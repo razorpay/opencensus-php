@@ -1506,16 +1506,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function editIIN($iin, $input)
-    {
-        // Auth as admin, live mode
-        $this->setApiCredentials(null);
-
-        $this->api->IIN->edit($iin, $input);
-
-        return [null, 'IIN Edit successful'];
-    }
-
     /**
      * See the data params at
      * https://razorpay.slack.com/services/20502106306?updated=1#service_setup

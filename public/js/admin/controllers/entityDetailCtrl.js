@@ -298,7 +298,18 @@ app
               delete iin[i];
             }
           }
-          var request = $http.put('/admin/iin/' + iinId, iin);
+          var data = {
+            route_name: 'iin_edit',
+            url_params: {
+              '{id}': iinId,
+            },
+            body: iin,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
+          });
           request
             .success(function(data) {
               if (data.success) {

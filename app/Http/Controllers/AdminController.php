@@ -516,19 +516,6 @@ class AdminController extends Controller
     }
 
     /**
-     * Edit an existing IIN
-     * @param  int $iin 6 digit IIN
-     */
-    public function putEditIIN($iin)
-    {
-        $input = Input::all();
-        list($error, $data) = $response = (new Admin\Service)
-            ->editIIN($iin, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
      * This is currently not supported on the API
      * so we just return an error
      * @param  int $iin IIN to delete

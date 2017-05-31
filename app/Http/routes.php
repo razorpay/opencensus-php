@@ -200,7 +200,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // IIN Routes
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
-        Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
 
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
