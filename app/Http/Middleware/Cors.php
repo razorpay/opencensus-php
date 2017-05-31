@@ -26,7 +26,12 @@ class Cors
         }
 
         $response = $next($request);
-        $response->header(key($headers), current($headers));
+
+        foreach ($headers as $key => $header)
+        {
+            $response->header($key, $header);
+        }
+
         return $response;
     }
 }

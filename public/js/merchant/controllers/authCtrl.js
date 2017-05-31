@@ -586,7 +586,6 @@ app
                   userDetails.merchants &&
                   userDetails.merchants[userDetails.id].pivot.role;
                 if ($state.params.next !== undefined) {
-                  console.log($state.params.next);
                   window.location = $state.params.next;
                 }
                 $scope.goToDashboard(role);
