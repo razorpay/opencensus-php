@@ -19,7 +19,9 @@ export default ({
       <NavLink {...linkProps}>
         <i class={icon} />
         {label}
-        {beta ? <span class="badge bg-success pull-right">beta</span> : null}
+        {beta
+          ? <span class="badge bg-success pull-right hidden-xs">beta</span>
+          : null}
       </NavLink>
     </ShowWhen>
   );

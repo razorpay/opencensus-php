@@ -52,7 +52,8 @@ export default class Sidebar extends Component {
       <div class="sidebar">
         <section class="brand-logo">
           <Link to="/dashboard">
-            <img src="img/logo_full.png" />
+            <img src="img/logo_full.png" class="hidden-xs" />
+            <img src="img/logo.png" class="visible-xs-block" />
           </Link>
         </section>
         <nav>
@@ -255,7 +256,11 @@ export default class Sidebar extends Component {
                     notMyRole="sellerapp support"
                   />
 
-                  <div class="divider-old" data-label="Settings" />
+                  <div
+                    class="divider-old"
+                    class="hidden-xs"
+                    data-label="Settings"
+                  />
 
                   <MainNavLink
                     label="API Keys"
