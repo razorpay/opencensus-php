@@ -877,6 +877,8 @@ class Terminal extends Base
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_rbl',
             'gateway_merchant_id'       => 'netbanking_rbl_merchant_id',
+            'gateway_merchant_id2'      => 'netbanking_rbl_merchant_id2',
+            'gateway_access_code'       => 'random_rbl_code',
             'netbanking'                => 1,
             'shared'                    => 1
         ];
