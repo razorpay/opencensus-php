@@ -549,7 +549,7 @@ final class Route
         //coupon routes
         'coupon_create'                          => ['post',     'coupons',                                         'CouponController@create'                                           ],
         'coupon_fetch_multiple'                  => ['get',      'coupons',                                         'CouponController@fetchMultiple'                                    ],
-
+        'coupon_delete'                          => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                           ],
     ];
 
     public static $public = [
@@ -924,6 +924,7 @@ final class Route
         'promotion_fetch_multiple',
         'coupon_create',
         'coupon_fetch_multiple',
+        'coupon_delete',
     ];
 
     public static $proxy = [

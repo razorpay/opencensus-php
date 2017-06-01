@@ -37,7 +37,7 @@ class CreatePromotionsTable extends Migration
                   ->unsigned()
                   ->default(1);
 
-            $table->tinyInteger(Promotion::CREDITS_EXPIRE)
+            $table->tinyInteger(Promotion::CREDITS_EXPIRABLE)
                   ->default(0);
 
             $table->integer(Promotion::CREATED_AT);

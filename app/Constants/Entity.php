@@ -165,6 +165,7 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::PROMOTION             => \RZP\Models\Promotion::class,
         self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,

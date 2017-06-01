@@ -244,6 +244,8 @@ class TraceCode
     const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
 
     const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
+    const COUPON_DELETE_REQUEST                         = 'COUPON_DELETE_REQUEST';
+    const COUPON_DELETED                                = 'COUPON_DELETED';
 
     const ITEM_CREATE_REQUEST                           = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                           = 'ITEM_UPDATE_REQUEST';

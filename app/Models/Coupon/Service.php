@@ -41,6 +41,6 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::COUPON_DELETED, $coupon->toArray());
 
-        return $schedule->toArrayAdmin();
+        return $coupon->toArrayAdmin();
     }
 }

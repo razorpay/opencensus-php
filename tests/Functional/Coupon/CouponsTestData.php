@@ -38,4 +38,20 @@ return [
             ]
         ]
     ],
+
+    'testDeleteCoupon' => [
+        'request' => [
+            'content' => [
+
+            ],
+            'url'    => '/coupons',
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'promotion',
+                'coupon_code' => 'RANDOM'
+            ]
+        ]
+    ],
 ];

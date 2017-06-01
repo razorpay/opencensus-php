@@ -28,6 +28,8 @@ class CouponController extends Controller
 
     public function delete($id)
     {
-        (new Coupon\Service)->delete($id);
+        $data = (new Coupon\Service)->delete($id);
+
+        return ApiResponse::json($data);
     }
 }

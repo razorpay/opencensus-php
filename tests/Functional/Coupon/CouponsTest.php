@@ -46,4 +46,20 @@ class CouponsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testDeleteCoupon()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/coupons/' . $coupon->getPublicId();
+
+        $this->startTest();
+    }
 }

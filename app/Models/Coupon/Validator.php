@@ -14,5 +14,6 @@ class Validator extends Base\Validator
         Entity::COUPON_CODE => 'required|string|max:10',
         Entity::START_DATE  => 'sometimes|integer',
         Entity::END_DATE    => 'sometimes|integer',
+        Entity::USAGE       => 'sometimes|integer',
     ];
 }
