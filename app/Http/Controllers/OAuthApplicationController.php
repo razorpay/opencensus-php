@@ -39,8 +39,26 @@ class OAuthApplicationController extends Controller
 
         $app = $this->appService->createApplication($input);
 
-        sd($app);
+        return ApiResponse::json($app);
+    }
+
+    public function get(string $id)
+    {
+        $app = $this->appService->fetch($id);
 
         return ApiResponse::json($app);
+    }
+
+    public function getMultiple()
+    {
+        $input = Request::all();
+
+        $merchantId = $this->merchant->getId();
+
+        $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
+        $apps = $this->appService->fetchMultiple($input);
+
+        return ApiResponse::json($apps);
     }
 }

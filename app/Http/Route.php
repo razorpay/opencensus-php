@@ -552,7 +552,9 @@ final class Route
         'oauth_client_create'                     => ['post',     'oauth/clients',                                  'OAuthClientController@createClient'                                ],
         'oauth_client_edit'                       => ['patch',    'oauth/clients/{id}',                             'OAuthClientController@editClient'                                  ],
         'oauth_client_delete'                     => ['delete',   'oauth/clients/{id}',                             'OAuthClientController@deleteClient'                                ],
-        'oauth_application_create'                => ['post',     'oauth/applications',                             'OAuthApplicationController@createApplication'                       ],
+        'oauth_application_create'                => ['post',     'oauth/applications',                             'OAuthApplicationController@createApplication'                      ],
+        'oauth_application_fetch_multiple'        => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
+        'oauth_application_fetch'                 => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
     ];
 
     public static $public = [
@@ -988,6 +990,8 @@ final class Route
         'oauth_client_edit',
         'oauth_client_delete',
         'oauth_application_create',
+        'oauth_application_fetch_multiple',
+        'oauth_application_fetch',
     ];
 
     // These will run on internal auth with the assurance
