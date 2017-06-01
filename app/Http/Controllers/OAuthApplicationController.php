@@ -44,7 +44,9 @@ class OAuthApplicationController extends Controller
 
     public function get(string $id)
     {
-        $app = $this->appService->fetch($id);
+        $merchantId = $this->merchant->getId();
+
+        $app = $this->appService->fetch($id, $merchantId);
 
         return ApiResponse::json($app);
     }
