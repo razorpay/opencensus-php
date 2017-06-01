@@ -7,6 +7,7 @@ var app = angular
     'ngStorage',
     'ui.router',
     'ui.bootstrap',
+    'ui.bootstrap.timepicker',
     'ui.load',
     'ui.jq',
     'ui.validate',

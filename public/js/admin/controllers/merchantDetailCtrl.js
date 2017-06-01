@@ -32,6 +32,9 @@ app
       utilMapping,
       $state
     ) {
+      // TODO: change default to live
+      $scope.mode = 'test';
+
       admin.identity().then(function(data) {
         $scope.admin = data;
       });
@@ -62,6 +65,7 @@ app
       $scope.selected_groups = {};
 
       generateMerchant();
+      getOffersOfMerchant();
       getGatewayRulesOfMerchant();
 
       // Gateway map is dependent upon method
@@ -1430,6 +1434,18 @@ app
           );
         }, $.noop);
       };
+
+      $scope.openCreateOffer = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'createMerchantOfferContent.html',
+          controller: 'createMerchantOfferModalCtrl',
+          backdrop: 'static',
+        });
+        modalInstance.result.then(function(offer) {
+          $scope.createMerchantOffer(offer);
+        }, $.noop);
+      };
+
       $scope.openEditMerchantEmail = function() {
         var modalInstance = $modal.open({
           templateUrl: 'editMerchantEmailModalContent.html',
@@ -1709,6 +1725,78 @@ app
       } else {
         createMapping(users);
       }
+
+      // Get offers of merchant to display in the list
+      function getOffersOfMerchant() {
+        console.log($scope.mode);
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'offer',
+          },
+          mode: $scope.mode,
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            console.log('MODE', $scope.mode);
+
+            if (data.success || true) {
+              $scope.merchantOffers = data.data.items;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      // Create merchant offer from the modal form
+      $scope.createMerchantOffer = function(offer) {
+        console.log('OFFER', offer);
+
+        var request = $http({
+          url: 'admin/generic',
+          method: 'POST',
+          data: {
+            route_name: 'offer_create',
+            content_type: 'application/json',
+            mode: $scope.mode,
+            merchant_id: $scope.merchant.id,
+            body: offer,
+          },
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Offer is successfully created',
+                true
+              );
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
 
       function getGatewayRulesOfMerchant() {
         var data = {
@@ -2204,6 +2292,75 @@ app
         // We convert it back from INR to paise.
         merchant.max_payment_amount = merchant.max_payment_amount * 100;
         $modalInstance.close(merchant);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('createMerchantOfferModalCtrl', [
+    '$scope',
+    'dateFactory',
+    '$modalInstance',
+    function($scope, dateFactory, $modalInstance) {
+      $scope.offer = {
+        name: 'some special icici offer',
+        payment_method: 'card',
+        iins: '401200,4011111',
+        percent_rate: 31.12,
+        ends_at: 1501353000000,
+        max_payment_count: 2,
+        display_text: '10% discount on all ICICI credit and debit cards',
+        error_message: 'This offer is not valid on your card. Retry using an ICICI card.',
+        terms: 'some terms',
+      };
+
+      $scope.date = dateFactory.getHandler($scope);
+      $scope.date.dateOptions['showWeeks'] = false;
+
+      var today = new Date();
+      $scope.currentDate = today.getTime();
+      $scope.offer_time = {
+        starts: today,
+        ends: today,
+      };
+
+      function cleanFields() {
+        var offer = Object.assign({}, $scope.offer);
+        // 1. Convert command separate values to array
+        if ($scope.offer['iins']) {
+          console.log('OFFER, TYPE OF', offer['iins'], typeof offer['iins']);
+          offer['iins'] = offer['iins'].split(',');
+        }
+
+        if (offer['linked_offer_ids']) {
+          offer['linked_offer_ids'] = offer['linked_offer_ids'].split(',');
+        }
+
+        // 2. Percent rate has limit 0-10000 (view takes from 0-100)
+        offer['percent_rate'] = offer['percent_rate'] * 100;
+
+        // 3. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
+        var startTime = new Date($scope.offer_time.starts);
+        var endTime = new Date($scope.offer_time.ends);
+
+        var offsetStart =
+          startTime.getHours() * 60 * 60 + startTime.getMinutes() * 60;
+        var offsetEnd =
+          endTime.getHours() * 60 * 60 + endTime.getMinutes() * 60;
+
+        offer.starts_at =
+          new Date(offer.starts_at).getTime() + offsetStart * 1000;
+        offer.ends_at = new Date(offer.ends_at).getTime() + offsetEnd * 1000;
+
+        offer.starts_at = offer.starts_at / 1000;
+        offer.ends_at = offer.ends_at / 1000;
+
+        return offer;
+      }
+
+      $scope.ok = function(offer) {
+        $modalInstance.close(cleanFields());
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

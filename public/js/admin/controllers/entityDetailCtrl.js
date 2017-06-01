@@ -46,6 +46,7 @@ app
       };
 
       function fetchEntity(entityType) {
+        console.log('ENTITY TYPE', entityType);
         var routeName = 'admin_fetch_entity_by_id';
         if (entityType === 'terminal') {
           routeName = 'admin_fetch_terminal_by_id';
@@ -76,6 +77,50 @@ app
             $scope.alerts.addAlert('danger', res ? res : null, true);
           });
       }
+
+      // Offer Specific actions
+      $scope.offer = {
+        edit: function(offer) {
+          var body = offer;
+
+          var successMsg = 'Offer is successfully Updated';
+          if (body.hasOwnProperty('active')) {
+            successMsg = 'Offer is successfully Deactivated';
+          }
+
+          var request = $http({
+            url: '/admin/generic',
+            method: 'PATCH',
+            params: {
+              route_name: 'offer_update',
+              content_type: 'application/json',
+              mode: $scope.mode,
+              url_params: {
+                '{id}': $scope.entity.id,
+              },
+            },
+            data: {
+              merchant_id: $scope.entity.merchant_id,
+              body: body,
+            },
+          });
+
+          request
+            .success(function(data) {
+              if (data.success) {
+                $scope.alerts.addAlert('success', successMsg, true);
+              } else {
+                $scope.alerts.resetAlerts();
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
+      };
 
       // Terminal Specific actions
       $scope.terminal = {
@@ -375,6 +420,20 @@ app
             $scope.terminal.edit(input.id, input);
           }, $.noop);
         },
+        offerEdit: function(offer) {
+          var modalInstance = $modal.open({
+            templateUrl: 'editOffer.html',
+            controller: 'editOfferModalCtrl',
+            resolve: {
+              current: function() {
+                return Object.assign({}, offer);
+              },
+            },
+          });
+          modalInstance.result.then(function(offer) {
+            $scope.offer.edit(offer);
+          }, $.noop);
+        },
         iinEdit: function(iin) {
           var modalInstance = $modal.open({
             templateUrl: 'editIin.html',
@@ -461,6 +520,47 @@ app
       };
       $scope.ok = function(terminal) {
         $modalInstance.close(terminal);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('editOfferModalCtrl', [
+    '$scope',
+    'dateFactory',
+    '$modalInstance',
+    'current',
+    function($scope, dateFactory, $modalInstance, current) {
+      $scope.date = dateFactory.getHandler($scope);
+      $scope.date.dateOptions['showWeeks'] = false;
+
+      $scope.offer = current;
+
+      $scope.offer['iins'] = $scope.offer['iins']
+        ? $scope.offer['iins'].join(',')
+        : null;
+      $scope.offer['linked_offer_ids'] = $scope.offer['linked_offer_ids']
+        ? $scope.offer['linked_offer_ids'].join(',')
+        : null;
+
+      $scope.ok = function() {
+        $scope.offer['iins'] = $scope.offer['iins'].split(',');
+        $scope.offer['linked_offer_ids'] = $scope.offer[
+          'linked_offer_ids'
+        ].split(',');
+
+        $scope.offer = {
+          name: $scope.offer.name,
+          iins: $scope.offer.iins,
+          max_payment_count: $scope.offer.max_payment_count,
+          linked_offer_ids: $scope.offer.linked_offer_ids,
+          display_text: $scope.offer.display_text,
+          error_message: $scope.offer.error_message,
+          terms: $scope.offer.terms,
+        };
+
+        $modalInstance.close($scope.offer);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

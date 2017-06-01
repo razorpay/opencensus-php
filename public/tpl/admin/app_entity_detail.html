@@ -66,6 +66,23 @@
         </button>
       </div>
     </div>
+
+     <!-- Entity: Offers -->
+    <div class="panel-footer row" ng-show="loadType === 'offer'">
+      <div class="btn-group text-left m-b" role="group"
+        aria-label="Offer Actions">
+        <button class="btn btn-info m-r" ng-click="open.offerEdit(entity)">
+          Edit Offer
+        </button>
+
+        <button class="btn btn-warning" ng-click="offer.edit({active: 0})"
+          ng-confirm-click="Are you sure you want to deactivate this offer?">
+          Deactivate Offer
+        </button>
+      </div>
+    </div>
+
+
     <div class="panel-footer row" ng-show="entity.entity == 'iin'">
       <div class="btn-group text-left" role="group"
         aria-label="IIN Actions"
@@ -110,6 +127,76 @@
     </div>
   </div>
 </div>
+
+<!--Edit Offer Modal-->
+<script type="text/ng-template" id="editOffer.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Merchant Offer</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal" name="merchantEditForm">
+
+      <!--NAME-->
+      <div class="form-group">
+        <label for="name" class="col-lg-3 control-label">Name:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="name" ng-model="offer.name"/>
+        </div>
+      </div>
+
+      <!--IINS-->
+      <div class="form-group">
+        <label for="iins" class="col-lg-3 control-label">iins:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="iins" ng-model="offer.iins" placeholder="Enter comma(,) separated values"/>
+        </div>
+      </div>
+
+      <!--MAX PAYMENT COUNT-->
+      <div class="form-group">
+        <label for="max_payment_count" class="col-lg-3 control-label">max Payment Count:</label>
+        <div class="col-lg-9" >
+          <input type="decimal" class="form-control m-b" name="max_payment_count" ng-model="offer.max_payment_count"/>
+        </div>
+      </div>
+      <!--LINKED OFFER IDs-->
+      <div class="form-group">
+        <label for="linked_offer_ids" class="col-lg-3 control-label">Linked Offer ids:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="linked_offer_ids" ng-model="offer.linked_offer_ids" />
+        </div>
+      </div>
+      <!--DISPLAY TEXT-->
+      <div class="form-group">
+        <label for="display_text" class="col-lg-3 control-label">Display Text:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="display_text" ng-model="offer.display_text" />
+        </div>
+      </div>
+      <!--ERROR MESSAGE-->
+      <div class="form-group">
+        <label for="error_message" class="col-lg-3 control-label">Error Message:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="error_message" ng-model="offer.error_message" />
+        </div>
+      </div>
+      <!--TERMS-->
+      <div class="form-group">
+        <label for="terms" class="col-lg-3 control-label">Terms:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="terms" ng-model="offer.terms" />
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(offer)">OK</button>
+  </div>
+</script>
+
+
 <script type="text/ng-template" id="editTerminal.html">
   <div class="modal-header">
     <h3 class="modal-title">Edit Terminal</h3>
@@ -296,7 +383,7 @@
           <td>
             <button class="btn btn-danger btn-xs" ng-click="deleteSubMerchant(subMerchant.id)">
               Delete
-            </a>
+            </button>
           </td>
       </tbody>
     </table>

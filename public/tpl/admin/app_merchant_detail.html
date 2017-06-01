@@ -89,6 +89,9 @@
         <a href class="list-group-item" ng-click="openAddAdjustment()" dynamic-tooltip="add_merchant_adjustment" ng-show="admin.permissions.indexOf('add_merchant_adjustment') !== -1">
           Add Adjustment <i class="pull-right fa fa-adjust"></i>
         </a>
+        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openCreateOffer()" dynamic-tooltip="edit_merchant" ng-show="admin.permissions.indexOf('edit_merchant') !== -1">
+          Create Offer <i class="pull-right fa fa-money"></i>
+        </a>
         <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openEditMerchant()" dynamic-tooltip="edit_merchant" ng-show="admin.permissions.indexOf('edit_merchant') !== -1">
           Edit Merchant <i class="pull-right fa fa-pencil-square"></i>
         </a>
@@ -670,8 +673,8 @@
         <a href class="list-group-item" ng-init="isGatewayRulesCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isGatewayRulesCollapsed = !isGatewayRulesCollapsed"
-                      ng-show="gatewayRules && gatewayRules.items.length != 0">Show/Hide</button>
-              <span ng-if="gatewayRules && gatewayRules.items.length === 0">
+                      ng-show="gatewayRules && gatewayRules.length != 0">Show/Hide</button>
+              <span ng-if="gatewayRules && gatewayRules.length === 0">
                 No Gateway rules found
               </span>
             </span>
@@ -705,6 +708,115 @@
                     <td>{{row.issuer || 'ALL'}}</td>
                     <td>{{row.international || 'BOTH'}}</td>
                     <td>{{row.load}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!--Group Details-->
+        <a href class="list-group-item" ng-init="isGroupDetailsCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isGroupDetailsCollapsed = !isGroupDetailsCollapsed"
+                      ng-show="groups && groups.length != 0">Show/Hide</button>
+              <span ng-if="groups && groups.length === 0">
+                No Group details found
+              </span>
+            </span>
+          Group Details
+        </a>
+
+        <div collapse="isGroupDetailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="groups.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light">
+                <thead>
+                  <tr>
+                    <th>Group</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="(key, row) in groups">
+                    <td>{{row.name}}</td>
+                    <td>{{row.description}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!--Admin Details-->
+        <a href class="list-group-item" ng-init="isAdminDetailsCollapsed = true" style="background-color: rgba(255, 255, 0, 0.20)">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isAdminDetailsCollapsed = !isAdminDetailsCollapsed"
+                      ng-show="selected_admins && selected_admins.length != 0">Show/Hide</button>
+              <span ng-if="selected_admins && selected_admins.length === 0">
+                No Admins found
+              </span>
+            </span>
+          Admins
+        </a>
+
+        <div collapse="isAdminDetailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="selected_admins.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light">
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="adminId in selected_admins track by $index" class="merchants-table-body">
+                    <td>{{adminMap[adminId].role}}</td>
+                    <td>{{adminMap[adminId].name}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!--Merchant Offers-->
+        <a href class="list-group-item" ng-init="isOffersCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isOffersCollapsed = !isOffersCollapsed"
+                      ng-show="merchantOffers && merchantOffers.length !== 0">Show/Hide</button>
+              <span ng-if="merchantOffers && merchantOffers.length === 0">
+                No offers found
+              </span>
+            </span>
+          Offers
+        </a>
+        <div collapse="isOffersCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="merchantOffers.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <tr>
+                    <th>Offer Id</th>
+                    <th>Name</th>
+                    <th>Starts At</th>
+                    <th>Display Text</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr ng-repeat="row in merchantOffers" class="merchants-table-body">
+                    <td>
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'offer', id: row['id'], mode: mode})">
+                        <code>{{row['id']}}</code>
+                      </a>
+                    </td>
+                    <td>{{row['name']}}</td>
+                    <td>{{row['starts_at']*1000 | date: 'd MMM, y h:mm a'}}</td>
+                    <td>{{row['display_text']}}</td>
                   </tr>
                 </tbody>
               </table>
@@ -1326,6 +1438,262 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(email)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="createMerchantOfferContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Create Merchant Offer</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal">
+
+      <div class="form-group">
+        <label for="name" class="col-lg-3 control-label">Name:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="name" ng-model="offer.name" required />
+        </div>
+      </div>
+
+      <div class="form-group col-lg-6">
+        <label for="payment_method" class="col-lg-6 control-label">Payment Method:</label>
+        <div class="col-lg-6" >
+          <select class="form-control m-b"
+                  name="payment_method"
+                  ng-model="offer.payment_method" required>
+            <option value="card">Card</option>
+            <option value="netbanking">Netbanking</option>
+            <option value="emi">EMI</option>
+            <option value="upi">UPI</option>
+            <option value="wallet">Wallet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group col-lg-7" ng-if="['card', 'netbanking', 'wallet'].indexOf(offer.payment_method) !== -1">
+        <label for="payment_network" class="col-lg-5 control-label">Payment Network:</label>
+        <div class="col-lg-7">
+          <select class="form-control m-b"
+                  name="payment_method"
+                  ng-if="offer.payment_method === 'card'"
+                  ng-model="offer.payment_network">
+            <option value="credit">Credit</option>
+            <option value="dedit">Dedit</option>
+          </select>
+          <input type="text" class="form-control m-b"
+                 name="payment_network"
+                 ng-if="offer.payment_method === 'netbanking'"
+                 placeholder="Enter bank code for netbanking"
+                 ng-model="offer.payment_network" />
+          <input type="text" class="form-control m-b"
+                 name="payment_network"
+                 ng-if="offer.payment_method === 'wallet'"
+                 placeholder="Enter wallet name"
+                 ng-model="offer.payment_network" />
+        </div>
+      </div>
+
+      <div class="form-group" ng-if="offer.payment_method === 'card'">
+        <label for="issuer" class="col-lg-3 control-label">Issuer:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="issuer" ng-model="offer.issuer" />
+        </div>
+      </div>
+
+      <div class="form-group col-lg-12">
+        <label for="iins" class="col-lg-3 control-label">iins:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="iins" ng-model="offer.iins" placeholder="Enter comma(,) separated values" required/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="percent_rate" class="col-lg-3 control-label">Percent Rate:</label>
+        <div class="col-lg-9" >
+          <input type="number" class="form-control m-b" name="percent_rate"
+                 ng-model="offer.percent_rate"
+                 ng-min="0"
+                 ng-max="100"
+                 placeholder="Eg: 45.25"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-lg-6" >
+          <label for="max_cashback" class="col-lg-6 control-label">Max Cashback:</label>
+          <input type="text" class="form-control m-b col-lg-6" name="max_cashback" ng-model="offer.max_cashback" style="width: auto"/>
+        </div>
+        <div class="col-lg-6" >
+          <label for="flat_cashback" class="col-lg-6 control-label">Flat Cashback:</label>
+          <input type="text" class="form-control m-b col-lg-6" name="flat_cashback" ng-model="offer.flat_cashback" style="width: auto"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-lg-6" >
+          <label for="min_amount" class="col-lg-6 control-label">min Amount:</label>
+          <input type="decimal" class="form-control m-b col-lg-6" name="min_amount" ng-model="offer.min_amount" style="width: auto"/>
+        </div>
+        <div class="col-lg-6" >
+          <label for="max_payment_count" class="col-lg-6 control-label">max Payment Count:</label>
+          <input type="decimal" class="form-control m-b col-lg-6" name="max_payment_count" ng-model="offer.max_payment_count" style="width: auto" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="linked_offer_ids" class="col-lg-3 control-label">Linked Offer ids:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="linked_offer_ids"
+                 ng-model="offer.linked_offer_ids" placeholder="Enter comma(,) separated values"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="processing_time" class="col-lg-3 control-label">Processing Time:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="processing_time" ng-model="offer.processing_time" />
+        </div>
+      </div>
+
+      <!-- Start date-->
+      <div class="form-group">
+        <label for="starts_at" class="col-lg-3 control-label"
+               style="display:table-cell; vertical-align: middle">
+          Starts at:
+        </label>
+        <div class="col-lg-9" style="display:table;">
+          <!--Date picker-->
+          <div style="display: table-cell; vertical-align: middle">
+            <div class="input-group input-date col-lg-3" name="starts_at"
+                 ng-click="date.open($event, 0)">
+
+              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
+                     ng-model="offer.starts_at"
+                     is-open="date.opened.0"
+                     datepicker-options="date.dateOptions"
+                     close-text="Close" />
+              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+            </div>
+          </div>
+          <!--Time picker-->
+          <div class="col-lg-6" style="display:table-cell; vertical-align: middle">
+            <div class="dropdown time-picker">
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                {{offer_time.starts | date: "h:mm a" }} <i class="glyphicon glyphicon-time" style="margin-left:5px;"></i>
+              </button>
+              <ul class="dropdown-menu" style="list-style:none" ui-time-dropdown>
+                <li>
+                  <timepicker ng-model="offer_time.starts"
+                              hour-step="1" minute-step="5" show-meridian="true">
+                  </timepicker>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--End Date-->
+      <div class="form-group">
+        <label for="ends_at" class="col-lg-3 control-label"
+               style="display:table-cell; vertical-align: middle">
+          Ends at:
+        </label>
+        <div class="col-lg-9" style="display:table;">
+          <!--Date picker-->
+          <div style="display: table-cell; vertical-align: middle">
+            <div class="input-group input-date col-lg-3" name="starts_at"
+                 ng-click="date.open($event, 1)">
+              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
+                     ng-model="offer.ends_at"
+                     is-open="date.opened.1"
+
+                     datepicker-options="date.dateOptions"
+                     close-text="Close" />
+              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+            </div>
+          </div>
+          <!--Time picker-->
+          <div class="col-lg-6" style="display:table-cell; vertical-align: middle">
+            <div class="dropdown time-picker">
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                {{offer_time.ends | date: "h:mm a" }} <i class="glyphicon glyphicon-time" style="margin-left:5px;"></i>
+              </button>
+              <ul class="dropdown-menu" style="list-style:none" ui-time-dropdown>
+                 <li>
+                    <timepicker ng-model="offer_time.ends"
+                                hour-step="1" minute-step="5" show-meridian="true">
+                    </timepicker>
+                 </li>
+              </ul>
+            </div>
+        </div>
+       </div>
+      </div>
+
+      <div class="form-group">
+        <label for="type" class="col-lg-3 control-label">Type:</label>
+        <div class="col-lg-9" ng-init="offer.type='instant'">
+          <label class="col-lg-4">
+            <input type="radio"
+                   name="type"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.type"
+                   value="instant">
+            Instant
+          </label>
+          <label class="col-lg-3">
+            <input type="radio"
+                   name="type"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.type"
+                   value="deferred">
+            Deffered
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="type" class="col-lg-3 control-label">Checkout Display:</label>
+        <div class="col-lg-9" ng-init="offer.checkout_display=false">
+          <label class="col-lg-4">
+            <input type="radio"
+                   name="checkout_display"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.checkout_display"
+                   data-ng-value="true">
+            True
+          </label>
+          <label class="col-lg-3">
+            <input type="radio"
+                   name="checkout_display"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.checkout_display"
+                   data-ng-value="false">
+            False
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="display_text" class="col-lg-3 control-label">Display Text:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="display_text" ng-model="offer.display_text" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="error_message" class="col-lg-3 control-label">Error Message:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="error_message" ng-model="offer.error_message"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="terms" class="col-lg-3 control-label">Terms:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="terms" ng-model="offer.terms" required/>
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(offer)">OK</button>
   </div>
 </script>
 
