@@ -236,7 +236,7 @@ app
             });
           } else {
             hideSpinner();
-            if (data.errors[0].includes('email has already been taken')) {
+            if (data.errors && data.errors[0] && data.errors[0].indexOf('email has already been taken') !== -1) {
               trackDrip('error_email_taken');
             }
 
