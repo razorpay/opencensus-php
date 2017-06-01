@@ -401,6 +401,7 @@ class TraceCode
     const GATEWAY_CALLBACK_PARES                    = 'GATEWAY_CALLBACK_PARES';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
+    const GATEWAY_REFUND_VERIFY_UNEXPECTED          = 'GATEWAY_REFUND_VERIFY_UNEXPECTED';
     const GATEWAY_DOWNTIME_CREATE                   = 'GATEWAY_DOWNTIME_CREATE';
     const GATEWAY_DOWNTIME_EDIT                     = 'GATEWAY_DOWNTIME_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
@@ -449,7 +450,6 @@ class TraceCode
     const SCHEDULE_EDITED                           = 'SCHEDULE_EDITED';
     const SCHEDULE_DELETED                          = 'SCHEDULE_DELETED';
     const SCHEDULE_ASSIGNED                         = 'SCHEDULE_ASSIGNED';
-    const SCHEDULE_NEXT_RUN_UPDATED                 = 'SCHEDULE_NEXT_RUN_UPDATED';
     const SCHEDULE_UNSETTLED_TXNS_FETCH             = 'SCHEDULE_UNSETTLED_TXNS_FETCH';
     const SCHEDULE_UNSETTLED_TXNS                   = 'SCHEDULE_UNSETTLED_TXNS';
     const SCHEDULE_MIGRATION_INITIATED              = 'SCHEDULE_MIGRATION_INITIATED';
@@ -671,6 +671,7 @@ class TraceCode
     const OFFER_CARD_TYPE_CHECK                         = 'OFFER_CARD_TYPE_CHECK';
     const OFFER_CARD_NETWORK_CHECK                      = 'OFFER_CARD_NETWORK_CHECK';
     const OFFER_CARD_ISSUER_CHECK                       = 'OFFER_CARD_ISSUER_CHECK';
+    const OFFER_CARD_USAGE_CHECK                        = 'OFFER_CARD_USAGE_CHECK';
 
 // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                  = 'ADD_GATEWAY_PRIORITY_REQUEST';

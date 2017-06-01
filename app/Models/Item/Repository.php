@@ -11,9 +11,8 @@ class Repository extends Base\Repository
 {
     protected $entity = 'item';
 
-    // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = [
-        Entity::ACTIVE => 'sometimes|boolean',
+        Entity::ACTIVE      => 'sometimes|boolean',
     ];
 
     protected $appFetchParamRules = [
@@ -24,13 +23,15 @@ class Repository extends Base\Repository
      * Finds item with given public id and where status is ACTIVE.
      * If not found, throws exception.
      *
-     * @param integer         $id
+     * @param string          $id
      * @param Merchant\Entity $merchant
      *
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function findActiveByPublicIdAndMerchantOrFail($id, Merchant\Entity $merchant)
+    public function findActiveByPublicIdAndMerchantOrFail(
+        string $id,
+        Merchant\Entity $merchant)
     {
         $item = $this->findByPublicIdAndMerchant($id, $merchant);
 

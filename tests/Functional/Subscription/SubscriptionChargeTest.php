@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
 
 class SubscriptionChargeTest extends TestCase
 {
+    use PaymentTrait;
     use SubscriptionTrait;
 
     const MAX_AUTH_ATTEMPTS = 3;

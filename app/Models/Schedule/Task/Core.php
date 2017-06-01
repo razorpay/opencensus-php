@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule\Task;
 
 use Config;
+use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -20,8 +21,6 @@ class Core extends Base\Core
     public function createDefaultSettlementSchedule(Merchant\Entity $merchant)
     {
         $schedule = $this->getDefaultMerchantSchedule($merchant);
-
-        $merchant->schedule()->associate($schedule);
 
         $input = [
             Entity::METHOD      => null,
@@ -53,14 +52,15 @@ class Core extends Base\Core
             {
                 $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
                 $this->createOrUpdateInMode($scheduleTask, Mode::TEST);
+
+                // Notify slack only in the case of settlement schedule_task
+                $this->traceAndNotifyScheduleAssignment($scheduleTask);
             }
             else
             {
                 $this->createOrUpdateInMode($scheduleTask, $this->mode);
             }
         });
-
-        $this->traceAndNotifyScheduleAssignment($scheduleTask);
 
         return $scheduleTask;
     }
@@ -89,6 +89,8 @@ class Core extends Base\Core
         $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
 
         $scheduleTask->schedule()->associate($schedule);
+
+        $scheduleTask->updateNextRunAt($scheduleTask->getNextRunAt());
 
         return $scheduleTask;
     }
@@ -127,7 +129,7 @@ class Core extends Base\Core
 
         if ($currentScheduleTask !== null)
         {
-            $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
+            $entity->updateNextRunAt($currentScheduleTask->getNextRunAt());
 
             $this->repo->deleteOrFail($currentScheduleTask);
         }

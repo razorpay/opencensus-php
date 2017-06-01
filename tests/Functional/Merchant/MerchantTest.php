@@ -893,7 +893,7 @@ class MerchantTest extends TestCase
                 'starts_at'    => $startsAt
             ]);
 
-        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -1280,14 +1280,12 @@ class MerchantTest extends TestCase
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
     }
 

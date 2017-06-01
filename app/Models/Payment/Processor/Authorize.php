@@ -1095,7 +1095,7 @@ trait Authorize
 
             $payment->setRecurring(false);
 
-            $vault = $payment->isEmi();
+            $vault = $payment->shouldSaveCard();
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
         }
@@ -1382,6 +1382,14 @@ trait Authorize
     protected function setBankAndEmiPlanDetails(Payment\Entity $payment, string $cardNumber, int $emiDuration)
     {
         $iinEntity = $payment->card->iinRelation;
+
+        // On custom checkouts, sometimes users are entering random cards for
+        // which iin entity doesn't exist
+        if ($iinEntity === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
+        }
 
         IIN\IIN::validateEmiAvailableForCard($iinEntity, $cardNumber);
 
@@ -2618,18 +2626,18 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
-        $terminalType = $payment->terminal->getType();
+        $terminalMode = $payment->terminal->getMode();
 
-        if ($terminalType === Terminal\Type::AUTH_CAPTURE)
+        if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
         {
             return true;
         }
-        else if ($terminalType === Terminal\Type::PURCHASE)
+        else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
             return false;
         }
 
-        // We handle dual and null terminal type as the default case
+        // We handle dual and null terminal mode as the default case
         // In the default case, we check if the card network supports
         // purchase or auth+capture. Example. FSS uses Auth and capture
         // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
