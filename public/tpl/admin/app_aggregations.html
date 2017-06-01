@@ -26,7 +26,7 @@
           <option value="settlement">Settlement</option>
         </select>
       </div>
-      <div class="col-xs-2">
+      <div class="col-xs-1">
         Mode:
         <select class="form-control input-sm w-xs inline" name="mode" ng-model="mode">
           <option value="live">Live</option>
@@ -34,17 +34,21 @@
         </select>
       </div>
       <div class="col-xs-2">
+        Count:
+        <input type="number" min="10" step="10" name="limit" ng-model="limit">
+      </div>
+      <div class="col-xs-1">
         For Last:
         <input type="number" min="0" max="180" name="duration_count" ng-model="duration_count">
       </div>
-      <div class="col-xs-1">
+      <div class="col-xs-1 m-t-md">
         <select class="form-control input-sm w-xs inline" name="period" ng-model="period">
           <option value="day">Day</option>
           <option value="week">Week</option>
           <option value="month">Month</option>
         </select>
       </div>
-      <div class="col-xs-3">
+      <div class="col-xs-2">
         Sort:
         <select class="form-control w-sm inline" name="sort" ng-model="sort">
           <option value="total_amount">Total Amount</option>
@@ -52,7 +56,7 @@
           <option value="txn_count">Total Count</option>
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-sm-2 m-t-md">
         <div class="input-group">
           <input type="text" class="input-sm form-control" placeholder="Search Merchant Id" ng-model="merchant_id">
           <span class="input-group-btn">

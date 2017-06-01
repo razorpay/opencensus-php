@@ -12,13 +12,23 @@ app.controller('MerchantStatsCtrl', [
     $scope.mode = 'live';
     $scope.merchant_id = '';
     $scope.sort = 'total_amount';
+    $scope.offset = 0;
+    $scope.limit = 10;
 
-    $scope.fetchAllAggregations = function(mode, resource, sort) {
+    $scope.fetchAllAggregations = function(
+      mode,
+      resource,
+      sort,
+      offset,
+      limit
+    ) {
       var request = $http.get(
         '/admin/' + mode + '/merchants/aggregations/' + resource,
         {
           params: {
             sort: sort,
+            offset: offset,
+            limit: limit,
           },
         }
       );
@@ -49,7 +59,13 @@ app.controller('MerchantStatsCtrl', [
     $scope.go = function(merchant_id) {
       if (merchant_id === '') {
         // We get all aggregations
-        $scope.fetchAllAggregations($scope.mode, $scope.resource, $scope.sort);
+        $scope.fetchAllAggregations(
+          $scope.mode,
+          $scope.resource,
+          $scope.sort,
+          $scope.offset,
+          $scope.limit
+        );
       } else {
         $scope.fetchAllAggregationsForMerchant(
           merchant_id,
