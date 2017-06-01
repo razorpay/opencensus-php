@@ -25,11 +25,7 @@ import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import { fetchConfig } from 'merchant/modules/config';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import { fetchItemsForAutocomplete } from 'merchant/modules/items';
-import {
-  saveInvoice,
-  highLightInvoice,
-  deleteInvoice,
-} from 'merchant/modules/invoices/list';
+import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
 import * as InvoiceActions from 'merchant/modules/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -82,7 +78,6 @@ const selector = formValueSelector('newInvoice');
     fetchCustomersForAutocomplete,
     fetchItemsForAutocomplete,
     saveInvoice,
-    highLightInvoice,
     deleteInvoice,
     fetchConfig,
     ...InvoiceActions,

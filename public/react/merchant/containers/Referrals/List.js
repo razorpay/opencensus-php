@@ -57,7 +57,7 @@ export default class ReferralsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, referrals, highlightReferralId } = this.props.referrals;
+    let { loading, referrals } = this.props.referrals;
     let user = this.props.session.user;
     let status = this.state.status;
 
@@ -89,10 +89,8 @@ export default class ReferralsListContainer extends ListContainer {
           referrals={referrals}
           isLoading={loading}
           user={user}
-          highlightRow={referral => referral.id === highlightReferralId}
           showCreateLoginModal={this.showCreateLoginModal}
           showCreateMerchantModal={this.showCreateMerchantModal}
-          highlightReferralId={highlightReferralId}
           switchMerchant={this.switchMerchant}
         />
       </div>

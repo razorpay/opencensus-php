@@ -97,7 +97,6 @@ export default class InvoicesListContainer extends ListContainer {
           invoices={invoices}
           isNewUIEnabled={isNewUIEnabled}
           isLoading={loading}
-          highlightRow={invoice => invoice.id === this.props.highLightInvoiceId}
           onEdit={this.editInvoice}
         />
 

@@ -81,8 +81,6 @@ export default class PaymentLinksContainer extends ListContainer {
             invoices={invoices}
             isLoading={loading}
             type="link"
-            highlightRow={invoice =>
-              invoice.id === this.props.highLightInvoiceId}
             onEdit={this.showPaymentLinkModal}
           />
 

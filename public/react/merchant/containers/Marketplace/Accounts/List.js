@@ -14,11 +14,13 @@ import ListContainer from 'merchant/containers/ListContainer';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(state => state.accounts, {
   ...AccountActions,
   ...ModalActions,
   showNotification,
+  luminateRow,
 })
 export default class AccountsListContainer extends ListContainer {
   fetchEntityList({ id, ...params }) {
@@ -54,7 +56,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   highlightRowAndClose = account => {
-    this.props.highlightItemRow(account);
+    this.props.luminateRow(account.id);
     this.props.closeModal();
   };
 
@@ -80,7 +82,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, accounts, highlightRowId } = this.props;
+    let { loading, accounts } = this.props;
     let status = this.state.status;
 
     return (
@@ -132,7 +134,6 @@ export default class AccountsListContainer extends ListContainer {
           <AccountsList
             accounts={accounts}
             isLoading={loading}
-            highlightRow={account => account.id === highlightRowId}
             onEdit={this.showAccountDetailsModal}
           />
 

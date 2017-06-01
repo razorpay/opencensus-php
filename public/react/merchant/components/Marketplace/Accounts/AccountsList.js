@@ -1,10 +1,11 @@
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-const AccountsListItem = ({ account, canHighlightRow, onEdit }) => {
+const AccountsListItem = ({ account, onEdit }) => {
   return (
-    <tr class={canHighlightRow ? 'luminate' : ''}>
+    <EntityItemRow id={account.id}>
       <td>
         <a onClick={onEdit}><code>{`acc_${account.id}`}</code></a>
       </td>
@@ -21,11 +22,11 @@ const AccountsListItem = ({ account, canHighlightRow, onEdit }) => {
       <td>
         <Time value={account.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
-const AccountsList = ({ accounts, isLoading, highlightRow, onEdit }) => {
+export default ({ accounts, isLoading, onEdit }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -49,7 +50,6 @@ const AccountsList = ({ accounts, isLoading, highlightRow, onEdit }) => {
             <AccountsListItem
               key={account.id}
               account={account}
-              canHighlightRow={highlightRow(account)}
               onEdit={() => onEdit(account)}
             />
           ))}
@@ -58,9 +58,3 @@ const AccountsList = ({ accounts, isLoading, highlightRow, onEdit }) => {
     </div>
   );
 };
-
-AccountsList.defaultProps = {
-  highlightRow: () => {},
-};
-
-export default AccountsList;

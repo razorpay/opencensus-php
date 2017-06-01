@@ -12,7 +12,6 @@ export default class ModalSlider extends Component {
   // Closes the slider
   //  1. When slider `Close` button is clicked
   //  2. When clicking on the document except on the Slider view & on any links
-
   handleDocumentClick = event => {
     let target = event.target;
     if (!(target.closest('a[href]') || target.closest('.ReactModalPortal'))) {
@@ -33,6 +32,7 @@ export default class ModalSlider extends Component {
     if (this.props.closeUrl) {
       this.props.history.push(this.props.closeUrl);
     }
+    this.props.onClose();
   };
 
   render() {
@@ -53,3 +53,7 @@ export default class ModalSlider extends Component {
     );
   }
 }
+
+ModalSlider.defaultProps = {
+  onClose: () => {},
+};

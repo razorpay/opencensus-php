@@ -8,6 +8,7 @@ import WebhooksList from 'merchant/components/Webhooks/List';
 import WebhookCreation from 'merchant/containers/Webhooks/New';
 import * as WebhookActions from 'merchant/modules/webhooks';
 import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(
   state => {
@@ -16,7 +17,7 @@ import * as ModalActions from 'rzp/modules/modals';
       modeFormatted: state.session.modeFormatted,
     };
   },
-  { ...WebhookActions, ...ModalActions }
+  { ...WebhookActions, ...ModalActions, luminateRow }
 )
 export default class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -32,14 +33,14 @@ export default class WebhooksContainer extends ListContainer {
   };
 
   highlightRowAndClose = webhook => {
-    this.props.highlightWebhookRow(webhook);
+    this.props.luminateRow(webhook.id);
     this.props.closeModal();
   };
 
   render() {
     let webhooksState = this.props.webhooks;
     let modeFormatted = this.props.modeFormatted;
-    let { loading, webhooks, error, highlightRowId } = webhooksState;
+    let { loading, webhooks, error } = webhooksState;
 
     return (
       <div class="content-wrapper">
@@ -67,7 +68,6 @@ export default class WebhooksContainer extends ListContainer {
         <WebhooksList
           webhooks={webhooks}
           isLoading={loading}
-          highlightRow={webhook => webhook.id === highlightRowId}
           onSetupWebhookClick={this.showWebhookModal}
           modeFormatted={modeFormatted}
         />

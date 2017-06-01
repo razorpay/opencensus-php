@@ -3,8 +3,6 @@ import { set, merge, unshift } from 'rzp/utils/immutable';
 
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
-const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM';
-const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT';
 
 export const fetchAccounts = params => {
   return dispatch => {
@@ -43,36 +41,17 @@ export const exportAccountsCSV = () => {
   };
 };
 
-export const highlightItemRow = params => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_ITEM,
-      payload: params,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_ITEM_HIGHLIGHT,
-      });
-    }, 6000);
-  };
-};
-
 let initialState = {
   loading: true,
   error: null,
   accounts: [],
   count: 0,
-  highlightRowId: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${ACCOUNTS_FETCH}::PENDING`:
-      return merge(state, {
-        loading: true,
-        highlightRowId: null,
-      });
+      return set(state, 'loading', true);
 
     case `${ACCOUNTS_FETCH}::SUCCESS`:
       return merge(state, {
@@ -91,12 +70,6 @@ export default function(state = initialState, action) {
 
     case `${ACCOUNT_CREATE}::SUCCESS`:
       return set(state, 'accounts', unshift(state.accounts, action.payload));
-
-    case HIGHLIGHT_ITEM:
-      return set(state, 'highlightRowId', action.payload.id);
-
-    case REMOVE_ITEM_HIGHLIGHT:
-      return set(state, 'highlightRowId', null);
 
     default:
       return state;

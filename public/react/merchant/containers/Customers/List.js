@@ -10,11 +10,13 @@ import ListContainer from 'merchant/containers/ListContainer';
 import * as CustomerActions from 'merchant/modules/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(state => state.customers, {
   ...CustomerActions,
   ...ModalActions,
   ...NotificationActions,
+  luminateRow,
 })
 export default class CustomersListContainer extends ListContainer {
   fetchEntityList(params) {
@@ -35,7 +37,7 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   highlightRowAndClose = customer => {
-    this.props.highlightCustomerRow(customer);
+    this.props.luminateRow(customer.id);
     this.props.closeModal();
   };
 
@@ -67,7 +69,7 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, customers, highlightRowId } = this.props;
+    let { loading, customers } = this.props;
     let status = this.state.status;
 
     return (
@@ -98,7 +100,6 @@ export default class CustomersListContainer extends ListContainer {
         <CustomersList
           customers={customers}
           isLoading={loading}
-          highlightRow={customer => customer.id === highlightRowId}
           onEdit={this.showCustomerModal}
           onDelete={this.deleteCustomer}
         />
