@@ -255,9 +255,7 @@ class Gateway extends Base\Gateway
             $type = $this->action;
         }
 
-        $type = "{$this->mode}_{$type}";
-
-        $url = parent::getUrl($type);
+        $url = parent::getUrl();
 
         return sprintf($url, $this->getMerchantId());
     }
