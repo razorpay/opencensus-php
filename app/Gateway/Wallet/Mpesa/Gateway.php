@@ -578,7 +578,8 @@ class Gateway extends Base\Gateway
             Base\Entity::RESPONSE_DESCRIPTION => $errorMessage
         ];
 
-        if (empty($wallet[Base\Entity::GATEWAY_PAYMENT_ID]) === true)
+        if ((empty($wallet[Base\Entity::GATEWAY_PAYMENT_ID]) === true) and
+            (isset($content[ResponseFields::S2S_TRANS_ID]) === true))
         {
             $contentToSave[Base\Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID];
         }
