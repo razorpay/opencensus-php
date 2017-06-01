@@ -10,7 +10,7 @@
   transition: transform 300ms linear;
   z-index: 2;
   background-color: #fff;
-  overflow: auto;
+  overflow: hidden;
   padding-bottom: 45px;
 
   &.ReactModal__Overlay--after-open {
@@ -29,9 +29,31 @@
 
   button.close {
     padding: 14px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
   }
 
   .content-wrapper {
     padding: 0;
+  }
+
+  .panel-heading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+  }
+
+  .panel-body {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50px;
+    bottom: 0;
+    overflow: auto;
+    padding-bottom: 80px;
   }
 }
