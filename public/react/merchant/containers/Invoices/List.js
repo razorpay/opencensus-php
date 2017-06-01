@@ -8,23 +8,51 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
+import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 
 @withRouter
-@connect(state => state.invoices, { ...InvoiceActions, ...ModalActions })
+@connect(
+  state => {
+    return { ...state.invoices, ...state.session };
+  },
+  { ...InvoiceActions, ...ModalActions }
+)
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
-    params.type = 'invoice';
+    if (this.props.user.tags.indexOf('Newui') !== -1) {
+      params.type = 'invoice';
+    }
+
     return this.props.fetchInvoices(params);
   }
 
   editInvoice = invoice => {
-    this.props.history.push(`/invoices/${invoice.id}`);
+    if (invoice.type === 'link') {
+      this.showPaymentLinkModal(invoice);
+    } else {
+      this.props.history.push(`/invoices/${invoice.id}`);
+    }
+  };
+
+  showPaymentLinkModal = (invoice = null) => {
+    this.props.openModal({
+      component: (
+        <CreatePaymentLink
+          invoice={invoice}
+          onSave={invoice => {
+            this.props.highLightInvoice(invoice.id);
+          }}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
   };
 
   render() {
-    let { loading, invoices } = this.props;
+    let { loading, invoices, user } = this.props;
+    let isNewUIEnabled = user.tags.indexOf('Newui') !== -1;
     let status = this.state.status;
 
     return (
@@ -36,11 +64,24 @@ export default class InvoicesListContainer extends ListContainer {
           offset="-8px 20px"
         >
           <div />{/* required by react-tether */}
-          <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
-            <NavLink to="/invoices/new" class="btn btn-primary pull-right">
-              <i class="icon icon-plus" />
-              <span>Create Invoice</span>
-            </NavLink>
+
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar pull-right">
+              <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
+                <NavLink to="/invoices/new" class="btn btn-primary">
+                  <i class="icon icon-plus" />
+                  <span>Create Invoice</span>
+                </NavLink>
+              </ShowWhen>
+
+              <button
+                class="btn btn-primary"
+                onClick={() => this.showPaymentLinkModal()}
+              >
+                <i class="icon icon-plus" />
+                <span>Create Payment Link</span>
+              </button>
+            </div>
           </ShowWhen>
         </TetherComponent>
 
@@ -54,6 +95,7 @@ export default class InvoicesListContainer extends ListContainer {
 
         <InvoicesList
           invoices={invoices}
+          isNewUIEnabled={isNewUIEnabled}
           isLoading={loading}
           highlightRow={invoice => invoice.id === this.props.highLightInvoiceId}
           onEdit={this.editInvoice}

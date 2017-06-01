@@ -7,6 +7,7 @@ const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
+const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
 
 @withRouter
 export default class Sidebar extends Component {
@@ -30,6 +31,10 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
+    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let invoicesRegex = isNewUIEnabled
+      ? INVOICES_ROUTES_REGEX
+      : INVOICES_ROUTES_OLD_REGEX;
 
     if (TRANSACTIONS_ROUTES_REGEX.test(pathname)) {
       routes.transactions = pathname.match(TRANSACTIONS_ROUTES_REGEX)[0];
@@ -37,8 +42,8 @@ export default class Sidebar extends Component {
       routes.account = pathname.match(ACCOUNTS_ROUTES_REGEX)[0];
     } else if (SETTINGS_ROUTES_REGEX.test(pathname)) {
       routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
-    } else if (INVOICES_ROUTES_REGEX.test(pathname)) {
-      routes.invoices = pathname.match(INVOICES_ROUTES_REGEX)[0];
+    } else if (invoicesRegex.test(pathname)) {
+      routes.invoices = pathname.match(invoicesRegex)[0];
     }
   }
 
@@ -193,22 +198,6 @@ export default class Sidebar extends Component {
                     label="Invoices"
                     icon="fa fa-money text-primary"
                     to={routes.invoices}
-                    featureEnabled="Invoice"
-                    notMyRole="sellerapp"
-                  />
-
-                  <MainNavLink
-                    label="Payment Links"
-                    icon="icon icon-link text-warning"
-                    to="/paymentlinks"
-                  />
-
-                  <MainNavLink
-                    label="Customers"
-                    icon="icon icon-people text-info"
-                    to="/customers"
-                    featureEnabled="Invoice"
-                    notMyRole="sellerapp"
                   />
 
                   <MainNavLink
@@ -256,11 +245,7 @@ export default class Sidebar extends Component {
                     notMyRole="sellerapp support"
                   />
 
-                  <div
-                    class="divider-old"
-                    class="hidden-xs"
-                    data-label="Settings"
-                  />
+                  <div class="divider-old" data-label="Settings" />
 
                   <MainNavLink
                     label="API Keys"

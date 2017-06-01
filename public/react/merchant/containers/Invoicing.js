@@ -1,21 +1,34 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Route, NavLink, withRouter } from 'react-router-dom';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import Invoices from 'merchant/containers/Invoices/List';
+import Customers from 'merchant/containers/Customers/List';
 import Items from 'merchant/containers/Items/List';
 
 @withRouter
+@connect(state => state.session)
 export default class InvoicingContainer extends Component {
   render() {
+    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
     return (
       <tabbed-container>
         <header id="invoicing-header">
           <NavLink to="/invoices">Invoices</NavLink>
-          <NavLink to="/items">Items</NavLink>
+          <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
+            <span>
+              {!isNewUIEnabled
+                ? <NavLink to="/customers">Customers</NavLink>
+                : null}
+              <NavLink to="/items">Items</NavLink>
+            </span>
+          </ShowWhen>
         </header>
 
         <Route path="/invoices" component={Invoices} />
         <Route path="/items" component={Items} />
+        <Route path="/customers" component={Customers} />
       </tabbed-container>
     );
   }

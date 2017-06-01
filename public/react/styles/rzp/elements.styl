@@ -11,16 +11,16 @@ tabbed-container {
     position: relative;
     margin-bottom: 16px;
 
+    > a:first-child {
+      margin-left: 0;
+    }
+
     a {
       color: #555;
       border-bottom: 4px solid transparent;
       display: inline-block;
       margin: 0 16px;
       font-weight: bold;
-
-      &:first-child {
-        margin-left: 0;
-      }
 
       &.active {
         color: #6A55D1;

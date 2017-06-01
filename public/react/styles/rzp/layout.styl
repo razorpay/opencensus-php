@@ -83,6 +83,23 @@ body {
     border-top: 1px solid transparent;
   }
 
+  .divider-old {
+    border-top: 2px solid #252939;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-left: 20px;
+    padding-top: 10px;
+    @media $sm-max {
+      display: none;
+    }
+
+    &::after {
+      content: attr(data-label);
+      font-size: 11px;
+      color: #8b8e99;
+    }
+  }
+
   nav {
     position: absolute;
     top: 72px;
@@ -92,6 +109,10 @@ body {
     overflow: auto;
     padding-bottom: 80px;
     padding-top: 15px;
+
+    .text-warning {
+      color: #fbe165;
+    }
   }
 
   .nav > a {

@@ -68,7 +68,17 @@ export default class Content extends Component {
                 <Route path="/invoices/new" component={InvoicesNew} />
                 <Route path="/items" component={InvoicingContainer} />
                 <Route path="/paymentlinks" component={PaymentLinks} />
-                <Route path="/customers" component={Customers} />
+                <Route
+                  path="/customers"
+                  render={() => (
+                    <TabbedContent
+                      headerId="invoicing-header"
+                      to="/customers"
+                      navLabel="Customers"
+                      component={Customers}
+                    />
+                  )}
+                />
 
                 <Route path="/marketplace" component={Marketplace} />
                 <Route path="/accounts" component={Marketplace} />
@@ -160,9 +170,8 @@ export default class Content extends Component {
                 <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
                 <Route path="/invoices/new" component={InvoicesNew} />
                 <Route path="/items" component={InvoicingContainer} />
-                <Route path="/paymentlinks" component={PaymentLinks} />
+                <Route path="/customers" component={InvoicingContainer} />
 
-                <Route path="/customers" component={Customers} />
                 <Route path="/marketplace" component={Marketplace} />
                 <Route path="/accounts" component={Marketplace} />
                 <Route path="/reports" component={Reports} />

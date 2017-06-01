@@ -12,6 +12,7 @@ const entityMap = {
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id': PaymentLinkDetails,
+  '/invoices/:id/details': PaymentLinkDetails,
 };
 
 export function matchDetail(pathname) {

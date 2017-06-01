@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -72,51 +71,45 @@ export default class CustomersListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <tabbed-container>
-        <header id="customers-header">
-          <NavLink to="/customers">Customers</NavLink>
-        </header>
+      <div class="content-wrapper">
+        <TetherComponent
+          target="#invoicing-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
 
-        <div class="content-wrapper">
-          <TetherComponent
-            target="#customers-header"
-            attachment="top right"
-            targetAttachment="top right"
-            offset="-8px 20px"
-          >
-            <div />{/* required by react-tether */}
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar">
+              <button
+                class="pull-right btn btn-primary"
+                onClick={() => this.showCustomerModal()}
+              >
+                <i class="icon icon-plus" />
+                <span>New Customer</span>
+              </button>
+            </div>
+          </ShowWhen>
+        </TetherComponent>
 
-            <ShowWhen notMyRole="support">
-              <div class="btn-toolbar">
-                <button
-                  class="pull-right btn btn-primary"
-                  onClick={() => this.showCustomerModal()}
-                >
-                  <i class="icon icon-plus" />
-                  <span>New Customer</span>
-                </button>
-              </div>
-            </ShowWhen>
-          </TetherComponent>
+        <Alert type={status.type} message={status.message} />
 
-          <Alert type={status.type} message={status.message} />
+        <CustomersList
+          customers={customers}
+          isLoading={loading}
+          highlightRow={customer => customer.id === highlightRowId}
+          onEdit={this.showCustomerModal}
+          onDelete={this.deleteCustomer}
+        />
 
-          <CustomersList
-            customers={customers}
-            isLoading={loading}
-            highlightRow={customer => customer.id === highlightRowId}
-            onEdit={this.showCustomerModal}
-            onDelete={this.deleteCustomer}
-          />
-
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={customers.length}
-            onClick={this.paginate}
-          />
-        </div>
-      </tabbed-container>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={customers.length}
+          onClick={this.paginate}
+        />
+      </div>
     );
   }
 }
