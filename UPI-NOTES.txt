@@ -1,7 +1,0 @@
-UPI NOTES
-
-1. Seamless flow, UPI without VPA. MPIN and send payment.
-2. MPIN same for the same bank account.
-3. Set MPIN only if bank account is set. Some banks already have mpin sets.
-4. Uninstall? SMS?
-5. Notification?
