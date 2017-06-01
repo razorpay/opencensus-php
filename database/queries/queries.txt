@@ -2098,3 +2098,4 @@ ALTER TABLE wallet
 # Query to add mpesa method
 ALTER TABLE merchant_banks
     ADD COLUMN mpesa TINYINT(1) DEFAULT 0 AFTER jiomoney,
+    ADD INDEX merchant_banks_mpesa_index (mpesa);

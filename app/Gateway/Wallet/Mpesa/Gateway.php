@@ -628,12 +628,14 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
+        $merchantId = $this->terminal['gateway_merchant_id'];
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_merchant_id'];
+            $merchantId = $this->config['test_merchant_id'];
         }
 
-        return $this->terminal['gateway_merchant_id'];
+        return $merchantId;
     }
 
     protected function getSoapUserId()
