@@ -75,7 +75,8 @@ class Gateway
      * auth as well as power wallet flow
      */
     const AUTH_AND_POWER_WALLETS = [
-        Wallet::MPESA,
+        // Commenting this out temporarily
+        // Wallet::MPESA,
     ];
 
     const TOPUP_GATEWAYS = [
@@ -121,8 +122,8 @@ class Gateway
         Payment\Gateway::BILLDESK,
         Payment\Gateway::HDFC,
         Payment\Gateway::MOBIKWIK,
-      
-      
+
+
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,

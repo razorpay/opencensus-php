@@ -56,6 +56,8 @@ class MpesaGatewayTest extends TestCase
 
     public function testAuthPayment()
     {
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         //
@@ -82,6 +84,8 @@ class MpesaGatewayTest extends TestCase
 
     public function testAuthPaymentFailure()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData[__FUNCTION__];
 
         //

@@ -66,6 +66,8 @@ class Gateway extends Base\Gateway
 
         $this->checkGatewayResponse($content[ResponseFields::STATUS_CODE]);
 
+        // TODO: Need to verify the callback
+
         return $this->getCallbackResponseData($input);
     }
 
