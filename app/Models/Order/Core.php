@@ -51,6 +51,41 @@ class Core extends Base\Core
         return $order;
     }
 
+    /**
+     * Returns formatted data of order to be used by checkout.
+     * Includes:
+     * - Amount fields
+     * - TPV data
+     *
+     * @param string          $id
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getFormattedDataForCheckout(
+        string $id,
+        Merchant\Entity $merchant): array
+    {
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $data = [
+            Entity::PARTIAL_PAYMENT => $order->hasPartialPaymentEnabled(),
+            Entity::AMOUNT          => $order->getAmount(),
+            Entity::AMOUNT_PAID     => $order->getAmountPaid(),
+            Entity::AMOUNT_DUE      => $order->getAmountDue(),
+        ];
+
+        if ($merchant->isTPVRequired())
+        {
+            $data += [
+                Entity::BANK           => $order->getBank(),
+                Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
+            ];
+        }
+
+        return $data;
+    }
+
     protected function validateAndAssociateOffer(Entity $order, string $offerId)
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($offerId, $this->merchant);

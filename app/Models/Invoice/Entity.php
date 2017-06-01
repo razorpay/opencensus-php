@@ -102,6 +102,7 @@ class Entity extends Base\PublicEntity
 
     const CUSTOMER_DETAILS         = 'customer_details';
     const PAYMENT_ID               = 'payment_id';
+    const URL                      = 'url';
 
     // ------------------------ Output Keys End ----------------------
 

@@ -169,7 +169,7 @@ class Core extends Base\Core
         $authAmount = $this->getAuthTransactionAmount($subscription);
 
         return [
-            'auth_amount' => $authAmount,
+            'amount' => $authAmount,
         ];
     }
 
