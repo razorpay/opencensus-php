@@ -739,22 +739,6 @@ class Entity extends Base\PublicEntity
         $this->setStatus($newStatus);
     }
 
-    /**
-     * Updates invoice entity post a payment refund.
-     * If all paid amount gets refunded, invoice moves to issued state
-     * else in(or stays in) partially_paid.
-     * Also unset paid attribute in this case.
-     */
-    public function updateStatusPostRefund()
-    {
-        $newStatus = ($this->getAmountPaid() === 0) ?
-                        Status::ISSUED : Status::PARTIALLY_PAID;
-
-        $this->setStatus($newStatus);
-
-        $this->setAttribute(self::PAID_AT, null);
-    }
-
     // -------------------------------------- End Setters ------------
 
     // -------------------------------------- Accessors --------------

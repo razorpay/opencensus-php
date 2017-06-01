@@ -1487,66 +1487,6 @@ class InvoiceTest extends TestCase
         $this->assertEquals(0, $invoice['amount_due']);
     }
 
-    public function testMultiplePartialPaymentsAndRefund()
-    {
-        $this->testPartialPayment();
-
-        $order = $this->getLastEntity('order');
-        $invoice = $this->getLastEntity('invoice');
-
-        // Invoice amount: 1000,  Paid: 600, Due: 400. Number of payments = 1
-
-        // 1. Refund the existing payment partially
-
-        $payment = $this->getLastEntity('payment');
-
-        $paymentId1 = $payment['id'];
-
-        $this->refundPayment($paymentId1, 500);
-
-        $invoice = $this->getLastEntity('invoice');
-
-        $this->assertEquals('partially_paid', $invoice['status']);
-        $this->assertEmpty($invoice['paid_at']);
-        $this->assertEquals(100, $invoice['amount_paid']);
-        $this->assertEquals(900, $invoice['amount_due']);
-
-        // 2. Make another partial payment for 900
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['order_id'] = $order['id'];
-        $payment['amount']   = 900;
-
-        $payment = $this->doAuthAndGetPayment(
-                            $payment,
-                            [
-                                'status'   => 'captured',
-                                'order_id' => 'order_100000000order',
-                            ]);
-
-        $paymentId2 = $payment['id'];
-
-        $invoice = $this->getLastEntity('invoice');
-
-        $this->assertEquals('paid', $invoice['status']);
-        $this->assertNotEmpty($invoice['paid_at']);
-        $this->assertEquals(1000, $invoice['amount_paid']);
-        $this->assertEquals(0, $invoice['amount_due']);
-
-        // 3. Refund both payments in full
-
-        $this->refundPayment($paymentId1);
-        $this->refundPayment($paymentId2);
-
-        $invoice = $this->getLastEntity('invoice');
-
-        $this->assertEquals('issued', $invoice['status']);
-        $this->assertEmpty($invoice['paid_at']);
-        $this->assertEquals(0, $invoice['amount_paid']);
-        $this->assertEquals(1000, $invoice['amount_due']);
-    }
-
     public function testCancelInvoice()
     {
         $this->createOrder();

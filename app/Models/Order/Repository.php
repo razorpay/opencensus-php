@@ -40,42 +40,4 @@ class Repository extends Base\Repository
 
         return $order;
     }
-
-    /**
-     * Gets all the paid orders which have any authorized payments.
-     *
-     * @param int $timestamp - Fetches order/payment past this timestamp.
-     *
-     * @return Base\Collection
-     */
-    public function getPaidOrdersWithAuthorizedPayments(int $timestamp)
-    {
-        // Raw SQL:
-        //
-        // SELECT orders.id
-        // FROM orders
-        // INNER JOIN payments ON payments.order_id = orders.id
-        // WHERE payments.created_at > ?
-        //       AND orders.status = 'paid'
-        //       AND payments.status = 'authorized'
-
-        $orderId     = $this->dbColumn(Entity::ID);
-        $orderStatus = $this->dbColumn(Entity::STATUS);
-
-        $paymentTable     = $this->repo->payment->getTableName();
-        $paymentStatus    = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
-        $paymentOrderId   = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
-        $paymentCreatedAt = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
-
-        $results = $this->newQuery()
-                        ->join($paymentTable, $paymentOrderId, '=', $orderId)
-                        ->selectRaw($orderId)
-                        ->where($paymentCreatedAt, '>', $timestamp)
-                        ->where($orderStatus, Status::PAID)
-                        ->where($paymentStatus, Payment\Status::AUTHORIZED)
-                        ->with('payments')
-                        ->get();
-
-        return $results;
-    }
 }

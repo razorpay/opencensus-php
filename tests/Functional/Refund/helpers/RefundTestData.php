@@ -201,7 +201,7 @@ return [
         ],
     ],
 
-    'testRefundOfMultipleAuthorizedPaymentsForOrder' => [
+    'testRefundAuthorizedPaymentsOfPaidOrders' => [
         'request' => [
             'method'    => 'post',
             'url'       => '/orders/payments/refund',
@@ -209,23 +209,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'total_orders' => 2,
-                'order_level_details' => [
-                    [
-                        'total_payments' => 2,
-                        'total_captured_payments' => 0,
-                        'refund_details' => [],
-                    ],
-                    [
-                        'total_payments' => 3,
-                        'total_captured_payments' => 1,
-                        'refund_details' => [
-                            'total_authorized_payments' => 2,
-                            'total_refunded_payments' => 2,
-                            'total_failed_refunds' => 0,
-                        ],
-                    ],
-                ],
+                'count'      => 4,
+                // 'total_time' => '1 secs',
+                'failed_ids' => [],
             ],
         ],
     ],

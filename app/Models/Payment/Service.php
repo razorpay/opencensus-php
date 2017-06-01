@@ -604,106 +604,72 @@ class Service extends Base\Service
     }
 
     /**
-     * If there are multiple authorized payments for a paid order,
-     * we refund all those payments immediately.
-     *
      * This method is triggered by a CRON job.
+     *
+     * Refunds all authorized (read extra) payments for paid orders.
+     *
+     * There is case when there will be authorized payment against paid order which
+     * is mostly LATE_AUTHORIZED payments. Though those will get auto refunded
+     * within 5 days (or set auto refund delay) but this CRON helps in refunding
+     * those payments immediately.
+     *
+     * For optimization purposes we only pick payments in last 10 days. This picked
+     * '10 days' is sufficient filter logically.
      */
     public function refundAuthorizedPaymentsOfPaidOrders()
     {
-        // We don't need query full db for payments to be refunded, 10 days is
-        // good enough even in case of issues where CRON did not run.
-
-        $timestamp = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
-
-        $orders = $this->repo->order->getPaidOrdersWithAuthorizedPayments($timestamp);
-
-        $orderLevelRefundDetails = [];
+        $payments = $this->repo->payment->getAuthorizedPaymentsOfPaidOrderForRefund();
 
         $time = time();
 
-        foreach ($orders as $order)
+        $failedPaymentIds = []; // Refund failed for these payments.
+
+        foreach ($payments as $payment)
         {
-            $orderLevelRefundDetails[] = $this->refundAuthorizedPaymentsOfPaidOrder($order);
+            $paymentId = $payment->getId();
+            $orderId   = $payment->getApiOrderId();
+
+            $merchant  = $payment->merchant;
+
+            $tracePayload = [
+                'payment_id' => $paymentId,
+                'order_id'   => $orderId,
+            ];
+
+            try
+            {
+                $this->getNewProcessor($merchant)->refundAuthorizedPayment($payment);
+
+                $this->trace->info(TraceCode::ORDER_REFUNDED, $tracePayload);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_AUTO_REFUND_FAILURE,
+                    $tracePayload);
+
+                $failedPaymentIds[] = $paymentId;
+            }
         }
 
         $time = time() - $time;
 
-        $results = [
-            'count'      => $orders->count(),
-            'items'      => $orderLevelRefundDetails,
-            'total_time' => $time . ' secs'
+        $summary = [
+            'count'      => $payments->count(),
+            'total_time' => $time . ' secs',
+            'failed_ids' => $failedPaymentIds,
         ];
 
-        $this->trace->info(TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS, $results);
+        $this->trace->info(TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS, $summary);
 
-        $message = 'Multiple authorized payments for orders with a captured payment refunded';
+        $message = 'Authorized payments for paid orders refunded';
+        $channel = Config::get('slack.channels.tech_logs');
 
-        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
+        $this->slack->queue($message, $summary, ['channel' => $channel]);
 
-        return $results;
-    }
-
-    /**
-     * Refunds all authorized (read extra payments) for a paid order.
-     * A paid order won't accept new payments and there are cases when
-     * a payment comes as late authorized and customer has already made another
-     * payment to get order fulfilled. Those payments will stay in authorized
-     * state and will be refunded in this flow.
-     *
-     * @param Order\Entity $order
-     *
-     * @return array
-     */
-    protected function refundAuthorizedPaymentsOfPaidOrder(Order\Entity $order)
-    {
-        $refundedCount = $failureCount = 0;
-
-        $payments = $order->payments;
-
-        $authorizedPayments = $payments->filter(function ($item)
-                                        {
-                                            return ($item->isAuthorized() === true);
-                                        })
-                                       ->values();
-
-        foreach ($authorizedPayments as $authorizedPayment)
-        {
-            $merchant = $authorizedPayment->merchant;
-
-            try
-            {
-                $this->getNewProcessor($merchant)->refundAuthorizedPayment($authorizedPayment);
-
-                $this->trace->info(
-                    TraceCode::ORDER_REFUNDED,
-                    [
-                        'payment_id' => $authorizedPayment->getId()
-                    ]);
-
-                $refundedCount++;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->error(
-                    TraceCode::PAYMENT_AUTO_REFUND_FAILURE,
-                    [
-                        'payment_id'    => $authorizedPayment->getId(),
-                    ]);
-
-                $this->trace->traceException($ex);
-
-                $failureCount++;
-            }
-        }
-
-        return [
-            'id'                              => $order->getId(),
-            'payments_count'                  => $payments->count(),
-            'extra_authorized_payments_count' => $authorizedPayments->count(),
-            'refunded_payments_count'         => $refundedCount,
-            'failed_refunds_count'            => $failureCount,
-        ];
+        return $summary;
     }
 
     public function refundOldAuthorizedPayments()

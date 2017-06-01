@@ -194,7 +194,7 @@ class Validator extends Base\Validator
 
         $type = $input[Entity::TYPE] ?? $this->entity->getType();
 
-        if ($type !== Type::INVOICE)
+        if (($type !== null) and ($type !== Type::INVOICE))
         {
             throw new BadRequestValidationFailureException(
                 'partial_payment is not expected with link type');

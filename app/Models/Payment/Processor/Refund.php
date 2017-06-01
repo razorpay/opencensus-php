@@ -14,7 +14,6 @@ use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
-use RZP\Models\Invoice;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -636,8 +635,6 @@ trait Refund
                 // update the payment entity for refund
                 $this->updatePaymentRefunded();
 
-                $this->updateOrderAfterRefund();
-
                 $refunded = $this->callGatewayRefundFunction($payment, $data);
 
                 $this->refund->setGatewayRefunded($refunded);
@@ -986,67 +983,5 @@ trait Refund
         ];
 
         return $this->callGatewayForRefundValidation($data);
-    }
-
-    /**
-     * Updates order attributes post refund of a payment.
-     * - order.status:       Moves to attempted from paid conditionally.
-     * - order.amount_paid : Decremented by refunded amount.
-     */
-    protected function updateOrderAfterRefund()
-    {
-        if ($this->payment->hasOrder() === false)
-        {
-            return;
-        }
-
-        // If payment was not captured there is nothing to update in order
-        // as these attributes gets updated post payment captured only.
-        if ($this->payment->hasBeenCaptured() === false)
-        {
-            return;
-        }
-
-        $order = $this->payment->order;
-
-        $this->trace->info(
-            TraceCode::PAYMENT_REFUND_ORDER_UPDATE,
-            [
-                'refund_id'         => $this->refund->getId(),
-                'order_id'          => $order->getId(),
-                'order_amount_paid' => $order->getAmountPaid(),
-                'order_status'      => $order->getStatus(),
-            ]);
-
-        $order->decrementAmountPaidBy($this->refund->getAmount());
-
-        $this->repo->saveOrFail($order);
-
-        $invoice = $order->invoice;
-
-        if ($invoice !== null)
-        {
-            $this->updateInvoiceAfterRefund($invoice);
-        }
-    }
-
-    /**
-     * Updates invoice attributes post refund of  payment.
-     *
-     * @param Invoice\Entity $invoice
-     */
-    protected function updateInvoiceAfterRefund(Invoice\Entity $invoice)
-    {
-        $this->trace->info(
-            TraceCode::PAYMENT_REFUND_INVOICE_UPDATE,
-            [
-                'refund_id'      => $this->refund->getId(),
-                'invoice_id'     => $invoice->getId(),
-                'invoice_status' => $invoice->getStatus(),
-            ]);
-
-        $invoice->updateStatusPostRefund();
-
-        $this->repo->saveOrFail($invoice);
     }
 }

@@ -267,8 +267,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * Increments amount paid by given amount.
-     * Also, if after the increment no amount is due, set the status of order
-     * to paid.
+     * Also, progresses status to paid if all amount is paid.
      *
      * @param int $amount
      */
@@ -278,28 +277,10 @@ class Entity extends Base\PublicEntity
 
         $this->setAmountPaid($amountPaid);
 
-        // If there is not amount due after increment,
-        // set the status to be paid.
-
-        if ($this->hasAmountDue() === false)
+        if ($this->getAmountPaid() === $this->getAmount())
         {
             $this->setStatus(Status::PAID);
         }
-    }
-
-    /**
-     * Decrement amount paid by given refunded amount.
-     * Also, set the status back to ATTEMPTED.
-     *
-     * @param int $amountRefunded
-     */
-    public function decrementAmountPaidBy(int $amountRefunded)
-    {
-        $amountPaid = $this->getAmountPaid() - $amountRefunded;
-
-        $this->setAmountPaid($amountPaid);
-
-        $this->setStatus(Status::ATTEMPTED);
     }
 
     public function isAuthorized()
@@ -315,11 +296,6 @@ class Entity extends Base\PublicEntity
     public function hasOffer()
     {
         return $this->isAttributeNotNull(self::OFFER_ID);
-    }
-
-    public function hasAmountDue(): bool
-    {
-        return (bool) $this->getAmountDue();
     }
 
     public function getOfferIfExists()

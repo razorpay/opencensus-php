@@ -565,10 +565,12 @@ class OrderTest extends TestCase
 
         $payment = $this->getLastEntity('payment');
 
-        // Payment was done for 500000 (above ^).
+        // Payment was done for 500000 (above ^). Due amount is 500000.
 
-        // Will refund the payment in 2 calls and check order's attributes
-        // at both stage.
+        // Will refund the payment in 2 calls (partial refunds) and check
+        // order's attributes at both stage.
+        //
+        // Refund should not affect order's attributes in any way.
 
         $this->refundPayment($payment['id'], 250000);
 
@@ -576,8 +578,8 @@ class OrderTest extends TestCase
 
         $this->assertEquals('attempted', $order['status']);
 
-        $this->assertEquals(250000, $order['amount_paid']);
-        $this->assertEquals(750000, $order['amount_due']);
+        $this->assertEquals(500000, $order['amount_paid']);
+        $this->assertEquals(500000, $order['amount_due']);
 
         // 2nd refund
 
@@ -587,43 +589,8 @@ class OrderTest extends TestCase
 
         $this->assertEquals('attempted', $order['status']);
 
-        $this->assertEquals(0, $order['amount_paid']);
-        $this->assertEquals(1000000, $order['amount_due']);
-    }
-
-    public function testMultiplePartialPaymentsAndRefund()
-    {
-        $this->testMultiplePartialPayments();
-
-        // There are 3 payments (of 500000, 250000 and 250000) on the order.
-
-        $payment = $this->getEntities('payment');
-
-        $paymentIds = array_column($payment['items'], 'id');
-
-        // Refund first 2 payments of 250000 each.
-
-        $this->refundPayment($paymentIds[0]);
-
-        $this->refundPayment($paymentIds[1]);
-
-        $order = $this->getLastEntity('order');
-
-        $this->assertEquals('attempted', $order['status']);
-
         $this->assertEquals(500000, $order['amount_paid']);
         $this->assertEquals(500000, $order['amount_due']);
-
-        // Refund last payment of 500000
-
-        $this->refundPayment($paymentIds[2]);
-
-        $order = $this->getLastEntity('order');
-
-        $this->assertEquals('attempted', $order['status']);
-
-        $this->assertEquals(0, $order['amount_paid']);
-        $this->assertEquals(1000000, $order['amount_due']);
     }
 
     public function testPartialPaymentAndNoAutoCapture()

@@ -66,7 +66,7 @@ class Core extends Base\Core
         string $id,
         Merchant\Entity $merchant): array
     {
-        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $merchant);
 
         $data = [
             Entity::PARTIAL_PAYMENT => $order->hasPartialPaymentEnabled(),
