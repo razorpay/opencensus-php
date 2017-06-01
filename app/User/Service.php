@@ -41,13 +41,6 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
-    public function __construct()
-    {
-        $app = \App::getFacadeRoot();
-
-        $this->app = $app;
-    }
-
     protected function getRef(array &$input)
     {
         $referer = false;
@@ -895,7 +888,7 @@ class Service extends Base\Service
 
             $data = [
                 'id'            => $user->id,
-                'merchant_id'   => $user->currentMerchant->id;
+                'merchant_id'   => $user->currentMerchant->id,
             ];
 
             $this->cache->put($cacheKey, $data, 10);
