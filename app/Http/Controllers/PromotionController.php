@@ -8,7 +8,7 @@ use RZP\Models\Promotion;
 
 class PromotionController extends Controller
 {
-    public function createPromotion()
+    public function create()
     {
         $input = Request::all();
 
@@ -17,7 +17,7 @@ class PromotionController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updatePromotion(string $id)
+    public function update(string $id)
     {
         $input = Request::all();
 
@@ -26,7 +26,7 @@ class PromotionController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchPromotions()
+    public function fetchMultiple()
     {
         $input = Request::all();
 
@@ -35,7 +35,7 @@ class PromotionController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchPromotionById(string $id)
+    public function fetchById(string $id)
     {
         $data = (new Promotion\Service)->fetch($id);
 

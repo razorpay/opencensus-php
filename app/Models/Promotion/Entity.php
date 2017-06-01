@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Promotion;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Transaction\CreditType;
@@ -14,10 +13,11 @@ class Entity extends Base\PublicEntity
     const CREDIT_TYPE         = 'credit_type';
     const SCHEDULE_ID         = 'schedule_id';
     const ITERATIONS          = 'iterations';
-    const CREDITS_EXPIRE      = 'credits_expire';
+    const CREDITS_EXPIRABLE   = 'credits_expirable';
 
     //Attribute lengths
-    const NAME_LENGTH               = 50;
+    const NAME_LENGTH         = 50;
+    const CREDIT_TYPE_LENGTH  = 10;
 
     protected $entity      = 'promotion';
 
@@ -33,14 +33,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
-        self::CREDITS_EXPIRE,
-    ];
-
-    protected $public = [
-        self::ID,
-        self::NAME,
-        self::AMOUNT,
-        self::CREDITS_EXPIRE,
+        self::CREDITS_EXPIRABLE,
     ];
 
     protected $visible = [
@@ -49,7 +42,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
-        self::CREDITS_EXPIRE,
+        self::CREDITS_EXPIRABLE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -60,23 +53,23 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT         => 'int',
-        self::ITERATIONS     => 'int',
-        self::CREDITS_EXPIRE => 'boolean',
+        self::AMOUNT            => 'int',
+        self::ITERATIONS        => 'int',
+        self::CREDITS_EXPIRABLE => 'boolean',
     ];
 
     protected static $modifiers = [
-        self::CREDITS_EXPIRE,
+        self::CREDITS_EXPIRABLE,
     ];
 
-    protected function modifyCreditsExpire(& $input)
+    protected function modifyCreditsExpirable(& $input)
     {
-        if (empty($input[self::CREDITS_EXPIRE]) === true)
+        if (empty($input[self::CREDITS_EXPIRABLE]) === true)
         {
-            $input[self::CREDITS_EXPIRE] = false;
+            $input[self::CREDITS_EXPIRABLE] = false;
         }
 
-        $input[self::CREDITS_EXPIRE] = (bool) $input[self::CREDITS_EXPIRE];
+        $input[self::CREDITS_EXPIRABLE] = (bool) $input[self::CREDITS_EXPIRABLE];
     }
 
     public function schedule()
@@ -111,13 +104,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ITERATIONS);
     }
 
-    public function doCreditsExpire()
+    public function areCreditsExpirable()
     {
-        return $this->getAttribute(self::CREDITS_EXPIRE);
+        return $this->getAttribute(self::CREDITS_EXPIRABLE);
     }
-
-
-
-// ----------------------- Setters ---------------------------------------------
-    //will add later if needed
 }

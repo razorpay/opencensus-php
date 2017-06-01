@@ -2056,16 +2056,6 @@ ALTER TABLE orgs
 ALTER TABLE terminals
     ADD COLUMN used TINYINT(1) DEFAULT 0 NOT NULL AFTER used_count;
 
-ALTER TABLE coupons
-    DROP foreign key coupon_offer_id_foreign,
-    CHANGE offer_id entity_id char(14) NOT NULL,
-    CHANGE expires_at end_date int(11),
-    ADD COLUMN entity_type varchar(255) NOT NULL after entity_id,
-    ADD COLUMN code varchar(255) NOT NULL after entity_type,
-    ADD COLUMN merchant_id char(14) DEFAULT NULL after id,
-    ADD COLUMN start_date int(11) after entity_type,
-    ADD CONSTRAINT coupons_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE RESTRICT;
-
 ALTER TABLE admin_leads
   ADD merchant_id CHAR(14) DEFAULT NULL AFTER org_id;
 
@@ -2094,3 +2084,5 @@ ALTER TABLE terminals
 # Index payment.amount_transferred
 ALTER TABLE payments
     ADD INDEX payments_amount_transferred_index (amount_transferred);
+
+DROP TABLE coupons;

@@ -13,6 +13,9 @@ class Entity extends Base\PublicEntity
     const END_DATE    = 'end_date';
     const USAGE       = 'usage';
 
+    const ENTITY_TYPE_LENGTH = 20;
+    const COUPON_CODE_LENGTH = 10;
+
     protected $entity = 'coupon';
 
     protected $generateIdOnCreate = true;

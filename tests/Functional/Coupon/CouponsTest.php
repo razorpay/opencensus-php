@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Coupon;
 
-use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 

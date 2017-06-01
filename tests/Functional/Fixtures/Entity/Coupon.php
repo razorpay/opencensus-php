@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Carbon\Carbon;
-
 class Coupon extends Base
 {
     public function createCoupon(array $attributes = [])

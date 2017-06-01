@@ -21,7 +21,7 @@ class Service extends Base\Service
 
         $promotion = $this->core->create($input);
 
-        return $promotion->toArrayPublic();
+        return $promotion->toArrayAdmin();
     }
 
     public function update(string $id, array $input)
@@ -32,20 +32,20 @@ class Service extends Base\Service
 
         $promotion = $this->core->update($promotion, $input);
 
-        return $promotion->toArrayPublic();
+        return $promotion->toArrayAdmin();
     }
 
     public function fetch(string $id)
     {
         $promotion = $this->repo->promotion->findByPublicId($id);
 
-        return $promotion->toArrayPublic();
+        return $promotion->toArrayAdmin();
     }
 
     public function fetchMultiple(array $input)
     {
         $promotions = $this->repo->promotion->fetch($input);
 
-        return $promotions->toArrayPublic();
+        return $promotions->toArrayAdmin();
     }
 }

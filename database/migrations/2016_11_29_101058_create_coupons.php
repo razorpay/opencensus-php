@@ -4,9 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Models\Coupon\Entity as Coupon;
 use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\Merchant;
 
 class CreateCoupons extends Migration
 {
@@ -29,9 +29,9 @@ class CreateCoupons extends Migration
 
             $table->char(Coupon::ENTITY_ID, Coupon::ID_LENGTH);
 
-            $table->string(Coupon::ENTITY_TYPE);
+            $table->string(Coupon::ENTITY_TYPE, Coupon::ENTITY_TYPE_LENGTH);
 
-            $table->string(Coupon::COUPON_CODE);
+            $table->string(Coupon::COUPON_CODE, Coupon::COUPON_CODE_LENGTH);
 
             $table->integer(Coupon::START_DATE)
                   ->nullable();
@@ -40,8 +40,7 @@ class CreateCoupons extends Migration
                   ->nullable();
 
             $table->integer(Coupon::USAGE)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(Coupon::CREATED_AT);
 

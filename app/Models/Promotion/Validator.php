@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT                    => 'required|integer|min:1',
         Entity::CREDIT_TYPE               => 'required|in:fee,amount',
         Entity::ITERATIONS                => 'sometimes|integer|min:1',
-        Entity::CREDITS_EXPIRE            => 'sometimes|boolean',
+        Entity::CREDITS_EXPIRABLE         => 'sometimes|boolean',
         self::CREDITS_EXPIRY_INTERVAL     => 'sometimes|integer',
         self::CREDITS_EXPIRY_PERIOD       => 'sometimes|string',
     ];
@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT                    => 'sometimes|integer|min:1',
         Entity::CREDIT_TYPE               => 'sometimes|in:fee,amount',
         Entity::ITERATIONS                => 'sometimes|integer|min:1',
-        Entity::CREDITS_EXPIRE            => 'sometimes|boolean',
+        Entity::CREDITS_EXPIRABLE         => 'sometimes|boolean',
         self::CREDITS_EXPIRY_INTERVAL     => 'sometimes|integer',
     ];
 
@@ -44,8 +44,7 @@ class Validator extends Base\Validator
 
     protected function validateCreditsExpiryPeriod(array $input)
     {
-        if ((empty($input[Entity::CREDITS_EXPIRE]) === true) or
-            ($input[Entity::CREDITS_EXPIRE] === false))
+        if (empty($input[Entity::CREDITS_EXPIRABLE]) === true)
         {
             return;
         }
@@ -65,8 +64,7 @@ class Validator extends Base\Validator
 
     protected function validateCreditsExpiryInterval(array $input)
     {
-        if ((empty($input[Entity::CREDITS_EXPIRE]) === true) or
-            ($input[Entity::CREDITS_EXPIRE] === false))
+        if (empty($input[Entity::CREDITS_EXPIRABLE]) === true)
         {
             return;
         }

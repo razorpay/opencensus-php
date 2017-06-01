@@ -7,6 +7,9 @@ use RZP\Models\Schedule;
 
 class Core extends Base\Core
 {
+    const CREDITS_EXPIRY_INTERVAL = 'credits_expiry_interval';
+    const CREDITS_EXPIRY_PERIOD = 'credits_expiry_period';
+
     public function create(array $input)
     {
         $promotion = (new Entity)->build($input);
@@ -25,6 +28,12 @@ class Core extends Base\Core
 
     public function update(Entity $promotion, array $input)
     {
+        if ($this->isUsed($promotion) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Editing a used promotion is not allowed');
+        }
+
         $promotion->edit($input);
 
         if ($promotion->doCreditsExpire() === true)
@@ -51,9 +60,9 @@ class Core extends Base\Core
     protected function createSchedule(array $input)
     {
         $scheduleInput = [
-            Schedule\Entity::NAME       => $input['credits_expiry_interval'] . '/' . $input['credits_expiry_period'],
-            Schedule\Entity::INTERVAL   => $input['credits_expiry_interval'],
-            Schedule\Entity::PERIOD     => $input['credits_expiry_period'],
+            Schedule\Entity::NAME       => $input[self::CREDITS_EXPIRY_INTERVAL] . '/' . $input[self::CREDITS_EXPIRY_PERIOD],
+            Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],
+            Schedule\Entity::PERIOD     => $input[self::CREDITS_EXPIRY_PERIOD],
         ];
 
         $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
@@ -64,11 +73,16 @@ class Core extends Base\Core
     protected function editSchedule($schedule, array $input)
     {
         $scheduleInput = [
-            Schedule\Entity::INTERVAL   => $input['credits_expiry_interval'],
+            Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],
         ];
 
         $schedule = (new Schedule\Core)->editSchedule($schedule, $scheduleInput);
 
         return $schedule;
+    }
+
+    protected function isUsed()
+    {
+        //check entry in merchant promotions
     }
 }

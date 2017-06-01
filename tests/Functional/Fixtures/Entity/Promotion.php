@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Carbon\Carbon;
-
 class Promotion extends Base
 {
     public function createOnetime(array $attributes = [])

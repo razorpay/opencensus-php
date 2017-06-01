@@ -21,13 +21,26 @@ class Service extends Base\Service
 
         $coupon = $this->core->create($input);
 
-        return $coupon->toArrayPublic();
+        return $coupon->toArrayAdmin();
     }
 
     public function fetchMultiple(array $input)
     {
         $coupons = $this->repo->coupon->fetch($input);
 
-        return $coupons->toArrayPublic();
+        return $coupons->toArrayAdmin();
+    }
+
+    public function delete(string $id)
+    {
+        $this->trace->info(TraceCode::COUPON_DELETE_REQUEST, ['coupon_id' => $id]);
+
+        $coupon = $this->repo->coupon->findOrFailPublic($id);
+
+        $this->repo->coupon->deleteOrFail($coupon);
+
+        $this->trace->info(TraceCode::COUPON_DELETED, $coupon->toArray());
+
+        return $schedule->toArrayAdmin();
     }
 }

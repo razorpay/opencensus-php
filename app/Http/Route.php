@@ -542,14 +542,13 @@ final class Route
         'tax_group_update'                       => ['patch',    'tax_groups/{id}',                                 'TaxGroupController@update'                                         ],
         'tax_group_delete'                       => ['delete',   'tax_groups/{id}',                                 'TaxGroupController@delete'                                         ],
         //promotion routes
-        'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@createPromotion'                               ],
-        'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@updatePromotion'                               ],
-        'promotion_fetch_by_id'                   => ['get',      'promotions/{id}',                                'PromotionController@fetchPromotionById'                            ],
-        'promotion_fetch_multiple'                => ['get',      'promotions',                                     'PromotionController@fetchPromotions'                               ],
+        'promotion_create'                       => ['post',     'promotions',                                      'PromotionController@create'                                        ],
+        'promotion_update'                       => ['patch',    'promotions/{id}',                                 'PromotionController@update'                                        ],
+        'promotion_fetch_by_id'                  => ['get',      'promotions/{id}',                                 'PromotionController@fetchById'                                     ],
+        'promotion_fetch_multiple'               => ['get',      'promotions',                                      'PromotionController@fetchMultiple'                                 ],
         //coupon routes
-        'coupon_create'                           => ['post',      'coupons',                                       'CouponController@createCoupon'                                     ],
-        'coupon_fetch_multiple'                   => ['get',       'coupons',                                       'CouponController@fetchCoupons'                                     ],
-
+        'coupon_create'                          => ['post',     'coupons',                                         'CouponController@create'                                           ],
+        'coupon_fetch_multiple'                  => ['get',      'coupons',                                         'CouponController@fetchMultiple'                                    ],
 
     ];
 

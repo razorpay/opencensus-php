@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+
 use RZP\Constants\Table;
 use RZP\Models\Schedule;
 use RZP\Models\Promotion\Entity as Promotion;
@@ -27,11 +28,10 @@ class CreatePromotionsTable extends Migration
             $table->integer(Promotion::AMOUNT)
                   ->unsigned();
 
-            $table->string(Promotion::CREDIT_TYPE);
+            $table->string(Promotion::CREDIT_TYPE, Promotion::CREDIT_TYPE_LENGTH);
 
             $table->char(Promotion::SCHEDULE_ID, Promotion::ID_LENGTH)
-                  ->nullable()
-                  ->default(null);
+                  ->nullable();
 
             $table->integer(Promotion::ITERATIONS)
                   ->unsigned()
@@ -58,7 +58,6 @@ class CreatePromotionsTable extends Migration
      */
     public function down()
     {
-
         Schema::table(Table::PROMOTION, function($table)
         {
             $table->dropForeign(Table::PROMOTION.'_'.Promotion::SCHEDULE_ID.'_foreign');

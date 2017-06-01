@@ -8,7 +8,7 @@ use RZP\Models\Coupon;
 
 class CouponController extends Controller
 {
-    public function createCoupon()
+    public function create()
     {
         $input = Request::all();
 
@@ -17,12 +17,17 @@ class CouponController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchCoupons()
+    public function fetchMultiple()
     {
         $input = Request::all();
 
         $data = (new Coupon\Service)->fetchMultiple($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function delete($id)
+    {
+        (new Coupon\Service)->delete($id);
     }
 }
