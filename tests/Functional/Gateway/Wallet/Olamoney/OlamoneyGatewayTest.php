@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Olamoney;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -329,11 +330,13 @@ class OlamoneyGatewayTest extends TestCase
 
         $paymentId = $payment['razorpay_payment_id'];
 
-        $this->refundAuthorizedPayment($paymentId, $input);
+        $refund = $this->refundAuthorizedPayment($paymentId, $input);
 
-        $refund = $this->getLastEntity('wallet', true);
+        $gatewayRefund = $this->getLastEntity('wallet', true);
 
-        $this->assertSame($refund['status_code'], 'error');
+        $this->assertSame($gatewayRefund['status_code'], 'error');
+
+        return $refund;
     }
 
     public function testPaymentPartialRefund()
@@ -364,6 +367,15 @@ class OlamoneyGatewayTest extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertArraySelectiveEquals($authPayment, $content);
+    }
+
+    public function testVerifyRefund()
+    {
+        $refund = $this->testRefundFailed();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
     }
 
     protected function failOlamoneyAuthorizePayment()

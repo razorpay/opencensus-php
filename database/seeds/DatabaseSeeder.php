@@ -900,7 +900,7 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::FIRST_DATA,
-                'gateway'                   => 'icic',
+                'gateway_acquirer'          => 'icic',
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
                 'created_at'                => time(),

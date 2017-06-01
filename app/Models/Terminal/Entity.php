@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const USED_COUNT                    = 'used_count';
+    const USED                          = 'used';
     const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
     const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
+    const MODE                          = 'mode';
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -68,9 +70,10 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
-        self::RECURRING,
         self::INTERNATIONAL,
         self::TPV,
+        self::TYPE,
+        self::MODE,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -96,7 +99,6 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
-        self::RECURRING,
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
@@ -106,6 +108,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::USED_COUNT,
         self::TYPE,
+        self::MODE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -143,20 +146,20 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => Type::DUAL,
+        self::TYPE                      => 1,
+        self::MODE                      => Mode::DUAL,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
-        self::RECURRING                 => 1,
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
+        self::USED                      => false,
     ];
 
     protected $casts = [
         self::CARD                      => 'boolean',
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
-        self::RECURRING                 => 'int',
         self::INTERNATIONAL             => 'boolean',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
@@ -164,6 +167,8 @@ class Entity extends Base\PublicEntity
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'boolean',
         self::TYPE                      => 'int',
+        self::MODE                      => 'int',
+        self::USED                      => 'boolean',
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -205,6 +210,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USED_COUNT);
     }
 
+    public function isUsed()
+    {
+        return $this->getAttribute(self::USED);
+    }
+
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
@@ -215,19 +225,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHARED);
     }
 
-    public function getRecurring()
+    public function getType()
     {
-        return $this->getAttribute(self::RECURRING);
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
     }
 
     protected function getSubMerchants()
@@ -273,6 +278,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETWORK_CATEGORY);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -312,16 +322,6 @@ class Entity extends Base\PublicEntity
         return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
     }
 
-    public function isAuthCapture()
-    {
-        return ($this->getAttribute(self::TYPE) === Type::AUTH_CAPTURE);
-    }
-
-    public function isPurchase()
-    {
-        return ($this->getAttribute(self::TYPE) === Type::PURCHASE);
-    }
-
     // ---------------------- SETTERS ----------------------
 
     public function setNetworkCategory($category)
@@ -339,9 +339,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
-    public function setType($type)
+    public function setMode($mode)
     {
-        $this->setAttribute(self::TYPE, $type);
+        $this->setAttribute(self::MODE, $mode);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -471,7 +471,9 @@ class Entity extends Base\PublicEntity
         $gateway = $input[self::GATEWAY];
         $methods = [
             self::CARD,
-            self::NETBANKING
+            self::NETBANKING,
+            self::UPI,
+            self::AEPS,
         ];
 
         foreach ($methods as $method)
@@ -489,7 +491,7 @@ class Entity extends Base\PublicEntity
 
     public function edit(array $input = [], $operation = 'edit')
     {
-        if ($this->getUsedCount() === 0)
+        if ($this->isUsed() === false)
         {
             // Essentially we ask for all the input anew and fill it in.
             // Put the values which are not changing like gateway and merchant_id
@@ -508,7 +510,7 @@ class Entity extends Base\PublicEntity
 
     protected function editUsedTerminal(array $input)
     {
-        assert ($this->getUsedCount() !== 0);
+        assert ($this->isUsed() === true);
 
         $this->getValidator()->usedTerminalValidator($this, $input);
 
@@ -520,6 +522,11 @@ class Entity extends Base\PublicEntity
         $usedCount = $this->getUsedCount() + 1;
 
         $this->setAttribute(self::USED_COUNT, $usedCount);
+    }
+
+    public function setUsed()
+    {
+        $this->setAttribute(self::USED, true);
     }
 
     public function merchant()
@@ -585,31 +592,46 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    protected function isRecurringTypeApplicable($type)
+    protected function isTypeApplicable($type)
     {
-        $hex = $this->getRecurring();
+        $hex = $this->getType();
 
-        return Recurring::isTypeApplicable($hex, $type);
+        return Type::isApplicable($hex, $type);
     }
 
     public function isNonRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::NON_RECURRING) === true);
+        return ($this->isTypeApplicable(Type::NON_RECURRING) === true);
     }
 
     public function is3DSRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_3DS) === true);
+        return ($this->isTypeApplicable(Type::RECURRING_3DS) === true);
     }
 
     public function isNon3DSRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_NON_3DS) === true);
+        return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
+    }
+
+    public function isIvr()
+    {
+        return ($this->isTypeApplicable(Type::IVR) === true);
     }
 
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isAuthCapture()
+    {
+        return ($this->getAttribute(self::MODE) === Mode::AUTH_CAPTURE);
+    }
+
+    public function isPurchase()
+    {
+        return ($this->getAttribute(self::MODE) === Mode::PURCHASE);
     }
 
     public function isDomestic()

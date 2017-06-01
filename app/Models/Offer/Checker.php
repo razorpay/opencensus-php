@@ -53,9 +53,12 @@ class Checker extends Base\Core
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
+        $validCardUsage = $this->checkCardUsage();
+
         return (($validPaymentMethod === true) and
                 ($offerActive === true) and
-                ($validOfferPeriod === true));
+                ($validOfferPeriod === true) and
+                ($validCardUsage === true));
     }
 
     protected function checkPaymentMethod()
@@ -251,6 +254,87 @@ class Checker extends Base\Core
             ]);
 
         return $result;
+    }
+
+    protected function checkCardUsage()
+    {
+        // Skip card usage check if payment method is not card or emi
+        // or if the max payment count is not present
+        if (($this->payment->isMethodCardOrEmi() === false) or
+            (empty($this->offer->getMaxPaymentCount()) === true))
+        {
+            return true;
+        }
+
+        $cardVaultToken = $this->getCardVaultToken();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        // Fetches all cards wihose own vault token or whose global cards have the
+        // given vault token
+        $cardIds = $this->repo->card->fetchWithVaultToken($cardVaultToken, $merchantId);
+
+        // Gets linked offer ids to get payment count if any and
+        // appends current offer's id with it
+        $offerIds = $this->offer->getLinkedOfferIds();
+        $offerIds[] = $this->offer->getId();
+
+        // Gets the number of successfully captured payments which have been paid
+        // with the cardIds fetched above and whose associated order has the above
+        // offerIds applied on them
+        $paymentCountForOffers = $this->repo
+                                      ->payment
+                                      ->getPaymentCountForCardIdsAndOfferIds($cardIds, $offerIds);
+
+        $result = $this->checkPaymentCountForOffer($paymentCountForOffers);
+
+        $this->traceCheckResult(
+            TraceCode::OFFER_CARD_USAGE_CHECK,
+            [
+                'result'                   => $result,
+                'payment_count_for_offers' => $paymentCountForOffers,
+            ]);
+
+        return $result;
+    }
+
+    protected function checkPaymentCountForOffer(array $paymentCountForOffers): bool
+    {
+        if (empty($paymentCountForOffers) === false)
+        {
+            foreach ($paymentCountForOffers as $offerId => $paymentCount)
+            {
+                // If a payment has already been made against a linked offer Id fail
+                // the check
+                if ($offerId !== $this->offer->getId())
+                {
+                    return false;
+                }
+
+                // If payment has been made against current offer id, check
+                // if payment count exceeds max count
+                if ($offerId === $this->offer->getId())
+                {
+                    $maxPaymentCount = $this->offer->getMaxPaymentCount();
+
+                    // We are using < operator as paymentCount tracks the number of times payment
+                    // has been made against the offer before current payment
+                    return $paymentCount < $maxPaymentCount;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    protected function getCardVaultToken(): string
+    {
+        if ($this->payment->card->hasGlobalCard() === true)
+        {
+            return $this->payment->card->globalCard->getVaultToken();
+        }
+
+        return $this->payment->card->getVaultToken();
     }
 
     protected function traceCheckResult(string $traceCode, array $data)

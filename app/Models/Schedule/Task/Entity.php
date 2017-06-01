@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $modifiers = array(
+        self::METHOD,
         self::NEXT_RUN_AT,
     );
 
@@ -94,6 +95,15 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Modifiers ---------------------------------------
+
+    protected function modifyMethod(& $input)
+    {
+        // converts the whitespaces to null
+        if (empty($input[self::METHOD]) === true)
+        {
+            $input[self::METHOD] = null;
+        }
+    }
 
     protected function modifyNextRunAt(& $input)
     {
@@ -186,6 +196,20 @@ class Entity extends Base\PublicEntity
 
         $this->setNextRunAt($nextRun->timestamp);
         $this->setLastRunAt($lastRun->timestamp);
+    }
+
+    public function updateNextRunAt($timestamp)
+    {
+        $schedule = $this->schedule;
+
+        if ($schedule->hasHour() === true)
+        {
+            $nextRunAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+
+            $nextRunAt->hour($schedule->getHour());
+
+            $this->setNextRunAt($nextRunAt->getTimestamp());
+        }
     }
 
     public function isTypeSettlement()

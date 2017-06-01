@@ -224,6 +224,7 @@ class CreatePayments extends Migration
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::WALLET);
             $table->index(Payment::TWO_FACTOR_AUTH);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
@@ -236,6 +237,7 @@ class CreatePayments extends Migration
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);
             $table->index(Payment::AMOUNT);
+            $table->index(Payment::AMOUNT_TRANSFERRED);
             $table->index(Payment::LATE_AUTHORIZED);
             $table->index(Payment::ON_HOLD);
             $table->index(Payment::ON_HOLD_UNTIL);

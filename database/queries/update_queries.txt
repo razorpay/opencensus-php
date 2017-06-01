@@ -379,5 +379,88 @@ UPDATE cybersource set authorizationCode='T38678' where id=28984;
 
 
 # Post deployment of branch order-partial-payments
+
 # Updates amount_paid value for old rows
 UPDATE orders SET amount_paid = amount where status = 'paid' and amount_paid = 0;
+
+
+# Post deployment of #3125
+
+# For all old entries (gross_amount would be null), set tax_amount to 0 and gross_amount = amount.
+UPDATE invoices SET
+    tax_amount = 0,
+    gross_amount = amount
+WHERE gross_amount IS NULL AND amount IS NOT NULL;
+
+# For all old entries (gross_amount would be null), set gross_amount, tax_amount and net_amount.
+UPDATE line_items SET
+    gross_amount = amount * quantity,
+    tax_amount = 0,
+    net_amount = gross_amount
+WHERE gross_amount IS NULL;
+
+### Updates type in terminals
+
+###########################################################################
+##          ##                                                           ##
+##          ## aeps_icici         netbanking_federal  wallet_airtelmoney ##
+##          ## billdesk           netbanking_hdfc     wallet_freecharge  ##
+## PURCHASE ## ebs                netbanking_icici    wallet_jiomoney    ##
+##          ## mobikwik           netbanking_kotak    wallet_olamoney    ##
+##          ## netbanking_airtel  upi_icici           wallet_payumoney   ##
+##          ## netbanking_axis    upi_idfc            wallet_payzapp     ##
+##          ##                                                           ##
+###########################################################################
+##          ##                                                           ##
+##          ## atom               first_data          sharp              ##
+##  DUAL    ## axis_genius        hdfc                                   ##
+##          ## cybersource        paytm                                  ##
+##          ##                                                           ##
+###########################################################################
+##          ##                                                           ##
+## AUTH-    ## amex               wallet_openwallet                      ##
+## CAPTURE  ## axis_migs                                                 ##
+##          ##                                                           ##
+###########################################################################
+
+UPDATE terminals
+    SET type=2
+    WHERE gateway='first_data' AND recurring=4;
+
+UPDATE terminals
+    SET type=1
+    WHERE gateway in (
+        'axis_migs', 'amex', 'wallet_openwallet'
+    );
+
+UPDATE terminals
+    SET type=2
+    WHERE
+        card=0
+        AND gateway NOT IN (
+                'sharp', 'atom', 'wallet_openwallet'
+            );
+
+# Shift to boolean for terminal use detection
+UPDATE terminals SET used = true WHERE used_count > 0;
+
+UPDATE terminals SET mode = type;
+
+# Set Org Id where org Id not set
+UPDATE merchants
+    SET org_id = '100000razorpay'
+    WHERE id NOT IN ('7icgzKgnv7IMbP', '7icw1On5t9IXsB', '7oDON3kPcJ7H0m')
+    AND org_id IS null;
+
+
+# To mark failed refunds with RRN as processed
+UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE id IN ("7mXj7UJtpyOPlE", "7o4JYARL094Pdo", "7mz7qebLCAt2JG", "7q68hxjoCEXOg4") AND status = "failed" AND rrn IS NOT NULL;
+
+# To mark all the old refunds as processed
+UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE status IS NULL;
+
+# To mark all the failed reversals as processed as authorization has already been voided by the bank
+UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE id IN ("7tPDqA8GZpmdf4", "7r205m0roajJiM", "7oSpcOsjkgwH5q") AND status = "failed";
+
+# move to type coulum from recurring column
+UPDATE terminals SET type = recurring;

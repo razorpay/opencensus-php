@@ -38,7 +38,7 @@ class Order extends Base
         return parent::create($attributes);
     }
 
-    public function createOrderWithOfferApplied(array $attributes = [])
+    public function createWithOfferApplied(array $attributes = [])
     {
         $defaultValues = [
             'merchant_id'               => '10000000000000',

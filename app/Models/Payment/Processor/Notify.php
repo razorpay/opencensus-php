@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -13,11 +11,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
 use RZP\Constants\MailTags;
 use RZP\Jobs\InvoiceAction;
+use RZP\Jobs\DispatchRouter;
 
 class Notify
 {
-    use DispatchesJobs;
-
     const AUTHORIZED                 = 'authorized';
     const CARD_SAVED                 = 'card_saved';
     const CAPTURED                   = 'captured';
@@ -389,15 +386,6 @@ class Notify
      */
     public function trigger($event)
     {
-        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
-        {
-            (new Invoice\Core)->dispatchQueueJob(
-                $this->mode,
-                InvoiceAction::AUTHORIZED,
-                $this->invoice->getId()
-            );
-        }
-
         /**
          * This is wrapped in a try-catch block as this is not
          * critical path for the payment operation
@@ -405,6 +393,20 @@ class Notify
          */
         try
         {
+            // If it's invoice payment authorization:
+            // - dispatch a queue job which updates the invoice pdf,
+            // - if invoice's email_notify is set to '0', just return.
+
+            if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+            {
+                $job = new InvoiceAction(
+                            $this->mode,
+                            InvoiceAction::AUTHORIZED,
+                            $this->invoice->getId());
+
+                (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            }
+
             // Send out notification for Slack
             $this->notifyViaSlack($event);
 
@@ -784,6 +786,14 @@ class Notify
      */
     protected function isMailEnabled($event, $isMerchant = false)
     {
+        // If it is a customer mail and the customer's email address
+        // is null or void@razorpay.com don't send email
+        if (($isMerchant === false) and
+            ($this->payment->isCustomerMailAbsent() === true))
+        {
+            return false;
+        }
+
         // If the merchant has disabled customer emails
         // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
@@ -793,7 +803,6 @@ class Notify
         }
 
         return $this->isEnabled();
-
     }
 
     /**

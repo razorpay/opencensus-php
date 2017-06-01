@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use BasicAuth;
 use Mail;
 use Request;
 use RZP\Error\ErrorCode;

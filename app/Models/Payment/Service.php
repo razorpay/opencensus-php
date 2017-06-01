@@ -611,7 +611,12 @@ class Service extends Base\Service
      */
     public function refundAuthorizedPaymentsOfPaidOrders()
     {
-        $orders = $this->repo->order->getPaidOrdersWithAuthorizedPayments();
+        // We don't need query full db for payments to be refunded, 10 days is
+        // good enough even in case of issues where CRON did not run.
+
+        $timestamp = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+
+        $orders = $this->repo->order->getPaidOrdersWithAuthorizedPayments($timestamp);
 
         $orderLevelRefundDetails = [];
 

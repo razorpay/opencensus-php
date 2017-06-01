@@ -346,6 +346,7 @@ class OrderTest extends TestCase
 
     public function testPaymentWithOfferAppliedOnOrder()
     {
+        $this->mockTokenex();
         $this->testCreateOrderWithOffer();
 
         $order = $this->getLastEntity('order', true);
@@ -395,7 +396,7 @@ class OrderTest extends TestCase
 
         $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
 
-        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
 
         $payment = $this->getDefaultWalletPaymentArray();
 
@@ -415,7 +416,7 @@ class OrderTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:card', ['block' => false]);
 
-        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
 
         $this->fixtures->merchant->enableMobikwik();
 
@@ -662,6 +663,158 @@ class OrderTest extends TestCase
 
         $this->assertEquals(500000, $order['amount_paid']);
         $this->assertEquals(500000, $order['amount_due']);
+    }
+
+    public function testPaymentWithMaxPaymentCountOfferAppliedOnOrderWithNoCardSaving()
+    {
+        $this->setUpTerminals();
+
+        $offer = $this->fixtures->create('offer:card', [
+            'max_payment_count' => 1,
+            'iins' => ['401200'],
+            'starts_at' => time(),
+        ]);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $content = $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentWithMaxPaymentCountAppliedOnOrderWithGlobalSavedCard()
+    {
+        $this->setUpTerminals();
+        $this->mockSession();
+
+        $offer = $this->fixtures->create('offer:card', [
+            'max_payment_count' => 1,
+            'iins' => ['401200'],
+            'starts_at' => time(),
+        ]);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
+            'save' => 1
+        ]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+        $token = $this->getLastEntity('token', true);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
+            'card' => ['cvv' => 111],
+            'token' => $token['token'],
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $content = $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentWithMaxPaymentCountAppliedOnOrderWithLocallySavedCard()
+    {
+        $this->setUpTerminals();
+        $this->mockSession();
+
+        $offer = $this->fixtures->create('offer:card', [
+            'max_payment_count' => 1,
+            'iins' => ['401200'],
+            'starts_at' => time(),
+        ]);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
+            'save' => 1,
+            'customer_id' => 'cust_100000customer',
+        ]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+        $token = $this->getLastEntity('token', true);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer, [
+            'customer_id' => 'cust_100000customer',
+            'card' => ['cvv' => 111],
+            'token' => $token['token'],
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $content = $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentWithMaxPaymentCountOfferButPaymentsAlreadyMadeOnLinkedOffers()
+    {
+        $this->setUpTerminals();
+
+        $offer1 = $this->fixtures->create('offer:card', [
+            'max_payment_count' => 1,
+            'iins' => ['401200'],
+            'starts_at' => time(),
+        ]);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer1);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $offer2 = $this->fixtures->create('offer:card', [
+            'max_payment_count' => 1,
+            'iins' => ['401200'],
+            'linked_offer_ids' => (array) $offer1->getId(),
+            'starts_at' => time(),
+        ]);
+
+        $payment = $this->createOrderWithOfferAppliedAndGetPaymentArray($offer2);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $content = $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    protected function setUpTerminals()
+    {
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->mockTokenex();
+    }
+
+    protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])
+    {
+        $order = $this->fixtures->create('order:with_offer_applied', [
+            'offer_id' => $offer->getId(),
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $payment = array_merge($payment, $additionalPaymentAttributes);
+
+        return $payment;
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')

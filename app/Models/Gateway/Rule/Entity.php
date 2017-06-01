@@ -84,6 +84,20 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT
     ];
 
+    protected $publicSetters = [
+        Entity::LOAD
+    ];
+
+    protected function modifyLoad(& $input)
+    {
+        $load = $input[self::LOAD];
+
+        if (empty($load) === false)
+        {
+            $input[self::LOAD] = intval(round($load * 100));
+        }
+    }
+
     public function getLoad()
     {
         return $this->getAttribute(self::LOAD);
@@ -124,13 +138,25 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
-    //-----------------Setters----------------------
-    public function setLoad(int $load)
+    //----------------- Public Setters------------------------------------------
+
+    public function setPublicLoadAttribute(array & $array)
     {
-        $this->setAttribute[self::LOAD] = $load;
+        $load = round(($this->getAttribute(self::LOAD) / 100), 2);
+
+        $array[self::LOAD] = $load;
     }
 
-    //----------------Setters End-------------------
+    //---------------- Public Setters End---------------------------------------
+
+    //---------------- Mutators-------------------------------------------------
+
+    public function setLoadAttribute($load)
+    {
+        $this->attributes[self::LOAD] = intval(round($load * 100));
+    }
+
+    //----------------- Mutators End--------------------------------------------
 
     /**
      * Evaluates if a rule's terminal related attributes match those of

@@ -64,4 +64,11 @@ class Repository extends Base\Repository
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->firstOrFail();
     }
+
+    public function findManyByStepIds(array $stepIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::STEP_ID, $stepIds)
+                    ->get();
+    }
 }
