@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
-        Entity::RECURRING                   => 'sometimes|integer|max:7',
+        Entity::TYPE                        => 'sometimes|integer|max:7',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
@@ -102,7 +102,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
-        Entity::RECURRING                   => 'sometimes|integer|max:7',
+        Entity::TYPE                        => 'sometimes|integer|max:7',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
@@ -137,7 +137,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::RECURRING                   => 'sometimes|integer|max:7',
+        Entity::TYPE                        => 'sometimes|integer|max:7',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
@@ -165,7 +165,7 @@ class Validator extends Base\Validator
 
     protected static $firstDataEditTerminalRules = [
         Entity::INTERNATIONAL => 'sometimes|boolean',
-        Entity::RECURRING     => 'sometimes|integer|max:7',
+        Entity::TYPE          => 'sometimes|integer|max:7',
     ];
 
     protected static $cybersourceEditTerminalRules = [
@@ -392,7 +392,7 @@ class Validator extends Base\Validator
             ($new->getGatewayAcquirer() === $existing->getGatewayAcquirer()) and
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
-            ($new->getRecurring() === $existing->getRecurring()) and
+            ($new->getType() === $existing->getType()) and
             ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()))
         {

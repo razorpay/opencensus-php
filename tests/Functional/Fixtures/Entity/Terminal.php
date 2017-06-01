@@ -349,7 +349,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
-            'recurring'                 => 3,
+            'type'                      => 3,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -402,13 +402,13 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
-        $attributes['recurring'] = 3;
+        $attributes['type'] = 3;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
-        $attributes['recurring'] = 4;
+        $attributes['type'] = 4;
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -422,7 +422,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 3,
+            'type'                      => 3,
             'gateway_merchant_id'       => 'random',
         ];
 
@@ -435,7 +435,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 4,
+            'type'                      => 4,
             'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
@@ -452,7 +452,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'axis',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 3,
+            'type'                      => 3,
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
             'gateway_terminal_password' => 'razorpay_password',
@@ -460,8 +460,8 @@ class Terminal extends Base
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
-        $attributes['id']               = 'MiGSRcgTmlN3DS';
-        $attributes['recurring']        = 4;
+        $attributes['id']   = 'MiGSRcgTmlN3DS';
+        $attributes['type'] = 4;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }

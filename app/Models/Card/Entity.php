@@ -491,7 +491,7 @@ class Entity extends Base\PublicEntity
 
         $blackListedIins = Card\BlackList::BLOCKED_IIN;
 
-        if (isset($blackListedIins[$iin]) === true)
+        if (in_array($iin, $blackListedIins) === true)
         {
             return true;
         }

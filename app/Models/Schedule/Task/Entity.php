@@ -198,6 +198,20 @@ class Entity extends Base\PublicEntity
         $this->setLastRunAt($lastRun->timestamp);
     }
 
+    public function updateNextRunAt($timestamp)
+    {
+        $schedule = $this->schedule;
+
+        if ($schedule->hasHour() === true)
+        {
+            $nextRunAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+
+            $nextRunAt->hour($schedule->getHour());
+
+            $this->setNextRunAt($nextRunAt->getTimestamp());
+        }
+    }
+
     public function isTypeSettlement()
     {
         return ($this->getType() === Type::SETTLEMENT);

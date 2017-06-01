@@ -17,7 +17,6 @@ class Entity extends Base\PublicEntity
     const ANCHOR      = 'anchor';
     const HOUR        = 'hour';
     const DELAY       = 'delay';
-    const NEXT_RUN    = 'next_run';
 
     const DELETED_AT  = 'deleted_at';
 
@@ -67,6 +66,12 @@ class Entity extends Base\PublicEntity
     public function isHourly()
     {
         return ($this->getPeriod() === Period::HOURLY);
+    }
+
+    public function hasHour()
+    {
+        return (($this->isHourly() === false) and
+                ($this->getHour() !== 0));
     }
 
     // ----------------------- Relations -----------------------

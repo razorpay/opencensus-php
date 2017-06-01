@@ -380,7 +380,7 @@ class Service extends Base\Service
                     TraceCode::SCHEDULE_MIGRATION_FAILED,
                     [
                         'merchant_id' => $merchantId,
-                        'schedule_id' => $merchant->getSettlementScheduleId(),
+                        'schedule_id' => $schedule->getId(),
                         'error'       => $ex->getMessage(),
                     ]);
 

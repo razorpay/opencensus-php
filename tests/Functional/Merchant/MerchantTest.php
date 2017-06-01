@@ -1280,14 +1280,12 @@ class MerchantTest extends TestCase
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
     }
 
