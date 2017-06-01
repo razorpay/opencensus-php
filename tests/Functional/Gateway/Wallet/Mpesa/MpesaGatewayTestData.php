@@ -43,7 +43,7 @@ return [
         'received'             => true,
         'wallet'               => 'mpesa',
         'amount'               => 500,
-        'status_code'          => '100',
+        'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
 
@@ -116,12 +116,12 @@ return [
     ],
 
     'verifyFailedWalletEntity' => [
-        'status_code' => '104',
+        'response_code' => '104',
         'response_description' => 'Invalid MSISDN',
     ],
 
     'verifySuccessWalletEntity' => [
-        'status_code'          => '100',
+        'response_code'        => '100',
         'wallet'               => 'mpesa',
         'action'               => 'authorize',
         'received'             => true,

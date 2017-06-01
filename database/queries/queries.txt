@@ -2092,9 +2092,6 @@ ALTER TABLE adjustment
 ALTER TABLE terminals
    MODIFY COLUMN type TINYINT(1) UNSIGNED DEFAULT 1;
 
-ALTER TABLE wallet
-    ADD COLUMN status VARCHAR(255) NULL AFTER gateway_refund_id
-
 # Query to add mpesa method
 ALTER TABLE merchant_banks
     ADD COLUMN mpesa TINYINT(1) DEFAULT 0 AFTER jiomoney,

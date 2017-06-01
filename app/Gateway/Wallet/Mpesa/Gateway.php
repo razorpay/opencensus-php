@@ -451,8 +451,8 @@ class Gateway extends Base\Gateway
             Base\Entity::GATEWAY_PAYMENT_ID2  => $content[ResponseFields::S2S_REF_NUMBER],
             Base\Entity::CONTACT              => $content[ResponseFields::OTP_MOBILE_NUMBER],
             Base\Entity::AMOUNT               => $input['payment']['amount'],
-            Base\Entity::STATUS               => $response[ResponseFields::LC_STATUS],
-            Base\Entity::STATUS_CODE          => $response[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::STATUS_CODE          => $response[ResponseFields::LC_STATUS],
+            Base\Entity::RESPONSE_CODE        => $response[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::RESPONSE_DESCRIPTION => $response[ResponseFields::DESCRIPTION],
             Base\Entity::REFERENCE1           => $response[ResponseFields::RESPONSE_ID]
         ];
@@ -465,8 +465,8 @@ class Gateway extends Base\Gateway
         $attributes = [
             Base\Entity::RECEIVED            => true,
             Base\Entity::GATEWAY_PAYMENT_ID  => $content[ResponseFields::S2S_TRANS_ID],
-            Base\Entity::STATUS              => $content[ResponseFields::LC_STATUS],
-            Base\Entity::STATUS_CODE         => $content[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::STATUS_CODE         => $content[ResponseFields::LC_STATUS],
+            Base\Entity::RESPONSE_CODE       => $content[ResponseFields::S2S_STATUS_CODE],
         ];
 
         $this->updateGatewayPaymentEntity($wallet, $attributes, false);
@@ -480,7 +480,7 @@ class Gateway extends Base\Gateway
             Base\Entity::WALLET               => Wallet::MPESA,
             Base\Entity::AMOUNT               => $input['refund']['amount'],
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
-            Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::RESPONSE_CODE        => $content[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::REFUND_ID            => $input['refund']['id'],
             Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
         ];
@@ -555,7 +555,7 @@ class Gateway extends Base\Gateway
         $contentToSave = [
             Base\Entity::RECEIVED             => true,
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],
-            Base\Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            Base\Entity::RESPONSE_CODE        => $content[ResponseFields::STATUS_CODE],
             Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
         ];
 
@@ -573,7 +573,7 @@ class Gateway extends Base\Gateway
         $errorMessage = StatusCode::getErrorMessage($content[ResponseFields::S2S_STATUS_CODE]);
 
         $contentToSave = [
-            Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::RESPONSE_CODE        => $content[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER],
             Base\Entity::RESPONSE_DESCRIPTION => $errorMessage
         ];
