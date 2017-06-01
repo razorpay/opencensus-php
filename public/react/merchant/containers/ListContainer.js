@@ -4,7 +4,6 @@ export default class ListContainer extends Component {
   static SKIP = 0;
   static COUNT = 25;
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 

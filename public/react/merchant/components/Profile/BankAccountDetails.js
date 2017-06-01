@@ -6,7 +6,7 @@ export default ({ bankAccount }) => {
       <div class="panel-heading">
         Bank Account
       </div>
-      <div class="list-group">
+      <div class="list-group details-row-container">
         <DetailRow label="IFSC Code" value={bankAccount.ifsc_code} />
         <DetailRow label="Account Number" value={bankAccount.account_number} />
         <DetailRow label="Beneficiary" value={bankAccount.beneficiary_name} />

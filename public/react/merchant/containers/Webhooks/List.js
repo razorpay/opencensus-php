@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
 import Header from 'rzp/ui/Header';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -41,37 +42,35 @@ export default class WebhooksContainer extends ListContainer {
     let { loading, webhooks, error, highlightRowId } = webhooksState;
 
     return (
-      <div class="react-root">
-        <Header title="Webhooks" />
-
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              {modeFormatted} Webhooks
-            </div>
-
-            {error && <Alert type="error" message={error} />}
-
-            <WebhooksList
-              webhooks={webhooks}
-              isLoading={loading}
-              highlightRow={webhook => webhook.id === highlightRowId}
-              onSetupWebhookClick={this.showWebhookModal}
-              modeFormatted={modeFormatted}
-            />
-
-            <div class="panel-footer text-center">
-              You can find your webhook documentation
-              {' '}
-              <a
-                href="https://docs.razorpay.com/v1/page/webhooks"
-                target="_blank"
-              >
-                here
-              </a>
-            </div>
+      <div class="content-wrapper">
+        <TetherComponent
+          target="#settings-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/webhooks"
+              target="_blank"
+            >
+              Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
           </div>
-        </div>
+        </TetherComponent>
+
+        {error && <Alert type="error" message={error} />}
+
+        <WebhooksList
+          webhooks={webhooks}
+          isLoading={loading}
+          highlightRow={webhook => webhook.id === highlightRowId}
+          onSetupWebhookClick={this.showWebhookModal}
+          modeFormatted={modeFormatted}
+        />
       </div>
     );
   }
