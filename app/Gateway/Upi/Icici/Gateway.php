@@ -250,11 +250,6 @@ class Gateway extends Base\Gateway
      */
     protected function getUrl($type = null): string
     {
-        if ($type === null)
-        {
-            $type = $this->action;
-        }
-
         $url = parent::getUrl();
 
         return sprintf($url, $this->getMerchantId());
