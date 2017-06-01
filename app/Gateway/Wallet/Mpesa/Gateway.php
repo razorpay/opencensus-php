@@ -175,9 +175,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $input = $verify->input;
-
-        $data = $this->getVerifyRequestData($input);
+        $data = $this->getVerifyRequestData($verify);
 
         $verify->verifyResponse = $this->sendSoapRequest($data,
                                                    SoapAction::QUERY_API,
@@ -333,11 +331,11 @@ class Gateway extends Base\Gateway
         return $gatewayParam;
     }
 
-    protected function getVerifyRequestData(array $input)
+    protected function getVerifyRequestData(Verify $verify)
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
-            Action::AUTHORIZE);
+        $wallet = $verify->payment;
+
+        $input = $verify->input;
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId() ?? "";
 
@@ -566,9 +564,7 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContent(Verify $verify)
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-                    $this->input['payment']['id'],
-                    Action::AUTHORIZE);
+        $wallet = $verify->payment;
 
         $content = $verify->verifyResponseContent;
 
