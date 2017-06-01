@@ -324,17 +324,16 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getAllAggregations($mode, $resource, $sort, $offset = 0, $limit = 10)
+    public static function getAllAggregations($mode, $resource, $sort, $skip, $count)
     {
         $data = \DB::table('aggregations')
                     ->where('resource','=',$resource)
                     ->where('mode','=',$mode)
                     ->where('total_amount' , '>', 0)
                     ->orderBy($sort, 'DESC')
-                    ->offset($offset)
-                    ->limit($limit)
+                    ->offset($skip)
+                    ->limit($count)
                     ->get();
-
         return $data;
     }
 

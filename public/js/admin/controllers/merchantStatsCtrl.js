@@ -12,23 +12,32 @@ app.controller('MerchantStatsCtrl', [
     $scope.mode = 'live';
     $scope.merchant_id = '';
     $scope.sort = 'total_amount';
-    $scope.offset = 0;
-    $scope.limit = 10;
+    $scope.count = 10;
+    $scope.stats = {
+      count: 0,
+      countStart: 0,
+      countEnd: 0,
+      skip: 0,
+    };
 
-    $scope.fetchAllAggregations = function(
-      mode,
-      resource,
-      sort,
-      offset,
-      limit
-    ) {
+    $scope.next = function() {
+      $scope.stats.skip += $scope.count;
+      $scope.go('');
+    };
+
+    $scope.prev = function() {
+      $scope.stats.skip -= $scope.count;
+      $scope.go('');
+    };
+
+    $scope.fetchAllAggregations = function(mode, resource, sort, skip, count) {
       var request = $http.get(
         '/admin/' + mode + '/merchants/aggregations/' + resource,
         {
           params: {
             sort: sort,
-            offset: offset,
-            limit: limit,
+            skip: skip,
+            count: count,
           },
         }
       );
@@ -36,6 +45,16 @@ app.controller('MerchantStatsCtrl', [
       request.success(function(data) {
         if (data.success) {
           $scope.data = data.data;
+          $scope.stats.count = data.data.length;
+          $scope.stats.countStart = $scope.stats.skip + 1;
+          if ($scope.stats.count === 0) {
+            $scope.stats.countEnd = $scope.stats.countStart;
+          } else {
+            $scope.stats.countEnd =
+              $scope.stats.countStart + $scope.stats.count - 1;
+          }
+          $scope.allowPrev = $scope.stats.countStart != 1;
+          $scope.allowNext = $scope.stats.count >= $scope.count;
         }
       });
     };
@@ -63,8 +82,8 @@ app.controller('MerchantStatsCtrl', [
           $scope.mode,
           $scope.resource,
           $scope.sort,
-          $scope.offset,
-          $scope.limit
+          $scope.stats.skip,
+          $scope.count
         );
       } else {
         $scope.fetchAllAggregationsForMerchant(

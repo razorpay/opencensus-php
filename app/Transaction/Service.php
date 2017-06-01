@@ -141,9 +141,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getAllAggregations($mode, $resource, $sort, $offset, $limit)
+    public function getAllAggregations($mode, $resource, $sort, $skip, $count)
     {
-        return Merchant\Entity::getAllAggregations($mode, $resource, $sort, $offset, $limit);
+        return Merchant\Entity::getAllAggregations($mode, $resource, $sort, $skip, $count);
     }
 
     public function getPaymentAggregations($merchantId, $mode)

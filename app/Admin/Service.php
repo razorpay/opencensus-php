@@ -1642,11 +1642,11 @@ class Service extends Base\Service
         {
             $sort = \Input::get('sort', 'total_amount');
 
-            $offset = \Input::get('offset', 0);
+            $skip = \Input::get('skip', 0);
 
-            $limit = \Input::get('limit', 10);
+            $count = \Input::get('count', 10);
 
-            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort, $offset, $limit)];
+            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort, $skip, $count)];
         }
         else
         {

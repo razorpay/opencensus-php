@@ -35,7 +35,7 @@
       </div>
       <div class="col-xs-2">
         Count:
-        <input type="number" min="10" step="10" name="limit" ng-model="limit">
+        <input type="number" min="10" step="10" name="count" ng-model="count" ng-enter="go(merchant_id)">
       </div>
       <div class="col-xs-1">
         For Last:
@@ -91,12 +91,12 @@
         </tbody>
       </table>
     </div>
-    <!-- <footer class="panel-footer">
+    <footer class="panel-footer">
       <div class="row">
         <div class="col-sm-4 hidden-xs">
         </div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{stats.countStart}}-{{stats.countEnd}}</small>
         </div>
         <div class="col-sm-4 text-right text-center-xs">
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
@@ -105,6 +105,6 @@
           </ul>
         </div>
       </div>
-    </footer> -->
+    </footer>
   </div>
 </div>
