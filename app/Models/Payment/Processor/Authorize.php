@@ -2203,7 +2203,7 @@ trait Authorize
     protected function isOtpOrAuthFlow(array $input): bool
     {
         if ((isset($input['_']['source']) === true) and
-            ($input['_']['source'] === 'auth'))
+            ($input['_']['source'] === 's2s'))
         {
             return false;
         }
