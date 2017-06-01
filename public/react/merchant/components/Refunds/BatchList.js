@@ -1,4 +1,5 @@
-import TableBody from '../TableBody';
+import { NavLink } from 'react-router-dom';
+import TableBody from 'rzp/ui/TableBody';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
 const BatchUploadsListItem = ({ batchupload, mode }) => {
@@ -8,13 +9,13 @@ const BatchUploadsListItem = ({ batchupload, mode }) => {
       <td>{batchupload.total_count}</td>
       <td><BatchUploadStatusLabel status={batchupload.status} /></td>
       <td>
-        <a
+        <NavLink
           class="btn btn-default btn-xs"
-          href={`/${mode}/batches/${batchupload.id}/download`}
+          to={`/${mode}/batches/${batchupload.id}/download`}
           target="_blank"
         >
           Download
-        </a>
+        </NavLink>
       </td>
     </tr>
   );
@@ -23,7 +24,7 @@ const BatchUploadsListItem = ({ batchupload, mode }) => {
 export default ({ batchuploads, isLoading, mode }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Batch Id</th>

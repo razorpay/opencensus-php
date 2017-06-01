@@ -1,13 +1,21 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
 import RefundDetails from 'merchant/components/Refunds/RefundDetails';
 import * as RefundActions from 'merchant/modules/refunds/details';
 
 @connect(state => state.refund, RefundActions)
 export default class RefundDetailsContainer extends Component {
   componentWillMount() {
-    this.props.fetchRefund(this.props.id);
+    let id = this.props.id || this.props.match.params.id;
+    this.props.fetchRefund(id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let oldId = this.props.id || this.props.match.params.id;
+    let newId = nextProps.id || nextProps.match.params.id;
+    if (oldId !== newId) {
+      this.props.fetchRefund(newId);
+    }
   }
 
   render() {
@@ -22,17 +30,11 @@ export default class RefundDetailsContainer extends Component {
     }
 
     return (
-      <div class="react-root">
-        <Header title="Refund Detail" />
-
-        <div class="content-wrapper">
-          <RefundDetails
-            refund={refund}
-            isLoading={loading}
-            statusMsg={statusMsg}
-          />
-        </div>
-      </div>
+      <RefundDetails
+        refund={refund}
+        isLoading={loading}
+        statusMsg={statusMsg}
+      />
     );
   }
 }

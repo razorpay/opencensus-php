@@ -4,7 +4,7 @@ const ModalHeader = props => (
   <div class="modal-header">
     {props.onCloseClick &&
       <button type="button" class="close" onClick={props.onCloseClick}>
-        <i class="fa fa-times" />
+        <i class="icon icon-close" />
       </button>}
 
     <h3 class="modal-title">{props.title}</h3>

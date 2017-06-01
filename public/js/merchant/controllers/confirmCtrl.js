@@ -57,7 +57,8 @@ app.controller('ConfirmCtrl', [
               // try-catch, since there could be tracker blocking scripts
               _dcq.push(['identify', dripPayload]);
             } catch (e) {}
-            $state.go('app.dashboard');
+            location.hash = '/app';
+            location.reload();
           }, 3000);
         } else {
           angular.forEach(data.errors, function(error, key) {

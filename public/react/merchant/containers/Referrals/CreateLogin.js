@@ -116,6 +116,7 @@ export default class CreateLogin extends Component {
                   component={InputField}
                   class="form-control"
                   type="password"
+                  autoFocus={true}
                 />
               </div>
             </div>
@@ -138,7 +139,7 @@ export default class CreateLogin extends Component {
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-default btn-rounded"
+              class="btn btn-default"
               onClick={this.props.closeModal}
             >
               Cancel
@@ -146,7 +147,7 @@ export default class CreateLogin extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               text="Create Login"
               pendingText="Creating Login..."
               onClick={handleSubmit(this.save)}

@@ -1,15 +1,16 @@
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import { Link } from 'react-router-dom';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
   return (
     <tr>
       <td>
-        <a href={`#/app/settlements/${settlement.id}`} target="_blank">
+        <Link to={`/settlements/${settlement.id}`}>
           <code>{settlement.id}</code>
-        </a>
+        </Link>
       </td>
       <td class="text-right">
         <Amount value={settlement.amount} />

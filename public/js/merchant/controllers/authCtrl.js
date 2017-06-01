@@ -256,16 +256,8 @@ app
       }
 
       $scope.goToDashboard = function(role) {
-        switch (role) {
-          case 'support':
-            $state.go('app.payments.list');
-            break;
-          case 'sellerapp':
-            $state.go('app.invoices');
-            break;
-          default:
-            $state.go('app.dashboard');
-        }
+        location.hash = '/app';
+        location.reload();
       };
 
       $scope.sendDetails = function() {

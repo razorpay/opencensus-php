@@ -1,10 +1,9 @@
 import moment from 'moment';
 
 export function titleCase(sentence) {
-  let text = sentence || '';
-  return text
+  return (sentence || '')
     .split(/\s+|_/)
-    .map(word => word.charAt(0).toUpperCase() + word.substr(1))
+    .map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
     .join(' ');
 }
 
@@ -64,6 +63,7 @@ export const pipe = (...funcs) => {
 };
 
 export const normalizeDate = date => moment(date).format('D/M/Y');
+export const formatFromNow = unixSeconds => moment(unixSeconds * 1e3).fromNow();
 
 export const normalizeBoolean = bool => {
   if (bool === undefined) {
@@ -96,4 +96,48 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
   }, {});
 };
 
+// TODO: Remove this fn once Selva's branch is merged having this function.
+export const getURLQueryParams = (url = document.location.hash) => {
+  let search = url.split('?')[1];
+  let params = {};
+
+  if (search) {
+    params = search.split('&').reduce((prev, curr) => {
+      let [key, value] = curr.split('=');
+      prev[key] = value;
+      return prev;
+    }, {});
+  }
+
+  return params;
+};
+
 export const noop = () => {};
+
+export const colors = ['primary', 'success', 'info', 'warn', 'danger'];
+
+export const paymentStatusColor = {
+  captured: colors[1],
+  authorized: colors[2],
+  refunded: colors[3],
+  failed: colors[4],
+};
+
+export const intervals = [
+  {
+    value: 'day',
+    label: 'Daily',
+  },
+  {
+    value: 'week',
+    label: 'Weekly',
+  },
+  {
+    value: 'month',
+    label: 'Monthly',
+  },
+  {
+    value: 'year',
+    label: 'Yearly',
+  },
+];

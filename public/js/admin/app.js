@@ -17,7 +17,6 @@ var app = angular
     'angularFileUpload',
     'ngIdle',
     'ngBusy',
-    'react',
   ])
   .run([
     '$rootScope',

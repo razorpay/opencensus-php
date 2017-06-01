@@ -19,7 +19,9 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        return view('merchant.tmpgetIndex');
+        $user = Auth::user();
+
+        return view('merchant.tmpgetIndex', [ 'isAuthenticated' =>  $user ]);
     }
 
     /**

@@ -162,7 +162,7 @@ export default class AddWebhook extends Component {
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-default btn-rounded"
+              class="btn btn-default"
               onClick={this.props.closeModal}
             >
               Cancel
@@ -170,7 +170,7 @@ export default class AddWebhook extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               text="Save"
               pendingText="Saving..."
               onClick={handleSubmit(this.save)}

@@ -60,7 +60,7 @@ export default class UpgradeMerchantForm extends PureComponent {
         <div class="panel-heading">
           Upgrade Merchant
         </div>
-        <div class="panel-body text-center">
+        <div class="text-center">
           <div>
             You can upgrade your account to a Merchant Account by giving us your business name
           </div>
