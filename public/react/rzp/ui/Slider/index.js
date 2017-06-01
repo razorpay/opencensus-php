@@ -21,11 +21,11 @@ export default class ModalSlider extends Component {
   };
 
   componentDidMount() {
-    document.addEventListener('click', this.handleDocumentClick, true);
+    document.addEventListener('click', this.handleDocumentClick);
   }
 
   componentWillUnmount() {
-    document.addEventListener('click', this.handleDocumentClick);
+    document.removeEventListener('click', this.handleDocumentClick);
   }
 
   close = () => {
