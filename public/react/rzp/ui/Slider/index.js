@@ -11,14 +11,11 @@ export default class ModalSlider extends Component {
 
   // Closes the slider
   //  1. When slider `Close` button is clicked
-  //  2. When clicking on the document except on the Slider view & transaction links
+  //  2. When clicking on the document except on the Slider view & on any links
 
   handleDocumentClick = event => {
     let target = event.target;
-    if (
-      !(target.closest('.content-wrapper .table a') ||
-        target.closest('.ReactModalPortal'))
-    ) {
+    if (!(target.closest('a[href]') || target.closest('.ReactModalPortal'))) {
       this.close();
     }
   };
