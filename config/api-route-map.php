@@ -260,6 +260,26 @@ return [
             'url'       => 'items/{id}',
             'routeName' => 'item_delete'
         ],
+
+        // Transfers
+        'transfer_fetch_multiple'           => [
+            'url'       => 'transfers',
+            'routeName' => 'marketplace_read'
+        ],
+        'transfer_fetch'           => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_read'
+        ],
+
+        // Reversals
+        'reversal_fetch_multiple'           => [
+            'url'       => 'reversals',
+            'routeName' => 'marketplace_read'
+        ],
+        'reversal_fetch'           => [
+            'url'       => 'reversals/{id}',
+            'routeName' => 'marketplace_read'
+        ],
     ],
 
     // auth
