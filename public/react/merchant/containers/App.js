@@ -61,13 +61,6 @@ export default class App extends Component {
     });
   }
 
-  componentWillReceiveProps({ user }) {
-    if (user) {
-      let role = user.merchants[user.current].role;
-      this.redirectToRoute(role);
-    }
-  }
-
   redirectToRoute(role) {
     if (role === 'sellerapp') {
       this.props.history.replace('/invoices');

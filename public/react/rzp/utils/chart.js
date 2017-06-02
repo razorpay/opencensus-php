@@ -37,6 +37,7 @@ export const timeScale = ({ xLabel, yLabel }) => {
       xAxes: [
         {
           type: 'time',
+          minUnit: 'day',
           time: {
             displayFormats: {
               day: 'DD MMM',

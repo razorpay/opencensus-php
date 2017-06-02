@@ -921,7 +921,12 @@ class Service extends Base\Service
         return [ $error, $presignupDetails];
     }
 
-    public function getPreSignupDetails($merchantId)
+    /**
+     * returns the presignup data for a merchant
+     * if the merchant is referred (submerchant)
+     * then returns an empty array
+     */
+    public function getPreSignupDetails($merchantId): array
     {
         $data = [];
 

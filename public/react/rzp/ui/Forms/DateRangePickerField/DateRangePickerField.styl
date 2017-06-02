@@ -10,24 +10,47 @@
     pointer-events: none;
   }
 
+  .caret {
+    position: absolute;
+    top: 16px;
+    right: 10px;
+    border-top-color: #b3b3b3;
+    pointer-events: none;
+  }
+
+  .DateInput:first-child {
+    width: 121px;
+  }
+
   .DateInput {
     font-weight: 600;
-    width: 108px;
+    width: 100px;
   }
 
   .DateRangePickerInput__arrow {
+    position: absolute;
+    top: 6px;
+    left: 52%;
+    margin-left: -5px;
+    pointer-events: none;
+
+
     > svg {
       display: none;
     }
 
     &::after {
       content: 'to'
-      font-size: 13px;
+      font-size: 12px;
       color: #666;
     }
   }
 
   .DateRangePickerInput >.DateInput:first-child .DateInput__display-text {
     padding-left: 32px;
+  }
+
+  .DateRangePickerInput, .DateInput {
+    backgground-color: #fafafa;
   }
 }

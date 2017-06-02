@@ -22,12 +22,7 @@ export default (url, params = {}) => {
     ajaxParams.url = normalizeUrl(`/${mode}/${params.url}`);
   }
 
-  return ajax(ajaxParams).catch(error => {
-    if (error.code === 401) {
-      window.location.reload();
-    }
-    throw error;
-  });
+  return ajax(ajaxParams);
 };
 
 // Replaces consecutive & trailing slashes from the URL
