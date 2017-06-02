@@ -7,8 +7,8 @@ class Promotion extends Base
     public function createOnetime(array $attributes = [])
     {
         $promotionAttributes = [
-            'iterations'     => '1',
-            'credits_expire' => false,
+            'iterations'        => '1',
+            'credits_expirable' => false,
         ];
 
         $attributes = array_merge($promotionAttributes, $attributes);
@@ -23,9 +23,9 @@ class Promotion extends Base
         $schedule = $this->fixtures->create('schedule', $attributes);
 
         $promotionAttributes = [
-            'iterations'     => '1',
-            'credits_expire' => true,
-            'schedule_id'    => $schedule->getId(),
+            'iterations'        => '1',
+            'credits_expirable' => true,
+            'schedule_id'       => $schedule->getId(),
         ];
 
         $attributes = array_merge($promotionAttributes, $attributes);

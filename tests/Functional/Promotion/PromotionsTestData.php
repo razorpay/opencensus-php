@@ -8,20 +8,20 @@ return [
     'testCreateOneTimePromotion' => [
         'request' => [
             'content' => [
-                'name'           => 'Test Promotion',
-                'amount'         => 100,
-                'credit_type'    => 'fee',
-                'iterations'     => 1,
-                'credits_expire' => false,
+                'name'              => 'Test Promotion',
+                'amount'            => 100,
+                'credit_type'       => 'fee',
+                'iterations'        => 1,
+                'credits_expirable' => false,
             ],
             'url'    => '/promotions',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'name'            => 'Test Promotion',
-                'amount'          => 100,
-                'credits_expire'  => false,
+                'name'              => 'Test Promotion',
+                'amount'            => 100,
+                'credits_expirable' => false,
             ]
         ]
     ],
@@ -33,7 +33,7 @@ return [
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 2,
-                'credits_expire'          => true,
+                'credits_expirable'       => true,
                 'credits_expiry_period'   => 'daily',
                 'credits_expiry_interval' => 1,
             ],
@@ -42,9 +42,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'            => 'Test Promotion',
-                'amount'          => 100,
-                'credits_expire'  => true,
+                'name'              => 'Test Promotion',
+                'amount'            => 100,
+                'credits_expirable' => true,
             ]
         ]
     ],
@@ -59,10 +59,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'              => null,
-                'name'            => 'Updated name',
-                'amount'          => 100,
-                'credits_expire'  => false,
+                'id'                => null,
+                'name'              => 'Updated name',
+                'amount'            => 100,
+                'credits_expirable' => false,
             ]
         ]
     ],
@@ -77,10 +77,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'              => null,
-                'name'            => 'Test Promotion',
-                'amount'          => 100,
-                'credits_expire'  => true,
+                'id'                => null,
+                'name'              => 'Test Promotion',
+                'amount'            => 100,
+                'credits_expirable' => true,
             ]
         ]
     ],
@@ -92,10 +92,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'              => null,
-                'name'            => 'Test Promotion',
-                'amount'          => 100,
-                'credits_expire'  => false,
+                'id'                => null,
+                'name'              => 'Test Promotion',
+                'amount'            => 100,
+                'credits_expirable' => false,
             ]
         ]
     ],
@@ -112,9 +112,9 @@ return [
                 'items'  => [
                     [
 
-                        'name'            => 'Test Promotion',
-                        'amount'          => 100,
-                        'credits_expire'  => false,
+                        'name'              => 'Test Promotion',
+                        'amount'            => 100,
+                        'credits_expirable' => false,
                     ]
                 ]
             ]
@@ -124,11 +124,11 @@ return [
     'testPromotionWithUnsupportedCreditType' => [
         'request' => [
             'content' => [
-                'name'           => 'Test Promotion',
-                'amount'         => 100,
-                'credit_type'    => 'random',
-                'iterations'     => 1,
-                'credits_expire' => false,
+                'name'              => 'Test Promotion',
+                'amount'            => 100,
+                'credit_type'       => 'random',
+                'iterations'        => 1,
+                'credits_expirable' => false,
             ],
             'url'    => '/promotions',
             'method' => 'POST'
@@ -155,7 +155,7 @@ return [
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
-                'credits_expire'          => true,
+                'credits_expirable'       => true,
                 'credits_expiry_interval' => 'random',
                 'credits_expiry_period'   => 'monthly'
             ],
@@ -184,7 +184,7 @@ return [
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
-                'credits_expire'          => true,
+                'credits_expirable'       => true,
                 'credits_expiry_interval' => 2,
                 'credits_expiry_period'   => 'random'
             ],
@@ -213,7 +213,7 @@ return [
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
-                'credits_expire'          => true,
+                'credits_expirable'       => true,
                 'credits_expiry_interval' => 2,
             ],
             'url'    => '/promotions',
@@ -241,7 +241,7 @@ return [
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
-                'credits_expire'          => true,
+                'credits_expirable'       => true,
                 'credits_expiry_period'   => 'monthly',
             ],
             'url'    => '/promotions',
