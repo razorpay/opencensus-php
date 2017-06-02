@@ -391,10 +391,12 @@ class MerchantTest extends TestCase
                     {
                         $this->assertNotNull($data['merchant']);
                         $this->assertNotNull($data['rules']);
+                        $this->assertNotNull($data['subject']);
 
                         $this->assertNotNull($data['merchant']['name']);
                         $this->assertNotNull($data['merchant']['website']);
                         $this->assertNotNull($data['merchant']['billing_label']);
+                        $this->assertNotNull($data['merchant']['email']);
                         $this->assertNotNull($data['merchant']['org']);
 
                         $this->assertNotNull($data['merchant']['org']['business_name']);
