@@ -282,14 +282,14 @@ class DatabaseSeeder extends Seeder
                 );
 
             DB::table(Table::USER)->insert([
-                    'id'             => '20000000000000',
-                    'name'           => 'Test User Account',
-                    'email'          => 'test@razorpay.com',
-                    'password'       => Hash::make('123456'),
-                    'contact_mobile' => '9999999999',
-                    'created_at'     => '1451606400',
-                    'updated_at'     => '1451606400'
-                ]);
+                'id'             => '20000000000000',
+                'name'           => 'Test User Account',
+                'email'          => 'test@razorpay.com',
+                'password'       => Hash::make('123456'),
+                'contact_mobile' => '9999999999',
+                'created_at'     => '1451606400', //1st Jan 2016.
+                'updated_at'     => '1451606400'
+            ]);
 
             DB::table(Table::USER)->insert([
                 'id'             => '20000000000001',
