@@ -28,8 +28,6 @@ class Activate extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
-
         //
         // Ensure that all payment methods enabled for the merchant
         // has an associated pricing assigned
@@ -75,7 +73,7 @@ class Activate extends Base\Core
 
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
 
-        $this->sendActivationEmail($merchant, $plan);
+        $this->sendActivationEmail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -86,8 +84,10 @@ class Activate extends Base\Core
      * @param  RZP\Models\Merchant\Entity $merchant merchant entity
      * @return null
      */
-    protected function sendActivationEmail($merchant, $plan)
+    public function sendActivationEmail($merchant)
     {
+        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
+
         $org = $merchant->org;
 
         $subjectName = $merchant->getBillingLabelElseName();

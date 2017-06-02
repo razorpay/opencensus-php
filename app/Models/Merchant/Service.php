@@ -416,6 +416,38 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function sendActivationEmail(array $merchantIds)
+    {
+        $act = new Activate($this->app);
+
+        $response = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if ($merchant->isActivated())
+                {
+                    $act->sendActivationEmail($merchant);
+
+                    $response[$merchantId] = 'Queued merchant activation email';
+                }
+                else
+                {
+                    $response[$merchantId] = 'Merchant is not activated';
+                }
+            }
+            catch(\Exception $e)
+            {
+                $response[$merchantId] = $e->getMessage();
+            }
+        }
+
+        return $response;
+    }
+
     public function liveEnable($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
