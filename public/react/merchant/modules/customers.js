@@ -8,45 +8,41 @@ const CUSTOMER_EDIT = 'CUSTOMER_EDIT';
 const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
 
 export const fetchCustomers = params => {
-  return dispatch => {
-    let customer = new Customer();
-    return dispatch({
-      type: CUSTOMERS_FETCH,
-      payload: customer.fetchAll(params),
-    });
+  let customer = new Customer();
+
+  return {
+    type: CUSTOMERS_FETCH,
+    payload: customer.fetchAll(params),
   };
 };
 
 export const fetchCustomersForAutocomplete = () => {
-  return dispatch => {
-    let customer = new Customer();
-    return dispatch({
-      type: CUSTOMERS_AUTOCOMPLETE_FETCH,
-      payload: customer.fetchForAutocomplete(),
-    });
+  let customer = new Customer();
+
+  return {
+    type: CUSTOMERS_AUTOCOMPLETE_FETCH,
+    payload: customer.fetchForAutocomplete(),
   };
 };
 
 export const saveCustomer = params => {
-  return dispatch => {
-    let customer = new Customer(params);
-    return dispatch({
-      type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
-      payload: customer.save(),
-    });
+  let customer = new Customer(params);
+
+  return {
+    type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
+    payload: customer.save(),
   };
 };
 
 export const deleteCustomer = params => {
-  return dispatch => {
-    let customer = new Customer(params);
-    return customer.delete().then(() => {
-      dispatch({
-        type: CUSTOMER_DELETED,
-        payload: customer,
-      });
+  let customer = new Customer(params);
+
+  return customer.delete().then(() => {
+    dispatch({
+      type: CUSTOMER_DELETED,
+      payload: customer,
     });
-  };
+  });
 };
 
 let initialState = {

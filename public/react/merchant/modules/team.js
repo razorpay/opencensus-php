@@ -10,95 +10,81 @@ const USER_UPDATE = 'USER_UPDATE';
 const USER_REMOVE = 'USER_REMOVE';
 
 export const fetchTeamDetails = params => {
-  return dispatch => {
-    return dispatch({
-      type: TEAM_FETCH,
-      payload: ajax({
-        url: '/settings/merchants/owned',
-        appendModeInURL: false,
-      }),
-    });
+  return {
+    type: TEAM_FETCH,
+    payload: ajax({
+      url: '/settings/merchants/owned',
+      appendModeInURL: false,
+    }),
   };
 };
 
 export const sendInvitation = data => {
-  return dispatch => {
-    return dispatch({
-      type: INVITATION_SEND,
-      payload: ajax({
-        url: '/settings/invitations',
-        method: 'post',
-        appendModeInURL: false,
-        data,
-      }),
-    });
+  return {
+    type: INVITATION_SEND,
+    payload: ajax({
+      url: '/settings/invitations',
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    }),
   };
 };
 
 export const resendInvitation = inviteId => {
-  return dispatch => {
-    return dispatch({
-      type: INVITATION_RESEND,
-      payload: ajax({
-        url: `/settings/invitations/${inviteId}/resend`,
-        method: 'get',
-        appendModeInURL: false,
-      }),
-    });
+  return {
+    type: INVITATION_RESEND,
+    payload: ajax({
+      url: `/settings/invitations/${inviteId}/resend`,
+      method: 'get',
+      appendModeInURL: false,
+    }),
   };
 };
 
 export const updateInvitation = (inviteId, data) => {
-  return dispatch => {
-    return dispatch({
-      type: INVITATION_UPDATE,
-      payload: ajax({
-        url: `/settings/invitations/${inviteId}`,
-        method: 'put',
-        appendModeInURL: false,
-        data,
-      }),
-    });
+  return {
+    type: INVITATION_UPDATE,
+    payload: ajax({
+      url: `/settings/invitations/${inviteId}`,
+      method: 'put',
+      appendModeInURL: false,
+      data,
+    }),
   };
 };
 
 export const cancelInvitation = inviteId => {
-  return dispatch => {
-    return dispatch({
-      type: INVITATION_REMOVE,
-      payload: ajax({
-        url: `/settings/invitations/${inviteId}`,
-        method: 'delete',
-        appendModeInURL: false,
-      }),
-    });
+  return {
+    type: INVITATION_REMOVE,
+    payload: ajax({
+      url: `/settings/invitations/${inviteId}`,
+      method: 'delete',
+      appendModeInURL: false,
+    }),
   };
 };
 
 export const updateUser = (userId, data) => {
-  return dispatch => {
-    return dispatch({
-      type: USER_UPDATE,
-      payload: ajax({
-        url: `/settings/merchants/owned/members/${userId}`,
-        method: 'put',
-        appendModeInURL: false,
-        data,
-      }),
-    });
+  return {
+    type: USER_UPDATE,
+    payload: ajax({
+      url: `/settings/merchants/owned/members/${userId}`,
+      method: 'put',
+      appendModeInURL: false,
+      data,
+    }),
   };
 };
 
 export const removeUser = userId => {
-  return dispatch => {
-    return dispatch({
-      type: USER_REMOVE,
-      payload: ajax({
-        url: `/settings/merchants/owned/members/${userId}`,
-        method: 'delete',
-        appendModeInURL: false,
-      }),
-    });
+  return {
+    type: USER_REMOVE,
+    payload: ajax({
+      url: `/settings/merchants/owned/members/${userId}`,
+      method: 'delete',
+      appendModeInURL: false,
+    }),
   };
 };
 

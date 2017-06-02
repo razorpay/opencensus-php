@@ -5,40 +5,34 @@ const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 
 export const fetchAccounts = params => {
-  return dispatch => {
-    return dispatch({
-      type: ACCOUNTS_FETCH,
-      payload: ajax({
-        url: '/accounts',
-        data: params,
-      }),
-    });
+  return {
+    type: ACCOUNTS_FETCH,
+    payload: ajax({
+      url: '/accounts',
+      data: params,
+    }),
   };
 };
 
 export const saveAccount = data => {
-  return dispatch => {
-    return dispatch({
-      type: ACCOUNT_CREATE,
-      payload: ajax({
-        url: '/submerchants',
-        method: 'post',
-        appendModeInURL: false,
-        data,
-      }).then(response => response.data),
-    });
+  return {
+    type: ACCOUNT_CREATE,
+    payload: ajax({
+      url: '/submerchants',
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    }).then(response => response.data),
   };
 };
 
 export const exportAccountsCSV = () => {
-  return dispatch => {
-    let data = { year: '2017', month: '1' };
+  let data = { year: '2017', month: '1' };
 
-    return ajax({
-      url: '/reports/account',
-      data,
-    });
-  };
+  return ajax({
+    url: '/reports/account',
+    data,
+  });
 };
 
 let initialState = {

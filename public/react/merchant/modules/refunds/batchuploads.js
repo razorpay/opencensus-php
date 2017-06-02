@@ -5,13 +5,11 @@ const BATCH_UPLOADS_FETCH = 'BATCH_UPLOADS_FETCH';
 const BATCH_UPLOAD = 'BATCH_UPLOAD';
 
 export const fetchBatchUploads = params => {
-  return dispatch => {
-    return dispatch({
-      type: BATCH_UPLOADS_FETCH,
-      payload: ajax({
-        url: '/batches',
-      }),
-    });
+  return {
+    type: BATCH_UPLOADS_FETCH,
+    payload: ajax({
+      url: '/batches',
+    }),
   };
 };
 
@@ -20,17 +18,15 @@ export const uploadBatchRefunds = file => {
   formData.append('file', file);
   formData.append('type', 'refund');
 
-  return dispatch => {
-    return dispatch({
-      type: BATCH_UPLOAD,
-      payload: ajax({
-        url: '/batches',
-        method: 'post',
-        data: formData,
-        processData: false,
-        contentType: false,
-      }),
-    });
+  return {
+    type: BATCH_UPLOAD,
+    payload: ajax({
+      url: '/batches',
+      method: 'post',
+      data: formData,
+      processData: false,
+      contentType: false,
+    }),
   };
 };
 

@@ -7,22 +7,20 @@ const MERCHANT_CREATE = 'MERCHANT_CREATE';
 const MERCHANT_SWITCH = 'MERCHANT_SWITCH';
 
 export const fetchReferrals = params => {
-  return dispatch => {
-    let referral = new Referral();
-    return dispatch({
-      type: REFERRALS_FETCH,
-      payload: referral.fetchAll(),
-    });
+  let referral = new Referral();
+
+  return {
+    type: REFERRALS_FETCH,
+    payload: referral.fetchAll(),
   };
 };
 
 export const switchMerchant = merchantId => {
   var referral = new Referral();
-  return dispatch => {
-    return dispatch({
-      type: MERCHANT_SWITCH,
-      payload: referral.switchMerchant(merchantId),
-    });
+
+  return {
+    type: MERCHANT_SWITCH,
+    payload: referral.switchMerchant(merchantId),
   };
 };
 

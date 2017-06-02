@@ -4,12 +4,11 @@ import { set, merge } from 'rzp/utils/immutable';
 const REFUND_FETCH = 'REFUND_FETCH';
 
 export const fetchRefund = id => {
-  return dispatch => {
-    let refund = new Refund();
-    return dispatch({
-      type: REFUND_FETCH,
-      payload: refund.fetch(id),
-    });
+  let refund = new Refund();
+
+  return {
+    type: REFUND_FETCH,
+    payload: refund.fetch(id),
   };
 };
 

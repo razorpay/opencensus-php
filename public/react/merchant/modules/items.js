@@ -8,45 +8,40 @@ const ITEM_EDIT = 'ITEM_EDIT';
 const ITEM_DELETED = 'ITEM_DELETED';
 
 export const fetchItems = params => {
-  return dispatch => {
-    let item = new Item();
-    return dispatch({
-      type: ITEMS_FETCH,
-      payload: item.fetchAll(params),
-    });
+  let item = new Item();
+
+  return {
+    type: ITEMS_FETCH,
+    payload: item.fetchAll(params),
   };
 };
 
 export const fetchItemsForAutocomplete = () => {
-  return dispatch => {
-    let item = new Item();
-    return dispatch({
-      type: ITEMS_AUTOCOMPLETE_FETCH,
-      payload: item.fetchForAutocomplete(),
-    });
+  let item = new Item();
+
+  return {
+    type: ITEMS_AUTOCOMPLETE_FETCH,
+    payload: item.fetchForAutocomplete(),
   };
 };
 
 export const saveItem = params => {
-  return dispatch => {
-    let item = new Item(params);
-    return dispatch({
-      type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
-      payload: item.save(),
-    });
+  let item = new Item(params);
+
+  return {
+    type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
+    payload: item.save(),
   };
 };
 
 export const deleteItem = params => {
-  return dispatch => {
-    let item = new Item(params);
-    return item.delete().then(() => {
-      dispatch({
-        type: ITEM_DELETED,
-        payload: item,
-      });
+  let item = new Item(params);
+  return item.delete().then(() => {
+    dispatch({
+      type: ITEM_DELETED,
+      payload: item,
     });
-  };
+  });
 };
 
 let initialState = {

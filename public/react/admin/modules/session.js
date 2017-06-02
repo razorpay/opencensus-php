@@ -3,11 +3,9 @@ import { merge } from 'rzp/utils/immutable';
 const UPDATE_SESSION = 'UPDATE_SESSION';
 
 export const updateSession = payload => {
-  return dispatch => {
-    return dispatch({
-      type: UPDATE_SESSION,
-      payload,
-    });
+  return {
+    type: UPDATE_SESSION,
+    payload,
   };
 };
 

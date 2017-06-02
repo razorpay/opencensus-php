@@ -12,26 +12,22 @@ export const fetchAjax = url => {
 };
 
 export const fetchPendingInvitations = () => {
-  return dispatch => {
-    return dispatch({
-      type: INVITATIONS_FETCH,
-      payload: fetchAjax('/settings/invitations'),
-    });
+  return {
+    type: INVITATIONS_FETCH,
+    payload: fetchAjax('/settings/invitations'),
   };
 };
 
 export const fetchBankAccount = () => {
-  return dispatch => {
-    return dispatch({
-      type: BANK_ACCOUNT_FETCH,
-      payload: fetchAjax('/bank_account'),
-    });
+  return {
+    type: BANK_ACCOUNT_FETCH,
+    payload: fetchAjax('/bank_account'),
   };
 };
 
 // To accept-reject invitation
 export const updateInvitation = (type, inviteId) => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: `/settings/invitations/${inviteId}/${type}`,
       method: type === 'reject' ? 'delete' : 'post',
@@ -41,7 +37,7 @@ export const updateInvitation = (type, inviteId) => {
 };
 
 export const upgradeAccount = data => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: '/merchants/register',
       method: 'post',
@@ -52,7 +48,7 @@ export const upgradeAccount = data => {
 };
 
 export const updatePassword = data => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: '/password',
       method: 'post',
