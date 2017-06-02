@@ -10,6 +10,9 @@
 |
 */
 
+// Everything in this group is a unauthenticated route
+// Please take care to not return any sensitive information
+// here
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
     Route::get('/admin', 'AdminController@getIndex');
@@ -17,8 +20,6 @@ Route::group(['middleware' => ['web']], function () {
     // This is for enabling CORS support on contact form submissions
     Route::options('/contact', 'MerchantController@optionsContact');
     Route::post('/contact', 'MerchantController@postContact');
-
-    Route::get('/invitation', 'MerchantController@getInvitationDetails');
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
@@ -32,33 +33,35 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset/{token}', 'PasswordController@resetAdminPassword');
     });
 
-    Route::group([], function()
+    Route::group(['prefix' => 'user'], function()
     {
-        Route::get('/user/confirm/{token}', 'UserController@getConfirm');
+        Route::get('/confirm/{token}', 'UserController@getConfirm');
         Route::group([], function()
         {
-            Route::post('/user/signin', 'UserController@postSignin'); // ePOS
-            Route::post('/user/register', 'UserController@postRegister'); // ePOS
-            Route::post('/user/resend', 'MerchantController@postResendConfirmation');
-            Route::post('/user/password/reset', 'PasswordController@postRemind');
-            Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
-            Route::post('/user/pre_signup', 'MerchantController@postSignup');
-            Route::get('/user/pre_signup', 'MerchantController@getSignup');
-            Route::post('/user/track_lead', 'UserController@trackLead');
+            Route::post('/signin', 'UserController@postSignin'); // ePOS
+            Route::post('/register', 'UserController@postRegister'); // ePOS
+            Route::post('/resend', 'MerchantController@postResendConfirmation');
+            Route::post('/password/reset', 'PasswordController@postRemind');
+            Route::post('/password/reset/{token}', 'PasswordController@postReset');
+            Route::post('/track_lead', 'UserController@trackLead');
         });
     });
 
-    Route::group(['middleware'  =>  'auth:user'], function()
+    Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
-        Route::any('/user/generic', 'GenericController@handle');
-
-        Route::get('/user/keepalive', 'UserController@getKeepAlive');
-        Route::get('/user/logout', 'UserController@getLogout');
+        Route::post('/pre_signup', 'MerchantController@postSignup');
+        Route::get('/pre_signup', 'MerchantController@getSignup');
+        Route::get('/keepalive', 'UserController@getKeepAlive');
+        Route::get('/logout', 'UserController@getLogout');
 
         // This returns all the needed information
-        Route::get('/user', 'UserController@getUserDetailsV2'); //ePOS
-        Route::get('/user_old', 'UserController@getUserDetailsV1');
-        Route::get('/user/details', 'UserController@getUserDetailsV2');
+        Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
+        Route::get('/details', 'UserController@getUserDetailsV2');
+    });
+
+    Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
+    {
+        Route::any('/user/generic', 'GenericController@handle');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
 
@@ -125,6 +128,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
         Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
+        // Update password
         Route::post('/password', 'UserController@postPassword');
         Route::post('/activation', 'MerchantController@postActivation')->name('post_activation'); // ePOS
         Route::post('/activation/{merchantId}', 'MerchantController@postActivation')->name('post_activation');
@@ -147,7 +151,6 @@ Route::group(['middleware' => ['web']], function () {
         // Registers a sub-merchant account
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
-
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
