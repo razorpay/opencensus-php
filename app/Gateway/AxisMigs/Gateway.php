@@ -368,6 +368,15 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        // We have confirmed with acquirer banks that these refunds have
+        // not been processed.
+        $hardcodedRefundIds = ['7myk24mVipncjt', '7quh5ytxljRfqo'];
+
+        if (in_array($input['refund']['id'], $hardcodedRefundIds) === true)
+        {
+            return false;
+        }
+
         // Adding a check for 8th May 2017 as track id was
         // changed in migs refund from payment id to refund id
         if ($input['refund']['created_at'] < 1494268200)
