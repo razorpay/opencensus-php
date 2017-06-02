@@ -51,7 +51,7 @@ export default class Sidebar extends Component {
     let { user } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    let isNewUIEnabled = user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = user.isNewUIEnabled;
 
     return (
       <div class="sidebar">

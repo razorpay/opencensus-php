@@ -15,10 +15,10 @@ export default class ShowWhen extends Component {
     let myRoles = myRole.split(' ');
     let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
-    let tags = (user && user.tags) || [];
+    let tags = (user.isAuthenticated && user.tags) || [];
     let userRole;
 
-    if (user) {
+    if (user.isAuthenticated) {
       userRole = user.merchants[user.id].role;
     }
 

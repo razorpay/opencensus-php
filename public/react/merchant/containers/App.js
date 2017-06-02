@@ -108,7 +108,7 @@ export default class App extends Component {
 
   switchMode = mode => {
     let user = this.props.user;
-    if (mode === 'live' && parseInt(user.activated) !== 1) {
+    if (mode === 'live' && user.isActivated) {
       this.props.openModal({
         size: 'small',
         component: <ActivationRequired onCloseClick={this.props.closeModal} />,
@@ -163,7 +163,7 @@ export default class App extends Component {
   render() {
     let { user, mode, modeFormatted } = this.props;
 
-    if (this.state.isLoading || !user) {
+    if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
 

@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import User from 'merchant/models/User';
 import { set, merge } from 'rzp/utils/immutable';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
@@ -18,12 +19,10 @@ export const updateSession = payload => {
 
 export const fetchUser = () => {
   return dispatch => {
+    let user = new User();
     return dispatch({
       type: USER_FETCH,
-      payload: ajax({
-        url: '/user',
-        appendModeInURL: false,
-      }),
+      payload: user.fetch(),
     });
   };
 };
@@ -62,7 +61,7 @@ export const logout = () => {
 };
 
 let initialState = {
-  user: null,
+  user: new User(),
   org: {},
   mode: 'test',
   modeFormatted: 'Test',
@@ -81,7 +80,7 @@ export default function(state = initialState, action) {
 
     case `${USER_FETCH}::ERROR`:
     case `${USER_LOGOUT}::SUCCESS`:
-      return set(state, 'user', null);
+      return set(state, 'user', new User(null));
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
