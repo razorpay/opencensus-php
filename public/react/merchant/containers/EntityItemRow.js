@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { setActiveRow, removeActiveRow } from 'merchant/modules/app';
+import { setActiveRow } from 'merchant/modules/app';
 
-@connect(state => state.app, { setActiveRow, removeActiveRow })
+@connect(state => state.app, { setActiveRow })
 export default class EnityItemRow extends Component {
   // Highlight the row only on anchor clicks
   handleClick = event => {
@@ -10,13 +10,6 @@ export default class EnityItemRow extends Component {
       this.props.setActiveRow(this.props.id);
     }
   };
-
-  componentWillUnmount() {
-    let { id, activeRowId } = this.props;
-    if (id === activeRowId) {
-      this.props.removeActiveRow();
-    }
-  }
 
   render() {
     let { id, activeRowId, luminateRowId } = this.props;

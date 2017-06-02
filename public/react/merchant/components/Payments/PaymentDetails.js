@@ -102,14 +102,14 @@ export default props => {
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel panel-default">
+        : <div class="panel panel-default SliderPanel">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="panel-heading">
               Payment ID: <b>{payment.id}</b>
             </div>
 
-            <div class="panel-body">
+            <div class="panel-body SliderPanel__Body">
               <div class="list-group details-row-container">
                 <DetailRow
                   label="Amount"

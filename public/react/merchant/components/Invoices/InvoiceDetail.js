@@ -31,90 +31,88 @@ export default props => {
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div>
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                Payment Link ID: <strong>{invoice.id}</strong>
+        : <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              Payment Link ID: <strong>{invoice.id}</strong>
 
-                <ShowWhen notMyRole="support finance">
-                  <div class="btn-toolbar pull-right">
-                    {(isDraft || isIssued) &&
-                      <button
-                        class="btn btn-primary btn-sm"
-                        onClick={props.onIssue}
-                      >
-                        Send Link
-                      </button>}
+              <ShowWhen notMyRole="support finance">
+                <div class="btn-toolbar pull-right">
+                  {(isDraft || isIssued) &&
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={props.onIssue}
+                    >
+                      Send Link
+                    </button>}
 
-                    {isIssued &&
-                      <button
-                        class="btn btn-default btn-sm"
-                        onClick={props.onCancel}
-                      >
-                        Cancel Link
-                      </button>}
-                  </div>
-                </ShowWhen>
-              </div>
-
-              <div class="panel-body">
-                <div class="list-group details-row-container">
-                  <DetailRow
-                    label="Amount"
-                    value={() => <Amount value={invoice.amount} />}
-                  />
-                  <DetailRow label="Summary" value={invoice.description} />
-                  <DetailRow
-                    label="Invoice Date"
-                    value={() => <Time value={invoice.date} />}
-                  />
-                  <DetailRow label="Receipt" value={invoice.receipt} />
-                  <DetailRow label="Payment Link" value={invoice.short_url} />
-                  <DetailRow
-                    label="Status"
-                    value={() => <InvoiceStatusLabel status={invoice.status} />}
-                  />
-                  <DetailRow
-                    label="Payment Id"
-                    value={() => {
-                      if (!invoice.payment_id) {
-                        return '--';
-                      }
-                      return (
-                        <NavLink to={`/payments/${invoice.payment_id}`}>
-                          <code>{invoice.payment_id}</code>
-                        </NavLink>
-                      );
-                    }}
-                  />
-                  <DetailRow
-                    label="Paid At"
-                    value={() => (
-                      <Time
-                        value={invoice.paid_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
-                  />
-                  <DetailRow label="Terms & Conditions" value={invoice.terms} />
-                  {Object.keys(invoice.notes).length > 0
-                    ? <ListGroupToggler label="Notes">
-                        {Object.keys(invoice.notes).map(note => (
-                          <DetailRow
-                            key={note}
-                            label={note}
-                            value={invoice.notes[note]}
-                          />
-                        ))}
-                      </ListGroupToggler>
-                    : <DetailRow label="Notes" value="No Notes" />}
+                  {isIssued &&
+                    <button
+                      class="btn btn-default btn-sm"
+                      onClick={props.onCancel}
+                    >
+                      Cancel Link
+                    </button>}
                 </div>
-              </div>
+              </ShowWhen>
             </div>
 
-            <div class="panel panel-default">
-              <div class="panel-heading">Customer Details</div>
-              <div class="panel-body">
+            <div class="panel-body SliderPanel__Body">
+              <div class="list-group details-row-container">
+                <DetailRow
+                  label="Amount"
+                  value={() => <Amount value={invoice.amount} />}
+                />
+                <DetailRow label="Summary" value={invoice.description} />
+                <DetailRow
+                  label="Invoice Date"
+                  value={() => <Time value={invoice.date} />}
+                />
+                <DetailRow label="Receipt" value={invoice.receipt} />
+                <DetailRow label="Payment Link" value={invoice.short_url} />
+                <DetailRow
+                  label="Status"
+                  value={() => <InvoiceStatusLabel status={invoice.status} />}
+                />
+                <DetailRow
+                  label="Payment Id"
+                  value={() => {
+                    if (!invoice.payment_id) {
+                      return '--';
+                    }
+                    return (
+                      <NavLink to={`/payments/${invoice.payment_id}`}>
+                        <code>{invoice.payment_id}</code>
+                      </NavLink>
+                    );
+                  }}
+                />
+                <DetailRow
+                  label="Paid At"
+                  value={() => (
+                    <Time
+                      value={invoice.paid_at}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />
+                  )}
+                />
+                <DetailRow label="Terms & Conditions" value={invoice.terms} />
+                {Object.keys(invoice.notes).length > 0
+                  ? <ListGroupToggler label="Notes">
+                      {Object.keys(invoice.notes).map(note => (
+                        <DetailRow
+                          key={note}
+                          label={note}
+                          value={invoice.notes[note]}
+                        />
+                      ))}
+                    </ListGroupToggler>
+                  : <DetailRow label="Notes" value="No Notes" />}
+              </div>
+
+              <div class="panel panel-default">
+                <div class="panel-heading panel-heading-sm">
+                  Customer Details
+                </div>
                 <div class="list-group details-row-container">
                   <DetailRow
                     label="Name"
@@ -154,26 +152,24 @@ export default props => {
                   />
                 </div>
               </div>
-            </div>
 
-            {invoice.line_items.length
-              ? <div class="panel panel-default">
-                  <div class="panel-heading">
-                    Item Details
-                  </div>
+              {invoice.line_items.length
+                ? <div class="panel panel-default">
+                    <div class="panel-heading">
+                      Item Details
+                    </div>
 
-                  <div class="panel-body">
-                    <LineItemReadOnlyTable line_items={invoice.line_items} />
+                    <div class="panel-body">
+                      <LineItemReadOnlyTable line_items={invoice.line_items} />
+                    </div>
                   </div>
+                : ''}
+
+              <div class="panel panel-default">
+                <div class="panel-heading panel-heading-sm">
+                  Updates
                 </div>
-              : ''}
 
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                Updates
-              </div>
-
-              <div class="panel-body">
                 <div class="list-group details-row-container">
                   <DetailRow
                     label="Last Updated At"

@@ -25,6 +25,7 @@ export default class ModalSlider extends Component {
 
   componentWillUnmount() {
     document.removeEventListener('click', this.handleDocumentClick);
+    this.props.onClose();
   }
 
   close = () => {
@@ -32,7 +33,6 @@ export default class ModalSlider extends Component {
     if (this.props.closeUrl) {
       this.props.history.push(this.props.closeUrl);
     }
-    this.props.onClose();
   };
 
   render() {

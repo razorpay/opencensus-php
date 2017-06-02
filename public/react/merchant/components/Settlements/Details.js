@@ -18,12 +18,12 @@ export default props => {
         : <div>
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
-            <div class="panel panel-default">
+            <div class="panel panel-default SliderPanel">
               <div class="panel-heading">
                 Settlement ID: <b>{settlement.id}</b>
               </div>
 
-              <div class="panel-body">
+              <div class="panel-body SliderPanel__Body">
                 <div class="list-group details-row-container">
                   <div class="list-group-item">
                     <span>Amount</span>
