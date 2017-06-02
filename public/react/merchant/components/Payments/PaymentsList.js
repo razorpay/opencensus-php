@@ -36,7 +36,7 @@ export default ({ payments, isLoading, hasOrders, orders }) => {
             <th>Payment Id</th>
             {hasOrders && <th>Order Id</th>}
             <th>Currency</th>
-            <th>Amount (INR)</th>
+            <th>Amount</th>
             <th>Customer Email</th>
             <th>Contact</th>
             <th>Created At</th>
