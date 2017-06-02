@@ -103,7 +103,7 @@ export default class BankDetailsForm extends Component {
                 validate={[required()]}
               />
               <small class="help-block">
-                <i class="fa fa-info-circle" />
+                <i class="icon icon-info-circle" />
                 <span>Should be same as business/individual name</span>
               </small>
             </div>

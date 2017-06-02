@@ -1,4 +1,4 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Key from 'merchant/models/Key';
 // import RegenerateKey from 'merchant/models/Key'
@@ -29,7 +29,7 @@ const KeysListItem = props => {
                   props.showRollKeyModal({ id });
                 }}
               >
-                <i class="fa fa-refresh" />
+                <i class="icon icon-refresh" />
                 <span>Regenerate {mode} Key</span>
               </button>
             </div>}

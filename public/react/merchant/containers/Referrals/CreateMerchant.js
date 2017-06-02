@@ -7,7 +7,8 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, email } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
-import { highlightReferral } from 'merchant/modules/referrals';
+import { fetchUser } from 'merchant/modules/session';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(
   state => {
@@ -15,7 +16,7 @@ import { highlightReferral } from 'merchant/modules/referrals';
       ...state.session,
     };
   },
-  { highlightReferral, closeModal, ...NotificationsActions }
+  { fetchUser, luminateRow, closeModal, ...NotificationsActions }
 )
 @reduxForm({
   form: 'createMerchant',
@@ -33,7 +34,8 @@ export default class CreateMerchant extends Component {
     return this.props
       .onSave(props)
       .then(referral => {
-        this.props.highlightReferral(referral.id);
+        this.props.fetchUser();
+        this.props.luminateRow(referral.id);
         this.props.showNotification({
           type: 'success',
           message: 'Merchant created',
@@ -58,58 +60,43 @@ export default class CreateMerchant extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
-          <div class="modal-body">
+        <div class="modal-body">
+          <form onSubmit={handleSubmit(this.save)}>
             <div class="form-group">
-              <label class="col-md-3 control-label">
-                <div>Merchant Name</div>
-              </label>
-              <div class="col-md-8">
-                <Field
-                  name="name"
-                  id="name"
-                  component={InputField}
-                  class="form-control"
-                  validate={required()}
-                  placeholder="Acme Inc."
-                />
-              </div>
+              <label>Merchant Name</label>
+              <Field
+                name="name"
+                id="name"
+                component={InputField}
+                class="form-control"
+                validate={required()}
+                placeholder="Acme Inc."
+                autoFocus={true}
+              />
             </div>
+
             <div class="form-group">
-              <label class="col-md-3 control-label">
-                <div>Merchant Email</div>
-              </label>
-              <div class="col-md-8">
-                <Field
-                  name="email"
-                  id="email"
-                  component={InputField}
-                  class="form-control"
-                  placeholder="Optional"
-                  validate={email('Please provide a valid email')}
-                />
-              </div>
+              <label>Merchant Email</label>
+              <Field
+                name="email"
+                id="email"
+                component={InputField}
+                class="form-control"
+                placeholder="Optional"
+                validate={email('Please provide a valid email')}
+              />
             </div>
-          </div>
 
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default btn-rounded"
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
-
-            <AsyncButton
-              type="submit"
-              class="btn btn-primary btn-rounded"
-              text="Create Merchant"
-              pendingText="Creating Merchant..."
-              onClick={handleSubmit(this.save)}
-            />
-          </div>
-        </form>
+            <div class="Modal__actions">
+              <AsyncButton
+                class="btn btn-primary btn-block"
+                text="Create Merchant"
+                pendingText="Creating Merchant..."
+                onClick={handleSubmit(this.save)}
+              />
+            </div>
+          </form>
+        </div>
       </div>
     );
   }

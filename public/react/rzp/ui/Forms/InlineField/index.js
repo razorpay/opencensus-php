@@ -35,7 +35,7 @@ class InlineField extends Component {
             class={`${currentValue ? 'inlineField__value' : 'inlineField__placeholder'}`}
           >
             {currentValue || placeholder}
-            {!this.props.disabled ? <i class="fa fa-pencil" /> : ''}
+            {!this.props.disabled ? <i class="icon icon-edit" /> : ''}
           </span>
         </span>
       </div>

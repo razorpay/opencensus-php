@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+const fs = require('fs');
 const gulp = require('gulp');
 const webpack = require('webpack');
 const through = require('through2').obj;
@@ -104,10 +106,8 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/angular/ui-validate.js',
     'public/js/angular/ui-bootstrap-tpls.min.js',
     'public/js/angular/angular-busy.js',
-    'public/js/angular/ng-react.js',
     'public/js/libs/angular-file-upload.min.js',
     'public/js/libs/filesaver.min.js',
-    'public/js/libs/jquery-tourbus.js',
     'public/js/themes/init.js',
     'public/js/themes/theme.js',
     'public/js/libs/select2.min.js',
@@ -119,10 +119,6 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
   ],
-
-  'js/generated/merchant_react.js': ['public/react/dist/merchant_react.js'],
-
-  'js/generated/admin_react.js': ['public/react/dist/admin_react.js'],
 
   'js/generated/admin.js': [
     'public/js/admin/**/*.js',
@@ -233,6 +229,32 @@ gulp.task('webpack:prod', cb => {
   runWebpack(config, cb);
 });
 
+var rmOrig = function() {
+  return through(function(file, enc, cb) {
+    this.push(file); // We'll just pass this file along
+
+    if (!file.revOrigPath) {
+      return cb(); // Nothing to remove :)
+    }
+
+    fs.unlink(file.revOrigPath, function(err) {
+      // TODO: emit an error if err
+      cb();
+    });
+  });
+};
+
+//TODO: Need to offload this work to webpack especially when doing code splitting
+gulp.task('webpack:rev', cb => {
+  return gulp
+    .src(['public/dist/merchant_react.js', 'public/dist/merchant_react.css'])
+    .pipe(rev())
+    .pipe(gulp.dest('public/dist'))
+    .pipe(rmOrig())
+    .pipe(rev.manifest())
+    .pipe(through(revReference));
+});
+
 gulp.task('dev:setENV', cb => {
   isDevelopment = true;
   cb();
@@ -241,6 +263,7 @@ gulp.task('dev:setENV', cb => {
 gulp.task('default', cb => {
   run(
     'webpack:prod',
+    'webpack:rev',
     'compileThemes',
     ['css:prod', 'js:prod'],
     'tmpl',
@@ -258,7 +281,6 @@ gulp.task('dev:webpack', ['dev:setENV'], cb => {
 });
 
 gulp.task('watch:full', ['dev:webpack'], () => {
-  gulp.watch('public/css/*.styl', ['css']);
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
   gulp.watch(
     [
@@ -268,6 +290,7 @@ gulp.task('watch:full', ['dev:webpack'], () => {
       'public/react/merchant/**/*',
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
+      'public/react/styles/**/*.styl',
     ],
     ['dev:webpack']
   );
