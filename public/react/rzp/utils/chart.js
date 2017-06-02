@@ -39,9 +39,8 @@ export const timeScale = ({ xLabel, yLabel }) => {
           type: 'time',
           time: {
             displayFormats: {
-              day: 'DD, MMM',
+              day: 'DD MMM',
             },
-            unit: 'day',
             parser: utcMoment => utcMoment.utcOffset('+0000'),
             tooltipFormat: 'ddd DD MMM YYYY',
           },
@@ -55,6 +54,7 @@ export const timeScale = ({ xLabel, yLabel }) => {
           ticks: {
             beginAtZero: true,
             suggestedMax: 10,
+            maxTicksLimit: 10,
           },
           gridLines: {
             color: '#f8f8f8',
