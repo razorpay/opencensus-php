@@ -90,7 +90,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
-        Entity::LOAD
+        self::ID,
+        self::ENTITY,
+        self::LOAD
     ];
 
     protected function modifyLoad(& $input)

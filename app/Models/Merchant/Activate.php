@@ -104,8 +104,16 @@ class Activate extends Base\Core
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant' => $merchant->toArray(),
-            'plan'     => $plan,
+            'merchant' => [
+                'name'          => $merchant->getName(),
+                'website'       => $merchant->getWebsite(),
+                'billing_label' => $merchant->getBillingLabel(),
+                'email'         => $merchant->getEmail(),
+                'org'           => [
+                    'business_name' => $org->getBusinessName(),
+                    'custom_code'   => $org->getCustomCode(),
+                ],
+            ],
             'rules'    => $this->formatPricingRules($rules),
             'subject'  => $subject,
         ];
