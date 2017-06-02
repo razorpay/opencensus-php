@@ -10,7 +10,7 @@ export default props => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Filter:</label>
+        <label>Status</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
           <option value="authorized">Authorized</option>
@@ -21,7 +21,7 @@ export default props => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Email:</label>
+        <label>Email</label>
         <Field
           name="email"
           component="input"

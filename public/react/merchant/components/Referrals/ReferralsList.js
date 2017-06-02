@@ -1,10 +1,10 @@
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const ReferralsListItem = props => {
   let user = props.user;
-  let canHighlight = props.canHighlight;
   let isAggregator = user.tags.indexOf('Aggregator') !== -1;
   let {
     id,
@@ -16,7 +16,7 @@ const ReferralsListItem = props => {
   } = props.referral;
 
   return (
-    <tr class={canHighlight ? 'luminate' : ''}>
+    <EntityItemRow id={id}>
       <td>
         {isAggregator
           ? <a
@@ -56,7 +56,7 @@ const ReferralsListItem = props => {
             Create Login
           </button>}
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
@@ -67,7 +67,6 @@ export default props => {
     user,
     showCreateMerchantModal,
     showCreateLoginModal,
-    highlightRow,
     switchMerchant,
   } = props;
 
@@ -113,7 +112,6 @@ export default props => {
                 key={referral.id}
                 referral={referral}
                 user={user}
-                canHighlight={highlightRow(referral)}
                 showCreateLoginModal={showCreateLoginModal}
                 switchMerchant={switchMerchant}
               />

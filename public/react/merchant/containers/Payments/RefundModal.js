@@ -128,10 +128,10 @@ export default class RefundModal extends Component {
         >
           <div class="modal-body">
             <div class="form-group">
-              <label class="col-md-3 control-label">
+              <label class="col-sm-3 control-label">
                 <div>Partial Refund</div>
               </label>
-              <div class="col-md-8">
+              <div class="col-sm-8">
                 <div class="checkbox">
                   <label class="i-checks">
                     <Field
@@ -148,11 +148,11 @@ export default class RefundModal extends Component {
             </div>
             {this.props.partial
               ? <div class="form-group">
-                  <label class="col-md-3 control-label">
+                  <label class="col-sm-3 control-label">
                     <div>Amount</div>
                     <small>(in INR)</small>
                   </label>
-                  <div class="col-md-8">
+                  <div class="col-sm-8">
                     <Field
                       name="amount"
                       component={InputField}
@@ -165,10 +165,10 @@ export default class RefundModal extends Component {
                 </div>
               : null}
             <div class="form-group">
-              <label class="col-md-3 control-label">
+              <label class="col-sm-3 control-label">
                 <div>Comments</div>
               </label>
-              <div class="col-md-8">
+              <div class="col-sm-8">
                 <Field
                   name="comment"
                   component={InputField}
@@ -180,7 +180,7 @@ export default class RefundModal extends Component {
             </div>
 
             <div class="form-group">
-              <div class="col-md-8 col-md-offset-3">
+              <div class="col-sm-8 col-sm-offset-3">
                 The payment will be
                 {' '}
                 {this.props.partial ? 'partially ' : 'completely '}

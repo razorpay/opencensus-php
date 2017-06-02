@@ -2,10 +2,11 @@ import Time from 'rzp/ui/Time';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from 'rzp/ui/TableBody';
 import { NavLink } from 'react-router-dom';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const PaymentsListItem = ({ payment, hasOrders, orders }) => {
   return (
-    <tr>
+    <EntityItemRow id={payment.id}>
       <td>
         <NavLink to={`/payments/${payment.id}`}>
           <code>{payment.id}</code>
@@ -22,7 +23,7 @@ const PaymentsListItem = ({ payment, hasOrders, orders }) => {
       <td>
         <PaymentStatusLabel status={payment.status} />
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 

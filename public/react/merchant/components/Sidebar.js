@@ -243,6 +243,7 @@ export default class Sidebar extends Component {
                     icon="fa fa-gift text-danger"
                     to="/referrals"
                     notMyRole="sellerapp support"
+                    featureEnabled="Referral"
                   />
 
                   <div class="divider-old" data-label="Settings" />
