@@ -30,4 +30,5 @@ tmp/
 public/js/themes/*.js
 !public/js/themes/init.js
 public/react/dist/
+public/dist/
 yarn-error.log

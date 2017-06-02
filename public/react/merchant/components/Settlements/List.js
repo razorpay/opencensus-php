@@ -1,15 +1,17 @@
+import { Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
   return (
-    <tr>
+    <EntityItemRow id={settlement.id}>
       <td>
-        <a href={`#/app/settlements/${settlement.id}`} target="_blank">
+        <Link to={`/settlements/${settlement.id}`}>
           <code>{settlement.id}</code>
-        </a>
+        </Link>
       </td>
       <td class="text-right">
         <Amount value={settlement.amount} />
@@ -31,7 +33,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
           Breakup
         </button>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 

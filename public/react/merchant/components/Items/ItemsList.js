@@ -1,31 +1,29 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-const ItemsListItem = props => {
-  let { item, canHighlightRow } = props;
+const ItemsListItem = ({ item, onEdit, onDelete }) => {
   return (
-    <tr class={canHighlightRow ? 'luminate' : ''}>
-      <td>{item.name}</td>
+    <EntityItemRow id={item.id}>
+      <td><a onClick={onEdit}>{item.name}</a></td>
       <td>{item.description}</td>
       <td class="text-right">{item.amountInINR}</td>
       <td class="row-action">
         <div class="btn-group">
-          <button class="btn btn-xs btn-default" onClick={props.onEdit}>
-            <i class="fa fa-edit" />
+          <button class="btn btn-xs btn-default" onClick={onEdit}>
+            <i class="icon icon-edit" />
             <span>edit</span>
           </button>
-          <button class="btn btn-xs btn-default" onClick={props.onDelete}>
-            <i class="fa fa-trash text-danger" />
+          <button class="btn btn-xs btn-default" onClick={onDelete}>
+            <i class="icon icon-trash text-danger" />
             <span>delete</span>
           </button>
         </div>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
-const ItemsList = props => {
-  let { items, isLoading, onEdit, onDelete, highlightRow } = props;
-
+export default ({ items, isLoading, onEdit, onDelete }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -47,7 +45,6 @@ const ItemsList = props => {
             <ItemsListItem
               key={item.id}
               item={item}
-              canHighlightRow={highlightRow(item)}
               onEdit={() => onEdit(item)}
               onDelete={() => onDelete(item)}
             />
@@ -57,9 +54,3 @@ const ItemsList = props => {
     </div>
   );
 };
-
-ItemsList.defaultProps = {
-  highlightRow: () => {},
-};
-
-export default ItemsList;

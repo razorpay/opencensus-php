@@ -96,6 +96,7 @@ app.controller('EntitiesCtrl', [
       'wallet_freecharge',
       'wallet_jiomoney',
       'wallet_openwallet',
+      'wallet_mpesa',
     ];
     var walletList = [
       'all',
@@ -109,6 +110,7 @@ app.controller('EntitiesCtrl', [
       'jiomoney',
       'ezeclick',
       'openwallet',
+      'mpesa',
     ];
     var upiBankList = ['all', 'icici'];
     var booleanList = ['all', 0, 1];
@@ -314,6 +316,7 @@ app.controller('EntitiesCtrl', [
         payumoney: booleanList2,
         payzapp: booleanList2,
         olamoney: booleanList2,
+        mpesa: booleanList2,
         upi: booleanList2,
         airtelmoney: booleanList2,
         freecharge: booleanList2,
@@ -334,6 +337,7 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList,
         payumoney: booleanList,
         payzapp: booleanList,
+        mpesa: booleanList,
         olamoney: booleanList,
         upi: booleanList,
         airtelmoney: booleanList,
@@ -703,7 +707,10 @@ app.controller('EntitiesCtrl', [
         .success(function(data) {
           $scope.alerts.resetAlerts();
           if (data.success) {
-            $scope.headings = Object.keys(data.data.items[0]);
+            $scope.headings = [];
+            if (Array.isArray(data.data.items) && data.data.items.length) {
+              $scope.headings = Object.keys(data.data.items[0]);
+            }
             $scope.entity.items = data.data.items;
 
             $scope.entity.count = parseInt(data.data.count);

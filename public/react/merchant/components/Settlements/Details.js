@@ -10,21 +10,21 @@ export default props => {
   let { settlement, breakupDetails, isLoading, statusMsg } = props;
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-detail-container">
+        : <div>
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
-            <div class="panel panel-default">
+            <div class="panel panel-default SliderPanel">
               <div class="panel-heading">
                 Settlement ID: <b>{settlement.id}</b>
               </div>
 
-              <div class="panel-body">
-                <div class="list-group">
+              <div class="panel-body SliderPanel__Body">
+                <div class="list-group details-row-container">
                   <div class="list-group-item">
                     <span>Amount</span>
                     <Amount value={settlement.amount} />

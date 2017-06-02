@@ -1,32 +1,34 @@
 import Time from 'rzp/ui/Time';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import { NavLink } from 'react-router-dom';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const RefundsListItem = ({ refund }) => {
   return (
-    <tr>
+    <EntityItemRow id={refund.id}>
       <td>
-        <a target="_blank" href={`#/app/refunds/${refund.id}`}>
-          {refund.id}
-        </a>
+        <NavLink to={`/refunds/${refund.id}`}>
+          <code>{refund.id}</code>
+        </NavLink>
       </td>
       <td>
-        <a target="_blank" href={`#/app/payments/${refund.payment_id}`}>
-          {refund.payment_id}
-        </a>
+        <NavLink to={`/payments/${refund.payment_id}`}>
+          <code>{refund.payment_id}</code>
+        </NavLink>
       </td>
       <td>{refund.currency}</td>
       <td>{refund.amountInINR}</td>
       <td>
         <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
 export default ({ refunds, isLoading }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Refund Id</th>

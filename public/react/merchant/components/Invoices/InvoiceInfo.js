@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import Clipboard from 'rzp/ui/Clipboard';
 
@@ -24,9 +25,9 @@ export default ({ invoice }) => {
           ? <div>
               <dt>Payment Id</dt>
               <dd>
-                <a href={`#/app/payments/${invoice.payment_id}`}>
-                  {invoice.payment_id}
-                </a>
+                <NavLink to={`/payments/${invoice.payment_id}`}>
+                  <code>{invoice.payment_id}</code>
+                </NavLink>
               </dd>
 
               <dt>Paid On</dt>
@@ -47,7 +48,7 @@ export default ({ invoice }) => {
           <div>
             <dt>Email Sent to</dt>
             <dd class="text-ellipsis">
-              {invoice.customer.email}
+              {invoice.customer_details.customer_email}
               <span
                 style={{ marginLeft: '10px' }}
                 class={`${notificationClassMap[invoice.email_status]}`}
@@ -61,7 +62,7 @@ export default ({ invoice }) => {
           <div>
             <dt>SMS Sent to</dt>
             <dd>
-              {invoice.customer.contact}
+              {invoice.customer_details.customer_contact}
               <span
                 style={{ marginLeft: '10px' }}
                 class={`${notificationClassMap[invoice.sms_status]}`}

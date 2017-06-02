@@ -1,14 +1,16 @@
 import Time from 'rzp/ui/Time';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import { NavLink } from 'react-router-dom';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const PaymentsListItem = ({ payment, hasOrders, orders }) => {
   return (
-    <tr>
+    <EntityItemRow id={payment.id}>
       <td>
-        <a target="_blank" href={`#/app/payments/${payment.id}`}>
-          {payment.id}
-        </a>
+        <NavLink to={`/payments/${payment.id}`}>
+          <code>{payment.id}</code>
+        </NavLink>
       </td>
       {hasOrders && <td>{orders[payment.id]}</td>}
       <td>{payment.currency}</td>
@@ -21,14 +23,14 @@ const PaymentsListItem = ({ payment, hasOrders, orders }) => {
       <td>
         <PaymentStatusLabel status={payment.status} />
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
 export default ({ payments, isLoading, hasOrders, orders }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Payment Id</th>
@@ -43,7 +45,7 @@ export default ({ payments, isLoading, hasOrders, orders }) => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={7}
+          colSpan={hasOrders ? 8 : 7}
           rows={payments}
           emptyTableMsg="No Payments found!"
         >

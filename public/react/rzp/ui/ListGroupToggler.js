@@ -10,6 +10,10 @@ export default class ListGroupToggler extends Component {
     this.toggle = ::this.toggle;
   }
 
+  componentWillMount() {
+    this.setState({ show: this.props.show });
+  }
+
   toggle() {
     this.setState({
       show: !this.state.show,
@@ -32,7 +36,7 @@ export default class ListGroupToggler extends Component {
         />
         {this.state.show
           ? <div class="panel-body">
-              <div class="list-group">
+              <div class="list-group detail-row-container">
                 {this.props.children}
               </div>
             </div>
@@ -41,3 +45,7 @@ export default class ListGroupToggler extends Component {
     );
   }
 }
+
+ListGroupToggler.defaultProps = {
+  show: false,
+};
