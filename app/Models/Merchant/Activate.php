@@ -130,7 +130,6 @@ class Activate extends Base\Core
             function ($message) use ($data, $config, $org)
             {
                 $message->to($data['merchant']['email']);
-                $message->from($data['from_email'], $data['from_name']);
 
                 if ($org->getId() === Org\Entity::RAZORPAY_ORG_ID)
                 {
