@@ -21,8 +21,6 @@ import * as ModalActions from 'rzp/modules/modals';
 )
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
-    let { type, skip, count, ...otherParams } = params;
-    debugger;
     if (this.props.user.tags.indexOf('Newui') !== -1) {
       params.type = 'invoice';
     }
@@ -63,7 +61,7 @@ export default class InvoicesListContainer extends ListContainer {
           target="#invoicing-header"
           attachment="top right"
           targetAttachment="top right"
-          offset="-8px 20px"
+          offset="-8px 0"
         >
           <div />{/* required by react-tether */}
 

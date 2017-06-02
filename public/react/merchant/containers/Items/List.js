@@ -76,7 +76,7 @@ export default class ItemsListContainer extends ListContainer {
           target="#invoicing-header"
           attachment="top right"
           targetAttachment="top right"
-          offset="-8px 20px"
+          offset="-8px 0"
         >
           <div />{/* required by react-tether */}
 

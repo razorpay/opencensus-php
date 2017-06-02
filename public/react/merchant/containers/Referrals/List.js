@@ -67,7 +67,7 @@ export default class ReferralsListContainer extends ListContainer {
           target="#myaccount-header"
           attachment="top right"
           targetAttachment="top right"
-          offset="-8px 20px"
+          offset="-8px 0"
         >
           <div />{/* required by react-tether */}
           <ShowWhen notMyRole="support">

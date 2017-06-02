@@ -51,7 +51,7 @@ export default class PaymentLinksContainer extends ListContainer {
             target="#link-header"
             attachment="top right"
             targetAttachment="top right"
-            offset="-8px 20px"
+            offset="-8px 0"
           >
             <div />{/* required by react-tether */}
 
