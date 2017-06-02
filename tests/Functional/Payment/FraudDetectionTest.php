@@ -22,6 +22,40 @@ class FraudDetectionTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
+    public function testBlockedBin()
+    {
+        $this->ba->appAuth();
+
+        $addIin = [
+            'request' => [
+                'url' => '/iins',
+                'method' => 'post',
+                'content' => [
+                    'iin' => 521729,
+                    'network' => 'MasterCard',
+                    'type' => 'debit',
+                    'country' => null,
+                ],
+            ],
+            'response' => [
+                'content' => [],
+                'status_code' => 200
+            ]
+        ];
+
+        $this->runRequestResponseFlow($addIin);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5217294025032720';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testFraudDetected()
     {
         $this->mockMaxmind();
