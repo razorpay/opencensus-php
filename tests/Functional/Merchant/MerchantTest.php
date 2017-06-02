@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use Mockery;
 use DB;
 
 use RZP\Models\Transaction;
@@ -381,6 +382,31 @@ class MerchantTest extends TestCase
         ]);
 
         $activatedAt = time();
+
+        \Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertNotNull($data['merchant']);
+                        $this->assertNotNull($data['rules']);
+
+                        $this->assertNotNull($data['merchant']['name']);
+                        $this->assertNotNull($data['merchant']['website']);
+                        $this->assertNotNull($data['merchant']['billing_label']);
+                        $this->assertNotNull($data['merchant']['org']);
+
+                        $this->assertNotNull($data['merchant']['org']['business_name']);
+                        $this->assertNotNull($data['merchant']['org']['hostname']);
+                        $this->assertNotNull($data['merchant']['org']['custom_code']);
+
+                        $this->assertNotNull($data['rules']['amountRangeRules']);
+                        $this->assertNotNull($data['rules']['otherRules']);
+
+                        return true;
+                    }),
+                    Mockery::any());
 
         $content = $this->startTest();
 
