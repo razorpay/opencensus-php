@@ -416,13 +416,13 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function sendActivationEmail(array $merchantIds)
+    public function sendActivationEmail(array $input)
     {
         $act = new Activate($this->app);
 
         $response = [];
 
-        foreach ($merchantIds as $merchantId)
+        foreach ($input['ids'] as $merchantId)
         {
             try
             {
