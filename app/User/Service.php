@@ -888,7 +888,7 @@ class Service extends Base\Service
 
             $data = [
                 'id'            => $user->id,
-                'merchant_id'   => $user->currentMerchant->id,
+                'merchant_id'   => $user->currentMerchant()->id,
             ];
 
             $this->cache->put($cacheKey, $data, 10);
