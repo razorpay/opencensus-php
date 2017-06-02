@@ -226,6 +226,25 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $request = $this->getVerifyRefundRequest($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+        [
+            'response' => $response,
+            'input'    => $input,
+        ]);
+
+        $content = $this->jsonToArray($response->body);
+
+        return $this->verifyRefundUsingGatewayResponse($content, $input);
+    }
+
     //------------------Authorize helper methods begin--------------------------
 
     protected function getPurchaseRequestArray(array $input)
@@ -746,27 +765,7 @@ class Gateway extends Base\Gateway
 
     protected function getCheckPaymentStatusRequest(array $input)
     {
-        $this->domainType = $this->mode . '_' . $this->action;
-
-        $content = [
-            RequestFields::APINAME       => ApiName::CHECKPAYMENTSTATUS,
-            RequestFields::MODE          => self::JSON_MODE,
-            RequestFields::REQUEST_ID    => gen_uuid(self::JIOMONEY_UUID_FORMAT),
-            RequestFields::STARTDATETIME => 'NA',
-            RequestFields::ENDDATETIME   => 'NA',
-            RequestFields::MERCHANT_ID   => $this->getMerchantId(),
-            RequestFields::PAYMENT_ID    => $input['payment']['id']
-        ];
-
-        $hashString = $this->getStringToHash($content, '~');
-
-        $content[RequestFields::CHECKSUM] = $this->getHashOfString($hashString);
-
-        $content = implode('~', $content);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = $this->getRequestHeaders($content);
+        $request = $this->getVerifyTransactionRequest(ApiName::CHECKPAYMENTSTATUS, $input['payment']['id']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -823,9 +822,76 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getVerifyRefundRequest(array $input)
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        $request = $this->getVerifyTransactionRequest(ApiName::GETREQUESTSTATUS, $wallet->getGatewayPaymentId());
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'  => $request,
+                'api_type' => ApiName::GETREQUESTSTATUS
+            ]);
+
+        return $request;
+    }
+
+    protected function getVerifyTransactionRequest(string $apiName, string $txnId)
+    {
+        $this->domainType = $this->mode . '_' . $this->action;
+
+        $content = [
+            RequestFields::APINAME       => $apiName,
+            RequestFields::MODE          => self::JSON_MODE,
+            RequestFields::REQUEST_ID    => gen_uuid(self::JIOMONEY_UUID_FORMAT),
+            RequestFields::STARTDATETIME => 'NA',
+            RequestFields::ENDDATETIME   => 'NA',
+            RequestFields::MERCHANT_ID   => $this->getMerchantId(),
+            RequestFields::PAYMENT_ID    => $txnId,
+        ];
+
+        $hashString = $this->getStringToHash($content, '~');
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfString($hashString);
+
+        $content = implode('~', $content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = $this->getRequestHeaders($content);
+
+        return $request;
+    }
+
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
+    }
+
+    protected function verifyRefundUsingGatewayResponse(array $content, array $input): bool
+    {
+        if (isset($content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS]) === true)
+        {
+            $gatewayRefundData = $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS];
+
+            if ($this->isSuccessFullyRefundedOnGateway($gatewayRefundData, $input) === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Unrecognized verify refund gateway response: ' . $content);
+    }
+
+    protected function isSuccessFullyRefundedOnGateway(array $gatewayRefundData, array $input): bool
+    {
+        return (($gatewayRefundData[ResponseFields::TXN_STATUS] === ResponseCode::SUCCESS) and
+                ($input['refund']['amount'] === intval($gatewayRefundData[ResponseFields::REFUND_AMOUNT])));
     }
 
     //----------------------------Verify helper methods end--------------------------------
