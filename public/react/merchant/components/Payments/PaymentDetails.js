@@ -212,7 +212,7 @@ export default props => {
                     />
                   : null}
                 {Object.keys(payment.notes).length > 0
-                  ? <ListGroupToggler label="Notes">
+                  ? <ListGroupToggler label="Notes" show={true}>
                       <table class="table table-hover">
                         <TableBody
                           colSpan={2}

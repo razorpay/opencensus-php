@@ -97,7 +97,7 @@ export default props => {
                 />
                 <DetailRow label="Terms & Conditions" value={invoice.terms} />
                 {Object.keys(invoice.notes).length > 0
-                  ? <ListGroupToggler label="Notes">
+                  ? <ListGroupToggler label="Notes" show={true}>
                       {Object.keys(invoice.notes).map(note => (
                         <DetailRow
                           key={note}
