@@ -35,27 +35,19 @@ let initialState = {
   },
 };
 
-const getTransactionCountData = (data, isLive) => {
+const getTransactionCountData = (data, mode) => {
   return createLineData(
-    data.filter(d => {
-      if (isLive) {
-        return !d.mode;
-      }
-      return d.mode;
-    }),
+    data.filter(d => d.mode === mode),
     'count',
     'Successful Transactions'
   );
 };
 
-const getTransactionAmountData = (data, isLive) => {
+const getTransactionAmountData = (data, mode) => {
   data = JSON.parse(JSON.stringify(data));
   data = data.filter(d => {
-    if (isLive) {
-      return !d.mode;
-    }
     d.amount = d.amount / 100;
-    return d.mode;
+    return d.mode === mode;
   });
   return createLineData(data, 'amount', 'Transaction Volume');
 };
@@ -76,11 +68,11 @@ export const fetchAnalytics = params => {
         if (response.data) {
           transaction_count = getTransactionCountData(
             response.data,
-            params.isLive
+            params.mode
           );
           transaction_amount = getTransactionAmountData(
             response.data,
-            params.isLive
+            params.mode
           );
         }
         return {
