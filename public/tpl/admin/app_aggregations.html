@@ -18,14 +18,6 @@
       <div class="text-center m-t">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
-      <div class="col-sm-2 m-b-xs">
-        Resource:
-        <select class="form-control input-sm w-sm inline " name="resource" ng-model="resource">
-          <option value="payment">Payment</option>
-          <option value="refund">Refund</option>
-          <option value="settlement">Settlement</option>
-        </select>
-      </div>
       <div class="col-xs-1">
         Mode:
         <select class="form-control input-sm w-xs inline" name="mode" ng-model="mode">
@@ -44,21 +36,21 @@
         >
       </div>
       <div class="col-xs-1 m-t-md m-l-n-xxl">
-        <select class="form-control input-sm w-xs inline" name="period" ng-model="period">
-          <option value="1">Day</option>
-          <option value="7">Week</option>
-          <option value="30">Month</option>
+        <select class="form-control input-sm w-xs inline" name="type" ng-model="type">
+          <option value="day">Day</option>
+          <option value="week">Week</option>
+          <option value="month">Month</option>
+          <option value="year">Year</option>
         </select>
       </div>
       <div class="col-xs-2">
         Sort:
         <select class="form-control w-sm inline" name="sort" ng-model="sort">
           <option value="total_amount">Total Amount</option>
-          <option value="successful_txn_count">Successful Count</option>
-          <option value="txn_count">Total Count</option>
+          <option value="total_count">Total Count</option>
         </select>
       </div>
-      <div class="col-sm-2 m-t-md">
+      <div class="col-sm-3 m-t-md">
         <div class="input-group">
           <input type="text" class="input-sm form-control" placeholder="Search Merchant Id" ng-model="merchant_id">
           <span class="input-group-btn">
@@ -77,18 +69,16 @@
           <tr>
             <th>Merchant Id</th>
             <th>Total Amount (INR)</th>
-            <th>Successful</th>
-            <th>Total</th>
-            <th>Updated</th>
+            <th>Total Count</th>
+            <th>Merchant Name</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in data">
             <td><a ui-sref="app.merchants.detail({id:row.merchant_id})">{{row.merchant_id}}</a></td>
             <td>{{row.total_amount/100 | rupee: ''}}</td>
-            <td>{{row.successful_txn_count}}</td>
-            <td>{{row.txn_count}}</td>
-            <td tooltip="{{row.updated_at*1000|fromNow}}">{{row.updated_at *1000 | date:'medium'}}</td>
+            <td>{{row.total_count}}</td>
+            <td>{{row.merchant_name}}</td>
           </tr>
         </tbody>
       </table>

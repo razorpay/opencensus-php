@@ -175,8 +175,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
-        Route::get('admin/{mode}/merchants/aggregations/{resource}', 'AdminController@getMerchantAggregations');
-        Route::get('admin/{mode}/merchants/{merchant_id}/aggregations/{resource}', 'AdminController@getSingleMerchantAggregations');
+        Route::get('admin/{mode}/merchants/aggregations', 'AdminController@getMerchantAggregations');
+        Route::get('admin/{mode}/merchants/{merchant_id}/aggregations', 'AdminController@getSingleMerchantAggregations');
 
         // Might delete this route later if its not used
         Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');

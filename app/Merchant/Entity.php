@@ -324,32 +324,49 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getAllAggregations($mode, $resource, $sort, $skip, $count, $days)
+    public static function getTransactionAggregations($mode, $sort, $timestamp, $type, $merchantId)
     {
-        $subQuery = \DB::table('aggregations')
-                        ->where('resource', '=', $resource)
-                        ->where('mode', '=', $mode)
-                        ->where('total_amount', '>', 0);
+        $data = \DB::table('transactions')
+                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
+                    ->select(
+                        \DB::raw(
+                            'transactions.merchant_id,
+                            SUM(transactions.amount) as total_amount,
+                            SUM(transactions.count) as total_count,
+                            merchants.name as merchant_name'
+                        )
+                    )
+                    ->where('transactions.mode', '=', $mode)
+                    ->where('transactions.type', '=', $type)
+                    ->where('transactions.created_at', '>=', $timestamp)
+                    ->where('transactions.merchant_id', '=', $merchantId)
+                    ->groupBy('transactions.merchant_id')
+                    ->orderBy($sort, 'DESC')
+                    ->get();
 
-        if ($days !== 0)
-        {
-            $durationTimestamp = strtotime("-$days days", time());
+        return $data;
+    }
 
-            $data = $subQuery
-                        ->where('updated_at', '>', $durationTimestamp)
-                        ->orderBy($sort, 'DESC')
-                        ->offset($skip)
-                        ->limit($count)
-                        ->get();
-        }
-        else
-        {
-            $data = $subQuery
-                        ->orderBy($sort, 'DESC')
-                        ->offset($skip)
-                        ->limit($count)
-                        ->get();
-        }
+    public static function getAllTransactionAggregations($mode, $sort, $skip, $count, $timestamp, $type)
+    {
+        $data = \DB::table('transactions')
+                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
+                    ->select(
+                        \DB::raw(
+                            'transactions.merchant_id,
+                            SUM(transactions.amount) as total_amount,
+                            SUM(transactions.count) as total_count,
+                            merchants.name as merchant_name'
+                        )
+                    )
+                    ->where('transactions.mode', '=', $mode)
+                    ->where('transactions.type', '=', $type)
+                    ->where('transactions.created_at', '>=', $timestamp)
+                    ->groupBy('transactions.merchant_id')
+                    ->orderBy($sort, 'DESC')
+                    ->offset($skip)
+                    ->limit($count)
+                    ->get();
 
         return $data;
     }

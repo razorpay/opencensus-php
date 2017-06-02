@@ -8,12 +8,11 @@ app.controller('MerchantStatsCtrl', [
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.data = [];
-    $scope.resource = 'payment';
     $scope.mode = 'live';
     $scope.merchant_id = '';
     $scope.sort = 'total_amount';
-    $scope.duration_count = '';
-    $scope.period = '';
+    $scope.duration_count = 1;
+    $scope.type = 'month';
     $scope.count = 10;
     $scope.stats = {
       count: 0,
@@ -34,23 +33,21 @@ app.controller('MerchantStatsCtrl', [
 
     $scope.fetchAllAggregations = function(
       mode,
-      resource,
       sort,
       skip,
       count,
-      days
+      duration_count,
+      type
     ) {
-      var request = $http.get(
-        '/admin/' + mode + '/merchants/aggregations/' + resource,
-        {
-          params: {
-            sort: sort,
-            skip: skip,
-            count: count,
-            days: days,
-          },
-        }
-      );
+      var request = $http.get('/admin/' + mode + '/merchants/aggregations', {
+        params: {
+          sort: sort,
+          skip: skip,
+          count: count,
+          duration_count: duration_count,
+          type: type,
+        },
+      });
 
       request.success(function(data) {
         if (data.success) {
@@ -69,14 +66,27 @@ app.controller('MerchantStatsCtrl', [
       });
     };
 
-    $scope.fetchAllAggregationsForMerchant = function(mid, mode, resource) {
+    $scope.fetchAllAggregationsForMerchant = function(
+      mid,
+      mode,
+      sort,
+      duration_count,
+      type
+    ) {
       var request = $http.get(
-        '/admin/' + mode + '/merchants/' + mid + '/aggregations/' + resource
+        '/admin/' + mode + '/merchants/' + mid + '/aggregations',
+        {
+          params: {
+            sort: sort,
+            duration_count: duration_count,
+            type: type,
+          },
+        }
       );
 
       request.success(function(data) {
         if (data.success) {
-          $scope.data = [data.data];
+          $scope.data = data.data;
           $scope.stats.skip = 0;
           $scope.stats.countStart = 1;
           $scope.stats.countEnd = 1;
@@ -84,31 +94,28 @@ app.controller('MerchantStatsCtrl', [
       });
     };
 
-    $scope.$watch('mode + sort + resource', function() {
+    $scope.$watch('mode + type + sort', function() {
       $scope.go('');
     });
 
     $scope.go = function(merchant_id) {
       if (merchant_id === '') {
-        var days = 0;
-        if ($scope.duration_count !== '' && $scope.period !== '') {
-          days = $scope.duration_count * $scope.period;
-        }
-
         // We get all aggregations
         $scope.fetchAllAggregations(
           $scope.mode,
-          $scope.resource,
           $scope.sort,
           $scope.stats.skip,
           $scope.count,
-          days
+          $scope.duration_count,
+          $scope.type
         );
       } else {
         $scope.fetchAllAggregationsForMerchant(
           merchant_id,
           $scope.mode,
-          $scope.resource
+          $scope.sort,
+          $scope.duration_count,
+          $scope.type
         );
       }
     };

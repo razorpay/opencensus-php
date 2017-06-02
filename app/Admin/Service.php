@@ -1634,7 +1634,40 @@ class Service extends Base\Service
         return $slack->getResponse();
     }
 
-    public function getMerchantAggregations($mode, $resource, $input)
+    /**
+     * This function is used to get the required timestamp based on the filters applied
+     * on merchant stats page [Eg: Last 1 week, Last 3 Months etc.]
+     * @param $duration_count int
+     * @param $type $type string
+    */
+    public function getMerchantStatsFilterTimestamp($duration_count, $type)
+    {
+        $current = Carbon::now();
+
+        $timestamp = '';
+
+        switch ($type) {
+            case 'day':
+                $timestamp = strtotime($current->subDays($duration_count));
+                break;
+
+            case 'week':
+                $timestamp = strtotime($current->subWeeks($duration_count));
+                break;
+
+            case 'month':
+                $timestamp = strtotime($current->subMonths($duration_count));
+                break;
+
+            case 'year':
+                $timestamp = strtotime($current->subYears($duration_count));
+                break;
+        }
+
+        return $timestamp;
+    }
+
+    public function getMerchantAggregations($mode, $input)
     {
         $error = (new Admin\Validator)->validateInput('merchant_stats', $input)->messages();
 
@@ -1646,9 +1679,16 @@ class Service extends Base\Service
 
             $count = \Input::get('count', 10);
 
-            $days = intval(\Input::get('days', 0));
+            $duration_count = \Input::get('duration_count', 1);
 
-            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort, $skip, $count, $days)];
+            $type = \Input::get('type', 'month');
+
+            $timestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+
+            $response =
+                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $skip, $count, $timestamp, $type);
+
+            return [null, $response];
         }
         else
         {
@@ -1657,14 +1697,17 @@ class Service extends Base\Service
 
     }
 
-    public function getSingleMerchantAggregations($merchantId, $mode, $resource)
+    public function getSingleMerchantAggregations($mode, $input, $merchantId)
     {
-        $data = [
-            'merchant_id'   =>  $merchantId,
-            'resource'      =>  $resource
-        ];
+        $sort = \Input::get('sort', 'total_amount');
 
-        $response = Merchant\Entity::getAggregations($data, $mode);
+        $duration_count = \Input::get('duration_count', 1);
+
+        $type = \Input::get('type', 'month');
+
+        $timestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+
+        $response = Merchant\Entity::getTransactionAggregations($mode, $sort, $timestamp, $type, $merchantId);
 
         return [null, $response];
     }
