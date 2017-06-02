@@ -21,6 +21,8 @@ import * as ModalActions from 'rzp/modules/modals';
 )
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
+    let { type, skip, count, ...otherParams } = params;
+    debugger;
     if (this.props.user.tags.indexOf('Newui') !== -1) {
       params.type = 'invoice';
     }
@@ -74,13 +76,15 @@ export default class InvoicesListContainer extends ListContainer {
                 </NavLink>
               </ShowWhen>
 
-              <button
-                class="btn btn-primary"
-                onClick={() => this.showPaymentLinkModal()}
-              >
-                <i class="icon icon-plus" />
-                <span>Create Payment Link</span>
-              </button>
+              {!isNewUIEnabled
+                ? <button
+                    class="btn btn-primary"
+                    onClick={() => this.showPaymentLinkModal()}
+                  >
+                    <i class="icon icon-plus" />
+                    <span>Create Payment Link</span>
+                  </button>
+                : null}
             </div>
           </ShowWhen>
         </TetherComponent>
