@@ -2,20 +2,17 @@
 
 namespace App\User;
 
+use Auth;
 use Uuid;
 use Session;
 use App\Base;
 use App\Merchant;
 use App\Invitation;
-use Auth;
-use RandomLib\Factory as RandomLibFactory;
-
 use Illuminate\Auth\Authenticatable;
+use RandomLib\Factory as RandomLibFactory;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Foundation\Auth\Access\Authorizable;
-
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-// use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
 class Entity extends Base\Entity implements AuthenticatableContract, CanResetPasswordContract
@@ -48,7 +45,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      *
      * @var array
      */
-    protected $fillable = ['name','email','password', 'contact_mobile'];
+    protected $fillable = ['id', 'name','email','password', 'contact_mobile'];
 
     /**
      * The attributes that must be auto-generated.

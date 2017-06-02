@@ -42,19 +42,14 @@
               </li>
             </ul>
           </li>
-          <li class="dropdown" ng-controller="switchMerchantCtrl" ng-show="merchants.length > 1">
-            <a href class="dropdown-toggle" data-toggle="dropdown">
-              Switch Merchant<b class="caret"></b>
-            </a>
-            <ul class="dropdown-menu animated fadeInRight switch-merchant-dropdown">
-              <li ng-repeat="merchant in merchants">
-                <a ng-click="switchMerchant(merchant)" class="dropdown-toggle" href>
-                  <span ng-show="merchant.id == user.current"><i class="fa fa-check text-success"></i></span>
-                  <span ng-show="merchant.id != user.current"><i class="fa fa-fw">&nbsp;</i></span>
-                  <span>{{merchant.name | titlecase}}</span>
-                </a>
-              </li>
-            </ul>
+          <li class="dropdown" ng-controller="switchMerchantCtrl" id="switch-merchant-button" ng-show="merchants.length > 1">
+            <select class="select2 role-select2" role-select theme="false" style="width: 180px">
+              <option value=""></option>
+              <option ng-repeat="merchant in merchants" value="{{merchant.id}}">
+                {{merchant.name | titlecase}}
+              </option>
+            </select>
+            <b class="caret"></b>
           </li>
           <li>
             <a target="_blank" href="https://docs.razorpay.com">

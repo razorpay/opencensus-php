@@ -26,39 +26,27 @@ export default class BatchListContainer extends ListContainer {
     let { loading, batchuploads, error, mode } = this.props;
 
     return (
-      <div class="react-root">
-        <Header title="Batch Uploads" />
+      <div class="content-wrapper">
+        <BatchListFilter
+          form="batchListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              List of all batch file uploads
-            </div>
+        {error && <Alert type="error" message={error} />}
 
-            <div class="panel-body">
-              <BatchListFilter
-                form="batchListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-              />
-            </div>
+        <BatchList
+          batchuploads={batchuploads}
+          isLoading={loading}
+          mode={mode}
+        />
 
-            {error && <Alert type="error" message={error} />}
-
-            <BatchList
-              batchuploads={batchuploads}
-              isLoading={loading}
-              mode={mode}
-            />
-
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={batchuploads.length}
-              onClick={this.paginate}
-            />
-          </div>
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={batchuploads.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

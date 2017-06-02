@@ -49,7 +49,7 @@ angular
             .success(function(data) {
               try {
                 dataLayer.push({
-                  merchant_id: data.data.merchants[0].pivot.merchant_id,
+                  merchant_id: data.data.merchants[0].id,
                 });
               } catch (e) {}
               _identity = data.data;
@@ -65,7 +65,8 @@ angular
                 // if any of the fields is missing, isPreSignupDone will be false
                 _isPreSignupDone =
                   _identity.pre_signup &&
-                  (_identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
+                  (parseInt(_identity.activated) === 1 ||
+                  _identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
                     !!Object.keys(_identity.pre_signup)
                       // get all values
                       .map(function(key) {
@@ -525,11 +526,11 @@ angular
           if (this.users) {
             return this.users;
           }
-
+          var deferred = $q.defer();
           var users = [];
+
           $http
             .get('/admin/generic', {
-              ignoreErrors: true,
               params: {
                 route_name: 'admin_get_multiple',
               },
@@ -541,13 +542,18 @@ angular
                     users.push(user);
                   });
                 }
+
+                deferred.resolve(users);
               } else {
-                users = {};
+                users = [];
               }
             })
-            .error(function() {});
+            .error(function(data) {
+              return data.errors;
+            });
+
           this.users = users;
-          return this.users;
+          return deferred.promise;
         },
       };
     },
@@ -916,67 +922,160 @@ angular
       };
     },
   ])
-  .factory('utils', function() {
-    return {
-      humanize: function(str) {
-        var frags = str.split('_');
+  .factory('utils', [
+    '$state',
+    function($state) {
+      return {
+        humanize: function(str) {
+          var frags = str.split('_');
 
-        for (var i = 0; i < frags.length; i++) {
-          frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
-        }
+          for (var i = 0; i < frags.length; i++) {
+            frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+          }
 
-        return frags.join(' ');
-      },
-      mergeUnique: function(arr, isCaseSensitive) {
-        isCaseSensitive = isCaseSensitive || false;
-        var auxArr = arr.concat();
+          return frags.join(' ');
+        },
+        mergeUnique: function(arr, isCaseSensitive) {
+          isCaseSensitive = isCaseSensitive || false;
+          var auxArr = arr.concat();
 
-        for (var i = 0; i < auxArr.length; i++) {
-          for (var j = i + 1; j < auxArr.length; j++) {
-            if (
-              (isCaseSensitive &&
-                auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
-              auxArr[i] === auxArr[j]
-            ) {
-              auxArr.splice(j--, 1);
+          for (var i = 0; i < auxArr.length; i++) {
+            for (var j = i + 1; j < auxArr.length; j++) {
+              if (
+                (isCaseSensitive &&
+                  auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
+                auxArr[i] === auxArr[j]
+              ) {
+                auxArr.splice(j--, 1);
+              }
             }
           }
-        }
 
-        return auxArr;
-      },
-      isArray: function(val) {
-        if (!val) {
+          return auxArr;
+        },
+        isArray: function(val) {
+          if (!val) {
+            return false;
+          }
+
+          return val instanceof Array;
+        },
+
+        isIndexedArray: function(val) {
+          if (this.isArray(val) === false) {
+            return false;
+          }
+
+          return ['object', 'undefined'].indexOf(typeof val[0]) === -1;
+        },
+
+        // rightmost obj gets preference for same keys
+        concatObj: function() {
+          var result = {};
+          var len = arguments.length;
+          for (var i = 0; i < len; i++) {
+            for (var p in arguments[i]) {
+              if (arguments[i].hasOwnProperty(p)) {
+                result[p] = arguments[i][p];
+              }
+            }
+          }
+
+          return result;
+        },
+        isWorkflow: function(data) {
+          if (
+            typeof data.id !== 'undefined' &&
+            data.id.indexOf('w_action') === 0 &&
+            typeof data.workflow_id !== 'undefined'
+          ) {
+            return true;
+          }
+
           return false;
-        }
+        },
 
-        return val instanceof Array;
-      },
+        resolveEntityLinkAndGo: function(entityId, entityName) {
+          var entityMap = {
+            merchant: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            credits: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            role: {
+              route: 'app.roles.edit',
+              idParam: 'id',
+              sign: 'role_',
+            },
+            methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            adjustment: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            schedule_task: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+          };
 
-      // rightmost obj gets preference for same keys
-      concatObj: function() {
-        var result = {};
-        var len = arguments.length;
-        for (var i = 0; i < len; i++) {
-          for (var p in arguments[i]) {
-            if (arguments[i].hasOwnProperty(p)) {
-              result[p] = arguments[i][p];
-            }
+          if (typeof entityMap[entityName] !== 'undefined') {
+            var entityDetails = entityMap[entityName];
+
+            var params = {};
+            params[entityDetails.idParam] = entityDetails.sign + entityId;
+
+            $state.go(entityDetails.route, params);
           }
-        }
+        },
+      };
+    },
+  ])
+  .factory('utilMapping', [
+    '$state',
+    function($state) {
+      // mapping used in multiple files
+      var map = {
+        networkMap: {
+          AMEX: 'American Express',
+          DICL: 'Diners Club',
+          DISC: 'Discover',
+          JCB: 'JCB',
+          MAES: 'Maestro',
+          MC: 'MasterCard',
+          RUPAY: 'RuPay',
+          VISA: 'Visa',
+          UNP: 'Union Pay',
+        },
+        methodMap: {
+          card: 'Card',
+          wallet: 'Wallet',
+          netbanking: 'Netbanking',
+          upi: 'UPI',
+          emi: 'EMI',
+        },
+        gatewayAcquirerMap: {
+          axis: 'Axis',
+          hdfc: 'HDFC',
+          amex: 'Amex',
+          icic: 'ICICI',
+        },
+      };
 
-        return result;
-      },
-
-      isWorkflow: function(data) {
-        if (
-          data.id.indexOf('w_action') === 0 &&
-          typeof data.workflow_id !== 'undefined'
-        ) {
-          return true;
-        }
-
-        return false;
-      },
-    };
-  });
+      return {
+        getMap: function(key) {
+          return map[key];
+        },
+      };
+    },
+  ]);

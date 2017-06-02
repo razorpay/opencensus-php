@@ -1,7 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header/Header';
+import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ReferralsList from 'merchant/components/Referrals/ReferralsList';
 import * as ReferralActions from 'merchant/modules/referrals';
@@ -43,6 +45,7 @@ export default class ReferralsListContainer extends ListContainer {
 
   showCreateMerchantModal = () => {
     this.props.openModal({
+      size: 'small',
       component: (
         <CreateMerchant
           onSave={params => {
@@ -59,42 +62,39 @@ export default class ReferralsListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
-        <Header title="Referrals" />
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Referrals
+      <div class="content-wrapper">
+        <TetherComponent
+          target="#myaccount-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar">
+              <button
+                class="pull-right btn btn-primary"
+                onClick={() => this.showCreateMerchantModal()}
+              >
+                <i class="icon icon-plus" />
+                <span>New Merchant</span>
+              </button>
             </div>
+          </ShowWhen>
+        </TetherComponent>
 
-            <Alert type={status.type} message={status.message} />
+        <Alert type={status.type} message={status.message} />
 
-            <ReferralsList
-              referrals={referrals}
-              isLoading={loading}
-              user={user}
-              highlightRow={referral => referral.id === highlightReferralId}
-              showCreateLoginModal={this.showCreateLoginModal}
-              highlightReferralId={highlightReferralId}
-              switchMerchant={this.switchMerchant}
-            />
-
-            {!loading && user.tags.indexOf('Aggregator') !== -1
-              ? <div class="panel-footer">
-                  <div class="row">
-                    <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-                      <button
-                        class="btn btn-primary"
-                        onClick={this.showCreateMerchantModal}
-                      >
-                        Create New Merchant
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              : null}
-          </div>
-        </div>
+        <ReferralsList
+          referrals={referrals}
+          isLoading={loading}
+          user={user}
+          highlightRow={referral => referral.id === highlightReferralId}
+          showCreateLoginModal={this.showCreateLoginModal}
+          showCreateMerchantModal={this.showCreateMerchantModal}
+          highlightReferralId={highlightReferralId}
+          switchMerchant={this.switchMerchant}
+        />
       </div>
     );
   }

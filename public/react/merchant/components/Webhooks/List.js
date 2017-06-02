@@ -1,5 +1,5 @@
 import Time from 'rzp/ui/Time';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 
 const WebhooksListItem = ({ webhook, canHighlightRow }) => {
   let activeEventsCount = Object.keys(webhook.events).filter(

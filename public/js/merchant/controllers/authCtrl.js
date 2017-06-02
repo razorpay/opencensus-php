@@ -221,7 +221,7 @@ app
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
-                $scope.goToDashboard(data.user.merchants[0].pivot.role);
+                $scope.goToDashboard(data.user.merchants[0].role);
               } else {
                 hideSpinner();
                 $state.transitionTo(
@@ -236,6 +236,10 @@ app
             });
           } else {
             hideSpinner();
+            if (data.errors && data.errors[0] && data.errors[0].indexOf('email has already been taken') !== -1) {
+              trackDrip('error_email_taken');
+            }
+
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
             });
@@ -252,16 +256,8 @@ app
       }
 
       $scope.goToDashboard = function(role) {
-        switch (role) {
-          case 'support':
-            $state.go('app.payments.list');
-            break;
-          case 'sellerapp':
-            $state.go('app.invoices');
-            break;
-          default:
-            $state.go('app.dashboard');
-        }
+        location.hash = '/app';
+        location.reload();
       };
 
       $scope.sendDetails = function() {
@@ -286,7 +282,7 @@ app
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
               if (user.isVerified()) {
-                var role = userDetails.merchants[userDetails.id].pivot.role;
+                var role = userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
                 goToVerification();
@@ -482,7 +478,7 @@ app
               );
             } else {
               var userDetails = user.getIdentity();
-              var role = userDetails.merchants[userDetails.id].pivot.role;
+              var role = userDetails.merchants[userDetails.id].role;
               $scope.goToDashboard(role);
             }
           }
@@ -581,7 +577,7 @@ app
               if (user.isVerified() && user.isPreSignupDone()) {
                 var role =
                   userDetails.merchants &&
-                  userDetails.merchants[userDetails.id].pivot.role;
+                  userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
                 $scope.email_not_verified = false;
@@ -625,7 +621,9 @@ app
           method: 'post',
           url: '/user/resend',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.login.data,
+          data: {
+            email: $scope.signup.data.email || $scope.login.data.email,
+          },
         };
 
         var request = $http(payload);

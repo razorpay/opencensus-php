@@ -49,7 +49,7 @@ export default class InvoiceLineItemTable extends Component {
               <td class="no-border">
                 {!disabled &&
                   <button
-                    class="btn btn-default add-line-item"
+                    class="btn btn-default btn-xs add-line-item"
                     type="button"
                     onClick={this.addInvoiceItem}
                   >

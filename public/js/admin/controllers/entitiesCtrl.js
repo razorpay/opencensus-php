@@ -85,6 +85,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_airtel',
       'netbanking_federal',
       'netbanking_indusind',
+      'netbanking_rbl',
       'paytm',
       'sharp',
       'upi_icici',
@@ -95,6 +96,7 @@ app.controller('EntitiesCtrl', [
       'wallet_freecharge',
       'wallet_jiomoney',
       'wallet_openwallet',
+      'wallet_mpesa',
     ];
     var walletList = [
       'all',
@@ -108,6 +110,7 @@ app.controller('EntitiesCtrl', [
       'jiomoney',
       'ezeclick',
       'openwallet',
+      'mpesa',
     ];
     var upiBankList = ['all', 'icici'];
     var booleanList = ['all', 0, 1];
@@ -313,6 +316,7 @@ app.controller('EntitiesCtrl', [
         payumoney: booleanList2,
         payzapp: booleanList2,
         olamoney: booleanList2,
+        mpesa: booleanList2,
         upi: booleanList2,
         airtelmoney: booleanList2,
         freecharge: booleanList2,
@@ -333,6 +337,7 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList,
         payumoney: booleanList,
         payzapp: booleanList,
+        mpesa: booleanList,
         olamoney: booleanList,
         upi: booleanList,
         airtelmoney: booleanList,
@@ -568,14 +573,22 @@ app.controller('EntitiesCtrl', [
         return;
       }
       clear('skip');
-      var request = $http.get(
-        '/admin/' +
-          $scope.mode +
-          '/fetchentity/' +
-          $scope.entity_type +
-          '/' +
-          $scope.entity.id
-      );
+
+      var routeName = 'admin_fetch_entity_by_id';
+      if ($scope.entity_type === 'terminal') {
+        routeName = 'admin_fetch_terminal_by_id';
+      }
+      var data = {
+        route_name: routeName,
+        url_params: {
+          '{type}': $scope.entity_type,
+          '{id}': $scope.entity.id,
+        },
+        mode: $scope.mode,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           $scope.alerts.resetAlerts();
@@ -584,8 +597,8 @@ app.controller('EntitiesCtrl', [
             var stateArray = {
               payment: 'app.payments',
               merchant: 'app.merchants.detail',
-            },
-              state = 'app.entitiesdetail';
+            };
+            var state = 'app.entitiesdetail';
             if (entity in stateArray) {
               state = stateArray[entity];
             }
@@ -673,17 +686,31 @@ app.controller('EntitiesCtrl', [
         $scope.from,
         $scope.to
       );
-      var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
       if (csv) {
+        var url =
+          '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
         window.open(url + '/csv?' + $.param(query));
         return;
       }
-      var request = $http.get(url, { params: query });
+      var data = {
+        route_name: 'admin_fetch_entity_multiple',
+        url_params: {
+          '{type}': $scope.entity_type,
+        },
+        mode: $scope.mode,
+        query_params: query,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           $scope.alerts.resetAlerts();
           if (data.success) {
-            $scope.headings = data.data.headings;
+            $scope.headings = [];
+            if (Array.isArray(data.data.items) && data.data.items.length) {
+              $scope.headings = Object.keys(data.data.items[0]);
+            }
             $scope.entity.items = data.data.items;
 
             $scope.entity.count = parseInt(data.data.count);

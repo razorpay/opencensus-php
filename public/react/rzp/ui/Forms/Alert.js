@@ -42,9 +42,10 @@ class Alert extends Component {
         )}
         style={{ borderRadius: 0 }}
       >
-        <button type="button" class="close" onClick={this.close}>
-          <span>×</span>
-        </button>
+        {props.showDismiss &&
+          <button type="button" class="close" onClick={this.close}>
+            <span>×</span>
+          </button>}
 
         <ul
           class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
@@ -52,7 +53,9 @@ class Alert extends Component {
         >
           {msgs.map((msg, index) => (
             <li key={index}>
-              {typeof msg === 'string' ? msg : JSON.stringify(msg)}
+              {msg.stack
+                ? msg.stack
+                : typeof msg === 'object' ? JSON.stringify(msg) : msg}
             </li>
           ))}
         </ul>
@@ -63,8 +66,13 @@ class Alert extends Component {
 
 Alert.displayName = 'FormAlert';
 
+Alert.defaultProps = {
+  showDismiss: true,
+};
+
 Alert.propTypes = {
   type: PropTypes.string,
+  showDismiss: PropTypes.bool,
 };
 
 export default Alert;

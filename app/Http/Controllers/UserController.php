@@ -2,17 +2,15 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\Http\AppResponse;
-use App\User;
-use App\MerchantDetails;
-use App\Merchant;
-use App\Lead;
-
 use Input;
+use App\Lead;
+use App\User;
+use App\Merchant;
+use App\MerchantDetails;
+use App\Http\AppResponse;
 
 class UserController extends Controller
 {
-
     protected $guard = 'users';
     /**
      * Returns the base template for angular.
@@ -21,7 +19,9 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        return view('merchant.tmpgetIndex');
+        $user = Auth::user();
+
+        return view('merchant.tmpgetIndex', [ 'isAuthenticated' =>  $user ]);
     }
 
     /**
@@ -37,7 +37,9 @@ class UserController extends Controller
     public function postRegister()
     {
         $input = Input::all();
+
         $data = null;
+
         $error = [];
 
         try
@@ -139,10 +141,12 @@ class UserController extends Controller
     }
 
     /**
+     * @deprecated
+     * Please use `getUserDetailsV2`
      * This is the one true method for all information
      * @return [type] [description]
      */
-    public function getUserDetails()
+    public function getUserDetailsV1()
     {
         $data = [
             // Current merchant
@@ -182,6 +186,12 @@ class UserController extends Controller
         return AppResponse::jsonResponse(null, $data);
     }
 
+    public function getUserDetailsV2()
+    {
+        list($error, $data) = (new User\Service)->getUserDetails();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 
     public function postUpgradeUserToMerchant()
     {

@@ -69,7 +69,7 @@ export default class InvoiceLineItem extends Component {
       >
         <td>
           <span class="remove-row-action" onClick={() => onRemove(index)}>
-            <i class="fa fa-times-circle text-danger" />
+            <i class="icon icon-done-circle text-danger" />
           </span>
 
           <div class="item-ac-container">

@@ -7,13 +7,6 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 
 class Schedule extends Entity
 {
-    public function getScheduleList()
-    {
-        $relativeUrl = $this->getEntityUrl();
-
-        return $this->request('GET', $relativeUrl)->toArray();
-    }
-
     public function fetch($id)
     {
         return parent::fetch($id);

@@ -1,4 +1,4 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
 
@@ -65,6 +65,7 @@ export default props => {
     referrals,
     isLoading,
     user,
+    showCreateMerchantModal,
     showCreateLoginModal,
     highlightRow,
     switchMerchant,
@@ -85,7 +86,28 @@ export default props => {
               <th>Actions</th>
             </tr>
           </thead>
-          <TableBody isLoading={isLoading} colSpan={7} rows={referrals}>
+          <TableBody
+            isLoading={isLoading}
+            colSpan={7}
+            rows={referrals}
+            emptyTableRow={() => {
+              if (isLoading || user.tags.indexOf('Aggregator') === -1) {
+                return null;
+              }
+              return (
+                <tr>
+                  <td class="text-center empty-table" colSpan={7}>
+                    <button
+                      class="btn btn-primary"
+                      onClick={showCreateMerchantModal}
+                    >
+                      Create New Merchant
+                    </button>
+                  </td>
+                </tr>
+              );
+            }}
+          >
             {referrals.map(referral => (
               <ReferralsListItem
                 key={referral.id}

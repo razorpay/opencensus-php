@@ -1,18 +1,33 @@
-import TableBody from '../TableBody';
+import { NavLink } from 'react-router-dom';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 const InvoiceListItem = props => {
-  let { invoice, canHighlight } = props;
+  let { invoice, isNewUIEnabled, canHighlight, onEditClick } = props;
   return (
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
-        <a
-          href={`${invoice.type === 'invoice' ? `#/app/invoices/${invoice.id}` : `#/app/invoices/${invoice.id}/details`}`}
-        >
-          {invoice.id}
-        </a>
+        {
+          do {
+            if (invoice.type === 'link') {
+              if (isNewUIEnabled) {
+                <NavLink to={`/paymentlinks/${invoice.id}`}>
+                  <code>{invoice.id}</code>
+                </NavLink>;
+              } else {
+                <NavLink to={`/invoices/${invoice.id}/details`}>
+                  <code>{invoice.id}</code>
+                </NavLink>;
+              }
+            } else {
+              <NavLink to={`/invoices/${invoice.id}`}>
+                <code>{invoice.id}</code>
+              </NavLink>;
+            }
+          }
+        }
       </td>
       <td>
         <Time value={invoice.date} />
@@ -24,7 +39,7 @@ const InvoiceListItem = props => {
           invoice.customer_details.customer_name}
       </td>
       <td>{invoice.short_url}</td>
-      <td>{invoice.type}</td>
+      {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
       <td class="text-right">
         <Amount value={invoice.amount} />
       </td>
@@ -42,7 +57,7 @@ const InvoiceListItem = props => {
               disabled={!invoice.isEditable}
               onClick={props.onEditClick}
             >
-              <i class="fa fa-edit" />
+              <i class="icon icon-edit" />
               <span>edit</span>
             </button>
           </div>
@@ -53,19 +68,26 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let { invoices, isLoading, highlightRow = () => {} } = props;
+  let {
+    type,
+    invoices,
+    isNewUIEnabled,
+    isLoading,
+    highlightRow = () => {},
+  } = props;
+  let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
-            <th>Invoice Id</th>
-            <th>Invoice Date</th>
+            <th>{label} Id</th>
+            <th>{label} Date</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
-            <th>Type</th>
+            {!isNewUIEnabled ? <th>Type</th> : ''}
             <th class="text-right">Amount (INR)</th>
             <th class="text-right">Status</th>
             <th>Actions</th>
@@ -75,12 +97,13 @@ export default props => {
           isLoading={isLoading}
           colSpan={8}
           rows={invoices}
-          emptyTableMsg="No Invoices found!"
+          emptyTableMsg="No data found!"
         >
           {invoices.map(invoice => (
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
+              isNewUIEnabled={isNewUIEnabled}
               canHighlight={highlightRow(invoice)}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}

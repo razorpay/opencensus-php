@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\AppResponse;
-
-use Input;
-use Password;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Lang;
 use DB;
 use Hash;
-use App\Merchant;
-use App\Generic;
-use App\Admin;
+use Input;
+use Password;
 use App\User;
+use App\Admin;
+use App\Generic;
+use App\Merchant;
+use Carbon\Carbon;
+use App\Http\AppResponse;
+use App\Mailers\MiscMailer;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Response;
 
 class PasswordController extends Controller
 {
+    const EXPIRY_WINDOW = 86400; // 24 hours
+    const SHA256 = 'sha256';
+
     /**
      * Handle a POST request to remind a user of their password.
      *
@@ -26,31 +30,33 @@ class PasswordController extends Controller
     {
         list($error, $org) = (new Admin\Service)->getOrg(Input::get('hostname'));
 
-        view()->composer('emails.auth.reminder', function($view) use($org) {
-            $view->with([
-                'org'   =>  $org
-            ]);
-        });
-
         $credentials = Input::only('email');
+
         // Lowercasing emails for consistency
         if (isset($credentials['email']))
         {
             $credentials['email'] = mb_strtolower($credentials['email']);
         }
 
-        $response = Password::sendResetLink($credentials, function($message){
-            $message->subject('Razorpay - Password Reset Request');
-        });
+        $user = User\Entity::select(['users.id'])
+                            ->where('users.email', $credentials['email'])
+                            ->first();
 
-        switch ($response)
+        if ($user === null)
         {
-            case Password::INVALID_USER:
-                return Response::json(array('success' => false, 'errors' => array(Lang::get($response))));
-
-            case Password::RESET_LINK_SENT:
-                return Response::json(array('success' => true));
+            return Response::json(['success' => true]);
         }
+
+        $expiryTime = Carbon::now()->timestamp + self::EXPIRY_WINDOW;
+
+        $resetToken = $this->generateToken($user['id'], $expiryTime);
+
+        $mailer = new MiscMailer();
+
+        $mailer->sendForgetPasswordEmail($credentials['email'], $org, $resetToken, $expiryTime)
+               ->queueAndDeliver();
+
+        return Response::json(['success' => true]);
     }
 
     /**
@@ -61,35 +67,41 @@ class PasswordController extends Controller
     public function postReset()
     {
         $credentials = Input::only(
-            'email', 'password', 'password_confirmation', 'token'
+            'email', 'password', 'password_confirmation', 'token', 'expiryTime'
         );
+
         // Lowercasing emails for consistency
         if (isset($credentials['email']))
         {
             $credentials['email'] = mb_strtolower($credentials['email']);
         }
 
-        $response = Password::reset($credentials, function($user, $password)
+        $user = User\Entity::where('users.email', $credentials['email'])->first();
+
+        if ($user === null)
         {
-            DB::transaction(function() use ($user, $password)
-            {
-                $user->password = Hash::make($password);
-                $user->save();
-
-                (new User\Service)->updatePasswordOnApi($user);
-            });
-        });
-
-        switch ($response)
-        {
-            case Password::INVALID_PASSWORD:
-            case Password::INVALID_TOKEN:
-            case Password::INVALID_USER:
-                return Response::json(array('success' => false, 'errors' => array(Lang::get($response))));
-
-            case Password::PASSWORD_RESET:
-                return Response::json(array('success' => true));
+            return Response::json([
+                            'success' => true,
+                            'errors'  => ['Token is invalid or expired.']
+                        ]);
         }
+
+        $resetToken = $this->generateToken($user['id'], $credentials['expiryTime']);
+
+        if (hash_equals($credentials['token'], $resetToken) === false)
+        {
+            return Response::json([
+                            'success' => false,
+                            'errors'  => ['Token is invalid or expired.']
+                        ]);
+        }
+
+        $user->password = Hash::make($credentials['password']);
+        $user->save();
+
+        (new User\Service)->updatePasswordOnApi($user);
+
+        return Response::json(['success' => true]);
     }
 
     public function forgotAdminPassword()
@@ -110,4 +122,8 @@ class PasswordController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    protected function generateToken($userId, $time)
+    {
+        return hash_hmac(self::SHA256, 'password.reset' . '_' . $userId . '_' . $time, env('APP_KEY'));
+    }
 }

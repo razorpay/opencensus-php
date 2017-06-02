@@ -14,6 +14,7 @@ class Entity extends Razorpay\Api\Entity
             'key',
             'invoice',
             'merchant',
+            'user',
             'payment',
             'pricing',
             'refund',

@@ -200,7 +200,7 @@ export default class RefundModal extends Component {
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-default btn-rounded"
+              class="btn btn-default"
               onClick={this.props.closeModal}
             >
               Cancel
@@ -208,7 +208,7 @@ export default class RefundModal extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               text="Refund"
               pendingText="Refunding..."
               onClick={handleSubmit(this.save)}
