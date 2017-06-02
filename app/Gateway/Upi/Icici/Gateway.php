@@ -320,10 +320,10 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
-            Fields::NOTE             => substr($this->getPaymentRemark($input), 0, 10),
+            Fields::NOTE             => preg_replace('/\s+/', '', $this->getPaymentRemark($input)),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
-            Fields::SUBMERCHANT_NAME => $input['merchant']->getFilteredDba(),
+            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
 
