@@ -57,7 +57,7 @@ export default class ReferralsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, referrals, highlightReferralId } = this.props.referrals;
+    let { loading, referrals } = this.props.referrals;
     let user = this.props.session.user;
     let status = this.state.status;
 
@@ -67,7 +67,7 @@ export default class ReferralsListContainer extends ListContainer {
           target="#myaccount-header"
           attachment="top right"
           targetAttachment="top right"
-          offset="-8px 20px"
+          offset="-8px 0"
         >
           <div />{/* required by react-tether */}
           <ShowWhen notMyRole="support">
@@ -89,10 +89,8 @@ export default class ReferralsListContainer extends ListContainer {
           referrals={referrals}
           isLoading={loading}
           user={user}
-          highlightRow={referral => referral.id === highlightReferralId}
           showCreateLoginModal={this.showCreateLoginModal}
           showCreateMerchantModal={this.showCreateMerchantModal}
-          highlightReferralId={highlightReferralId}
           switchMerchant={this.switchMerchant}
         />
       </div>

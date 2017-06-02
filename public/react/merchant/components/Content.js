@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import Home from 'merchant/containers/HomeContainer';
 import Transactions from 'merchant/containers/Transactions';
@@ -31,6 +32,8 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
+import { removeActiveRow } from 'merchant/modules/app';
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -44,6 +47,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
 };
 
 @withRouter
+@connect(null, { removeActiveRow })
 export default class Content extends Component {
   getBaseView = () => {
     let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
@@ -271,6 +275,10 @@ export default class Content extends Component {
     );
   };
 
+  removeActiveRow = () => {
+    this.props.removeActiveRow();
+  };
+
   render() {
     let location = this.props.location;
     let DetailView = matchDetail(location.pathname);
@@ -283,7 +291,9 @@ export default class Content extends Component {
 
     if (DetailView) {
       DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation}><DetailView /></Slider>
+        ? <Slider closeUrl={this.baseLocation} onClose={this.removeActiveRow}>
+            <DetailView />
+          </Slider>
         : <DetailView />;
     }
 

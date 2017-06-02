@@ -26,8 +26,14 @@ export default ({ label, value, entity = {} }) => {
 
     case 'id':
       entityName = label.split('_')[0];
+      let url = `/${entityName}s/${value}`;
+
+      if (entityName === 'invoice') {
+        url += '/details';
+      }
+
       val = () => (
-        <NavLink to={`/${entityName}s/${value}`}>
+        <NavLink to={url}>
           {value}
         </NavLink>
       );

@@ -5,8 +5,6 @@ export const INVOICES_FETCH = 'INVOICES_FETCH';
 export const INVOICE_CREATE = 'INVOICE_CREATE';
 export const INVOICE_EDIT = 'INVOICE_EDIT';
 export const INVOICE_DELETED = 'INVOICE_DELETED';
-export const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE';
-export const REMOVE_HIGHLIGHT_INVOICE = 'REMOVE_HIGHLIGHT_INVOICE';
 
 export const fetchInvoices = params => {
   return dispatch => {
@@ -40,26 +38,10 @@ export const deleteInvoice = params => {
   };
 };
 
-export const highLightInvoice = invoiceId => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_INVOICE,
-      payload: invoiceId,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_HIGHLIGHT_INVOICE,
-      });
-    }, 6000);
-  };
-};
-
 let initialState = {
   loading: true,
   invoices: [],
   count: 0,
-  highLightInvoiceId: null,
 };
 
 export default function(state = initialState, action) {
@@ -95,12 +77,6 @@ export default function(state = initialState, action) {
         invoice => invoice.id === action.payload.id
       );
       return set(state, 'invoices', invoicesList);
-
-    case HIGHLIGHT_INVOICE:
-      return set(state, 'highLightInvoiceId', action.payload);
-
-    case REMOVE_HIGHLIGHT_INVOICE:
-      return set(state, 'highLightInvoiceId', null);
 
     default:
       return state;

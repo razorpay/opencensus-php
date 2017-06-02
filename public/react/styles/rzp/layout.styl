@@ -107,7 +107,7 @@ body {
     left: 0;
     right: 0;
     overflow: auto;
-    padding-bottom: 80px;
+    padding-bottom: 15px;
     padding-top: 15px;
 
     .text-warning {
@@ -371,6 +371,7 @@ body.ReactModal__Body--open {
 .CalendarDay--selected:active {
   background-color: #6A5ACE;
   border-color: #6A5ACE;
+  color: #fff;
 }
 
 .DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
@@ -433,6 +434,10 @@ tr:hover .row-action > .btn-group {
     &:not(.no-flex) {
       display: flex;
       justify-content: space-between;
+    }
+
+    .list-group, .table {
+      margin-bottom: 0;
     }
   }
 }
