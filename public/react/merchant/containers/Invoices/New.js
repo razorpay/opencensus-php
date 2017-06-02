@@ -454,7 +454,7 @@ export default class InvoicesNewContainer extends Component {
           : <div class="content-wrapper invoice-creation-container">
               <form onSubmit={handleSubmit(this.save)}>
                 <div class="row">
-                  <div class="col-md-8">
+                  <div class="col-md-8 col-sm-8">
                     <div class="invoice-container pull-right">
                       <InvoiceBreadcrumbNav
                         invoice={invoice}
@@ -650,7 +650,10 @@ export default class InvoicesNewContainer extends Component {
                   </div>
 
                   <ShowWhen notMyRole="support finance">
-                    <div class="col-md-4" style={{ marginTop: '48px' }}>
+                    <div
+                      class="col-md-4 col-sm-4"
+                      style={{ marginTop: '48px' }}
+                    >
                       {!locked &&
                         <div class="inv__cta">
                           <div class="btn-group-vertical">
