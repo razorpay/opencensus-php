@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Header from 'rzp/ui/Header';
 import { connect } from 'react-redux';
 import * as HomeActions from 'merchant/modules/home';
-import { fetchPayments } from 'merchant/modules/payments/list';
+import { fetchAll as fetchPayments } from 'merchant/modules/payments/list';
 import { fetchRefunds } from 'merchant/modules/refunds/list';
 import { fetchSettlements } from 'merchant/modules/settlements/list';
 import moment from 'moment';

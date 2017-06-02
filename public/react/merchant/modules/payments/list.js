@@ -3,7 +3,7 @@ import { set, merge } from 'rzp/utils/immutable';
 
 const PAYMENTS_FETCH = 'PAYMENTS_FETCH';
 
-export const fetchPayments = params => {
+export const fetchAll = params => {
   return dispatch => {
     let payment = new Payment();
     return dispatch({
@@ -15,8 +15,7 @@ export const fetchPayments = params => {
 
 let initialState = {
   loading: true,
-  payments: [],
-  count: 0,
+  items: [],
   error: null,
 };
 
@@ -26,10 +25,11 @@ export default function(state = initialState, action) {
       return set(state, 'loading', true);
 
     case `${PAYMENTS_FETCH}::SUCCESS`:
+      let { items } = action.payload.data;
       return merge(state, {
         loading: false,
         payments: action.payload.data.items,
-        count: action.payload.data.count,
+        items,
         error: null,
       });
 

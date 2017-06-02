@@ -1,9 +1,19 @@
-import { set } from 'rzp/utils/immutable';
+import { set, merge } from 'rzp/utils/immutable';
 
 const ROW_HIGHLIGHT_ADD = 'ROW_HIGHLIGHT_ADD';
 const ROW_HIGHLIGHT_REMOVE = 'ROW_HIGHLIGHT_REMOVE';
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
+const UPDATE_LOCATION = 'UPDATE_LOCATION';
+
+export const updateLocation = payload => {
+  return dispatch => {
+    return dispatch({
+      type: UPDATE_LOCATION,
+      payload,
+    });
+  };
+};
 
 export const setActiveRow = id => {
   return dispatch => {
@@ -44,6 +54,9 @@ let initialState = {
 
 export default function(state = initialState, action) {
   switch (action.type) {
+    case UPDATE_LOCATION:
+      return merge(state, action.payload);
+
     case ROW_HIGHLIGHT_ADD:
       return set(state, 'activeRowId', action.payload.id);
 

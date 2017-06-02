@@ -44,8 +44,18 @@ export const batchUploadStatusMap = {
   failure: 'label-danger',
 };
 
+const entityMap = {
+  payment: paymentStatusMap,
+  settlement: settlementStatusMap,
+  invoice: invoiceStatusMap,
+  order: orderStatusMap,
+  batch: batchUploadStatusMap,
+};
+
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
 export const OrderStatusLabel = StatusLabel(orderStatusMap);
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
+
+export default item => StatusLabel(entityMap[item.entity])(item);

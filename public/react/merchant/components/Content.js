@@ -32,7 +32,7 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { removeActiveRow } from 'merchant/modules/app';
+import { updateLocation, removeActiveRow } from 'merchant/modules/app';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -47,8 +47,17 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
 };
 
 @withRouter
-@connect(null, { removeActiveRow })
+@connect(null, { updateLocation, removeActiveRow })
 export default class Content extends Component {
+  setBaseLocation = location => {
+    this.detailView = matchDetail(location.pathname);
+
+    if (!this.detailView) {
+      this.baseLocation = location;
+      this.props.updateLocation({ base: location });
+    }
+  };
+
   getBaseView = () => {
     let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
 
@@ -279,14 +288,16 @@ export default class Content extends Component {
     this.props.removeActiveRow();
   };
 
+  componentWillMount() {
+    this.setBaseLocation(this.props.location);
+  }
+
+  componentWillUpdate(props) {
+    this.setBaseLocation(props.location);
+  }
+
   render() {
-    let location = this.props.location;
-    let DetailView = matchDetail(location.pathname);
-
-    if (!DetailView) {
-      this.baseLocation = location;
-    }
-
+    var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
     if (DetailView) {

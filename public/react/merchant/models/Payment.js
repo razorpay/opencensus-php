@@ -45,7 +45,6 @@ export default class Payment extends GenericEntity {
   refund(params) {
     let data = {};
     const method = 'post';
-    const Klass = this.constructor;
 
     data.body = {
       amount: params.amount,
@@ -64,7 +63,6 @@ export default class Payment extends GenericEntity {
 
   fetchCardDetails() {
     let data = {};
-    const Klass = this.constructor;
     data.url_params = JSON.stringify({
       '{id}': this.id,
     });
@@ -73,10 +71,6 @@ export default class Payment extends GenericEntity {
   }
 
   deserializeProperty(prop, value, allProps) {
-    if (prop === 'amount') {
-      this.amountInINR = getFixedINRAmount(value);
-    }
-
     return super.deserializeProperty(prop, value);
   }
 
