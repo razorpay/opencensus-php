@@ -1646,7 +1646,9 @@ class Service extends Base\Service
 
             $count = \Input::get('count', 10);
 
-            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort, $skip, $count)];
+            $days = intval(\Input::get('days', 0));
+
+            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort, $skip, $count, $days)];
         }
         else
         {

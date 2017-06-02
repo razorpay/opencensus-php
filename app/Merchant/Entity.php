@@ -324,16 +324,33 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getAllAggregations($mode, $resource, $sort, $skip, $count)
+    public static function getAllAggregations($mode, $resource, $sort, $skip, $count, $days)
     {
-        $data = \DB::table('aggregations')
-                    ->where('resource','=',$resource)
-                    ->where('mode','=',$mode)
-                    ->where('total_amount' , '>', 0)
-                    ->orderBy($sort, 'DESC')
-                    ->offset($skip)
-                    ->limit($count)
-                    ->get();
+        $subQuery = \DB::table('aggregations')
+                        ->where('resource', '=', $resource)
+                        ->where('mode', '=', $mode)
+                        ->where('total_amount', '>', 0);
+
+        if ($days !== 0)
+        {
+            $durationTimestamp = strtotime("-$days days", time());
+
+            $data = $subQuery
+                        ->where('updated_at', '>', $durationTimestamp)
+                        ->orderBy($sort, 'DESC')
+                        ->offset($skip)
+                        ->limit($count)
+                        ->get();
+        }
+        else
+        {
+            $data = $subQuery
+                        ->orderBy($sort, 'DESC')
+                        ->offset($skip)
+                        ->limit($count)
+                        ->get();
+        }
+
         return $data;
     }
 

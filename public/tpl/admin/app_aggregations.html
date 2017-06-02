@@ -39,13 +39,15 @@
       </div>
       <div class="col-xs-1">
         For Last:
-        <input type="number" min="0" max="180" name="duration_count" ng-model="duration_count">
+        <input type="number" min="0" max="180" name="duration_count" ng-model="duration_count"
+          ng-enter="go(merchant_id)"
+        >
       </div>
-      <div class="col-xs-1 m-t-md">
+      <div class="col-xs-1 m-t-md m-l-n-xxl">
         <select class="form-control input-sm w-xs inline" name="period" ng-model="period">
-          <option value="day">Day</option>
-          <option value="week">Week</option>
-          <option value="month">Month</option>
+          <option value="1">Day</option>
+          <option value="7">Week</option>
+          <option value="30">Month</option>
         </select>
       </div>
       <div class="col-xs-2">
