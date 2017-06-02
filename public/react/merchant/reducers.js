@@ -58,7 +58,6 @@ export default combineReducers({
   team: teamReducer,
   config: configReducer,
   activation: activationReducer,
-  credits: creditsReducer,
   refunds: refundsReducer,
   refund: refundReducer,
   referrals: referralsReducer,
