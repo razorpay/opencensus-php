@@ -324,7 +324,7 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getTransactionAggregations($mode, $sort, $timestamp, $type, $merchantId)
+    public static function getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId)
     {
         $data = \DB::table('transactions')
                     ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
@@ -338,7 +338,7 @@ class Entity extends Base\Entity
                     )
                     ->where('transactions.mode', '=', $mode)
                     ->where('transactions.type', '=', $type)
-                    ->where('transactions.created_at', '>=', $timestamp)
+                    ->where('transactions.created_at', '>=', $filterTimestamp)
                     ->where('transactions.merchant_id', '=', $merchantId)
                     ->groupBy('transactions.merchant_id')
                     ->orderBy($sort, 'DESC')
@@ -347,7 +347,7 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getAllTransactionAggregations($mode, $sort, $skip, $count, $timestamp, $type)
+    public static function getAllTransactionAggregations($mode, $sort, $skip, $count, $filterTimestamp, $type)
     {
         $data = \DB::table('transactions')
                     ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
@@ -361,7 +361,7 @@ class Entity extends Base\Entity
                     )
                     ->where('transactions.mode', '=', $mode)
                     ->where('transactions.type', '=', $type)
-                    ->where('transactions.created_at', '>=', $timestamp)
+                    ->where('transactions.created_at', '>=', $filterTimestamp)
                     ->groupBy('transactions.merchant_id')
                     ->orderBy($sort, 'DESC')
                     ->offset($skip)

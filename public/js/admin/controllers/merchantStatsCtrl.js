@@ -14,6 +14,7 @@ app.controller('MerchantStatsCtrl', [
     $scope.duration_count = 1;
     $scope.type = 'month';
     $scope.count = 10;
+    $scope.note = '';
     $scope.stats = {
       count: 0,
       countStart: 0,
@@ -99,6 +100,12 @@ app.controller('MerchantStatsCtrl', [
     });
 
     $scope.go = function(merchant_id) {
+      $scope.note =
+        'Fetching results from last ' +
+        $scope.duration_count +
+        ' ' +
+        $scope.type +
+        "'s starting day till today.";
       if (merchant_id === '') {
         // We get all aggregations
         $scope.fetchAllAggregations(
@@ -119,8 +126,5 @@ app.controller('MerchantStatsCtrl', [
         );
       }
     };
-
-    // Call go once
-    $scope.go('');
   },
 ]);

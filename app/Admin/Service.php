@@ -1648,19 +1648,19 @@ class Service extends Base\Service
 
         switch ($type) {
             case 'day':
-                $timestamp = strtotime($current->subDays($duration_count));
+                $timestamp = $current->startOfDay()->subDays($duration_count)->timestamp;
                 break;
 
             case 'week':
-                $timestamp = strtotime($current->subWeeks($duration_count));
+                $timestamp = $current->startOfWeek()->subWeeks($duration_count)->timestamp;
                 break;
 
             case 'month':
-                $timestamp = strtotime($current->subMonths($duration_count));
+                $timestamp = $current->startOfMonth()->subMonths($duration_count)->timestamp;
                 break;
 
             case 'year':
-                $timestamp = strtotime($current->subYears($duration_count));
+                $timestamp = $current->startOfYear()->subYears($duration_count)->timestamp;
                 break;
         }
 
@@ -1683,10 +1683,10 @@ class Service extends Base\Service
 
             $type = \Input::get('type', 'month');
 
-            $timestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+            $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
 
             $response =
-                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $skip, $count, $timestamp, $type);
+                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $skip, $count, $filterTimestamp, $type);
 
             return [null, $response];
         }
@@ -1705,9 +1705,9 @@ class Service extends Base\Service
 
         $type = \Input::get('type', 'month');
 
-        $timestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+        $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
 
-        $response = Merchant\Entity::getTransactionAggregations($mode, $sort, $timestamp, $type, $merchantId);
+        $response = Merchant\Entity::getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId);
 
         return [null, $response];
     }
