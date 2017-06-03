@@ -2,7 +2,7 @@
 
 <link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
 
-@if ($isPreSignupComplete)
+@if ($isConfirmed and $isPreSignupComplete)
   <link rel='stylesheet' href="/dist/{{asset('merchant_react.css')}}">
 @else
   <link rel='stylesheet' href='css/generated{{asset('style.css')}}' type='text/css' />
@@ -10,7 +10,7 @@
 
 @include('partials/common')
 
-@if ($isPreSignupComplete)
+@if ($isConfirmed and $isPreSignupComplete)
   <script src="/js/jquery/jquery-2.1.4.min.js"></script>
   <script src="/dist/{{asset('merchant_react.js')}}"></script>
 @else

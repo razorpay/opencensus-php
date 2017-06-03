@@ -13,21 +13,22 @@
         <div class="alert alert-success">
           <p>Confirmation successful.</p>
         </div>
-        <p class="text-center">Redirecting you to Dashboard. If not redirected automatically, click here.</p>
-        <a ui-sref="app.dashboard" id="signin" class="btn btn-sm btn-success">Go to Dashboard</a>
+        <!-- uncomment this when this is done: https://github.com/razorpay/dashboard/pull/1090/commits/e6fe3ce78e4e2f944571e124a54d04e580d858e3 -->
+        <!-- <p class="text-center">Redirecting you to Dashboard. If not redirected automatically, click here.</p>
+        <a ui-sref="app.dashboard" id="signin" class="btn btn-sm btn-success">Go to Dashboard</a> -->
       </div>
     </div>
   </div>
   <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
 </div>
-<script >  
+<script >
 var _dcq = _dcq || [];
-var _dcs = _dcs || {}; 
+var _dcs = _dcs || {};
 _dcs.account = '9421167';
 
 (function() {
   var dc = document.createElement('script');
-  dc.type = 'text/javascript'; dc.async = true; 
+  dc.type = 'text/javascript'; dc.async = true;
   dc.src = '//tag.getdrip.com/9421167.js';
   var s = document.getElementsByTagName('script')[0];
   s.parentNode.insertBefore(dc, s);

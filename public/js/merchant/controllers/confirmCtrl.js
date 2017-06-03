@@ -57,8 +57,16 @@ app.controller('ConfirmCtrl', [
               // try-catch, since there could be tracker blocking scripts
               _dcq.push(['identify', dripPayload]);
             } catch (e) {}
-            location.hash = '/app';
-            location.reload();
+
+            var logoutRequest = $http({
+              method: 'get',
+              url: '/user/logout',
+            });
+
+            logoutRequest.success(function(data) {
+              location.hash = '/access/signin';
+              location.reload();
+            });
           }, 3000);
         } else {
           angular.forEach(data.errors, function(error, key) {

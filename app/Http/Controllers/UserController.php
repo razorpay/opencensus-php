@@ -80,7 +80,7 @@ class UserController extends Controller
             return (new Merchant\Service)->getPreSignupDetails($merchant->id);
         }
 
-        return false;
+        return [];
     }
 
     /**
