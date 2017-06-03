@@ -44,23 +44,27 @@ class UserController extends Controller
         //  and not verified
         //      Then show the verification page
         $data = [
-            'isAuthenticated'   => (bool) $user,
-            'isConfirmed'       => $confirmed,
-            'preSignupData'     => $preSignup,
+            'isAuthenticated'       => (bool) $user,
+            'isConfirmed'           => $confirmed,
+            'preSignupData'         => $preSignup,
+            'isPreSignupComplete'   => false,
         ];
 
         $values = array_values($data['preSignupData']);
 
-        $data['isPreSignupComplete'] = array_reduce($values, function($carry, $item)
+        if ($data['isAuthenticated'] === true)
         {
-            return $carry and !empty($item);
-        }, true);
+            $data['isPreSignupComplete'] = array_reduce($values, function($carry, $item)
+            {
+                return $carry and !empty($item);
+            }, true);
 
-        // We don't show presignup form for user
-        // created before this date
-        if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
-        {
-            $data['isPreSignupComplete'] = true;
+            // We don't show presignup form for user
+            // created before this date
+            if ($user and ($user->created_at < self::PRE_SIGNUP_TIMESTAMP))
+            {
+                $data['isPreSignupComplete'] = true;
+            }
         }
 
         // $data is used to run diferent pieces of JS

@@ -36,15 +36,13 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['prefix' => 'user'], function()
     {
         Route::get('/confirm/{token}', 'UserController@getConfirm');
-        Route::group([], function()
-        {
-            Route::post('/signin', 'UserController@postSignin'); // ePOS
-            Route::post('/register', 'UserController@postRegister'); // ePOS
-            Route::post('/resend', 'MerchantController@postResendConfirmation');
-            Route::post('/password/reset', 'PasswordController@postRemind');
-            Route::post('/password/reset/{token}', 'PasswordController@postReset');
-            Route::post('/track_lead', 'UserController@trackLead');
-        });
+        Route::post('/signin', 'UserController@postSignin'); // ePOS
+        Route::post('/register', 'UserController@postRegister'); // ePOS
+        Route::post('/resend', 'MerchantController@postResendConfirmation');
+        Route::post('/password/reset', 'PasswordController@postRemind');
+        Route::post('/password/reset/{token}', 'PasswordController@postReset');
+        Route::post('/track_lead', 'UserController@trackLead');
+
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
