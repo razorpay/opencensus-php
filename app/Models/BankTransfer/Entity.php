@@ -84,6 +84,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYEE_IFSC);
     }
 
+    public function getPayerAccount()
+    {
+        return $this->getAttribute(self::PAYER_ACCOUNT);
+    }
+
+    public function getPayerIfsc()
+    {
+        return $this->getAttribute(self::PAYER_IFSC);
+    }
+
     // ----------------------- Setters ---------------------------------------------
 
     public function setAmount($amount)

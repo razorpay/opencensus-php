@@ -12,15 +12,18 @@ class Core extends Base\Core
 
     public function addVirtualBankAccountForCustomer($customer)
     {
-        $bankAccount = $this->buildBankAccount($this->merchant);
+        $this->repo->transaction(function() use ($customer)
+        {
+            $bankAccount = $this->buildBankAccount($this->merchant);
 
-        $bankAccount->associateCustomer($customer);
+            $bankAccount->associateCustomer($customer);
 
-        $bankAccount->setVirtual(true);
+            $bankAccount->setVirtual(true);
 
-        $this->createReceiverFromBankAccount($bankAccount);
+            $this->createReceiverFromBankAccount($bankAccount);
 
-        $this->repo->saveOrFail($bankAccount);
+            $this->repo->saveOrFail($bankAccount);
+        });
 
         return $bankAccount;
     }
@@ -40,13 +43,13 @@ class Core extends Base\Core
         return $bankAccount;
     }
 
-    protected function createReceiverFromBankAccount($bankAccount, $oneTimeUse = true)
+    protected function createReceiverFromBankAccount($bankAccount, $singleUse = true)
     {
         $receiver = new Entity;
 
         $receiver->entityAssociate($bankAccount);
 
-        $receiver->setOneTimeUse($oneTimeUse);
+        $receiver->setSingleUse($singleUse);
 
         $this->repo->saveOrFail($receiver);
     }
@@ -70,7 +73,7 @@ class Core extends Base\Core
     {
         $provider = $this->selectProvider($merchant);
 
-        $details = Provider::ACCOUNT_DETAILS[$provider];
+        $details = Provider::DEFAULT_DETAILS[$provider];
 
         $merchantDetails = [
             BankAccount\Entity::ACCOUNT_NUMBER     => $this->generateAccountNumberForProvider($provider),

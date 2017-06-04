@@ -194,9 +194,9 @@ class Processor
 
         $updated = $this->updatePaymentAuthorized();
 
-        // This is probably because payment was already in authorized state,
-        // and this is the second time the Pay API has been hit by the bank.
-        // In this case, do not attempt to capture the payment again.
+        // This is probably because payment was already in authorized/captured
+        // state, and this is the second time the Pay API has been hit by the
+        // bank. In this case, do not attempt to capture the payment again.
         if ($updated === false)
         {
             return;

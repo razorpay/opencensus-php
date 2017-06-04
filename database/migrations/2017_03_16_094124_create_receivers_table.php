@@ -22,7 +22,7 @@ class CreateReceiversTable extends Migration
             $table->char(Receiver::ID, Receiver::ID_LENGTH)
                   ->primary();
 
-            $table->tinyInteger(Receiver::ONE_TIME_USE)
+            $table->tinyInteger(Receiver::SINGLE_USE)
                   ->default(0);
 
             $table->tinyInteger(Receiver::VALID)

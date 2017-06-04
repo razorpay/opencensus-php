@@ -11,7 +11,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const ID                   = 'id';
-    const ONE_TIME_USE         = 'one_time_use';
+    const SINGLE_USE           = 'single_use';
     const EXPECTED_AMOUNT      = 'expected_amount';
     const ACCEPT_PARTIAL       = 'accept_partial';
     const AMOUNT_PAID          = 'amount_paid';
@@ -19,29 +19,26 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID            = 'entity_id';
     const VALID                = 'valid';
 
-    const DELETED_AT = 'deleted_at';
+    const DELETED_AT           = 'deleted_at';
 
     protected $fillable = [
-        self::ID,
-        self::ONE_TIME_USE,
+        self::SINGLE_USE,
         self::EXPECTED_AMOUNT,
         self::ACCEPT_PARTIAL,
         self::AMOUNT_PAID,
-        self::ENTITY_TYPE,
-        self::ENTITY_ID,
         self::VALID,
     ];
 
     protected $public = [
         self::ID,
-        self::ONE_TIME_USE,
+        self::SINGLE_USE,
         self::EXPECTED_AMOUNT,
         self::ACCEPT_PARTIAL,
         self::AMOUNT_PAID,
     ];
 
     protected $casts = [
-        self::ONE_TIME_USE         => 'bool',
+        self::SINGLE_USE         => 'bool',
         self::ACCEPT_PARTIAL       => 'bool',
         self::VALID                => 'bool',
     ];
@@ -71,16 +68,16 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters ---------------------------------------------
 
-    public function isOneTimeUse()
+    public function isSingleUse()
     {
-        return (bool) $this->attributes[self::ONE_TIME_USE];
+        return $this->getAttribute(self::SINGLE_USE);
     }
 
     // ----------------------- Setters ---------------------------------------------
 
-    public function setOneTimeUse($oneTimeUse)
+    public function setSingleUse($singleUse)
     {
-        return $this->setAttribute(self::ONE_TIME_USE, $oneTimeUse);
+        return $this->setAttribute(self::SINGLE_USE, $singleUse);
     }
 
     public function setValid($valid)

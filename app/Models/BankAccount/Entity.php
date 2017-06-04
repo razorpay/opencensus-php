@@ -277,7 +277,7 @@ class Entity extends Base\PublicEntity
 
     public function isVirtual()
     {
-        return (bool) $this->getAttribute(self::VIRTUAL);
+        return $this->getAttribute(self::VIRTUAL);
     }
 
     protected function getIfscCodeAttribute($code)

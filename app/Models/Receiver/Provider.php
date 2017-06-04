@@ -15,7 +15,7 @@ class Provider
         Provider::KOTAK    => 'RZP',
     ];
 
-    const ACCOUNT_DETAILS = [
+    const DEFAULT_DETAILS = [
         Provider::YES_BANK => [
             BankAccount::IFSC_CODE            => 'YESB0CMSNOC',
             BankAccount::BENEFICIARY_ADDRESS1 => 'YES BANK TOWER',

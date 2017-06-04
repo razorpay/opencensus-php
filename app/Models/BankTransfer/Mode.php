@@ -11,7 +11,6 @@ class Mode
     const IMPS = 'imps';
     const IFT  = 'ift';
 
-
     public static function isValid($mode)
     {
         return defined(__CLASS__ . '::' . strtoupper($mode));

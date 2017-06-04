@@ -5,8 +5,11 @@ namespace RZP\Models\BankTransfer;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Customer;
+use RZP\Models\BankAccount;
 USE RZP\Models\Currency;
 use RZP\Trace\TraceCode;
+use Razorpay\IFSC;
 
 class Service extends Base\Service
 {
@@ -53,7 +56,7 @@ class Service extends Base\Service
 
         if ($bankTransfer !== null)
         {
-            $this->merchant = $bankTransfer->payment->merchant;
+            $this->setAssociatedEntities($bankTransfer);
 
             $paymentProcessor = new PaymentProcessor($this->merchant);
 
@@ -69,6 +72,42 @@ class Service extends Base\Service
             'message'        => null,
             Entity::UTR      => $input[Entity::UTR],
         ];
+    }
+
+    protected function setAssociatedEntities(Entity $bankTransfer)
+    {
+        $this->merchant = $bankTransfer->payment->merchant;
+
+        // $this->customer = (new Customer\Core)->createLocalCustomer([], $this->merchant);
+
+        // $bankAccountInput = $this->customerBankAccountInput($bankTransfer);
+
+        // $this->customerAccount = (new BankAccount\Core)->addOrUpdateBankAccountForCustomer([], $this->customer);
+    }
+
+    protected function customerBankAccountInput(Entity $bankTransfer)
+    {
+        $ifsc = $bankTransfer->getPayerIfsc();
+
+        $res = (new IFSC\Client)->lookupIFSC($ifsc);
+
+        $addressChunks = str_split($res->address, 30);
+
+        $accountDetails = [
+            BankAccount\Entity::ACCOUNT_NUMBER       => $bankTransfer->getPayerAccount(),
+            BankAccount\Entity::BENEFICIARY_NAME     => 'dummy value',
+            BankAccount\Entity::BENEFICIARY_EMAIL    => 'dummy value',
+            BankAccount\Entity::BENEFICIARY_MOBILE   => $res->contact,
+            BankAccount\Entity::IFSC_CODE            => $bankTransfer->getPayerIfsc(),
+            BankAccount\Entity::BENEFICIARY_PIN      => 'dummy value',
+            BankAccount\Entity::BENEFICIARY_CITY     => $res->city,
+            BankAccount\Entity::BENEFICIARY_STATE    => $res->state,
+        ];
+
+        foreach ($addressChunks as $index => $chunk)
+        {
+            $accountDetails['beneficiary_address' . ($index + 1)] = $chunk;
+        }
     }
 
     protected function validateReceiver(array $input): array
@@ -158,7 +197,7 @@ class Service extends Base\Service
     {
         $this->receiver = $this->getReceiverFromBankTransfer($bankTransfer);
 
-        if ($this->receiver->isOneTimeUse() === true)
+        if ($this->receiver->isSingleUse() === true)
         {
             $this->receiver->setValid(false);
 
