@@ -3,12 +3,16 @@
 namespace RZP\Tests\Functional\BankTransfer;
 
 use Redis;
+use Mockery;
+use Closure;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 class BankTransferTest extends TestCase
 {
+    use EntityActionTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -97,6 +101,42 @@ class BankTransferTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
+    public function testAccountCreditedWebhook()
+    {
+        $this->createWebhook(
+            [
+                'events' => [
+                    'account.credited' => '1',
+                ]
+            ]);
+
+        $testData = [];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            $payload = $data['event']['payload'];
+
+            $bankTransfer = $payload['bank_transfer']['entity'];
+
+            $this->assertArrayHasKey('id', $bankTransfer);
+            $this->assertArrayHasKey('payment_id', $bankTransfer);
+            $this->assertArrayHasKey('transaction_id', $bankTransfer);
+
+            return true;
+        });
+
+        $this->ba->appAuth();
+
+        $this->testBankTransferPay();
+    }
+
     public function testBankTransferPayAgain()
     {
         $this->testBankTransferValidate();
@@ -182,5 +222,20 @@ class BankTransferTest extends TestCase
         $this->assertEquals($utr, $response[E::UTR]);
 
         return $response;
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
+
+        $inferno = Mockery::mock($class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 }

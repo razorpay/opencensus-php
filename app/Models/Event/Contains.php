@@ -20,6 +20,7 @@ class Contains
         Type::SUBSCRIPTION_OVERDUE      => [Constants\Entity::SUBSCRIPTION],
         Type::SUBSCRIPTION_HALTED       => [Constants\Entity::SUBSCRIPTION],
         // Type::SUBSCRIPTION_EXPIRED      => [Constants\Entity::SUBSCRIPTION],
+        Type::ACCOUNT_CREDITED          => [Constants\Entity::PAYMENT, Constants\Entity::BANK_TRANSFER],
     );
 
     public static function getEntityNamesForEvent($event)

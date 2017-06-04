@@ -8,6 +8,7 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const PAYMENT_ID     = 'payment_id';
+    const MERCHANT_ID     = 'merchant_id';
     const PAYER_ACCOUNT  = 'payer_account';
     const PAYER_IFSC     = 'payer_ifsc';
     const PAYEE_ACCOUNT  = 'payee_account';
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYEE_ACCOUNT,
@@ -60,6 +62,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(
             'RZP\Models\Payment\Entity', self::PAYMENT_ID);
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     // ----------------------- Getters ---------------------------------------------

@@ -56,15 +56,20 @@ class Service extends Base\Service
 
         if ($bankTransfer !== null)
         {
-            $this->setAssociatedEntities($bankTransfer);
+            $this->repo->transaction(function() use ($bankTransfer)
+            {
+                $this->setAssociatedEntities($bankTransfer);
 
-            $paymentProcessor = new PaymentProcessor($this->merchant);
+                $paymentProcessor = new PaymentProcessor($this->merchant);
 
-            $paymentId = $bankTransfer->payment->getId();
+                $paymentId = $bankTransfer->payment->getId();
 
-            $paymentProcessor->processBankTransferPayment($paymentId);
+                $paymentProcessor->processBankTransferPayment($paymentId);
 
-            $this->markReceiverUsed($bankTransfer);
+                $this->markReceiverUsed($bankTransfer);
+
+                $this->app['events']->fire('api.account.credited', [$bankTransfer]);
+            });
         }
 
         return [
@@ -76,7 +81,7 @@ class Service extends Base\Service
 
     protected function setAssociatedEntities(Entity $bankTransfer)
     {
-        $this->merchant = $bankTransfer->payment->merchant;
+        $this->merchant = $bankTransfer->merchant;
 
         // $this->customer = (new Customer\Core)->createLocalCustomer([], $this->merchant);
 
@@ -129,6 +134,8 @@ class Service extends Base\Service
             $payment = $paymentProcessor->processBankTransfer($paymentInput);
 
             $bankTransfer->payment()->associate($payment);
+
+            $bankTransfer->merchant()->associate($this->merchant);
 
             $data = [
                 'valid'          => true,

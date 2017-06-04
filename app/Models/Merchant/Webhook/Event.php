@@ -26,6 +26,7 @@ class Event
     const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
+    const ACCOUNT_CREDITED          = 'account.credited';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
@@ -41,6 +42,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::ACCOUNT_CREDITED,
     );
 
     protected static $bitMap = array(
@@ -56,6 +58,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE      => 0x10,
         self::SUBSCRIPTION_HALTED       => 0x11,
         // self::SUBSCRIPTION_EXPIRED      => 0x12,
+        self::ACCOUNT_CREDITED          => 0x13,
     );
 
     /**
@@ -76,6 +79,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::ACCOUNT_CREDITED,
     );
 
     protected static $bitPosition = array(
@@ -92,6 +96,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE      => 11,
         self::SUBSCRIPTION_HALTED       => 12,
         // self::SUBSCRIPTION_EXPIRED      => 13,
+        self::ACCOUNT_CREDITED          => 14,
     );
 
     /**
@@ -112,6 +117,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::ACCOUNT_CREDITED,
     );
 
     /**
@@ -130,6 +136,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE      => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_HALTED       => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+        self::ACCOUNT_CREDITED          => Entity::BANK_TRANSFER,
     ];
 
     /**

@@ -109,4 +109,44 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testAccountCreditedWebhook' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'account.credited',
+            'contains' => ['payment', 'bank_transfer'],
+            'payload' => [
+                'bank_transfer' => [
+                    'entity' => [
+                        'merchant_id' => "10000000000000",
+                        'payer_account' => "9876543210123456789",
+                        'payer_ifsc' => "HDFC0000001",
+                        'payee_account' => "RAZORP14966082177614",
+                        'payee_ifsc' => "YESB0CMSNOC",
+                        'amount' => 5000000,
+                        'mode' => "neft",
+                        'description' => "NEFT payment of 50,000 rupees",
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 5000000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'method' => 'bank_transfer',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

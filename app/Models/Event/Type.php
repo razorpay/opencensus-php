@@ -25,4 +25,5 @@ class Type
     const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
+    const ACCOUNT_CREDITED          = 'account.credited';
 }
