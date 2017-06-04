@@ -22,11 +22,13 @@ class Entity extends Base\PublicEntity
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
     const OPENWALLET        = 'openwallet';
+    const MPESA             = 'mpesa';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
     const BANK_TRANSFER     = 'bank_transfer';
+    const AEPS              = 'aeps';
 
     const METHODS           = 'methods';
 
@@ -51,8 +53,10 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -73,8 +77,10 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -96,9 +102,11 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE    => false,
         self::JIOMONEY      => false,
         self::OPENWALLET    => false,
+        self::MPESA         => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
+        self::AEPS          => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -115,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
     );
 
     protected static $methods = array(
@@ -123,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::AMEX,
         self::UPI,
         self::BANK_TRANSFER,
+        self::AEPS,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -131,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::MPESA,
     );
 
     // Casts the attributes to native types
@@ -148,9 +159,11 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE    => 'bool',
         self::JIOMONEY      => 'bool',
         self::OPENWALLET    => 'bool',
+        self::MPESA         => 'bool',
         self::EMI           => 'bool',
         self::UPI           => 'bool',
         self::BANK_TRANSFER => 'bool',
+        self::AEPS          => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -192,6 +205,11 @@ class Entity extends Base\PublicEntity
     public function isBankTransferEnabled()
     {
         return $this->getAttribute(self::BANK_TRANSFER);
+    }
+
+    public function isAepsEnabled()
+    {
+        return $this->getAttribute(self::AEPS);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -240,6 +258,11 @@ class Entity extends Base\PublicEntity
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function isMpesaEnabled()
+    {
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()

@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Schedule;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Holidays;
 use Carbon\Carbon;
 
 class Library
 {
-    public static function getNextApplicableTime($currentTime, $schedule, $nextRunAt)
+    public static function getNextApplicableTime($currentTime, Entity $schedule, $nextRunAt) : int
     {
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
@@ -27,14 +28,18 @@ class Library
         return $nextRun->getTimestamp();
     }
 
-    public static function computeFutureRun($schedule, $referenceTime, $nextRun)
+    public static function computeFutureRun(
+        Entity $schedule,
+        Carbon $referenceTime,
+        Carbon $lastRun,
+        bool $considerHolidays = true)
     {
         if ($schedule->getAnchor() !== null)
         {
             // Anchored schedules are those that rely on a certain attribute
             // of its target days. For example, settlements that happen every
             // Thursday, or the last Friday of every month.
-            $futureRun = self::resolveAnchored($referenceTime, $schedule);
+            $futureRun = self::resolveAnchored($schedule, $referenceTime);
         }
         else
         {
@@ -42,17 +47,20 @@ class Library
             // the time between payment and settlement, or after a fixed period
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
-            $futureRun = self::resolveUnAnchored($referenceTime, $schedule, $nextRun);
+            $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $lastRun);
         }
 
-        // If anchor date is a holiday, don't wait till next anchor
-        // date. Settlement on the next working day.
-        if (Holidays::isWorkingDay($futureRun) === false)
+        if ($considerHolidays === true)
         {
-            $futureRun = Holidays::getNextWorkingDay($futureRun);
+            // If anchor date is a holiday, don't wait till next anchor
+            // date. Settlement on the next working day.
+            if (Holidays::isWorkingDay($futureRun) === false)
+            {
+                $futureRun = Holidays::getNextWorkingDay($futureRun);
+            }
         }
 
-        if ($schedule->isHourly() === false)
+        if ($schedule->hasHour() === true)
         {
             // set the hour for future run from schedule
             $futureRun->hour($schedule->getHour());
@@ -61,25 +69,44 @@ class Library
         return $futureRun;
     }
 
-    protected static function resolveAnchored($refTime, $schedule)
+    protected static function resolveAnchored($schedule, $refTime) : Carbon
     {
-        // Since hourly schedules can't be anchored, time no longer matters.
-        $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
-
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
-        // Increment by step size until condition is met and we arrive
-        // at an anchor date.
-        while (self::checkAnchor($nextRun, $schedule) === false)
+        $interval = $schedule->getInterval();
+
+        //
+        // Not sure when the interval would be null. Mostly it should always
+        // be 1 or more. Keeping this here just in case, since it's nullable.
+        //
+        if ($interval === null)
         {
-            $nextRun->$step();
+            $interval = 1;
+        }
+
+        //
+        // range parameters are inclusive on both ends.
+        //
+        foreach (range(1, $interval) as $i)
+        {
+            // Since hourly schedules can't be anchored, time no longer matters.
+            $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
+
+            // Increment by step size until condition is met and we arrive
+            // at an anchor date.
+            while (self::checkAnchor($nextRun, $schedule) === false)
+            {
+                $nextRun->$step();
+            }
+
+            $refTime = $nextRun;
         }
 
         return $nextRun;
     }
 
-    protected static function resolveUnAnchored($refTime, $schedule, $nextRun)
+    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $lastRun)
     {
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
@@ -87,43 +114,101 @@ class Library
         $interval = $schedule->getInterval();
 
         // Increment by interval until we cross minimum delay time.
-        while ($refTime > $nextRun)
+        while ($refTime > $lastRun)
         {
-            $nextRun->$step($interval);
+            $lastRun->$step($interval);
         }
 
-        return $nextRun;
+        return $lastRun;
     }
 
-    protected static function checkAnchor($time, $schedule)
+    protected static function checkAnchor(Carbon $time, Entity $schedule)
     {
         // -1 is used to denote 'last', for example the last day of month.
         if ($schedule->getAnchor() !== -1)
         {
-            // Mapping for period to Carbon methods
-            $check = Anchor::CHECKS[$schedule->getPeriod()];
-
-            // For monthly-week periods, ensure that weekday is Monday
-            if (($schedule->getPeriod() === Period::MONTHLY_WEEK) and
-                ($time->dayOfWeek !== Carbon::MONDAY))
-            {
-                return false;
-            }
-
-            return ($time->$check === $schedule->getAnchor());
+            return self::checkAnchorForNonLast($time, $schedule);
         }
         else
         {
-            // Last date of the month
-            if ($schedule->getPeriod() === Period::MONTHLY_DATE)
+            return self::checkAnchorForLast($time, $schedule);
+        }
+    }
+
+    /**
+     * For monthly date, if the anchor is 31 and if the month is
+     * April (which has 30 days), we take the end of the month for the next run.
+     * The ideal way would be to pass -1 as the anchor while creating
+     * the schedule. But in case someone sends 31 instead,
+     * we take the last day of every month for the next run.
+     * Similarly, if someone passes 30th as the anchor, to calculate
+     * next run in February, we will take 28th or 29th.
+     *
+     * @param Carbon $time
+     * @param Entity $schedule
+     *
+     * @return bool
+     */
+    protected static function checkAnchorForNonLast(Carbon $time, Entity $schedule)
+    {
+        $period = $schedule->getPeriod();
+
+        // Mapping for period to Carbon methods
+        $check = Anchor::CHECKS[$schedule->getPeriod()];
+
+        // For monthly-week periods, ensure that weekday is Monday
+        if (($period === Period::MONTHLY_WEEK) and
+            ($time->dayOfWeek !== Carbon::MONDAY))
+        {
+            return false;
+        }
+
+        if ($time->$check === $schedule->getAnchor())
+        {
+            return true;
+        }
+        else
+        {
+            if (($period === Period::MONTHLY) or ($period === Period::MONTHLY_DATE))
             {
-                return ($time->day === $time->copy()->lastOfMonth()->day);
+                if ($time->$check === $time->copy()->endOfMonth()->$check)
+                {
+                    if ($time->$check < $schedule->getAnchor())
+                    {
+                        return true;
+                    }
+                }
             }
-            // Last week of the month
-            else if ($schedule->getPeriod() === Period::MONTHLY_WEEK)
-            {
-                return ($time->day === $time->copy()->lastOfMonth(Carbon::MONDAY)->day);
-            }
+
+            return false;
+        }
+    }
+
+    protected static function checkAnchorForLast($time, Entity $schedule)
+    {
+        $period = $schedule->getPeriod();
+
+        // Last date of the month
+        if (($period === Period::MONTHLY_DATE) or
+            ($period === Period::MONTHLY))
+        {
+            return ($time->day === $time->copy()->lastOfMonth()->day);
+        }
+        // Last week of the month
+        else if ($period === Period::MONTHLY_WEEK)
+        {
+            return ($time->day === $time->copy()->lastOfMonth(Carbon::MONDAY)->day);
+        }
+        else
+        {
+            throw new LogicException(
+                'Invalid period. Should not have reached here.',
+                null,
+                [
+                    'period'        => $period,
+                    'schedule_id'   => $schedule->getId(),
+                    'anchor'        => $schedule->getAnchor(),
+                ]);
         }
     }
 

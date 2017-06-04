@@ -11,14 +11,22 @@ trait RepositoryUpdateTestAndLive
     /**
      * Save the model to the database.
      *
-     * @param  array  $options
+     * @param  PublicEntity  $entity
+     * @param  array         $options
+     *
+     * @throws Exception\LogicException
      */
     public function saveOrFail($entity, array $options = array())
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::saveOrFail($entity, $options);
+        }
+
         $this->validateInstanceIsOfCurrentEntity($entity);
         $this->validateIdGenerated($entity);
 
-        $liveEntity = $this->manager->transactionOnLiveAndTest(
+        $liveEntity = $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $options)
             {
                 $exists = $entity->exists;
@@ -54,10 +62,15 @@ trait RepositoryUpdateTestAndLive
         $entity->exists = true;
     }
 
-    public function sync($entity, $relation, $ids = array())
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
-        return $this->manager->transactionOnLiveAndTest(
-            function () use ($entity, $relation, $ids)
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::sync($entity, $relation, $ids);
+        }
+
+        return $this->repo->transactionOnLiveAndTest(
+            function () use ($entity, $relation, $ids, $detaching)
             {
                 $changes = [];
 
@@ -75,10 +88,10 @@ trait RepositoryUpdateTestAndLive
                 // We'll use the parent connection once we update to
                 // L5.4
                 Config::set('database.default', Mode::LIVE);
-                $changes = $liveEntity->$relation()->sync($ids);
+                $changes = $liveEntity->$relation()->sync($ids, $detaching);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->sync($ids);
+                $testEntity->$relation()->sync($ids, $detaching);
 
                 return $changes;
             });
@@ -86,7 +99,12 @@ trait RepositoryUpdateTestAndLive
 
     public function detach($entity, $relation, $ids = [])
     {
-        return $this->manager->transactionOnLiveAndTest(
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::detach($entity, $relation, $ids);
+        }
+
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
             {
                 $changes = [];
@@ -104,15 +122,21 @@ trait RepositoryUpdateTestAndLive
                 Config::set('database.default', Mode::TEST);
                 $testDetachedEntitiesCount = $testEntity->$relation()->detach($ids);
 
-                assert ($liveDetachedEntitiesCount === $testDetachedEntitiesCount);
-
                 return $changes;
             });
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function attach(
+        $entity, $relation,
+        array $ids = [],
+        array $attributes = [], $touch = true)
     {
-        return $this->manager->transactionOnLiveAndTest(
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::attach($entity, $relation, $ids, $attributes, $touch);
+        }
+
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $touch)
             {
                 //
@@ -123,16 +147,21 @@ trait RepositoryUpdateTestAndLive
 
                 // Attach the relationship in both live and test databases.
                 Config::set('database.default', Mode::LIVE);
-                $liveEntity->$relation()->attach($id);
+                $liveEntity->$relation()->attach($ids);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->attach($id);
+                $testEntity->$relation()->attach($ids);
             });
     }
 
     public function delete($entity)
     {
-        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::delete($entity);
+        }
+
+        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
@@ -157,7 +186,12 @@ trait RepositoryUpdateTestAndLive
 
     public function forceDelete($entity)
     {
-        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::forceDelete($entity);
+        }
+
+        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
@@ -249,5 +283,26 @@ trait RepositoryUpdateTestAndLive
 
             throw new Exception\LogicException($msg);
         }
+    }
+
+    /**
+    * Check if changes to the entity should be sync'd on test and live?
+    *
+    * - Including this trait in the corresponding repo class will enable
+    *   sync for the entity
+    * - For cases where we want to sync based on conditions: define
+    *   function `shouldSync` in the entity's repository class, returning
+    *   `boolean`
+    *   Example: `Schedule\Repository::shouldSync()`
+    *
+    * @param PublicEntity $entity
+    * @return bool
+    */
+    protected function entityShouldSync($entity) : bool
+    {
+        $shouldSync = ((method_exists($this, 'shouldSync') === false) or
+                       ($this->shouldSync($entity) === true));
+
+        return $shouldSync;
     }
 }

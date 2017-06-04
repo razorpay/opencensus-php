@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 class ScheduleTest extends TestCase
 {
     use ScheduleTrait;
+    use SubscriptionTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -66,21 +68,10 @@ class ScheduleTest extends TestCase
         });
     }
 
-    public function testScheduleInvalidWeeklyAnchor()
-    {
-        $input = $this->getDefaultScheduleArray();
-
-        $input['anchor'] = Carbon::SATURDAY;
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($input) {
-            $this->createSchedule($input);
-        });
-    }
-
     public function testScheduleInvalidType()
     {
+        $this->markTestSkipped('No type in schedules now');
+
         $input = $this->getDefaultScheduleArray();
 
         $input['type'] = 'not_settlement';
@@ -167,5 +158,24 @@ class ScheduleTest extends TestCase
     public function testAssignScheduleById()
     {
         $this->createAndAssignSchedule();
+    }
+
+    protected function createSubscriptionToSync()
+    {
+        $this->fixtures->base->connection('test');
+
+        $this->createSubscriptionPreRequisiteEntities();
+
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $customer = $this->getLastEntity('customer');
+
+        $request['content']['customer_id'] = $customer['id'];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

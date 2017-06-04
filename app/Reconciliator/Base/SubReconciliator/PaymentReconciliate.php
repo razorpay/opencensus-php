@@ -2,22 +2,19 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Exception\ReconciliationException;
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Payment;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Transaction;
-use RZP\Models\Payment\Verify\Result as VerifyResult;
-use RZP\Reconciliator\Messenger;
-
-use RZP\Gateway\AxisMigs;
-
-use Rzp\Trace\TraceCode;
 use App;
-use RZP\Models\Base\PublicCollection;
-
+use RZP\Models\Card;
+use RZP\Models\Payment;
+use Rzp\Trace\TraceCode;
+use RZP\Models\Card\IIN;
+use RZP\Gateway\AxisMigs;
+use RZP\Models\Transaction;
+use RZP\Reconciliator\Messenger;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\ReconciliationException;
+use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Foundation\SubReconciliate
@@ -591,7 +588,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        if (isset($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
+        if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
             return;
         }
@@ -1019,13 +1016,28 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->app['trace']->info(
             TraceCode::RECON_INFO_ALERT,
             [
-                'info_code'                         => 'PAYMENT_TRANSACTION_CREATE',
-                'message'                           => 'Attempting to create payment transaction in recon',
-                'payment_id'                        => $this->payment->getId(),
-                'gateway'                           => get_called_class()
+                'info_code'     => 'PAYMENT_TRANSACTION_CREATE',
+                'message'       => 'Attempting to create payment transaction in recon',
+                'payment_id'    => $this->payment->getId(),
+                'gateway'       => get_called_class()
             ]);
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        //
+        // We should always create a transaction if the payment comes in the recon file.
+        // This is needed because currently nodal and merchant transactions are tracked via
+        // a single transaction entity.
+        // If the merchant has not captured the payment, we should create the transaction WITHOUT
+        // the fees/service_tax.
+        // If the merchant has captured the payment, we should create the transaction WITH fee/service_tax.
+        //
+        if ($this->payment->hasBeenCaptured() === true)
+        {
+            list($txn, $feesSplit) = (new Transaction\Core)->createOrUpdateFromPaymentCaptured($this->payment);
+        }
+        else
+        {
+            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        }
 
         $this->repo->saveOrFail($txn);
         // This is required to save the association of the transaction with the payment.

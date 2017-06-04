@@ -21,8 +21,10 @@ class ResponseFields
     const RESPONSE             = 'RESPONSE';
     const RESPONSE_HEADER      = 'RESPONSE_HEADER';
     const CHECKPAYMENTSTATUS   = 'CHECKPAYMENTSTATUS';
+    const GETREQUESTSTATUS     = 'GETREQUESTSTATUS';
     const STATUS               = 'STATUS';
     const TXN_STATUS           = 'TXN_STATUS';
+    const REFUND_AMOUNT        = 'REFUND_AMOUNT';
     const JM_TRAN_REF_NO       = 'JM_TRAN_REF_NO';
     const TXN_TIME_STAMP       = 'TXN_TIME_STAMP';
 

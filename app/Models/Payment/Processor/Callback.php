@@ -61,13 +61,7 @@ trait Callback
 
         $response = $this->acquireLockAndProcessCallback($payment, $gatewayInput);
 
-        // If response is not null then it's a response that needs to be sent back.
-        if ($response !== null)
-        {
-            return $response;
-        }
-
-        return $this->postPaymentAuthorizeProcessing($payment);
+        return $response;
     }
 
     public function s2sCallback($payment, array $gatewayInput)
@@ -105,14 +99,14 @@ trait Callback
                 }
 
                 $this->processPaymentCallback($payment, $gatewayInput);
+
+                $this->autoCapturePaymentIfApplicable($payment);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
             20,
             1000,
             2000);
-
-        $this->autoCapturePaymentIfApplicable($payment);
 
         return ['success' => true];
     }
@@ -202,7 +196,7 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
-        $this->updateAndNotifyPaymentAuthorized();
+        $this->updateAndNotifyPaymentAuthorized($data);
     }
 
     protected function acquireLockAndProcessCallback($payment, $gatewayInput)
@@ -222,6 +216,8 @@ trait Callback
                 }
 
                 $this->processPaymentCallback($payment, $gatewayInput);
+
+                return $this->postPaymentAuthorizeProcessing($payment);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

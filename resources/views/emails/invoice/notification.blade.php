@@ -4,6 +4,7 @@
         $themeBgColor = $merchant['brand_color'];
         $themeFontColor = $merchant['brand_text_color'];
         $themed = 'background-color: ' . $themeBgColor . '; color: ' . $merchant['brand_text_color'] . ';';
+        $is_test_mode = $is_test_mode ?? false;
     @endphp
   
   </p>
@@ -15,20 +16,40 @@
                 <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
             </tr>
 
-            @if ($invoice['description'])
+            @if ($is_test_mode)
             <tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><td class="first" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
+                <td colspan="2" class="content" style="color: #8a6d3b; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 12px; background-color: #fcf8e3; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; border-top: 1px solid #f2f2f2; border-color: #faebcc; padding-top: 12px; font-size: 12px;">
+                    This {{$invoice['type_label']}} is created in <b style="color: #8a6d3b; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">Test Mode</b>. Only test payments can be made for this invoice.
+                </td>
+                <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
+            </tr>
+            @endif
+
+
+            @if ($invoice['description'])
+            <tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
+                @if ($is_test_mode)
+                    <td class="first" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
+                @else
+                    <td class="first" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
+                @endif
                 <td colspan="2" class="content" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; border-top: 1px solid #f2f2f2;">
                     <div style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
                         <label style="color: #757575; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">{{ $invoice['type_label'] }} SUMMARY</label>
                         <div style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">{{$invoice['description']}}</div>
                     </div>
                 </td>
-                <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
+
+                @if ($is_test_mode)
+                    <td class="last" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%;"></td>
+                @else
+                    <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
+                @endif
             </tr>
             @endif
 
             <tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
-                @if ($invoice['description'])
+                @if ($invoice['description'] || $is_test_mode)
                     <td class="first" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
                 @else
                     <td class="first" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
@@ -50,7 +71,7 @@
                         </div>
                     </div>
                 </td>
-                @if ($invoice['description'])
+                @if ($invoice['description'] || $is_test_mode)
                     <td class="last" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%;"></td>
                 @else
                     <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>

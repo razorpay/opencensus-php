@@ -144,7 +144,6 @@ return array(
         Illuminate\Filesystem\FilesystemServiceProvider::class,
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
         Illuminate\Hashing\HashServiceProvider::class,
-        Illuminate\Mail\MailServiceProvider::class,
         Illuminate\Pagination\PaginationServiceProvider::class,
         Illuminate\Pipeline\PipelineServiceProvider::class,
         Illuminate\Queue\QueueServiceProvider::class,
@@ -163,6 +162,7 @@ return array(
         RZP\Services\ApiServiceProvider::class,
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
+        RZP\Services\MailServiceProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
@@ -242,7 +242,6 @@ return array(
         'View'          => Illuminate\Support\Facades\View::class,
 
         // Application Facades
-        'BasicAuth'     => RZP\Http\BasicAuth\Facade::class,
         'ApiResponse'   => RZP\Http\Response\Facade::class,
         'Trace'         => RZP\Trace\Facade::class,
 
@@ -250,6 +249,7 @@ return array(
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'           => Aws\Laravel\AwsFacade::class,
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
+        'Workflow'      => RZP\Services\Workflow\Facade::class,
     ),
 
     'context' => env('CONTEXT'),

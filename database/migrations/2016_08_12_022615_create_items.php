@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\Item\Entity;
+use RZP\Models\Item\Type;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 
@@ -37,12 +38,28 @@ class CreateItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
+            $table->char(Entity::TYPE, 16)
+                  ->default(Type::INVOICE);
+
+            $table->string(Entity::UNIT, 512)
+                  ->nullable();
+
+            $table->tinyInteger(Entity::TAX_INCLUSIVE)
+                  ->default(0);
+
+            $table->char(Entity::TAX_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Entity::TAX_GROUP_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
             $table->index(Entity::ACTIVE);
+            $table->index(Entity::TYPE);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);

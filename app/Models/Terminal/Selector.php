@@ -36,7 +36,7 @@ class Selector
         Sorters\NetbankingSorter::class,
 
         // Boost a gateway terminals based on load distribution of probabilities
-        Sorters\TerminalLoadSorter::class,
+        Sorters\NewTerminalLoadSorter::class,
 
         // Boosts direct terminals over shared terminals
         Sorters\ExclusivitySorter::class,
@@ -74,11 +74,6 @@ class Selector
         // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo->getTerminalsForMerchantAndSharedMerchant(
             $this->merchant->getId());
-
-        // Fetch Shared Terminals
-        $sharedTerminals = $this->repo->getAllSharedTerminals();
-
-        $merchantTerminals = $merchantTerminals->merge($sharedTerminals);
 
         return $merchantTerminals;
     }

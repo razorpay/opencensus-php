@@ -24,28 +24,37 @@ class Core extends Base\Core
             ]
         );
 
-        $morphEntity->getValidator()->validateInvoiceMaxAllowedLineItems();
+        $this->modifyInputToHandleRenamedAttributes($input);
 
-        $lineItem = new Entity;
+        $lineItem = (new Entity)->generateId();
 
-        //
-        // If without ITEM_ID (template), no CURRENCY is sent,
-        // we use invoice's currency.
-        //
+        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
+
+        // For Backward compatibility: If without ITEM_ID (template),
+        // no CURRENCY is sent, we use invoice's currency.
         if ((isset($input[Entity::ITEM_ID]) === false) and
             (isset($input[Entity::CURRENCY]) === false))
         {
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
 
-        $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
-
         $lineItem->build($input);
 
-        $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
+        // Validations:
+        $morphEntity->getValidator()->validateInvoiceMaxAllowedLineItems();
 
+        $lineItem->getValidator()
+                 ->validateCurrency($morphEntity->getCurrency());
+
+        // Associations:
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
+
+        $this->setRefAssociationIfApplicable($input, $lineItem);
+
+        (new Tax\Core)->createLineItemTaxes($lineItem, $input, $merchant);
+
+        $this->calculateAndSetAmountsOfLineItem($lineItem);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -64,14 +73,16 @@ class Core extends Base\Core
                 'entity_id' => $morphEntity->getId()
             ]);
 
-        (new Validator)->validateInput('create_many', [Entity::LINE_ITEMS => $input]);
+        (new Validator)->validateInput(
+                            'create_many',
+                            [Entity::LINE_ITEMS => $input]);
 
         $this->repo->transaction(
             function() use ($merchant, $morphEntity, $input)
             {
-                foreach ($input as $singleLineItemInput)
+                foreach ($input as $lineItemInput)
                 {
-                    $this->create($singleLineItemInput, $merchant, $morphEntity);
+                    $this->create($lineItemInput, $merchant, $morphEntity);
                 }
             });
     }
@@ -90,11 +101,21 @@ class Core extends Base\Core
                 'input'     => $input,
             ]);
 
-        $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
+        $this->modifyInputToHandleRenamedAttributes($input);
+
+        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
         $lineItem->edit($input);
 
-        $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
+        $lineItem->getValidator()
+                 ->validateCurrency($morphEntity->getCurrency());
+
+        (new Tax\Core)->cleanUpAndCreateLineItemTaxes(
+                            $lineItem,
+                            $input,
+                            $merchant);
+
+        $this->calculateAndSetAmountsOfLineItem($lineItem);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -129,20 +150,6 @@ class Core extends Base\Core
                     $this->repo->line_item->deleteOrFail($lineItem);
                 }
             });
-    }
-
-    public function getTotalAmountOfLineItems(Base\PublicEntity $morphEntity)
-    {
-        $totalAmount = 0;
-
-        $lineItems = $morphEntity->lineItems()->get();
-
-        foreach ($lineItems as $lineItem)
-        {
-            $totalAmount += ($lineItem->getQuantity() * $lineItem->getAmount());
-        }
-
-        return ($totalAmount === 0) ? null : $totalAmount;
     }
 
     /**
@@ -189,7 +196,8 @@ class Core extends Base\Core
         //
         $this->deleteLineItemsViaUpdate($morphEntity, $lineItemsDetails);
 
-        $this->createOrUpdateLineItemsViaUpdate($lineItemsDetails, $morphEntity, $merchant);
+        $this->createOrUpdateLineItemsViaUpdate(
+            $lineItemsDetails, $morphEntity, $merchant);
     }
 
     // -------------------- Protected methods --------------------
@@ -229,7 +237,9 @@ class Core extends Base\Core
      * @param Base\PublicEntity $morphEntity
      * @param array             $lineItemsDetails
      */
-    protected function deleteLineItemsViaUpdate(Base\PublicEntity $morphEntity, array $lineItemsDetails)
+    protected function deleteLineItemsViaUpdate(
+        Base\PublicEntity $morphEntity,
+        array $lineItemsDetails)
     {
         $existingLineItems = $morphEntity->lineItems()->get();
 
@@ -238,11 +248,35 @@ class Core extends Base\Core
         $existingLineItems->map(
             function($existingLineItem, $i) use ($inputLineItemIds, $morphEntity)
             {
-                if (in_array($existingLineItem->getPublicId(), $inputLineItemIds, true) === false)
+                if (in_array(
+                    $existingLineItem->getPublicId(),
+                    $inputLineItemIds,
+                    true) === false)
                 {
                     $this->delete($existingLineItem, $morphEntity);
                 }
             });
+    }
+
+    protected function setRefAssociationIfApplicable(
+        array $input,
+        Entity $lineItem)
+    {
+        //
+        // We are passing the ref object in line_item input
+        // rather than passing the entity to the function because
+        // one invoice can have multiple line_items and addons
+        // are associated with the line_item and not an invoice.
+        // Hence, while creating an invoice, associating the addons
+        // with line_items becomes difficult otherwise.
+        //
+
+        if (empty($input[Entity::REF]) === true)
+        {
+            return;
+        }
+
+        $lineItem->ref()->associate($input[Entity::REF]);
     }
 
     /**
@@ -257,7 +291,7 @@ class Core extends Base\Core
      *
      * @return null
      */
-    protected function setItemAssociationAndUpdateInput(
+    protected function setItemAssociationAndModifyInput(
         Entity $lineItem,
         array & $input,
         Merchant\Entity $merchant)
@@ -275,16 +309,66 @@ class Core extends Base\Core
 
         $lineItem->item()->associate($item);
 
-        foreach (Entity::$itemFields as $field)
+        // Use item's values where line item detail is not present,
+        // and modify input for line item's build
+
+        $itemFields = array_intersect_key(
+                        $item->toArrayPublic(),
+                        array_flip(Entity::$itemFields));
+
+        $input = array_merge($itemFields, $input);
+    }
+
+    /**
+     * Calculates and sets derived amounts of line item.
+     *
+     * @param Entity $lineItem
+     *
+     */
+    protected function calculateAndSetAmountsOfLineItem(Entity $lineItem)
+    {
+        // Gross amount = Quantity * Unit amount
+
+        $grossAmount = $lineItem->getAmount() * $lineItem->getQuantity();
+
+        $lineItem->setGrossAmount($grossAmount);
+
+        // Tax amount = ∑(lineItem.taxes.tax_amount)
+
+        $taxAmount = $lineItem->taxes()
+                              ->get()
+                              ->sum(function ($lineItemTax)
+                                {
+                                    return $lineItemTax->getTaxAmount();
+                                });
+
+        $lineItem->setTaxAmount($taxAmount);
+
+        // Net amount = Gross amount, if tax inclusive
+        //            = Gross amount + Tax amount, if not tax inclusive
+
+        $netAmount = $lineItem->getGrossAmount();
+
+        if ($lineItem->isTaxInclusive() === false)
         {
-            if (isset($input[$field]) === true)
-            {
-                continue;
-            }
+            $netAmount += $lineItem->getTaxAmount();
+        }
 
-            $accessor = 'get' . studly_case($field);
+        $lineItem->setNetAmount($netAmount);
+    }
 
-            $input[$field] = $item->$accessor();
+    /**
+     * Modifies input param to handle renamed attributes in response.
+     *
+     * @param array $input
+     */
+    protected function modifyInputToHandleRenamedAttributes(array & $input)
+    {
+        if (array_key_exists(Entity::UNIT_AMOUNT, $input) === true)
+        {
+            $input[Entity::AMOUNT] = $input[Entity::UNIT_AMOUNT];
+
+            unset($input[Entity::UNIT_AMOUNT]);
         }
     }
 }

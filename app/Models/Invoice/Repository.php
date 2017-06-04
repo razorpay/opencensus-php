@@ -6,7 +6,9 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -15,17 +17,22 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID => 'sometimes|string|min:14|max:18',
-        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
+        Entity::PAYMENT_ID  => 'sometimes|string|min:14|max:18',
+        Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
+        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:20',
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::USER_ID          => 'sometimes|alpha_num',
-        Entity::STATUS           => 'sometimes|string',
-        Entity::TYPE             => 'sometimes|string|max:16',
-        Entity::CUSTOMER_NAME    => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
-        Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
-        Entity::CUSTOMER_EMAIL   => 'sometimes|email',
+        Entity::USER_ID           => 'sometimes|alpha_num',
+        Entity::STATUS            => 'sometimes|string',
+        Entity::TYPE              => 'sometimes|string|max:16',
+        Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
+        Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
+        Entity::CUSTOMER_EMAIL    => 'sometimes|email',
+        Entity::NOTES             => 'sometimes|string|min:1|max:40',
+        EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
+        // TODO: Enable this once the expand pr is back merged.
+        // EsRepository::SEARCH_HITS => 'sometimes|boolean',
     ];
 
     protected $appFetchParamRules = [
@@ -67,6 +74,15 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
+    public function findByPublicIdAndSubscription(string $invoiceId, Subscription\Entity $subscription)
+    {
+        Entity::verifyIdAndStripSign($invoiceId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                    ->findOrFailPublic($invoiceId);
+    }
+
     public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
@@ -103,10 +119,64 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getNonFailedPaymentsCount(Entity $invoice)
+    public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                    ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->get();
+    }
+
+    public function fetchIssuedAndNotHaltedInvoiceForSubscription(Subscription\Entity $subscription)
+    {
+        $invoices = $this->newQuery()
+                         ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                         ->where(Entity::STATUS, '=', Status::ISSUED)
+                         ->where(function($query)
+                           {
+                                $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
+                                      ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
+                           })
+                         ->get();
+
+        if ($invoices->count() !== 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been exactly one invoice for this',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'auth_attempts'     => $subscription->getAuthAttempts(),
+                    'error_status'      => $subscription->getErrorStatus(),
+                    'status'            => $subscription->getStatus(),
+                ]);
+        }
+
+        return $invoices->first();
+    }
+
+    /**
+     * Returns counts of payment which are succeeding(i.e. either created,
+     * authorized or captured) for given invoice.
+     *
+     * This method gets used in validation(in conjunction with invoice being
+     * in 'issued' state) when expiring/canceling an invoice, we don't allow the
+     * former when there are succeeding payments.
+     *
+     * @param Entity $invoice
+     *
+     * @return int
+     */
+    public function getSucceedingPaymentsCount(Entity $invoice): int
     {
         return $invoice->payments()
-                       ->where(Payment\Entity::STATUS, '!=', Payment\Status::FAILED)
+                       ->whereIn(
+                            Payment\Entity::STATUS,
+                            [
+                                Payment\Status::CREATED,
+                                Payment\Status::AUTHORIZED,
+                                Payment\Status::CAPTURED,
+                            ])
                        ->count();
     }
 
@@ -117,17 +187,30 @@ class Repository extends Base\Repository
         $paymentId = $params[Entity::PAYMENT_ID];
         Entity::stripSignWithoutValidation($paymentId);
 
-        $paymentIdAttribute = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentIdAttribute = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
+    }
+
+    protected function addQueryParamCustomerId(
+        \RZP\Base\BuilderEx $query,
+        array $params)
+    {
+        $customerId = $params[Entity::CUSTOMER_ID];
+
+        Customer\Entity::stripSignWithoutValidation($customerId);
+
+        $customerIdAttr = $this->repo->invoice->dbColumn(Entity::CUSTOMER_ID);
+
+        $query->where($customerIdAttr, $customerId);
     }
 
     protected function addQueryParamOrderId($query, $params)
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $orderIdAttribute = $this->manager->invoice->getAttributeWithTableName(Entity::ORDER_ID);
+        $orderIdAttribute = $this->repo->invoice->dbColumn(Entity::ORDER_ID);
 
         $query->where($orderIdAttribute, '=', $orderId);
     }
@@ -140,15 +223,15 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === $this->manager->payment->getTableName())
+            if ($join->table === $this->repo->payment->getTableName())
             {
                 return;
             }
         }
 
-        $invoiceOrderId = $this->getAttributeWithTableName(Entity::ORDER_ID);
-        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $invoiceOrderId = $this->dbColumn(Entity::ORDER_ID);
+        $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
 
-        $query->join($this->manager->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
+        $query->join($this->repo->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
     }
 }

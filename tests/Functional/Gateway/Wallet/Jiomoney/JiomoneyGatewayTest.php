@@ -2,11 +2,12 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Jiomoney;
 
-use RZP\Http\Route;
-use RZP\Gateway\Wallet\Jiomoney\TestAmount;
-use RZP\Gateway\Wallet\Jiomoney\StatusCode;
-use RZP\Gateway\Wallet\Jiomoney\ResponseFields;
 use RZP\Gateway\Wallet\Jiomoney\RequestFields;
+use RZP\Gateway\Wallet\Jiomoney\ResponseFields;
+use RZP\Gateway\Wallet\Jiomoney\StatusCode;
+use RZP\Gateway\Wallet\Jiomoney\TestAmount;
+use RZP\Http\Route;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -129,14 +130,13 @@ class JiomoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($capturePaymentId)
-        {
-            $this->refundPayment($capturePaymentId);
-        });
+        $refund = $this->refundPayment($capturePaymentId);
 
-        $refund = $this->getLastEntity('wallet', true);
+        $gatewayRefundEntity = $this->getLastEntity('wallet', true);
 
-        $this->assertTestResponse($refund, 'testRefundFailedPaymentEntity');
+        $this->assertTestResponse($gatewayRefundEntity, 'testRefundFailedPaymentEntity');
+
+        return $refund;
     }
 
     public function testVerifyPayment()
@@ -272,6 +272,15 @@ class JiomoneyGatewayTest extends TestCase
         });
 
         $wallet = $this->getLastEntity('wallet', true);
+    }
+
+    public function testVerifyRefund()
+    {
+        $refund = $this->testRefundFailedPayment();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
     }
 
     public function testAuthorizedPaymentRefund()

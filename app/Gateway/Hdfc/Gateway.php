@@ -32,6 +32,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
@@ -343,7 +344,19 @@ class Gateway extends Base\Gateway
 
         $this->postAuthEnrolledRequest($input);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($this->model);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                PaymentEntity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                PaymentEntity::REFERENCE1    => $gatewayPayment->getRef()
+            ]
+        ];
     }
 
     public function verify(array $input)
@@ -376,7 +389,7 @@ class Gateway extends Base\Gateway
             'Hdfc gateway does not support voids');
     }
 
-    public function verifyRefund(array $input)
+    public function verifyInternalRefund(array $input)
     {
         $isRefundRequired = $this->isRefundRequired($input);
 

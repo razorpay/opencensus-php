@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -17,9 +18,14 @@ class Entity extends Base\PublicEntity
     const REMEMBER_TOKEN        = 'remember_token';
     const CONFIRM_TOKEN         = 'confirm_token';
 
-    // For merchant-user pivot table
-    const MERCHANT_USERS        = 'merchant_users';
+    const ACTION                = 'action';
     const USER_ID               = 'user_id';
+    const MERCHANT_ID           = 'merchant_id';
+    const MERCHANTS             = 'merchants';
+    const ROLE                  = 'role';
+    const PIVOT                 = 'pivot';
+    const OWNER                 = 'owner';
+    const CONFIRMED             = 'confirmed';
 
     protected $entity = 'user';
 
@@ -38,65 +44,19 @@ class Entity extends Base\PublicEntity
     	self::NAME,
     	self::EMAIL,
     	self::CONTACT_MOBILE,
+        self::CONFIRMED,
     	self::CREATED_AT,
     ];
 
     protected $generateIdOnCreate = false;
 
-    /**
-     * Determine if the user is a member of any merchants.
-     *
-     * @return bool
-     */
-    public function hasMerchants()
-    {
-        return (count($this->merchants) > 0);
-    }
+    protected $appends = [self::CONFIRMED];
 
-    /**
-     * Get all of the merchants that the user belongs to.
-     */
     public function merchants()
     {
-        $query = $this->belongsToMany(
-                            Merchant\Entity::class,
-                            self::MERCHANT_USERS,
-                            self::USER_ID,
-                            self::MERCHANT_ID)
-                      ->withPivot('role');
-
-        return $query->orderBy(self::NAME, 'asc');
-    }
-
-    /**
-     * Get the token value for the "remember me" session.
-     *
-     * @return string
-     */
-    public function getRememberToken()
-    {
-        return $this->getAttribute(self::REMEMBER_TOKEN);
-    }
-
-    /**
-     * Set the token value for the "remember me" session.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setRememberToken($value)
-    {
-        $this->setAttribute(self::REMEMBER_TOKEN, $value);
-    }
-
-    /**
-     * Get the e-mail address where password reminders are sent.
-     *
-     * @return string
-     */
-    public function getReminderEmail()
-    {
-        return $this->email;
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot(self::ROLE)
+                    ->orderBy(self::NAME);
     }
 
     public function setConfirmTokenNull()
@@ -104,54 +64,22 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONFIRM_TOKEN, null);
     }
 
-    /**
-     * Determine if the given merchant is owned by the user.
-     *
-     * @param  \RZP\Models\Merchant\Entity  $merchant
-     * @return bool
-     */
-    public function ownsMerchant($merchant)
+    public function getPassword()
     {
-        $merchant = $this->merchants()
-                         ->where('merchant_id', $merchant['id'])
-                         ->where('role','owner')
-                         ->first();
-
-        return !is_null($merchant);
+        return $this->getAttribute(self::PASSWORD);
     }
 
-    /**
-     * Get the user's role on a given merchant.
-     *
-     * @param  \RZP\Models\Merchant\Entity  $merchant
-     * @return string
-     */
-    public function getMerchantRole($merchant)
+    public function getConfirmedAttribute()
     {
-        $merchant = $this->merchants->find($merchant->id);
-
-        if ($merchant)
-        {
-            return $merchant->pivot->role;
-        }
+        return ($this->getAttribute(self::CONFIRM_TOKEN) === null);
     }
 
-    /**
-     * Generates a one time use token of the given length
-     */
-    protected function generateOneTimeUseToken($length)
+    public function toArrayMerchant()
     {
-        $bytes = random_bytes($length/2);
-        $token = bin2hex($bytes);
+        $attributes = $this->toArrayPublic();
 
-        return $token;
-    }
+        $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
-    /**
-     * Generates Confirmation token
-     */
-    protected function generateConfirmToken()
-    {
-        $this->setAttribute(self::CONFIRM_TOKEN, $this->generateOneTimeUseToken(32));
+        return $attributes;
     }
 }

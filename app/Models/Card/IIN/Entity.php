@@ -5,6 +5,7 @@ namespace RZP\Models\Card\IIN;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Bank\Name;
+use RZP\Models\Bank\IFSC;
 
 class Entity extends Base\PublicEntity
 {
@@ -137,6 +138,20 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getIssuerName()
+    {
+        $dbName = $this->getAttribute(self::ISSUER_NAME);
+
+        $issuer = $this->getAttribute(self::ISSUER);
+
+        if (IFSC::exists($issuer) === true)
+        {
+            return Name::getName($issuer) ?? $dbName;
+        }
+
+        return $dbName;
     }
 
     public function setIssuer($issuer)

@@ -10,6 +10,11 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\Core
 {
+    /**
+     * Minutes for which Signed Url is valid
+     */
+    const SIGNED_URL_DURATION = '1440';
+
     public function __construct()
     {
         parent::__construct();

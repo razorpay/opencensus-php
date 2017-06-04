@@ -87,6 +87,11 @@ class Handler extends BaseHandler
      */
     public function saveAs($bucketConfig, $key, $filePath)
     {
+        if ($this->config['mock'] === true)
+        {
+            return $filePath;
+        }
+
         $s3 = self::getClient($bucketConfig['region']);
 
         try

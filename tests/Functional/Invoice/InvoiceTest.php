@@ -11,6 +11,7 @@ use Mockery;
 
 class InvoiceTest extends TestCase
 {
+    use InvoiceTestTrait;
     use PaymentTrait;
 
     public function setUp()
@@ -27,7 +28,7 @@ class InvoiceTest extends TestCase
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
             ]);
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
     }
 
     // ------------------------------------------------------------
@@ -47,23 +48,6 @@ class InvoiceTest extends TestCase
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
-
-        //
-        // Asserts expire_by's default value. Must be set to 60 days from
-        // created_at.
-        //
-        $this->assertNotNull($response['expire_by']);
-        $this->assertInternalType('int', $response['expire_by']);
-
-        //
-        // Use delta of 5 secs to avoid random failures of tests
-        //
-        $this->assertEquals(
-            5184000,
-            $response['expire_by'] - $response['created_at'],
-            'expire_by should be by default 60 days in future',
-            5
-        );
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -97,6 +81,11 @@ class InvoiceTest extends TestCase
         //
     }
 
+    public function testCreateLinkWithTooLargeAmount()
+    {
+        $this->startTest();
+    }
+
     public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
     {
         $order = $this->createOrder();
@@ -119,8 +108,8 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->assertEquals($invoice['customer']['email'], 'a@b.com');
-        $this->assertEquals($invoice['customer']['contact'], '+919918899029');
+        $this->assertEquals($invoice['customer_details']['email'], 'a@b.com');
+        $this->assertEquals($invoice['customer_details']['contact'], '+919918899029');
     }
 
     public function testCreateInvoiceWithMultipleLineItems()
@@ -234,6 +223,17 @@ class InvoiceTest extends TestCase
 
         $this->createDraftInvoice();
 
+        $this->startTest();
+    }
+
+    /**
+     * Creates invoice with few line items such that the total invoice amount
+     * exceeds the allowed payment amount for merchant.
+     *
+     * @return
+     */
+    public function testCreateDraftInvoiceWithLineItemsAndMaxAllowedAmount()
+    {
         $this->startTest();
     }
 
@@ -354,6 +354,34 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceAndAssertEsSync()
+    {
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        //
+        // For the first time, it will createIndex as indexExists will return false.
+        // Asserting all of it.
+        //
+
+        $expected = $this->getExpectedUpsertIndexParams();
+
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
+               ->with(
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                            $this->assertNotEmpty($actual['body'][1]['id']);
+
+                            return true;
+                        }));
+
+        $this->startTest();
+    }
+
 
 
     // ------------------------------------------------------------
@@ -401,8 +429,6 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice();
 
-        $invoice = $this->getLastEntity('invoice');
-
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');
 
@@ -426,6 +452,13 @@ class InvoiceTest extends TestCase
         $this->assertNotContains('1000000003item', $lineItemIds);
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceWithLineItemsTooLargeAmount()
+    {
+        $this->testAddManyLineItemsToInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateDraftInvoiceAmountWhenLineItemsExists()
@@ -490,6 +523,51 @@ class InvoiceTest extends TestCase
     {
         $this->createOrder();
         $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
+    public function testUpdateInvoiceAndAssertEsSync()
+    {
+        $invoice = $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $expected = $this->getExpectedUpsertIndexParams(
+            [
+                'id'      => $invoice->getId(),
+                'receipt' => 'inv_receipt_0001',
+                'terms'   => 'Updated terms & conditions',
+            ]);
+
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
+               ->with(
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            return true;
+                        }));
+
+        $this->startTest();
+    }
+
+    public function testUpdateInvoiceAndAssertEsNoSync()
+    {
+        //
+        // Case:
+        // When dirtied fields are not in index, es sync must not happen
+        // unnecessarily.
+        //
+
+        $invoice = $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $esMock->expects($this->never())
+               ->method('bulkUpdate');
 
         $this->startTest();
     }
@@ -593,8 +671,30 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($invoice);
     }
 
+    public function testDeleteInvoiceAndAssertEsSync()
+    {
+        $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['delete']);
+
+        $esMock->expects($this->once())
+               ->method('delete')
+               ->with(
+                    [
+                        'index' => 'invoice_test',
+                        'type'  => 'invoice_test',
+                        'id'    => '1000000invoice',
+                    ]);
+
+        $testData = $this->testData['testDeleteInvoice'];
+
+        $this->startTest($testData);
+    }
+
     public function testAddLineItemToInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $response = $this->startTest();
@@ -634,6 +734,8 @@ class InvoiceTest extends TestCase
 
     public function testAddManyLineItemsToInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->startTest();
@@ -643,6 +745,8 @@ class InvoiceTest extends TestCase
 
     public function testAddTooManyLineItemsToInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         foreach (range(1, 18) as $i)
@@ -668,6 +772,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemToInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $response = $this->startTest();
@@ -675,6 +781,8 @@ class InvoiceTest extends TestCase
 
     public function testAddManyLineItemsToInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->startTest();
@@ -685,6 +793,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemsToIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -694,6 +804,8 @@ class InvoiceTest extends TestCase
 
     public function testAddManyLineItemsToIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -703,6 +815,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemsToInvoiceAndIssueAndPay()
     {
+        $this->ba->proxyAuth();
+
         // Steps:
         // - Creates a draft invoice
         // - Adds 2 line items to it
@@ -765,6 +879,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -777,6 +893,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoiceWithExistingItem()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -798,6 +916,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -808,6 +928,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -819,6 +941,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveLineItemOfInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -834,6 +958,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveManyLineItemsOfInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->createFewLineItems();
@@ -848,6 +974,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveManyLineItemsOfInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->createFewLineItems();
@@ -860,6 +988,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveLineItemOfIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -871,6 +1001,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveManyLineItemsOfIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -941,23 +1073,28 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceByReceipt()
     {
-        $this->createOrder();
+        $order = $this->fixtures->create('order');
 
-        $this->fixtures->create('invoice');
-        $this->fixtures->create(
-            'invoice',
+        $this->createIssuedInvoice(
             [
-                'id'      => '1000001invoice',
-                'receipt' => '00000000000001',
-            ]
-        );
-        $this->fixtures->create(
-            'invoice',
+                'id'       => '1000001invoice',
+                'order_id' => $order->getId(),
+                'receipt'  => '00000000000001'
+            ]);
+
+        $order = $this->fixtures->create('order');
+
+        $this->createIssuedInvoice(
             [
-                'id'      => '1000002invoice',
-                'receipt' => '00000000000002',
-            ]
-        );
+                'id'       => '1000002invoice',
+                'order_id' => $order->getId(),
+                'receipt'  => '00000000000002'
+            ]);
+
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->startTest();
     }
@@ -1010,6 +1147,88 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
     }
+
+    // -------------------------------------------------------------------------
+    // Following tests asserts working of es fetch in various cases.
+    //
+
+    public function testGetMultipleInvoicesOnlyEsFields()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createManyInvoicesForFetchTests();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByQ()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createManyInvoicesForFetchTests();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesOnlyMysqlFields()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createDraftInvoice([
+                'id'      => '1000000invoice',
+                'user_id' => '1000000000user',
+                'type'    => 'link',
+            ]);
+
+        $this->createDraftInvoice([
+                'id'   => '1000001invoice',
+                'type' => 'link',
+            ]);
+
+        $this->createDraftInvoice([
+                'id'      => '1000002invoice',
+                'user_id' => '1000000000user',
+                'type'    => 'invoice',
+            ]);
+
+
+        $esMock = $this->createEsMock(['search']);
+
+        $esMock->expects($this->never())
+               ->method('search');
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesMixedFields()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesSearchHitsOnly()
+    {
+        $this->markTestSkipped(
+            'Temporarily disabled, waiting for one other pr
+            which handles eager loading of relations to go out.');
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    // -------------------------------------------------------------------------
 
     public function testGetInvoicesOfCapturedPaymentId()
     {
@@ -1262,8 +1481,8 @@ class InvoiceTest extends TestCase
                 'expire_by'  => 1484519217,
             ]);
 
-        // Not picked: Cancelled invoice, can be past expire_by if cancelled in between
-        // after issuing.
+        // Not picked: Cancelled invoice, can be past expire_by if cancelled in
+        // between after issuing.
         $this->createOrder(['id' => '100000002order']);
         $this->fixtures->create('invoice',
             [
@@ -1277,7 +1496,7 @@ class InvoiceTest extends TestCase
         // Not picked: Draft invoice
         $this->createDraftInvoice(['id' => '1000003invoice']);
 
-        // Not picked: Issued invoice, past expire_by but paid
+        // Not picked: Past expire_by but paid invoice
         $this->createOrder(['id' => '100000004order']);
         $this->fixtures->create('invoice',
             [
@@ -1287,8 +1506,8 @@ class InvoiceTest extends TestCase
                 'status'     => 'paid',
             ]);
 
-        // Fails: Issued invoice with created payments (not captured so invoice still
-        // not paid) and past expire_by.
+        // Picked and failed: Issued invoice with created payments (not captured
+        // so invoice still not paid) and past expire_by.
         $this->createOrder(['id' => '100000005order']);
         $this->fixtures->create('invoice',
             [
@@ -1299,9 +1518,26 @@ class InvoiceTest extends TestCase
             ]);
         $this->fixtures->payment->createAuthorized(
             [
-                'order_id' => '100000005order',
+                'order_id'   => '100000005order',
                 'invoice_id' => '1000005invoice',
             ]);
+
+        // Picked and expired: Issued invoice with a payment which might be
+        // late authorized and got auto refunded by cron.
+        $this->createOrder(['id' => '100000006order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000006invoice',
+                'order_id'   => '100000006order',
+                'expire_by'  => 1484519217,
+                'status'     => 'issued',
+            ]);
+        $payment = $this->fixtures->payment->createAuthorized(
+                        [
+                            'order_id'   => '100000006order',
+                            'invoice_id' => '1000006invoice',
+                        ]);
+        $this->refundAuthorizedPayment($payment->getPublicId());
 
         $this->ba->appAuth();
 
@@ -1324,25 +1560,6 @@ class InvoiceTest extends TestCase
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 
-    protected function createDraftInvoice(array $overrideWith = [])
-    {
-        $this->fixtures->create(
-            'invoice',
-            array_merge(
-                [
-                    'type'         => 'invoice',
-                    'status'       => 'draft',
-                    'order_id'     => null,
-                    'short_url'    => null,
-                    'amount'       => null,
-                    'sms_status'   => 'pending',
-                    'email_status' => 'pending',
-                ],
-                $overrideWith
-            )
-        );
-    }
-
     protected function createOrder(array $overrideWith = [])
     {
         $order = $this->fixtures
@@ -1361,36 +1578,6 @@ class InvoiceTest extends TestCase
         return $order;
     }
 
-    /**
-     * Helper method to make payment for given invoice and do the necessary
-     * assertions.
-     */
-    protected function makePaymentForInvoiceAndAssert(array $invoice)
-    {
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['order_id'] = $invoice['order_id'];
-        $payment['amount']   = $invoice['amount'];
-
-        $payment = $this->doAuthAndGetPayment(
-            $payment,
-            [
-                'status'   => 'captured',
-                'order_id' => $invoice['order_id'],
-            ]
-        );
-
-        $order   = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('invoice', true);
-
-        $this->assertEquals($payment['id'], $invoice['payment_id']);
-        $this->assertEquals($order['status'], 'paid');
-        $this->assertEquals($invoice['status'], 'paid');
-        $this->assertEquals($invoice['id'], $payment['invoice_id']);
-
-        return $payment;
-    }
-
     protected function createFewLineItems()
     {
         $this->fixtures->create('item');
@@ -1401,5 +1588,59 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('item', ['id' => '1000000002item']);
         $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
+    }
+
+    protected function setEsMockSearchExpectations($callee, $esMock)
+    {
+        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
+        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
+
+        $esMock->expects($this->once())
+               ->method('search')
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
+    }
+
+    protected function createManyInvoicesForFetchTests()
+    {
+        $this->createDraftInvoice(
+            [
+                'id'    => '1000000invoice',
+                'notes' => [
+                    'extra' => 'Extra Information in notes key!!',
+                    'ref'   => 'Sample Reference Number',
+                ]
+            ]);
+
+        $this->createDraftInvoice(
+            [
+                'id'    => '1000001invoice',
+                'terms' => 'Random terms and conditions',
+            ]);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->createDraftInvoice(
+            [
+                'id'          => '1000004invoice',
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        $order = $this->createOrder();
+
+        $this->createIssuedInvoice(
+            [
+                'id'       => '1000006invoice',
+                'order_id' => $order->getId(),
+            ]);
+
+        $order = $this->createOrder(['id' => '100000001order']);
+
+        $this->createIssuedInvoice(
+            [
+                'id'       => '1000007invoice',
+                'order_id' => $order->getId(),
+            ]);
+
     }
 }

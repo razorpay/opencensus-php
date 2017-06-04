@@ -51,6 +51,10 @@ class Entity extends Base\Entity
         self::PERMISSIONS,
     ];
 
+    protected $diff = [
+        self::NAME,
+    ];
+
     protected $visible = [
         self::ID,
         self::NAME,
@@ -117,5 +121,12 @@ class Entity extends Base\Entity
         }
 
         return false;
+    }
+
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::PERMISSIONS,
+        ];
     }
 }

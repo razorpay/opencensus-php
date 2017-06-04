@@ -2,12 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Factory;
 
-use RZP\Models\Merchant;
 use Config;
 use Eloquent;
-use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
 use Carbon\Carbon;
+use RZP\Models\Merchant;
+use RZP\Tests\TestDummy\Factory;
 
 final class FactoryData
 {
@@ -41,6 +41,7 @@ final class FactoryData
             'shared'                    => 1,
             'currency'                  => 'INR',
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => $faker->word,
             'gateway_terminal_id'       => $faker->word,
             'gateway_terminal_password' => null,
@@ -118,6 +119,7 @@ final class FactoryData
             'email' => $faker->email,
             'auto_captured' => 0,
             'captured_at' => null,
+            'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
             'created_at' => $faker->timestamp,
@@ -152,7 +154,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             'entity_id' => $faker->uniqueid,
             'type' => 'payment',
-            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
+            // 'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'fee' => $faker->randomNumber,
             'pricing_rule_id' => null,
@@ -163,27 +165,43 @@ final class FactoryData
             'gateway_fee' => null,
             'on_hold'   => 0,
             'gratis' => false,
-            'channel' => 'kotak'
+            'channel' => 'kotak',
+            'settled' => 0,
         ]);
 
         $factory(\RZP\Models\Settlement\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
-            'amount' => $faker->randomNumber,
+            'amount' => $faker->randomNumber(4),
             'status' => 'created',
-            'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
+            // 'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
+            'fees' => $faker->randomNumber(2),
             'channel' => 'kotak',
-            'utr' => $faker->randomNumber(8),
             'failure_reason' => null,
             'return_utr' => null,
         ]);
 
         $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
             'id' => $faker->uniqueid,
-            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
-            'entity_type' => 'settlement',
+            // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'source_type' => 'settlement',
+            'status' => 'created',
             'channel' => 'kotak',
-            'version' => 'V2',
+            'version' => 'V3',
+        ]);
+
+        $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
+            'id' => $faker->uniqueid,
+            'date' => Carbon::today('Asia/Kolkata')->timestamp,
+            'channel' => 'kotak',
+            'amount' => $faker->randomNumber(4),
+            'processed_amount' => 0,
+            'processed_count' => 0,
+            'fees' => $faker->randomNumber(2),
+            'api_fee' => $faker->randomNumber(2),
+            'gateway_fee' => $faker->randomNumber(2),
+            'urls' => $faker->sentence,
+            'initiated_at' => Carbon::today('Asia/Kolkata')->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [
@@ -288,12 +306,17 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Item\Entity::class, [
-            'id' => '1000000000item',
-            'merchant_id' => '10000000000000',
-            'name' => 'Some item name',
-            'description' => 'Some item description',
-            'amount' => 100000,
-            'currency' => 'INR',
+            'id'            => '1000000000item',
+            'merchant_id'   => '10000000000000',
+            'name'          => 'Some item name',
+            'description'   => 'Some item description',
+            'type'          => 'invoice',
+            'amount'        => 100000,
+            'currency'      => 'INR',
+            'unit'          => null,
+            'tax_inclusive' => false,
+            'tax_id'        => null,
+            'tax_group_id'  => null,
         ]);
 
         $factory(\RZP\Models\Invoice\Entity::class, [
@@ -320,16 +343,19 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\LineItem\Entity::class, [
-            'id'          => '100000lineitem',
-            'merchant_id' => '10000000000000',
-            'entity_id'   => '1000000invoice',
-            'entity_type' => 'invoice',
-            'item_id'     => '1000000000item',
-            'name'        => 'Some item name',
-            'description' => 'Some item description',
-            'amount'      => 100000,
-            'currency'    => 'INR',
-            'quantity'    => 1,
+            'id'           => '100000lineitem',
+            'merchant_id'  => '10000000000000',
+            'entity_id'    => '1000000invoice',
+            'entity_type'  => 'invoice',
+            'item_id'      => '1000000000item',
+            'name'         => 'Some item name',
+            'description'  => 'Some item description',
+            'amount'       => 100000,
+            'currency'     => 'INR',
+            'quantity'     => 1,
+            'gross_amount' => 100000,
+            'tax_amount'   => 0,
+            'net_amount'   => 100000,
         ]);
 
         $factory(\RZP\Gateway\FirstData\Entity::class, [
@@ -412,6 +438,7 @@ final class FactoryData
             'display_name'  => 'Razorpay',
             'business_name' => 'Razorpay Software Pvt Ltd',
             'auth_type'     => 'password',
+            'custom_code'   => $faker->name,
         ]);
 
         $factory(\RZP\Models\Admin\Org\FieldMap\Entity::class, [
@@ -475,6 +502,15 @@ final class FactoryData
             'contact_email' => $faker->email,
         ]);
 
+        $factory(\RZP\Models\User\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'name'       => $faker->word,
+            'email'      => $faker->email,
+            'password'   => $faker->word,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Customer\Balance\Entity::class, [
             'customer_id'   => 'factory:RZP\Models\Customer\Entity',
             'merchant_id'   => '10000000000000',
@@ -500,6 +536,32 @@ final class FactoryData
             'id'        => $faker->uniqueid,
             'active'    => true,
             'terms'     => 'Terms and Condition'
+        ]);
+
+        $factory(\RZP\Models\Plan\Entity::class, [
+            'id'                => '1000000000plan',
+            'merchant_id'       => '10000000000000',
+            'period'            => 'monthly',
+            'interval'          => 2,
+            'item_id'           => '1000000000item',
+            // 'schedule_id'       => null,
+            'notes'             => null,
+        ]);
+
+        $factory(\RZP\Models\Plan\Subscription\Entity::class, [
+            'merchant_id'   => '10000000000000',
+            'customer_id'   => '100000customer',
+            'status'        => 'created',
+            'quantity'      => 1,
+            'total_count'   => 4,
+            'notes'         => null,
+        ]);
+
+        $factory(\RZP\Models\Plan\Subscription\Addon\Entity::class, [
+            'merchant_id'       => '10000000000000',
+            'item_id'           => '1000000000item',
+            'invoice_id'        => '1000000invoice',
+            'subscription_id'   => '10subscription,'
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [
@@ -585,12 +647,10 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'merchant_id'       => '100000Razorpay',
             'name'              => 'Basic T3',
-            'type'              => 'settlement',
             'period'            => 'daily',
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
-            'next_run'          => 1451586600,
         ]);
 
         $factory(\RZP\Models\Schedule\Task\Entity::class, [
@@ -602,6 +662,38 @@ final class FactoryData
             'method'            => null,
             'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
             'next_run_at'       => 1451604600,
+        ]);
+
+        $factory(\RZP\Models\Gateway\Downtime\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Gateway\Rule\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp
+        ]);
+
+        $factory(\RZP\Models\Tax\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'name'        => 'Sample tax',
+            'rate_type'   => 'percentage',
+            'rate'        => 1000,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'deleted_at'  => null,
+        ]);
+
+        $factory(\RZP\Models\Tax\Group\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'name'        => 'Sample tax group',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'deleted_at'  => null,
         ]);
     }
 }

@@ -41,4 +41,13 @@ class AdjustmentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postMultipleAdjustments()
+    {
+        $input = Request::all();
+
+        $data = (new Adjustment\Service)->addMultipleAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
 }

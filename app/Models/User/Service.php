@@ -2,26 +2,18 @@
 
 namespace RZP\Models\User;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
-    /**
-     * Creates a user and saves in database
-     *
-     * @param  array            $input
-     * @return User\Entity
-     */
-    public function create(array $input)
+    public function create(array $input): array
     {
         $user = (new Core)->create($input);
 
         return $user->toArrayPublic();
     }
 
-    public function edit($id, array $input)
+    public function edit(string $id, array $input): array
     {
         $user = $this->repo->user->findOrFailPublic($id);
 
@@ -30,21 +22,51 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
-    public function attach($id, array $input)
+    public function confirm(string $id): array
     {
         $user = $this->repo->user->findOrFailPublic($id);
 
-        $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
-
-        $this->repo->sync($user,
-                        'merchants',
-                        [$input['merchant_id'] => [
-                                                'role' => $input['role'],
-                                                'created_at' => $currentTimestamp,
-                                                'updated_at' => $currentTimestamp
-                                                ]
-                        ]);
+        $user = (new Core)->confirm($user);
 
         return $user->toArrayPublic();
+    }
+
+    public function confirmUserByData(array $input): array
+    {
+        $user = (new Core)->confirmUserByData($input);
+
+        return $user->toArrayPublic();
+    }
+
+    public function changePassword(string $id, array $input): array
+    {
+        $user = $this->repo->user->findOrFailPublic($id);
+
+        $user = (new Core)->changePassword($user, $input);
+
+        return $user->toArrayPublic();
+    }
+
+    public function updateUserMerchantMapping(string $id, array $input): array
+    {
+        $user = $this->repo->user->findOrFailPublic($id);
+
+        $user = (new Core)->updateUserMerchantMapping($user, $input);
+
+        return $user->toArrayPublic();
+    }
+
+    public function login(array $input): array
+    {
+        return (new Core)->login($input);
+    }
+
+    public function get(string $id): array
+    {
+        $user = $this->repo->user->findOrFailPublic($id);
+
+        $response = (new Core)->get($user);
+
+        return $response;
     }
 }

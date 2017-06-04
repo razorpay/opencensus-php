@@ -25,6 +25,8 @@ class AxisGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
 
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'axis_migs';
@@ -121,7 +123,7 @@ class AxisGatewayTest extends TestCase
         $this->assertSame($paymentId, $refund['payment_id']);
         // $this->assertTestResponse($refund);
 
-        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(true, $refund['gateway_refunded']);
         $this->assertNull($refund['transaction_id']);
 
         $migs = $this->getLastEntity('axis_migs', true);
@@ -259,4 +261,51 @@ class AxisGatewayTest extends TestCase
         });
     }
 
+    public function testRecurringPaymentAuthenticateCard()
+    {
+        $this->mockTokenex();
+
+        $this->fixtures->merchant->addFeatures('recurring');
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertTestResponse($paymentEntity);
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('MiGSRcgTmnl3DS', $paymentEntity['terminal_id']);
+
+        $token = $paymentEntity['token_id'];
+
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertTestResponse($paymentEntity);
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('MiGSRcgTmlN3DS', $paymentEntity['terminal_id']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $migs = $this->getLastEntity('axis_migs', true);
+
+        $migsData = $this->testData['recurringEntity'];
+
+        $this->assertNotNull($migs['vpc_TransactionNo']);
+        $this->assertNotNull($migs['vpc_AuthorizeId']);
+        $this->assertEquals($paymentId, $migs['payment_id']);
+        $this->assertArraySelectiveEquals($migsData, $migs);
+    }
 }

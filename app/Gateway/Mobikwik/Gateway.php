@@ -165,6 +165,30 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        // Hardcoding these refunds for processing
+        $ids = ['7mS1VNzr53SCue', '7r8d83OFCFyUrv', '7oMFpxsOk5TSGa'];
+
+        if (in_array($input['refund']['id'], $ids) === true)
+        {
+            return false;
+        }
+
+        // Mobikwik returns an error when refund amount exceeds the remaining amount
+        // on Mobikwik's end. We take advantage of this error and initiate refunds
+        // for all the pending refunds whose amount is either equal to payment, i.e,
+        // they are full refund or twice of refund amount is less than payment amount
+        if (($input['refund']['amount'] !== $input['payment']['amount']) and
+            ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
+        {
+            throw new Exception\LogicException(
+                'Verify refund is only supported for full refunds and specific partial refunds');
+        }
+
+        return false;
+    }
+
     protected function saveVerifyContentIfNeeded($payment, $content)
     {
         $this->action = Action::AUTHORIZE;
@@ -402,6 +426,45 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($content);
 
         return $this->getCallbackResponseData($input);
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId(
+            $refundId, Processor\Wallet::MOBIKWIK);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = $refundEntity->getAmount();
+        $refundEntityStatusCode = $refundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'status_code'           => $refundEntityStatusCode,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($refundEntityStatusCode === false))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function getAuthorizeRequestContent($input)

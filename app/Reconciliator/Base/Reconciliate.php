@@ -43,6 +43,7 @@ class Reconciliate
     const CUSTOMER_ID          = 'customer_id';
     const CUSTOMER_NAME        = 'customer_name';
     const GATEWAY_PAYMENT_DATE = 'gateway_payment_date';
+    const RRN                  = 'rrn';
 
     /*************************
      * Card types
@@ -138,6 +139,17 @@ class Reconciliate
     public function getReconPassword($fileDetails)
     {
         return null;
+    }
+
+    /**
+     * This should be implemented in the child class if the gateway
+     * sends CSV files which has a delimiter other than `,`
+     *
+     * @return string
+     */
+    public function getDelimiter()
+    {
+        return ',';
     }
 
     /**

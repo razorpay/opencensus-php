@@ -56,9 +56,6 @@ class CreateGatewayDowntime extends Migration
             $table->tinyInteger(Downtime::PARTIAL)
                   ->default(0);
 
-            $table->tinyInteger(Downtime::PUBLIC)
-                   ->default(1);
-
             $table->integer(Downtime::CREATED_AT);
 
             $table->integer(Downtime::UPDATED_AT);

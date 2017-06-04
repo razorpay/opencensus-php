@@ -14,20 +14,20 @@ class Repository extends Base\Repository
 
     public function getValidVirtualBankAccountFromNumber($accountNumber, $ifsc = null)
     {
-        $rId   = $this->getAttributeWithTableName(Entity::ENTITY_ID);
-        $rType = $this->getAttributeWithTableName(Entity::ENTITY_TYPE);
-        $rValid = $this->getAttributeWithTableName(Entity::VALID);
+        $rId   = $this->dbColumn(Entity::ENTITY_ID);
+        $rType = $this->dbColumn(Entity::ENTITY_TYPE);
+        $rValid = $this->dbColumn(Entity::VALID);
 
-        $baTable = $this->manager->bank_account->getTableName();
+        $baTable = $this->repo->bank_account->getTableName();
 
-        $baId      = $this->manager->bank_account
-                          ->getAttributeWithTableName(BankAccount\Entity::ID);
-        $baNumber  = $this->manager->bank_account
-                          ->getAttributeWithTableName(BankAccount\Entity::ACCOUNT_NUMBER);
-        $baVirtual = $this->manager->bank_account
-                          ->getAttributeWithTableName(BankAccount\Entity::VIRTUAL);
-        $baIfsc    = $this->manager->bank_account
-                          ->getAttributeWithTableName(BankAccount\Entity::IFSC_CODE);
+        $baId      = $this->repo->bank_account
+                          ->dbColumn(BankAccount\Entity::ID);
+        $baNumber  = $this->repo->bank_account
+                          ->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+        $baVirtual = $this->repo->bank_account
+                          ->dbColumn(BankAccount\Entity::VIRTUAL);
+        $baIfsc    = $this->repo->bank_account
+                          ->dbColumn(BankAccount\Entity::IFSC_CODE);
 
         $query = $this->newQuery()
                       ->join($baTable, $rId, '=', $baId)

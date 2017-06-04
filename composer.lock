@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ff52a99ef02f8e08631115db96526f66",
+    "content-hash": "fe65d790bc8e7c6067a3e302001ea4ca",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -186,6 +186,75 @@
                 "zxcvbn"
             ],
             "time": "2016-09-08T17:29:46+00:00"
+        },
+        {
+            "name": "box/spout",
+            "version": "v2.7.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/box/spout.git",
+                "reference": "4a65466b6135d2aa28dd3bc52785a5e999f95fe8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/box/spout/zipball/4a65466b6135d2aa28dd3bc52785a5e999f95fe8",
+                "reference": "4a65466b6135d2aa28dd3bc52785a5e999f95fe8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-simplexml": "*",
+                "ext-xmlreader": "*",
+                "ext-zip": "*",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.0"
+            },
+            "suggest": {
+                "ext-iconv": "To handle non UTF-8 CSV files (if \"php-intl\" is not already installed or is too limited)",
+                "ext-intl": "To handle non UTF-8 CSV files (if \"iconv\" is not already installed)"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Box\\Spout\\": "src/Spout"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Adrien Loison",
+                    "email": "adrien@box.com"
+                }
+            ],
+            "description": "PHP Library to read and write spreadsheet files (CSV, XLSX and ODS), in a fast and scalable way",
+            "homepage": "https://www.github.com/box/spout",
+            "keywords": [
+                "OOXML",
+                "csv",
+                "excel",
+                "memory",
+                "odf",
+                "ods",
+                "office",
+                "open",
+                "php",
+                "read",
+                "scale",
+                "spreadsheet",
+                "stream",
+                "write",
+                "xlsx"
+            ],
+            "time": "2017-03-28T13:07:48+00:00"
         },
         {
             "name": "cebe/markdown",
@@ -4287,16 +4356,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "0.2.12",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "dcd12ff8552b2655d2852e57c5983fecad09cdd1"
+                "reference": "e7a0b208f141307c25bc7afa4278bbbd5c36cc5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/dcd12ff8552b2655d2852e57c5983fecad09cdd1",
-                "reference": "dcd12ff8552b2655d2852e57c5983fecad09cdd1",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/e7a0b208f141307c25bc7afa4278bbbd5c36cc5f",
+                "reference": "e7a0b208f141307c25bc7afa4278bbbd5c36cc5f",
                 "shasum": ""
             },
             "require": {
@@ -4330,7 +4399,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-03-27T10:04:48+00:00"
+            "time": "2017-05-30T11:09:05+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -4391,16 +4460,16 @@
         },
         {
             "name": "razorpay/slack",
-            "version": "v1.8.0",
+            "version": "1.9.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "7b1100bcae7611dd11d6a759225569abe3260def"
+                "reference": "ce669ad5ae594c914013f186a14212a3d7efaca9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/7b1100bcae7611dd11d6a759225569abe3260def",
-                "reference": "7b1100bcae7611dd11d6a759225569abe3260def",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/ce669ad5ae594c914013f186a14212a3d7efaca9",
+                "reference": "ce669ad5ae594c914013f186a14212a3d7efaca9",
                 "shasum": ""
             },
             "require": {
@@ -4411,7 +4480,8 @@
             "require-dev": {
                 "illuminate/queue": "5.*",
                 "mockery/mockery": "0.9.*",
-                "phpunit/phpunit": "4.2.*"
+                "phpunit/phpunit": "4.2.*",
+                "satooshi/php-coveralls": "~1.0"
             },
             "suggest": {
                 "nexylan/slack-bundle": "Required for Symfony bundle support",
@@ -4442,25 +4512,25 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-03-10T06:17:18+00:00"
+            "time": "2017-05-30T10:44:07+00:00"
         },
         {
             "name": "razorpay/slack-laravel",
-            "version": "1.2.0",
+            "version": "1.3.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack-laravel.git",
-                "reference": "47457d07b58a1844fd38e690033452fad2be45e6"
+                "reference": "0f406bfb5c67f2da29866e70d8f97387deb03629"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/47457d07b58a1844fd38e690033452fad2be45e6",
-                "reference": "47457d07b58a1844fd38e690033452fad2be45e6",
+                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/0f406bfb5c67f2da29866e70d8f97387deb03629",
+                "reference": "0f406bfb5c67f2da29866e70d8f97387deb03629",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0",
-                "razorpay/slack": "1.8.0"
+                "razorpay/slack": "1.9.9"
             },
             "type": "library",
             "autoload": {
@@ -4487,7 +4557,7 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-03-13T10:46:45+00:00"
+            "time": "2017-05-30T09:30:05+00:00"
         },
         {
             "name": "razorpay/spine",
@@ -6225,12 +6295,12 @@
             "version": "0.9.9",
             "source": {
                 "type": "git",
-                "url": "https://github.com/padraic/mockery.git",
+                "url": "https://github.com/mockery/mockery.git",
                 "reference": "6fdb61243844dc924071d3404bb23994ea0b6856"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/6fdb61243844dc924071d3404bb23994ea0b6856",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/6fdb61243844dc924071d3404bb23994ea0b6856",
                 "reference": "6fdb61243844dc924071d3404bb23994ea0b6856",
                 "shasum": ""
             },

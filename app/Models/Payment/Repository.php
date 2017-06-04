@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use DB;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -10,6 +11,7 @@ use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -27,6 +29,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
+        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1'
     ];
 
     // These are proxy allowed params to search on.
@@ -65,10 +68,6 @@ class Repository extends Base\Repository
         Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
     ];
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     protected $signedIds = [
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
@@ -78,17 +77,17 @@ class Repository extends Base\Repository
     {
         $timestamp = time() - Entity::PAYMENT_WINDOW;
 
-        $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
-        $paPaymentId = $this->manager
+        $pid = $this->dbColumn(Payment\Entity::ID);
+        $paPaymentId = $this->repo
                             ->payment_analytics
-                            ->getAttributeWithTableName(Analytics\Entity::PAYMENT_ID);
+                            ->dbColumn(Analytics\Entity::PAYMENT_ID);
 
-        $paymentColumns = $this->getAttributeWithTableName('*');
+        $paymentColumns = $this->dbColumn('*');
 
-        $paTable = $this->manager->payment_analytics->getTableName();
-        $checkoutIdAttr = $this->manager
+        $paTable = $this->repo->payment_analytics->getTableName();
+        $checkoutIdAttr = $this->repo
                                ->payment_analytics
-                               ->getAttributeWithTableName(Analytics\Entity::CHECKOUT_ID);
+                               ->dbColumn(Analytics\Entity::CHECKOUT_ID);
 
         return $this->newQuery()
                     ->select($paymentColumns)
@@ -136,7 +135,7 @@ class Repository extends Base\Repository
     public function fetchEmiPaymentsBetween($from, $to, $bank)
     {
         return $this->newQuery()
-                    ->whereBetween(Entity::UPDATED_AT, [$from, $to])
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
@@ -208,11 +207,11 @@ class Repository extends Base\Repository
      */
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
-        $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $createdAt  = $this->dbColumn(Entity::CREATED_AT);
+        $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->select($this->getAttributeWithTableName('*'))
+                    ->select($this->dbColumn('*'))
                     ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
                     ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->status(Payment\Status::AUTHORIZED)
@@ -229,8 +228,8 @@ class Repository extends Base\Repository
      */
     public function getAuthorizedPaymentsWithAutoRefundDelay()
     {
-        $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId       = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+        $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
@@ -238,7 +237,7 @@ class Repository extends Base\Repository
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
         return $this->newQuery()
-                    ->select($this->getAttributeWithTableName('*'))
+                    ->select($this->dbColumn('*'))
                     ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
                     ->status(Payment\Status::AUTHORIZED)
                     ->whereRaw($rawCondition)
@@ -289,10 +288,11 @@ class Repository extends Base\Repository
                         bool $random = true,
                         int $rowsToFetch = 100)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
 
         $query = $this->newQuery()
-                      ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+                      ->whereNotNull(Payment\Entity::GATEWAY)
+                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
 
         if ($verifyStatus !== null)
         {
@@ -322,11 +322,7 @@ class Repository extends Base\Repository
         // Sample Query
         // SELECT *
         // FROM   `payments`
-        // WHERE  `gateway` IN ( 'axis_migs', 'billdesk', 'ebs', 'mobikwik',
-        //                      'paytm', 'hdfc', 'amex', 'netbanking_hdfc',
-        //                      'netbanking_kotak', 'wallet_payzapp', 'first_data',
-        //                      'cybersource', 'wallet_payumoney', 'wallet_airtelmoney',
-        //                      'wallet_olamoney', 'wallet_freecharge' )
+        // WHERE  `gateway` NOT IN ( 'wallet_openwallet' )
         //        AND `status` = 'failed'
         //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
         //              OR ( `verify_bucket` = '1' AND `created_at` < '1478022368' )
@@ -448,17 +444,17 @@ class Repository extends Base\Repository
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
     {
-        $paymentAttrs = $this->getAttributeWithTableName('*');
+        $paymentAttrs = $this->dbColumn('*');
 
-        $paymentId = $this->getAttributeWithTableName(Entity::ID);
+        $paymentId = $this->dbColumn(Entity::ID);
 
-        $txnRepo = $this->manager->transaction;
+        $txnRepo = $this->repo->transaction;
 
-        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+        $transactionPaymentId = $txnRepo->dbColumn(Transaction\Entity::ENTITY_ID);
 
-        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
 
-        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+        $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
@@ -482,24 +478,24 @@ class Repository extends Base\Repository
         //   AND `payments`.`status` IN ( $status ) // status is an array
         //   AND `terminals`.`tpv` = $tpvEnabled
 
-        $paymentAttrs = $this->getAttributeWithTableName('*');
+        $paymentAttrs = $this->dbColumn('*');
 
-        $paymentId = $this->getAttributeWithTableName(Entity::ID);
-        $paymentTerminalId = $this->getAttributeWithTableName(Entity::TERMINAL_ID);
-        $paymentGateway = $this->getAttributeWithTableName(Entity::GATEWAY);
-        $paymentStatus = $this->getAttributeWithTableName(Entity::STATUS);
+        $paymentId = $this->dbColumn(Entity::ID);
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+        $paymentGateway = $this->dbColumn(Entity::GATEWAY);
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        $txnRepo = $this->manager->transaction;
+        $txnRepo = $this->repo->transaction;
 
-        $tRepo = $this->manager->terminal;
+        $tRepo = $this->repo->terminal;
         $tTableName = $tRepo->getTableName();
 
-        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
-        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
-        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+        $transactionPaymentId = $txnRepo->dbColumn(Transaction\Entity::ENTITY_ID);
+        $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
+        $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        $terminalId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
-        $terminalTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+        $terminalTpv = $tRepo->dbColumn(Terminal\Entity::TPV);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
@@ -564,7 +560,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamAmount($query, $params)
     {
-        $amount = $this->getAttributeWithTableName(Entity::AMOUNT);
+        $amount = $this->dbColumn(Entity::AMOUNT);
 
         $query->where($amount, '=', $params[Entity::AMOUNT]);
     }
@@ -589,9 +585,27 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
+        $international = $this->dbColumn(Entity::INTERNATIONAL);
 
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
+    }
+
+    /**
+     * Param to filter payments that have been transferred (amount_transferred > 0)
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamTransferred($query, $params)
+    {
+        if ($params[Entity::TRANSFERRED] !== '1')
+        {
+            return;
+        }
+
+        $amountTransferred = $this->dbColumn(Entity::AMOUNT_TRANSFERRED);
+
+        $query->where($amountTransferred, '>', 0);
     }
 
     protected function addQueryCaptured($query, $params)
@@ -630,16 +644,16 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === $this->manager->card->getTableName())
+            if ($join->table === $this->repo->card->getTableName())
             {
                 return;
             }
         }
 
-        $paymentCardId = $this->getAttributeWithTableName(Payment\Entity::CARD_ID);
-        $cardId = $this->manager->card->getAttributeWithTableName(Card\Entity::ID);
+        $paymentCardId = $this->dbColumn(Payment\Entity::CARD_ID);
+        $cardId = $this->repo->card->dbColumn(Card\Entity::ID);
 
-        $query->join($this->manager->card->getTableName(), $paymentCardId, '=', $cardId);
+        $query->join($this->repo->card->getTableName(), $paymentCardId, '=', $cardId);
     }
 
     public function getYesterdayVolume()
@@ -682,11 +696,11 @@ class Repository extends Base\Repository
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+        $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
+                    ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
@@ -709,11 +723,11 @@ class Repository extends Base\Repository
         $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+        $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
+                    ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
@@ -762,6 +776,40 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Fetches the number of times a payment has been made against each offer id in $offerIds
+     * grouped by offerId
+     *
+     * @param  array  $cardIds  Card ids to check
+     * @param  array  $offerIds Offer ids to check
+     * @return int              Count of payments
+     */
+    public function getPaymentCountForCardIdsAndOfferIds(array $cardIds, array $offerIds): array
+    {
+        $ordersTable = $this->repo->order->getTableName();
+        $paymentOrderIdCol = $this->dbColumn(Entity::ORDER_ID);
+        $orderIdCol = $this->repo->order->dbColumn(Order\Entity::ID);
+        $paymentStatusCol = $this->dbColumn(Entity::STATUS);
+        $orderOfferIdCol = $this->repo->order->dbColumn(Order\Entity::OFFER_ID);
+        $paymentCardIdCol = $this->dbColumn(Entity::CARD_ID);
+        $paymentIdCol = $this->dbColumn(Entity::ID);
+
+        // Query executed - select count(payments.id) AS payment_count, orders.offer_id
+        // from `payments` inner join `orders` on `payments`.`order_id` = `orders`.`id`
+        // where `payments`.`status` = ? and `orders`.`offer_id` in (?) and `payments`.`card_id`
+        // in (?) having payment_count >= 1 group by `orders`.`offer_id`
+        return $this->newQuery()
+                    ->select(DB::raw("count($paymentIdCol) AS payment_count, $orderOfferIdCol"))
+                    ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
+                    ->where($paymentStatusCol, '=', Status::CAPTURED)
+                    ->whereIn($orderOfferIdCol, $offerIds)
+                    ->whereIn($paymentCardIdCol, $cardIds)
+                    ->groupBy($orderOfferIdCol)
+                    ->having('payment_count', '>=', 1)
+                    ->pluck('payment_count', 'offer_id')
+                    ->toArray();
+    }
+
     protected function getPaymentVolumeBetweenTimestamp($from, $to)
     {
         $vol = $this->newQuery()
@@ -777,5 +825,12 @@ class Repository extends Base\Repository
     protected function validateWallet($attribute, $value)
     {
         Processor\Wallet::validateExists($value);
+    }
+
+    public function getTotalUsedCountForTerminal($terminalId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminalId)
+                    ->count();
     }
 }

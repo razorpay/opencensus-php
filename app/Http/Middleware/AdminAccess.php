@@ -32,7 +32,7 @@ class AdminAccess
 
     public function handle($request, Closure $next)
     {
-        if ($this->ba->isAdminAuth())
+        if ($this->ba->isAdminAuth() === true)
         {
             $admin = $this->ba->getAdmin();
 
@@ -66,17 +66,17 @@ class AdminAccess
         return $next($request);
     }
 
-    private function getRoutePermissions(string $routeName)
+    private function getRoutePermission(string $routeName)
     {
-        $adminAuthRoutes = Route::$adminPermission;
+        $routePermissionList = Route::$routePermission;
 
-        if (isset($adminAuthRoutes[$routeName]) === false)
+        if (isset($routePermissionList[$routeName]) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
         }
 
-        return $adminAuthRoutes[$routeName];
+        return $routePermissionList[$routeName];
     }
 
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
@@ -180,6 +180,7 @@ class AdminAccess
             'action_comment_fetch',
             'workflow_get_actions_for_checker',
             'workflow_get_actions_by_maker',
+            'workflow_action_close',
         ];
     }
 
@@ -203,7 +204,7 @@ class AdminAccess
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {
-        $permissions = $this->getRoutePermissions($routeName);
+        $permission = $this->getRoutePermission($routeName);
 
         // We have the following:
         // - permission
@@ -221,8 +222,8 @@ class AdminAccess
         // 2. Check if the specified permissions exist in our
         // generated white list
 
-        $policyPassed = $this->checkPermissionsAllowed(
-            $permissions, $adminPermissions);
+        $policyPassed = $this->checkPermissionAllowed(
+            $permission, $adminPermissions);
 
         if ($policyPassed === true)
         {
@@ -244,40 +245,34 @@ class AdminAccess
         return $policyPassed;
     }
 
-    private function checkPermissionsAllowed($toCheck, $haystack)
+    private function checkPermissionAllowed(string $toCheck, array $haystack)
     {
-        if (in_array(self::WILDCARD_PERMISSION, $toCheck, true) === true)
+        // Wildcard check takes precedence for obvious reasons
+        if ($toCheck === self::WILDCARD_PERMISSION)
         {
-            $this->validateWildCardPermissionRules($toCheck);
-
             return true;
         }
 
-        foreach ($toCheck as $permission)
+        // Check if the required permission is present in the
+        // list of admin permissions
+        if (in_array($toCheck, $haystack, true) === true)
         {
-            if (in_array($permission, $haystack, true) === false)
-            {
-                return false;
-            }
+            return true;
         }
 
-        return true;
-    }
-
-    private function validateWildCardPermissionRules(array $permissions)
-    {
-        // Check wildcard permission is the only one used in the list
-        if ((in_array(self::WILDCARD_PERMISSION, $permissions) === true) and
-            (count($permissions) > 1))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_PERMISSIONS_USAGE);
-        }
+        // Access denied!
+        return false;
     }
 
     private function groupCheck($admin, $merchant)
     {
         // TODO: Enforce there's no cycle in the graph (while creation/assigning)
+
+        // If the admin has access to all the merchants then just return true
+        if ($admin->canSeeAllMerchants())
+        {
+            return true;
+        }
 
         // 1. Get all the required groups and admins for the $admin
 

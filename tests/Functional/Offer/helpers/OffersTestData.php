@@ -42,6 +42,109 @@ return [
         ]
     ],
 
+    'testCreateCardOfferWithMaxPaymentCount' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'max_payment_count'   => 2,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'max_payment_count'   => 2,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testCreateCardOfferWithLinkedOfferIds' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1500,
+                'max_payment_count'   => 2,
+                'linked_offer_ids'    => null,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1500,
+                'max_payment_count'   => 2,
+                'linked_offer_ids'    => null,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testCreateCardOfferWithInvalidLinkedOfferIds' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1500,
+                'max_payment_count'   => 2,
+                'linked_offer_ids'    => null,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked offer ids submitted are not valid',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testCreateCardOfferWithIin' => [
         'request' => [
             'content' => [
@@ -82,7 +185,6 @@ return [
                 'percent_rate'    => 1000,
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
-                'payment_count'   => 2,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -101,7 +203,6 @@ return [
                 'payment_method'  => 'wallet',
                 'payment_network' => 'airtelmoney',
                 'percent_rate'    => 1000,
-                'payment_count'   => 2,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -120,7 +221,6 @@ return [
                 'percent_rate'    => 1000,
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
-                'payment_count'   => 2,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -139,7 +239,6 @@ return [
                 'payment_method'  => 'netbanking',
                 'payment_network' => 'UTBI',
                 'percent_rate'    => 1000,
-                'payment_count'   => 2,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -157,7 +256,6 @@ return [
                 'payment_network' => 'airtelmoney',
                 'flat_cashback'   => 300,
                 'min_amount'      => 500,
-                'payment_count'   => 2,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -175,7 +273,6 @@ return [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
                 'payment_network' => 'airtelmoney',
-                'payment_count'   => 2,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -194,7 +291,7 @@ return [
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
-                'payment_count'       => 2,
+                'max_payment_count'   => 2,
                 'processing_time'     => 86400,
                 'starts_at'           => 1519457070,
                 'ends_at'             => 1550993070,
@@ -227,7 +324,7 @@ return [
                 'payment_method_type' => 'credit',
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDFC',
-                'payment_count'       => 2,
+                'max_payment_count'   => 2,
                 'processing_time'     => 86400,
                 'starts_at'           => 1519457070,
                 'ends_at'             => 1550993070,
@@ -326,7 +423,6 @@ return [
                 'payment_network'    => 'airtelhoney',
                 'percent_rate'       => 1000,
                 'max_cashback'       => 200,
-                'payment_count'      => 2,
                 'processing_time'    => '2',
                 'starts_at'          => 1519457070,
                 'ends_at'            => 1550993070,
@@ -360,7 +456,6 @@ return [
                 'percent_rate'       => 1000,
                 'max_cashback'       => 200,
                 'min_amount'         => 500,
-                'payment_count'      => 2,
                 'processing_time'    => '2',
                 'starts_at'          => 1519457070,
                 'ends_at'            => 1550993070,
@@ -394,7 +489,7 @@ return [
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
-                'payment_count'       => 2,
+                'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1519457070,
                 'ends_at'             => 1550993070,
@@ -428,7 +523,7 @@ return [
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDF1',
                 'percent_rate'        => 1000,
-                'payment_count'       => 2,
+                'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1519457070,
                 'ends_at'             => 1550993070,
@@ -463,7 +558,7 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'flat_cashback'       => 200,
-                'payment_count'       => 2,
+                'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1519457070,
                 'ends_at'             => 1550993070,
@@ -497,7 +592,7 @@ return [
                 'payment_network'     => 'VISA',
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
-                'payment_count'       => 2,
+                'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1419457070,
                 'ends_at'             => 1350993070,
@@ -542,7 +637,7 @@ return [
                 'iins'                      => ['123456', '411111'],
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
-                'payment_count'             => 2,
+                'max_payment_count'         => 2,
                 'starts_at'                 => 1519457070,
                 'ends_at'                   => 1550993070,
             ]
@@ -605,18 +700,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'                        => null,
-                'active'                    => false,
-                'name'                      => 'Test Offer',
-                'payment_method'            => 'card',
-                'payment_method_type'       => 'credit',
-                'payment_network'           => 'VISA',
-                'issuer'                    => 'HDFC',
-                'percent_rate'              => 1000,
-                'processing_time'           => 86400,
-                'payment_count'             => 2,
-                'starts_at'                 => 1519457070,
-                'ends_at'                   => 1550993070,
+                'id'                  => null,
+                'active'              => false,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'max_payment_count'   => 2,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
             ]
         ]
     ],
@@ -631,19 +726,88 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'                        => null,
-                'active'                    => true,
-                'name'                      => 'Updated name',
-                'payment_method'            => 'card',
-                'payment_method_type'       => 'credit',
-                'payment_network'           => 'VISA',
-                'issuer'                    => 'HDFC',
-                'percent_rate'              => 1000,
-                'processing_time'           => 86400,
-                'payment_count'             => 2,
-                'starts_at'                 => 1519457070,
-                'ends_at'                   => 1550993070,
+                'id'                  => null,
+                'active'              => true,
+                'name'                => 'Updated name',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'max_payment_count'   => 2,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
             ]
+        ]
+    ],
+
+    'testUpdateWalletOfferWithMaxPaymentCount' => [
+        'request' => [
+            'content' => [
+                'max_payment_count' => 2,
+            ],
+            'url'    => null,
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'max_payment_count can only be set for card or emi offera',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testUpdateCardOfferWithNoMaxPaymentCount' => [
+        'request' => [
+            'content' => [
+                'linked_offer_ids' => null,
+            ],
+            'url'    => null,
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'linked_offer_ids can only be set for offer with max_payment_count',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testUpdateCardOfferWithInvalidLinkedOfferIds' => [
+        'request' => [
+            'content' => [
+                'linked_offer_ids' => null,
+            ],
+            'url'    => null,
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked offer ids submitted are not valid',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
 
@@ -654,18 +818,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'                        => null,
-                'active'                    => true,
-                'name'                      => 'Test Offer',
-                'payment_method'            => 'card',
-                'payment_method_type'       => 'credit',
-                'payment_network'           => 'VISA',
-                'issuer'                    => 'HDFC',
-                'percent_rate'              => 1000,
-                'processing_time'           => 86400,
-                'payment_count'             => 2,
-                'starts_at'                 => 1519457070,
-                'ends_at'                   => 1550993070,
+                'id'                  => null,
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'max_payment_count'   => 2,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
             ]
         ]
     ],
@@ -681,18 +845,17 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-
-                        'active'                    => true,
-                        'name'                      => 'Test Offer',
-                        'payment_method'            => 'card',
-                        'payment_method_type'       => 'credit',
-                        'payment_network'           => 'VISA',
-                        'issuer'                    => 'HDFC',
-                        'percent_rate'              => 1000,
-                        'processing_time'           => 86400,
-                        'payment_count'             => 2,
-                        'starts_at'                 => 1519457070,
-                        'ends_at'                   => 1550993070,
+                        'active'              => true,
+                        'name'                => 'Test Offer',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'VISA',
+                        'issuer'              => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'processing_time'     => 86400,
+                        'max_payment_count'   => 2,
+                        'starts_at'           => 1519457070,
+                        'ends_at'             => 1550993070,
                     ]
                 ]
             ]

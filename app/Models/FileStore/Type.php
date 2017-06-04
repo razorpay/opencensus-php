@@ -22,6 +22,8 @@ class Type
 
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
+    const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -35,6 +37,8 @@ class Type
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+
+    const REPORT                            = 'report';
 
     const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
     const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
@@ -66,10 +70,12 @@ class Type
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::FEDERAL_NETBANKING_REFUND,
+            self::RBL_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::REPORT,
         ],
 
         Constants\Entity::BATCH => [
@@ -107,6 +113,7 @@ class Type
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::FEDERAL_NETBANKING_REFUND,
+        self::RBL_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
@@ -128,6 +135,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
+            self::REPORT
         ],
 
         self::BATCH_BUCKET_CONFIG => [
@@ -185,7 +193,7 @@ class Type
      */
     public static function isTypeForSharedAccount(string $type)
     {
-        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true)
+        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES, true) === true)
         {
             return true;
         }

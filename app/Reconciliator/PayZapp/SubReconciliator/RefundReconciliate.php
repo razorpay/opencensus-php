@@ -15,6 +15,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $gatewayRefundId = $row[self::COLUMN_REFUND_ID];
 
+        if (empty($gatewayRefundId) === true)
+        {
+            return null;
+        }
+
         $payzappRepo = $this->app['repo']->wallet_payzapp;
 
         $refundId = $payzappRepo->findByGatewayRefundId($gatewayRefundId)->getRefundId();

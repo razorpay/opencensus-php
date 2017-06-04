@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class OrgTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -200,6 +202,16 @@ class OrgTest extends TestCase
     public function testGetOrgByHostname()
     {
         $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    // Test for an exception
+    public function testCreateWithoutPassword()
+    {
+        $permIds = $this->getAssignablePermissionsByIds();
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
         $this->startTest();
     }

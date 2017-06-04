@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
-use BasicAuth;
+use App;
 use RZP\Constants\Mode;
 use RZP\Models;
 use RZP\Models\Base;
@@ -11,6 +11,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
@@ -32,14 +33,24 @@ class Merchant
     protected $serviceTax;
     protected $setlTime;
     protected $setlDetailAmounts;
+    protected $scheduleTasks;
+
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
 
     public function __construct($merchant, $channel, $repo = null)
     {
+        $app = App::getFacadeRoot();
+
         $this->merchant = $merchant;
 
         $this->channel = $channel;
 
         $this->repo = $repo;
+
+        $this->ba = $app['basicauth'];
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
@@ -53,6 +64,9 @@ class Merchant
 
         // Update Settlement Entity
         $this->updateSettlementEntity();
+
+        // Increment attempts in settlements
+        $this->setl->incrementAttempts();
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
@@ -89,6 +103,8 @@ class Merchant
 
         // Updates merchant and api balance
         $this->updateBalances();
+
+        $this->updateMerchantScheduleTask();
 
         $this->saveChangesToDb();
 
@@ -308,11 +324,15 @@ class Merchant
     {
         $setl = (new Settlement\Entity)->generateId();
 
-        $setl->setAmount($this->amount);
-        $setl->setStatus(Status::CREATED);
-        $setl->setFees($this->fee);
-        $setl->setServiceTax($this->serviceTax);
-        $setl->setChannel($this->channel);
+        $input = [
+            Settlement\Entity::AMOUNT       => $this->amount,
+            Settlement\Entity::STATUS       => Status::CREATED,
+            Settlement\Entity::FEES         => $this->fee,
+            Settlement\Entity::SERVICE_TAX  => $this->serviceTax,
+            Settlement\Entity::CHANNEL      => $this->channel,
+        ];
+
+        $setl = $setl->build($input);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
@@ -345,7 +365,7 @@ class Merchant
 
         $values = [
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
-            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
         ];
 
@@ -367,6 +387,8 @@ class Merchant
         $this->repo->saveOrFail($this->bankTransferAtpt);
 
         $this->repo->saveOrFailCollection($this->setlDetails);
+
+        $this->repo->saveOrFailCollection($this->scheduleTasks);
     }
 
     protected function updateBalances(): Transaction\Entity
@@ -374,12 +396,28 @@ class Merchant
         return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
 
+    protected function updateMerchantScheduleTask()
+    {
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->fetchByMerchant($this->merchant, ScheduleTaskType::SETTLEMENT);
+
+        $this->scheduleTasks = new Base\PublicCollection;
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $scheduleTask->updateNextRunAndLastRun();
+
+            $this->scheduleTasks->push($scheduleTask);
+        }
+    }
+
     /**
      * Attaches bank account to merchant entity
      */
     protected function attachMerchantBankAccount(): BankAccount\Entity
     {
-        $mode = BasicAuth::getMode();
+        $mode = $this->ba->getMode();
 
         if (($mode === Mode::TEST) and
             ($this->merchant->bankAccount === null))

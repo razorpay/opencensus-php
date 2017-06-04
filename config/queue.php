@@ -20,12 +20,103 @@ return [
 
     'mock'                  => env('QUEUE_MOCK', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | For accessing values via dot notation nested array need to created
+    |--------------------------------------------------------------------------
+    */
+    'webhook' => [
+        'connection' => 'sqs_multi_default',
+        'test' => [
+            'payment' => [
+                'authorized'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'failed'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'order' => [
+                'paid'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'invoice' => [
+                'paid'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'vpa' => [
+                'edited'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'p2p' => [
+                'created'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'rejected'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'transferred'   => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
+            'subscription' => [
+                'activated'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'overdue'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'halted'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ]
+        ],
+        'live' => [
+            'payment' => [
+                'authorized'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'failed'        => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
+            ],
+            'order' => [
+                'paid'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'invoice' => [
+                'paid'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'vpa' => [
+                'edited'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'p2p' => [
+                'created'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'rejected'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'transferred'   => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
+            'subscription' => [
+                'activated'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'overdue'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'halted'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ]
+        ],
+    ],
+
+    'dashboard' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+
+    'es' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+
+    'es_v2' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_ES_SYNC_QUEUE'),
+        'live'       => env('AWS_ES_SYNC_QUEUE'),
+    ],
+
+    'reports' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_REPORTS_QUEUE'),
+        'live'       => env('AWS_REPORTS_QUEUE'),
+    ],
+
+    'invoice' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+        'live'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+    ],
+
+    'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
     'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
     'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),
-    'sqs_webhooks_live'     => env('AWS_WEBHOOK_LIVE_QUEUE'),
-    'sqs_webhooks_test'     => env('AWS_WEBHOOK_TEST_QUEUE'),
-    'sqs_webhooks_failure'  => env('AWS_WEBHOOK_FAILURE_QUEUE'),
-    'sqs_invoice_emails'    => env('AWS_INVOICE_EMAILS_QUEUE'),
+    'sqs_webhooks_live'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+    'sqs_webhooks_test'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+    'sqs_webhooks_failure'  => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
 
 
     /*

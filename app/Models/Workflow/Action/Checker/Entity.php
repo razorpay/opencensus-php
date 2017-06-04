@@ -38,6 +38,7 @@ class Entity extends Base\Entity
     ];
 
     protected $visible = [
+        self::ID,
         self::ADMIN_ID,
         self::ADMIN,
         self::ACTION_ID,
@@ -59,6 +60,13 @@ class Entity extends Base\Entity
 
     protected $casts = [
         self::APPROVED => 'boolean',
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ADMIN_ID,
+        self::ACTION_ID,
+        self::STEP_ID,
     ];
 
     public function admin()
@@ -106,7 +114,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getStatus() : string
+    public function getStatus()
     {
         if (empty($this->isApproved()) === true)
         {

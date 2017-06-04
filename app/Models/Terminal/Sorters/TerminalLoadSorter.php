@@ -6,6 +6,10 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 
+/**
+ * Contains fallback loadsorting logic based on hardcoded data.
+ * To be removed once rules for new load sorting logic are live
+ */
 class TerminalLoadSorter extends Terminal\Sorter
 {
     protected $properties = [
@@ -19,13 +23,13 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     protected static $rules = [
         [
-            'load'          => 5,
+            'load'          => 500,
             'attributes'    => [
                 Terminal\Entity::GATEWAY           => Gateway::FIRST_DATA
             ]
         ],
         [
-            'load'          => 45,
+            'load'          => 4500,
             'attributes'    => [
                 Terminal\Entity::GATEWAY            => Gateway::AXIS_MIGS
             ]
@@ -38,10 +42,16 @@ class TerminalLoadSorter extends Terminal\Sorter
             ]
         ],
         [
-            'load'      => 5,
+            'load'      => 500,
             'attributes'    => [
                 Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
                 Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_AXIS,
+            ]
+        ],
+        [
+            'load'          => 500,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::EBS
             ]
         ],
     ];
@@ -67,13 +77,11 @@ class TerminalLoadSorter extends Terminal\Sorter
         if (is_null($options) === false)
         {
             $chancePercent = $options->getChance();
-
             $boostedTerminalIds = $this->getBoostedTerminalIds($terminals, $chancePercent);
 
             if (is_null($boostedTerminalIds) === false)
             {
                 $boostedTerminals = [];
-
                 $nonBoostedTerminals = [];
 
                 // As the terminals are from the priority list
@@ -102,13 +110,11 @@ class TerminalLoadSorter extends Terminal\Sorter
         // Not all rules will apply, a terminal may already have
         // been rejected in the previous sorting/filtering steps.
         $applicableRules = $this->getApplicableRules($terminals);
-
         $cumulativeProbabity = 0;
 
         foreach ($applicableRules as $rule)
         {
             $cumulativeProbabity += $rule['load'];
-
             $valid = $this->validateRules($cumulativeProbabity, $applicableRules);
 
             if ($valid === false)
@@ -120,7 +126,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             // Checking > 100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected behaviour.
-            if ($chancePercent > (100 - $cumulativeProbabity))
+            if ($chancePercent > (10000 - $cumulativeProbabity))
             {
                 return $rule['ids'];
             }
@@ -132,7 +138,6 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected function getApplicableRules($terminals)
     {
         $allRules = $this->getRules();
-
         $applicableRules = [];
 
         foreach ($allRules as $rule)
@@ -140,7 +145,6 @@ class TerminalLoadSorter extends Terminal\Sorter
             // If the rule has any matching terminal then only merge
             // it to the applicableRules array
             $merge = false;
-
             // Rules only apply to terminals that have made it
             // this far in the selection process
             foreach ($terminals as $terminal)
@@ -176,7 +180,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         // Cumulative probability for all applicable rules
         // can't possibly be above 100. In this case, don't
         // boost any terminal.
-        if ($cumulativeProbability > 100)
+        if ($cumulativeProbability > 10000)
         {
             $this->trace->error(
                 TraceCode::TERMINAL_BOOST_INVALID,

@@ -388,7 +388,7 @@ class Core extends Base\Core
 
     protected function validateMerchantForTransfer(Merchant\Entity $merchant)
     {
-        $isOnHold = $merchant->holdFunds();
+        $isOnHold = $merchant->getHoldFunds();
 
         //
         // Don't allow a transfer operation on live mode
@@ -397,6 +397,16 @@ class Core extends Base\Core
         if (($this->mode === Constants\Mode::LIVE) and
             ($isOnHold === true))
         {
+            //
+            // Banks are testing our Openwallet demo app on
+            // on live mode, merchant ID 5ohNv7JkUtGrRx
+            // and hence we're ignoring this check for the merchant ID
+            //
+            if ($merchant->getId() === '5ohNv7JkUtGrRx')
+            {
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
                 null,

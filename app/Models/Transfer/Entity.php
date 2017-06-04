@@ -94,6 +94,15 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL          => 'int',
     ];
 
+    protected $dates = [
+        self::ON_HOLD_UNTIL,
+    ];
+
+    protected $amounts = [
+        self::AMOUNT,
+        self::AMOUNT_REVERSED,
+    ];
+
     protected $defaults = [
         self::AMOUNT_REVERSED   => 0,
         self::NOTES             => [],
@@ -263,5 +272,16 @@ class Entity extends Base\PublicEntity
         }
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
+    }
+
+    public function toArrayReport()
+    {
+        $data = parent::toArrayReport();
+
+        $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
+
+        $data[self::ON_HOLD_UNTIL] = $this->getDateInFormatDMYHMS(self::ON_HOLD_UNTIL);
+
+        return $data;
     }
 }

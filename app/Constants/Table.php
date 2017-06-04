@@ -10,6 +10,7 @@ class Table
     const IIN                   = 'iins';
     const KEY                   = 'keys';
     const CARD                  = 'cards';
+    const PLAN                  = 'plans';
     const ITEM                  = 'items';
     const USER                  = 'users';
     const BATCH                 = 'batches';
@@ -18,8 +19,10 @@ class Table
     const TOKEN                 = 'tokens';
     const COUPON                = 'coupons';
     const DEVICE                = 'devices';
+    const ADDON                 = 'addons';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
+    const REPORT                = 'reports';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const RECEIVER              = 'receivers';
@@ -31,11 +34,11 @@ class Table
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
     const FEATURE               = 'features';
+    const MERCHANT              = 'merchants';
+    const EMI_PLAN              = 'emi_plans';
     const SCHEDULE              = 'schedules';
     const TERMINAL              = 'terminals';
-    const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
-    const EMI_PLAN              = 'emi_plans';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
     const LINE_ITEM             = 'line_items';
@@ -46,7 +49,9 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
+    const SUBSCRIPTION          = 'subscriptions';
     const SCHEDULE_TASK         = 'schedule_tasks';
+    const LINE_ITEM_TAX         = 'line_item_taxes';
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
     const MERCHANT_DETAIL       = 'merchant_details';
@@ -85,6 +90,7 @@ class Table
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
+    const AEPS                  = 'aeps';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';
@@ -106,10 +112,17 @@ class Table
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
+    const GATEWAY_RULE          = 'gateway_rules';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+
+    // Tax and Tax Groups
+
+    const TAX                   = 'taxes';
+    const TAX_GROUP             = 'tax_groups';
+    const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

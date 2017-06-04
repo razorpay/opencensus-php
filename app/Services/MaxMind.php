@@ -71,9 +71,6 @@ class MaxMind
             'shop_id'          => $payment->getMerchantId(),
             'time'             => Carbon::now()->toIso8601String(),
             'type'             => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
-        ])->withEmail([
-            'address'          => md5($payment->getEmail()),
-            'domain'           => $this->getEmailDomain($payment)
         ])->withBilling([
             'first_name'       => $card->getFirstName(),
             'last_name'        => $card->getLastName(),
@@ -84,6 +81,14 @@ class MaxMind
             'amount'           => $this->getFormattedAmount($payment),
             'currency'         => $payment->getCurrency(),
         ]);
+
+        if ($payment->isCustomerMailAbsent() === false)
+        {
+            $request->withEmail([
+                'address' => md5($payment->getEmail()),
+                'domain'  => $this->getEmailDomain($payment)
+             ]);
+        }
 
         $response = $request->score();
 

@@ -53,6 +53,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->where(Entity::LEVEL, '>', $level)
+                    ->orderBy(Entity::LEVEL)
                     ->first();
     }
 
@@ -97,5 +98,12 @@ class Repository extends Base\Repository
                     ->where(Entity::WORKFLOW_ID, '=', $wid)
                     ->with(Entity::WORKFLOW)
                     ->get();
+    }
+
+    public function getLastLevelOfWorkflow(string $workflowId)
+    {
+        return (int) $this->newQuery()
+                          ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                          ->max(Entity::LEVEL);
     }
 }

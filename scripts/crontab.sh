@@ -55,14 +55,17 @@ add_cron() {
 add_cron "6 2 * * *"       "payment_auth_notify_prod"  GET  "$BASE_URL/payments/auth/notify"             ""                              $LIVE_AUTH
 add_cron "5 0 * * *"       "mrchnt_daily_report_prod"  POST "$BASE_URL/merchants/report"                 ""                              $LIVE_AUTH
 add_cron "0 14 * * *"      "authorized_reminder_live"  GET  "$BASE_URL/payments/all/reminder"            ""                              $LIVE_AUTH
-add_cron "30 0 * * 1-6"    "beneficiary_gen_live"      POST "$BASE_URL/merchants/beneficiary/file/bank"  ""                              $LIVE_AUTH
 add_cron "0 3 * * *"       "emi_excel_generate"        POST "$BASE_URL/emi/generate/excel"               ""                              $LIVE_AUTH
-add_cron "0 6 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard"                        ""                              $LIVE_AUTH
+add_cron "5 0 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard"                        ""                              $LIVE_AUTH
 add_cron "0 * * * *"       "prod_international_curren" POST "$BASE_URL/international/USD/rates"          ""                              $LIVE_AUTH
-add_cron "*/30 * * * *"    "payment_update_on_hold"    POST "$BASE_URL/payments/on_hold/update"          ""                              $LIVE_AUTH
+add_cron "22 */2 * * *"    "payment_update_on_hold"    POST "$BASE_URL/payments/on_hold/update"          ""                              $LIVE_AUTH
 
-# Settlement
-add_cron "1 5-18 * * 1-6"  "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
+# Settlements/Payouts
+add_cron "1 7-18 * * 1-6"  "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
+add_cron "0 6 * * 1-6"     "settlement_prod_test"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $TEST_AUTH
+add_cron "30 22 * * 1-6"   "settlement_recon_test"     POST "$BASE_URL/settlements/reconcile/test"       ""                              $TEST_AUTH
+add_cron "30 0 * * 1-6"    "beneficiary_gen_live"      POST "$BASE_URL/merchants/beneficiary/file/bank"  ""                              $LIVE_AUTH
+add_cron "1 5-18 * * 1-6"  "payouts_prod_live"         POST "$BASE_URL/payouts/initiate/kotak"           ""                              $LIVE_AUTH
 
 # Verify
 add_cron "* * * * *"       "payment_verify_prod_live"  POST "$BASE_URL/payments/verify/payments_failed"  ""                              $LIVE_AUTH
@@ -91,10 +94,20 @@ add_cron "0 4 * * *"        "upi_refunds_prod"               POST "$BASE_URL/ref
 add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/orders/payments/refund"                     ""                              $LIVE_AUTH
 add_cron "48 3-21/6 * * *"  "batch_processor_prod"           POST "$BASE_URL/batches/process"                            ""                              $LIVE_AUTH
 add_cron "7 10,22 * * *"    "gateway_create_refund_rec"      POST "$BASE_URL/refunds/billdesk/create_record"             ""                              $LIVE_AUTH
-add_cron "7 10,22 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/refunds/wallet_freecharge/create_record"    ""                              $LIVE_AUTH
-add_cron "7 * * * *"        "freecharge_validate_refund_rec" POST "$BASE_URL/refunds/wallet_freecharge/validate"         ""                              $LIVE_AUTH
-add_cron "30 * * * *"       "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
-add_cron "*/10 * * * *"     "invoice_expire_bulk"            POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
+add_cron "58 7,19 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/refunds/wallet_freecharge/create_record"    ""                              $LIVE_AUTH
+# add_cron "33 1-19/6 * * *"  "freecharge_validate_refund_rec" POST "$BASE_URL/refunds/wallet_freecharge/validate"         ""                              $LIVE_AUTH
+# add_cron "9,39 * * * *"     "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
+add_cron "*/15 * * * *"     "refund_failed_retry"            POST "$BASE_URL/refunds/retry/failed"                       ""                              $LIVE_AUTH
+
+# Invoice
+add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
+add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
+
+# Subscription
+add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/charge/invoices"              ""                              $LIVE_AUTH
+add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
+add_cron "*/10 * * *"       "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+
 
 # Install the generated crontab
 crontab $TMP_CRONTAB

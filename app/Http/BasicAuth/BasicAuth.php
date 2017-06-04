@@ -97,7 +97,7 @@ class BasicAuth
      * Admin who is authenticating himself
      * through adminAuth
      */
-    private $isAdmin = null;
+    private $isAdmin = false;
 
     /**
      * During app authentication, the app
@@ -208,6 +208,9 @@ class BasicAuth
         $this->route = $this->app['api.route'];
         $this->merchant = null;
         $this->device = null;
+        $this->isAdmin = false;
+        $this->appAuth = false;
+        $this->proxy = false;
     }
 
     public function setCredentials()
@@ -327,45 +330,6 @@ class BasicAuth
         return $this->invalidApiKey();
     }
 
-    public function adminAuth()
-    {
-        $this->setType(Type::ADMIN_AUTH);
-
-        $res = $this->setCredentials();
-
-        // null is the good value here
-        if ($res !== null)
-        {
-            return $res;
-        }
-
-        if ($this->getKey() !== 'admin')
-        {
-            return $this->invalidApiKey();
-        }
-
-        $this->setAdminTrue();
-
-        $token = $this->getSecret();
-
-        $adminToken = $this->fetchAdminToken($token);
-
-        if ($adminToken->getAdminId() !== null)
-        {
-            $this->checkForDashboardMerchantHeader();
-
-            $this->setDashboardHeaders();
-
-            $this->admin = $adminToken->admin;
-
-            $this->adminOrgId = $this->admin->getOrgId();
-
-            return $this->checkAndSetAccountScope();
-        }
-
-        return $this->invalidApiKey();
-    }
-
     /**
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
@@ -442,6 +406,12 @@ class BasicAuth
             // from merchant dashboard and not admin dashboard
             // which can potentially cause a security issue and
             // hence needs to be actively checked against.
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
 
             $this->checkForDashboardMerchantHeader();
 
@@ -472,12 +442,61 @@ class BasicAuth
         // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             $this->setDashboardHeaders();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    /**
+     * The return values will be those of:
+     *
+     * @return \Response|null
+     */
+    protected function setAdminAuthIfApplicable()
+    {
+        $adminToken = $this->request->header('X-Admin-Token');
+
+        if ($adminToken !== null)
+        {
+            // Remove the token so that subsequent code has no
+            // access to it (prevents logging, etc.)
+            $this->request->headers->remove('X-Admin-Token');
+
+            $token = $this->fetchAdminToken($adminToken);
+
+            if ($token->getAdminId() !== null)
+            {
+                $this->setAdminTrue();
+
+                $this->admin = $token->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return;
+            }
+
+            return $this->invalidApiKey();
+        }
+
+        // `Route::$admin` contains routes that should strictly
+        // be on admin auth and cannot be accessed over others
+        // (proxy, internal, etc.)
+        $currentRoute = $this->router->currentRouteName();
+
+        if (in_array($currentRoute, Route::$admin, true) === true)
+        {
+            return $this->invalidApiKey();
+        }
     }
 
     public function deviceAuth()
@@ -793,7 +812,9 @@ class BasicAuth
         // The key in case of app proxy will be the merchant id
         $merchantId = $this->getKey();
 
-        $this->merchant = $this->repo->merchant->find($merchantId);
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $this->setMerchant($merchant);
 
         // If merchant id isn't found, then return false.
         return ($this->merchant !== null);
@@ -919,12 +940,12 @@ class BasicAuth
 
                 $this->internalApp = $name;
 
-                if ((isset($info['cloud'])) and
-                    ($info['cloud'] === true))
-                {
-                    // Disable internal ip checks for now
-                    // $verify = $this->verifyClientIpInternal();
-                }
+                // if ((isset($info['cloud'])) and
+                //     ($info['cloud'] === true))
+                // {
+                //     Disable internal ip checks for now
+                //     $verify = $this->verifyClientIpInternal();
+                // }
 
                 break;
             }
@@ -1034,6 +1055,11 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
+    public function setMerchant($merchant)
+    {
+        $this->merchant = $merchant;
+    }
+
     protected function setType($type)
     {
         $this->type = $type;
@@ -1070,7 +1096,7 @@ class BasicAuth
 
     public function isAdminAuth()
     {
-        return ($this->type === Type::ADMIN_AUTH);
+        return $this->isAdmin;
     }
 
     public function isPublicAuth()
@@ -1146,7 +1172,18 @@ class BasicAuth
 
     protected function fetchAdminToken($token)
     {
-        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = $this->mode;
+        }
+
+        // Admin token check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $this->adminToken = $this->repo->admin_token->connection($mode)->findOrFailToken($token);
 
         return $this->adminToken;
     }

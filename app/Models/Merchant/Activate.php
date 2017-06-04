@@ -3,8 +3,11 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+
+use RZP\Constants\MailTags;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
@@ -14,7 +17,6 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -25,8 +27,6 @@ class Activate extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
-
-        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
         //
         // Ensure that all payment methods enabled for the merchant
@@ -52,11 +52,18 @@ class Activate extends Base\Core
 
         (new Merchant\Validator)->validateBeforeActivate($merchant);
 
-        (new Merchant\Core)->createBalance($merchant, 'live');
+        $oldMerchant = clone $merchant;
 
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
+
+        (new Merchant\Core)->createBalance($merchant, 'live');
 
         $this->repo->saveOrFail($merchant);
 
@@ -66,7 +73,7 @@ class Activate extends Base\Core
 
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
 
-        $this->sendActivationEmail($merchant, $plan);
+        $this->sendActivationEmail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -77,22 +84,41 @@ class Activate extends Base\Core
      * @param  RZP\Models\Merchant\Entity $merchant merchant entity
      * @return null
      */
-    protected function sendActivationEmail($merchant, $plan)
+    public function sendActivationEmail($merchant)
     {
+        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
+
+        $org = $merchant->org;
+
         $subjectName = $merchant->getBillingLabelElseName();
 
-        $subject = "Razorpay | Account activated for $subjectName";
+        if ($org === null)
+        {
+            $org = $this->repo->org->getRazorpayOrg();
+        }
+
+        $subject = $org->getBusinessName() . " | Account activated for $subjectName";
 
         $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant' => $merchant->toArray(),
-            'plan'     => $plan,
+            'merchant' => [
+                'name'          => $merchant->getName(),
+                'website'       => $merchant->getWebsite(),
+                'billing_label' => $merchant->getBillingLabel(),
+                'email'         => $merchant->getEmail(),
+                'org'           => [
+                    'business_name' => $org->getBusinessName(),
+                    'custom_code'   => $org->getCustomCode(),
+                ],
+            ],
             'rules'    => $this->formatPricingRules($rules),
             'subject'  => $subject,
         ];
+
+        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
 
         $config = $this->app->config->get('applications.mailgun');
 
@@ -109,11 +135,20 @@ class Activate extends Base\Core
                 'text' => 'emails.merchant.activation_text'
             ],
             $data,
-            function ($message) use ($data, $config)
+            function ($message) use ($data, $config, $org)
             {
                 $message->to($data['merchant']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->cc('notifications@razorpay.com');
+
+                if ($org->getId() === Org\Entity::RAZORPAY_ORG_ID)
+                {
+                    $message->from($config['from_email'], $config['from_name']);
+                    $message->cc('notifications@razorpay.com');
+                }
+                else
+                {
+                    $message->from($org->getFromEmail(), $org->getDisplayName());
+                }
+
                 $message->subject($data['subject']);
 
                 $headers = $message->getHeaders();

@@ -16,6 +16,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Trace\TraceCode;
 use RZP\Services\Elfin\Service as Elfin;
 
@@ -47,6 +48,13 @@ class Generator extends Base\Core
      */
     protected $baseInvoiceUrl;
 
+    /**
+     * The subscription associated for the invoice.
+     *
+     * @var Subscription\Entity
+     */
+    protected $subscription;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -66,7 +74,19 @@ class Generator extends Base\Core
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
-    public function generate(array $input)
+    /**
+     * @param null|Subscription\Entity $subscription
+     *
+     * @return $this
+     */
+    public function setSubscription($subscription)
+    {
+        $this->subscription = $subscription;
+
+        return $this;
+    }
+
+    public function generate(array $input): Entity
     {
         $this->generateInvoiceSkeleton($input);
 
@@ -76,6 +96,8 @@ class Generator extends Base\Core
                 function() use ($input)
                 {
                     $this->preProcessGeneration($input);
+
+                    (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
 
                     if ($this->invoice->getStatus() === Status::ISSUED)
                     {
@@ -93,11 +115,26 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
+    /**
+     * @param array                     $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
     protected function preProcessGeneration(array $input)
     {
         $this->associateCustomerWithInvoice($input);
 
-        $this->createLineItemsFromInputAndSetInvoiceAmount($input);
+        if ($this->subscription !== null)
+        {
+            $this->invoice->subscription()->associate($this->subscription);
+
+            if ($this->subscription->getStatus() === Subscription\Status::HALTED)
+            {
+                $this->invoice->setSubscriptionStatus(Status::HALTED);
+            }
+        }
+
+        $this->createLineItems($input);
     }
 
     /**
@@ -118,11 +155,9 @@ class Generator extends Base\Core
                 $input[Entity::LINE_ITEMS],
                 $this->merchant,
                 $this->invoice);
-
-            $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-            $this->invoice->setAmount($totalAmount);
         }
+
+        (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
 
         if ($this->invoice->getStatus() === Status::ISSUED)
         {
@@ -136,9 +171,10 @@ class Generator extends Base\Core
      * Here t or l is short form for test or live mode.
      *
      * @return string
+     *
      * @throws LogicException
      */
-    protected function getInvoiceLink()
+    protected function getInvoiceLink(): string
     {
         $invoiceId = $this->invoice->getId();
 
@@ -185,11 +221,13 @@ class Generator extends Base\Core
 
         $invoice = new Entity;
 
+        // Merchant should get associated before calling build()
+        // as invoice's validator uses merchant relation.
+        $invoice->merchant()->associate($this->merchant);
+
         $invoice->build($input);
 
         (new Validator)->validateInput(camel_case($operation), $input);
-
-        $invoice->merchant()->associate($this->merchant);
 
         //
         // This is being done because dashboard can create an invoice
@@ -204,7 +242,6 @@ class Generator extends Base\Core
         // without saving the invoice. Also, to generate a shortUrl,
         // we need the invoice ID.
         //
-
         $invoice->generateId();
 
         $this->invoice = $invoice;
@@ -222,8 +259,6 @@ class Generator extends Base\Core
     {
         $this->invoice->getValidator()
                       ->validateInvoiceIssue();
-
-        $this->invoice->setDefaultExpireByIfNotAlreadySet();
 
         $this->invoice->setStatus(Status::ISSUED);
 
@@ -247,10 +282,21 @@ class Generator extends Base\Core
                 'long_url'       => $longUrl,
             ]);
 
+        //
+        // TODO: Currently, since we are not exposing the invoice
+        // to the customer at all, should we NOT generate
+        // a short_url at all? We can start exposing it when
+        // we start exposing the invoices to the customer.
+        // This might create issues because the merchant, when
+        // he sees a short_url, he might send the link to the
+        // customer and the customer might try paying it.
+        // We will have to make changes in the invoice
+        // template to remove the pay link.
+        //
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    protected function createLineItemsFromInputAndSetInvoiceAmount(array $input)
+    protected function createLineItems(array $input)
     {
         if (isset($input[Entity::LINE_ITEMS]) === false)
         {
@@ -261,10 +307,6 @@ class Generator extends Base\Core
             $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
-
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-        $this->invoice->setAmount($totalAmount);
     }
 
     protected function createAndAssociateOrderForInvoice()

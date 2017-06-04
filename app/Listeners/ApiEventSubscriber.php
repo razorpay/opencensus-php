@@ -2,7 +2,6 @@
 
 namespace RZP\Listeners;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Events\Dispatcher;
 
 use App;
@@ -12,13 +11,11 @@ use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Jobs\DispatchRouter;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
 {
-    // Used to push jobs to queues
-    use DispatchesJobs;
-
     /**
      * Event being fired
      * @var string
@@ -37,11 +34,14 @@ class ApiEventSubscriber extends Base\Core
 
     protected $webhookEnabledForEvent = false;
 
-    // Events for which only webhook needs to be triggered
-    protected static $webhookOnlyEvents = [
-        WebhookEvent::PAYMENT_AUTHORIZED,
-        WebhookEvent::PAYMENT_FAILED,
-        WebhookEvent::ORDER_PAID,
+    /**
+     * Events for which other things apart from
+     * webhooks also needs to be triggered/done.
+     *
+     * @var array
+     */
+    protected static $notWebhookOnlyEvents = [
+        WebhookEvent::INVOICE_PAID,
     ];
 
     public function __construct()
@@ -63,13 +63,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
 
-        // Returns if:
-        // - Event is web-hook only event,
-        // - Merchant doesn't have web-hook enabled
-        if (in_array($event, self::$webhookOnlyEvents, true) and
+        //
+        // Doesn't execute the event if
+        // - The event's purpose is only webhook
+        // - Webhook not enabled for the event
+        //
+        if ((in_array($event, self::$notWebhookOnlyEvents, true) === false) and
             ($this->webhookEnabledForEvent === false))
         {
-            return;
+            return null;
         }
 
         $this->params = $params;
@@ -127,8 +129,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onInvoicePaid($payment)
     {
-        $invCore = new Invoice\Core;
-        $invCore->setCustomerDetailsFromPaymentIfAbsent($payment);
+        (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
         if ($this->webhookEnabledForEvent === false)
         {
@@ -140,6 +141,34 @@ class ApiEventSubscriber extends Base\Core
 
         $this->prepareAndDispatchWebhook($payload);
     }
+
+    protected function onSubscriptionActivated($subscription)
+    {
+        $payload = $this->getSubscriptionPayload($subscription);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onSubscriptionOverdue($subscription)
+    {
+        $payload = $this->getSubscriptionPayload($subscription);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onSubscriptionHalted($subscription)
+    {
+        $payload = $this->getSubscriptionPayload($subscription);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    // protected function onSubscriptionExpired($subscription)
+    // {
+    //     $payload = $this->getSubscriptionPayload($subscription);
+    //
+    //     $this->prepareAndDispatchWebhook($payload);
+    // }
 
     protected function onVpaEdited($vpa)
     {
@@ -185,6 +214,15 @@ class ApiEventSubscriber extends Base\Core
 
         $partialPayload['sink'] = [
             'entity' => $sink->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getSubscriptionPayload($subscription)
+    {
+        $partialPayload[Constants\Entity::SUBSCRIPTION] = [
+            'entity' => $subscription->toArrayPublic()
         ];
 
         return $partialPayload;
@@ -261,7 +299,9 @@ class ApiEventSubscriber extends Base\Core
     {
         $data = $this->getWebhookData($payload);
 
-        $this->dispatch(new Webhook($data));
+        $job = new Webhook($data);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::WEBHOOK, [$this->event]);
     }
 
     protected function getWebhookData($payload)

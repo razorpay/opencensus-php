@@ -12,6 +12,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Permission;
 
 class Entity extends Base\Entity
 {
@@ -73,6 +76,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::USERNAME,
         self::PASSWORD,
+        self::PASSWORD_CONFIRMATION,
         self::REMEMBER_TOKEN,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
@@ -206,8 +210,10 @@ class Entity extends Base\Entity
     {
         $permissions = [];
 
+        $roles = $this->roles()->with('permissions')->get();
+
         // Create a list of all the permissions from all the roles
-        foreach ($this->roles as $role)
+        foreach ($roles as $role)
         {
             foreach ($role->permissions->toArray() as $permission)
             {
@@ -472,9 +478,68 @@ class Entity extends Base\Entity
     {
         $extra = [
             self::ROLES,
-            self::GROUPS
+            self::GROUPS,
         ];
 
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getAdminOrgId();
+
+        $org = (new Org\Repository)->findOrFailPublic($orgId);
+
+        if ($org->getAuthType() === Org\AuthType::PASSWORD)
+        {
+            $extra = array_merge(
+                $extra,
+                [self::PASSWORD, self::PASSWORD_CONFIRMATION]);
+        }
+
         return array_merge($this->fillable, $extra);
+    }
+
+    /**
+     * Get all relations to the array
+     */
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::ROLES,
+            self::GROUPS,
+        ];
+    }
+
+    public function hasPermission($permission)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app['api.route']->isWorkflowExecuteCall() === true)
+        {
+            return true;
+        }
+
+        $adminPermissions = $this->getPermissionsList();
+
+        return (in_array($permission, $adminPermissions, true) === true);
+    }
+
+    public function hasPermissionOrFail($permission)
+    {
+        $hasPermission = $this->hasPermission($permission);
+
+        if ($hasPermission === false)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        // $hasPermission === true
+        return $hasPermission;
+    }
+
+    public function hasMerchantActionPermissionOrFail($action)
+    {
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        return $this->hasPermissionOrFail($routePermission);
     }
 }

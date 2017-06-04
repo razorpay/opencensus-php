@@ -22,6 +22,19 @@ trait ScheduleTrait
         return $response;
     }
 
+    private function editSchedule($id, $input)
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/schedules/'.$id,
+            'content' => $input,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function fetchSchedule($id)
     {
         $request = [
@@ -67,12 +80,10 @@ trait ScheduleTrait
     {
         return [
             'name'       => 'Every Wednesday',
-            'type'       => 'settlement',
             'period'     => 'weekly',
             'interval'   => 1,
             'anchor'     => 3,
             'delay'      => 1,
-            'next_run'   => 1452105000,
         ];
     }
 }

@@ -2,17 +2,17 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
-use RZP\Error\ErrorCode;
+use ApiResponse;
 use RZP\Exception;
-use RZP\Constants\Entity as E;
 use RZP\Models\Key;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Terminal;
 use RZP\Models\Report;
+use RZP\Models\Terminal;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Credits;
 
 class MerchantController extends Controller
 {
@@ -224,6 +224,15 @@ class MerchantController extends Controller
     public function postActivate($id)
     {
         $data = (new Merchant\Service)->activate($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSendActivationMail()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->sendActivationEmail($input);
 
         return ApiResponse::json($data);
     }
@@ -450,7 +459,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $report = new Report\BasicEntityReport($entity);
+        $report = new Report\Types\BasicEntityReport($entity);
 
         return $report->getReport($input);
     }
@@ -459,7 +468,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $report = new Report\BasicEntityReport($entity);
+        $report = new Report\Types\BasicEntityReport($entity);
 
         $data = $report->getReportUrl($input);
 
@@ -470,7 +479,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $report = new Report\BrokerTransactionReport(E::TRANSACTION);
+        $report = new Report\Types\BrokerTransactionReport(E::TRANSACTION);
 
         return $report->getReport($input);
     }
@@ -479,14 +488,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new Report\InvoiceReport)->getInvoice($input);
+        return (new Report\Types\InvoiceReport)->getInvoice($input);
     }
 
     public function getInvoiceReportV2()
     {
         $input = Request::all();
 
-        return (new Report\InvoiceReport)->getInvoiceV2($input);
+        return (new Report\Types\InvoiceReport)->getInvoiceV2($input);
     }
 
     /**
@@ -523,6 +532,24 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = (new Merchant\Service)->updateMethodsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateHoldFundsForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateHoldFundsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateBankAccountForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateBankAccountForMultipleMerchants($input);
 
         return ApiResponse::json($data);
     }
@@ -662,5 +689,12 @@ class MerchantController extends Controller
         $response = ['id' => $this->ba->getMerchant()->getId()];
 
         return ApiResponse::json($response);
+    }
+
+    public function getUsers($id)
+    {
+        $data = (new Merchant\Service)->getUsers($id);
+
+        return ApiResponse::json($data);
     }
 }

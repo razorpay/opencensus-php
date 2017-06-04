@@ -7,7 +7,7 @@ $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 $key_id = $_GET['key'] ?? 'rzp_test_1DP5mmOlF5G5ag';
 $secret = 'thisissupersecret';
 
-$public_url = $key_id.'@'.$baseurl;
+$public_url = $baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
 $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 ?>
@@ -87,6 +87,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
                 <option value="FDRL">Federal Bank</option>
+                <option value="RATN">RBL Bank</option>
                 <option value="CITI">CITI Bank</option>
                 <option value="UTIB">Axis Bank</option>
                 <option value="YESB">Yes Bank</option>
@@ -113,6 +114,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="freecharge">Freecharge</option>
                 <option value="jiomoney">JioMoney</option>
                 <option value="openwallet">Openwallet (B2B)</option>
+                <option value="mpesa">Vodafone Mpesa</option>
             </select>
         </td>
     </tr>
@@ -163,7 +165,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan='40'>Razorpay Order Id:</td>
-        <td><input type="text" name="order_id" size="25" value=""></td>
+        <!-- <td><input type="text" name="order_id" size="25" value=""></td> -->
     </tr>
     <tr>
         <td colspan='40'>Order Id:</td>

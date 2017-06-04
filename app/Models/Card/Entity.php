@@ -140,6 +140,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Card\Entity', self::GLOBAL_CARD_ID, self::ID);
     }
 
+    public function hasGlobalCard(): bool
+    {
+        return $this->isAttributeNotNull(self::GLOBAL_CARD_ID);
+    }
+
     protected function generateLast4($input)
     {
         $last4 = substr($input['number'], -4);
@@ -188,7 +193,7 @@ class Entity extends Base\PublicEntity
         }
 
         if ((isset($input['expiry_year'])) and
-            (strlen($input['expiry_year']) == 2))
+            (strlen($input['expiry_year']) === 2))
         {
             $input['expiry_year'] = '20'.$input['expiry_year'];
         }
@@ -483,6 +488,13 @@ class Entity extends Base\PublicEntity
         $iin = $this->getIin();
 
         $last4 = $this->getLast4();
+
+        $blackListedIins = Card\BlackList::BLOCKED_IIN;
+
+        if (in_array($iin, $blackListedIins) === true)
+        {
+            return true;
+        }
 
         $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
 

@@ -10,85 +10,78 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const ID          = 'id';
     const NAME        = 'name';
     const MERCHANT_ID = 'merchant_id';
-    const TYPE        = 'type';
     const PERIOD      = 'period';
     const INTERVAL    = 'interval';
     const ANCHOR      = 'anchor';
     const HOUR        = 'hour';
     const DELAY       = 'delay';
-    const NEXT_RUN    = 'next_run';
 
     const DELETED_AT  = 'deleted_at';
 
-    protected $fillable = array(
-        self::ID,
+    protected $fillable = [
         self::NAME,
-        self::TYPE,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
         self::HOUR,
         self::DELAY,
-        self::NEXT_RUN,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::NAME,
         self::MERCHANT_ID,
-        self::TYPE,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
         self::HOUR,
         self::DELAY,
-        self::NEXT_RUN,
-    );
+    ];
 
-    protected static $modifiers = array(
+    protected static $modifiers = [
         self::ANCHOR,
-        self::NEXT_RUN,
-    );
+    ];
 
     protected $casts = [
         self::INTERVAL => 'int',
         self::ANCHOR   => 'int',
         self::HOUR     => 'int',
         self::DELAY    => 'int',
-        self::NEXT_RUN => 'int',
+    ];
+
+    protected $defaults = [
+        self::DELAY     => 0,
+        self::HOUR      => 0,
+        self::ANCHOR    => null,
+        self::INTERVAL  => null,
+        self::NAME      => null,
     ];
 
     protected $entity = 'schedule';
 
-    public function updateNextRun()
-    {
-        $lastRun = Carbon::createFromTimestamp($this->getNextRun(), 'Asia/Kolkata');
-
-        $currentTime = Carbon::now('Asia/Kolkata');
-
-        $nextRun = Library::computeFutureRun($this, $currentTime, $lastRun);
-
-        $this->setNextRun($nextRun->timestamp);
-    }
-
-    // -------------------------- Checks -------------------------------------------
+    // -------------------------- Checks -----------------------
 
     public function isHourly()
     {
         return ($this->getPeriod() === Period::HOURLY);
     }
 
-    // ----------------------- Associations ----------------------------------------
+    public function hasHour()
+    {
+        return (($this->isHourly() === false) and
+                ($this->getHour() !== 0));
+    }
+
+    // ----------------------- Relations -----------------------
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    // ----------------------- Modifiers -------------------------------------------
+    // ----------------------- Modifiers -----------------------
 
     public function modifyAnchor(& $input)
     {
@@ -106,17 +99,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function modifyNextRun(& $input)
-    {
-        if (isset($input[self::NEXT_RUN]) === false)
-        {
-            $nextRun = Carbon::today('Asia/Kolkata')->timestamp;
-
-            $input[self::NEXT_RUN] = $nextRun;
-        }
-    }
-
-    // ----------------------- Getters ---------------------------------------------
+    // ----------------------- Getters -----------------------
 
     public function getName()
     {
@@ -126,11 +109,6 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
     }
 
     public function getPeriod()
@@ -158,21 +136,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DELAY);
     }
 
-    public function getNextRun()
+    // ----------------------- Setters -----------------------
+
+    public function setAnchor($anchor)
     {
-        return $this->getAttribute(self::NEXT_RUN);
+        $this->setAttribute(self::ANCHOR, $anchor);
     }
-
-    // ----------------------- Setters ---------------------------------------------
-
-    public function setNextRun($nextRun)
-    {
-        return $this->setAttribute(self::NEXT_RUN, $nextRun);
-    }
-
-    public function setMerchantId($merchantId)
-    {
-        return $this->setAttribute(self::MERCHANT_ID, $merchantId);
-    }
-
 }

@@ -52,13 +52,13 @@ class SettlementTest extends TestCase
             {
                 $txn = $payment->transaction;
 
-                $this->assertEquals(2300, $txn->fee);
-                $this->assertEquals(7700, $txn->credit);
+                $this->assertEquals(2000, $txn->fee);
+                $this->assertEquals(8000, $txn->credit);
                 $this->assertEquals(0, $txn->debit);
-                $this->assertEquals(300, $txn->service_tax);
+                $this->assertEquals(0, $txn->service_tax);
             }
 
-            $this->assertEquals(15400, $merchant->balance->getBalance());
+            $this->assertEquals(16000, $merchant->balance->getBalance());
 
             $merchantPayments[] = $payments;
         }
@@ -69,8 +69,8 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(10000, $refund->transaction->debit);
 
-        $this->assertEquals(5400, $merchants[0]->balance->reload()->getBalance());
-        $this->assertEquals(5400, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
     }
 
     /**
@@ -407,7 +407,7 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
-        $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlement');
 
         // Validate settlement txn entity
         $setlTxn = $this->getLastEntity('transaction', true);
@@ -447,6 +447,9 @@ class SettlementTest extends TestCase
         $this->assertNull($batchFundTransfer['reconciled_at']);
         $this->assertNotNull($batchFundTransfer['txt_file_id']);
         $this->assertNotNull($batchFundTransfer['excel_file_id']);
+
+        // Validate association of settlement with batch
+        $this->assertEquals($batchFundTransfer['id'], $setl['batch_fund_transfer_id']);
 
         // Validate fund_transfer_attempt entity
         $bta = $this->getLastEntity('fund_transfer_attempt', true);

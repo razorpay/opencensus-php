@@ -52,8 +52,12 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'file_path' => $file['local_file_path']
+            'file_path'  => $file['local_file_path'],
+            'file_name'  => basename($file['local_file_path']),
+            'signed_url' => $signedFileUrl,
         ];
 
         $this->sendRefundEmail($fileData);
@@ -64,8 +68,9 @@ class RefundFile extends Base\RefundFile
     protected function sendRefundEmail($fileData = [])
     {
         $data = [
-            'file' => $fileData['file_path'],
-            'body' => 'Please find attached refunds information for UPI'
+            'file_url'  => $fileData['signed_url'],
+            'body'      => 'Please find attached refunds information for UPI',
+            'file_name' => $fileData['file_name'],
         ];
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
@@ -80,7 +85,7 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($data['file']);
+            $message->attach($data['file_url'], ['as' => $data['file_name']]);
 
             $headers = $message->getHeaders();
 
@@ -90,10 +95,17 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
+        $data = [];
+
         $fileName = $this->getFileToWriteName(FileStore\Format::CSV);
 
         foreach ($input['data'] as $row)
         {
+            if (isset($row['gateway']) === false)
+            {
+                continue;
+            }
+
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
 

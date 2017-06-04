@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Cybersource;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
@@ -53,6 +54,7 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertNotNull($payment['approval_code']);
         $this->assertTestResponse($payment);
 
         $payment = $this->getLastEntity('cybersource', true);
@@ -102,6 +104,26 @@ class CybersourceGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() {
             $this->doAuthPayment();
         });
+    }
+
+    public function testParesFixPayment()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $messyPaRes = "eNpV\r\nUttygjAQfc9XM\r\nP0AkiAw";
+            $fixedPaRes = "eNpVUttygjAQfc9XMP0AkiAw";
+
+            if ($action === 'callback')
+            {
+                $content['PaRes'] = $messyPaRes;
+            }
+            else if ($action === 'verify_pares')
+            {
+                $this->assertEquals($fixedPaRes, $content['payerAuthValidateService']['signedPARes']);
+            }
+        });
+
+        $this->doAuthAndCapturePayment();
     }
 
     public function testGatewayProcessorTimeout()
@@ -270,6 +292,288 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testGatewayRefundVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'verify_xml')
+            {
+                $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
+<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="razorpaycybs" ReportStartDate="2017-04-20 11:33:58.208+05:30" ReportEndDate="2017-04-20 11:33:58.208+05:30">
+  <Requests>
+    <Request MerchantReferenceNumber="'.$refund['id'].'" RequestDate="2017-04-04T00:01:12+05:30" RequestID="4912442722396160004013" SubscriptionID="" Source="SOAP Toolkit API">
+      <BillTo>
+        <FirstName />
+        <LastName />
+        <City />
+        <Email />
+        <Country />
+        <Phone />
+      </BillTo>
+      <PaymentMethod>
+        <Card>
+          <AccountSuffix>8371</AccountSuffix>
+          <ExpirationMonth>4</ExpirationMonth>
+          <ExpirationYear>2018</ExpirationYear>
+          <CardType>MasterCard</CardType>
+        </Card>
+      </PaymentMethod>
+      <LineItems>
+        <LineItem Number="0">
+          <FulfillmentType />
+          <Quantity>1</Quantity>
+          <UnitPrice>2267.00</UnitPrice>
+          <TaxAmount>0.00</TaxAmount>
+          <ProductCode>default</ProductCode>
+        </LineItem>
+      </LineItems>
+      <ApplicationReplies>
+        <ApplicationReply Name="ics_credit">
+          <RCode>1</RCode>
+          <RFlag>SOK</RFlag>
+          <RMsg>Request was processed successfully.</RMsg>
+        </ApplicationReply>
+      </ApplicationReplies>
+      <PaymentData>
+        <PaymentRequestID>4912442722396160004013</PaymentRequestID>
+        <PaymentProcessor>vdcaxis</PaymentProcessor>
+        <Amount>'. $refund['amount'] / 100 .'</Amount>
+        <CurrencyCode>INR</CurrencyCode>
+        <TotalTaxAmount>0.00</TotalTaxAmount>
+        <AuthorizationCode>292540</AuthorizationCode>
+      </PaymentData>
+      <MerchantDefinedData>
+        <field1>1</field1>
+        <field2>'. $refund['payment_id'] .'</field2>
+      </MerchantDefinedData>
+    </Request>
+  </Requests>
+</Report>
+';
+            }
+        });
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
+    }
+
+    public function testGatewayVerifyRefundVerifyFailure()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'refund')
+            {
+               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+            }
+        });
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('failed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+    }
+
+    public function testGatewayVerifyRefundFailure()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'verify_xml')
+            {
+               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+            }
+        });
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('failed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+    }
+
+    public function testGatewayRefundVerifyMultipleTimes()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'verify_xml')
+            {
+                $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
+<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="razorpaycybs" ReportStartDate="2017-04-20 11:33:58.208+05:30" ReportEndDate="2017-04-20 11:33:58.208+05:30">
+  <Requests>
+    <Request MerchantReferenceNumber="'.$refund['id'].'" RequestDate="2017-04-04T00:01:12+05:30" RequestID="4912442722396160004013" SubscriptionID="" Source="SOAP Toolkit API">
+      <ApplicationReplies>
+        <ApplicationReply Name="ics_credit">
+          <RCode>1</RCode>
+          <RFlag>SOK</RFlag>
+          <RMsg>Request was processed successfully.</RMsg>
+        </ApplicationReply>
+      </ApplicationReplies>
+      <PaymentData>
+        <PaymentRequestID>4912442722396160004013</PaymentRequestID>
+        <PaymentProcessor>vdcaxis</PaymentProcessor>
+        <Amount>'. $refund['amount'] / 100 .'</Amount>
+        <CurrencyCode>INR</CurrencyCode>
+        <TotalTaxAmount>0.00</TotalTaxAmount>
+        <AuthorizationCode>292540</AuthorizationCode>
+      </PaymentData>
+    </Request>
+  </Requests>
+</Report>
+';
+            }
+        });
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
+
+        $response = $this->retryFailedRefunds();
+
+        $this->assertEquals($response['status'], []);
+    }
+
+    public function testGatewayRefundVerifyMultipleFailedAttempts()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'verify_xml')
+            {
+               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+            }
+        });
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefunds();
+
+        $this->assertEquals($response['status'], []);
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('failed', $actualRefund['status']);
+        $this->assertEquals(3, $actualRefund['attempts']);
+        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+    }
+
+    public function testGatewayRefundVerifySuccess()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+
+        $this->assertEquals($response['status'], []);
+    }
+
     public function testGatewayVerifyPaymentNotFound()
     {
         $this->mockTimeout('processor');
@@ -431,7 +735,7 @@ class CybersourceGatewayTest extends TestCase
         // Switch to private auth for subsequent recurring payment
         $this->ba->privateAuth();
 
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
@@ -568,6 +872,26 @@ class CybersourceGatewayTest extends TestCase
                     $content['reasonCode'] = 151;
                     $content['payerAuthEnrollReply'] = [
                         'reasonCode' => 151
+                    ];
+
+                    unset($content['purchaseTotals']);
+                }
+            }
+        });
+    }
+
+    protected function mockRefundTimeout($type = 'gateway')
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null) use ($type)
+        {
+            if ($action === 'refund')
+            {
+                if ($type === 'processor')
+                {
+                    $content['decision'] = 'ERROR';
+                    $content['reasonCode'] = 150;
+                    $content['ccCreditReply'] = [
+                        'reasonCode' => 150
                     ];
 
                     unset($content['purchaseTotals']);

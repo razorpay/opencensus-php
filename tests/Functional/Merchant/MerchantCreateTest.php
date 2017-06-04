@@ -122,8 +122,6 @@ class MerchantCreateTest extends TestCase
         $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
 
         $this->assertEquals($merchant['id'], $scheduleTask['merchant_id']);
-        $this->assertEquals($schedule['id'], $merchant['settlement_schedule_id']);
-        $this->assertEquals($schedule['type'], 'settlement');
         $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
         $this->assertEquals($schedule['period'], 'daily');
         $this->assertEquals($schedule['delay'], 3);
@@ -169,6 +167,52 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateMarketplaceLinkedAccount()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testLinkedAccountDefaultSchedule()
+    {
+        $this->fixtures->create('merchant',
+                                [
+                                    'id' => '10000000000002',
+                                    'email' => 'test2@razorpay.com'
+                                ]);
+
+        // Define T+2 cycle for new merchant
+        $schedule = [
+            'interval'          => 1,
+            'delay'             => 2,
+            'hour'              => 0
+        ];
+
+        $this->fixtures->create('merchant:schedule_task',
+                                [
+                                    'merchant_id' => '10000000000002',
+                                    'schedule'    => $schedule
+                                ]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000002');
+
+        $this->ba->proxyAuth('rzp_test_10000000000002');
+
+        $linkedAcc = $this->startTest();
+
+        $this->ba->appAuthTest();
+
+        // Check schedule entries for new linked account
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
+
+        $this->assertEquals($linkedAcc['id'], $scheduleTask['merchant_id']);
+        $this->assertEquals($schedule['delay'], 2);
     }
 
     protected function startTest($testDataToReplace = [])

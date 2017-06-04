@@ -12,13 +12,12 @@ use Requests;
 use Trace;
 use RZP\Trace\TraceCode;
 use App;
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Constants;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Dashboard as DashboardJob;
 
 class Dashboard
 {
-    use DispatchesJobs;
-
     /**
      * Resource specifier
      * For example, payments, cards, etc.
@@ -174,7 +173,9 @@ class Dashboard
                     $array,
                     ['merchant_id' => $entity->getMerchantId()]);
 
-            $mode = \BasicAuth::getMode();
+            $app = App::getFacadeRoot();
+
+            $mode = $app['basicauth']->getMode();
 
             $job = new DashboardJob([
                 'mode'     => $mode,
@@ -182,7 +183,7 @@ class Dashboard
                 'type'     => $type
             ]);
 
-            $this->dispatch($job);
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::DASHBOARD);
         }
     }
 }

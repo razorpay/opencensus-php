@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Admin\Org;
 
-use RZP\Models\Admin\Action;
 use RZP\Models\Base;
+use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
@@ -28,7 +28,7 @@ class Core extends Base\Core
         Entity::verifyIdAndStripSign($orgId);
 
         return $this->repo->org->findOrFailPublicWithRelations(
-            $orgId, ['hostnames', 'permissions']);
+            $orgId, ['hostnames', 'permissions', 'workflow_permissions']);
     }
 
     public function edit(string $orgId, array $input)
@@ -43,7 +43,6 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use($org, $input)
         {
-
             $this->repo->saveOrFail($org);
 
             if (isset($input[Entity::PERMISSIONS]) === true)
@@ -56,6 +55,25 @@ class Core extends Base\Core
                 $this->deleteUnassignedPermissionsFromRoles($org, $diffPerms);
 
                 $this->addOrgRelatedEntities($org, $input);
+            }
+
+            if (isset($input[Entity::WORKFLOW_PERMISSIONS]) === true)
+            {
+                $perms = $input[Entity::WORKFLOW_PERMISSIONS];
+
+                $oldPerms = $this->repo->permission
+                                       ->fetchAllByOrg($org->getId(), 'workflow')
+                                       ->toArray();
+
+                $oldPerms = array_map(function($perm) {
+                    return $perm['id'];
+                }, $oldPerms);
+
+                $diffPerms = array_diff($oldPerms, $perms);
+
+                $this->disableWorkflowPermissionsForOrg($org, $diffPerms);
+
+                $this->enableWorkflowPermissionsForOrg($org, $perms);
             }
         });
 
@@ -98,6 +116,43 @@ class Core extends Base\Core
         return $org->toArrayDeleted();
     }
 
+    public function addPermissionToOrg(
+        Permission\Entity $permission,
+        Entity $org)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
+        {
+            $permId = $permission->getId();
+
+            $this->repo->attach($org, 'permissions', [$permId]);
+
+            $role = $this->repo->role
+                               ->getSuperAdminRoleByOrgId($org->getId());
+
+            $this->repo->attach($role, 'permissions', [$permId]);
+        });
+    }
+
+    public function deletePermissionFromOrg(
+        Permission\Entity $permission,
+        Entity $org)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
+        {
+            $permId = $permission->getId();
+            $orgId = $org->getId();
+
+            $this->repo->detach($org, 'permissions', [$permId]);
+
+            $roles = $this->repo->role->fetchByOrgId($orgId);
+
+            foreach ($roles as $role)
+            {
+                $this->repo->detach($role, 'permissions', [$permId]);
+            }
+        });
+    }
+
     protected function addOrgRelatedEntities(Entity $org, array $input)
     {
         if (isset($input[Entity::PERMISSIONS]) === true)
@@ -105,5 +160,27 @@ class Core extends Base\Core
             $this->repo->sync(
                 $org, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }
+
+        if (isset($input[Entity::WORKFLOW_PERMISSIONS]) === true)
+        {
+            $this->enableWorkflowPermissionsForOrg(
+                $org, $input[Entity::WORKFLOW_PERMISSIONS]);
+        }
+    }
+
+    protected function enableWorkflowPermissionsForOrg(
+        Entity $org,
+        array $permissions)
+    {
+        $this->repo->permission->toggleWorkflowOnOrgForPermissions(
+            $org->getId(), $permissions, true);
+    }
+
+    protected function disableWorkflowPermissionsForOrg(
+        Entity $org,
+        array $permissions)
+    {
+        $this->repo->permission->toggleWorkflowOnOrgForPermissions(
+            $org->getId(), $permissions, false);
     }
 }

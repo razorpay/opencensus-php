@@ -65,6 +65,23 @@ return [
         ],
     ],
 
+    'testGetMerchantUsers' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/users',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role' => 'owner'
+                ],
+                [
+                    'role' => 'manager'
+                ]
+            ],
+        ],
+    ],
+
     'testGetBalance' => [
         'request' => [
             'url' => '/balance',
@@ -812,8 +829,8 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
-                    'ICIC' => 'ICICI Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
                 ],
                 'disabled' => [],
             ],
@@ -832,8 +849,8 @@ return [
             'content' => [
                 'enabled' => [],
                 'disabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
-                    'ICIC' => 'ICICI Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
                 ],
             ],
         ]
@@ -850,8 +867,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'HDFC' => 'HDFC Bank Ltd',
-                'ICIC' => 'ICICI Bank Ltd',
+                'HDFC' => 'HDFC Bank',
+                'ICIC' => 'ICICI Bank',
             ],
         ],
         'jsonp' => true
@@ -865,11 +882,11 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
-                    'ICIC' => 'ICICI Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
                 ],
                 'disabled' => [
-                    'YESB' => 'Yes Bank Ltd',
+                    'YESB' => 'Yes Bank',
                     'VIJB' => 'Vijaya Bank',
                 ]
             ],
@@ -888,7 +905,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank Ltd',
+                    'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
                     'paytm' => true,
@@ -904,6 +921,308 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNonOrderRelatedOffer' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'payment_network' => 'olamoney',
+                        'display_text'    => 'Some display text',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card'   => true
+                ],
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'card',
+                        'payment_network' => 'VISA',
+                        'display_text'    => 'Some display text',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'card' => [
+                        [
+                            'issuer' => ['ALL'],
+                            'scheduled' => true,
+                            'reason_code' => 'OTHER',
+                            'card_type' => 'credit',
+                            'network' => ['VISA'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCardDowntimeWithSpecificGatewayDown' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'card' => [
+                        [
+                            'issuer'      => ['ALL'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                            'card_type'   => 'credit',
+                            'network'     => ['DICL'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'card' => [
+                        [
+                            'issuer'      => ['ALL'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                            'card_type'   => 'credit',
+                            'network'     => ['DICL'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDowntimeWithAllGateway' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => ['HDFC'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => [
+                                'ALLA',
+                                'BBKM',
+                                'BKDN',
+                                'COSB',
+                                'DCBL',
+                                'DCBL',
+                                'DEUT',
+                                'DBSS',
+                                'IDFB',
+                                'IBKL',
+                                'JSBP',
+                                'KVBL',
+                                'NKGS',
+                                'PMCB',
+                                'SBBJ',
+                                'SBHY',
+                                'SBIN',
+                                'SBMY',
+                                'STBP',
+                                'SBTR',
+                                'SCBL',
+                                'SIBL',
+                                'SVCB',
+                                'SYNB',
+                                'TMBL',
+                                'TNSC',
+                                'BARB_C',
+                                'BARB_R',
+                                'PUNB_C',
+                                'LAVB_C'
+                            ],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingWithIssuerExclusiveTogateway' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => ['ALLA'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithDirectNetbankingDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => ['HDFC'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithWalletDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'wallet' => [
+                        [
+                            'issuer'      => ['olamoney'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDowntimeWithDirectTerminal' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer' => [
+                                'ALLA',
+                                'BBKM',
+                                'BKDN',
+                                'COSB',
+                                'DCBL',
+                                'DCBL',
+                                'DEUT',
+                                'DBSS',
+                                'IDFB',
+                                'IBKL',
+                                'JSBP',
+                                'KVBL',
+                                'NKGS',
+                                'PMCB',
+                                'RATN',
+                                'SBBJ',
+                                'SBHY',
+                                'SBIN',
+                                'SBMY',
+                                'STBP',
+                                'SBTR',
+                                'SCBL',
+                                'SIBL',
+                                'SVCB',
+                                'SYNB',
+                                'TMBL',
+                                'TNSC',
+                                'BARBC',
+                                'BARBR',
+                                'PUNBC',
+                                'LAVBC'
+                            ],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],

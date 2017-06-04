@@ -22,6 +22,7 @@ class Entity extends Base\Entity
         'auth',
         'ref',
         'avr',
+        'arn_no',
         'postdate',
         'error_code',
         'error_text',
@@ -121,6 +122,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('auth');
     }
 
+    public function getRef()
+    {
+        return $this->getAttribute('ref');
+    }
+
     public function getActionAttribute()
     {
         return (int) $this->attributes['action'];
@@ -129,5 +135,10 @@ class Entity extends Base\Entity
     public function getAmount()
     {
         return (float) $this->getAttribute('amount');
+    }
+
+    public function setArnNo($arnNo)
+    {
+        $this->setAttribute('arn_no', $arnNo);
     }
 }

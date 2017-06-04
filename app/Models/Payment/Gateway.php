@@ -30,10 +30,12 @@ class Gateway
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
     const NETBANKING_FEDERAL = 'netbanking_federal';
+    const NETBANKING_RBL     = 'netbanking_rbl';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
     const UPI_IDFC           = 'upi_idfc';
+    const AEPS_ICICI         = 'aeps_icici';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
@@ -41,28 +43,49 @@ class Gateway
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_MPESA       = 'wallet_mpesa';
 
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_AMEX      = 'amex';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
 
-    const POWER_WALLETS = array(
+    const GATEWAY_ACQUIRERS = [
+        self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::HDFC        => [self::ACQUIRER_HDFC],
+        self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::FIRST_DATA  => [self::ACQUIRER_ICIC],
+        self::AMEX        => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+    ];
+
+    const POWER_WALLETS = [
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
         Wallet::OLAMONEY,
         Wallet::FREECHARGE,
-    );
+        Wallet::MPESA,
+    ];
 
-    const TOPUP_GATEWAYS = array(
+    /**
+     * These are the wallets that support both
+     * auth as well as power wallet flow
+     */
+    const AUTH_AND_POWER_WALLETS = [
+        // Commenting this out temporarily
+        // Wallet::MPESA,
+    ];
+
+    const TOPUP_GATEWAYS = [
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::SHARP,
-    );
+    ];
 
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
@@ -86,6 +109,25 @@ class Gateway
         self::WALLET_JIOMONEY
     ];
 
+    /**
+     * List of gateways that we wish to attempt this with.
+     * This should eventually cover all API based refund
+     * gateways.
+     *
+     * These gateways should have verifyRefund2 implemented.
+     * and be allowed to perform it.
+     * */
+    const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::BILLDESK,
+        Payment\Gateway::HDFC,
+        Payment\Gateway::MOBIKWIK,
+        Payment\Gateway::WALLET_OLAMONEY,
+        Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::AMEX,
+        Payment\Gateway::WALLET_JIOMONEY,
+    ];
+
     public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -103,6 +145,7 @@ class Gateway
         self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::NETBANKING_FEDERAL => Settlement\Channel::KOTAK,
+        self::NETBANKING_RBL     => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -110,8 +153,10 @@ class Gateway
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
         self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
+        self::WALLET_MPESA       => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
+        self::AEPS_ICICI         => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK,
     ];
 
@@ -143,6 +188,7 @@ class Gateway
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
+            self::NETBANKING_RBL,
         ],
 
         Method::WALLET => [
@@ -155,6 +201,7 @@ class Gateway
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
             self::WALLET_OPENWALLET,
+            self::WALLET_MPESA,
         ],
 
         Method::EMI => [
@@ -167,6 +214,23 @@ class Gateway
             self::UPI_ICICI,
             self::UPI_IDFC,
         ],
+
+        Method::AEPS => [
+            self::AEPS_ICICI,
+        ],
+    ];
+
+    const CARD_GATEWAYS_LIVE = [
+        self::HDFC,
+        self::AXIS_MIGS,
+        self::AMEX,
+        self::CYBERSOURCE,
+        self::FIRST_DATA,
+    ];
+
+    const SHARED_NETBANKING_GATEWAYS_LIVE = [
+        self::BILLDESK,
+        self::EBS
     ];
 
     /**
@@ -197,6 +261,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::AMEX,
         self::WALLET_OPENWALLET,
     ];
 
@@ -221,46 +286,46 @@ class Gateway
      *
      * @var array
      */
-    public static $cardNetworkMap = array(
-        self::HDFC => array(
+    public static $cardNetworkMap = [
+        self::HDFC => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN),
-        self::AXIS_MIGS => array(
+            Network::UNKNOWN],
+        self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA),
-        self::AXIS_GENIUS => array(
+            Network::VISA],
+        self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA),
-        self::ATOM => array(
+            Network::VISA],
+        self::ATOM => [
             Network::MC,
-            Network::VISA),
-        self::AMEX => array(
-            Network::AMEX),
-        self::PAYTM => array(
+            Network::VISA],
+        self::AMEX => [
+            Network::AMEX],
+        self::PAYTM => [
             Network::MC,
-            Network::VISA),
-        self::SHARP => array(
+            Network::VISA],
+        self::SHARP => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN),
-        self::CYBERSOURCE => array(
+            Network::UNKNOWN],
+        self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA),
-        self::FIRST_DATA => array(
+            Network::VISA],
+        self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::RUPAY,
-        ),
-    );
+        ],
+    ];
 
     public static $walletToGatewayMap = array(
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
@@ -271,7 +336,8 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
-        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET
+        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
+        Wallet::MPESA       => Gateway::WALLET_MPESA,
     );
 
     public static $upiToGatewayMap = array(
@@ -280,12 +346,13 @@ class Gateway
     );
 
     /**
+     * @deprecated
      * List of gateways for which we run verification checks for all
      * failed payments on a continuous basis.
      *
      * @var array
      */
-    public static $verifyEnabled = array(
+    public static $verifyEnabled = [
         self::AXIS_MIGS,
         self::BILLDESK,
         self::EBS,
@@ -299,6 +366,7 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
+        self::NETBANKING_RBL,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -309,7 +377,11 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
-    );
+    ];
+
+    public static $verifyDisabled = [
+        self::WALLET_OPENWALLET
+    ];
 
     /**
      * List of gateways that support recurring payments
@@ -319,6 +391,7 @@ class Gateway
     public static $recurringGateways = [
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::AXIS_MIGS,
     ];
 
     /**
@@ -354,6 +427,7 @@ class Gateway
     public static $claimsFileToBank = [
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::FDRL,
     ];
 
     /**
@@ -380,7 +454,8 @@ class Gateway
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::RATN => Gateway::NETBANKING_RBL);
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -393,7 +468,8 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL);
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN => Gateway::NETBANKING_RBL);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -436,6 +512,20 @@ class Gateway
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
+    public static function isDirectNetbankingGateway(string $gateway)
+    {
+        $directNetbankingGateways = array_values(self::$netbankingToGatewayMap);
+
+        return in_array($gateway, $directNetbankingGateways, true);
+    }
+
+    public static function getBankForDirectNetbankingGateway(string $gateway)
+    {
+        $gatewayToBankMap = array_flip(self::$netbankingToGatewayMap);
+
+        return $gatewayToBankMap[$gateway];
+    }
+
     public static function isRecurringGateway($gateway)
     {
         return in_array($gateway, self::$recurringGateways, true);
@@ -449,6 +539,18 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
+    }
+
+    public static function isValidGatewayAcquirer(string $gatewayAcquirer)
+    {
+        return array_key_exists($gatewayAcquirer, self::GATEWAY_ACQUIRERS);
+    }
+
+    public static function isValidAcquirerForGateway(string $gatewayAcquirer, string $gateway): bool
+    {
+        $validAcquirersForGateway = self::GATEWAY_ACQUIRERS[$gateway];
+
+        return in_array($gatewayAcquirer, $validAcquirersForGateway, true);
     }
 
     public static function getGatewayForWallet($wallet)
@@ -556,6 +658,11 @@ class Gateway
         return (in_array($wallet, self::POWER_WALLETS));
     }
 
+    public static function isAuthAndPowerWallet(string $wallet)
+    {
+        return (in_array($wallet, self::AUTH_AND_POWER_WALLETS, true));
+    }
+
     public static function canGatewayTopup($gateway)
     {
         return (in_array($gateway, self::TOPUP_GATEWAYS));
@@ -565,6 +672,38 @@ class Gateway
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
                 (in_array($network, self::$cardNetworkMap[$gateway])));
+    }
+
+    public static function getExclusiveNetworksForGateway(string $gateway)
+    {
+        $exclusiveNetworks = self::$cardNetworkMap[$gateway];
+
+        foreach (self::CARD_GATEWAYS_LIVE as $cardGateway)
+        {
+            if ($gateway !== $cardGateway)
+            {
+                $networks = self::$cardNetworkMap[$cardGateway];
+
+                $exclusiveNetworks = array_diff($exclusiveNetworks, $networks);
+            }
+        }
+
+        // Filter out the UNKNOWN network if present
+        $exclusiveNetworks = array_filter($exclusiveNetworks, function ($network)
+        {
+            return ($network !== Network::UNKNOWN);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $exclusiveNetworks = array_values($exclusiveNetworks);
+
+        return $exclusiveNetworks;
+    }
+
+    public static function isNetworkExclusiveToGateway(string $network, string $gateway)
+    {
+        $exclusiveNetworks = self::getExclusiveNetworksForGateway($gateway);
+
+        return in_array($network, $exclusiveNetworks, true);
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)

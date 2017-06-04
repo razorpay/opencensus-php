@@ -4,7 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Report\BasicEntityReport;
+use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Constants\Entity as E;
 use RZP\Models\Settlement;
 use RZP\Models\FundTransfer\Icici;
@@ -118,6 +118,11 @@ class Service extends Base\Service
     public function reconcileH2HSettlements($input)
     {
         return (new Kotak\Service)->reconcileH2HSettlements($input);
+    }
+
+    public function reconcileSettlementsInTestMode($input)
+    {
+        return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
     }
 
     public function generateSettlementReconciliation($input)

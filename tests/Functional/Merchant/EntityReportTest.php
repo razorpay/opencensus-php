@@ -75,7 +75,6 @@ class EntityReportTest extends TestCase
             'month' => $dt->month,
             'day' => $dt->day);
 
-
         $orderReport = $this->fetchReport('order', $input);
 
         assert(count($orderReport) === 1);
@@ -164,15 +163,33 @@ class EntityReportTest extends TestCase
 
         $dt = Carbon::today('Asia/Kolkata');
         $input = [
-            'year' => $dt->year,
-            'month'=> $dt->month
+            'year'  => $dt->year,
+            'month' => $dt->month
         ];
 
         $invoice = $this->fetchInvoice($input);
 
-        $this->assertEquals('2300', $invoice['total_fee']);
-        $this->assertEquals('300', $invoice['tax']);
+        $this->assertEquals('2000', $invoice['total_fee']);
+        $this->assertEquals('0', $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
+    }
+
+    public function testPaymentReportWithoutAcquirerData()
+    {
+        $this->doAuthAndCapturePayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $paymentReport = $this->fetchReport('payment', $input);
+
+        $this->assertEquals(1, count($paymentReport));
+        $this->assertArrayNotHasKey('acquirer_data', $paymentReport[0]);
     }
 
     public function testBrokingReport()
@@ -241,5 +258,46 @@ class EntityReportTest extends TestCase
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGenerateReportCombined()
+    {
+        $entity = 'transaction';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    public function testGenerateReportSettlement()
+    {
+        $entity = 'settlement';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    public function testGenerateReportPayment()
+    {
+        $entity = 'payment';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    protected function generateReportAndFetch(string $entity)
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $this->generateEntityReport($entity, $input);
+
+        $reports = $this->fetchReports(['type' => $entity]);
+
+        assert($reports['count'] === 1);
     }
 }
