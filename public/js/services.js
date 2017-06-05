@@ -1070,6 +1070,40 @@ angular
           amex: 'Amex',
           icic: 'ICICI',
         },
+        gatewayCardMap: {
+          first_data: 'First Data',
+          hdfc: 'FSS',
+          axis_migs: 'Axis Migs',
+          cybersource: 'Cybersource',
+          amex: 'Amex',
+        },
+        gatewayEmiMap: {
+          amex: 'Amex',
+          hdfc: 'FSS',
+          first_data: 'First Data',
+        },
+        gatewayNBMap: {
+          netbanking_hdfc: 'HDFC Netbanking',
+          netbanking_kotak: 'Kotak Netbanking',
+          netbanking_icici: 'ICICI Netbanking',
+          netbanking_axis: 'Axis Netbanking',
+          netbanking_federal: 'Federal Netbanking',
+          netbanking_airtel: 'Airtel Netbanking',
+          billdesk: 'Billdesk',
+          ebs: 'Ebs',
+        },
+        gatewayWalletMap: {
+          wallet_airtelmoney: 'Airtelmoney',
+          wallet_freecharge: 'Freecharge',
+          wallet_jiomoney: 'Jiomoney',
+          wallet_olamoney: 'Olamoney',
+          wallet_payumoney: 'Payumoney',
+          wallet_payzapp: 'Payzapp',
+        },
+        gatewayUpiMap: {
+          upi_idfc: 'IDFC UPI',
+          upi_icici: 'ICICI UPI',
+        },
       };
 
       return {

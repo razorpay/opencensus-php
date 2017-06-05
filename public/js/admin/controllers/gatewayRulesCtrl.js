@@ -32,6 +32,34 @@ app
         $scope.admin = data;
       });
 
+      // Gateway map is dependent upon method
+      $scope.getGatewayLabel = function(method, gateway) {
+        var map = null;
+        switch (method) {
+          case 'card':
+            map = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            map = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            map = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            map = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            map = utilMapping.getMap('gatewayUpiMap');
+            break;
+        }
+
+        if (!map) {
+          return gateway;
+        }
+
+        return map[gateway];
+      };
+
       // fetch gateway rules on basis of mode and merchant id selected by user
       $scope.getRulesById = function() {
         var data = {
@@ -249,6 +277,26 @@ app
 
       $scope.editMode = false;
 
+      $scope.updateGatewayList = function(methodType) {
+        switch (methodType) {
+          case 'card':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayUpiMap');
+            break;
+        }
+      };
+
       admin.identity().then(function(data) {
         $scope.admin = data;
       });
@@ -256,22 +304,6 @@ app
       if (Object.keys(current).length) {
         $scope.editMode = true;
       }
-
-      function fetchBanks() {
-        var data = {
-          route_name: 'merchant_get_banks',
-        };
-        var request = $http.get('/admin/generic', {
-          params: data,
-        });
-        request.success(function(data) {
-          if (data.success) {
-            $scope.banks = data.data;
-            console.log($scope.banks);
-          }
-        });
-      }
-      fetchBanks();
 
       $scope.ok = function(currentRule) {
         $modalInstance.close(currentRule);
