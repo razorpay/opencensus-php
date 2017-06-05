@@ -1,4 +1,4 @@
-export default ({ rows, columns }) => {
+export default ({ rows, columns, rowClass }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -9,7 +9,7 @@ export default ({ rows, columns }) => {
         </thead>
         <tbody>
           {rows.map(item => (
-            <tr key={item.id}>
+            <tr key={item.id} className={rowClass && rowClass(item)}>
               {columns.map((column, index) => (
                 <td key={index}>{column[1](item)}</td>
               ))}

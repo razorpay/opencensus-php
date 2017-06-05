@@ -32,7 +32,7 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { updateLocation, removeActiveRow } from 'merchant/modules/app';
+import { updateLocation, updateEntity } from 'merchant/modules/app';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -47,14 +47,19 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
 };
 
 @withRouter
-@connect(null, { updateLocation, removeActiveRow })
+@connect(null, { updateLocation, updateEntity })
 export default class Content extends Component {
   setBaseLocation = location => {
-    this.detailView = matchDetail(location.pathname);
+    let { updateLocation, updateEntity } = this.props;
+    var matchResult = matchDetail(location.pathname);
 
-    if (!this.detailView) {
+    if (matchResult) {
+      this.detailView = matchResult.component;
+      updateEntity(matchResult.match.params.id);
+    } else {
       this.baseLocation = location;
-      this.props.updateLocation({ base: location });
+      updateEntity(null);
+      updateLocation(location);
     }
   };
 
@@ -284,10 +289,6 @@ export default class Content extends Component {
     );
   };
 
-  removeActiveRow = () => {
-    this.props.removeActiveRow();
-  };
-
   componentWillMount() {
     this.setBaseLocation(this.props.location);
   }
@@ -302,7 +303,7 @@ export default class Content extends Component {
 
     if (DetailView) {
       DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation} onClose={this.removeActiveRow}>
+        ? <Slider closeUrl={this.baseLocation}>
             <DetailView />
           </Slider>
         : <DetailView />;

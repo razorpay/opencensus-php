@@ -24,7 +24,10 @@ function matcher(routeMap, pathname) {
     var match = matchPath(pathname, route);
     if (match) {
       var MatchedComponent = routeMap[route];
-      return props => <MatchedComponent match={match} {...props} />;
+      return {
+        match,
+        component: props => <MatchedComponent match={match} {...props} />,
+      };
     }
   }
 }
