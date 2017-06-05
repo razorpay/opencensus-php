@@ -24,15 +24,6 @@ export const updateEntity = payload => {
   };
 };
 
-export const setActiveRow = id => {
-  return dispatch => {
-    return dispatch({
-      type: ROW_HIGHLIGHT_ADD,
-      payload: { id },
-    });
-  };
-};
-
 export const luminateRow = id => {
   return dispatch => {
     dispatch({
@@ -49,7 +40,6 @@ export const luminateRow = id => {
 };
 
 let initialState = {
-  activeRowId: null,
   luminateRowId: null,
 };
 
@@ -60,9 +50,6 @@ export default function(state = initialState, action) {
 
     case UPDATE_LOCATION:
       return set(state, 'baseLocation', action.payload);
-
-    case ROW_HIGHLIGHT_ADD:
-      return set(state, 'activeRowId', action.payload.id);
 
     case ROW_LUMINATE_ADD:
       return set(state, 'luminateRowId', action.payload.id);

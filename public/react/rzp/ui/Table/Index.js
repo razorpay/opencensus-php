@@ -7,15 +7,16 @@ export default ({ rows, columns, rowClass }) => {
             {columns.map((column, index) => <th key={index}>{column[0]}</th>)}
           </tr>
         </thead>
-        <tbody>
-          {rows.map(item => (
-            <tr key={item.id} className={rowClass && rowClass(item)}>
-              {columns.map((column, index) => (
-                <td key={index}>{column[1](item)}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
+        {rows &&
+          <tbody>
+            {rows.map(item => (
+              <tr key={item.id} className={rowClass && rowClass(item)}>
+                {columns.map((column, index) => (
+                  <td key={index}>{column[1](item)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>}
       </table>
     </div>
   );

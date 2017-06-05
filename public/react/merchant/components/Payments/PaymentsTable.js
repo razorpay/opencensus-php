@@ -9,6 +9,8 @@ import {
   status,
 } from 'rzp/ui/Table/Column';
 
+import rowClass from 'merchant/utils/activeRow';
+
 const getOrderId = ({ order_id, notes }) => {
   if (order_id) {
     return <Link to={`/orders/${order_id}`}><code>{order_id}</code></Link>;
@@ -48,5 +50,5 @@ export default ({ items }) => {
     );
   }
 
-  return <Table rows={items} columns={paymentColumns} />;
+  return <Table rows={items} columns={paymentColumns} rowClass={rowClass} />;
 };

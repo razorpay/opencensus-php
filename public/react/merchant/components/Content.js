@@ -57,8 +57,10 @@ export default class Content extends Component {
       this.detailView = matchResult.component;
       updateEntity(matchResult.match.params.id);
     } else {
-      this.baseLocation = location;
+      this.detailView = null;
       updateEntity(null);
+
+      this.baseLocation = location;
       updateLocation(location);
     }
   };
@@ -293,7 +295,7 @@ export default class Content extends Component {
     this.setBaseLocation(this.props.location);
   }
 
-  componentWillUpdate(props) {
+  componentWillReceiveProps(props) {
     this.setBaseLocation(props.location);
   }
 

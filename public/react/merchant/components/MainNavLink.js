@@ -14,7 +14,8 @@ export default class MainNavLink extends Component {
       featureEnabled,
       icon,
       label,
-      activeRowId,
+      activeEntityId,
+      baseLocation,
       luminateRowId,
       beta = false,
       ...linkProps
