@@ -9,8 +9,11 @@ class Entity extends Base\PublicEntity
     const ID                        = 'id';
     const CAMPAIGN                  = 'campaign';
     const MERCHANT_ID               = 'merchant_id';
+    const PROMOTION_ID              = 'promotion_id';
     const VALUE                     = 'value';
     const TYPE                      = 'type';
+    const BALANCE                   = 'balance';
+    const EXPIRED                   = 'expired';
 
     protected $entity               = 'credits';
 
@@ -33,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::VALUE,
         self::TYPE,
+        self::EXPIRED,
         self::CREATED_AT
     );
 
@@ -41,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,
+        self::EXPIRED,
         self::CREATED_AT
     );
 
@@ -48,11 +53,14 @@ class Entity extends Base\PublicEntity
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
         self::TYPE              => 'amount',
+        self::EXPIRED           => false,
+        self::BALANCE           => 0,
     );
 
     // Casts the attributes to native types
     protected $casts = [
         self::VALUE             => 'integer',
+        self::EXPIRED           => 'bool',
     ];
 
     protected static $sign      = 'credits';

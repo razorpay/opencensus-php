@@ -6,6 +6,7 @@ class Type
 {
     const SETTLEMENT   = 'settlement';
     const SUBSCRIPTION = 'subscription';
+    const PROMOTION    = 'promotion';
 
     const SYNC_LIVE_TEST = [
         self::SETTLEMENT,

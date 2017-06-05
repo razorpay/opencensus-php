@@ -70,4 +70,10 @@ class Service extends Base\Service
 
         return $schedule->toArrayPublic();
     }
+
+    public function processTasks($input)
+    {
+        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
+
+    }
 }
