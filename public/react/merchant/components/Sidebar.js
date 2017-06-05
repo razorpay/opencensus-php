@@ -20,10 +20,6 @@ export default class Sidebar extends Component {
     invoices: '/invoices',
   };
 
-  componentWillMount() {
-    this.initializeRoutes(this.props.location);
-  }
-
   componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
   }
@@ -31,7 +27,7 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
-    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
     let invoicesRegex = isNewUIEnabled
       ? INVOICES_ROUTES_REGEX
       : INVOICES_ROUTES_OLD_REGEX;
