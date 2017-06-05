@@ -158,6 +158,19 @@
         </div>
       </div>
 
+      <!-- Gateway -->
+      <div class="form-group" ng-if="current.method">
+        <label class="col-lg-2 control-label">Gateway*:</label>
+        <div class="col-lg-10" >
+          <select name="gateway" ng-model="current.gateway" class="form-control"
+                  ng-readonly="editMode"
+                  ng-required="!editMode">
+            <option ng-repeat="(key, option) in gatewayListMap" value={{key}}>{{option}}</option>
+          </select>
+
+        </div>
+      </div>
+
       <!-- Method Type -->
       <div class="form-group" ng-if="current.method === 'card'">
         <label class="col-lg-2 control-label">Method Type:</label>
@@ -183,20 +196,6 @@
             <option value="">ALL</option>
             <option ng-repeat="(key, option) in networkMap" value={{key}}>{{option}}</option>
           </select>
-        </div>
-      </div>
-
-      <!-- Gateway -->
-      <div class="form-group" ng-if="current.method">
-        <label class="col-lg-2 control-label">Gateway*:</label>
-        <div class="col-lg-10" >
-          <select name="gateway" ng-model="current.gateway" class="form-control"
-                  ng-change=""
-                  ng-readonly="editMode"
-                  ng-required="!editMode">
-            <option ng-repeat="(key, option) in gatewayListMap" value={{key}}>{{option}}</option>
-          </select>
-
         </div>
       </div>
 

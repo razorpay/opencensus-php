@@ -305,6 +305,10 @@ app
         $scope.editMode = true;
       }
 
+      if ($scope.editMode) {
+        $scope.updateGatewayList(current.method);
+      }
+
       $scope.ok = function(currentRule) {
         $modalInstance.close(currentRule);
       };
