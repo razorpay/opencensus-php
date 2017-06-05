@@ -4,21 +4,11 @@ import { setActiveRow } from 'merchant/modules/app';
 
 @connect(state => state.app, { setActiveRow })
 export default class EnityItemRow extends Component {
-  // Highlight the row only on anchor clicks
-  handleClick = event => {
-    if (event.target.closest('a[href]')) {
-      this.props.setActiveRow(this.props.id);
-    }
-  };
-
   render() {
-    let { id, activeRowId, luminateRowId } = this.props;
+    let { id, luminateRowId } = this.props;
 
     return (
-      <tr
-        class={`${activeRowId === id ? 'active' : ''} ${luminateRowId === id ? 'luminate' : ''}`}
-        onClick={this.handleClick}
-      >
+      <tr class={luminateRowId === id ? 'luminate' : null}>
         {this.props.children}
       </tr>
     );
