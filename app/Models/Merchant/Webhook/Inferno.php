@@ -323,7 +323,8 @@ class Inferno
             return $clientError;
         }
 
-        if ($response->getStatusCode() === 200)
+        if (($response->getStatusCode() >= 200) and
+            ($response->getStatusCode() < 300))
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
@@ -355,7 +356,7 @@ class Inferno
      * @param string     $msgPrefix Message Prefix which will be appended before $response Failure reason if any
      * @param array|null $response  Response if any
      */
-    protected function traceWebhookResponse(Entity $webhook,string $msgPrefix = '', $response = null)
+    protected function traceWebhookResponse(Entity $webhook, string $msgPrefix = '', $response = null)
     {
         $webhookData = [
             'webhook_id'        => $webhook->getId(),
