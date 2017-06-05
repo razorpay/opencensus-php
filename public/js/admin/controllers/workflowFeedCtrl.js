@@ -139,6 +139,7 @@ app
             $scope.stateClass = 'approved-bg-color';
             break;
           case 'closed':
+          case 'rejected':
             $scope.stateClass = 'rejected-bg-color';
             break;
           case 'open':
