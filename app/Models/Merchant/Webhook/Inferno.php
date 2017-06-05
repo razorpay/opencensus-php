@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 use RZP\Http\Response\Header;
+use RZP\Http\Response\StatusCode;
 
 use Http\Discovery\HttpClientDiscovery;
 use Http\Client\Common\PluginClient;
@@ -256,7 +257,7 @@ class Inferno
      * @param array  $request Options in array format for making request
      * @param Entity $webhook Webhook Entity
      *
-     * @return bool Success/Failure
+     * @return bool Error
      * @throws \Throwable
      */
     public function sendRequest(array $request, Entity $webhook)
@@ -326,8 +327,7 @@ class Inferno
 
         $statusCode = $response->getStatusCode();
 
-        if (($statusCode >= 200) and
-            ($statusCode < 300))
+        if ($this->isSuccesssfulStatusCode($statusCode) === true)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
@@ -348,6 +348,12 @@ class Inferno
         }
 
         return $clientError;
+    }
+
+    protected function isSuccesssfulStatusCode($statusCode)
+    {
+        return (($statusCode >= StatusCode::SUCCESS) and
+                ($statusCode < StatusCode::REDIRECTION));
     }
 
     /**
