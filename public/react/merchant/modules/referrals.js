@@ -26,21 +26,19 @@ export const switchMerchant = merchantId => {
 
 export const createLogin = params => {
   var referral = new Referral();
-  return dispatch => {
-    return dispatch({
-      type: LOGIN_CREATE,
-      payload: referral.createLogin(params),
-    });
+
+  return {
+    type: LOGIN_CREATE,
+    payload: referral.createLogin(params),
   };
 };
 
 export const createMerchant = params => {
   var referral = new Referral(params);
-  return dispatch => {
-    return dispatch({
-      type: MERCHANT_CREATE,
-      payload: referral.createMerchant(),
-    });
+
+  return {
+    type: MERCHANT_CREATE,
+    payload: referral.createMerchant(),
   };
 };
 
