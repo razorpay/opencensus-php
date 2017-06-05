@@ -236,7 +236,11 @@ app
             });
           } else {
             hideSpinner();
-            if (data.errors && data.errors[0] && data.errors[0].indexOf('email has already been taken') !== -1) {
+            if (
+              data.errors &&
+              data.errors[0] &&
+              data.errors[0].indexOf('email has already been taken') !== -1
+            ) {
               trackDrip('error_email_taken');
             }
 
@@ -458,29 +462,32 @@ app
               $scope.login.data.email = $stateParams.email;
             }
           } else {
-            if (!user.isPreSignupDone()) {
+            user.identity().then(function(userDetails) {
               $scope.isLoggedIn = true;
-              var userDetails = user.getIdentity();
-              if (userDetails) {
-                Object.assign(
-                  $scope.signup.merchantData,
-                  userDetails.pre_signup
-                );
-              }
-              goToRelevantQuestion();
-              $scope.login.currentStep = 2;
-              $state.transitionTo(
-                'access.pre_signup',
-                {},
-                {
-                  notify: false,
+              $scope.login.data.email = userDetails.email;
+              if (!user.isPreSignupDone()) {
+                if (userDetails) {
+                  Object.assign(
+                    $scope.signup.merchantData,
+                    userDetails.pre_signup
+                  );
                 }
-              );
-            } else {
-              var userDetails = user.getIdentity();
-              var role = userDetails.merchants[userDetails.id].role;
-              $scope.goToDashboard(role);
-            }
+                goToRelevantQuestion();
+                $scope.login.currentStep = 2;
+                $state.transitionTo(
+                  'access.pre_signup',
+                  {},
+                  {
+                    notify: false,
+                  }
+                );
+              } else if (!user.isVerified()) {
+                goToVerification();
+              } else {
+                var role = userDetails.merchants[userDetails.id].role;
+                $scope.goToDashboard(role);
+              }
+            });
           }
         } else if ($state.current.name === 'access.forgotpwd') {
           $scope.login.currentStep = 0;
@@ -495,13 +502,21 @@ app
             );
             $scope.login.currentStep = 1;
           } else {
-            // if pre sign up pending
-            $scope.isLoggedIn = true;
-            var userDetails = user.getIdentity();
-            $scope.login.data.email = userDetails.email;
-            Object.assign($scope.signup.merchantData, userDetails.pre_signup);
-            $scope.login.currentStep = 2;
-            goToRelevantQuestion();
+            user.identity().then(function(userDetails) {
+              // if pre sign up pending
+              $scope.isLoggedIn = true;
+              $scope.login.data.email = userDetails.email;
+              if (!user.isVerified()) {
+                goToVerification();
+              } else {
+                Object.assign(
+                  $scope.signup.merchantData,
+                  userDetails.pre_signup
+                );
+                $scope.login.currentStep = 2;
+                goToRelevantQuestion();
+              }
+            });
           }
         }
       } else if ($state.current.name === 'access.signup') {
@@ -580,7 +595,6 @@ app
                   userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
-                $scope.email_not_verified = false;
                 $scope.isLoggedIn = true;
                 hideSpinner();
                 if (userDetails) {
@@ -590,15 +604,22 @@ app
                     userDetails.pre_signup
                   );
                 }
-                goToRelevantQuestion();
-                $scope.login.currentStep = 2;
-                $state.transitionTo(
-                  'access.pre_signup',
-                  {},
-                  {
-                    notify: false,
-                  }
-                );
+                if (!user.isVerified()) {
+                  // go to email not verified screen
+                  $scope.email_not_verified = true;
+                  $scope.login.currentStep = 2;
+                } else {
+                  $scope.email_not_verified = false;
+                  goToRelevantQuestion();
+                  $scope.login.currentStep = 2;
+                  $state.transitionTo(
+                    'access.pre_signup',
+                    {},
+                    {
+                      notify: false,
+                    }
+                  );
+                }
               }
             });
           } else {
