@@ -37,12 +37,14 @@ export const saveCustomer = params => {
 export const deleteCustomer = params => {
   let customer = new Customer(params);
 
-  return customer.delete().then(() => {
-    dispatch({
-      type: CUSTOMER_DELETED,
-      payload: customer,
+  return dispatch => {
+    return customer.delete().then(() => {
+      dispatch({
+        type: CUSTOMER_DELETED,
+        payload: customer,
+      });
     });
-  });
+  };
 };
 
 let initialState = {

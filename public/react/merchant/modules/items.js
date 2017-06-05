@@ -36,12 +36,15 @@ export const saveItem = params => {
 
 export const deleteItem = params => {
   let item = new Item(params);
-  return item.delete().then(() => {
-    dispatch({
-      type: ITEM_DELETED,
-      payload: item,
+
+  return dispatch => {
+    return item.delete().then(() => {
+      dispatch({
+        type: ITEM_DELETED,
+        payload: item,
+      });
     });
-  });
+  };
 };
 
 let initialState = {
