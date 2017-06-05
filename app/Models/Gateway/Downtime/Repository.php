@@ -122,7 +122,11 @@ class Repository extends Base\Repository
         $this->buildQueryForDowntimeSorter($params, $query);
 
         $query->where(Entity::BEGIN, '<=', $now)
-              ->where(Entity::END, '>=', $now);
+              ->where(function() use ($query, $now)
+              {
+                    $query->where(Entity::END, '<=', $now)
+                          ->orWhereNull(Entity::END);
+              });
 
         return $query->get();
     }
