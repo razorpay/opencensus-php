@@ -51,7 +51,9 @@
               <td>{{row.permission_description}}</td>
               <td>{{row.title}}</td>
               <td>{{row.created_at*1000 | date:'medium'}}</td>
-              <td>{{row.state}}</td>
+              <td>
+                <div class="label" ng-class="getStateClass(row.state)">{{row.state}}</div>
+              </td>
               <td>
                 <div class="btn-group">
                   <a class="btn btn-default btn-xs" ui-sref="app.workflows.actions.detail({ action_id: row.id })">

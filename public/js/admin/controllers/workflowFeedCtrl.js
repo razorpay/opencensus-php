@@ -141,6 +141,9 @@ app
           case 'closed':
             $scope.stateClass = 'rejected-bg-color';
             break;
+          case 'rejected':
+            $scope.stateClass = 'rejected-bg-color';
+            break;
           case 'open':
           default:
             $scope.stateClass = 'pending-bg-color';

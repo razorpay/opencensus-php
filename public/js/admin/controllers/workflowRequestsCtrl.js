@@ -11,6 +11,24 @@ app.controller('WorkflowRequestsCtrl', [
   function($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
     $scope.workflow_request_type = $stateParams.type;
 
+    $scope.getStateClass = function(state) {
+      switch (state) {
+        case 'approved':
+        case 'executed':
+          return 'approved-bg-color';
+          break;
+        case 'closed':
+          return 'rejected-bg-color';
+          break;
+        case 'rejected':
+          return 'rejected-bg-color';
+          break;
+        case 'open':
+        default:
+          return 'pending-bg-color';
+      }
+    };
+
     // Get requests made by maker
     $scope.getActionsByMakerAndType = function(type) {
       var request = $http.get('/admin/generic', {
