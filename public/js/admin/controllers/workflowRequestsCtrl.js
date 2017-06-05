@@ -16,13 +16,10 @@ app.controller('WorkflowRequestsCtrl', [
         case 'approved':
         case 'executed':
           return 'approved-bg-color';
-          break;
         case 'closed':
           return 'rejected-bg-color';
-          break;
         case 'rejected':
           return 'rejected-bg-color';
-          break;
         case 'open':
         default:
           return 'pending-bg-color';
