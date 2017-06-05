@@ -32,9 +32,7 @@ export const fetchFeatures = currentUserId => {
 };
 
 export const fetchConfig = () => {
-  return dispatch => {
-    return fetchConfigAjax();
-  };
+  return () => fetchConfigAjax();
 };
 
 /*

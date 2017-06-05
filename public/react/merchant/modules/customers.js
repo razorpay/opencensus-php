@@ -37,13 +37,10 @@ export const saveCustomer = params => {
 export const deleteCustomer = params => {
   let customer = new Customer(params);
 
-  return dispatch => {
-    return customer.delete().then(() => {
-      dispatch({
-        type: CUSTOMER_DELETED,
-        payload: customer,
-      });
-    });
+  return {
+    type: CUSTOMER_DELETED,
+    payload: customer.delete(),
+    id: customer.id,
   };
 };
 
@@ -83,10 +80,10 @@ export default function(state = initialState, action) {
       );
       return set(state, `customers.${customerIndex}`, action.payload);
 
-    case CUSTOMER_DELETED:
+    case `${CUSTOMER_DELETED}::SUCCESS`:
       var customersList = remove(
         state.customers,
-        customer => customer.id === action.payload.id
+        customer => customer.id === action.id
       );
       return set(state, 'customers', customersList);
 

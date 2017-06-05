@@ -35,11 +35,11 @@ export const fetchOrg = () => {
 };
 
 export const switchMerchant = merchantId => {
-  return {
-    payload: ajax({
+  return () => {
+    return ajax({
       url: `/settings/merchants/switch/${merchantId}`,
       appendModeInURL: false,
-    }),
+    });
   };
 };
 

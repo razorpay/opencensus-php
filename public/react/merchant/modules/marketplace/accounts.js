@@ -29,10 +29,12 @@ export const saveAccount = data => {
 export const exportAccountsCSV = () => {
   let data = { year: '2017', month: '1' };
 
-  return ajax({
-    url: '/reports/account',
-    data,
-  });
+  return () => {
+    return ajax({
+      url: '/reports/account',
+      data,
+    });
+  };
 };
 
 let initialState = {

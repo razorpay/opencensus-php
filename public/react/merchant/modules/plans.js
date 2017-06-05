@@ -13,19 +13,23 @@ export const fetchPlans = () => {
 };
 
 export const createPlan = data => {
-  return ajax({
-    url: '/plan',
-    method: 'post',
-    data,
-  });
+  return () => {
+    return ajax({
+      url: '/plan',
+      method: 'post',
+      data,
+    });
+  };
 };
 
 export const editPlan = (id, data) => {
-  return ajax({
-    url: `/plan/${id}`,
-    method: 'put',
-    data,
-  });
+  return () => {
+    return ajax({
+      url: `/plan/${id}`,
+      method: 'put',
+      data,
+    });
+  };
 };
 
 export const planAdded = plan => {

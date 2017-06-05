@@ -26,7 +26,7 @@ export const deleteInvoice = params => {
   let invoice = new Invoice(params);
   return {
     type: INVOICE_DELETED,
-    payload: invoice,
+    payload: invoice.delete(),
   };
 };
 
