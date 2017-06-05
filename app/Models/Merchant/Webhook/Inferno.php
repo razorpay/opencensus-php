@@ -256,7 +256,8 @@ class Inferno
      * @param array  $request Options in array format for making request
      * @param Entity $webhook Webhook Entity
      *
-     * @return boolean Success/Failure
+     * @return bool Success/Failure
+     * @throws \Throwable
      */
     public function sendRequest(array $request, Entity $webhook)
     {
@@ -323,15 +324,17 @@ class Inferno
             return $clientError;
         }
 
-        if (($response->getStatusCode() >= 200) and
-            ($response->getStatusCode() < 300))
+        $statusCode = $response->getStatusCode();
+
+        if (($statusCode >= 200) and
+            ($statusCode < 300))
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
                     'webhook_id'        => $webhook->getId(),
                     'merchant_id'       => $webhook->merchant->getId(),
-                    'response_code'     => $response->getStatusCode(),
+                    'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders()
                 ]);
 
@@ -350,7 +353,7 @@ class Inferno
     /**
      * This Will Trace the Webhook Data for Various Exception Response
      * Depending on exception thrown, sometime we have getResponse(),
-     * if available, then use it for logging and creating ErrorMessgage which is used to send mail
+     * if available, then use it for logging and creating ErrorMessage which is used to send mail
      *
      * @param Entity     $webhook   Webhook Entity
      * @param string     $msgPrefix Message Prefix which will be appended before $response Failure reason if any
