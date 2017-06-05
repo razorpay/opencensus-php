@@ -1,11 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import TetherComponent from 'react-tether';
 import Spinner from 'rzp/ui/Spinner';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
-
+import TransfersListFilter
+  from 'merchant/components/Marketplace/TransfersListFilter';
 import Table from 'rzp/ui/Table/Index';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
@@ -41,6 +40,11 @@ export default class TransfersListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <TransfersListFilter
+          form="transferListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
         {error && <Alert type="error" message={error} />}
 
