@@ -13,6 +13,11 @@ export const fetchAll = params => {
   };
 };
 
+export const fetchMarketplacePayments = (params = {}) => {
+  params.transferred = 1;
+  return fetchAll(params);
+};
+
 let initialState = {
   loading: true,
   items: [],

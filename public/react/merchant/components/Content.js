@@ -9,7 +9,7 @@ import PaymentLinks from 'merchant/containers/PaymentLinks/List';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Customers from 'merchant/containers/Customers/List';
-import Marketplace from 'merchant/containers/Marketplace/Accounts/List';
+import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
 import TeamManagement from 'merchant/containers/Team';
 import MyAccount from 'merchant/containers/MyAccount';
@@ -101,7 +101,6 @@ export default class Content extends Component {
                 />
 
                 <Route path="/marketplace" component={Marketplace} />
-                <Route path="/accounts" component={Marketplace} />
 
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
@@ -193,7 +192,6 @@ export default class Content extends Component {
                 <Route path="/customers" component={InvoicingContainer} />
 
                 <Route path="/marketplace" component={Marketplace} />
-                <Route path="/accounts" component={Marketplace} />
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
 

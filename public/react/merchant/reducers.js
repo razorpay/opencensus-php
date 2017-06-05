@@ -63,4 +63,5 @@ export default combineReducers({
   referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
+  mpPayments: paymentsReducer,
 });

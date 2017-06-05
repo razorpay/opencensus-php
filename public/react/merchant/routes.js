@@ -13,6 +13,8 @@ const entityMap = {
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id': PaymentLinkDetails,
   '/invoices/:id/details': PaymentLinkDetails,
+
+  '/marketplace/payments/:id': PaymentsDetails,
 };
 
 export function matchDetail(pathname) {
