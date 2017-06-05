@@ -27,7 +27,7 @@ const transferColumns = [
   createdAt,
 ];
 
-@connect(state => state.mpTransfers, { fetchAll })
+@connect(state => state.collection, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchAll(params);

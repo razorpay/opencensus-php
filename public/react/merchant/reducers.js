@@ -13,9 +13,7 @@ import plansReducer from 'merchant/modules/plans';
 import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
 import itemsReducer from 'merchant/modules/items';
-import ordersReducer from 'merchant/modules/orders/list';
 import orderReducer from 'merchant/modules/orders/details';
-import settlementsReducer from 'merchant/modules/settlements/list';
 import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
@@ -23,7 +21,6 @@ import creditsReducer from 'merchant/modules/credits';
 import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
-import refundsReducer from 'merchant/modules/refunds/list';
 import refundReducer from 'merchant/modules/refunds/details';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import paymentReducer from 'merchant/modules/payments/details';
@@ -31,11 +28,9 @@ import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 // import mpTransferReducer from 'merchant/modules/marketplace/transfers/details';
 import referralsReducer from 'merchant/modules/referrals';
 
-import {
-  paymentsReducer,
-  mpPaymentsReducer,
-  transfersReducer as mpTransfersReducer,
-  reversalsReducer as mpReversalsReducer,
+import collectionReducer, {
+  refundsReducer,
+  settlementsReducer,
 } from 'rzp/modules/collection';
 
 export default combineReducers({
@@ -53,10 +48,7 @@ export default combineReducers({
   profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,
-  orders: ordersReducer,
   order: orderReducer,
-  payments: paymentsReducer,
-  payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
@@ -70,7 +62,5 @@ export default combineReducers({
   referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
-  mpPayments: mpPaymentsReducer,
-  mpTransfers: mpTransfersReducer,
-  mpReversals: mpReversalsReducer,
+  collection: collectionReducer,
 });

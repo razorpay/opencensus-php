@@ -4,21 +4,20 @@ import { NavLink } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RefundsList from 'merchant/components/Refunds/RefundsList';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
-import { fetchRefunds } from 'merchant/modules/refunds/list';
+import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
 
-@connect(state => state.refunds, { fetchRefunds })
+@connect(state => state.refunds, { fetchAll })
 export default class RefundsListContainer extends ListContainer {
   fetchEntityList(params) {
-    return this.props.fetchRefunds(params);
+    return this.props.fetchAll(params);
   }
 
   render() {
-    let { loading, refunds, error } = this.props;
+    let { loading, items, error } = this.props;
 
     return (
       <div class="content-wrapper">
@@ -50,12 +49,12 @@ export default class RefundsListContainer extends ListContainer {
 
         {error && <Alert type="error" message={error} />}
 
-        <RefundsList refunds={refunds} isLoading={loading} />
+        <RefundsList refunds={items} isLoading={loading} />
 
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={refunds.length}
+          length={items.length}
           onClick={this.paginate}
         />
       </div>

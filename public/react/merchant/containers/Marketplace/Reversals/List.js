@@ -20,7 +20,7 @@ import rowClass from 'merchant/utils/activeRow';
 
 const reversalColumns = [idColumn, reversalTransfer, amount, createdAt];
 
-@connect(state => state.mpReversals, { fetchAll })
+@connect(state => state.collection, { fetchAll })
 export default class ReversalsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchAll(params);
