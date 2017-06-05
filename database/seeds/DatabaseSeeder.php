@@ -281,6 +281,43 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::USER)->insert([
+                'id'             => '20000000000000',
+                'name'           => 'Test User Account',
+                'email'          => 'test@razorpay.com',
+                'password'       => Hash::make('123456'),
+                'contact_mobile' => '9999999999',
+                'created_at'     => '1451606400', //1st Jan 2016.
+                'updated_at'     => '1451606400'
+            ]);
+
+            DB::table(Table::USER)->insert([
+                'id'             => '20000000000001',
+                'name'           => 'Test User Account2',
+                'email'          => 'test2@razorpay.com',
+                'password'       => Hash::make('123456'),
+                'contact_mobile' => '9999999999',
+                'created_at'     => '1451606400',
+                'updated_at'     => '1451606400'
+            ]);
+
+            DB::table(Table::MERCHANT_USERS)->insert([
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                    'user_id'     => '20000000000000',
+                    'role'        => 'owner',
+                    'created_at'  => '1451606400',
+                    'updated_at'  => '1451606400'
+                ],
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                    'user_id'     => '20000000000001',
+                    'role'        => 'manager',
+                    'created_at'  => '1451606400',
+                    'updated_at'  => '1451606400'
+                ]
+            ]);
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::TEST_ACCOUNT,
@@ -995,6 +1032,7 @@ class DatabaseSeeder extends Seeder
         $this->createFreechargeTerminals();
         $this->createJiomoneyTerminals();
         $this->createOpenwalletTerminals();
+        $this->createVodafoneMpesaTerminal();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -1558,6 +1596,23 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => null,
                 'gateway_terminal_password' => null,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createVodafoneMpesaTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::MPESA_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_MPESA,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'random_merchant_id',
+                'gateway_secure_secret'     => Crypt::encrypt('demo_account_mpesa_secure_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

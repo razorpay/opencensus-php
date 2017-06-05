@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional;
 
 use Validator;
+use RZP\Gateway\Hdfc;
 
 trait CustomAssertions
 {
@@ -71,7 +72,7 @@ trait CustomAssertions
         {
             $this->assertEquals($expected['gateway_error_code'], $actual['gateway_error_code']);
 
-            $gatewayErrorDesc = \RZP\Gateway\Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']];
+            $gatewayErrorDesc = $this->getGatewayErrorDescription($actual);
 
             $this->assertEquals($gatewayErrorDesc, $actual['gateway_error_desc'], 'key: gateway_error_desc');
         }
@@ -107,5 +108,10 @@ trait CustomAssertions
     public function assertResponseOk($response)
     {
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    protected function getGatewayErrorDescription(array $actual)
+    {
+        return Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']] ?? $actual['gateway_error_desc'];
     }
 }

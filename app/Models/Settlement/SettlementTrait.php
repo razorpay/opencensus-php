@@ -233,7 +233,7 @@ trait SettlementTrait
 
     protected function settlementFailure($channel, $e, $traceCode)
     {
-        $e = new SettlementFailureException($channel, null, $e);
+        $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
 
         $this->failureNotification($e);
 

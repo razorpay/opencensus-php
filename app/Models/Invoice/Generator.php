@@ -86,7 +86,7 @@ class Generator extends Base\Core
         return $this;
     }
 
-    public function generate(array $input)
+    public function generate(array $input): Entity
     {
         $this->generateInvoiceSkeleton($input);
 
@@ -96,6 +96,8 @@ class Generator extends Base\Core
                 function() use ($input)
                 {
                     $this->preProcessGeneration($input);
+
+                    (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
 
                     if ($this->invoice->getStatus() === Status::ISSUED)
                     {
@@ -132,7 +134,7 @@ class Generator extends Base\Core
             }
         }
 
-        $this->createLineItemsFromInputAndSetInvoiceAmount($input);
+        $this->createLineItems($input);
     }
 
     /**
@@ -153,9 +155,9 @@ class Generator extends Base\Core
                 $input[Entity::LINE_ITEMS],
                 $this->merchant,
                 $this->invoice);
-
-            $this->calculateAndSetInvoiceAmount();
         }
+
+        (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
 
         if ($this->invoice->getStatus() === Status::ISSUED)
         {
@@ -169,9 +171,10 @@ class Generator extends Base\Core
      * Here t or l is short form for test or live mode.
      *
      * @return string
+     *
      * @throws LogicException
      */
-    protected function getInvoiceLink()
+    protected function getInvoiceLink(): string
     {
         $invoiceId = $this->invoice->getId();
 
@@ -293,7 +296,7 @@ class Generator extends Base\Core
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    protected function createLineItemsFromInputAndSetInvoiceAmount(array $input)
+    protected function createLineItems(array $input)
     {
         if (isset($input[Entity::LINE_ITEMS]) === false)
         {
@@ -304,8 +307,6 @@ class Generator extends Base\Core
             $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
-
-        $this->calculateAndSetInvoiceAmount();
     }
 
     protected function createAndAssociateOrderForInvoice()
@@ -326,20 +327,6 @@ class Generator extends Base\Core
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
         $this->invoice->order()->associate($order);
-    }
-
-    /**
-     * Calculates, validates and sets the invoice amount after creation of
-     * its line items.
-     */
-    protected function calculateAndSetInvoiceAmount()
-    {
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-        $this->invoice->getValidator()
-                      ->validateMaxAllowedAmount($totalAmount);
-
-        $this->invoice->setAmount($totalAmount);
     }
 
     /**

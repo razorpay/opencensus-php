@@ -91,6 +91,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getAction()
+    {
+        return $this->getAttribute(self::ACTION);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
@@ -99,6 +104,11 @@ class Entity extends Base\Entity
     public function getGatewayPaymentId()
     {
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
+    }
+
+    public function getGatewayPaymentId2()
+    {
+        return $this->getAttribute(self::GATEWAY_PAYMENT_ID2);
     }
 
     public function getDate()

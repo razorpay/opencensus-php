@@ -278,6 +278,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedMpesaTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::MPESA_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'wallet_mpesa',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'mpesa_merchant',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedFreechargeTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::FREECHARGE_RAZORPAY_TERMINAL;
@@ -349,7 +367,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
-            'recurring'                 => 3,
+            'type'                      => 3,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -402,13 +420,13 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
-        $attributes['recurring'] = 3;
+        $attributes['type'] = 3;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
-        $attributes['recurring'] = 4;
+        $attributes['type'] = 4;
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -422,7 +440,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 3,
+            'type'                      => 3,
             'gateway_merchant_id'       => 'random',
         ];
 
@@ -435,7 +453,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 4,
+            'type'                      => 4,
             'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
@@ -452,7 +470,7 @@ class Terminal extends Base
             'gateway_acquirer'          => 'axis',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 3,
+            'type'                      => 3,
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
             'gateway_terminal_password' => 'razorpay_password',
@@ -460,8 +478,8 @@ class Terminal extends Base
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
-        $attributes['id']               = 'MiGSRcgTmlN3DS';
-        $attributes['recurring']        = 4;
+        $attributes['id']   = 'MiGSRcgTmlN3DS';
+        $attributes['type'] = 4;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -877,6 +895,8 @@ class Terminal extends Base
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_rbl',
             'gateway_merchant_id'       => 'netbanking_rbl_merchant_id',
+            'gateway_merchant_id2'      => 'netbanking_rbl_merchant_id2',
+            'gateway_access_code'       => 'random_rbl_code',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

@@ -1383,6 +1383,14 @@ trait Authorize
     {
         $iinEntity = $payment->card->iinRelation;
 
+        // On custom checkouts, sometimes users are entering random cards for
+        // which iin entity doesn't exist
+        if ($iinEntity === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
+        }
+
         IIN\IIN::validateEmiAvailableForCard($iinEntity, $cardNumber);
 
         $payment->setBank($iinEntity->getIssuer());
@@ -2178,6 +2186,30 @@ trait Authorize
             {
                 return false;
             }
+        }
+
+        if (Payment\Gateway::isAuthAndPowerWallet($wallet) === true)
+        {
+            return $this->isOtpOrAuthFlow($input);
+        }
+
+        return true;
+    }
+
+    /**
+     * For gateways that support both auth and otp flow,
+     * determine whether the payment is in auth or otp mode.
+     * This is mainly used for the test cases
+     *
+     * @param array $input
+     * @return bool
+     */
+    protected function isOtpOrAuthFlow(array $input): bool
+    {
+        if ((isset($input['_']['source']) === true) and
+            ($input['_']['source'] === 's2s'))
+        {
+            return false;
         }
 
         return true;

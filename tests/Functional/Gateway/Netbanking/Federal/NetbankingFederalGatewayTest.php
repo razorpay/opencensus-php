@@ -296,7 +296,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            return $mail->hasTo('settlements@razorpay.com');
+            return $mail->hasTo('federal.netbanking.refunds@razorpay.com');
         });
     }
 

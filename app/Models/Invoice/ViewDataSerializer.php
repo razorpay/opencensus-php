@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
+use RZP\Models\LineItem;
 use RZP\Exception;
 use RZP\Constants\Mode;
 
@@ -39,7 +40,7 @@ class ViewDataSerializer extends Base\Core
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function get()
+    public function get(): array
     {
         $publicId = $this->invoice->getPublicId();
 
@@ -78,12 +79,17 @@ class ViewDataSerializer extends Base\Core
         ];
     }
 
-    protected function getFormattedInvoiceDataForView()
+    protected function getFormattedInvoiceDataForView(): array
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
-        $invoiceData['is_paid'] = ($this->invoice->isPaid());
-        $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
+        $isInvoicePaid = $this->invoice->isPaid();
+        $invoiceAmountFormatted = number_format($invoiceData[Entity::AMOUNT] / 100, 2);
+
+        $invoiceData += [
+            'is_paid'          => $isInvoicePaid,
+            'amount_formatted' => $invoiceAmountFormatted,
+        ];
 
         foreach (self::$appendEpochsFormatted as $key)
         {
@@ -95,17 +101,25 @@ class ViewDataSerializer extends Base\Core
             }
             else
             {
-                $invoiceData[$key . '_formatted'] = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
-                                                          ->format('j M Y');
+                $formattedEpoch = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                                        ->format('j M Y');
+
+                $invoiceData[$key . '_formatted'] = $formattedEpoch;
             }
         }
 
         array_walk(
-            $invoiceData['line_items'],
+            $invoiceData[Entity::LINE_ITEMS],
             function (& $lineItem, $i)
             {
-                $lineItem['amount_formatted'] = number_format($lineItem['amount'] / 100, 2);
-                $lineItem['total_amount_formatted'] = number_format(($lineItem['amount'] * $lineItem['quantity']) / 100, 2);
+                $amountFormatted = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
+                $grossAmount = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
+                $grossAmountFormatted = number_format($grossAmount / 100, 2);
+
+                $lineItem += [
+                    'amount_formatted'       => $amountFormatted,
+                    'total_amount_formatted' => $grossAmountFormatted,
+                ];
             });
 
         $this->addExtraInvoicePayLoad($invoiceData);
@@ -130,7 +144,7 @@ class ViewDataSerializer extends Base\Core
         $data += $extraInvoicePayload;
     }
 
-    protected function getFormattedMerchantDataForView()
+    protected function getFormattedMerchantDataForView(): array
     {
         $merchantBrandColor = $this->merchant->getBrandColor();
 

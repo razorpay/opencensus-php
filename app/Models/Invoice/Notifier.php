@@ -61,7 +61,7 @@ class Notifier extends Base\Core
     // Methods to notify (via sms|email) events (issued|expired) of invoice.
     //
 
-    public function notifyInvoiceIssuedToCustomer()
+    public function notifyInvoiceIssuedToCustomer(): bool
     {
         if ($this->canNotifyInvoiceIssuedToCustomer() === false)
         {
@@ -83,7 +83,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function notifyInvoiceExpiredToCustomer()
+    public function notifyInvoiceExpiredToCustomer(): bool
     {
         if ($this->invoice->isExpired() === false)
         {
@@ -95,7 +95,7 @@ class Notifier extends Base\Core
 
     //  -------------------------------------------------------------------
 
-    public function canNotifyInvoiceIssuedToCustomer()
+    public function canNotifyInvoiceIssuedToCustomer(): bool
     {
         if ($this->invoice->isIssued() === false)
         {
@@ -122,7 +122,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function emailInvoiceIssuedToCustomer()
+    public function emailInvoiceIssuedToCustomer(): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -156,7 +156,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function emailInvoiceExpiredToCustomer()
+    public function emailInvoiceExpiredToCustomer(): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -181,7 +181,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function smsInvoiceIssuedToCustomer()
+    public function smsInvoiceIssuedToCustomer(): bool
     {
         $contact = $this->invoice->getCustomerContact();
 
@@ -220,7 +220,7 @@ class Notifier extends Base\Core
         return false;
     }
 
-    protected function emailInvoiceExpiringToCustomer()
+    protected function emailInvoiceExpiringToCustomer(): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -245,7 +245,45 @@ class Notifier extends Base\Core
         return true;
     }
 
-    protected function smsInvoiceIssuedToCustomerInBulk(array $invoices)
+    public function sendNotificationsInBulk(): array
+    {
+        $smsIssuedInvoices   = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
+
+        $emailIssuedInvoices = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
+
+        $expiringInvoices    = $this->repo
+                                    ->invoice
+                                     ->getInvoicesForExpiringNotificationToCustomer();
+
+        $sentSmsCount            = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
+        $sentEmailCount          = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
+        $expiringEmailsSentCount = $this->emailInvoiceExpiringToCustomerInBulk($expiringInvoices);
+
+        $results = [
+            'sms_issued_pending'     => count($smsIssuedInvoices),
+            'email_issued_pending'   => count($emailIssuedInvoices),
+            'sms_issued_sent'        => $sentSmsCount,
+            'email_issued_sent'      => $sentEmailCount,
+            'email_expiring_pending' => $expiringInvoices->count(),
+            'email_expiring_sent'    => $expiringEmailsSentCount,
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_BULK_NOTIFICATION_SUMMARY, $results);
+
+        // Post summary to slack
+        $message = 'Invoice Notify result';
+        $meta    = ['channel' => $this->slackTechLogsChannel];
+
+        $this->slack->queue($message, $results, $meta);
+
+        return $results;
+    }
+
+    protected function smsInvoiceIssuedToCustomerInBulk(array $invoices): int
     {
         $totalSent = 0;
 
@@ -266,7 +304,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function emailInvoiceIssuedToCustomerInBulk(array $invoices)
+    protected function emailInvoiceIssuedToCustomerInBulk(array $invoices): int
     {
         $totalSent = 0;
 
@@ -287,7 +325,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function emailInvoiceExpiringToCustomerInBulk(array $invoices)
+    protected function emailInvoiceExpiringToCustomerInBulk(array $invoices): int
     {
         $totalSent = 0;
 
@@ -306,7 +344,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function getRavenSendInvoiceRequestInput($contact)
+    protected function getRavenSendInvoiceRequestInput(string $contact): array
     {
         $merchant = $this->invoice->merchant;
 

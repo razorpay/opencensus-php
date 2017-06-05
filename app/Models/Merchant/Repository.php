@@ -86,19 +86,6 @@ class Repository extends Base\Repository
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
-    public function fetchBySettlementScheduleId($settlementScheduleIds)
-    {
-        if (is_array($settlementScheduleIds) === false)
-        {
-            $settlementScheduleIds = [$settlementScheduleIds];
-        }
-
-        return $this->newQuery()
-                    ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
-                    ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)
-                    ->get();
-    }
-
     public function getFewMerchantsWithNoCorrespondingScheduleTasks()
     {
         $mercIds = $this->db->select(

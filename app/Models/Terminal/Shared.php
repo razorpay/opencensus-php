@@ -40,6 +40,7 @@ class Shared
     const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
     const JIOMONEY_RAZORPAY_TERMINAL        = '1000JioMnyTmnl';
     const OPENWALLET_RAZORPAY_TERMINAL      = '100OpenwalltTl';
+    const MPESA_RAZORPAY_TERMINAL           = '100VodaMpesaTl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -70,6 +71,7 @@ class Shared
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
         self::JIOMONEY_RAZORPAY_TERMINAL,
         self::OPENWALLET_RAZORPAY_TERMINAL,
+        self::MPESA_RAZORPAY_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -103,6 +105,7 @@ class Shared
         self::AEPS_ICICI_RAZORPAY_TERMINAL  => Gateway::AEPS_ICICI,
         self::UPI_ICICI_RAZORPAY_TERMINAL   => Gateway::UPI_ICICI,
         self::OPENWALLET_RAZORPAY_TERMINAL  => Gateway::WALLET_OPENWALLET,
+        self::MPESA_RAZORPAY_TERMINAL       => Gateway::WALLET_MPESA,
     );
 
     public static function getSharedTerminalMapping()

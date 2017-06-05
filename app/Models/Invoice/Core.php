@@ -46,12 +46,17 @@ class Core extends Base\Core
         $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
-    public function create(array $input, Merchant\Entity $merchant, $subscription = null)
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        $subscription = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
             $input
         );
+
+        $this->modifyInputToHandleRenamedAttributes($input);
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
@@ -75,7 +80,10 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
+    public function update(
+        Entity $invoice,
+        array $input,
+        Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
             [
@@ -83,6 +91,8 @@ class Core extends Base\Core
                 'invoice_status' => $invoice->getStatus(),
                 'input'          => $input,
             ]);
+
+        $this->modifyInputToHandleRenamedAttributes($input);
 
         $status = $invoice->getStatus();
 
@@ -126,7 +136,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function issue(Entity $invoice, Merchant\Entity $merchant)
+    public function issue(Entity $invoice, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_ISSUE_REQUEST,
@@ -170,7 +180,7 @@ class Core extends Base\Core
     public function addLineItems(
         Entity $invoice,
         array $input,
-        Merchant\Entity $merchant)
+        Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
@@ -187,7 +197,8 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->createMany($input, $merchant, $invoice);
 
-                $this->recomputeInvoiceAmount($invoice);
+                $this->calculateAndSetAmountsOfInvoice($invoice);
+
                 $this->repo->saveOrFail($invoice);
             });
 
@@ -198,7 +209,7 @@ class Core extends Base\Core
         Entity $invoice,
         LineItem\Entity $lineItem,
         array $input,
-        Merchant\Entity $merchant)
+        Merchant\Entity $merchant): Entity
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
@@ -221,14 +232,17 @@ class Core extends Base\Core
                     $invoice
                 );
 
-                $this->recomputeInvoiceAmount($invoice);
+                $this->calculateAndSetAmountsOfInvoice($invoice);
+
                 $this->repo->saveOrFail($invoice);
             });
 
         return $invoice;
     }
 
-    public function removeLineItem(Entity $invoice, LineItem\Entity $lineItem)
+    public function removeLineItem(
+        Entity $invoice,
+        LineItem\Entity $lineItem): Entity
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
@@ -246,14 +260,17 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->delete($lineItem, $invoice);
 
-                $this->recomputeInvoiceAmount($invoice);
+                $this->calculateAndSetAmountsOfInvoice($invoice);
+
                 $this->repo->saveOrFail($invoice);
             });
 
         return $invoice;
     }
 
-    public function removeManyLineItems(Entity $invoice, Base\PublicCollection $lineItems)
+    public function removeManyLineItems(
+        Entity $invoice,
+        Base\PublicCollection $lineItems): Entity
     {
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
@@ -270,14 +287,15 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->deleteMany($lineItems);
 
-                $this->recomputeInvoiceAmount($invoice);
+                $this->calculateAndSetAmountsOfInvoice($invoice);
+
                 $this->repo->saveOrFail($invoice);
             });
 
         return $invoice;
     }
 
-    public function sendNotification(Entity $invoice, string $medium)
+    public function sendNotification(Entity $invoice, string $medium): array
     {
         $this->trace->info(
             TraceCode::INVOICE_SEND_NOTIFICATION,
@@ -305,7 +323,7 @@ class Core extends Base\Core
         return ['success' => $response];
     }
 
-    public function cancelInvoice(Entity $invoice)
+    public function cancelInvoice(Entity $invoice): Entity
     {
         $this->trace->info(
             TraceCode::CANCEL_INVOICE,
@@ -336,7 +354,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function expireInvoices()
+    public function expireInvoices(): array
     {
         $time = time();
 
@@ -384,7 +402,6 @@ class Core extends Base\Core
      *
      * @param Entity $invoice
      *
-     * @return void
      */
     protected function expireInvoice(Entity $invoice)
     {
@@ -410,7 +427,7 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
     }
 
-    public function fetchStatus(Entity $invoice)
+    public function fetchStatus(Entity $invoice): array
     {
         $paymentId = $invoice->getPaymentId();
 
@@ -426,7 +443,9 @@ class Core extends Base\Core
         ];
     }
 
-    public function getFormattedInvoiceData($invoiceId, Merchant\Entity $merchant)
+    public function getFormattedInvoiceData(
+        string $invoiceId,
+        Merchant\Entity $merchant): array
     {
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($invoiceId, $merchant);
@@ -497,7 +516,7 @@ class Core extends Base\Core
      *
      * @param Entity $invoice
      *
-     * @return string
+     * @return string|null
      */
     public function getFreshInvoicePdf(Entity $invoice)
     {
@@ -574,9 +593,63 @@ class Core extends Base\Core
         return $this->generatePdfWithRetry($invoice->getId());
     }
 
+    /**
+     * Calculates and sets derived amounts of invoice.
+     *
+     * @param Entity $invoice
+     */
+    public function calculateAndSetAmountsOfInvoice(Entity $invoice)
+    {
+        // Other types won't have taxation, their tax amount will be 0
+        // and net amount will be equal to amount.
+
+        if (($invoice->isTypeInvoice() === false) and ($invoice->getAmount() !== null))
+        {
+            $invoice->setTaxAmount(0);
+            $invoice->setGrossAmount($invoice->getAmount());
+
+            return;
+        }
+
+        $lineItems = $invoice->lineItems()->get();
+
+        // If there are no line items associated with invoice, make all amounts
+        // field 'null' (i.e. unset).
+
+        if ($lineItems->count() === 0)
+        {
+            $invoice->setAmountsToNull();
+
+            return;
+        }
+
+        // Invoice's:
+        // Gross amount = ∑(line_items.gross_amount)
+        // Tax amount = ∑(line_items.tax_amount)
+        // Amount = ∑(line_items.net_amount)
+
+        $grossAmount = $taxAmount = $amount = 0;
+
+        foreach ($lineItems as $lineItem)
+        {
+            $grossAmount += $lineItem->getGrossAmount();
+            $taxAmount   += $lineItem->getTaxAmount();
+            $amount      += $lineItem->getNetAmount();
+        }
+
+        $invoice->setGrossAmount($grossAmount);
+        $invoice->setTaxAmount($taxAmount);
+        $invoice->setAmount($amount);
+
+        $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
+    }
+
     // -------------------- Protected methods --------------------
 
-    protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
+    protected function updateDraftInvoice(
+        Merchant\Entity $merchant,
+        Entity $invoice,
+        array $input)
     {
         $this->repo->transaction(
             function() use ($merchant, $invoice, $input)
@@ -589,31 +662,12 @@ class Core extends Base\Core
             });
     }
 
-    protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
+    protected function updateIssuedInvoice(
+        Merchant\Entity $merchant,
+        Entity $invoice,
+        array $input)
     {
         $this->repo->saveOrFail($invoice);
-    }
-
-    /**
-     * Whenever invoice gets updated via add/update/delete of it's line items,
-     * The invoice amount is calculated and set again.
-     *
-     * We don't need to set order amount here because order is created only in
-     * issued state and recomputing invoice amount happens in draft state.
-     *
-     * @param Entity $invoice
-     */
-    protected function recomputeInvoiceAmount(Entity $invoice)
-    {
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($invoice);
-
-        // Validate invoice amount after re-computation, only if not null.
-        if ($totalAmount !== null)
-        {
-            $invoice->getValidator()->validateMaxAllowedAmount($totalAmount);
-        }
-
-        $invoice->setAmount($totalAmount);
     }
 
     /**
@@ -688,6 +742,21 @@ class Core extends Base\Core
                 ]);
 
             $this->generatePdfWithRetry($id, $attempt);
+        }
+    }
+
+    /**
+     * Modifies input param to handle renamed attributes in response.
+     *
+     * @param array $input
+     */
+    protected function modifyInputToHandleRenamedAttributes(array & $input)
+    {
+        if (array_key_exists(Entity::INVOICE_NUMBER, $input) === true)
+        {
+            $input[Entity::RECEIPT] = $input[Entity::INVOICE_NUMBER];
+
+            unset($input[Entity::INVOICE_NUMBER]);
         }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use DB;
 use Mail;
-use Carbon\Carbon;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
@@ -386,6 +386,33 @@ class MerchantTest extends TestCase
         ]);
 
         $activatedAt = time();
+
+        // \Mail::shouldReceive('queue')
+        //       ->once()
+        //       ->with(
+        //             Mockery::any(),
+        //             Mockery::on(function ($data)
+        //             {
+        //                 $this->assertNotNull($data['merchant']);
+        //                 $this->assertNotNull($data['rules']);
+        //                 $this->assertNotNull($data['subject']);
+
+        //                 $this->assertNotNull($data['merchant']['name']);
+        //                 $this->assertNotNull($data['merchant']['website']);
+        //                 $this->assertNotNull($data['merchant']['billing_label']);
+        //                 $this->assertNotNull($data['merchant']['email']);
+        //                 $this->assertNotNull($data['merchant']['org']);
+
+        //                 $this->assertNotNull($data['merchant']['org']['business_name']);
+        //                 $this->assertNotNull($data['merchant']['org']['hostname']);
+        //                 $this->assertNotNull($data['merchant']['org']['custom_code']);
+
+        //                 $this->assertNotNull($data['rules']['amountRangeRules']);
+        //                 $this->assertNotNull($data['rules']['otherRules']);
+
+        //                 return true;
+        //             }),
+        //             Mockery::any());
 
         $content = $this->startTest();
 
@@ -1302,14 +1329,12 @@ class MerchantTest extends TestCase
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
     }
 

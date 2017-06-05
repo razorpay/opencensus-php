@@ -60,6 +60,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const SCHEDULE_TASK         = 'schedule_task';
+    const LINE_ITEM_TAX         = 'line_item_tax';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
@@ -129,6 +130,7 @@ class Entity
     const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_OPENWALLET     = 'wallet_openwallet';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
+    const WALLET_MPESA          = 'wallet_mpesa';
 
     // Tax and Tax Groups
 
@@ -216,6 +218,7 @@ class Entity
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
+        self::WALLET_MPESA          => \RZP\Gateway\Wallet\Mpesa::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -235,6 +238,7 @@ class Entity
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
+        self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
     ];
 
     protected static $repository = [
@@ -255,6 +259,7 @@ class Entity
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_JIOMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_MPESA       => \RZP\Gateway\Wallet\Base::class,
     ];
 
     protected static $syncedInLiveAndTest = [

@@ -84,8 +84,15 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT
     ];
 
+    protected static $modifiers = [
+        self::NETWORK,
+        self::ISSUER
+    ];
+
     protected $publicSetters = [
-        Entity::LOAD
+        self::ID,
+        self::ENTITY,
+        self::LOAD
     ];
 
     protected function modifyLoad(& $input)
@@ -148,6 +155,26 @@ class Entity extends Base\PublicEntity
     }
 
     //---------------- Public Setters End---------------------------------------
+
+    //----------------------------Modifiers-------------------------------------
+
+    protected function modifyNetwork(array & $input)
+    {
+        if (empty($input[self::NETWORK]) === false)
+        {
+            $input[self::NETWORK] = strtoupper($input[self::NETWORK]);
+        }
+    }
+
+    protected function modifyIssuer(array & $input)
+    {
+        if (empty($input[self::ISSUER]) === false)
+        {
+            $input[self::ISSUER] = strtoupper($input[self::ISSUER]);
+        }
+    }
+
+    //----------------------------Modifiers End---------------------------------
 
     //---------------- Mutators-------------------------------------------------
 
