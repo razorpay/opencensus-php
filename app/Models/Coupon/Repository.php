@@ -14,4 +14,11 @@ class Repository extends Base\Repository
         Entity::ENTITY_ID           => 'required|alpha_num',
         Entity::ENTITY_TYPE         => 'required|string',
     ];
+
+    public function fetchByCode($code)
+    {
+        return $this->newQuery()
+                    ->where(Entity::COUPON_CODE, '=', $code)
+                    ->get();
+    }
 }

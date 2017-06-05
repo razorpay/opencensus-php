@@ -16,4 +16,9 @@ class Validator extends Base\Validator
         Entity::END_DATE    => 'sometimes|integer',
         Entity::USAGE       => 'sometimes|integer',
     ];
+
+    public function couponApplyValidator($coupon, array $input)
+    {
+        //TODO Write Validator
+    }
 }
