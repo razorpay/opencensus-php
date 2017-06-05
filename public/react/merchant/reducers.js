@@ -26,10 +26,16 @@ import activationReducer from 'merchant/modules/activation';
 import refundsReducer from 'merchant/modules/refunds/list';
 import refundReducer from 'merchant/modules/refunds/details';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
-import paymentsReducer from 'merchant/modules/payments/list';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
+// import mpTransferReducer from 'merchant/modules/marketplace/transfers/details';
 import referralsReducer from 'merchant/modules/referrals';
+
+import {
+  paymentsReducer,
+  mpPaymentsReducer,
+  transfersReducer as mpTransfersReducer,
+} from 'rzp/modules/collection';
 
 export default combineReducers({
   modal: modalReducer,
@@ -63,5 +69,7 @@ export default combineReducers({
   referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
-  mpPayments: paymentsReducer,
+  mpPayments: mpPaymentsReducer,
+  mpTransfers: mpTransfersReducer,
+  // mpTransfer: mpTransferReducer
 });

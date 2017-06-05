@@ -21,18 +21,19 @@ export default class PaymentsListContainer extends ListContainer {
         />
         {error && <Alert type="error" message={error} />}
 
-        {loading
-          ? <Spinner />
-          : items && items.length
-              ? <PaymentsTable items={items} />
-              : <h4 class="empty-table-message">No Payments Found!</h4>}
+        {loading ? <Spinner /> : <PaymentsTable items={items} />}
+        {!loading &&
+          items &&
+          !items.length &&
+          <h4 class="empty-table-message">No Payments Found!</h4>}
 
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={items.length}
-          onClick={this.paginate}
-        />
+        {items &&
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={items.length}
+            onClick={this.paginate}
+          />}
       </div>
     );
   }
