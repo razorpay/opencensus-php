@@ -31,7 +31,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantStatsRules = [
-        'sort'      =>  'sometimes|in:total_amount,successful_txn_count,txn_count'
+        'sort'      =>  'sometimes|in:total_amount,total_count'
     ];
 
     protected static $addTagsValidators = [
