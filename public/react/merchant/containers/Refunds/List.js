@@ -16,10 +16,6 @@ import {
 
 @connect(state => state.collection, { fetchAll })
 export default class RefundsListContainer extends ListContainer {
-  fetchEntityList(params) {
-    return this.props.fetchAll(params);
-  }
-
   render() {
     return (
       <div class="content-wrapper">

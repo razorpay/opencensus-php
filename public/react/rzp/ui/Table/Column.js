@@ -39,6 +39,8 @@ export const refundPayment = [
 ];
 
 export const orderId = ['Order ID', item => idLink(item.id, 'order')];
+export const attempts = ['Attempts', item => item.attempts];
+export const receipt = ['Receipt', item => item.receipt];
 
 export const transferId = ['Transfer ID', item => idLink(item.id, 'trf')];
 export const transferSource = ['Source', item => idLink(item.source)];

@@ -5,7 +5,6 @@ import TransfersListFilter
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
-
 import {
   transferId,
   transferSource,
@@ -16,10 +15,6 @@ import {
 
 @connect(state => state.collection, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
-  fetchEntityList(params) {
-    return this.props.fetchAll(params);
-  }
-
   render() {
     return (
       <div class="content-wrapper">

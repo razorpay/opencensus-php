@@ -15,10 +15,6 @@ import {
 
 @connect(state => state.collection, { fetchAll })
 export default class ReversalsListContainer extends ListContainer {
-  fetchEntityList(params) {
-    return this.props.fetchAll(params);
-  }
-
   render() {
     let { loading, items, error } = this.props;
 

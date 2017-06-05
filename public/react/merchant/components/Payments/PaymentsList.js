@@ -5,8 +5,6 @@ import PaymentsListFilter
   from 'merchant/components/Payments/PaymentsListFilter';
 
 export default class PaymentsListContainer extends ListContainer {
-  fetchEntityList = props => this.props.fetchAll(props);
-
   render() {
     return (
       <div class="content-wrapper">

@@ -15,10 +15,6 @@ import * as ModalActions from 'rzp/modules/modals';
   ...ModalActions,
 })
 export default class SettlementsListContainer extends ListContainer {
-  fetchEntityList(params) {
-    return this.props.fetchAll(params);
-  }
-
   showBreakup = settlement => {
     this.props.openModal({
       component: <SettlementBreakupModal settlementId={settlement.id} />,
