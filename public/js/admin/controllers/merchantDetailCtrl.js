@@ -64,6 +64,34 @@ app
       generateMerchant();
       getGatewayRulesOfMerchant();
 
+      // Gateway map is dependent upon method
+      $scope.getGatewayLabel = function(method, gateway) {
+        var map = null;
+        switch (method) {
+          case 'card':
+            map = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            map = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            map = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            map = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            map = utilMapping.getMap('gatewayUpiMap');
+            break;
+        }
+
+        if (!map) {
+          return gateway;
+        }
+
+        return map[gateway];
+      };
+
       $scope.lockForm = function() {
         var data = {
           route_name: 'merchant_activation_update',

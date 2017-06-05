@@ -11,13 +11,14 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 @withRouter
 @connect(
   state => {
     return { ...state.invoices, ...state.session };
   },
-  { ...InvoiceActions, ...ModalActions }
+  { ...InvoiceActions, ...ModalActions, luminateRow }
 )
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
@@ -42,7 +43,7 @@ export default class InvoicesListContainer extends ListContainer {
         <CreatePaymentLink
           invoice={invoice}
           onSave={invoice => {
-            this.props.highLightInvoice(invoice.id);
+            this.props.luminateRow(invoice.id);
           }}
           closeModal={this.props.closeModal}
         />

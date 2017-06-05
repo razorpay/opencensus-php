@@ -79,6 +79,7 @@ export default class DateRangePickerField extends Component {
           initialVisibleMonth={_ => from}
           {...otherProps}
         />
+        <span class="caret" />
       </div>
     );
   }

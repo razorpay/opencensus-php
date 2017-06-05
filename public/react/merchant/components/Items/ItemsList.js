@@ -31,7 +31,7 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
           <tr>
             <th>Item Name</th>
             <th>Description</th>
-            <th class="text-right">Amount (INR)</th>
+            <th class="text-right">Amount</th>
             <th>Actions</th>
           </tr>
         </thead>

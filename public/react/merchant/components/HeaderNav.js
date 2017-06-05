@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import { PowerSelect } from 'react-power-select';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
@@ -62,16 +63,18 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
       <DropdownContent>
         <ul class="dropdown-menu">
           {user.current &&
-            <li>
-              <Link to="/activation">
-                Activation
-                {' '}
-                {!user.activated &&
-                  <span class="badge bg-danger pull-right">
-                    {user.activation_progress}%
-                  </span>}
-              </Link>
-            </li>}
+            <ShowWhen myRole="owner manager admin">
+              <li>
+                <Link to="/activation">
+                  Activation
+                  {' '}
+                  {!user.activated &&
+                    <span class="badge bg-danger pull-right">
+                      {user.activation_progress}%
+                    </span>}
+                </Link>
+              </li>
+            </ShowWhen>}
           <li><Link to="/profile">Profile</Link></li>
           <li class="divider" />
           <li><a onClick={onLogoutClick}>Logout</a></li>

@@ -83,7 +83,7 @@ export default props => {
             <th>Customer</th>
             <th>Payment Link</th>
             {!isNewUIEnabled ? <th>Type</th> : ''}
-            <th class="text-right">Amount (INR)</th>
+            <th class="text-right">Amount</th>
             <th class="text-right">Status</th>
             <th>Actions</th>
           </tr>

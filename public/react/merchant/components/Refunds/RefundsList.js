@@ -34,7 +34,7 @@ export default ({ refunds, isLoading }) => {
             <th>Refund Id</th>
             <th>Payment Id</th>
             <th>Currency</th>
-            <th>Amount (INR)</th>
+            <th>Amount</th>
             <th>Created At</th>
           </tr>
         </thead>
