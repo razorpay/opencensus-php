@@ -63,4 +63,13 @@ class OAuthApplicationController extends Controller
 
         return ApiResponse::json($apps);
     }
+
+    public function delete(string $id)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $this->appService->delete($id, $merchantId);
+
+        return ApiResponse::json([]);
+    }
 }
