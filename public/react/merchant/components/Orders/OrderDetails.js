@@ -40,13 +40,12 @@ export default props => {
             <Spinner />
           </div>
         : <div class="panel panel-default SliderPanel">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
-
             <div class="panel-heading">
               Order ID: <b>{order.id}</b>
             </div>
 
             <div class="SliderPanel__Body">
+              <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
                 <div class="list-group details-row-container">
                   <DetailRow

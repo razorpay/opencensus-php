@@ -16,8 +16,6 @@ export default props => {
             <Spinner />
           </div>
         : <div>
-            <Alert type={statusMsg.type} message={statusMsg.message} />
-
             <div class="panel panel-default SliderPanel">
               <div class="panel-heading">
                 Settlement ID: <b>{settlement.id}</b>
@@ -25,6 +23,7 @@ export default props => {
 
               <div class="SliderPanel__Body">
                 <div class="panel-body">
+                  <Alert type={statusMsg.type} message={statusMsg.message} />
                   <div class="list-group details-row-container">
                     <div class="list-group-item">
                       <span>Amount</span>

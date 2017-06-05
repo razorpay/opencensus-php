@@ -30,14 +30,13 @@ export default ({ refund, isLoading, statusMsg }) => {
             <Spinner />
           </div>
         : <div class="panel panel-default SliderPanel">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
-
             <div class="panel-heading">
               Refund ID: <b>{refund.id}</b>
             </div>
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
+                <Alert type={statusMsg.type} message={statusMsg.message} />
                 <div class="list-group details-row-container">
                   <DetailRow
                     label="Payment"
