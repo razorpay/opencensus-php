@@ -72,4 +72,17 @@ class OAuthApplicationController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function update(string $id)
+    {
+        $input = Request::all();
+
+        $merchantId = $this->merchant->getId();
+
+        $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
+        $app = $this->appService->update($id, $input);
+
+        return ApiResponse::json($app);
+    }
 }
