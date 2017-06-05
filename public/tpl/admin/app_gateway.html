@@ -72,7 +72,7 @@
         <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
           <td>{{row.id}}</td>
           <td>{{row.merchant_id}}</td>
-          <td>{{row.gateway}}</td>
+          <td>{{getGatewayLabel(row.method, row.gateway)}}</td>
           <td>{{methodMap[row.method]}}</td>
           <td>{{row.method_type || 'ALL'}}</td>
           <td>{{networkMap[row.network] || 'ALL'}}</td>
@@ -141,39 +141,14 @@
         </div>
       </div>
 
-      <!-- Gateway -->
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway*:</label>
-        <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" name="gateway"
-                 ng-model="current.gateway"
-                 ng-readonly="editMode"
-                 ng-required="!editMode">
-        </div>
-      </div>
-
-      <!-- Gateway Acquirer -->
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway Acquirer:</label>
-        <div class="col-lg-10" >
-          <!--<input type="text" class="form-control m-b" name="gateway_acquirer" ng-model="current.gateway_acquirer" ng-readonly="editMode">-->
-          <select name="gateway_acquirer"
-                  ng-model="current.gateway_acquirer"
-                  ng-init="current.gateway_acquirer = current.gateway_acquirer || ''"
-                  class="form-control"
-                  ng-disabled="editMode">
-            <option value="">ALL</option>
-            <option ng-repeat="(key, option) in gatewayAcquirerMap" value={{key}}>{{option}}</option>
-          </select>
-
-        </div>
-      </div>
 
       <!-- Method -->
       <div class="form-group">
         <label class="col-lg-2 control-label">Method*:</label>
         <div class="col-lg-10" >
-          <select name="method" ng-model="current.method" ng-required="!editMode" class="form-control" ng-disabled="editMode">
+          <select name="method" ng-model="current.method" class="form-control"
+                  ng-change="updateGatewayList(current.method)"
+                  ng-disabled="editMode" ng-required="!editMode" >
             <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
           </select>
           <!--Display error for select type tags-->
@@ -211,6 +186,37 @@
         </div>
       </div>
 
+      <!-- Gateway -->
+      <div class="form-group" ng-if="current.method">
+        <label class="col-lg-2 control-label">Gateway*:</label>
+        <div class="col-lg-10" >
+          <select name="gateway" ng-model="current.gateway" class="form-control"
+                  ng-change=""
+                  ng-readonly="editMode"
+                  ng-required="!editMode">
+            <option ng-repeat="(key, option) in gatewayListMap" value={{key}}>{{option}}</option>
+          </select>
+
+        </div>
+      </div>
+
+      <!-- Gateway Acquirer -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway Acquirer:</label>
+        <div class="col-lg-10" >
+          <!--<input type="text" class="form-control m-b" name="gateway_acquirer" ng-model="current.gateway_acquirer" ng-readonly="editMode">-->
+          <select name="gateway_acquirer"
+                  ng-model="current.gateway_acquirer"
+                  ng-init="current.gateway_acquirer = current.gateway_acquirer || ''"
+                  class="form-control"
+                  ng-disabled="editMode">
+            <option value="">ALL</option>
+            <option ng-repeat="(key, option) in gatewayAcquirerMap" value={{key}}>{{option}}</option>
+          </select>
+
+        </div>
+      </div>
+
       <!-- International -->
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
@@ -245,7 +251,7 @@
         <div class="col-lg-10" >
           <input type="decimal" class="form-control m-b" name="load"
                  ng-model="current.load"
-                 placeholder="Eg: 220.15 (range is 0-100)"
+                 placeholder="Eg: 22.15 (range is 0-100)"
                  ng-required="!editMode"
                  ng-readonly="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') === -1">
         </div>
