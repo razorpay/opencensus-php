@@ -67,17 +67,22 @@ export default props => {
                         label="Payments"
                         onToggleClick={() => props.onTogglePayments(order)}
                       >
-                        <table class="table table-hover">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={payments.loading}
-                            rows={payments.items}
-                          >
-                            {payments.items.map(payment => (
-                              <PaymentList key={payment.id} payment={payment} />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={payments.loading}
+                              rows={payments.items}
+                            >
+                              {payments.items.map(payment => (
+                                <PaymentList
+                                  key={payment.id}
+                                  payment={payment}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : <DetailRow label="Payments" value="No Payments" />}
 

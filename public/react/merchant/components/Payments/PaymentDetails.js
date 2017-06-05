@@ -143,21 +143,23 @@ export default props => {
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        <table class="table table-hover">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={card.loading}
-                            rows={Object.keys(card.details)}
-                          >
-                            {Object.keys(card.details).map(key => (
-                              <ListItem
-                                key={key}
-                                item={titleCase(key)}
-                                value={card.details[key]}
-                              />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={card.loading}
+                              rows={Object.keys(card.details)}
+                            >
+                              {Object.keys(card.details).map(key => (
+                                <ListItem
+                                  key={key}
+                                  item={titleCase(key)}
+                                  value={card.details[key]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : null}
 
@@ -214,20 +216,22 @@ export default props => {
                     : null}
                   {Object.keys(payment.notes).length > 0
                     ? <ListGroupToggler label="Notes" show={true}>
-                        <table class="table table-hover">
-                          <TableBody
-                            colSpan={2}
-                            rows={Object.keys(payment.notes)}
-                          >
-                            {Object.keys(payment.notes).map(note => (
-                              <ListItem
-                                key={note}
-                                item={note}
-                                value={payment.notes[note]}
-                              />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              rows={Object.keys(payment.notes)}
+                            >
+                              {Object.keys(payment.notes).map(note => (
+                                <ListItem
+                                  key={note}
+                                  item={note}
+                                  value={payment.notes[note]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : <DetailRow label="Notes" value="No Notes" />}
 
@@ -245,20 +249,22 @@ export default props => {
                         label="Refunds"
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
-                        <table class="table table-hover">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={refunds.loading}
-                            rows={refunds.items}
-                          >
-                            {refunds.items.map(refund => (
-                              <RefundsListItem
-                                key={refund.id}
-                                refund={refund}
-                              />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={refunds.loading}
+                              rows={refunds.items}
+                            >
+                              {refunds.items.map(refund => (
+                                <RefundsListItem
+                                  key={refund.id}
+                                  refund={refund}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : <DetailRow label="Refunds" value="No Refunds" />}
                 </div>

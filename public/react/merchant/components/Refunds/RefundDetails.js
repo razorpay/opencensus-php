@@ -2,7 +2,6 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import { Link } from 'react-router-dom';
