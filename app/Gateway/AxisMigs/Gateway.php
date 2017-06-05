@@ -45,6 +45,11 @@ class Gateway extends Base\Gateway
         $traceRequest = $request;
         unset($traceRequest['content']['vpc_SecureHash']);
         unset($traceRequest['content']['vpc_SecureHashType']);
+        unset($traceRequest['content']['vpc_Card']);
+        unset($traceRequest['content']['vpc_CardNum']);
+        unset($traceRequest['content']['vpc_CardExp']);
+        unset($traceRequest['content']['vpc_CardSecurityCode']);
+        unset($traceRequest['content']['vpc_AccessCode']);
 
         $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
