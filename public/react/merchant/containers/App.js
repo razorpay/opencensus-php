@@ -43,7 +43,6 @@ export default class App extends Component {
           currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
           this.props.updateSession({ mode: currentMode });
         }
-
         this.redirectToRoute(role);
         this.initSmooch(data);
       }),
@@ -62,8 +61,17 @@ export default class App extends Component {
   }
 
   redirectToRoute(role) {
-    if (role === 'sellerapp') {
-      this.props.history.replace('/invoices');
+    let pathname = this.props.history.location.pathname;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+
+    if (pathname === '/' || pathname === '/dashboard') {
+      switch (role) {
+        case 'sellerapp':
+          let url = isNewUIEnabled ? '/paymentlinks' : '/invoices';
+          return this.props.history.replace(url);
+        case 'support':
+          return this.props.history.replace('/payments');
+      }
     }
   }
 

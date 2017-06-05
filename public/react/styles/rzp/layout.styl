@@ -52,7 +52,6 @@ body {
   z-index: 1111;
   @media $sm-max {
     width: 45px;
-    overflow: hidden;
   }
 
   .brand-logo {
@@ -106,9 +105,13 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-bottom: 15px;
     padding-top: 15px;
+    @media $sm-max {
+      padding-bottom: 60px;
+    }
 
     .text-warning {
       color: #fbe165;
