@@ -236,8 +236,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
         [
-            'response' => $response,
-            'input'    => $input,
+            'response'  => $response,
+            'refund_id' => $input['refund']['id'],
         ]);
 
         $content = $this->jsonToArray($response->body);
@@ -612,8 +612,8 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MATCH;
 
             $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,[
-                'msg'     => 'Jiomoney payment verification after 2 days',
-                'payment' => $input['payment']
+                'msg'        => 'Jiomoney payment verification after 2 days',
+                'payment_id' => $input['payment']['id']
             ]);
         }
 
