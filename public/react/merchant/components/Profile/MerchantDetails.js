@@ -5,7 +5,7 @@ import CheckIcon from 'rzp/ui/CheckIcon';
 
 export default ({ user }) => {
   return (
-    <div class="list-group">
+    <div class="list-group details-row-container">
       <DetailRow label="Merchant Name" value={titleCase(user.name)} />
 
       <DetailRow

@@ -73,4 +73,6 @@ return [
     'item_create'               => $writers,
     'item_edit'                 => $writers,
     'item_delete'               => $writers,
+
+    'marketplace_read'          => $readers
 ];

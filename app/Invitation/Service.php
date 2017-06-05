@@ -4,6 +4,7 @@ namespace App\Invitation;
 
 use Auth;
 use Mail;
+use Session;
 use App\Base;
 use App\User;
 use App\Merchant;
@@ -161,6 +162,13 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+
+            list($error, $genericUser) = (new User\Service)->getUserFromApi($user->id);
+
+            if (empty($error) === true)
+            {
+                Session::put('dashboard_user_payload', $genericUser);
+            }
 
             $invitation->delete();
         }

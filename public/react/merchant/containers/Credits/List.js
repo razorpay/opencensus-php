@@ -22,16 +22,10 @@ export default class CreditsListContainer extends Component {
 
   render() {
     return (
-      <div class="react-root">
-        <Header title="Your Credits" showMode={false} />
-
-        <div class="content-wrapper">
-          <CreditsDetails
-            currentUser={this.props.user.current}
-            {...this.props.credits}
-          />
-        </div>
-      </div>
+      <CreditsDetails
+        currentUser={this.props.user.current}
+        {...this.props.credits}
+      />
     );
   }
 }

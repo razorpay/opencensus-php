@@ -2,8 +2,6 @@ import { set, merge, push } from 'rzp/utils/immutable';
 import Referral from 'merchant/models/Referral';
 
 const REFERRALS_FETCH = 'REFERRALS_FETCH';
-const HIGHLIGHT_REFERRAL = 'HIGHLIGHT_REFERRAL';
-const REMOVE_HIGHLIGHT_REFERRAL = 'REMOVE_HIGHLIGHT_REFERRAL';
 const LOGIN_CREATE = 'LOGIN_CREATE';
 const MERCHANT_CREATE = 'MERCHANT_CREATE';
 const MERCHANT_SWITCH = 'MERCHANT_SWITCH';
@@ -48,26 +46,10 @@ export const createMerchant = params => {
   };
 };
 
-export const highlightReferral = merchantId => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_REFERRAL,
-      payload: merchantId,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_HIGHLIGHT_REFERRAL,
-      });
-    }, 6000);
-  };
-};
-
 let initialState = {
   loading: true,
   referrals: [],
   count: 0,
-  highlightReferralId: null,
 };
 
 export default function(state = initialState, action) {
@@ -89,12 +71,6 @@ export default function(state = initialState, action) {
         loading: false,
         referrals: push(state.referrals, action.payload),
       });
-
-    case HIGHLIGHT_REFERRAL:
-      return set(state, 'highlightReferralId', action.payload);
-
-    case REMOVE_HIGHLIGHT_REFERRAL:
-      return set(state, 'highlightReferralId', null);
 
     default:
       return state;

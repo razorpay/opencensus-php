@@ -18,7 +18,6 @@ var app = angular
     'ngIdle',
     'ngBusy',
     'noCAPTCHA',
-    'react',
   ])
   .run([
     '$rootScope',
@@ -26,15 +25,7 @@ var app = angular
     '$stateParams',
     'user',
     'authorization',
-    'jqTourbusService',
-    function(
-      $rootScope,
-      $state,
-      $stateParams,
-      user,
-      authorization,
-      jqTourbusService
-    ) {
+    function($rootScope, $state, $stateParams, user, authorization) {
       $rootScope.$on('$stateChangeStart', function(
         event,
         toState,
@@ -57,8 +48,6 @@ var app = angular
       $rootScope.$on('$stateChangeError', function() {
         $state.go('500');
       });
-
-      $rootScope.tour = jqTourbusService;
     },
   ])
   .config([
@@ -86,20 +75,13 @@ var app = angular
       app.service = $provide.service;
       app.constant = $provide.constant;
       app.value = $provide.value;
-      $urlRouterProvider.otherwise(function($injector, $location) {
-        var role = $injector.get('$rootScope').role;
-        if (role === 'sellerapp') {
-          return '/app/invoices';
-        }
-        return '/app/dashboard';
-      });
+      $urlRouterProvider.otherwise('/access/signin');
 
       $httpProvider.defaults.headers.common['X-Requested-With'] =
         'XMLHttpRequest';
 
       $stateProvider //Logged in routes
         .state('app', {
-          abstract: true,
           url: '/app',
           templateUrl: 'tpl/app.html',
           resolve: {
@@ -111,227 +93,6 @@ var app = angular
             ],
           },
           data: { role: 'auth' },
-        })
-        .state('app.dashboard', {
-          url: '/dashboard',
-          templateUrl: 'tpl/app_dashboard.html',
-        })
-        .state('app.transactions', {
-          url: '/transactions',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.transactions.list', {
-          url: '/list',
-          templateUrl: 'tpl/app_transactions.html',
-        })
-        .state('app.transactions.detail', {
-          url: '/:id',
-          templateUrl: 'tpl/app_transaction_detail.html',
-        })
-        .state('app.activationold', {
-          url: '/activationold',
-          templateUrl: 'tpl/app_activation.html',
-        })
-        .state('app.profileold', {
-          url: '/profileold',
-          templateUrl: 'tpl/app_profile.html',
-        })
-        .state('app.accountsold', {
-          url: '/accountsold',
-          templateUrl: 'tpl/app_accounts.html',
-        })
-        // React
-        .state('app.profile', {
-          url: '/profile',
-          templateProvider: reactTemplateProvider('<profile/>'),
-        })
-        .state('app.invoices', {
-          url: '/invoices',
-          templateUrl: 'tpl/app_invoices.html',
-        })
-        .state('app.invoices.list', {
-          url: '/list',
-          templateProvider: reactTemplateProvider('<invoices-list />'),
-        })
-        .state('app.invoices.customers', {
-          url: '/customers',
-          templateProvider: reactTemplateProvider('<customers-list />'),
-        })
-        .state('app.invoices.items', {
-          url: '/items',
-          templateProvider: reactTemplateProvider('<items-list />'),
-        })
-        .state('app.invoices.new', {
-          url: '/new',
-          templateProvider: reactTemplateProvider('<invoices-new />'),
-        })
-        .state('app.invoices.detail', {
-          url: '/:id/details',
-          controller: [
-            '$scope',
-            '$stateParams',
-            function($scope, $stateParams) {
-              $scope.invoiceId = $stateParams.id;
-            },
-          ],
-          templateProvider: reactTemplateProvider(
-            '<invoice-detail id="invoiceId" />'
-          ),
-        })
-        .state('app.invoices.edit', {
-          url: '/:id',
-          controller: [
-            '$scope',
-            '$stateParams',
-            function($scope, $stateParams) {
-              $scope.invoiceId = $stateParams.id;
-            },
-          ],
-          templateProvider: reactTemplateProvider(
-            '<invoices-new id="invoiceId" />'
-          ),
-        })
-        .state('app.subscriptions', {
-          url: '/subscriptions',
-          templateProvider: reactTemplateProvider('<subscriptions-list />'),
-        })
-        .state('app.subscriptionsnew', {
-          url: '/subscriptions/new',
-          templateProvider: reactTemplateProvider('<subscriptions-new />'),
-        })
-        .state('app.plans', {
-          url: '/plans',
-          templateProvider: reactTemplateProvider('<plans-list />'),
-        })
-        .state('app.orders', {
-          url: '/orders',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.orders.list', {
-          url: '/list',
-          templateProvider: reactTemplateProvider('<orders-list />'),
-        })
-        .state('app.orders.detail', {
-          url: '/:id/details',
-          controller: [
-            '$scope',
-            '$stateParams',
-            function($scope, $stateParams) {
-              $scope.id = $stateParams.id;
-            },
-          ],
-          templateProvider: reactTemplateProvider('<order-details id="id" />'),
-        })
-        .state('app.settlements', {
-          url: '/settlements',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.settlements.list', {
-          url: '/list',
-          templateProvider: reactTemplateProvider('<settlements-list />'),
-        })
-        .state('app.settlements.detail', {
-          url: '/:id',
-          controller: [
-            '$scope',
-            '$stateParams',
-            function($scope, $stateParams) {
-              $scope.id = $stateParams.id;
-            },
-          ],
-          templateProvider: reactTemplateProvider(
-            '<settlement-details id="id" />'
-          ),
-        })
-        .state('app.webhooks', {
-          url: '/webhooks',
-          templateProvider: reactTemplateProvider('<webhooks-list />'),
-        })
-        .state('app.keys', {
-          url: '/keys',
-          templateProvider: reactTemplateProvider('<keys-list />'),
-        })
-        .state('app.credits', {
-          url: '/credits',
-          templateProvider: reactTemplateProvider('<credits-new/>'),
-        })
-        .state('app.addfunds', {
-          url: '/addfunds',
-          templateProvider: reactTemplateProvider('<add-funds />'),
-        })
-        .state('app.generatereport', {
-          url: '/generatereport',
-          templateProvider: reactTemplateProvider('<generate-report />'),
-        })
-        .state('app.teammanagement', {
-          url: '/team',
-          templateProvider: reactTemplateProvider('<manage-team />'),
-        })
-        .state('app.config', {
-          url: '/config',
-          templateProvider: reactTemplateProvider('<config-details/>'),
-        })
-        .state('app.refunds', {
-          url: '/refunds',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.refunds.list', {
-          url: '/list',
-          templateProvider: reactTemplateProvider('<refunds-list />'),
-        })
-        .state('app.refunds.detail', {
-          url: '/:id',
-          controller: [
-            '$scope',
-            '$stateParams',
-            function($scope, $stateParams) {
-              $scope.id = $stateParams.id;
-            },
-          ],
-          templateProvider: reactTemplateProvider('<refund-details id="id" />'),
-        })
-        .state('app.batch', {
-          url: '/batch',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.batch.upload', {
-          url: '/upload',
-          templateProvider: reactTemplateProvider('<batch-upload />'),
-        })
-        .state('app.batch.list', {
-          url: '/list',
-          templateProvider: reactTemplateProvider('<batch-list />'),
-        })
-        .state('app.payments', {
-          url: '/payments',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.payments.list', {
-          url: '/list',
-          templateProvider: reactTemplateProvider('<payments-list />'),
-        })
-        .state('app.payments.detail', {
-          url: '/:id',
-          controller: [
-            '$scope',
-            '$stateParams',
-            function($scope, $stateParams) {
-              $scope.id = $stateParams.id;
-            },
-          ],
-          templateProvider: reactTemplateProvider('<payment-details id="id"/>'),
-        })
-        .state('app.activation', {
-          url: '/activation',
-          templateProvider: reactTemplateProvider('<activation-wizard />'),
-        })
-        .state('app.accounts', {
-          url: '/accounts',
-          templateProvider: reactTemplateProvider('<accounts-list />'),
-        })
-        .state('app.referrals', {
-          url: '/referral',
-          templateProvider: reactTemplateProvider('<referrals-list />'),
         })
         //Guest Routes
         .state('access', {
@@ -404,48 +165,3 @@ var app = angular
       $keepaliveProvider.interval(60);
     },
   ]);
-
-var injectScript = (function() {
-  return function(src, callback) {
-    var script = document.createElement('script');
-    script.async = true;
-    script.src = src;
-    if (callback) {
-      script.onload = function() {
-        callback.call();
-      };
-    }
-    document.getElementsByTagName('head')[0].appendChild(script);
-  };
-})();
-
-var reactTemplateProvider = function(template) {
-  var calledOnce = false;
-  var deferred = null;
-  return [
-    '$q',
-    '$stateParams',
-    function($q) {
-      deferred = deferred || $q.defer();
-      if (!window.React) {
-        if (!calledOnce) {
-          calledOnce = true;
-          var url = "<% asset('js/generated/merchant_react.js') %>";
-          url = url.indexOf('-') !== -1
-            ? url
-            : 'js/generated/merchant_react.js';
-          injectScript(url, function() {
-            deferred.resolve(template);
-          });
-        }
-      } else {
-        deferred.resolve(template);
-        if (window.ga) {
-          ga('set', 'page', '/' + location.hash);
-          ga('send', 'pageview');
-        }
-      }
-      return deferred.promise;
-    },
-  ];
-};

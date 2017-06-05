@@ -56,24 +56,15 @@ export default class CongfigurationContainer extends Component {
     let { config, features, loading } = this.props.configState;
 
     return (
-      <div class="react-root">
-        <Header title="Configuration" showMode={false} />
-
+      <div class="content-wrapper content-sm">
         {loading
           ? <div class="page-spinner-container">
               <Spinner />
             </div>
-          : <div class="content-wrapper">
-              <div class="row">
-                <div class="col-md-8 col-md-offset-2 col-sm-12">
-                  <CheckoutTheme form="configForm" onSave={this.saveConfig} />
-                  <FlashCheckout />
-                  <EmailNotifications
-                    form="configForm"
-                    onSave={this.saveConfig}
-                  />
-                </div>
-              </div>
+          : <div>
+              <CheckoutTheme form="configForm" onSave={this.saveConfig} />
+              <FlashCheckout />
+              <EmailNotifications form="configForm" onSave={this.saveConfig} />
             </div>}
       </div>
     );

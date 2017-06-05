@@ -6,8 +6,6 @@ const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH';
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE';
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT';
 const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
-const HIGHLIGHT_CUSTOMER = 'HIGHLIGHT_CUSTOMER';
-const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT';
 
 export const fetchCustomers = params => {
   return dispatch => {
@@ -51,36 +49,17 @@ export const deleteCustomer = params => {
   };
 };
 
-export const highlightCustomerRow = params => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_CUSTOMER,
-      payload: params,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_HIGHLIGHT,
-      });
-    }, 6000);
-  };
-};
-
 let initialState = {
   loading: true,
   customers: [],
   count: 0,
-  highlightRowId: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${CUSTOMERS_FETCH}::PENDING`:
     case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return merge(state, {
-        loading: true,
-        highlightRowId: null,
-      });
+      return set(state, 'loading', true);
 
     case `${CUSTOMERS_FETCH}::SUCCESS`:
     case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`:
@@ -112,12 +91,6 @@ export default function(state = initialState, action) {
         customer => customer.id === action.payload.id
       );
       return set(state, 'customers', customersList);
-
-    case HIGHLIGHT_CUSTOMER:
-      return set(state, 'highlightRowId', action.payload.id);
-
-    case REMOVE_HIGHLIGHT:
-      return set(state, 'highlightRowId', null);
 
     default:
       return state;

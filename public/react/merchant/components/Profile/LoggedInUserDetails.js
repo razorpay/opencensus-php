@@ -5,7 +5,7 @@ import { roles } from 'rzp/utils/constants';
 export default ({ loggedInUser, loggedInUserRole }) => {
   return (
     <div class="panel panel-default">
-      <div class="list-group">
+      <div class="list-group details-row-container">
         <DetailRow label="User Name" value={titleCase(loggedInUser.name)} />
 
         <DetailRow

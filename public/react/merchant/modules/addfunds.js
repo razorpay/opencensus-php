@@ -23,7 +23,7 @@ export const fetchKeys = currentUser => {
       if (response.data.count) {
         return response.data.items[0].id;
       }
-      throw new Error('No valid api keys found, check Api Keys page');
+      throw ['No valid api keys found, check Api Keys page'];
     });
   };
 };

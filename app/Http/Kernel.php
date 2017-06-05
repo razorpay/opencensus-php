@@ -48,6 +48,7 @@ class Kernel extends HttpKernel {
         'slack'         => 'App\Http\Middleware\Slack',
         'admin_access'  => 'App\Http\Middleware\AdminAccess',
         'cors'          => 'App\Http\Middleware\Cors',
+        'verified'      => 'App\Http\Middleware\Verified',
     ];
 
 }

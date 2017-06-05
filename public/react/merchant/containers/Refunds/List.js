@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
@@ -19,44 +21,43 @@ export default class RefundsListContainer extends ListContainer {
     let { loading, refunds, error } = this.props;
 
     return (
-      <div class="react-root">
-        <Header title="Refunds">
+      <div class="content-wrapper">
+        <TetherComponent
+          target="#transactions-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 0"
+        >
+          <div />{/* required by react-tether */}
           <ShowWhen
             featureEnabled="Batchrefunds"
             myRole="owner manager operations admin finance"
           >
-            <a class="btn btn-primary pull-right" href="#/app/batch/upload">
+            <NavLink
+              class="btn btn-primary pull-right"
+              to="/refunds/batchupload"
+            >
               Batch Refunds
-            </a>
+            </NavLink>
           </ShowWhen>
-        </Header>
+        </TetherComponent>
 
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Refunds List
-            </div>
+        <RefundsListFilter
+          form="refundListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-            <div class="panel-body">
-              <RefundsListFilter
-                form="refundListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-              />
-            </div>
+        {error && <Alert type="error" message={error} />}
 
-            {error && <Alert type="error" message={error} />}
+        <RefundsList refunds={refunds} isLoading={loading} />
 
-            <RefundsList refunds={refunds} isLoading={loading} />
-
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={refunds.length}
-              onClick={this.paginate}
-            />
-          </div>
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={refunds.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

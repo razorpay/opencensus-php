@@ -366,19 +366,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    /*
-        This piece of code is weird cuz api-route-map is not
-        auth aware. We need to make that happen before we can
-        remove this. This route is accessible without any session
-        guard.
-    */
-    public function getInvitationDetails()
-    {
-        $genericController = App::make(GenericController::class);
-
-        return App::call([$genericController, 'handle']);
-    }
-
     public function postSignup()
     {
         $id = Auth::user()->currentMerchant()->id;

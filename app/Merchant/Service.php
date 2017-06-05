@@ -455,35 +455,31 @@ class Service extends Base\Service
 
     public function resendConfirmation(array $input)
     {
-        $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
-
-        if (empty($error))
+        if (isset($input['email']) === false)
         {
-            $credentials = array(
-                'email'     => $input['email'],
-                'password'  => $input['password']
-            );
-
-            $user = Auth::guard('user');
-
-            if ($user->once($credentials))
-            {
-                $user = Auth::user();
-
-                if ($user->getConfirmToken() === null)
-                {
-                    return [['User already confirmed. You can login ' .
-                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
-                }
-
-                $user->token = $user->getConfirmToken();
-                (new UserMailer($user))->accountVerification()->queueAndDeliver();
-
-                return array(array(),array());
-            }
+            return [[static::INVALID_EMAIL_OR_PASSWORD], []];
         }
 
-        return array(array(static::INVALID_EMAIL_OR_PASSWORD), array());
+        $email = $input['email'];
+
+        $user = (new User\Entity)->where('users.email', $email)
+                                 ->first();
+        if ($user === null)
+        {
+            return [[static::INVALID_EMAIL_OR_PASSWORD], []];
+        }
+
+        if ($user->getConfirmToken() === null)
+        {
+            return [['User already confirmed. You can login ' .
+                    '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
+        }
+
+        $user->token = $user->getConfirmToken();
+
+        (new UserMailer($user))->accountVerification()->queueAndDeliver();
+
+        return [[], []];
     }
 
     public function fetch($merchantId)
@@ -925,7 +921,12 @@ class Service extends Base\Service
         return [ $error, $presignupDetails];
     }
 
-    public function getPreSignupDetails($merchantId)
+    /**
+     * returns the presignup data for a merchant
+     * if the merchant is referred (submerchant)
+     * then returns an empty array
+     */
+    public function getPreSignupDetails($merchantId): array
     {
         $data = [];
 

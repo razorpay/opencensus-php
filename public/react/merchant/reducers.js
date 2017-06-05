@@ -1,8 +1,11 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
-import sessionReducer from 'merchant/modules/session';
 import modalReducer from 'rzp/modules/modals';
+import sliderReducer from 'rzp/modules/slider';
 import notificationsReducer from 'rzp/modules/notifications';
+import sessionReducer from 'merchant/modules/session';
+import appReducer from 'merchant/modules/app';
+import homeReducer from 'merchant/modules/home';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
 import subscriptionsReducer from 'merchant/modules/subscriptions';
@@ -25,14 +28,17 @@ import refundReducer from 'merchant/modules/refunds/details';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import paymentsReducer from 'merchant/modules/payments/list';
 import paymentReducer from 'merchant/modules/payments/details';
-import accountsReducer from 'merchant/modules/accounts';
+import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
 
 export default combineReducers({
+  modal: modalReducer,
+  slider: sliderReducer,
+  notifications: notificationsReducer,
   form: formReducer,
   session: sessionReducer,
-  modal: modalReducer,
-  notifications: notificationsReducer,
+  app: appReducer,
+  home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
   subscriptions: subscriptionsReducer,
@@ -52,10 +58,9 @@ export default combineReducers({
   team: teamReducer,
   config: configReducer,
   activation: activationReducer,
-  credits: creditsReducer,
   refunds: refundsReducer,
   refund: refundReducer,
   referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
-  accounts: accountsReducer,
+  accounts: mpAccountsReducer,
 });

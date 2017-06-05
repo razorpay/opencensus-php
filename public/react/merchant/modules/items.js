@@ -6,8 +6,6 @@ const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';
 const ITEM_CREATE = 'ITEM_CREATE';
 const ITEM_EDIT = 'ITEM_EDIT';
 const ITEM_DELETED = 'ITEM_DELETED';
-const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM';
-const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT';
 
 export const fetchItems = params => {
   return dispatch => {
@@ -51,36 +49,17 @@ export const deleteItem = params => {
   };
 };
 
-export const highlightItemRow = params => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_ITEM,
-      payload: params,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_ITEM_HIGHLIGHT,
-      });
-    }, 6000);
-  };
-};
-
 let initialState = {
   loading: true,
   items: [],
   count: 0,
-  highlightRowId: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${ITEMS_FETCH}::PENDING`:
     case `${ITEMS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return merge(state, {
-        loading: true,
-        highlightRowId: null,
-      });
+      return set(state, 'loading', true);
 
     case `${ITEMS_FETCH}::SUCCESS`:
     case `${ITEMS_AUTOCOMPLETE_FETCH}::SUCCESS`:
@@ -112,12 +91,6 @@ export default function(state = initialState, action) {
         item => item.id === action.payload.id
       );
       return set(state, 'items', itemsList);
-
-    case HIGHLIGHT_ITEM:
-      return set(state, 'highlightRowId', action.payload.id);
-
-    case REMOVE_ITEM_HIGHLIGHT:
-      return set(state, 'highlightRowId', null);
 
     default:
       return state;

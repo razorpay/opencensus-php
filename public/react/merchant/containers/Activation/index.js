@@ -15,16 +15,12 @@ export default class ActivationContainer extends Component {
     let { loading, data } = this.props;
 
     return (
-      <div class="react-root">
-        <Header title="Activation Form" showMode={false} />
-
-        <div class="content-wrapper">
-          {loading
-            ? <div class="page-spinner-container">
-                <Spinner />
-              </div>
-            : <ActivationWizard data={data} />}
-        </div>
+      <div class="content-wrapper">
+        {loading
+          ? <div class="page-spinner-container">
+              <Spinner />
+            </div>
+          : <ActivationWizard data={data} />}
       </div>
     );
   }

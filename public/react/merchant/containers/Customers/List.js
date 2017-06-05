@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -9,11 +10,13 @@ import ListContainer from 'merchant/containers/ListContainer';
 import * as CustomerActions from 'merchant/modules/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(state => state.customers, {
   ...CustomerActions,
   ...ModalActions,
   ...NotificationActions,
+  luminateRow,
 })
 export default class CustomersListContainer extends ListContainer {
   fetchEntityList(params) {
@@ -34,7 +37,7 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   highlightRowAndClose = customer => {
-    this.props.highlightCustomerRow(customer);
+    this.props.luminateRow(customer.id);
     this.props.closeModal();
   };
 
@@ -66,43 +69,47 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, customers, highlightRowId } = this.props;
+    let { loading, customers } = this.props;
     let status = this.state.status;
 
     return (
-      <div class="react-root">
-        <ShowWhen notMyRole="support">
-          <div class="btn-toolbar">
-            <button
-              class="pull-right btn btn-primary btn-rounded"
-              onClick={() => this.showCustomerModal()}
-            >
-              <i class="fa fa-plus" />
-              <span>New Customer</span>
-            </button>
-          </div>
-        </ShowWhen>
+      <div class="content-wrapper">
+        <TetherComponent
+          target="#invoicing-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 0"
+        >
+          <div />{/* required by react-tether */}
 
-        <div class="content-wrapper">
-          <Alert type={status.type} message={status.message} />
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar">
+              <button
+                class="pull-right btn btn-primary"
+                onClick={() => this.showCustomerModal()}
+              >
+                <i class="icon icon-plus" />
+                <span>New Customer</span>
+              </button>
+            </div>
+          </ShowWhen>
+        </TetherComponent>
 
-          <div class="panel panel-default">
-            <CustomersList
-              customers={customers}
-              isLoading={loading}
-              highlightRow={customer => customer.id === highlightRowId}
-              onEdit={this.showCustomerModal}
-              onDelete={this.deleteCustomer}
-            />
+        <Alert type={status.type} message={status.message} />
 
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={customers.length}
-              onClick={this.paginate}
-            />
-          </div>
-        </div>
+        <CustomersList
+          customers={customers}
+          isLoading={loading}
+          onEdit={this.showCustomerModal}
+          onDelete={this.deleteCustomer}
+        />
+
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={customers.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }
