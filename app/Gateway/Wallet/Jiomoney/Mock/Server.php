@@ -83,7 +83,7 @@ class Server extends Base\Mock\Server
         {
             $input = explode('~', $input);
 
-            $checkPaymentStatusApiFields = [
+            $checkTxnStatusRequestFields = [
                 RequestFields::APINAME,
                 RequestFields::MODE,
                 RequestFields::REQUEST_ID,
@@ -94,13 +94,13 @@ class Server extends Base\Mock\Server
                 RequestFields::CHECKSUM
             ];
 
-            $input = array_combine($checkPaymentStatusApiFields, $input);
+            $input = array_combine($checkTxnStatusRequestFields, $input);
 
-            $this->verifyCheckPaymentStatusHash($input);
+            $this->verifyCheckTxnStatusRequestHash($input);
 
-            $this->validateActionInput($input, 'check_payment_status');
+            $this->validateActionInput($input, 'check_txn_status');
 
-            $response = $this->getCheckPaymentStatusResponse($input);
+            $response = $this->getCheckTxnStatusResponse($input);
 
             $this->content($response, 'checkpaymentstatus');
         }
@@ -168,7 +168,40 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getCheckPaymentStatusResponse(array $input)
+    protected function getCheckTxnStatusResponse(array $input): array
+    {
+        $date = $this->getFormattedTimeStamp(
+                        Carbon::now('Asia/Kolkata')->timestamp,
+                        self::TXN_DATE_FORMAT);
+
+        if ($input[RequestFields::APINAME] === 'CHECKPAYMENTSTATUS')
+        {
+            return $this->getCheckPaymentStatusResponse($input);
+        }
+
+        return $this->getVerifyRefundResponse($input);
+    }
+
+    protected function getVerifyRefundResponse(array $input): array
+    {
+        return [
+            'RESPONSE' => [
+                'RESPONSE_HEADER' => [
+                    'STATUS' => 'SUCCESS',
+                ],
+                'GETREQUESTSTATUS' => [
+                    'JM_TRAN_REF_NO' => '1001',
+                    'TXN_STATUS'     => 'SUCCESS',
+                    'TXN_AMOUNT'     => '50000',
+                    'REFUND_AMOUNT'  => '50000',
+                    'REQUEST_TYPE'   => 'REFUND',
+                    'ERROR_CODE'     => '000'
+                ]
+            ]
+        ];
+    }
+
+    protected function getCheckPaymentStatusResponse(array $input): array
     {
         $date = $this->getFormattedTimeStamp(
                         Carbon::now('Asia/Kolkata')->timestamp,
@@ -276,7 +309,7 @@ class Server extends Base\Mock\Server
         assertTrue(hash_equals($hash, $content['checksum']));
     }
 
-    protected function verifyCheckPaymentStatusHash($content)
+    protected function verifyCheckTxnStatusRequestHash($content)
     {
         $hashArray = [
             $content[RequestFields::APINAME],

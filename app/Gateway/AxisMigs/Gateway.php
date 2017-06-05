@@ -42,6 +42,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthRequestArray($content);
 
+        $traceRequest = $request;
+        unset($traceRequest['content']['vpc_SecureHash']);
+        unset($traceRequest['content']['vpc_SecureHashType']);
+        unset($traceRequest['content']['vpc_Card']);
+        unset($traceRequest['content']['vpc_CardNum']);
+        unset($traceRequest['content']['vpc_CardExp']);
+        unset($traceRequest['content']['vpc_CardSecurityCode']);
+        unset($traceRequest['content']['vpc_AccessCode']);
+
+        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
         return $request;
     }
 
@@ -367,6 +378,15 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         parent::verify($input);
+
+        // We have confirmed with acquirer banks that these refunds have
+        // not been processed.
+        $hardcodedRefundIds = ['7myk24mVipncjt', '7quh5ytxljRfqo'];
+
+        if (in_array($input['refund']['id'], $hardcodedRefundIds) === true)
+        {
+            return false;
+        }
 
         // Adding a check for 8th May 2017 as track id was
         // changed in migs refund from payment id to refund id

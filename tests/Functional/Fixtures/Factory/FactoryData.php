@@ -438,6 +438,7 @@ final class FactoryData
             'display_name'  => 'Razorpay',
             'business_name' => 'Razorpay Software Pvt Ltd',
             'auth_type'     => 'password',
+            'custom_code'   => $faker->name,
         ]);
 
         $factory(\RZP\Models\Admin\Org\FieldMap\Entity::class, [

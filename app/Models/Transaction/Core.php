@@ -919,8 +919,6 @@ class Core extends Base\Core
 
         $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
 
-        $schedule = $merchant->schedule;
-
         // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
         {

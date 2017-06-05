@@ -41,8 +41,8 @@ class Validator extends Base\Validator
         'checksum'       => 'required|string'
     ];
 
-    protected static $checkPaymentStatusRules = [
-        RequestFields::APINAME       => 'required|string|in:CHECKPAYMENTSTATUS',
+    protected static $checkTxnStatusRules = [
+        RequestFields::APINAME       => 'required|string|in:CHECKPAYMENTSTATUS,GETREQUESTSTATUS',
         RequestFields::MODE          => 'required|string|in:2',
         RequestFields::REQUEST_ID    => 'required|string',
         RequestFields::STARTDATETIME => 'required|string|in:NA',

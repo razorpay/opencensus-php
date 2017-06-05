@@ -44,6 +44,7 @@ class ProviderCode
     const OBC               = 'obc';
     const PINGPAY           = 'pingpay';
     const PNB               = 'pnb';
+    const PSB               = 'psb';
     const POCKETS           = 'pockets';
     const RBL               = 'rbl';
     const SBI               = 'sbi';
@@ -96,6 +97,7 @@ class ProviderCode
         self::OBC               => IFSC::ORBC,
         self::PINGPAY           => IFSC::UTIB,
         self::PNB               => IFSC::PUNB,
+        self::PSB               => IFSC::PSIB,
         self::POCKETS           => IFSC::ICIC,
         self::RBL               => IFSC::RATN,
         self::SBI               => IFSC::SBIN,
