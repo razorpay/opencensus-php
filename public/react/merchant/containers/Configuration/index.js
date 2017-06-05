@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
 import * as ConfigActions from 'merchant/modules/config';
 import * as NotificationActions from 'rzp/modules/notifications';

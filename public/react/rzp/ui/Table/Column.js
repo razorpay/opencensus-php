@@ -32,6 +32,12 @@ export const createdAt = [
 export const paymentId = ['Payment ID', item => idLink(item.id, 'pay')];
 export const paymentOrder = orders => ['Order ID', item => orders[item.id]];
 
+export const refundId = ['Refund ID', item => idLink(item.id, 'pay')];
+export const refundPayment = [
+  'Payment ID',
+  item => idLink(item.payment_id, 'pay'),
+];
+
 export const orderId = ['Order ID', item => idLink(item.id, 'order')];
 
 export const transferId = ['Transfer ID', item => idLink(item.id, 'trf')];

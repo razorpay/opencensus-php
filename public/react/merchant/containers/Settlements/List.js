@@ -10,7 +10,7 @@ import SettlementBreakupModal from './BreakupModal';
 import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 
-@connect(state => state.settlements, {
+@connect(state => state.collection, {
   fetchAll,
   ...ModalActions,
 })

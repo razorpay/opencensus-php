@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header/Header';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ReferralsList from 'merchant/components/Referrals/ReferralsList';

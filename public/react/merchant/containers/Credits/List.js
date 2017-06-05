@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { fetchCreditBalance } from 'merchant/modules/credits';
-import Header from 'rzp/ui/Header';
 import CreditsDetails from 'merchant/components/Credits';
 
 @connect(

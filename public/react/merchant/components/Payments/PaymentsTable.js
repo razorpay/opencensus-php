@@ -1,4 +1,4 @@
-import Table from 'rzp/ui/Table/Index';
+import DataTable from 'rzp/ui/Table/DataTable';
 import {
   paymentId,
   paymentOrder,
@@ -38,10 +38,10 @@ const mapOrders = payments =>
     return orders;
   }, {});
 
-export default ({ items }) => {
+export default props => {
   let paymentColumns = [paymentId, amount, email, contact, createdAt, status];
 
-  let orders = mapOrders(items);
+  let orders = mapOrders(props.items);
 
   // if there is atleast one visible "order-id"
   if (Object.keys(orders).length) {
@@ -50,5 +50,5 @@ export default ({ items }) => {
     );
   }
 
-  return <Table rows={items} columns={paymentColumns} rowClass={rowClass} />;
+  return <DataTable title="Payments" columns={paymentColumns} {...props} />;
 };

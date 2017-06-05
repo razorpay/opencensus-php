@@ -2,23 +2,25 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import TetherComponent from 'react-tether';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
-import RefundsList from 'merchant/components/Refunds/RefundsList';
+import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
+import {
+  refundId,
+  refundPayment,
+  amount,
+  createdAt,
+} from 'rzp/ui/Table/Column';
 
-@connect(state => state.refunds, { fetchAll })
+@connect(state => state.collection, { fetchAll })
 export default class RefundsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchAll(params);
   }
 
   render() {
-    let { loading, items, error } = this.props;
-
     return (
       <div class="content-wrapper">
         <TetherComponent
@@ -47,15 +49,13 @@ export default class RefundsListContainer extends ListContainer {
           onSubmit={this.search}
         />
 
-        {error && <Alert type="error" message={error} />}
-
-        <RefundsList refunds={items} isLoading={loading} />
-
-        <Pager
+        <DataTable
+          title="Refunds"
+          columns={[refundId, refundPayment, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
-          length={items.length}
-          onClick={this.paginate}
+          paginate={this.paginate}
+          {...this.props}
         />
       </div>
     );
