@@ -792,7 +792,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('billdesk', $payment['gateway']);
     }
 
-    public function testDowntimeCardAxisMigs()
+    public function testDowntimeSortingCardAxisMigs()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
         $this->fixtures->create('terminal:shared_axis_terminal');
@@ -811,7 +811,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('hdfc', $payment['gateway']);
     }
 
-    public function testDowntimeCardHdfcVisa()
+    public function testDowntimeSortingCardHdfcVisa()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
         $this->fixtures->create('terminal:shared_axis_terminal');

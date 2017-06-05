@@ -112,17 +112,17 @@ class Repository extends Base\Repository
      * it has to be compared to 'begin' & 'end'
      *
      * @param $params array
-     * @param $timestamp
+     * @param $now timestamp
      * @return collection
      */
-    public function fetchDowntimesForSorter(array $params, $timestamp)
+    public function fetchApplicableDowntimesForPayment(array $params, $now)
     {
         $query = $this->newQuery();
 
         $this->buildQueryForDowntimeSorter($params, $query);
 
-        $query->where(Entity::BEGIN, '<=', $timestamp)
-              ->where(Entity::END, '>=', $timestamp);
+        $query->where(Entity::BEGIN, '<=', $now)
+              ->where(Entity::END, '>=', $now);
 
         return $query->get();
     }
@@ -145,10 +145,7 @@ class Repository extends Base\Repository
             }
             else
             {
-                $query->where(function ($query) use ($key, $value)
-                {
-                    $query->where($key, '=', $value);
-                });
+                $query->where($key, '=', $value);
             }
         }
     }

@@ -48,7 +48,7 @@ class Selector
         Sorters\FailedTerminalsSorter::class,
 
         // Sorting based on gateway downtimes
-        Sorters\DowntimeSorter::class,
+        Sorters\GatewayDowntimeSorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
