@@ -616,6 +616,8 @@ class AdminController extends Controller
 
     public function getMerchantAggregations($mode)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)
@@ -626,6 +628,8 @@ class AdminController extends Controller
 
     public function getSingleMerchantAggregations($mode, $merchant)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)

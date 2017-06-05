@@ -347,7 +347,7 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getAllTransactionAggregations($mode, $sort, $skip, $count, $filterTimestamp, $type)
+    public static function getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type)
     {
         $data = \DB::table('transactions')
                     ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
@@ -364,9 +364,7 @@ class Entity extends Base\Entity
                     ->where('transactions.created_at', '>=', $filterTimestamp)
                     ->groupBy('transactions.merchant_id')
                     ->orderBy($sort, 'DESC')
-                    ->offset($skip)
-                    ->limit($count)
-                    ->get();
+                    ->simplePaginate($count);
 
         return $data;
     }

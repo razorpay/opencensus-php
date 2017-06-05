@@ -19,23 +19,23 @@ app.controller('MerchantStatsCtrl', [
       count: 0,
       countStart: 0,
       countEnd: 0,
-      skip: 0,
+      page: 1,
     };
 
     $scope.next = function() {
-      $scope.stats.skip += $scope.count;
+      $scope.stats.page += 1;
       $scope.go('');
     };
 
     $scope.prev = function() {
-      $scope.stats.skip -= $scope.count;
+      $scope.stats.page -= 1;
       $scope.go('');
     };
 
     $scope.fetchAllAggregations = function(
       mode,
       sort,
-      skip,
+      page,
       count,
       duration_count,
       type
@@ -43,7 +43,7 @@ app.controller('MerchantStatsCtrl', [
       var request = $http.get('/admin/' + mode + '/merchants/aggregations', {
         params: {
           sort: sort,
-          skip: skip,
+          page: page,
           count: count,
           duration_count: duration_count,
           type: type,
@@ -52,17 +52,12 @@ app.controller('MerchantStatsCtrl', [
 
       request.success(function(data) {
         if (data.success) {
-          $scope.data = data.data;
-          $scope.stats.count = data.data.length;
-          $scope.stats.countStart = $scope.stats.skip + 1;
-          if ($scope.stats.count === 0) {
-            $scope.stats.countEnd = $scope.stats.countStart;
-          } else {
-            $scope.stats.countEnd =
-              $scope.stats.countStart + $scope.stats.count - 1;
-          }
-          $scope.allowPrev = $scope.stats.countStart != 1;
-          $scope.allowNext = $scope.stats.count >= $scope.count;
+          $scope.data = data.data.data;
+          $scope.stats.count = data.data.data.length;
+          $scope.stats.countStart = data.data.from;
+          $scope.stats.countEnd = data.data.to;
+          $scope.allowPrev = data.data.prev_page_url !== null;
+          $scope.allowNext = data.data.next_page_url !== null;
         }
       });
     };
@@ -88,7 +83,7 @@ app.controller('MerchantStatsCtrl', [
       request.success(function(data) {
         if (data.success) {
           $scope.data = data.data;
-          $scope.stats.skip = 0;
+          $scope.stats.page = 1;
           $scope.stats.countStart = 1;
           $scope.stats.countEnd = 1;
         }
@@ -105,13 +100,13 @@ app.controller('MerchantStatsCtrl', [
         $scope.duration_count +
         ' ' +
         $scope.type +
-        "'s starting day till today.";
+        '(s) starting day till today.';
       if (merchant_id === '') {
         // We get all aggregations
         $scope.fetchAllAggregations(
           $scope.mode,
           $scope.sort,
-          $scope.stats.skip,
+          $scope.stats.page,
           $scope.count,
           $scope.duration_count,
           $scope.type

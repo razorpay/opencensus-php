@@ -9,6 +9,7 @@ use Cache;
 use Trace;
 use Queue;
 use Crypt;
+use Input;
 use Config;
 use Session;
 use Requests;
@@ -1673,20 +1674,18 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $sort = \Input::get('sort', 'total_amount');
+            $sort = Input::get('sort', 'total_amount');
 
-            $skip = \Input::get('skip', 0);
+            $count = Input::get('count', 10);
 
-            $count = \Input::get('count', 10);
+            $duration_count = Input::get('duration_count', 1);
 
-            $duration_count = \Input::get('duration_count', 1);
-
-            $type = \Input::get('type', 'month');
+            $type = Input::get('type', 'month');
 
             $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
 
             $response =
-                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $skip, $count, $filterTimestamp, $type);
+                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type);
 
             return [null, $response];
         }
@@ -1699,11 +1698,11 @@ class Service extends Base\Service
 
     public function getSingleMerchantAggregations($mode, $input, $merchantId)
     {
-        $sort = \Input::get('sort', 'total_amount');
+        $sort = Input::get('sort', 'total_amount');
 
-        $duration_count = \Input::get('duration_count', 1);
+        $duration_count = Input::get('duration_count', 1);
 
-        $type = \Input::get('type', 'month');
+        $type = Input::get('type', 'month');
 
         $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
 
