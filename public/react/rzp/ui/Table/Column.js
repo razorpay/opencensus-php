@@ -38,6 +38,21 @@ export const refundPayment = [
   item => idLink(item.payment_id, 'pay'),
 ];
 
+export const batchId = ['Batch ID', item => item.id];
+export const batchCount = ['Count', item => item.total_count];
+export const batchDownload = mode => [
+  'Actions',
+  item => (
+    <Link
+      class="btn btn-default btn-xs"
+      to={`/${mode}/batches/${item.id}/download`}
+      target="_blank"
+    >
+      Download
+    </Link>
+  ),
+];
+
 export const orderId = ['Order ID', item => idLink(item.id, 'order')];
 export const attempts = ['Attempts', item => item.attempts];
 export const receipt = ['Receipt', item => item.receipt];

@@ -1,14 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header';
-import BatchList from 'merchant/components/Refunds/BatchList';
+import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/Refunds/BatchListFilter';
 import {
   fetchBatchUploads as fetchAll,
 } from 'merchant/modules/refunds/batchuploads';
+import {
+  batchId,
+  batchCount,
+  status,
+  batchDownload,
+} from 'rzp/ui/Table/Column';
 
 @connect(
   state => {
@@ -17,12 +20,10 @@ import {
       ...state.collection,
     };
   },
-  { fetchBatchUploads }
+  { fetchAll }
 )
 export default class BatchListContainer extends ListContainer {
   render() {
-    let { loading, items, error, mode } = this.props;
-
     return (
       <div class="content-wrapper">
         <BatchListFilter
@@ -31,15 +32,18 @@ export default class BatchListContainer extends ListContainer {
           onSubmit={this.search}
         />
 
-        {error && <Alert type="error" message={error} />}
-
-        <BatchList batchuploads={items} isLoading={loading} mode={mode} />
-
-        <Pager
+        <DataTable
+          title="Batch Uploads"
+          columns={[
+            batchId,
+            batchCount,
+            status,
+            batchDownload(this.props.mode),
+          ]}
           count={this.state.count}
           skip={this.state.skip}
-          length={items.length}
-          onClick={this.paginate}
+          paginate={this.paginate}
+          {...this.props}
         />
       </div>
     );
