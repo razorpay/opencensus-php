@@ -26,7 +26,7 @@ class TransferController extends Controller
 
     public function getTransferReversals(string $id)
     {
-        $reversals = $this->service->fetchReversalsOfTransfer($id);
+        $reversals = $this->service('transfer')->fetchReversalsOfTransfer($id);
 
         return ApiResponse::json($reversals);
     }

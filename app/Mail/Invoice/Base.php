@@ -37,9 +37,12 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $customerEmail = $this->data['invoice']['customer']['email'];
+        if (isset($this->data['invoice']['customer_details']) === true)
+        {
+            $customerEmail = $this->data['invoice']['customer_details']['email'];
 
-        $this->to($customerEmail);
+            $this->to($customerEmail);
+        }
 
         return $this;
     }
