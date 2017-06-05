@@ -25,7 +25,6 @@ import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 // import mpTransferReducer from 'merchant/modules/marketplace/transfers/details';
-import referralsReducer from 'merchant/modules/referrals';
 
 import collectionReducer, {
   refundsReducer,
@@ -57,7 +56,6 @@ export default combineReducers({
   activation: activationReducer,
   refunds: refundsReducer,
   refund: refundReducer,
-  referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
   collection: collectionReducer,

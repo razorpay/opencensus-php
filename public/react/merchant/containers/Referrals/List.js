@@ -15,7 +15,7 @@ import CreateMerchant from './CreateMerchant';
 @connect(
   state => {
     return {
-      referrals: state.referrals,
+      referrals: state.collection,
       session: state.session,
     };
   },
@@ -57,7 +57,7 @@ export default class ReferralsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, referrals } = this.props.referrals;
+    let { loading, items } = this.props.referrals;
     let user = this.props.session.user;
     let status = this.state.status;
 
@@ -86,7 +86,7 @@ export default class ReferralsListContainer extends ListContainer {
         <Alert type={status.type} message={status.message} />
 
         <ReferralsList
-          referrals={referrals}
+          referrals={items}
           isLoading={loading}
           user={user}
           showCreateLoginModal={this.showCreateLoginModal}

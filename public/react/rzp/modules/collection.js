@@ -8,7 +8,7 @@ import Settlement from 'merchant/models/Settlement';
 import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 
-const fetchAll = (params, Entity, shouldNameAction) => {
+export const fetchAll = (params, Entity, shouldNameAction) => {
   let entity = new Entity();
   return {
     type: getActionName(shouldNameAction && Entity),
