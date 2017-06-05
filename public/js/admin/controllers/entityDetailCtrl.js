@@ -8,6 +8,7 @@ app
     '$stateParams',
     'alertsFactory',
     '$modal',
+    'admin',
     'statusClass',
     'isStatusKey',
     'getState',
@@ -21,6 +22,7 @@ app
       $stateParams,
       alertsFactory,
       $modal,
+      admin,
       statusClass,
       isStatusKey,
       getState,
@@ -44,6 +46,11 @@ app
       $scope.generate = function(entityType) {
         fetchEntity(entityType);
       };
+
+      admin.identity().then(function(data) {
+        console.log(data);
+        $scope.admin = data;
+      });
 
       function fetchEntity(entityType) {
         console.log('ENTITY TYPE', entityType);

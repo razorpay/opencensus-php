@@ -68,7 +68,8 @@
     </div>
 
      <!-- Entity: Offers -->
-    <div class="panel-footer row" ng-show="loadType === 'offer'">
+    <div class="panel-footer row"
+         ng-show="loadType === 'offer' && admin.permissions && admin.permissions.indexOf('edit_merchant_offer') !== -1">
       <div class="btn-group text-left m-b" role="group"
         aria-label="Offer Actions">
         <button class="btn btn-info m-r" ng-click="open.offerEdit(entity)">
