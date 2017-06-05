@@ -39,3 +39,7 @@ export const transferSource = ['Source', item => idLink(item.source)];
 export const transferRecipient = ['Recipient', item => idLink(item.recipient)];
 
 export const reversalId = ['Reversal ID', item => idLink(item.id, 'rvrsl')];
+export const reversalTransfer = [
+  'Transfer ID',
+  item => idLink(item.transfer_id, 'trf'),
+];

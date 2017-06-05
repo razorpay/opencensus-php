@@ -1,6 +1,7 @@
 import { set, merge } from 'rzp/utils/immutable';
 import GenericEntity from 'merchant/models/GenericEntity';
 import Payment from 'merchant/models/Payment';
+import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 
 const GENERIC_ENTITY = 'ENTITY';
@@ -72,3 +73,6 @@ export const fetchMarketplacePayments = params => {
 
 export const transfersReducer = makeCollectionReducer(Transfer);
 export const fetchTransfers = params => fetchAll(params, Transfer);
+
+export const reversalsReducer = makeCollectionReducer(Reversal);
+export const fetchReversals = params => fetchAll(params, Reversal);

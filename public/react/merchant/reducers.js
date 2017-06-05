@@ -35,6 +35,7 @@ import {
   paymentsReducer,
   mpPaymentsReducer,
   transfersReducer as mpTransfersReducer,
+  reversalsReducer as mpReversalsReducer,
 } from 'rzp/modules/collection';
 
 export default combineReducers({
@@ -71,5 +72,5 @@ export default combineReducers({
   accounts: mpAccountsReducer,
   mpPayments: mpPaymentsReducer,
   mpTransfers: mpTransfersReducer,
-  // mpTransfer: mpTransferReducer
+  mpReversals: mpReversalsReducer,
 });

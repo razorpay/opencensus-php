@@ -7,28 +7,21 @@ import TransfersListFilter
   from 'merchant/components/Marketplace/TransfersListFilter';
 import Table from 'rzp/ui/Table/Index';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
+import { fetchReversals as fetchAll } from 'rzp/modules/collection';
 
 import {
-  transferId,
-  transferSource,
-  transferRecipient,
+  reversalId as idColumn,
+  reversalTransfer,
   amount,
   createdAt,
 } from 'rzp/ui/Table/Column';
 
 import rowClass from 'merchant/utils/activeRow';
 
-const transferColumns = [
-  transferId,
-  transferSource,
-  transferRecipient,
-  amount,
-  createdAt,
-];
+const reversalColumns = [idColumn, reversalTransfer, amount, createdAt];
 
-@connect(state => state.mpTransfers, { fetchAll })
-export default class TransfersListContainer extends ListContainer {
+@connect(state => state.mpReversals, { fetchAll })
+export default class ReversalsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchAll(params);
   }
@@ -46,11 +39,11 @@ export default class TransfersListContainer extends ListContainer {
 
         {error && <Alert type="error" message={error} />}
 
-        <Table rows={items} columns={transferColumns} rowClass={rowClass} />
+        <Table rows={items} columns={reversalColumns} rowClass={rowClass} />
         {loading && <Spinner />}
         {!loading &&
           !items.length &&
-          <h4 class="empty-table-message">No Transfers Found!</h4>}
+          <h4 class="empty-table-message">No Reversals Found!</h4>}
 
         <Pager
           count={this.state.count}
