@@ -1,4 +1,4 @@
-import { set, merge } from 'rzp/utils/immutable';
+import { set } from 'rzp/utils/immutable';
 
 const ROW_HIGHLIGHT_ADD = 'ROW_HIGHLIGHT_ADD';
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
@@ -6,20 +6,20 @@ const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
 const UPDATE_LOCATION = 'UPDATE_LOCATION';
 const UPDATE_ENTITY = 'UPDATE_ENTITY';
 
-export const updateLocation = payload => {
+export const setBaseLocation = location => {
   return dispatch => {
     return dispatch({
       type: UPDATE_LOCATION,
-      payload,
+      payload: location,
     });
   };
 };
 
-export const updateEntity = payload => {
+export const setActiveEntity = id => {
   return dispatch => {
     return dispatch({
       type: UPDATE_ENTITY,
-      payload,
+      payload: id,
     });
   };
 };

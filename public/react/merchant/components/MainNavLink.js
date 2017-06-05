@@ -2,22 +2,21 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { merge } from 'rzp/utils/immutable';
 
-@connect(state => state.app)
+@connect(state => state.app, null, (stateProps, dispatchProps, ownProps) =>
+  merge(ownProps, { baseLocation: stateProps.baseLocation })
+)
 export default class MainNavLink extends Component {
   render() {
     let {
-      base,
-      dispatch,
       myRole,
       notMyRole,
       featureEnabled,
       icon,
       label,
-      activeEntityId,
-      baseLocation,
-      luminateRowId,
       beta = false,
+      baseLocation,
       ...linkProps
     } = this.props;
 
@@ -30,7 +29,7 @@ export default class MainNavLink extends Component {
         <NavLink
           {...linkProps}
           isActive={(match, location) => {
-            return (base || location).pathname === linkProps.to;
+            return (baseLocation || location).pathname === linkProps.to;
           }}
         >
           <i class={icon} />

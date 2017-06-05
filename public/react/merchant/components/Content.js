@@ -32,7 +32,7 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { updateLocation, updateEntity } from 'merchant/modules/app';
+import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -47,21 +47,21 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
 };
 
 @withRouter
-@connect(null, { updateLocation, updateEntity })
+@connect(null, { setBaseLocation, setActiveEntity })
 export default class Content extends Component {
   setBaseLocation = location => {
-    let { updateLocation, updateEntity } = this.props;
+    let { setBaseLocation, setActiveEntity } = this.props;
     var matchResult = matchDetail(location.pathname);
 
     if (matchResult) {
       this.detailView = matchResult.component;
-      updateEntity(matchResult.match.params.id);
+      setActiveEntity(matchResult.match.params.id);
     } else {
       this.detailView = null;
-      updateEntity(null);
+      setActiveEntity(null);
 
       this.baseLocation = location;
-      updateLocation(location);
+      setBaseLocation(location);
     }
   };
 
