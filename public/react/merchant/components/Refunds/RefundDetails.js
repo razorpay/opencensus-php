@@ -37,35 +37,37 @@ export default ({ refund, isLoading, statusMsg }) => {
               Refund ID: <b>{refund.id}</b>
             </div>
 
-            <div class="panel-body SliderPanel__Body">
-              <div class="list-group details-row-container">
-                <DetailRow
-                  label="Payment"
-                  value={() => (
-                    <Link to={`/payments/${refund.payment_id}`}>
-                      <code>{refund.payment_id}</code>
-                    </Link>
-                  )}
-                />
+            <div class="SliderPanel__Body">
+              <div class="panel-body">
+                <div class="list-group details-row-container">
+                  <DetailRow
+                    label="Payment"
+                    value={() => (
+                      <Link to={`/payments/${refund.payment_id}`}>
+                        <code>{refund.payment_id}</code>
+                      </Link>
+                    )}
+                  />
 
-                <DetailRow
-                  label="Amount"
-                  value={() => <Amount value={refund.amount} />}
-                />
+                  <DetailRow
+                    label="Amount"
+                    value={() => <Amount value={refund.amount} />}
+                  />
 
-                <DetailRow label="Currency" value={refund.currency} />
+                  <DetailRow label="Currency" value={refund.currency} />
 
-                <DetailRow
-                  label="Created At"
-                  value={() => (
-                    <Time
-                      value={refund.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
+                  <DetailRow
+                    label="Created At"
+                    value={() => (
+                      <Time
+                        value={refund.created_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
+                  />
 
-                {refundNotes}
+                  {refundNotes}
+                </div>
               </div>
             </div>
           </div>}
