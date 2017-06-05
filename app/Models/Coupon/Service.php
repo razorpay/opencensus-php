@@ -5,6 +5,7 @@ namespace RZP\Models\Coupon;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Credits;
 
 class Service extends Base\Service
 {
@@ -44,7 +45,7 @@ class Service extends Base\Service
         return $coupon->toArrayAdmin();
     }
 
-    public function apply(string $code, $merchantId = null)
+    public function apply(string $code, string $merchantId)
     {
         $this->trace->info(
             TraceCode::COUPON_APPLY_REQUEST,
@@ -55,7 +56,24 @@ class Service extends Base\Service
 
         $coupon = $this->repo->coupon->fetchByCode($code);
 
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
         (new Validator)->couponApplyValidator($coupon, $merchantId);
 
+        $this->applyCredit($coupon, $merchant);
+
+    }
+
+    protected function applyCredit($coupon, $merchant)
+    {
+        $promotion = $coupon->source()->firstOrFail();
+
+        $creditInput = [
+            'campaign' => $coupon->getCode(),
+            'value'    => $promotion->getAmount(),
+            'type'     => $promotion->getType(),
+        ];
+
+        (new Credits\Core)->create($merchant, $creditInput);
     }
 }
