@@ -25,46 +25,23 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        $user = Auth::user();
+        list($error, $details) = (new User\Service)->getUserDetails();
 
-        $confirmed = (bool) ($user and $user->confirmed);
-
-        // This will be empty in case of submerchants
-        $preSignup = ($user ? $this->getPreSignupData($user) : []);
-
-        // The flow is as follows:
-        //
-        // If user is authenticated
-        //  and verified
-        //  and (has presignup complete
-        //  or signed up before PRE_SIGNUP_TIMESTAMP)
-        //      Then take to home page
-        //  and has presignup incomplete
-        //      Then show the presignup flow
-        //  and not verified
-        //      Then show the verification page
         $data = [
-            'isAuthenticated'       => (bool) $user,
-            'isConfirmed'           => $confirmed,
-            'preSignupData'         => $preSignup,
+            'isAuthenticated'       => false,
+            'isConfirmed'           => false,
+            'preSignupData'         => [],
             'isPreSignupComplete'   => false,
         ];
 
-        $values = array_values($data['preSignupData']);
-
-        if ($data['isAuthenticated'] === true)
+        if (empty($error))
         {
-            $data['isPreSignupComplete'] = array_reduce($values, function($carry, $item)
-            {
-                return $carry and !empty($item);
-            }, true);
-
-            // We don't show presignup form for user
-            // created before this date
-            if ($user and ($user->created_at < self::PRE_SIGNUP_TIMESTAMP))
-            {
-                $data['isPreSignupComplete'] = true;
-            }
+            $data = [
+                'isAuthenticated'       => (bool) $details['user'],
+                'isConfirmed'           => $details['user']['confirmed'],
+                'preSignupData'         => $details['pre_signup'],
+                'isPreSignupComplete'   => $details['pre_signup_complete'],
+            ];
         }
 
         // $data is used to run diferent pieces of JS
