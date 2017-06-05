@@ -118,7 +118,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
             [
-                'input'                 => $input,
+                'input'                 => $input['refund']['id'],
                 'refund_payment_id'     => $refundEntityPaymentId,
                 'gateway_refund_amount' => $refundEntityRefundAmount,
                 'status_code'           => $refundEntityStatusCode,

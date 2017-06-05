@@ -469,8 +469,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_HDFC_CAPTURED,
             [
-                'input'     => $input,
-                'captured'  => $gatewayCaptured
+                'payment_id' => $input['payment']['id'],
+                'captured'   => $gatewayCaptured
             ]);
 
         return $gatewayCaptured;

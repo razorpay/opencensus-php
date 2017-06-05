@@ -72,7 +72,9 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input
+            [
+                'payment_id' => $input['payment']['id'],
+            ]
         );
 
         $msg = $input['gateway']['msg'];
@@ -151,10 +153,10 @@ class Gateway extends Base\Gateway
                 $this->trace->warning(
                     TraceCode::GATEWAY_ALREADY_REFUNDED,
                     [
-                        'error_code'        => $response['ErrorCode'],
-                        'process_status'    => $response['ProcessStatus'],
-                        'response'          => $response,
-                        'input'             => $input,
+                        'error_code'     => $response['ErrorCode'],
+                        'process_status' => $response['ProcessStatus'],
+                        'response'       => $response,
+                        'refund_id'      => $input['refund']['id'],
                     ]);
 
                 return;
