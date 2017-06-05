@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
-use Carbon\Carbon;
-
 use RZP\Models\Terminal;
-use RZP\Models\Payment;
 use RZP\Models\Gateway\Downtime;
 
 /*
