@@ -60,6 +60,13 @@ export default class App extends Component {
     });
   }
 
+  componentWillReceiveProps({ user, history }) {
+    if (user.isAuthenticated) {
+      let role = user.merchants[user.current].role;
+      this.redirectToRoute(role);
+    }
+  }
+
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
     let isNewUIEnabled = this.props.user.isNewUIEnabled;
