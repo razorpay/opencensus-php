@@ -17,8 +17,20 @@ class Validator extends Base\Validator
         Entity::USAGE       => 'sometimes|integer',
     ];
 
-    public function couponApplyValidator($coupon, array $input)
+    public function couponApplyValidator($coupon, $merchantId)
     {
-        //TODO Write Validator
+        if (($coupon->getUsage() !== null) and
+            ($coupon->getUsedCount() === $coupon->getUsage()))
+        {
+            throw new Exception\BadRequestException(
+                'Coupon Code Already used');
+        }
+
+        if (($merchantId !== null) and
+            ($coupon->getMerchantId() !== $merchantId))
+        {
+            throw new Exception\BadRequestException(
+                'Coupon Code Not valid for this Merchant');
+        }
     }
 }

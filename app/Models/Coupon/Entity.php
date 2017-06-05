@@ -73,4 +73,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
+
+    public function getUsage()
+    {
+        return $this->getAttribute(self::USAGE);
+    }
+
+    public function getUsedCount()
+    {
+        return $this->getAttribute(self::USED_COUNT);
+    }
 }

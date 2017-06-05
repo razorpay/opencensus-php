@@ -44,7 +44,7 @@ class Service extends Base\Service
         return $coupon->toArrayAdmin();
     }
 
-    public function apply(string $code, $merchantId)
+    public function apply(string $code, $merchantId = null)
     {
         $this->trace->info(
             TraceCode::COUPON_APPLY_REQUEST,
@@ -55,7 +55,7 @@ class Service extends Base\Service
 
         $coupon = $this->repo->coupon->fetchByCode($code);
 
-        (new Validator)->couponApplyValidator($input);
+        (new Validator)->couponApplyValidator($coupon, $merchantId);
 
     }
 }
