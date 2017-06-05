@@ -506,15 +506,15 @@ app
               // if pre sign up pending
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
-              if (!user.isVerified()) {
-                goToVerification();
-              } else {
+              if (!user.isPreSignupDone()) {
                 Object.assign(
                   $scope.signup.merchantData,
                   userDetails.pre_signup
                 );
                 $scope.login.currentStep = 2;
                 goToRelevantQuestion();
+              } else if (!user.isVerified()) {
+                goToVerification();
               }
             });
           }
@@ -604,11 +604,7 @@ app
                     userDetails.pre_signup
                   );
                 }
-                if (!user.isVerified()) {
-                  // go to email not verified screen
-                  $scope.email_not_verified = true;
-                  $scope.login.currentStep = 2;
-                } else {
+                if (!user.isPreSignupDone()) {
                   $scope.email_not_verified = false;
                   goToRelevantQuestion();
                   $scope.login.currentStep = 2;
@@ -619,6 +615,8 @@ app
                       notify: false,
                     }
                   );
+                } else if (!user.isVerified()) {
+                  goToVerification();
                 }
               }
             });
