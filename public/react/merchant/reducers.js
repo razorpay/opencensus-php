@@ -46,6 +46,7 @@ export default combineReducers({
   customers: customersReducer,
   items: itemsReducer,
   order: orderReducer,
+  payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
