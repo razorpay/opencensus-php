@@ -1,4 +1,5 @@
 import { set, merge } from 'rzp/utils/immutable';
+import ajax from 'merchant/utils/ajax';
 import GenericEntity from 'merchant/models/GenericEntity';
 import Payment from 'merchant/models/Payment';
 import Refund from 'merchant/models/Refund';
@@ -56,6 +57,12 @@ export default makeCollectionReducer();
 
 export const fetchPayments = params => fetchAll(params, Payment);
 export const fetchOrders = params => fetchAll(params, Order);
+export const fetchTransfers = params => fetchAll(params, Transfer);
+export const fetchReversals = params => fetchAll(params, Reversal);
+export const fetchMarketplacePayments = params => {
+  params.transferred = 1;
+  return fetchAll(params, Payment);
+};
 
 export const refundsReducer = makeCollectionReducer(Refund);
 export const fetchRefunds = params => fetchAll(params, Refund);
@@ -63,9 +70,9 @@ export const fetchRefunds = params => fetchAll(params, Refund);
 export const settlementsReducer = makeCollectionReducer(Settlement);
 export const fetchSettlements = params => fetchAll(params, Settlement);
 
-export const fetchMarketplacePayments = params => {
-  params.transferred = 1;
-  return fetchAll(params, Payment);
+export const fetchSubscriptions = () => {
+  return {
+    type: getActionName(),
+    payload: ajax('/subscriptions'),
+  };
 };
-export const fetchTransfers = params => fetchAll(params, Transfer);
-export const fetchReversals = params => fetchAll(params, Reversal);

@@ -8,7 +8,6 @@ import appReducer from 'merchant/modules/app';
 import homeReducer from 'merchant/modules/home';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
-import subscriptionsReducer from 'merchant/modules/subscriptions';
 import plansReducer from 'merchant/modules/plans';
 import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
@@ -43,7 +42,6 @@ export default combineReducers({
   home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
-  subscriptions: subscriptionsReducer,
   plans: plansReducer,
   profile: profileReducer,
   customers: customersReducer,
