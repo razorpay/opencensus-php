@@ -124,7 +124,7 @@ class Repository extends Base\Repository
         $query->where(Entity::BEGIN, '<=', $now)
               ->where(function() use ($query, $now)
               {
-                    $query->where(Entity::END, '<=', $now)
+                    $query->where(Entity::END, '>=', $now)
                           ->orWhereNull(Entity::END);
               });
 
