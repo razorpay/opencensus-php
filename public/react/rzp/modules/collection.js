@@ -51,7 +51,7 @@ export function makeCollectionReducer(Entity) {
   };
 }
 
-const getActionName = (Entity = GenericEntity) => `${Entity.name}_FETCH`;
+export const getActionName = (Entity = GenericEntity) => `${Entity.name}_FETCH`;
 
 export default makeCollectionReducer();
 

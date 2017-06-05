@@ -21,7 +21,6 @@ import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
-import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 // import mpTransferReducer from 'merchant/modules/marketplace/transfers/details';
@@ -57,7 +56,6 @@ export default combineReducers({
   activation: activationReducer,
   refunds: refundsReducer,
   refund: refundReducer,
-  batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
   collection: collectionReducer,
 });
