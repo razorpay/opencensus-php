@@ -931,6 +931,8 @@ class Service extends Base\Service
      */
     public function activateMerchant($id, $dashboardOnly = false)
     {
+        $error = $response = [];
+
         $this->setApiCredentials();
 
         $merchant = $this->api->merchant->fetch($id);
@@ -976,7 +978,7 @@ class Service extends Base\Service
 
             if ($merchant['activated'] === false)
             {
-                $this->api->merchant->setId($id)->activate();
+                $response = $this->api->merchant->setId($id)->activate();
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -1003,7 +1005,9 @@ class Service extends Base\Service
         {
             $merchant = Merchant\Entity::findorfail($id);
 
-            return $this->activateMerchantOnDashboard($merchant);
+            $this->activateMerchantOnDashboard($merchant);
+
+            return [$error, $response->toArray()];
         }
     }
 
