@@ -941,7 +941,7 @@ class Service extends Base\Service
 
         if ((int) $details['submitted'] === 0)
         {
-            return ['Activation form has not been submitted by merchant yet.', []];
+            return [['Activation form has not been submitted by merchant yet.'], []];
         }
 
         $this->setApiCredentials();
@@ -983,7 +983,7 @@ class Service extends Base\Service
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return [$e->getMessage(), []];
+            return [[$e->getMessage()], []];
         }
 
         try
