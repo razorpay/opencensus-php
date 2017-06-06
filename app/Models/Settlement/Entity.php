@@ -101,6 +101,8 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_ON,
     ];
 
+    protected $hiddenInReport = [self::PROCESSED_ON];
+
     // --------------------------------- relations -------------------------------
 
     public function fundTransferAttempts()
