@@ -904,6 +904,11 @@ class Service extends Base\Service
 
         $data['user'] = $userDetails;
 
+        // Default values in case no merchant is associated
+        // with the user account
+        $data['pre_signup'] = [];
+        $data['pre_signup_complete'] = true;
+
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
         if ($currentMerchant === null)
