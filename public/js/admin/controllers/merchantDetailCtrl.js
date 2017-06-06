@@ -317,7 +317,7 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
-      $scope.activateMerchant = function(dashboard) {
+      $scope.g = function(dashboard) {
         var query = {};
 
         if (typeof dashboard !== 'undefined') {
