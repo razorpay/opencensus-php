@@ -133,7 +133,11 @@ class RefundController extends Controller
 
     public function postRetryFailedRefunds()
     {
-        $data = $this->service('refund')->retryFailedRefunds();
+        $input = Request::all();
+
+        $data = $this->service('refund')->retryFailedRefunds($input);
+
+        $data = $this->refund->retryFailedRefunds($input);
 
         return ApiResponse::json($data);
     }
