@@ -965,18 +965,18 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials();
+            $this->setAdminCredentials();
 
             // Only if the merchant doesn't have the Bank Account associated
             // Do we add a bank account
             if ($bankAccountApi === false)
             {
-                $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+                $this->api->merchant->setId($id)->setBankAccount($bankAccount);
             }
 
             if ($merchant['activated'] === false)
             {
-                $this->api->merchant->fetch($id)->activate();
+                $this->api->merchant->setId($id)->activate();
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
