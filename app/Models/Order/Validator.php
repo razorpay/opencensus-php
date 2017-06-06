@@ -95,6 +95,8 @@ class Validator extends Base\Validator
      * creation should be allowed.
      *
      * @param int $paymentAmount
+     *
+     * @throws Exception\BadRequestException
      */
     protected function validateOrderAmount(int $paymentAmount)
     {

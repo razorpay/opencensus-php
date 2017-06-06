@@ -541,6 +541,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::INVOICE);
     }
 
+    public function isFullyPaid()
+    {
+        return ($this->getAmount() === $this->getAmountPaid());
+    }
+
     /**
      * Returns the path component of Dashboard view url.
      *
@@ -667,7 +672,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
 
         // Sets corresponding timestamps as per new status
-        if (in_array($status, Status::$timestampedStatuses, true))
+        if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
             $timestampKey = $status . '_at';
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
@@ -733,7 +738,7 @@ class Entity extends Base\PublicEntity
      */
     public function updateStatusPostCapture()
     {
-        $newStatus = ($this->getAmountPaid() === $this->getAmount()) ?
+        $newStatus = ($this->isFullyPaid() === true) ?
                         Status::PAID : Status::PARTIALLY_PAID;
 
         $this->setStatus($newStatus);

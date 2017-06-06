@@ -634,6 +634,8 @@ trait Capture
      *
      * @param Invoice\Entity $invoice
      * @param Payment\Entity $payment
+     *
+     * @throws Exception\LogicException
      */
     protected function updateInvoiceAfterCapture(
         Invoice\Entity $invoice,
