@@ -373,6 +373,8 @@ class Merchant
 
         $fundTransferAttempt->source()->associate($this->setl);
 
+        $fundTransferAttempt->merchant()->associate($this->merchant);
+
         $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
 
         $this->bankTransferAtpt = $fundTransferAttempt;
