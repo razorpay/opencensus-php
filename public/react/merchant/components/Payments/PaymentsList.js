@@ -14,7 +14,7 @@ const PaymentsListItem = ({ payment, hasOrders, orders }) => {
       </td>
       {hasOrders && <td>{orders[payment.id]}</td>}
       <td>{payment.currency}</td>
-      <td>{payment.amountInINR}</td>
+      <td class="text-right">{payment.amountInINR}</td>
       <td>{payment.email}</td>
       <td>{payment.contact}</td>
       <td>
@@ -36,7 +36,7 @@ export default ({ payments, isLoading, hasOrders, orders }) => {
             <th>Payment Id</th>
             {hasOrders && <th>Order Id</th>}
             <th>Currency</th>
-            <th>Amount</th>
+            <th class="text-right">Amount</th>
             <th>Customer Email</th>
             <th>Contact</th>
             <th>Created At</th>

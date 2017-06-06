@@ -43,7 +43,6 @@ export default class App extends Component {
           currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
           this.props.updateSession({ mode: currentMode });
         }
-
         this.redirectToRoute(role);
         this.initSmooch(data);
       }),
@@ -61,9 +60,25 @@ export default class App extends Component {
     });
   }
 
+  componentWillReceiveProps({ user, history }) {
+    if (user.isAuthenticated) {
+      let role = user.merchants[user.current].role;
+      this.redirectToRoute(role);
+    }
+  }
+
   redirectToRoute(role) {
-    if (role === 'sellerapp') {
-      this.props.history.replace('/invoices');
+    let pathname = this.props.history.location.pathname;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+
+    if (pathname === '/' || pathname === '/dashboard') {
+      switch (role) {
+        case 'sellerapp':
+          let url = isNewUIEnabled ? '/paymentlinks' : '/invoices';
+          return this.props.history.replace(url);
+        case 'support':
+          return this.props.history.replace('/payments');
+      }
     }
   }
 
@@ -108,7 +123,7 @@ export default class App extends Component {
 
   switchMode = mode => {
     let user = this.props.user;
-    if (mode === 'live' && parseInt(user.activated) !== 1) {
+    if (mode === 'live' && user.isActivated) {
       this.props.openModal({
         size: 'small',
         component: <ActivationRequired onCloseClick={this.props.closeModal} />,
@@ -163,7 +178,7 @@ export default class App extends Component {
   render() {
     let { user, mode, modeFormatted } = this.props;
 
-    if (this.state.isLoading || !user) {
+    if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
 

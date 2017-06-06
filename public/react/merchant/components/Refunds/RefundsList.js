@@ -17,7 +17,7 @@ const RefundsListItem = ({ refund }) => {
         </NavLink>
       </td>
       <td>{refund.currency}</td>
-      <td>{refund.amountInINR}</td>
+      <td class="text-right">{refund.amountInINR}</td>
       <td>
         <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
@@ -34,7 +34,7 @@ export default ({ refunds, isLoading }) => {
             <th>Refund Id</th>
             <th>Payment Id</th>
             <th>Currency</th>
-            <th>Amount</th>
+            <th class="text-right">Amount</th>
             <th>Created At</th>
           </tr>
         </thead>

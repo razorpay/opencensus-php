@@ -14,7 +14,7 @@ const OrdersListItem = ({ order }) => {
       </td>
       <td>{order.attempts}</td>
       <td>{order.currency}</td>
-      <td>{order.amountInINR}</td>
+      <td class="text-right">{order.amountInINR}</td>
       <td>
         <OrderStatusLabel status={order.status} />
       </td>
@@ -35,7 +35,7 @@ export default ({ orders, isLoading }) => {
             <th>Order Id</th>
             <th>Attempts</th>
             <th>Currency</th>
-            <th>Amount</th>
+            <th class="text-right">Amount</th>
             <th>Status</th>
             <th>Receipt</th>
             <th>Created At</th>

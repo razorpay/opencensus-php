@@ -13,6 +13,11 @@
   overflow: hidden;
   padding-bottom: 45px;
 
+  @media (max-width: 650px) {
+    max-width: 92%;
+    width: 100%;
+  }
+
   &.ReactModal__Overlay--after-open {
     transform: translateX(1%);
   }
@@ -54,6 +59,15 @@
     top: 50px;
     bottom: 0;
     overflow: auto;
-    padding-bottom: 80px;
+
+    > .panel-body {
+      padding-bottom: 80px;
+    }
+  }
+}
+
+.ReactModal__Content--after-open {
+  .SliderPanel .panel-heading > .btn-toolbar {
+    padding-right: 30px;
   }
 }
