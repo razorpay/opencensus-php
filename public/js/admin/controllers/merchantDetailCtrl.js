@@ -317,7 +317,7 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
-      $scope.g = function(dashboard) {
+      $scope.activateMerchant = function(dashboard) {
         var query = {};
 
         if (typeof dashboard !== 'undefined') {
@@ -1120,6 +1120,13 @@ app
                 true
               );
               $scope.merchant.details.suspended_at = Date.now() / 1000;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1154,6 +1161,13 @@ app
                 true
               );
               $scope.merchant.details.suspended_at = null;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
