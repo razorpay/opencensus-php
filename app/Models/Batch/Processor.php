@@ -55,19 +55,11 @@ class Processor extends Base\Core
     {
         $file = $file->move($batch->getLocalSaveDir(), $batch->getFileKeyWithExt());
 
-        $name = $batch->getFilePrefix() . $batch->getFileKey();
+        $filePath = $file->getPathname();
 
-        $file = (new FileStore\Creator)
-                    ->localFile($file)
-                    ->name($name)
-                    ->extension(FileStore\Format::XLSX)
-                    ->entity($batch)
-                    ->merchant($batch->merchant)
-                    ->type(FileStore\Type::BATCH_INPUT)
-                    ->save()
-                    ->getFileInstance();
+        $ufhFile = $this->saveFile($batch, $filePath, FileStore\Type::BATCH_INPUT);
 
-        $batch->inputFile()->associate($file);
+        $batch->inputFile()->associate($ufhFile);
     }
 
     /**
@@ -79,20 +71,28 @@ class Processor extends Base\Core
      */
     public function saveProcessedFile(Entity $batch, string $filePath)
     {
+        $ufhFile = $this->saveFile($batch, $filePath, FileStore\Type::BATCH_PROCESSED);
+
+        $batch->processedFile()->associate($ufhFile);
+    }
+
+    protected function saveFile(
+        Entity $batch,
+        string $filePath,
+        string $type)
+    {
         $name = $batch->getFilePrefix() . $batch->getFileKey();
 
-        $file = (new FileStore\Creator)
+        return (new FileStore\Creator)
                     ->localFilePath($filePath)
                     ->mime(self::XLSX_MIME_TYPE)
                     ->name($name)
                     ->extension(FileStore\Format::XLSX)
                     ->entity($batch)
                     ->merchant($batch->merchant)
-                    ->type(FileStore\Type::BATCH_PROCESSED)
+                    ->type($type)
                     ->save()
                     ->getFileInstance();
-
-        $batch->processedFile()->associate($file);
     }
 
     /**
@@ -106,33 +106,23 @@ class Processor extends Base\Core
     {
         $inputFile = $batch->inputFile;
 
+        // To handle backward compatibility. New entries will have reference to
+        // UFH but older ones unless migrated will not have reference. So using
+        // the old way of forming S3 object key and then fetches the same.
+
         if ($inputFile === null)
         {
-            return $this->getInputFileDeprecated($batch);
+            $awsKey = $batch->getFilePrefix(Status::CREATED) . $batch->getFileKeyWithExt();
+
+            $saveAs = $batch->getLocalSavePath(Status::CREATED);
+
+            return $this->getFileFromAws($awsKey, $saveAs);
         }
 
         return (new FileStore\Accessor)
                     ->id($inputFile->getId())
                     ->merchantId($batch->getMerchantId())
                     ->getFile();
-    }
-
-    /**
-     * @deprecated
-     *
-     * Gets input file when there is no association already. To maintain BC.
-     *
-     * @param Entity $batch
-     *
-     * @return string
-     */
-    protected function getInputFileDeprecated(Entity $batch): string
-    {
-        $awsKey = $batch->getFilePrefix(Status::CREATED) . $batch->getFileKeyWithExt();
-
-        $saveAs = $batch->getLocalSavePath(Status::CREATED);
-
-        return $this->getFileFromAws($awsKey, $saveAs);
     }
 
     /**
@@ -220,10 +210,10 @@ class Processor extends Base\Core
         $this->sendMailIfProcessed();
 
         // Delete download file from local instance
-        // $this->deleteFile($this->processedFileLocalPath);
+        $this->deleteFile($this->processedFileLocalPath);
 
         // Delete upload file from local instance
-        // $this->deleteFile($this->inputFileLocalPath);
+        $this->deleteFile($this->inputFileLocalPath);
     }
 
     /**

@@ -45,13 +45,6 @@ class Entity extends Base\PublicEntity
     const STATUS_LENGTH             = 20;
     const FILE                      = 'file';
 
-    /**
-     * Prefix to construct type for file store entity.
-     * E.g. if type of batch is 'refund', type for file store entity
-     * would be batch_refund.
-     */
-    const UFH_TYPE_PREFIX           = 'batch_';
-
     protected static $sign = 'batch';
 
     protected $entity = 'batch';
@@ -156,16 +149,6 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
-    }
-
-    /**
-     * Returns type to be used when creating files via UFH.
-     *
-     * @return string
-     */
-    public function getTypeForFileStore(): string
-    {
-        return self::UFH_TYPE_PREFIX . $this->getType();
     }
 
     public function getProcessedAt()

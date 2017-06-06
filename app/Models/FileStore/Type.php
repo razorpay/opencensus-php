@@ -52,7 +52,6 @@ class Type
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
-    const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
@@ -137,9 +136,6 @@ class Type
             self::REPORT,
             self::BATCH_INPUT,
             self::BATCH_PROCESSED,
-        ],
-
-        self::BATCH_BUCKET_CONFIG => [
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
