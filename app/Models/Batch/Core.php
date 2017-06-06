@@ -32,8 +32,6 @@ class Core extends Base\Core
 
     public function create($input): Entity
     {
-        // Build the entity and associates relations
-
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);
@@ -175,15 +173,13 @@ class Core extends Base\Core
     }
 
     /**
-     * @deprecated
-     *
      * Get signed URL of batch file in old way.
      *
      * @param Entity $batch
      *
      * @return string
      */
-    protected function getSignedUrlOrBatchFile(Batch\Entity $batch): string
+    protected function getSignedUrlOrBatchFile(Entity $batch): string
     {
         $awsKey = $batch->getFilePrefix() . $batch->getFileKeyWithExt();
 

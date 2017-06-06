@@ -19,18 +19,21 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Processor extends Base\Core
 {
-    const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
     use FileHandlerTrait;
+
+    const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
     protected $mutex;
 
+    /**
+     * @var Entity
+     */
     protected $batch;
 
     /**
      * Holds local file path of input and processed file respectively.
      * They are re-used in the flow. E.g. sending mails with attachment,
-     * unlinking post processing etc.
+     * un-linking post processing etc.
      */
     protected $inputFileLocalPath;
     protected $processedFileLocalPath;
@@ -67,7 +70,7 @@ class Processor extends Base\Core
      * the same with batch entity.
      *
      * @param Entity  $batch
-     * @param  string $filePath
+     * @param string $filePath
      */
     public function saveProcessedFile(Entity $batch, string $filePath)
     {
@@ -76,6 +79,14 @@ class Processor extends Base\Core
         $batch->processedFile()->associate($ufhFile);
     }
 
+    /**
+     * @param Entity $batch
+     * @param string $filePath
+     * @param string $type
+     *
+     * @return FileStore\Entity
+     * @throws Exception\LogicException
+     */
     protected function saveFile(
         Entity $batch,
         string $filePath,
@@ -240,7 +251,9 @@ class Processor extends Base\Core
      * This function process the refund entries.
      * We process only the unprocessed entries.
      * If the payment id doesn't exists in the system then we mark the entry as failure
-     * @param  Array        $entries Array of entries
+     *
+     * @param  array $entries Array of entries
+     *
      * @return void
      */
     protected function processRefundEntries(& $entries)
@@ -301,8 +314,8 @@ class Processor extends Base\Core
     /**
      * Method to generate the excel from the processed entries.
      * Also set the downloadFileUrl for the batch
-     * @param  Array        $entries Array of processed entries
-     * @return FilePath              Local file path of the excel file.
+     *
+     * @param  array  $entries Array of processed entries
      */
     protected function createProcessedExcel($entries)
     {
