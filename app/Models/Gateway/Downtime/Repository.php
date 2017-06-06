@@ -157,7 +157,7 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryParamEnd($query, $params)
+    protected function addQueryParamBegin($query, $params)
     {
         // The default value for Entity::END is null. This is because we do not
         // necessarily know the end time in case of an unscheduled downtime.
@@ -168,7 +168,7 @@ class Repository extends Base\Repository
               ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
     }
 
-    protected function addQueryParamBegin($query, $params)
+    protected function addQueryParamEnd($query, $params)
     {
         // If query does have an endtime, then downtime should
         // have begun before it for there to be an overlap
