@@ -6,12 +6,11 @@ export default class User {
   }
 
   fetch() {
-    const Klass = this.constructor;
     return ajax({
       url: '/user',
       appendModeInURL: false,
     }).then(response => {
-      response.data = new Klass(response.data);
+      response.data = new User(response.data);
       return response;
     });
   }

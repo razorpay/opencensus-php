@@ -80,7 +80,7 @@ export default function(state = initialState, action) {
 
     case `${USER_FETCH}::ERROR`:
     case `${USER_LOGOUT}::SUCCESS`:
-      return set(state, 'user', new User(null));
+      return set(state, 'user', new User());
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
