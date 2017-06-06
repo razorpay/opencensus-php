@@ -169,10 +169,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $cybersourceEditTerminalRules = [
-        Entity::GATEWAY_RECON_PASSWORD => 'sometimes|alpha_num',
-        Entity::GATEWAY                => 'sometimes|in:cybersource',
-        Entity::CARD                   => 'sometimes|boolean|in:1',
-        Entity::INTERNATIONAL          => 'sometimes|boolean',
+        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY                     => 'sometimes|in:cybersource',
+        Entity::CARD                        => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
     protected static $upiIciciEditTerminalRules = [

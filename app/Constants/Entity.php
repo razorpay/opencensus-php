@@ -130,6 +130,7 @@ class Entity
     const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_OPENWALLET     = 'wallet_openwallet';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
+    const WALLET_MPESA          = 'wallet_mpesa';
 
     // Tax and Tax Groups
 
@@ -217,6 +218,7 @@ class Entity
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
+        self::WALLET_MPESA          => \RZP\Gateway\Wallet\Mpesa::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -257,6 +259,7 @@ class Entity
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_JIOMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_MPESA       => \RZP\Gateway\Wallet\Base::class,
     ];
 
     protected static $syncedInLiveAndTest = [
