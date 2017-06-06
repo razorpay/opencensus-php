@@ -22,4 +22,14 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::EXPIRED => 'boolean'
     ];
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function promotion()
+    {
+        return $this->belongsTo('RZP\Models\Promotion\Entity');
+    }
 }
