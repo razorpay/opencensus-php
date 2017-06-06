@@ -1086,6 +1086,13 @@ app
                 true
               );
               $scope.merchant.details.archived_at = null;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
