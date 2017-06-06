@@ -92,11 +92,9 @@ class Core extends Base\Core
     {
         $params = $this->getDowntimeFetchParams($terminals, $input);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
         $downtimes = $this->repo
                           ->gateway_downtime
-                          ->fetchApplicableDowntimesForPayment($params, $now);
+                          ->fetchApplicableDowntimesForPayment($params);
 
         return $downtimes;
     }
@@ -131,9 +129,13 @@ class Core extends Base\Core
 
         $gateways = $this->getTerminalGateways($terminals);
 
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
         $params = [
             Entity::GATEWAY => array_merge($gateways, [Entity::ALL]),
             Entity::PARTIAL => false,
+            Entity::END     => $now,
+            Entity::BEGIN   => $now,
         ];
 
         $method = $payment->getMethod();

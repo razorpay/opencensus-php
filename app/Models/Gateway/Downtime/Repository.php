@@ -112,49 +112,41 @@ class Repository extends Base\Repository
      * it has to be compared to 'begin' & 'end'
      *
      * @param $params array
-     * @param $now timestamp
      * @return collection
      */
-    public function fetchApplicableDowntimesForPayment(array $params, $now)
+    public function fetchApplicableDowntimesForPayment(array $params)
     {
         $query = $this->newQuery();
 
-        $this->buildQueryForDowntimeSorter($params, $query);
-
-        $query->where(Entity::BEGIN, '<=', $now)
-              ->where(function() use ($query, $now)
-              {
-                    $query->where(Entity::END, '>=', $now)
-                          ->orWhereNull(Entity::END);
-              });
+        $this->buildFetchQuery($query, $params);
 
         return $query->get();
     }
 
     /**
      * Helper function to add param valus to the query
+     * Overrides the default `addQueryParamDefault` in Repository Fetch
      *
-     * @param $input array
-     * @param $query
-     * @return $query
+     * @param $query \RZP\Base\BuilderEx
+     * @param $params array
+     * @param $key string
      */
-    protected function buildQueryForDowntimeSorter(
-        array $input, \RZP\Base\BuilderEx & $query)
+    protected function addQueryParamDefault($query, $params, $key)
     {
-        foreach ($input as $key => $value)
+        $value = $params[$key];
+
+        if (is_array($value) === true)
         {
-            if (is_array($value) === true)
-            {
-                $query->whereIn($key, $value);
-            }
-            else
-            {
-                $query->where($key, '=', $value);
-            }
+            $query->whereIn($key, $value);
+        }
+        else
+        {
+            $query->where($key, '=', $value);
         }
     }
 
-    protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
+    protected function buildQuery(
+        array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
     {
         foreach ($keyOperatorMap as $key => $operator)
         {
@@ -165,7 +157,7 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryParamBegin($query, $params)
+    protected function addQueryParamEnd($query, $params)
     {
         // The default value for Entity::END is null. This is because we do not
         // necessarily know the end time in case of an unscheduled downtime.
@@ -176,7 +168,7 @@ class Repository extends Base\Repository
               ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
     }
 
-    protected function addQueryParamEnd($query, $params)
+    protected function addQueryParamBegin($query, $params)
     {
         // If query does have an endtime, then downtime should
         // have begun before it for there to be an overlap

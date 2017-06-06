@@ -742,6 +742,15 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
     }
 
+
+    /**
+     * Netbaking Downtime
+     *
+     * Downtime for netbanking for all gateways for all issuers
+     *
+     * this payment should go through via billdesk
+     * order shouldn't change
+     */
     public function testDowntimeSortingNetbankingAll()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
@@ -753,12 +762,19 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        // this payment should go through via billdesk
-        // order shouldn't change
+
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
     }
 
+    /**
+     * Netbaking Downtime
+     *
+     * netbanking downtime for ebs for all issuers
+     *
+     * this payment should go through via billdesk
+     * as ebs has lowest priority
+     */
     public function testDowntimeSortingNetbankingEbs()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
@@ -769,12 +785,19 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        // this payment should go through via billdesk as ebs has lowest priority
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
     }
 
-    public function testDowntimeSortingNetbankingHdfc()
+    /**
+     * Netbaking Downtime
+     *
+     * netbanking downtime for kotak for issuer kotak
+     *
+     * this payment should go through via billdesk
+     * because netbanking for kotak is down
+     */
+    public function testDowntimeSortingNetbankingKotak()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
 
@@ -786,12 +809,18 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        // this payment should go through via billdesk
-        // because netbanking for kotak is down
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
     }
 
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for axis_migs for all networks
+     *
+     * this payment should go through via hdfc
+     * because axis_migs is down
+     */
     public function testDowntimeSortingCardAxisMigs()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
@@ -805,12 +834,18 @@ class TerminalSelectionTest extends TestCase
 
         $this->doAuthAndCapturePayment($payment);
 
-        // this payment should go through via hdfc
-        // because netbanking for kotak is down
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('hdfc', $payment['gateway']);
     }
 
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for visa networks
+     *
+     * this payment should go through via axis_migs
+     * because hdfc visa network is down
+     */
     public function testDowntimeSortingCardHdfcVisa()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
@@ -824,8 +859,6 @@ class TerminalSelectionTest extends TestCase
 
         $this->doAuthAndCapturePayment($payment);
 
-        // this payment should go through via hdfc
-        // because netbanking for kotak is down
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('axis_migs', $payment['gateway']);
     }

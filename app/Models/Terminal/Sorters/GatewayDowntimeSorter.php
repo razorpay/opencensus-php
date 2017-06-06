@@ -19,7 +19,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
     /**
      * Sorts the terminals wrt the downtimes.
      *
-     * The terminals related to the downtimes,
+     * The terminals whose gateways are down,
      * will be pushed to the bottom of the list.
      * Scenarios & cases are mentioned in the spec.
      *
@@ -30,7 +30,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      * @param $input array
      * @return $sortedTerminals array of Terminal\Entity
      */
-    public function downtimeSorter($terminals, array $input)
+    public function downtimeSorter(array $terminals, array $input) : array
     {
         $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals,$input);
 
@@ -49,7 +49,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      * @param $downtimes array
      * @param array (sorted array of terminals)
      */
-    protected function sortTerminals($terminals, $downtimes)
+    protected function sortTerminals(array $terminals, $downtimes) : array
     {
         if (count($downtimes) === 0)
         {
@@ -76,7 +76,6 @@ class GatewayDowntimeSorter extends Terminal\Sorter
                 {
                     $nonBoostedTerminals[] = $terminal;
                 }
-
                 else
                 {
                     $boostedTerminals[] = $terminal;
@@ -99,7 +98,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      * @param $downtime Downtime
      * @return bool
      */
-    protected function shouldBoostTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime)
+    protected function shouldBoostTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime) : bool
     {
         if ($terminal->getId() === $downtime->getTerminalId())
         {
