@@ -181,6 +181,30 @@ EOT;
         }
     }
 
+    public function testInvalidVpaOnValidation()
+    {
+         $vpas = [
+            // \ not valid
+            'a\b@razorpay',
+            // ' ' not valid
+            ' a.b@razorpay',
+        ];
+
+        foreach ($vpas as $vpa)
+        {
+            $payment = $this->getDefaultUpiPaymentArray();
+
+            $payment['vpa'] = $vpa;
+
+            $data = $this->testData['testInvalidVpaOnValidation'];
+
+            $this->runRequestResponseFlow($data, function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+        }
+    }
+
     public function testInvalidVpaError()
     {
         $vpas = [
