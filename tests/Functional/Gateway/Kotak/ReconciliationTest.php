@@ -370,9 +370,9 @@ class ReconciliationTest extends TestCase
             $transaction = $this->fixtures->create(
                                 'transaction',
                                 [
-                                    'merchant_id' => $merchantId,
-                                    'type' => 'settlement',
-                                    'entity_id' => $settlement->getId()
+                                    'merchant_id'   => $merchantId,
+                                    'type'          => 'settlement',
+                                    'entity_id'     => $settlement->getId()
                                 ]);
 
             $this->fixtures->edit('settlement', $settlement->getId(), ['transaction_id' => $transaction->getId()]);
@@ -380,9 +380,10 @@ class ReconciliationTest extends TestCase
             $fta = $this->fixtures->create(
                 'fund_transfer_attempt',
                 [
-                    'source_id' => $settlement->getId(),
-                    'created_at' => $timestamp,
-                    'batch_fund_transfer_id' => $batchTransferEntity->getId(),
+                    'source_id'                 => $settlement->getId(),
+                    'created_at'                => $timestamp,
+                    'batch_fund_transfer_id'    => $batchTransferEntity->getId(),
+                    'merchant_id'               => $merchantId
                 ]
             );
 

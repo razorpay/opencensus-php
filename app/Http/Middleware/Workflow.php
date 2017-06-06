@@ -32,6 +32,8 @@ class Workflow
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
         Permission::ADD_MERCHANT_ADJUSTMENT,
+        Permission::EDIT_MERCHANT_ENABLE_LIVE,
+        Permission::EDIT_MERCHANT_DISABLE_LIVE,
     ];
 
     protected $app;
