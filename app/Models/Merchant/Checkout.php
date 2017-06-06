@@ -40,7 +40,7 @@ class Checkout
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
-        $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
+        $data = $this->getMerchantPreferencesData($merchant, $mode);
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
@@ -275,7 +275,7 @@ class Checkout
         }
     }
 
-    protected function getMerchantPreferencesData(Entity $merchant, $mode, array $input)
+    protected function getMerchantPreferencesData(Entity $merchant, $mode)
     {
         $data['options']['theme']['color'] = $merchant->getBrandColor();
 

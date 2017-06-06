@@ -196,16 +196,25 @@ class Service extends Base\Service
     }
 
     /**
-     * @param  check global customer existance and send otp
-     * @param  boolean if to send otp or not
-     * @return global customer existance, send otp if true
+     * We do this only for Global customers. If the contact sent is not
+     * of a global customer, we just return back without any tokens.
+     *
+     * @param      $contact
+     * @param      $input
+     * @param bool $sendOtp true when the flow is via checkout.
+     *                      false when called from the preferences.
+     *
+     *                      For checkout, we decide to send the OTP
+     *                      only if the customer has tokens. Else, we just return back.
+     *                      For preferences, only if device token is present,
+     *                      we search for tokens and return back the results.
+     *
+     * @return array global customer existence, send otp if true
      */
     public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false)
     {
         $data = ['saved' => false];
 
-        // send otp is true when called from the checkout, false if called from
-        // preferences, we need to find out for first case only
         if ($sendOtp === true)
         {
             $sessionData = $this->app['request']->session()->all();
@@ -264,9 +273,11 @@ class Service extends Base\Service
 
     /**
      * Validates if device token is valid device token for a contact
-     * @param  deviceToken to be validated
-     * @param  input params
-     * @return issues a new app_token if device_token is valid
+     *
+     * @param  string $deviceToken to be validated
+     * @param         $customer
+     *
+     * @return array issues a new app_token if device_token is valid
      */
     public function validateDeviceToken($deviceToken, $customer)
     {
