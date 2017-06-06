@@ -19,6 +19,7 @@ class Notify
     const CARD_SAVED                 = 'card_saved';
     const CAPTURED                   = 'captured';
     const REFUNDED                   = 'refunded';
+    const FAILED                     = 'failed';
     const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
     const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
     const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
@@ -53,6 +54,7 @@ class Notify
     const MAIL_TAG_MAP = [
         self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
         self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
+        self::FAILED                     => MailTags::PAYMENT_FAILED,
         self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
         self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
         self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
@@ -86,6 +88,14 @@ class Notify
             'merchant'  => [
                 'view'  => 'emails.refund.common',
             ]
+        ],
+        self::FAILED        => [
+            'merchant' => [
+                'view' => [
+                    'html' => 'emails.payment.merchant_failure',
+                    'text' => 'emails.payment.merchant_text'
+                ],
+            ],
         ],
         self::FAILED_TO_AUTHORIZED => [
             'customer'  => [
@@ -446,18 +456,19 @@ class Notify
          * can do a survey later and remove this check from here and other
          * places
          */
-        if (isset($this->template['merchant']['billing_label']))
-        {
-            $subject = "$action successful for {$this->template['merchant']['billing_label']}";
-        }
-        else
-        {
-            $subject = "$action successful for {$this->template['payment']['amount']}";
-        }
+
+        $label = $this->template['merchant']['billing_label'] ?? $this->template['payment']['amount'];
+
+        $subject = "$action successful for $label";
 
         if ($event === self::CARD_SAVED)
         {
             $subject = "Card successfully saved with Razorpay";
+        }
+
+        if ($event === self::FAILED)
+        {
+            $subject = "Payment failed for $label";
         }
 
         // All mails that we send out to the merchant follow the same pattern:
@@ -672,6 +683,11 @@ class Notify
 
             $data['invoice']   = $payloadForInvoice['invoice'];
             $data['merchant'] += $payloadForInvoice['merchant'];
+        }
+
+        if ($this->payment->isFailed() === true)
+        {
+            $data['payment']['error_description'] = $this->payment->getErrorDescription();
         }
 
         return $data;
