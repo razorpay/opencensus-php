@@ -255,7 +255,7 @@ class Entity extends Base\PublicEntity
 
     public function hasPartialPaymentEnabled()
     {
-        return (bool) $this->getAttribute(self::PARTIAL_PAYMENT);
+        return $this->getAttribute(self::PARTIAL_PAYMENT);
     }
 
     public function incrementAttempts()

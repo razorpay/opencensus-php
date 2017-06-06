@@ -844,7 +844,7 @@ class Processor
         Payment\Entity $payment,
         array $input)
     {
-        if (empty($input['order_id']) === true)
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
             if ($this->merchant->isTPVRequired() === true)
             {

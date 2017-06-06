@@ -70,6 +70,7 @@ class Validator extends Base\Validator
 
         // An order is assumed paid if:
         // - status = PAID (Perfect case, amount of order is captured as well)
+        //
         // - it doesn't accept partial payments and there is one authorized
         //   payment waiting to be captured by merchant. This we do to avoid
         //   multiple authorized payment against same order.
@@ -79,11 +80,14 @@ class Validator extends Base\Validator
         // to continue allow payment creation for rest of the partial payments
         // until status changes to PAID, which is once amount paid = amount.
 
-        if (($order->getStatus() === Status::PAID) or
-            (
-                ($order->hasPartialPaymentEnabled() === false) and
-                ($order->isAuthorized() === true)
-            ))
+        $isOrderPaid = ($order->getStatus() === Status::PAID);
+
+        $isOrderAuthorized = (
+                                ($order->isAuthorized() === true) and
+                                ($order->hasPartialPaymentEnabled() === false)
+                            );
+
+        if (($isOrderPaid === true) or ($isOrderAuthorized === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
@@ -107,7 +111,6 @@ class Validator extends Base\Validator
 
         $hasPartialPaymentEnabled = $this->entity->hasPartialPaymentEnabled();
 
-
         if (($hasPartialPaymentEnabled === false) and
             ($orderAmountDue !== $paymentAmount))
         {
@@ -119,7 +122,7 @@ class Validator extends Base\Validator
             ($paymentAmount > $orderAmountDue))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_MUCH_FOR_ORDER);
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
         }
     }
 

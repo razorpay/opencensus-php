@@ -75,7 +75,7 @@ class Core extends Base\Core
             Entity::AMOUNT_DUE      => $order->getAmountDue(),
         ];
 
-        if ($merchant->isTPVRequired())
+        if ($merchant->isTPVRequired() === true)
         {
             $data += [
                 Entity::BANK           => $order->getBank(),

@@ -504,7 +504,7 @@ class OrderTest extends TestCase
 
         $this->expectException(Exception\BadRequestException::class);
         $this->expectExceptionCode(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_MUCH_FOR_ORDER);
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
         $this->expectExceptionMessage(
                 'Payment amount is greater than the amount due for order');
 
