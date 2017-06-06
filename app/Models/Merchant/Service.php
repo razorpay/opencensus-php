@@ -470,7 +470,14 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
         }
 
+        $oldMerchant = clone $merchant;
+
         $merchant->liveEnable();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
@@ -495,7 +502,14 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE);
         }
 
+        $oldMerchant = clone $merchant;
+
         $merchant->liveDisable();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
