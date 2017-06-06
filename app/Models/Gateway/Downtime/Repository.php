@@ -125,7 +125,10 @@ class Repository extends Base\Repository
 
     /**
      * Helper function to add param valus to the query
+     *
      * Overrides the default `addQueryParamDefault` in Repository Fetch
+     * because we need to handle the case where the comparison could be
+     * on an array of values, e.g. : terminal gateways, networks etc.
      *
      * @param $query \RZP\Base\BuilderEx
      * @param $params array
@@ -135,7 +138,11 @@ class Repository extends Base\Repository
     {
         $value = $params[$key];
 
-        if (is_array($value) === true)
+        if ($value === 'null')
+        {
+            $query->whereNull($key);
+        }
+        else if (is_array($value) === true)
         {
             $query->whereIn($key, $value);
         }
