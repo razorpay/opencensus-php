@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Service extends Base\Service
 {
@@ -58,15 +59,18 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $promotion = $coupon->source()->firstOrFail();
+
         (new Validator)->couponApplyValidator($coupon, $merchantId);
 
-        $this->applyCredit($coupon, $merchant);
+        // TODO move to merchantPromotion
+        $this->applyCredit($merchant, $coupon);
 
+        (new MerchantPromotion\Core)->create($merchant, $promotion);
     }
 
-    protected function applyCredit($coupon, $merchant)
+    protected function applyCredit($merchant, $coupon)
     {
-        $promotion = $coupon->source()->firstOrFail();
 
         $creditInput = [
             'campaign' => $coupon->getCode(),
