@@ -144,7 +144,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'xyz is not a valid network',
+                    'description' => 'XYZ is not a valid network',
                 ],
             ],
             'status_code' => 400,

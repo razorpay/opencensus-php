@@ -365,7 +365,8 @@ class EventTrackerClient extends Base\Core
                 'acquirer'  => $terminal->getGatewayAcquirer(),
                 'category'  => $terminal->getCategory(),
                 'shared'    => $terminal->getShared(),
-                'recurring' => $terminal->getRecurring(),
+                'type'      => $terminal->getType(),
+                'mode'      => $terminal->getMode(),
             ];
 
             return $data;
