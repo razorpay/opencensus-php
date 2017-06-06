@@ -4,23 +4,19 @@ const NOTIFICATION_SHOW = 'NOTIFICATION_SHOW';
 const NOTIFICATION_HIDE = 'NOTIFICATION_HIDE';
 
 export const showNotification = payload => {
-  return dispatch => {
-    return dispatch({
-      type: NOTIFICATION_SHOW,
-      payload: {
-        ...payload,
-        id: +new Date(),
-      },
-    });
+  return {
+    type: NOTIFICATION_SHOW,
+    payload: {
+      ...payload,
+      id: +new Date(),
+    },
   };
 };
 
 export const hideNotification = payload => {
-  return dispatch => {
-    return dispatch({
-      type: NOTIFICATION_HIDE,
-      payload,
-    });
+  return {
+    type: NOTIFICATION_HIDE,
+    payload,
   };
 };
 

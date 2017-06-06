@@ -9,38 +9,33 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 
 export const updateSession = payload => {
-  return dispatch => {
-    return dispatch({
-      type: UPDATE_SESSION,
-      payload,
-    });
+  return {
+    type: UPDATE_SESSION,
+    payload,
   };
 };
 
 export const fetchUser = () => {
-  return dispatch => {
-    let user = new User();
-    return dispatch({
-      type: USER_FETCH,
-      payload: user.fetch(),
-    });
+  let user = new User();
+
+  return {
+    type: USER_FETCH,
+    payload: user.fetch(),
   };
 };
 
 export const fetchOrg = () => {
-  return dispatch => {
-    return dispatch({
-      type: ORG_FETCH,
-      payload: ajax({
-        url: '/admin/org',
-        appendModeInURL: false,
-      }),
-    });
+  return {
+    type: ORG_FETCH,
+    payload: ajax({
+      url: '/admin/org',
+      appendModeInURL: false,
+    }),
   };
 };
 
 export const switchMerchant = merchantId => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: `/settings/merchants/switch/${merchantId}`,
       appendModeInURL: false,
@@ -49,14 +44,12 @@ export const switchMerchant = merchantId => {
 };
 
 export const logout = () => {
-  return dispatch => {
-    return dispatch({
-      type: USER_LOGOUT,
-      payload: ajax({
-        url: '/user/logout',
-        appendModeInURL: false,
-      }),
-    });
+  return {
+    type: USER_LOGOUT,
+    payload: ajax({
+      url: '/user/logout',
+      appendModeInURL: false,
+    }),
   };
 };
 

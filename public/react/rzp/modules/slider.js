@@ -4,26 +4,22 @@ const SLIDER_OPEN = 'SLIDER_OPEN';
 const SLIDER_CLOSE = 'SLIDER_CLOSE';
 
 export const openSlider = payload => {
-  return dispatch => {
-    return dispatch({
-      type: SLIDER_OPEN,
-      payload: {
-        isOpen: true,
-        ...payload,
-      },
-    });
+  return {
+    type: SLIDER_OPEN,
+    payload: {
+      isOpen: true,
+      ...payload,
+    },
   };
 };
 
 export const closeSlider = (payload = {}) => {
-  return dispatch => {
-    return dispatch({
-      type: SLIDER_CLOSE,
-      payload: {
-        isOpen: false,
-        ...payload,
-      },
-    });
+  return {
+    type: SLIDER_CLOSE,
+    payload: {
+      isOpen: false,
+      ...payload,
+    },
   };
 };
 

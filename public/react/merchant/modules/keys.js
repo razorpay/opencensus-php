@@ -6,22 +6,20 @@ const KEY_GENERATE = 'KEY_GENERATE';
 const KEY_ROLL = 'KEY_ROLL';
 
 export const fetchKeys = params => {
-  return dispatch => {
-    let key = new Key();
-    return dispatch({
-      type: KEYS_FETCH,
-      payload: key.fetchAll(params),
-    });
+  let key = new Key();
+
+  return {
+    type: KEYS_FETCH,
+    payload: key.fetchAll(params),
   };
 };
 
 export const generateKey = params => {
   var key = new Key(params);
-  return dispatch => {
-    return dispatch({
-      type: key.isNew ? KEY_GENERATE : KEY_ROLL,
-      payload: key.save(),
-    });
+
+  return {
+    type: key.isNew ? KEY_GENERATE : KEY_ROLL,
+    payload: key.save(),
   };
 };
 

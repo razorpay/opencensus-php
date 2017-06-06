@@ -8,48 +8,39 @@ const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 
 export const fetchPayment = id => {
-  return dispatch => {
-    let payment = new Payment();
-    return dispatch({
-      type: PAYMENT_FETCH,
-      payload: payment.fetch(id),
-    });
+  let payment = new Payment();
+
+  return {
+    type: PAYMENT_FETCH,
+    payload: payment.fetch(id),
   };
 };
 
 export const fetchCardDetails = payment => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_FETCH_CARD_DETAILS,
-      payload: payment.fetchCardDetails(),
-    });
+  return {
+    type: PAYMENT_FETCH_CARD_DETAILS,
+    payload: payment.fetchCardDetails(),
   };
 };
 
 export const fetchRefunds = payment => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_FETCH_REFUNDS,
-      payload: payment.fetchRefunds(),
-    });
+  return {
+    type: PAYMENT_FETCH_REFUNDS,
+    payload: payment.fetchRefunds(),
   };
 };
 
 export const capturePayment = payment => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_CAPTURE,
-      payload: payment.capture(),
-    });
+  return {
+    type: PAYMENT_CAPTURE,
+    payload: payment.capture(),
   };
 };
 
 export const refundPayment = (payment, data) => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_REFUND,
-      payload: payment.refund(data),
-    });
+  return {
+    type: PAYMENT_REFUND,
+    payload: payment.refund(data),
   };
 };
 

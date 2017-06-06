@@ -24,7 +24,7 @@ export default class User {
   }
 
   get isActivated() {
-    return !!parseInt(this.user.activated);
+    return !!parseInt(this.activated);
   }
 
   get isNewUIEnabled() {

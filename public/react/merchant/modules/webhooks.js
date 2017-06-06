@@ -6,22 +6,20 @@ const WEBHOOK_CREATE = 'WEBHOOK_CREATE';
 const WEBHOOK_EDIT = 'WEBHOOK_EDIT';
 
 export const fetchWebhooks = params => {
-  return dispatch => {
-    let webhook = new Webhook(params);
-    return dispatch({
-      type: WEBHOOKS_FETCH,
-      payload: webhook.fetchAll(params),
-    });
+  let webhook = new Webhook(params);
+
+  return {
+    type: WEBHOOKS_FETCH,
+    payload: webhook.fetchAll(params),
   };
 };
 
 export const saveWebhook = params => {
-  return dispatch => {
-    let webhook = new Webhook(params);
-    return dispatch({
-      type: webhook.isNew ? WEBHOOK_CREATE : WEBHOOK_EDIT,
-      payload: webhook.save(),
-    });
+  let webhook = new Webhook(params);
+
+  return {
+    type: webhook.isNew ? WEBHOOK_CREATE : WEBHOOK_EDIT,
+    payload: webhook.save(),
   };
 };
 

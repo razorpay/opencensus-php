@@ -123,7 +123,7 @@ export default class App extends Component {
 
   switchMode = mode => {
     let user = this.props.user;
-    if (mode === 'live' && user.isActivated) {
+    if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
         size: 'small',
         component: <ActivationRequired onCloseClick={this.props.closeModal} />,

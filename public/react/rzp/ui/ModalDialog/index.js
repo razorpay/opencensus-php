@@ -41,4 +41,8 @@ class ModalDialog extends Component {
   }
 }
 
+ModalDialog.defaultProps = {
+  size: 'regular',
+};
+
 export default ModalDialog;

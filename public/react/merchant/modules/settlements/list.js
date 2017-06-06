@@ -4,12 +4,10 @@ import { set, merge } from 'rzp/utils/immutable';
 const SETTLEMENTS_FETCH = 'SETTLEMENTS_FETCH';
 
 export const fetchSettlements = params => {
-  return dispatch => {
-    let settlement = new Settlement();
-    return dispatch({
-      type: SETTLEMENTS_FETCH,
-      payload: settlement.fetchAll(params),
-    });
+  let settlement = new Settlement();
+  return {
+    type: SETTLEMENTS_FETCH,
+    payload: settlement.fetchAll(params),
   };
 };
 

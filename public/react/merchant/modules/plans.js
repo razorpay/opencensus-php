@@ -6,16 +6,14 @@ const PLAN_ADDED = 'PLAN_ADDED';
 const PLAN_EDITED = 'PLAN_EDITED';
 
 export const fetchPlans = () => {
-  return dispatch => {
-    return dispatch({
-      type: PLANS_FETCH,
-      payload: ajax('/plans'),
-    });
+  return {
+    type: PLANS_FETCH,
+    payload: ajax('/plans'),
   };
 };
 
 export const createPlan = data => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: '/plan',
       method: 'post',
@@ -25,7 +23,7 @@ export const createPlan = data => {
 };
 
 export const editPlan = (id, data) => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: `/plan/${id}`,
       method: 'put',
