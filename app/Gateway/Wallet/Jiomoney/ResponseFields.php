@@ -20,6 +20,7 @@ class ResponseFields
     const CHECKSUM             = 'checksum';
     const RESPONSE             = 'RESPONSE';
     const RESPONSE_HEADER      = 'RESPONSE_HEADER';
+    const API_MSG              = 'API_MSG';
     const CHECKPAYMENTSTATUS   = 'CHECKPAYMENTSTATUS';
     const GETREQUESTSTATUS     = 'GETREQUESTSTATUS';
     const STATUS               = 'STATUS';
