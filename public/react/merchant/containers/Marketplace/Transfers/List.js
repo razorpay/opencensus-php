@@ -19,7 +19,7 @@ export default class TransfersListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <TransfersListFilter
-          form="listFilter"
+          form="transfersListFilter"
           count={this.state.count}
           onSubmit={this.search}
         />

@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import TransfersListFilter
-  from 'merchant/components/Marketplace/TransfersListFilter';
+import ReversalsListFilter
+  from 'merchant/components/Marketplace/ReversalsListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchReversals as fetchAll } from 'rzp/modules/collection';
@@ -20,8 +20,8 @@ export default class ReversalsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TransfersListFilter
-          form="listFilter"
+        <ReversalsListFilter
+          form="reversalsListFilter"
           count={this.state.count}
           onSubmit={this.search}
         />
