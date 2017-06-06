@@ -14,7 +14,17 @@ use RZP\Models\Schedule\Task;
 
 class Creator extends Base\Core
 {
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer): Entity
+    /**
+     * @param array                 $input
+     * @param Plan\Entity           $plan
+     * @param Customer\Entity|null  $customer This is not type hinted because customer can be null
+     *                                        also, in case the merchant wants to follow global
+     *                                        customer flow.
+     *
+     * @return Entity
+     * @throws \Exception
+     */
+    public function create(array $input, Plan\Entity $plan, $customer): Entity
     {
         $subscription = (new Entity)->build($input);
 

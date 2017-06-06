@@ -495,9 +495,12 @@ class Entity extends Base\PublicEntity
 
     public function associateEntities(
         Plan\Entity $plan,
-        Customer\Entity $customer)
+        $customer)
     {
-        $merchant = $customer->merchant;
+        //
+        // Cannot get it via customer since customer can be null too.
+        //
+        $merchant = $plan->merchant;
 
         $this->merchant()->associate($merchant);
         $this->plan()->associate($plan);

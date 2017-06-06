@@ -28,7 +28,16 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer): Entity
+    /**
+     * @param array                 $input
+     * @param Plan\Entity           $plan
+     * @param Customer\Entity|null  $customer This is not type hinted because customer can be null
+     *                                        also, in case the merchant wants to follow global
+     *                                        customer flow.
+     *
+     * @return Entity
+     */
+    public function create(array $input, Plan\Entity $plan, $customer): Entity
     {
         return (new Creator)->create($input, $plan, $customer);
     }

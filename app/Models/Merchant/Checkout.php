@@ -32,6 +32,8 @@ class Checkout
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
     }
 
     public function getPreferences(Entity $merchant, $mode, array $input)
@@ -158,8 +160,8 @@ class Checkout
             }
 
             if((Base\Utility::isUpdatedAndroidSdk($input)) and
-                    ($appToken !== null) and
-                    ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
+               ($appToken !== null) and
+               ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
             {
                 return null;
             }
@@ -172,6 +174,9 @@ class Checkout
                 'tokens'    => $savedTokens->toArrayPublic()
             );
 
+            //
+            // This case comes when customer_id is sent in the input (always local customer).
+            //
             if ($customer->isLocal() === true)
             {
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
@@ -234,7 +239,54 @@ class Checkout
                 return;
             }
 
-            // fetch customer data and saved cards data
+            //
+            // Since customer_id will always be associated with the subscription,
+            // it should not be sent in the input. If it is sent, we would
+            // not know whether to use the customer associated with the subscription
+            // or the one sent in the input.
+            // If the customer is not present in subscription AND not sent in
+            // the input, we use/create global customer.
+            //
+            if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+            {
+                if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+                {
+                    // TODO: Throw an exception
+                }
+
+                $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
+                    $input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
+
+                //
+                // If a customer is associated with the subscription, we assume
+                // that the merchant wants the local cards, and go ahead with
+                // that flow. We add customer_id to the input to force the local flow.
+                // If no customer is associated with the subscription, we go
+                // ahead with the global flow.
+                //
+                $customerId = $subscription->getCustomerId();
+
+                if ($customerId === null)
+                {
+                    if ($data['options']['remember_customer'] === false)
+                    {
+                        // TODO: Throw an exception
+                    }
+                    else
+                    {
+                        $input[Payment\Entity::CUSTOMER_ID] = $customerId;
+                    }
+                }
+            }
+
+            //
+            // We get the customer using either the customer_id or the app_token.
+            // If customer_id is present in the input, it means that it's a local customer.
+            // Since the merchant will not have customer_id of a global customer.
+            // If app_token is present in the input, it means that it's a global customer.
+            // It also means that the user is already logged in.
+            // If customer_id AND app_token both are present, we give preference to the customer_id.
+            //
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
             {
@@ -245,6 +297,15 @@ class Checkout
                     $data['customer'] = $custData;
                 }
             }
+            //
+            // In cases where neither app_token is present nor any customer_id,
+            // we use the contact number + device_token to search for an existing
+            // global customer. We receive device token only in case of
+            // mobile (sometimes). (contact will always be there anyway).
+            // If device token is valid, we fetch the tokens and send across.
+            // Otherwise, we don't send any tokens. (Refer the checkout flow to
+            // find out what happens at checkout when we don't send any tokens).
+            //
             else if(isset($input['contact']))
             {
                 $response = (new Customer\Service)->fetchGlobalCustomerStatus(

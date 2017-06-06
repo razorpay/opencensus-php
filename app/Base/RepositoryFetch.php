@@ -398,22 +398,33 @@ trait RepositoryFetch
         return $this->findOrFailPublic($id);
     }
 
-    public function findByPublicIdAndMerchant($id, $merchant)
+    public function findByPublicIdAndMerchant($id, $merchant, $fail = true)
     {
         $entity = $this->getEntityClass();
 
         $entity::verifyIdAndStripSign($id);
 
-        return $this->findByIdAndMerchant($id, $merchant);
+        return $this->findByIdAndMerchant($id, $merchant, $fail);
     }
 
-    public function findByIdAndMerchant($id, Merchant\Entity $merchant)
+    public function findByIdAndMerchant($id, Merchant\Entity $merchant, $fail = true)
     {
         $entity = $this->newQuery()
-                       ->merchantId($merchant->getId())
-                       ->findOrFailPublic($id);
+                       ->merchantId($merchant->getId());
 
-        $entity->merchant()->associate($merchant);
+        if ($fail === true)
+        {
+            $entity = $entity->findOrFailPublic($id);
+        }
+        else
+        {
+            $entity = $entity->find($id);
+        }
+
+        if ($entity !== null)
+        {
+            $entity->merchant()->associate($merchant);
+        }
 
         return $entity;
     }

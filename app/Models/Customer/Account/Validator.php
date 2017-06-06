@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         Entity::CONTACT         => 'sometimes|contact_syntax',
         Entity::EMAIL           => 'sometimes|email',
         'otp'                   => 'sometimes|string|regex:"^\d{4,8}$"',
-        'device_token'          => 'sometimes|',
+        'device_token'          => 'sometimes',
         '_'                     => 'sometimes'
     );
 
@@ -70,6 +70,10 @@ class Validator extends Base\Validator
     /**
      * Wallets can only be created for customers having
      * Indian mobile numbers
+     *
+     * @param null $number
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateIndianContact($number = null)
     {

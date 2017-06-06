@@ -26,7 +26,7 @@ class Validator extends Base\Validator
     const SECONDS_IN_ONE_YEAR = 31536000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID     => 'required|string|size:19|public_id',
+        Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
         Entity::QUANTITY        => 'required|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
@@ -82,12 +82,20 @@ class Validator extends Base\Validator
 
     public function validateInputBeforeBuild(array $input)
     {
-        if (empty($input[Entity::CUSTOMER_ID]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'customer_id should be sent in the request to create a subscription.',
-                'customer_id');
-        }
+        //
+        // Keeping it commented for now. Will remove this later, once confident.
+        //
+        // If customer_id is not sent in the input, we get the customer and associate
+        // during the auth transaction. We create a global customer.
+        // 
+        //
+        
+        // if (empty($input[Entity::CUSTOMER_ID]) === true)
+        // {
+        //     throw new Exception\BadRequestValidationFailureException(
+        //         'customer_id should be sent in the request to create a subscription.',
+        //         'customer_id');
+        // }
 
         if (empty($input[Entity::PLAN_ID]) === true)
         {

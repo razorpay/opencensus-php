@@ -283,6 +283,14 @@ class Core extends Base\Core
         $customer = null;
         $appToken = null;
 
+        //
+        // If customer_id is present, it means it's a local customer.
+        //
+        // If app_token is present, it would always be a global customer.
+        //
+        // If both are present, we always give preference to the local customer. 
+        //
+        
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
