@@ -63,21 +63,15 @@ class Service extends Base\Service
 
         (new Validator)->couponApplyValidator($coupon, $merchantId);
 
-        // TODO move to merchantPromotion
-        $this->applyCredit($merchant, $coupon);
+        return $this->repo->transaction(function() use ($merchant, $promotion)
+        {
+            $merchantPromotion = (new MerchantPromotion\Core);
 
-        (new MerchantPromotion\Core)->create($merchant, $promotion);
-    }
+            $merchantPromotion->create($merchant, $promotion);
 
-    protected function applyCredit($merchant, $coupon)
-    {
-
-        $creditInput = [
-            'campaign' => $coupon->getCode(),
-            'value'    => $promotion->getAmount(),
-            'type'     => $promotion->getType(),
-        ];
-
-        (new Credits\Core)->create($merchant, $creditInput);
+            // Initial apply of Credit is done instantly
+            // Subsequent run and expiry will be handled by cron
+            $merchantPromotion->applyCredit($merchant, $promotion);
+        });
     }
 }
