@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const REMAINING_RUNS = 'remaining_runs';
     const EXPIRED        = 'expired';
 
+    protected $entity = 'merchant_promotion';
 
     protected $defaults = [
         self::EXPIRED => false
@@ -21,6 +22,14 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::EXPIRED => 'boolean'
+    ];
+
+    protected $fillable = [
+        self::MERCHANT_ID,
+        self::PROMOTION_ID,
+        self::START_TIME,
+        self::REMAINING_RUNS,
+        self::EXPIRED
     ];
 
     public function merchant()

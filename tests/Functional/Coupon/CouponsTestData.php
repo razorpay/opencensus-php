@@ -17,6 +17,22 @@ return [
         ]
     ],
 
+    'testCreateCouponAndApplyOnMerchant' => [
+        'request' => [
+            'content' => [
+                'coupon_code' => 'OFFER-123'
+            ],
+            'url'    => '/coupons',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'promotion',
+                'coupon_code' => 'OFFER-123'
+            ]
+        ]
+    ],
+
     'testGetCouponsByPromotionId' => [
         'request' => [
             'content' => [

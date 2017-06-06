@@ -56,6 +56,7 @@ class Table
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const MERCHANT_PROMOTION    = 'merchant_promotion';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';

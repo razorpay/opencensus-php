@@ -551,6 +551,7 @@ final class Route
         'promotion_fetch_multiple'               => ['get',      'promotions',                                      'PromotionController@fetchMultiple'                                 ],
         //coupon routes
         'coupon_create'                          => ['post',     'coupons',                                         'CouponController@create'                                           ],
+        'coupon_apply'                           => ['post',     'coupons/apply',                                   'CouponController@apply'                                            ],
         'coupon_fetch_multiple'                  => ['get',      'coupons',                                         'CouponController@fetchMultiple'                                    ],
         'coupon_delete'                          => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                           ],
     ];
@@ -928,6 +929,7 @@ final class Route
         'promotion_fetch_by_id',
         'promotion_fetch_multiple',
         'coupon_create',
+        'coupon_apply',
         'coupon_fetch_multiple',
         'coupon_delete',
     ];

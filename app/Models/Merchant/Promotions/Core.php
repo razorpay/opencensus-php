@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Promotion;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -68,7 +69,7 @@ class Core extends Base\Core
         $creditInput = [
             'campaign' => $promotion->getName(),
             'value'    => $promotion->getAmount(),
-            'type'     => $promotion->getType(),
+            'type'     => $promotion->getCreditType(),
         ];
 
         (new Credits\Core)->create($merchant, $creditInput);
@@ -79,7 +80,7 @@ class Core extends Base\Core
         $creditInput = [
             'campaign' => $promotion->getName(),
             'value'    => $this->calculateCreditToExpire() * -1,
-            'type'     => $promotion->getType(),
+            'type'     => $promotion->getCreditType(),
         ];
 
         (new Credits\Core)->create($merchant, $creditInput);

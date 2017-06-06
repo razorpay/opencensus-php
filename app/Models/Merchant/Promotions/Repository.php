@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Merchant\Promotions;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Promotions;
 
 class Repository extends Base\Repository
 {

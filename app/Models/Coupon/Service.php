@@ -46,8 +46,13 @@ class Service extends Base\Service
         return $coupon->toArrayAdmin();
     }
 
-    public function apply(string $code, string $merchantId)
+    public function apply(array $input)
     {
+        //TODO add validation here
+        $code = $input['code'];
+
+        $merchantId = $input['merchant_id'];
+
         $this->trace->info(
             TraceCode::COUPON_APPLY_REQUEST,
             [
@@ -71,7 +76,7 @@ class Service extends Base\Service
 
             // Initial apply of Credit is done instantly
             // Subsequent run and expiry will be handled by cron
-            $merchantPromotion->applyCredit($merchant, $promotion);
+            $merchantPromotion->applyCredits($merchant, $promotion);
         });
     }
 }

@@ -19,6 +19,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::COUPON_CODE, '=', $code)
-                    ->get();
+                    ->firstOrFail();
     }
 }

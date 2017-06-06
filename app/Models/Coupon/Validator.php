@@ -26,7 +26,7 @@ class Validator extends Base\Validator
                 'Coupon Code Already used');
         }
 
-        if (($merchantId !== null) and
+        if (($coupon->getMerchantId() !== null) and
             ($coupon->getMerchantId() !== $merchantId))
         {
             throw new Exception\BadRequestException(

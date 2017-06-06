@@ -38,7 +38,7 @@ class Promotion extends Base
     public function create(array $attributes = [])
     {
         $defaultValues = [
-            'name'        => 'Test Promotion',
+            'name'        => 'Test-Promotion',
             'amount'      => 100,
             'credit_type' => 'fee',
         ];

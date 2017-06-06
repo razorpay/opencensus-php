@@ -17,6 +17,15 @@ class CouponController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function apply()
+    {
+        $input = Request::all();
+
+        $data = (new Coupon\Service)->apply($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchMultiple()
     {
         $input = Request::all();

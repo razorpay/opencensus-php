@@ -29,6 +29,39 @@ class CouponsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCouponAndApplyOnMerchant()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
+
+        $this->startTest();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code'        =>  'OFFER-123',
+        ];
+
+        $this->applyCouponOnMerchant($content);
+
+        $coupon = $this->getLastEntity('coupon', true);
+    }
+
+    public function applyCouponOnMerchant($content)
+    {
+        $request = [
+            'url'     => '/coupons/apply',
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     public function testGetCouponsByPromotionId()
     {
         $promotion = $this->fixtures->create('promotion:onetime');
