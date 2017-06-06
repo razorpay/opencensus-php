@@ -91,16 +91,16 @@ app.controller('MerchantStatsCtrl', [
     };
 
     $scope.$watch('mode + type + sort', function() {
-      $scope.go('');
+      $scope.go($scope.merchant_id);
     });
 
     $scope.go = function(merchant_id) {
-      $scope.note =
-        'Fetching results from last ' +
-        $scope.duration_count +
-        ' ' +
-        $scope.type +
-        '(s) starting day till today.';
+      var startOf = $scope.type === 'week' ? 'iso' + $scope.type : $scope.type;
+      var startDate = moment()
+        .subtract($scope.duration_count, $scope.type)
+        .startOf(startOf)
+        .format('MMMM Do, YYYY');
+      $scope.note = 'Fetching results from ' + startDate + ' till today.';
       if (merchant_id === '') {
         // We get all aggregations
         $scope.fetchAllAggregations(
