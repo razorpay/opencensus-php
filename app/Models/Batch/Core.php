@@ -8,11 +8,12 @@ use RZP\Base\RuntimeManager;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 
 class Core extends Base\Core
 {
@@ -29,29 +30,27 @@ class Core extends Base\Core
         $this->processor = new Processor;
     }
 
-    public function create($input)
+    public function create($input): Entity
     {
-        $batch = (new Batch\Entity)->build($input);
+        // Build the entity and associates relations
+
+        $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);
 
-        $entries = $this->parseExcelSheets($input['file']);
+        // Parses input file and validates according to batch type.
 
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE_ENTRIES, $entries);
+        $entries = $this->parseExcelSheets($input['file']);
 
         $batch->getValidator()->validateEntries($entries, $batch->getType());
 
-        list($totalCount, $amount) = $this->getFileData($entries);
+        // Fills batch entity with relevant details of input file.
 
-        $batch->setAmount($amount);
+        $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
-        $batch->setTotalCount($totalCount);
+        // Saves input file
 
-        $awsUrl = $this->processor->saveBatchFileToAws($batch, $input['file']);
-
-        $this->processor->deleteFile($input['file']->getRealPath());
-
-        $batch->setUploadFileUrl($awsUrl);
+        $this->processor->saveInputFile($batch, $input[Entity::FILE]);
 
         $this->repo->saveOrFail($batch);
 
@@ -60,13 +59,11 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function retryBatch(Batch\Entity $batch)
+    public function retryBatch(Entity $batch): Entity
     {
         if (($batch->getStatus() === Status::PROCESSED) and
             ($batch->getFailureCount() === 0))
         {
-            $this->trace->info(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
-
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED);
         }
@@ -80,20 +77,38 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function downloadBatch(Batch\Entity $batch)
+    /**
+     * Returns signed url of the processed batch file.
+     *
+     * @param Entity $batch
+     *
+     * @return string
+     */
+    public function downloadBatch(Entity $batch): string
     {
-        $awsKey = $this->processor->getAwsKey($batch);
+        $processedFile = $batch->processedFile;
 
-        $publicUrl = $this->getPreSignedUrlFromAws($awsKey);
+        // Backward compatibility:
+        // - If processed file relation exists use that else to handle BC
+        //   form the AWS key and get the signed URL as done previously.
+
+        if ($processedFile === null)
+        {
+            $signedUrl = $this->getSignedUrlOrBatchFile($batch);
+        }
+        else
+        {
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($processedFile);
+        }
 
         $this->trace->info(
             TraceCode::BATCH_DOWNLOAD,
             [
-                'batch'         => $batch->toArrayPublic(),
-                'url'           => $publicUrl,
+                'batch_id' => $batch->getId(),
+                'url'      => $signedUrl,
             ]);
 
-        return $publicUrl;
+        return $signedUrl;
     }
 
     public function processBatches()
@@ -112,10 +127,12 @@ class Core extends Base\Core
             }
             catch (\Exception $e)
             {
-                $this->trace->warning(
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
                     TraceCode::BATCH_PROCESSING_ERROR,
                     [
-                        'batch'         => $batch->toArrayPublic(),
+                        'batch' => $batch->toArrayPublic(),
                     ]);
 
                 // TODO: Remove this comment. Currently we will mark the final state as processed.
@@ -129,24 +146,48 @@ class Core extends Base\Core
                 // }
 
                 $batch->setStatus(Status::PROCESSED);
+
                 $this->repo->saveOrFail($batch);
             }
         }
+
         return $batches;
     }
 
-    protected function getFileData($entries)
+    /**
+     * Fills Batch entity with details extracted from the input file.
+     * Eg.
+     * - Total row count
+     * - Aggregate sum of amount field
+     *
+     * @param Entity $batch
+     * @param array  $entries
+     */
+    protected function fillBatchEntityWithInputFileDetails(
+        Entity $batch,
+        array $entries)
     {
-        $totalAmount = 0;
+        $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
+        $totalCount  = count($entries);
 
-        $totalEntries = count($entries);
+        $batch->setAmount($totalAmount);
+        $batch->setTotalCount($totalCount);
+    }
 
-        foreach ($entries as $entry)
-        {
-            $totalAmount += $entry[Header::AMOUNT];
-        }
+    /**
+     * @deprecated
+     *
+     * Get signed URL of batch file in old way.
+     *
+     * @param Entity $batch
+     *
+     * @return string
+     */
+    protected function getSignedUrlOrBatchFile(Batch\Entity $batch): string
+    {
+        $awsKey = $batch->getFilePrefix() . $batch->getFileKeyWithExt();
 
-        return array($totalEntries, $totalAmount);
+        return $this->getPreSignedUrlFromAws($awsKey);
     }
 
     protected function increaseAllowedSystemLimits()

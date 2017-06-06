@@ -31,8 +31,7 @@ class Type
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
     const BATCH_INPUT                       = 'batch_input';
-
-    const BATCH_OUTPUT                      = 'batch_output';
+    const BATCH_PROCESSED                   = 'batch_processed';
 
     const BLANK                             = 'blank';
 
@@ -80,7 +79,7 @@ class Type
 
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
-            self::BATCH_OUTPUT,
+            self::BATCH_PROCESSED,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -135,12 +134,12 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
-            self::REPORT
+            self::REPORT,
+            self::BATCH_INPUT,
+            self::BATCH_PROCESSED,
         ],
 
         self::BATCH_BUCKET_CONFIG => [
-            self::BATCH_INPUT,
-            self::BATCH_OUTPUT,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

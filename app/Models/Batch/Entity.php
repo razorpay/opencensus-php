@@ -3,13 +3,33 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\FileStore;
+
 
 class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
+
+    /**
+     * @deprecated
+     *
+     * Previously we didn't use UFH and stored the file key names in
+     * following two attributes.
+     */
     const UPLOAD_FILE_URL           = 'upload_file_url';
     const DOWNLOAD_FILE_URL         = 'download_file_url';
+
+    /**
+     * Input file's id. It's the file uploaded during batch entity creation.
+     */
+    const INPUT_FILE_ID             = 'input_file_id';
+
+    /**
+     * Processed file's id. It's the file created by us post processing.
+     */
+    const PROCESSED_FILE_ID         = 'processed_file_id';
+
     const STATUS                    = 'status';
     const TOTAL_COUNT               = 'total_count';
     const SUCCESS_COUNT             = 'success_count';
@@ -25,19 +45,28 @@ class Entity extends Base\PublicEntity
     const STATUS_LENGTH             = 20;
     const FILE                      = 'file';
 
+    /**
+     * Prefix to construct type for file store entity.
+     * E.g. if type of batch is 'refund', type for file store entity
+     * would be batch_refund.
+     */
+    const UFH_TYPE_PREFIX           = 'batch_';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';
 
     protected $generateIdOnCreate = true;
 
-    protected static $generators = array(self::ID);
+    protected static $generators = [
+        self::ID,
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::TYPE,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::TYPE,
@@ -50,32 +79,42 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AMOUNT,
         self::PROCESSED_AT,
         self::CREATED_AT,
-    );
+    ];
 
-    protected $defaults = array(
-        self::ATTEMPTS                       => 0,
-        self::STATUS                         => Status::CREATED,
-        self::DOWNLOAD_FILE_URL              => null,
-        self::SUCCESS_COUNT                  => null,
-        self::FAILURE_COUNT                  => null,
-        self::AMOUNT                         => null,
-        self::PROCESSED_AMOUNT               => 0,
-        self::COMMENT                        => null,
-        self::PROCESSED_AT                   => null,
-    );
+    protected $defaults = [
+        self::ATTEMPTS          => 0,
+        self::STATUS            => Status::CREATED,
+        self::DOWNLOAD_FILE_URL => null,
+        self::SUCCESS_COUNT     => null,
+        self::FAILURE_COUNT     => null,
+        self::AMOUNT            => null,
+        self::PROCESSED_AMOUNT  => 0,
+        self::COMMENT           => null,
+        self::PROCESSED_AT      => null,
+    ];
 
-    protected $casts = array(
-        self::TOTAL_COUNT                    => 'int',
-        self::SUCCESS_COUNT                  => 'int',
-        self::FAILURE_COUNT                  => 'int',
-        self::AMOUNT                         => 'int',
-        self::PROCESSED_AMOUNT               => 'int',
-        self::ATTEMPTS                       => 'int',
-    );
+    protected $casts = [
+        self::TOTAL_COUNT      => 'int',
+        self::SUCCESS_COUNT    => 'int',
+        self::FAILURE_COUNT    => 'int',
+        self::AMOUNT           => 'int',
+        self::PROCESSED_AMOUNT => 'int',
+        self::ATTEMPTS         => 'int',
+    ];
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function inputFile()
+    {
+        return $this->belongsTo('RZP\Models\FileStore\Entity');
+    }
+
+    public function processedFile()
+    {
+        return $this->belongsTo('RZP\Models\FileStore\Entity');
     }
 
     // ----------------------- Getters ---------------------------------------------
@@ -87,16 +126,6 @@ class Entity extends Base\PublicEntity
     public function getProcessedAmount()
     {
         return $this->getAttribute(self::PROCESSED_AMOUNT);
-    }
-
-    public function getUploadFileUrl()
-    {
-        return $this->getAttribute(self::UPLOAD_FILE_URL);
-    }
-
-    public function getDownloadFileUrl()
-    {
-        return $this->getAttribute(self::DOWNLOAD_FILE_URL);
     }
 
     public function getStatus()
@@ -129,6 +158,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    /**
+     * Returns type to be used when creating files via UFH.
+     *
+     * @return string
+     */
+    public function getTypeForFileStore(): string
+    {
+        return self::UFH_TYPE_PREFIX . $this->getType();
+    }
+
     public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
@@ -139,16 +178,66 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
-    // ----------------------- Setters ---------------------------------------------
-    public function setUploadFileUrl($url)
+    /**
+     * Returns prefix for the file. Prefix are mostly used to get a folder like
+     * structure on S3. We have different prefix for created and processed batch
+     * files, for convenience.
+     *
+     * @param string|null $status
+     *
+     * @return string
+     */
+    public function getFilePrefix(string $status = null): string
     {
-        $this->setAttribute(self::UPLOAD_FILE_URL, $url);
+        $status = $status ?: $this->getStatus();
+
+        if ($status === Status::CREATED)
+        {
+            return 'batch/upload/';
+        }
+        else
+        {
+            return 'batch/download/';
+        }
     }
 
-    public function setDownloadFileUrl($url)
+    /**
+     * Returns key for file. Id is being used for key.
+     *
+     * @return string
+     */
+    public function getFileKey(): string
     {
-        $this->setAttribute(self::DOWNLOAD_FILE_URL, $url);
+        return $this->getId();
     }
+
+    public function getFileKeyWithExt(): string
+    {
+        return $this->getFileKey() . '.' . FileStore\Format::XLSX;
+    }
+
+    /**
+     * Get local save directory.
+     *
+     * Used in Processor:
+     * - To move temp php request to this location and pass the same to UFH
+     * - To create processed file at proper location.
+     *
+     * @param string|null $status
+     *
+     * @return string
+     */
+    public function getLocalSaveDir(string $status = null): string
+    {
+        return storage_path('files/filestore') . '/' . $this->getFilePrefix($status);
+    }
+
+    public function getLocalSavePath(string $status = null)
+    {
+        return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
+    }
+
+    // ----------------------- Setters ---------------------------------------------
 
     public function setSuccessCount($count)
     {

@@ -8,24 +8,32 @@ use Mail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
+use RZP\Models\FileStore;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Processor extends Base\Core
 {
+    const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
     use FileHandlerTrait;
 
     protected $mutex;
 
     protected $batch;
 
-    protected $uploadFileLocalPath;
-    protected $downloadFileLocalPath;
+    /**
+     * Holds local file path of input and processed file respectively.
+     * They are re-used in the flow. E.g. sending mails with attachment,
+     * unlinking post processing etc.
+     */
+    protected $inputFileLocalPath;
+    protected $processedFileLocalPath;
 
     const MUTEX_LOCK_TIMEOUT = 2500;
 
@@ -37,11 +45,102 @@ class Processor extends Base\Core
     }
 
     /**
-     * This function process one batch.
-     * @param  Batch\Entity $batch batch entity
-     * @return void
+     * Saves given file as input against the batch entity. And then associates
+     * the same with the batch entity.
+     *
+     * @param Entity       $batch
+     * @param UploadedFile $file
      */
-    public function process(Batch\Entity $batch)
+    public function saveInputFile(Entity $batch, UploadedFile $file)
+    {
+        $file = $file->move($batch->getLocalSaveDir(), $batch->getFileKeyWithExt());
+
+        $name = $batch->getFilePrefix() . $batch->getFileKey();
+
+        $file = (new FileStore\Creator)
+                    ->localFile($file)
+                    ->name($name)
+                    ->extension(FileStore\Format::XLSX)
+                    ->entity($batch)
+                    ->merchant($batch->merchant)
+                    ->type(FileStore\Type::BATCH_INPUT)
+                    ->save()
+                    ->getFileInstance();
+
+        $batch->inputFile()->associate($file);
+    }
+
+    /**
+     * Saves given processed file against the batch entity. And then associates
+     * the same with batch entity.
+     *
+     * @param Entity  $batch
+     * @param  string $filePath
+     */
+    public function saveProcessedFile(Entity $batch, string $filePath)
+    {
+        $name = $batch->getFilePrefix() . $batch->getFileKey();
+
+        $file = (new FileStore\Creator)
+                    ->localFilePath($filePath)
+                    ->mime(self::XLSX_MIME_TYPE)
+                    ->name($name)
+                    ->extension(FileStore\Format::XLSX)
+                    ->entity($batch)
+                    ->merchant($batch->merchant)
+                    ->type(FileStore\Type::BATCH_PROCESSED)
+                    ->save()
+                    ->getFileInstance();
+
+        $batch->processedFile()->associate($file);
+    }
+
+    /**
+     * Gets the input file for processing. Returns the local file path.
+     *
+     * @param Entity $batch
+     *
+     * @return string
+     */
+    protected function getInputFile(Entity $batch): string
+    {
+        $inputFile = $batch->inputFile;
+
+        if ($inputFile === null)
+        {
+            return $this->getInputFileDeprecated($batch);
+        }
+
+        return (new FileStore\Accessor)
+                    ->id($inputFile->getId())
+                    ->merchantId($batch->getMerchantId())
+                    ->getFile();
+    }
+
+    /**
+     * @deprecated
+     *
+     * Gets input file when there is no association already. To maintain BC.
+     *
+     * @param Entity $batch
+     *
+     * @return string
+     */
+    protected function getInputFileDeprecated(Entity $batch): string
+    {
+        $awsKey = $batch->getFilePrefix(Status::CREATED) . $batch->getFileKeyWithExt();
+
+        $saveAs = $batch->getLocalSavePath(Status::CREATED);
+
+        return $this->getFileFromAws($awsKey, $saveAs);
+    }
+
+    /**
+     * This function process one batch.
+     *
+     * @param Entity $batch
+     */
+    public function process(Entity $batch)
     {
         $this->batch = $batch;
 
@@ -121,10 +220,10 @@ class Processor extends Base\Core
         $this->sendMailIfProcessed();
 
         // Delete download file from local instance
-        $this->deleteFile($this->downloadFileLocalPath);
+        // $this->deleteFile($this->processedFileLocalPath);
 
         // Delete upload file from local instance
-        $this->deleteFile($this->uploadFileLocalPath);
+        // $this->deleteFile($this->inputFileLocalPath);
     }
 
     /**
@@ -235,83 +334,15 @@ class Processor extends Base\Core
 
         $excel = $this->createExcelObject($finalEntries, $this->batch->getId(), [], $this->batch->getType());
 
-        $storagePath = $this->getStoragePath();
+        $storagePath = $this->batch->getLocalSaveDir();
 
         $fileMetadata = $excel->store('xlsx', $storagePath, true);
 
         $fullpath = $fileMetadata['full'];
 
-        $downloadUrl = $this->saveBatchFileToAws($this->batch, $fullpath);
+        $downloadUrl = $this->saveProcessedFile($this->batch, $fullpath);
 
-        $this->batch->setDownloadFileUrl($downloadUrl);
-
-        $this->downloadFileLocalPath = $fullpath;
-    }
-
-    public function saveBatchFileToAws(Batch\Entity $batch, $file)
-    {
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-        $awsKey = $this->getAwsKey($batch);
-
-        $url = $this->saveToAws($awsKey, $file, $xlsxMimeType);
-
-        return $url;
-    }
-
-    protected function getBatchFileFromAws(Batch\Entity $batch)
-    {
-        $storagePath = $this->getStoragePath();
-
-        $filename = $this->getFileName($batch);
-
-        $filePath = $storagePath . '/' . $filename;
-
-        $awsKey = $this->getAwsKey($batch);
-
-        return $this->getFileFromAws($awsKey, $filePath);
-    }
-
-    public function getStoragePath()
-    {
-        $path = storage_path('files/batch');
-
-        return $path;
-    }
-
-    /**
-     * Get the bucket file path.
-     * If the batch status is created, then the dir would be batch/upload
-     * else the batch would be processing/processed state, then dir would be batch/download
-     * @param  Batch\Entity $batch [description]
-     * @return [type]              [description]
-     */
-    public function getBucketFilePath(Batch\Entity $batch)
-    {
-        if ($batch->getStatus() === Status::CREATED)
-        {
-            return 'batch/upload';
-        }
-        else
-        {
-            return 'batch/download';
-        }
-    }
-
-    public function getFileName(Batch\Entity $batch)
-    {
-        return $batch->getId() .'.xlsx';
-    }
-
-    public function getAwsKey(Batch\Entity $batch)
-    {
-        $bucketFilePath = $this->getBucketFilePath($batch);
-
-        $filename = $this->getFileName($batch);
-
-        $awsKey = $bucketFilePath .'/' .$filename;
-
-        return $awsKey;
+        $this->processedFileLocalPath = $fullpath;
     }
 
     public function deleteFile($filePath)
@@ -330,9 +361,9 @@ class Processor extends Base\Core
 
     protected function getEntriesToProcess()
     {
-        $filePath = $this->getBatchFileFromAws($this->batch);
+        $filePath = $this->getInputFile($this->batch);
 
-        $this->uploadFileLocalPath = $filePath;
+        $this->inputFileLocalPath = $filePath;
 
         return $this->parseExcelSheets($filePath);
     }
@@ -378,7 +409,7 @@ class Processor extends Base\Core
     {
         $batch = $this->batch;
 
-        $filePath = $this->downloadFileLocalPath;
+        $filePath = $this->processedFileLocalPath;
 
         if ($batch->isProcessed() === false)
         {

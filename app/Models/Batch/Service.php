@@ -7,7 +7,6 @@ use Mail;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -22,7 +21,7 @@ class Service extends Base\Service
 
     public function createBatch($input)
     {
-        $batch = (new Batch\Core)->create($input);
+        $batch = (new Core)->create($input);
 
         return $batch->toArrayPublic();
     }
@@ -49,7 +48,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $batch = (new Batch\Core)->retryBatch($batch);
+        $batch = (new Core)->retryBatch($batch);
 
         return $batch->toArrayPublic();
     }
@@ -58,7 +57,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $awsPublicUrl = (new Batch\Core)->downloadBatch($batch);
+        $awsPublicUrl = (new Core)->downloadBatch($batch);
 
         $responseObj = [
             'url' => $awsPublicUrl,
@@ -69,7 +68,7 @@ class Service extends Base\Service
 
     public function processBatches()
     {
-        $batches = (new Batch\Core)->processBatches();
+        $batches = (new Core)->processBatches();
 
         return $batches->toArrayPublic();
     }
