@@ -42,8 +42,8 @@ class GatewayDowntimeSorter extends Terminal\Sorter
     /**
      * Performs sorting on relevant downtimes & given terminals
      *
-     * Separates terminals into boosted/nonBoosted
-     * Returns after merging boosted with nonBoosted terminals
+     * Separates terminals into demotedTerminals/nonDemotedTerminals
+     * Returns after merging demoted with nonDemoted terminals
      *
      * @param $terminals array
      * @param $downtimes array
@@ -56,40 +56,35 @@ class GatewayDowntimeSorter extends Terminal\Sorter
             return $terminals;
         }
 
-        $boostedTerminals = [];
-
-        $nonBoostedTerminals = [];
+        $demotedTerminals = [];
 
         foreach ($terminals as $terminal)
         {
-            if ((in_array($terminal, $boostedTerminals) === true) or
-                (in_array($terminal, $nonBoostedTerminals) === true))
+            if (in_array($terminal, $demotedTerminals) === true)
             {
                 continue;
             }
 
             foreach ($downtimes as $downtime)
             {
-                $boostTerminal = $this->shouldBoostTerminal($terminal, $downtime);
+                $demoteTerminal = $this->shouldDemoteTerminal($terminal, $downtime);
 
-                if ($boostTerminal === false)
+                if ($demoteTerminal === true)
                 {
-                    $nonBoostedTerminals[] = $terminal;
-                }
-                else
-                {
-                    $boostedTerminals[] = $terminal;
+                    $demotedTerminals[] = $terminal;
                 }
             }
         }
 
-        return array_merge($boostedTerminals, $nonBoostedTerminals);
+        $nonDemotedTerminals = array_diff($terminals, $demotedTerminals);
+
+        return array_merge($nonDemotedTerminals, $demotedTerminals);
     }
 
     /**
-     * Checks if priority of terminal should be kept low
+     * Checks if priority of terminal should be demoted
      *
-     * Filters on basis on terminal related data
+     * Compares on basis on terminal related data
      * 1. Terminal Id
      * 2. Terminal Gateway
      * 3. Downtime Gateway
@@ -98,19 +93,19 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      * @param $downtime Downtime
      * @return bool
      */
-    protected function shouldBoostTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime) : bool
+    protected function shouldDemoteTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime) : bool
     {
         if ($terminal->getId() === $downtime->getTerminalId())
         {
-            return false;
+            return true;
         }
 
         if (($terminal->getGateway() === $downtime->getGateway()) or
             ($downtime->getGateway() === Downtime\Entity::ALL))
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 }
