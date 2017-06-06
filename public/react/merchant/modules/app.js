@@ -6,19 +6,15 @@ const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
 
 export const setActiveRow = id => {
-  return dispatch => {
-    return dispatch({
-      type: ROW_HIGHLIGHT_ADD,
-      payload: { id },
-    });
+  return {
+    type: ROW_HIGHLIGHT_ADD,
+    payload: { id },
   };
 };
 
 export const removeActiveRow = id => {
-  return dispatch => {
-    return dispatch({
-      type: ROW_HIGHLIGHT_REMOVE,
-    });
+  return {
+    type: ROW_HIGHLIGHT_REMOVE,
   };
 };
 

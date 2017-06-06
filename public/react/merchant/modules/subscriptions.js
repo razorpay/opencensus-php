@@ -3,11 +3,9 @@ import ajax from 'merchant/utils/ajax';
 const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH';
 
 export const fetchSubscriptions = () => {
-  return dispatch => {
-    return dispatch({
-      type: SUBSCRIPTIONS_FETCH,
-      payload: ajax('/subscriptions'),
-    });
+  return {
+    type: SUBSCRIPTIONS_FETCH,
+    payload: ajax('/subscriptions'),
   };
 };
 
