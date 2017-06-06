@@ -62,22 +62,6 @@ return [
         ],
     ],
 
-    'testInvalidVpaOnValidation' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Vpa Provided is not valid'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
-    ],
-
     'testUpiVpa'   => [
         'response'  => [
             'content'     => [

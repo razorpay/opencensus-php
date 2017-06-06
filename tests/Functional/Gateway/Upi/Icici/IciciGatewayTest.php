@@ -163,27 +163,7 @@ EOT;
             'nemo@razorpay.com',
             // See ProviderCode
             'nemo@statebank',
-            'fake@invalidbank'
-        ];
-
-        foreach ($vpas as $vpa)
-        {
-            $payment = $this->getDefaultUpiPaymentArray();
-
-            $payment['vpa'] = $vpa;
-
-            $data = $this->testData['testInvalidVpa'];
-
-            $this->runRequestResponseFlow($data, function() use ($payment)
-            {
-                $this->doAuthPaymentViaAjaxRoute($payment);
-            });
-        }
-    }
-
-    public function testInvalidVpaOnValidation()
-    {
-         $vpas = [
+            'fake@invalidbank',
             // \ not valid
             'a\b@razorpay',
             // ' ' not valid
@@ -196,7 +176,7 @@ EOT;
 
             $payment['vpa'] = $vpa;
 
-            $data = $this->testData['testInvalidVpaOnValidation'];
+            $data = $this->testData['testInvalidVpa'];
 
             $this->runRequestResponseFlow($data, function() use ($payment)
             {

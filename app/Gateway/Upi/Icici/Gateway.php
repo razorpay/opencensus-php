@@ -58,8 +58,6 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        (new Validator)->validateInput('vpa', ['vpa' => $input['payment']['vpa']]);
-
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $payment = $this->createGatewayPaymentEntity($attributes);
