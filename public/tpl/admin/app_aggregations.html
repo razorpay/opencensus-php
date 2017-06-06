@@ -18,15 +18,7 @@
       <div class="text-center m-t">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
-      <div class="col-sm-2 m-b-xs">
-        Resource:
-        <select class="form-control input-sm w-sm inline " name="resource" ng-model="resource">
-          <option value="payment">Payment</option>
-          <option value="refund">Refund</option>
-          <option value="settlement">Settlement</option>
-        </select>
-      </div>
-      <div class="col-xs-2">
+      <div class="col-xs-1">
         Mode:
         <select class="form-control input-sm w-xs inline" name="mode" ng-model="mode">
           <option value="live">Live</option>
@@ -34,25 +26,31 @@
         </select>
       </div>
       <div class="col-xs-2">
-        For Last:
-        <input type="number" min="0" max="180" name="duration_count" ng-model="duration_count">
+        Count:
+        <input type="number" min="10" step="10" name="count" ng-model="count" ng-enter="go(merchant_id)">
       </div>
       <div class="col-xs-1">
-        <select class="form-control input-sm w-xs inline" name="period" ng-model="period">
+        For Last:
+        <input type="number" min="0" max="180" name="duration_count" ng-model="duration_count"
+          ng-enter="go(merchant_id)"
+        >
+      </div>
+      <div class="col-xs-1 m-t-md m-l-n-xxl">
+        <select class="form-control input-sm w-xs inline" name="type" ng-model="type">
           <option value="day">Day</option>
           <option value="week">Week</option>
           <option value="month">Month</option>
+          <option value="year">Year</option>
         </select>
       </div>
-      <div class="col-xs-3">
+      <div class="col-xs-2">
         Sort:
         <select class="form-control w-sm inline" name="sort" ng-model="sort">
           <option value="total_amount">Total Amount</option>
-          <option value="successful_txn_count">Successful Count</option>
-          <option value="txn_count">Total Count</option>
+          <option value="total_count">Total Count</option>
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-sm-3 m-t-md">
         <div class="input-group">
           <input type="text" class="input-sm form-control" placeholder="Search Merchant Id" ng-model="merchant_id">
           <span class="input-group-btn">
@@ -64,35 +62,35 @@
         <button class="btn btn-primary" ng-click="generateTable(true);">Download</button>
       </div> -->
     </div>
-
+    <div class="m-l">
+      <b>Note:</b> {{note}}
+    </div>
     <div class="table-responsive">
       <table id="merchants-table" class="table table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
             <th>Total Amount (INR)</th>
-            <th>Successful</th>
-            <th>Total</th>
-            <th>Updated</th>
+            <th>Total Count</th>
+            <th>Merchant Name</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in data">
             <td><a ui-sref="app.merchants.detail({id:row.merchant_id})">{{row.merchant_id}}</a></td>
             <td>{{row.total_amount/100 | rupee: ''}}</td>
-            <td>{{row.successful_txn_count}}</td>
-            <td>{{row.txn_count}}</td>
-            <td tooltip="{{row.updated_at*1000|fromNow}}">{{row.updated_at *1000 | date:'medium'}}</td>
+            <td>{{row.total_count}}</td>
+            <td>{{row.merchant_name}}</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!-- <footer class="panel-footer">
+    <footer class="panel-footer">
       <div class="row">
         <div class="col-sm-4 hidden-xs">
         </div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{stats.countStart}}-{{stats.countEnd}}</small>
         </div>
         <div class="col-sm-4 text-right text-center-xs">
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
@@ -101,6 +99,6 @@
           </ul>
         </div>
       </div>
-    </footer> -->
+    </footer>
   </div>
 </div>
