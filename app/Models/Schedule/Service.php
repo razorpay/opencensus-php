@@ -7,6 +7,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants;
 
 class Service extends Base\Service
 {
@@ -75,5 +76,8 @@ class Service extends Base\Service
     {
         $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
 
+        $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
+
+        (new $entityNameSpace)->processTasks($scheduleTasksToProcess);
     }
 }

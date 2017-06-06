@@ -41,11 +41,14 @@ class Core extends Base\Core
 
                if ($merchantPromotion->getRemainingRuns() > 0)
                {
-                    $this->applyCredits($merchant, $promotion);
+                    $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion)
+                    {
+                        $this->applyCredits($merchant, $promotion);
 
-                    $merchantPromotion->updateRemainingRuns();
+                        $merchantPromotion->updateRemainingRuns();
 
-                    $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+                        $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+                    });
                }
             }
             catch (\Exception $e)

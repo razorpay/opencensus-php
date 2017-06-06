@@ -196,6 +196,7 @@ final class Route
         'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
         'schedule_migration'                      => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
+        'schedule_process_tasks'                  => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -1245,6 +1246,7 @@ final class Route
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
             'refund_retry_failed',
+            'schedule_process_tasks',
         ],
 
         'kotak' => [
