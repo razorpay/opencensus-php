@@ -20,7 +20,7 @@ class Server extends Base\Mock\Server
 
         $atom = $this->repo->atom->findByToken($input['token']);
 
-        $merchant = \BasicAuth::getMerchant();
+        $merchant = $this->app['basicauth']->getMerchant();
 
         $paymentId = $atom->getKey();
 

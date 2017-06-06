@@ -59,7 +59,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'name'      => 'New tax',
-                'rate_type' => 'percentage',
                 'rate'      => 1020,
             ],
         ],

@@ -28,6 +28,7 @@ return array(
         'netbanking_airtel',
         'netbanking_axis',
         'netbanking_federal',
+        'netbanking_rbl',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -39,7 +40,8 @@ return array(
         'wallet_airtelmoney',
         'wallet_freecharge',
         'wallet_jiomoney',
-        'wallet_openwallet'
+        'wallet_openwallet',
+        'wallet_mpesa',
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -58,6 +60,7 @@ return array(
     'mock_netbanking_airtel'  => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
     'mock_netbanking_federal' => env('NETBANKING_FEDERAL_MOCK'),
+    'mock_netbanking_rbl'     => env('NETBANKING_RBL_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -69,6 +72,7 @@ return array(
     'mock_upi_idfc'           => env('UPI_IDFC_MOCK'),
     'mock_aeps_icici'         => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
+    'mock_wallet_mpesa'       => env('MPESA_MOCK'),
 
     'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
 
@@ -222,6 +226,15 @@ return array(
         'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
     ),
 
+    'wallet_mpesa' => array(
+        'test_merchant_id' => env('MPESA_WALLET_TEST_MERCHANT_ID'),
+        'test_hash_secret' => env('MPESA_WALLET_TEST_HASH_SECRET'),
+        'test_user_id'     => env('MPESA_WALLET_TEST_USER_ID'),
+        'test_password'    => env('MPESA_WALLET_TEST_PASSWORD'),
+        'live_user_id'     => env('MPESA_WALLET_LIVE_USER_ID'),
+        'live_password'    => env('MPESA_WALLET_LIVE_PASSWORD'),
+    ),
+
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
@@ -261,6 +274,13 @@ return array(
     'netbanking_federal' => [
         'test_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_MERCHANT_ID'),
         'live_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_LIVE_MERCHANT_ID'),
+    ],
+
+    'netbanking_rbl' => [
+        'test_merchant_id'  => env('NETBANKING_RBL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_RBL_GATEWAY_TEST_HASH_SECRET'),
+        'test_access_code'  => env('NETBANKING_RBL_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id2' => env('NETBANKING_RBL_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'sharp' => array(

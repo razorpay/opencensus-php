@@ -86,8 +86,6 @@ class Processor extends Base\Core
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
 
-        $this->updateSettlementScheduleTaskNextRun();
-
         return $data;
     }
 
@@ -326,16 +324,5 @@ class Processor extends Base\Core
         }
 
         return false;
-    }
-
-    protected function updateSettlementScheduleTaskNextRun()
-    {
-        $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(
-                                                        ScheduleTask\Type::SETTLEMENT,
-                                                        $this->setlTime);
-
-        $scheduleTasks->callOnEveryItem('updateNextRunAndLastRun');
-
-        $this->repo->saveOrFailCollection($scheduleTasks);
     }
 }

@@ -60,4 +60,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute('method', $method);
     }
+
+    public function getRefundId()
+    {
+        return $this->getAttribute('refund_id');
+    }
 }

@@ -78,6 +78,14 @@ class CreateInvoices extends Migration
             $table->string(Entity::SMS_STATUS, 32)
                   ->nullable();
 
+            $table->integer(Entity::GROSS_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Entity::TAX_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->bigInteger(Entity::AMOUNT)
                   ->nullable();
 
@@ -123,6 +131,9 @@ class CreateInvoices extends Migration
 
             $table->char(Entity::USER_ID, Entity::ID_LENGTH)
                   ->nullable();
+
+            $table->tinyInteger(Entity::GROUP_TAXES_DISCOUNTS)
+                  ->default(0);
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

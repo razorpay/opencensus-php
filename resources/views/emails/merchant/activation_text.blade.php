@@ -1,6 +1,6 @@
 Hi,
 
-Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You can now start accepting payments from your customers.
+Your {{{$merchant['org']['business_name']}}} account for {{{$merchant['billing_label']}}} is now active. You can now start accepting payments from your customers.
 
 The pricing details associated with your account are:
 
@@ -18,7 +18,7 @@ Please ensure that your production website/app is using the live keys generated 
 
 If you face any issues while implementing this, feel free to drop us an email at support@razorpay.com.
 
-We hope that the association between you and Razorpay will be fruitful for both organizations.
+We hope that the association between you and {{{$merchant['org']['business_name']}}} will be fruitful for both organizations.
 
 Regards,
-Team Razorpay
+Team {{{$merchant['org']['business_name']}}}

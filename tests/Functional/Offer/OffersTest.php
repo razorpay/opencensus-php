@@ -29,6 +29,33 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCardOfferWithMaxPaymentCount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateCardOfferWithLinkedOfferIds()
+    {
+        $offer = $this->fixtures->create('offer:card');
+
+        $this->testData[__FUNCTION__]['request']['content']['linked_offer_ids'] = (array) $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['linked_offer_ids'] = (array) $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testCreateCardOfferWithInvalidLinkedOfferIds()
+    {
+        $offer = $this->fixtures->create('offer:card', [
+            'merchant_id' => '100000Razorpay'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['linked_offer_ids'] = (array) $offer->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testCreateWalletOffer()
     {
         $this->startTest();
@@ -132,6 +159,45 @@ class OffersTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testUpdateWalletOfferWithMaxPaymentCount()
+    {
+        $offer = $this->fixtures->create('offer:wallet');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testUpdateCardOfferWithNoMaxPaymentCount()
+    {
+        $offer1 = $this->fixtures->create('offer:card');
+
+        $offer2 = $this->fixtures->create('offer:card', [
+            'max_payment_count' => null,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer2->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['linked_offer_ids'] = (array) $offer1->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testUpdateCardOfferWithInvalidLinkedOfferIds()
+    {
+        $offer1 = $this->fixtures->create('offer:card', [
+            'merchant_id' => '100000Razorpay'
+        ]);
+
+         $offer2 = $this->fixtures->create('offer:card');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer2->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['linked_offer_ids'] = (array) $offer1->getPublicId();
 
         $this->startTest();
     }

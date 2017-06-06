@@ -60,7 +60,7 @@ class Library
             }
         }
 
-        if ($schedule->isHourly() === false)
+        if ($schedule->hasHour() === true)
         {
             // set the hour for future run from schedule
             $futureRun->hour($schedule->getHour());

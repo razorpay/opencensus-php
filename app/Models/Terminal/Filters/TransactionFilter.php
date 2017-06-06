@@ -183,7 +183,7 @@ class TransactionFilter extends Terminal\Filter
                 ($input['mode'] === Mode::LIVE) and
                 ($terminal->getGateway() === Gateway::HDFC))
             {
-                return Shared::isSharedTerminal($terminal);
+                return $terminal->isShared();
             }
         }
 

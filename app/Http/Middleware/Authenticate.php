@@ -50,7 +50,8 @@ class Authenticate
             return ApiResponse::routeDisabled();
         }
 
-        if (in_array($route, Route::$internal, true))
+        if ((in_array($route, Route::$internal, true)) or
+            (in_array($route, Route::$admin, true)))
         {
             $ret = $ba->appAuth();
         }

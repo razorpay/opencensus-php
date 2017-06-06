@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Entity as Terminal;
-use RZP\Models\Terminal\Type;
-use RZP\Models\Terminal\Recurring;
+use RZP\Models\Terminal\Mode;
 
 class CreateTerminals extends Migration
 {
@@ -29,6 +28,9 @@ class CreateTerminals extends Migration
 
             $table->integer(Terminal::USED_COUNT)
                   ->unsigned()
+                  ->default(0);
+
+            $table->tinyInteger(Terminal::USED)
                   ->default(0);
 
             $table->integer(Terminal::CATEGORY)
@@ -96,7 +98,11 @@ class CreateTerminals extends Migration
                   ->default(0);
 
             $table->tinyInteger(Terminal::TYPE)
-                  ->default(Type::DUAL);
+                  ->unsigned()
+                  ->default(1);
+
+            $table->tinyInteger(Terminal::MODE)
+                  ->default(Mode::DUAL);
 
             $table->string(Terminal::CURRENCY, 3)
                   ->default(Terminal::DEFAULT_CURRENCY);

@@ -25,7 +25,7 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function create($input)
+    public function create(array $input): array
     {
         // Appends USER_ID in create input:
         // - if not already set, and
@@ -41,7 +41,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function fetch($id)
+    public function fetch(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -52,7 +52,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function fetchMultiple(array $input)
+    public function fetchMultiple(array $input): array
     {
         // Appends USER_ID in query input if userId available in headers via
         // dashboard given userRole is sellerapp so only invoices created by
@@ -69,7 +69,7 @@ class Service extends Base\Service
         return $invoices->toArrayPublic();
     }
 
-    public function update(string $id, array $input)
+    public function update(string $id, array $input): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -82,7 +82,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function issue(string $id)
+    public function issue(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -95,7 +95,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function delete(string $id)
+    public function delete(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -113,7 +113,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function addLineItems(string $id, array $input)
+    public function addLineItems(string $id, array $input): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -126,7 +126,10 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function updateLineItem(string $id, string $lineItemId, array $input)
+    public function updateLineItem(
+        string $id,
+        string $lineItemId,
+        array $input): array
     {
         $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -150,7 +153,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function removeLineItem(string $id, string $lineItemId)
+    public function removeLineItem(string $id, string $lineItemId): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -169,7 +172,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function removeManyLineItems(string $id, array $input)
+    public function removeManyLineItems(string $id, array $input): array
     {
         $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -190,7 +193,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function sendNotification($id, $medium)
+    public function sendNotification(string $id, string $medium): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -203,7 +206,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function cancelInvoice($id)
+    public function cancelInvoice(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -216,17 +219,17 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function expireInvoices()
+    public function expireInvoices(): array
     {
         return $this->core->expireInvoices();
     }
 
-    public function sendNotificationsInBulk()
+    public function sendNotificationsInBulk(): array
     {
         return (new Notifier())->sendNotificationsInBulk();
     }
 
-    public function fetchStatus($id)
+    public function fetchStatus(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -239,7 +242,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getInvoiceViewData($invoiceId)
+    public function getInvoiceViewData(string $invoiceId): array
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
@@ -262,7 +265,7 @@ class Service extends Base\Service
         return (new ViewDataSerializer($invoice))->get();
     }
 
-    public function getInvoicePdf(string $id)
+    public function getInvoicePdf(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,

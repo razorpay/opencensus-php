@@ -105,13 +105,18 @@ return [
         'live'       => env('AWS_REPORTS_QUEUE'),
     ],
 
+    'invoice' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+        'live'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+    ],
+
     'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
     'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
     'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),
     'sqs_webhooks_live'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
     'sqs_webhooks_test'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
     'sqs_webhooks_failure'  => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
-    'sqs_invoice_emails'    => env('AWS_INVOICE_EMAILS_QUEUE'),
 
 
     /*

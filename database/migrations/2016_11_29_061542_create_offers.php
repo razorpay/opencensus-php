@@ -66,7 +66,10 @@ class CreateOffers extends Migration
             $table->integer(Offer::FLAT_CASHBACK)
                   ->nullable();
 
-            $table->integer(Offer::PAYMENT_COUNT)
+            $table->integer(Offer::MAX_PAYMENT_COUNT)
+                  ->nullable();
+
+            $table->text(Offer::LINKED_OFFER_IDS)
                   ->nullable();
 
             $table->integer(Offer::PROCESSING_TIME)

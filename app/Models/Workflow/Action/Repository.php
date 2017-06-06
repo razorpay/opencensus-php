@@ -159,4 +159,14 @@ class Repository extends Base\Repository
                     ->where($cAdminId, '=', $adminId)
                     ->get();
     }
+
+    public function getOpenActionOnEntityOperation($entityId, $entityName, $permissionId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::ENTITY_NAME, $entityName)
+                    ->where(Entity::PERMISSION_ID, $permissionId)
+                    ->whereIn(Entity::STATE, State\Entity::OPEN_STATES)
+                    ->get();
+    }
 }

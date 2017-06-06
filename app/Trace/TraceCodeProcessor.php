@@ -2,6 +2,8 @@
 
 namespace RZP\Trace;
 
+use App;
+
 /**
  * Adds trace code field to the record at the starting position
  * This ensures that trace code is near starting and catches first
@@ -29,7 +31,9 @@ class TraceCodeProcessor
 
         $record = ['code' => $code] + $record;
 
-        $record['mode'] = \BasicAuth::getMode();
+        $app = App::getFacadeRoot();
+
+        $record['mode'] = $app['basicauth']->getMode();
 
         return $record;
     }

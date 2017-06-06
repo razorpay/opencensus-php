@@ -32,7 +32,19 @@ class Entity extends Base\PublicEntity
     const MIN_AMOUNT          = 'min_amount';
     const MAX_CASHBACK        = 'max_cashback';
     const FLAT_CASHBACK       = 'flat_cashback';
-    const PAYMENT_COUNT       = 'payment_count';
+
+    /**
+     * For card payments, this indicates the maximum number of payments
+     * allowed on a card for the offer
+     */
+    const MAX_PAYMENT_COUNT   = 'max_payment_count';
+
+    /**
+     * Additional set of offer ids to check if the card for payment has also
+     * bee used against these offer ids.
+     * @todo check for better name
+     */
+    const LINKED_OFFER_IDS    = 'linked_offer_ids';
 
     /**
      * Processing time denotes the number of seconds required for offer cashback to be
@@ -77,7 +89,8 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
-        self::PAYMENT_COUNT,
+        self::MAX_PAYMENT_COUNT,
+        self::LINKED_OFFER_IDS,
         self::PROCESSING_TIME,
         self::ACTIVE,
         self::BLOCK,
@@ -91,6 +104,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
@@ -102,7 +116,8 @@ class Entity extends Base\PublicEntity
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
         self::MIN_AMOUNT,
-        self::PAYMENT_COUNT,
+        self::MAX_PAYMENT_COUNT,
+        self::LINKED_OFFER_IDS,
         self::PROCESSING_TIME,
         self::CHECKOUT_DISPLAY,
         self::ACTIVE,
@@ -117,6 +132,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::NAME,
+        self::MERCHANT_ID,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
         self::IINS,
@@ -127,7 +143,8 @@ class Entity extends Base\PublicEntity
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
         self::MIN_AMOUNT,
-        self::PAYMENT_COUNT,
+        self::MAX_PAYMENT_COUNT,
+        self::LINKED_OFFER_IDS,
         self::PROCESSING_TIME,
         self::STARTS_AT,
         self::ENDS_AT,
@@ -149,23 +166,30 @@ class Entity extends Base\PublicEntity
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::LINKED_OFFER_IDS,
+    ];
+
     protected static $generators = [
         self::STARTS_AT,
     ];
 
     protected $casts = [
-        self::IINS             => 'array',
-        self::ACTIVE           => 'boolean',
-        self::BLOCK            => 'boolean',
-        self::CHECKOUT_DISPLAY => 'boolean',
-        self::PROCESSING_TIME  => 'int',
-        self::PERCENT_RATE     => 'int',
-        self::MAX_CASHBACK     => 'int',
-        self::FLAT_CASHBACK    => 'int',
-        self::MIN_AMOUNT       => 'int',
-        self::STARTS_AT        => 'int',
-        self::ENDS_AT          => 'int',
-        self::PAYMENT_COUNT    => 'int'
+        self::IINS               => 'array',
+        self::ACTIVE             => 'boolean',
+        self::BLOCK              => 'boolean',
+        self::CHECKOUT_DISPLAY   => 'boolean',
+        self::PROCESSING_TIME    => 'int',
+        self::PERCENT_RATE       => 'int',
+        self::MAX_CASHBACK       => 'int',
+        self::FLAT_CASHBACK      => 'int',
+        self::MIN_AMOUNT         => 'int',
+        self::STARTS_AT          => 'int',
+        self::ENDS_AT            => 'int',
+        self::MAX_PAYMENT_COUNT  => 'int',
+        self::LINKED_OFFER_IDS   => 'array',
     ];
 
     public function merchant()
@@ -218,9 +242,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_METHOD);
     }
 
-    public function getPaymentCount()
+    public function getMaxPaymentCount()
     {
-        return $this->getAttribute(self::PAYMENT_COUNT);
+        return $this->getAttribute(self::MAX_PAYMENT_COUNT);
+    }
+
+    public function getLinkedOfferIds()
+    {
+        return (array) $this->getAttribute(self::LINKED_OFFER_IDS);
     }
 
     public function getMinAmount()
@@ -248,7 +277,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENDS_AT);
     }
 
-    public function shouldBlock()
+    public function shouldBlockPayment()
     {
         return $this->getAttribute(self::BLOCK);
     }
@@ -275,6 +304,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVE, 0);
     }
 
+// ------------------------Public Setters--------------------------------------------
+
+    public function setPublicLinkedOfferIdsAttribute(array & $array)
+    {
+        $linkedOfferIds = $this->getAttribute(self::LINKED_OFFER_IDS);
+
+        if (empty($linkedOfferIds) === false)
+        {
+            self::getSignedIdMultiple($linkedOfferIds);
+
+            $array[self::LINKED_OFFER_IDS] = $linkedOfferIds;
+        }
+    }
+
 // ----------------------- Mutators --------------------------------------------
 
     protected function setIinsAttribute(array $iins)
@@ -287,6 +330,18 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::IINS] = json_encode(array_values($iins));
+    }
+
+    protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)
+    {
+        $existingLinkedOfferIds = $this->getAttribute(self::LINKED_OFFER_IDS);
+
+        if ($existingLinkedOfferIds !== null)
+        {
+            $linkedOfferIds = array_unique(array_merge($existingLinkedOfferIds, $linkedOfferIds));
+        }
+
+        $this->attributes[self::LINKED_OFFER_IDS] = json_encode(array_values($linkedOfferIds));
     }
 
     protected function generateStartsAt(array $input)

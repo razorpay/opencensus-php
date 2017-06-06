@@ -1089,7 +1089,6 @@ return [
                                 'KVBL',
                                 'NKGS',
                                 'PMCB',
-                                'RATN',
                                 'SBBJ',
                                 'SBHY',
                                 'SBIN',

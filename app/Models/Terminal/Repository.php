@@ -219,11 +219,10 @@ class Repository extends Base\Repository
 
     public function deleteOrFail($entity)
     {
-        $successCount = $entity->getUsedCount();
-        $count = $this->getTotalUsedCount($entity);
+        $count = $this->repo->payment->getTotalUsedCountForTerminal(
+                    $entity->getId());
 
-        if (($count === 0) and
-            ($successCount === 0))
+        if ($count === 0)
         {
             $entity->forceDelete();
 
@@ -250,13 +249,6 @@ class Repository extends Base\Repository
             'restore',
             'terminal',
             $terminal->getAttributes());
-    }
-
-    public function getTotalUsedCount($terminal)
-    {
-        return (new Payment\Entity)->newQuery()
-                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminal->getId())
-                    ->count();
     }
 
     public function addMerchantToTerminal(Entity $terminal, string $merchantId)

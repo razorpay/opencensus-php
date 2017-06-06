@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use Mockery;
 use DB;
 
 use RZP\Models\Transaction;
@@ -375,7 +376,39 @@ class MerchantTest extends TestCase
                          'entity_id'   => '1cXSLlUU8V9sXl',
                          'type'        => 'merchant']);
 
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => '100000razorpay',
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
         $activatedAt = time();
+
+        \Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertNotNull($data['merchant']);
+                        $this->assertNotNull($data['rules']);
+                        $this->assertNotNull($data['subject']);
+
+                        $this->assertNotNull($data['merchant']['name']);
+                        $this->assertNotNull($data['merchant']['website']);
+                        $this->assertNotNull($data['merchant']['billing_label']);
+                        $this->assertNotNull($data['merchant']['email']);
+                        $this->assertNotNull($data['merchant']['org']);
+
+                        $this->assertNotNull($data['merchant']['org']['business_name']);
+                        $this->assertNotNull($data['merchant']['org']['hostname']);
+                        $this->assertNotNull($data['merchant']['org']['custom_code']);
+
+                        $this->assertNotNull($data['rules']['amountRangeRules']);
+                        $this->assertNotNull($data['rules']['otherRules']);
+
+                        return true;
+                    }),
+                    Mockery::any());
 
         $content = $this->startTest();
 
@@ -888,7 +921,7 @@ class MerchantTest extends TestCase
                 'starts_at'    => $startsAt
             ]);
 
-        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -1275,14 +1308,12 @@ class MerchantTest extends TestCase
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
     }
 

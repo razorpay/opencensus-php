@@ -84,6 +84,27 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT
     ];
 
+    protected static $modifiers = [
+        self::NETWORK,
+        self::ISSUER
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::LOAD
+    ];
+
+    protected function modifyLoad(& $input)
+    {
+        $load = $input[self::LOAD];
+
+        if (empty($load) === false)
+        {
+            $input[self::LOAD] = intval(round($load * 100));
+        }
+    }
+
     public function getLoad()
     {
         return $this->getAttribute(self::LOAD);
@@ -124,13 +145,45 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
-    //-----------------Setters----------------------
-    public function setLoad(int $load)
+    //----------------- Public Setters------------------------------------------
+
+    public function setPublicLoadAttribute(array & $array)
     {
-        $this->setAttribute[self::LOAD] = $load;
+        $load = round(($this->getAttribute(self::LOAD) / 100), 2);
+
+        $array[self::LOAD] = $load;
     }
 
-    //----------------Setters End-------------------
+    //---------------- Public Setters End---------------------------------------
+
+    //----------------------------Modifiers-------------------------------------
+
+    protected function modifyNetwork(array & $input)
+    {
+        if (empty($input[self::NETWORK]) === false)
+        {
+            $input[self::NETWORK] = strtoupper($input[self::NETWORK]);
+        }
+    }
+
+    protected function modifyIssuer(array & $input)
+    {
+        if (empty($input[self::ISSUER]) === false)
+        {
+            $input[self::ISSUER] = strtoupper($input[self::ISSUER]);
+        }
+    }
+
+    //----------------------------Modifiers End---------------------------------
+
+    //---------------- Mutators-------------------------------------------------
+
+    public function setLoadAttribute($load)
+    {
+        $this->attributes[self::LOAD] = intval(round($load * 100));
+    }
+
+    //----------------- Mutators End--------------------------------------------
 
     /**
      * Evaluates if a rule's terminal related attributes match those of

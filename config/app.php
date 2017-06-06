@@ -242,7 +242,6 @@ return array(
         'View'          => Illuminate\Support\Facades\View::class,
 
         // Application Facades
-        'BasicAuth'     => RZP\Http\BasicAuth\Facade::class,
         'ApiResponse'   => RZP\Http\Response\Facade::class,
         'Trace'         => RZP\Trace\Facade::class,
 

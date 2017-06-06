@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
     const OPENWALLET        = 'openwallet';
+    const MPESA             = 'mpesa';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
         self::AEPS,
@@ -73,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
         self::AEPS,
@@ -96,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE    => false,
         self::JIOMONEY      => false,
         self::OPENWALLET    => false,
+        self::MPESA         => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
@@ -115,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
     );
 
     protected static $methods = array(
@@ -131,6 +136,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::MPESA,
     );
 
     // Casts the attributes to native types
@@ -148,6 +154,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE  => 'bool',
         self::JIOMONEY    => 'bool',
         self::OPENWALLET  => 'bool',
+        self::MPESA       => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
         self::AEPS        => 'bool',
@@ -240,6 +247,11 @@ class Entity extends Base\PublicEntity
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function isMpesaEnabled()
+    {
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()

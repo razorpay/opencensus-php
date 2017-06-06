@@ -29,7 +29,6 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
-    const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const CATEGORY2                 = 'category2';
@@ -82,6 +81,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::SCOPE,
+        self::ORG_ID,
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
@@ -99,7 +99,6 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
-        self::SETTLEMENT_SCHEDULE_ID,
         self::TRANSACTION_REPORT_EMAIL,
     ];
 
@@ -133,7 +132,6 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
-        self::SETTLEMENT_SCHEDULE_ID,
         self::METHODS,
         self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
@@ -160,7 +158,6 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
         self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
-        self::SETTLEMENT_SCHEDULE_ID => null,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
         self::RISK_RATING            => 3,
@@ -321,11 +318,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ARCHIVED_AT, null);
     }
 
-    public function hasSchedule()
-    {
-        return ($this->getSettlementScheduleId() !== null);
-    }
-
     public function keys()
     {
         return $this->hasMany('RZP\Models\Key\Entity');
@@ -334,12 +326,6 @@ class Entity extends Base\PublicEntity
     public function pricing()
     {
         return $this->belongsTo('RZP\Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
-    }
-
-    public function schedule()
-    {
-        return $this->belongsTo(
-            'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
     }
 
     public function payments()
@@ -822,14 +808,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
     }
 
-    public function getSettlementScheduleId()
+    public function getHoldFunds()
     {
-        return $this->getAttribute(self::SETTLEMENT_SCHEDULE_ID);
+        return $this->getAttribute(self::HOLD_FUNDS);
     }
 
     public function holdFunds()
     {
-        return $this->getAttribute(self::HOLD_FUNDS);
+        $this->setHoldFunds(true);
+    }
+
+    public function releaseFunds()
+    {
+        $this->setHoldFunds(false);
     }
 
     public function setHoldFunds($holdFunds)
@@ -875,6 +866,21 @@ class Entity extends Base\PublicEntity
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
+    }
+
+    public function disableReceiptEmails()
+    {
+        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, false);
+    }
+
+    public function enableInternational()
+    {
+        $this->setAttribute(self::INTERNATIONAL, true);
+    }
+
+    public function disableInternational()
+    {
+        $this->setAttribute(self::INTERNATIONAL, false);
     }
 
     /** Overridden from the PublicEntity */

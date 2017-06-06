@@ -165,6 +165,30 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        // Hardcoding these refunds for processing
+        $ids = ['7mS1VNzr53SCue', '7r8d83OFCFyUrv', '7oMFpxsOk5TSGa'];
+
+        if (in_array($input['refund']['id'], $ids) === true)
+        {
+            return false;
+        }
+
+        // Mobikwik returns an error when refund amount exceeds the remaining amount
+        // on Mobikwik's end. We take advantage of this error and initiate refunds
+        // for all the pending refunds whose amount is either equal to payment, i.e,
+        // they are full refund or twice of refund amount is less than payment amount
+        if (($input['refund']['amount'] !== $input['payment']['amount']) and
+            ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
+        {
+            throw new Exception\LogicException(
+                'Verify refund is only supported for full refunds and specific partial refunds');
+        }
+
+        return false;
+    }
+
     protected function saveVerifyContentIfNeeded($payment, $content)
     {
         $this->action = Action::AUTHORIZE;

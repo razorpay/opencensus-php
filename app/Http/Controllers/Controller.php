@@ -11,6 +11,7 @@ use App;
 use Request;
 
 use RZP\Constants\Entity as E;
+use RZP\Models\Base\Service as BaseService;
 
 abstract class Controller extends BaseController
 {
@@ -94,7 +95,7 @@ abstract class Controller extends BaseController
      *
      * @return \RZP\Models\Base\Service
      */
-    protected function service($service = null)
+    protected function service($service = null): BaseService
     {
         if ($service !== null)
         {

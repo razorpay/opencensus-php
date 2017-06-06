@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Tax\Entity;
+use RZP\Models\Item;
 
 class CreateTaxes extends Migration
 {
@@ -44,7 +45,17 @@ class CreateTaxes extends Migration
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
+                  ->onDelete('restrict');
+        });
+
+        // This needs to be done here because migrations are run in order of
+        // timestamps and taxes table gets created after items.
+        Schema::table(Table::ITEM, function(Blueprint $table)
+        {
+            $table->foreign(Item\Entity::TAX_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::TAX)
+                  ->onDelete('set null');
         });
     }
 
@@ -60,6 +71,14 @@ class CreateTaxes extends Migration
             $table->dropForeign
             (
                 Table::TAX . '_' . Entity::MERCHANT_ID . '_foreign'
+            );
+        });
+
+        Schema::table(Table::ITEM, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::ITEM . '_' . Item\Entity::TAX_ID . '_foreign'
             );
         });
 

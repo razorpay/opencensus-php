@@ -85,4 +85,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany('RZP\Models\Tax\Entity', Table::TAX_GROUP_TAX_MAP)
                     ->withTimestamps();
     }
+
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Status
 {
     // ----------- Invoice Statuses -----------
@@ -54,16 +56,17 @@ class Status
         self::HALTED,
     ];
 
-    public static function isStatusValid($status) : bool
+    public static function isStatusValid(string $status): bool
     {
         return in_array($status, self::$invoiceStatuses, true);
     }
 
-    public static function checkStatus($status)
+    public static function checkStatus(string $status)
     {
         if (self::isStatusValid($status) === false)
         {
-            throw new \InvalidArgumentException('Not a valid status: ' . $status);
+            throw new BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
         }
     }
 
