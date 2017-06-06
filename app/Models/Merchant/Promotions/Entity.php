@@ -32,4 +32,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Promotion\Entity');
     }
+
+    public function getRemainingRuns()
+    {
+        return (int) $this->attributes[self::REMAINING_RUNS];
+    }
+
+    public function updateRemainingRuns()
+    {
+        $remainingRuns = $this->getRemainingRuns() - 1;
+
+        $this->setAttribute(self::REMAINING_RUNS, $remainingRuns);
+    }
 }

@@ -55,4 +55,21 @@ class Repository extends Base\Repository
                 'Credits Id: ' . $creditsLog->getId());
         }
     }
+
+    public function findNonExpiredCredits(string $merchantId, string $promotionId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                    ->where(Entity::EXPIRED, '=', false)
+                    ->first();
+    }
+
+    public function getNotExpiredNewCredits($timestamp, string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::EXPIRED, '=', false)
+                    ->where(Entity::CREATED_AT, '>', $timestamp)
+                    ->get();
+    }
 }

@@ -85,12 +85,4 @@ class Core extends Base\Core
     {
         //check entry in merchant promotions
     }
-
-    protected function processTasks($tasks)
-    {
-        foreach ($tasks as $task)
-        {
-
-        }
-    }
 }

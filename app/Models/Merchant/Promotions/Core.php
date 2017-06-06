@@ -24,6 +24,37 @@ class Core extends Base\Core
         return $merchantPromotion;
     }
 
+    public function processTasks($scheduleTaks)
+    {
+        foreach ($scheduleTaks as $scheduleTask)
+        {
+            try
+            {
+                $merchant = $scheduleTask->merchant;
+
+                $promotion = $scheduleTask->entity;
+
+                $merchantPromotion = $this->repo->findByMerchantAndPromotionId(
+                    $merchant->getId(), $promotion->getId());
+
+                $this->expireCredits($merchant, $promotion);
+
+               if ($merchantPromotion->getRemainingRuns() > 0)
+               {
+                    $this->applyCredits($merchant, $promotion);
+
+                    $merchantPromotion->updateRemainingRuns();
+
+                    $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+               }
+            }
+            catch (\Exception $e)
+            {
+                //Trace Log
+            }
+        }
+    }
+
     public function updateCredits(Entity $merchantPromotion)
     {
         //TODO fill me
@@ -53,7 +84,36 @@ class Core extends Base\Core
 
     protected function calculateCreditToExpire($merchant, $promotion)
     {
-        //TODO implement this
-        return 0;
+        $creditLog = $this->repo->credit->findNonExpiredCreditLog(
+                    $merchant->getId(), $promotion->getId());
+
+        $newCredits = $this->repo->credit->getNotExpiredNewCredits($creditLog->getCreatedAt(), $creditLog->getType());
+
+        $totalApplicableBalance = $creditLog->getValue();
+
+        foreach ($newCredits as $newCredit)
+        {
+            $totalApplicableBalance += $newCredit->getValue();
+        }
+
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
+
+        if ($creditLog->getType() === Credit\Type::FEE)
+        {
+            $balanceCredits = $balance->getFeeCredits();
+        }
+        else
+        {
+            $balanceCredits = $balance->getAmountCredits();
+        }
+
+        $usedCredits = $totalApplicableBalance - $balanceCredits;
+
+        if ($usedCredits > $creditLog->getValue())
+        {
+            return 0;
+        }
+
+        return ($creditLog->getValue() - $usedCredits);
     }
 }
