@@ -289,9 +289,9 @@ class AdminController extends Controller
     {
         $dashboardOnly = Input::get('dashboard', false);
 
-        $error = (new Admin\Service)->activateMerchant($id, $dashboardOnly);
+        list($error, $data) = (new Admin\Service)->activateMerchant($id, $dashboardOnly);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     /**
