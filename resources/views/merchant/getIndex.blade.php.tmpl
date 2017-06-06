@@ -11,6 +11,10 @@
 @include('partials/common')
 
 @if ($isConfirmed and $isPreSignupComplete)
+  <script type="text/javascript">
+    window.rzp_user = <?php echo json_encode($user); ?>;
+    window.rzp_org = <?php echo json_encode($org); ?>;
+  </script>
   <script src="/js/jquery/jquery-2.1.4.min.js"></script>
   <script src="/dist/{{asset('merchant_react.js')}}"></script>
 @else
