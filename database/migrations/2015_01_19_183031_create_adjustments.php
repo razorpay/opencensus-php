@@ -54,6 +54,11 @@ class CreateAdjustments extends Migration {
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
 
+            $table->foreign(Adjustment::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
             $table->index(Adjustment::CHANNEL);
         });
     }
@@ -67,7 +72,11 @@ class CreateAdjustments extends Migration {
     {
         Schema::table(Table::ADJUSTMENT, function($table)
         {
+            $table->dropForeign(Table::ADJUSTMENT.'_'.Adjustment::MERCHANT_ID.'_foreign');
+
             $table->dropForeign(Table::ADJUSTMENT.'_'.Adjustment::TRANSACTION_ID.'_foreign');
+
+            $table->dropForeign(Table::ADJUSTMENT.'_'.Adjustment::SETTLEMENT_ID.'_foreign');
         });
 
         Schema::drop(Table::ADJUSTMENT);

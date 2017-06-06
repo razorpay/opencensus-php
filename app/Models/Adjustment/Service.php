@@ -41,6 +41,62 @@ class Service extends Base\Service
         return $adj->toArrayPublic();
     }
 
+    /**
+     * Adds Multiple adjustments
+     * @param array $input [list of adjustments to be added]
+     */
+    public function addMultipleAdjustment(array $input)
+    {
+        $merchantToAmountAdjList = $input['adjustments'];
+
+        unset($input['adjustments']);
+
+        $success = 0;
+        $total = 0;
+        $failed = 0;
+        $failedIds = [];
+
+        foreach ($merchantToAmountAdjList as $merchantId => $amount)
+        {
+            try
+            {
+                $input[Entity::MERCHANT_ID] = $merchantId;
+
+                $input[Entity::AMOUNT] = $amount;
+
+                $this->addAdjustment($input);
+
+                $success++;
+
+                $total += $amount;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $merchantId,
+                        Entity::AMOUNT      => $amount
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success'    => $success,
+            'total'      => $total/100,
+            'failed'     => $failed,
+            'failed_Ids' => $failedIds
+        ];
+
+        return $response;
+    }
+
     public function postReverseAdjustments($input)
     {
         $adjustmentIds = $input['ids'];

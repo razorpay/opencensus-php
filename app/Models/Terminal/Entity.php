@@ -70,9 +70,9 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
-        self::RECURRING,
         self::INTERNATIONAL,
         self::TPV,
+        self::TYPE,
         self::MODE,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
@@ -99,7 +99,6 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
-        self::RECURRING,
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
@@ -147,12 +146,11 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => Mode::DUAL,
+        self::TYPE                      => 1,
         self::MODE                      => Mode::DUAL,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
-        self::RECURRING                 => 1,
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
@@ -162,7 +160,6 @@ class Entity extends Base\PublicEntity
         self::CARD                      => 'boolean',
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
-        self::RECURRING                 => 'int',
         self::INTERNATIONAL             => 'boolean',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
@@ -228,9 +225,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHARED);
     }
 
-    public function getRecurring()
+    public function getType()
     {
-        return $this->getAttribute(self::RECURRING);
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getEmiDuration()
@@ -595,26 +592,31 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    protected function isRecurringTypeApplicable($type)
+    protected function isTypeApplicable($type)
     {
-        $hex = $this->getRecurring();
+        $hex = $this->getType();
 
-        return Recurring::isTypeApplicable($hex, $type);
+        return Type::isApplicable($hex, $type);
     }
 
     public function isNonRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::NON_RECURRING) === true);
+        return ($this->isTypeApplicable(Type::NON_RECURRING) === true);
     }
 
     public function is3DSRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_3DS) === true);
+        return ($this->isTypeApplicable(Type::RECURRING_3DS) === true);
     }
 
     public function isNon3DSRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_NON_3DS) === true);
+        return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
+    }
+
+    public function isIvr()
+    {
+        return ($this->isTypeApplicable(Type::IVR) === true);
     }
 
     public function isInternational()

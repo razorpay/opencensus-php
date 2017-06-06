@@ -35,7 +35,7 @@
         "ext-gmp": "*",
         "box/spout": "^2.7",
         "schuppo/password-strength": "~1.5",
-        "razorpay/slack-laravel": "1.3.0"
+        "razorpay/slack-laravel": "1.3.9"
     },
     "repositories": [
         {
