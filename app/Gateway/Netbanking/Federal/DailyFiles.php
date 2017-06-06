@@ -74,7 +74,7 @@ class DailyFiles extends Base\DailyFiles
 
             $message->to($emails);
 
-            if (empty($data['refundsFile']) === false)
+            if (empty($data['refundsFile']['url']) === false)
             {
                 $message->attach($data['refundsFile']['url'], ['as' => $data['refundsFile']['name']]);
             }
