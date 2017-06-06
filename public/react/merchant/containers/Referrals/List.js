@@ -8,6 +8,7 @@ import ReferralsList from 'merchant/components/Referrals/ReferralsList';
 import * as ReferralActions from 'merchant/modules/referrals';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { destroy } from 'rzp/modules/collection';
 import CreateLogin from './CreateLogin';
 import CreateMerchant from './CreateMerchant';
 
@@ -18,7 +19,7 @@ import CreateMerchant from './CreateMerchant';
       session: state.session,
     };
   },
-  { ...ReferralActions, ...ModalActions, ...NotificationsActions }
+  { ...ReferralActions, ...ModalActions, ...NotificationsActions, destroy }
 )
 export default class ReferralsListContainer extends ListContainer {
   fetchEntityList(params) {

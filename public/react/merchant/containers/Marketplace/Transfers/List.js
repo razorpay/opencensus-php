@@ -4,7 +4,7 @@ import TransfersListFilter
   from 'merchant/components/Marketplace/TransfersListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
+import { fetchTransfers as fetchAll, destroy } from 'rzp/modules/collection';
 import {
   transferId,
   transferSource,
@@ -13,7 +13,7 @@ import {
   createdAt,
 } from 'rzp/ui/Table/Column';
 
-@connect(state => state.collection, { fetchAll })
+@connect(state => state.collection, { fetchAll, destroy })
 export default class TransfersListContainer extends ListContainer {
   render() {
     return (

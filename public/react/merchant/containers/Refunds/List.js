@@ -6,7 +6,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
-import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
+import { fetchRefunds as fetchAll, destroy } from 'rzp/modules/collection';
 import {
   refundId,
   refundPayment,
@@ -14,7 +14,7 @@ import {
   createdAt,
 } from 'rzp/ui/Table/Column';
 
-@connect(state => state.collection, { fetchAll })
+@connect(state => state.refunds, { fetchAll })
 export default class RefundsListContainer extends ListContainer {
   render() {
     return (

@@ -16,6 +16,13 @@ export const fetchAll = (params, Entity, shouldNameAction) => {
   };
 };
 
+export const destroy = (Entity, shouldNameAction) => {
+  return {
+    type: getActionName(shouldNameAction && Entity) + '_RESET',
+    payload: null,
+  };
+};
+
 let initialState = {
   loading: true,
   items: [],
@@ -27,6 +34,7 @@ export function makeCollectionReducer(Entity) {
 
   return function(state = initialState, action) {
     switch (action.type) {
+      case `${actionName}_RESET`:
       case `${actionName}::PENDING`:
         return initialState;
 
@@ -65,10 +73,10 @@ export const fetchMarketplacePayments = params => {
 };
 
 export const refundsReducer = makeCollectionReducer(Refund);
-export const fetchRefunds = params => fetchAll(params, Refund);
+export const fetchRefunds = params => fetchAll(params, Refund, 1);
 
 export const settlementsReducer = makeCollectionReducer(Settlement);
-export const fetchSettlements = params => fetchAll(params, Settlement);
+export const fetchSettlements = params => fetchAll(params, Settlement, 1);
 
 export const fetchSubscriptions = () => {
   return {

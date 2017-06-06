@@ -1,5 +1,10 @@
 import { connect } from 'react-redux';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
-import { fetchMarketplacePayments as fetchAll } from 'rzp/modules/collection';
+import {
+  fetchMarketplacePayments as fetchAll,
+  destroy,
+} from 'rzp/modules/collection';
 
-export default connect(state => state.collection, { fetchAll })(PaymentsList);
+export default connect(state => state.collection, { fetchAll, destroy })(
+  PaymentsList
+);
