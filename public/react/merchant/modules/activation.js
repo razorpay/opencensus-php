@@ -6,79 +6,65 @@ export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP';
 export const ACTIVATION_SAVE_FILE = 'ACTIVATION_SAVE_FILE';
 export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT';
 
-export const fetchActivationDetails = () => {
-  return dispatch => {
-    return dispatch({
-      type: ACTIVATION_FETCH,
-      payload: ajax({
-        url: '/activation/details',
-        appendModeInURL: false,
-      }).then(response => {
-        response.data.bank_account_number_confirmation =
-          response.data.bank_account_number;
-        return response;
-      }),
-    });
+export const fetchActivationDetails = (accountId = '') => {
+  return {
+    type: ACTIVATION_FETCH,
+    payload: ajax({
+      url: `/activation/details/${accountId}`,
+      appendModeInURL: false,
+    }).then(response => {
+      response.data.bank_account_number_confirmation =
+        response.data.bank_account_number;
+      return response;
+    }),
   };
 };
 
-export const saveStep = (step, data) => {
-  return dispatch => {
-    return dispatch({
-      type: ACTIVATION_SAVE_STEP,
-      payload: ajax({
-        url: `/activation/save/step/${step}`,
-        method: 'post',
-        appendModeInURL: false,
-        data,
-      }),
-      extraArgs: {
-        step,
-        data,
-      },
-    });
+export const saveStep = ({ step, data, accountId = '' }) => {
+  return {
+    type: ACTIVATION_SAVE_STEP,
+    payload: ajax({
+      url: `/activation/save/step/${step}/${accountId}`,
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    }),
+    step,
+    data,
   };
 };
 
-export const saveFile = (file, fieldName) => {
-  return dispatch => {
-    let formData = new FormData();
-    formData.append(fieldName, file);
+export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
+  let formData = new FormData();
+  formData.append(fieldName, file);
 
-    return dispatch({
-      type: ACTIVATION_SAVE_FILE,
-      payload: ajax({
-        url: '/activation/save/file',
-        method: 'post',
-        data: formData,
-        processData: false,
-        contentType: false,
-        appendModeInURL: false,
-      }),
-      extraArgs: {
-        fieldName,
-        fileName: file.name,
-        step: 5,
-      },
-    });
+  return {
+    type: ACTIVATION_SAVE_FILE,
+    payload: ajax({
+      url: `/activation/save/file/${accountId}`,
+      method: 'post',
+      data: formData,
+      processData: false,
+      contentType: false,
+      appendModeInURL: false,
+    }),
+    fileName: file.name,
+    fieldName,
+    step,
   };
 };
 
-export const submitForm = data => {
-  return dispatch => {
-    return dispatch({
-      type: ACTIVATION_FORM_SUBMIT,
-      payload: ajax({
-        url: '/activation',
-        method: 'post',
-        appendModeInURL: false,
-        data,
-      }),
-      extraArgs: {
-        step: 6,
-        data,
-      },
-    });
+export const submitForm = ({ step, data, accountId = '' }) => {
+  return {
+    type: ACTIVATION_FORM_SUBMIT,
+    payload: ajax({
+      url: `/activation/${accountId}`,
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    }),
+    step,
+    data,
   };
 };
 
@@ -138,27 +124,28 @@ export default function(state = initialState, action) {
 
     case `${ACTIVATION_SAVE_STEP}::SUCCESS`:
     case `${ACTIVATION_FORM_SUBMIT}::SUCCESS`:
-      updatedSteps = set(state.steps, action.extraArgs.step, 'success');
+      updatedSteps = set(state.steps, action.step, 'success');
       return merge(state, {
         steps: updatedSteps,
-        data: action.extraArgs.data,
+        data: action.data,
       });
 
     case `${ACTIVATION_SAVE_STEP}::ERROR`:
     case `${ACTIVATION_FORM_SUBMIT}::ERROR`:
-      updatedSteps = set(state.steps, action.extraArgs.step, 'error');
+      updatedSteps = set(state.steps, action.step, 'error');
       return set(state, 'steps', updatedSteps);
 
     case `${ACTIVATION_SAVE_FILE}::SUCCESS`:
       uploadedFiles = set(
         state.uploadedFiles,
-        action.extraArgs.fieldName,
-        action.extraArgs.fileName
+        action.fieldName,
+        action.fileName
       );
       updatedSteps = state.steps;
+      let maxUploads = action.step === 4 ? 4 : 2;
 
-      if (Object.keys(uploadedFiles).length === 4) {
-        updatedSteps = set(state.steps, action.extraArgs.step, 'success');
+      if (Object.keys(uploadedFiles).length === maxUploads) {
+        updatedSteps = set(state.steps, action.step, 'success');
       }
 
       return merge(state, {

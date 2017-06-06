@@ -1,13 +1,12 @@
 <?php
 namespace App\Http\Controllers;
 
+use App;
 use Auth;
 use Input;
 use Config;
-use App;
-use App\Generic;
 use Request;
-
+use App\Generic;
 use App\Http\AppResponse;
 
 class GenericController extends Controller

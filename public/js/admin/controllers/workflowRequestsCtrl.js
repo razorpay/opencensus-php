@@ -11,6 +11,21 @@ app.controller('WorkflowRequestsCtrl', [
   function($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
     $scope.workflow_request_type = $stateParams.type;
 
+    $scope.getStateClass = function(state) {
+      switch (state) {
+        case 'approved':
+        case 'executed':
+          return 'approved-bg-color';
+        case 'closed':
+          return 'rejected-bg-color';
+        case 'rejected':
+          return 'rejected-bg-color';
+        case 'open':
+        default:
+          return 'pending-bg-color';
+      }
+    };
+
     // Get requests made by maker
     $scope.getActionsByMakerAndType = function(type) {
       var request = $http.get('/admin/generic', {
@@ -50,19 +65,10 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.regenerateList = function() {
       var type = $scope.workflow_request_type;
 
-      switch (type) {
-        case 'checker':
-          $scope.getCheckerActions();
-          break;
-        case 'closer':
-          $scope.getActionsByMakerAndType('closed');
-          break;
-        case 'open':
-          $scope.getActionsByMakerAndType('open');
-          break;
-        case 'all':
-        default:
-          $scope.getActionsByMakerAndType('all');
+      if (type === 'checker') {
+        $scope.getCheckerActions();
+      } else {
+        $scope.getActionsByMakerAndType(type);
       }
     };
 

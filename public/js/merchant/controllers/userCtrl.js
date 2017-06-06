@@ -164,17 +164,6 @@ app
             }
           }
 
-          Rollbar.configure({
-            payload: {
-              person: {
-                id: data.id,
-                name: data.name,
-                email: data.email,
-                role: 'merchant',
-              },
-            },
-          });
-
           if (window.smoochScript) {
             smoochScript.then(function() {
               var sk_user = function() {
@@ -211,12 +200,9 @@ app
             });
           }
 
-          analytics.identify(data.id, {
-            name: data.name,
-            email: data.email,
-            activated: data.activated,
-            submitted: data.submitted,
-          });
+          if (window.ga) {
+            ga('set', 'userId', data.id);
+          }
         });
       };
       $scope.refreshUser();

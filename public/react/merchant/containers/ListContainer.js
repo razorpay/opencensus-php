@@ -4,12 +4,12 @@ export default class ListContainer extends Component {
   static SKIP = 0;
   static COUNT = 25;
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 
   constructor() {
     super(...arguments);
+    this.searchFilters = {};
     this.state = {
       status: {},
     };
@@ -44,9 +44,22 @@ export default class ListContainer extends Component {
   };
 
   search = params => {
+    this.searchFilters = params;
     return this.fetchAll({
       ...this.getDefaultPageParams(),
       ...params,
+    });
+  };
+
+  paginate = params => {
+    let filters = {
+      ...this.searchFilters,
+      ...params,
+    };
+
+    return this.fetchAll({
+      ...this.getDefaultPageParams(),
+      ...filters,
     });
   };
 

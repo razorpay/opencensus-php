@@ -157,7 +157,9 @@
           e.stopPropagation();
           e.preventDefault();
           if (
-            dataTransfer && dataTransfer.files && dataTransfer.files.length > 0
+            dataTransfer &&
+            dataTransfer.files &&
+            dataTransfer.files.length > 0
           ) {
             insertFiles(dataTransfer.files);
           }

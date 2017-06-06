@@ -3,14 +3,16 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { roles } from 'rzp/utils/constants';
+import { without } from 'rzp/utils/rzp-utils';
 import {
-  roles,
   resendInvitation,
   updateInvitation,
   cancelInvitation,
   fetchTeamDetails,
 } from 'merchant/modules/team';
 
+const ROLES = without(roles, 'owner');
 @connect(null, {
   fetchTeamDetails,
   resendInvitation,
@@ -89,8 +91,8 @@ export default class EditInvitation extends Component {
         <td>{invite.email}</td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {Object.keys(roles).map(role => (
-              <option key={role} value={role}>{roles[role].label}</option>
+            {Object.keys(ROLES).map(role => (
+              <option key={role} value={role}>{ROLES[role].label}</option>
             ))}
           </Field>
         </td>

@@ -2,23 +2,23 @@
 
 return [
     'defaults' => [
-        'guard' => 'user',
+        'guard'     => 'user',
         'passwords' => 'user',
     ],
 
     //Authenticating guards
     'guards' => [
         'admin' => [
-            'driver' => 'session',
-            'provider' => 'admins',
+            'driver'    => 'session',
+            'provider'  => 'admins',
         ],
         'user' =>[
-            'driver' => 'session',
-            'provider' => 'users',
+            'driver'    => 'session',
+            'provider'  => 'api_user',
         ],
         'api' => [
-            'driver' => 'api',
-            'provider' => 'api',
+            'driver'      => 'api',
+            'provider'    => 'api',
             'session_key' => 'api_admin',
         ]
     ],
@@ -27,15 +27,19 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\User\Entity::class,
+            'model'  => App\User\Entity::class,
         ],
         'admins' => [
             'driver' => 'eloquent',
-            'model' => App\Admin\Entity::class,
+            'model'  => App\Admin\Entity::class,
         ],
         'api' => [
             'driver' => 'api',
-            'model' => Illuminate\Auth\GenericUser::class
+            'model'  => Illuminate\Auth\GenericUser::class
+        ],
+        'api_user' => [
+            'driver' => 'api_user',
+            'model'  => Illuminate\Auth\GenericUser::class
         ]
     ],
 
@@ -43,13 +47,13 @@ return [
     'passwords' => [
         'user' => [
             'provider' => 'users',
-            'email' => 'emails.auth.reminder',
-            'table' => 'password_reminders',
-            'expire' => 1440,
+            'email'    => 'emails.auth.reminder',
+            'table'    => 'password_reminders',
+            'expire'   => 1440,
         ],
         'admins' => [
             'provider' => 'admins',
-            'expire' => 1440,
+            'expire'   => 1440,
         ]
     ],
 ];

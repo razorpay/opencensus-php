@@ -8,16 +8,17 @@ import {
   OrderStatusLabel,
   PaymentStatusLabel,
 } from 'merchant/components/StatusLabel';
-import TableBody from 'merchant/components/TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
+import { NavLink } from 'react-router-dom';
 
 const PaymentList = ({ payment }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/payments/${payment.id}`}>
-          {payment.id}
-        </a>
+        <NavLink to={`/payments/${payment.id}`}>
+          <code>{payment.id}</code>
+        </NavLink>
       </td>
       <td>
         <PaymentStatusLabel status={payment.status} />
@@ -33,21 +34,20 @@ export default props => {
   let { order, payments, isLoading, statusMsg } = props;
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-detail-container">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
+        : <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              Order ID: <b>{order.id}</b>
+            </div>
 
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                Order ID: <b>{order.id}</b>
-              </div>
-
+            <div class="SliderPanel__Body">
+              <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
-                <div class="list-group">
+                <div class="list-group details-row-container">
                   <DetailRow
                     label="Amount"
                     value={() => <Amount value={order.amount} />}
@@ -66,17 +66,22 @@ export default props => {
                         label="Payments"
                         onToggleClick={() => props.onTogglePayments(order)}
                       >
-                        <table class="table table-hover table-striped">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={payments.loading}
-                            rows={payments.items}
-                          >
-                            {payments.items.map(payment => (
-                              <PaymentList key={payment.id} payment={payment} />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={payments.loading}
+                              rows={payments.items}
+                            >
+                              {payments.items.map(payment => (
+                                <PaymentList
+                                  key={payment.id}
+                                  payment={payment}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : <DetailRow label="Payments" value="No Payments" />}
 

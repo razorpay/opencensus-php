@@ -25,7 +25,7 @@ export default ({ invoice, isSaving, onAddClick }) => {
             onClick={onAddClick}
             disabled={isSaving}
           >
-            <i class="fa fa-comment" />
+            <i class="icon icon-comment" />
             <span>Add Internal Note</span>
           </button>}
       </div>
@@ -39,7 +39,7 @@ export default ({ invoice, isSaving, onAddClick }) => {
           onClick={onAddClick}
           disabled={isSaving}
         >
-          <i class="fa fa-comment" />
+          <i class="icon icon-comment" />
           <span>Add Internal Note</span>
         </button>
       </div>

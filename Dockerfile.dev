@@ -1,0 +1,19 @@
+FROM razorpay/docker:base-nginx-php7-yarn
+
+RUN apk add --update lsof && \
+    cd /tmp && \
+    /usr/local/bin/composer selfupdate && \
+    /usr/local/bin/composer require "phpunit/phpunit:~5.3.4" --prefer-source --no-interaction && \
+    ln -s /tmp/vendor/bin/phpunit /usr/local/bin/phpunit
+
+VOLUME ["/app"]
+
+RUN chown -R nginx.nginx /app
+
+COPY ./dockerconf/entrypoint.sh /entrypoint.sh
+
+WORKDIR /app
+
+EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]

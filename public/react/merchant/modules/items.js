@@ -5,64 +5,42 @@ const ITEMS_FETCH = 'ITEMS_FETCH';
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';
 const ITEM_CREATE = 'ITEM_CREATE';
 const ITEM_EDIT = 'ITEM_EDIT';
-const ITEM_DELETED = 'ITEM_DELETED';
-const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM';
-const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT';
+const ITEM_DELETE = 'ITEM_DELETE';
 
 export const fetchItems = params => {
-  return dispatch => {
-    let item = new Item();
-    return dispatch({
-      type: ITEMS_FETCH,
-      payload: item.fetchAll(params),
-    });
+  let item = new Item();
+
+  return {
+    type: ITEMS_FETCH,
+    payload: item.fetchAll(params),
   };
 };
 
 export const fetchItemsForAutocomplete = () => {
-  return dispatch => {
-    let item = new Item();
-    return dispatch({
-      type: ITEMS_AUTOCOMPLETE_FETCH,
-      payload: item.fetchForAutocomplete(),
-    });
+  let item = new Item();
+
+  return {
+    type: ITEMS_AUTOCOMPLETE_FETCH,
+    payload: item.fetchForAutocomplete(),
   };
 };
 
 export const saveItem = params => {
-  return dispatch => {
-    let item = new Item(params);
-    return dispatch({
-      type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
-      payload: item.save(),
-    });
+  let item = new Item(params);
+
+  return {
+    type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
+    payload: item.save(),
   };
 };
 
 export const deleteItem = params => {
-  return dispatch => {
-    let item = new Item(params);
-    return item.delete().then(() => {
-      dispatch({
-        type: ITEM_DELETED,
-        payload: item,
-      });
-    });
-  };
-};
+  let item = new Item(params);
 
-export const highlightItemRow = params => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_ITEM,
-      payload: params,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_ITEM_HIGHLIGHT,
-      });
-    }, 6000);
+  return {
+    type: ITEM_DELETE,
+    payload: item.delete(),
+    id: item.id,
   };
 };
 
@@ -70,17 +48,13 @@ let initialState = {
   loading: true,
   items: [],
   count: 0,
-  highlightRowId: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${ITEMS_FETCH}::PENDING`:
     case `${ITEMS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return merge(state, {
-        loading: true,
-        highlightRowId: null,
-      });
+      return set(state, 'loading', true);
 
     case `${ITEMS_FETCH}::SUCCESS`:
     case `${ITEMS_AUTOCOMPLETE_FETCH}::SUCCESS`:
@@ -106,18 +80,9 @@ export default function(state = initialState, action) {
       );
       return set(state, `items.${itemIndex}`, action.payload);
 
-    case ITEM_DELETED:
-      var itemsList = remove(
-        state.items,
-        item => item.id === action.payload.id
-      );
+    case `${ITEM_DELETE}::SUCCESS`:
+      var itemsList = remove(state.items, item => item.id === action.id);
       return set(state, 'items', itemsList);
-
-    case HIGHLIGHT_ITEM:
-      return set(state, 'highlightRowId', action.payload.id);
-
-    case REMOVE_ITEM_HIGHLIGHT:
-      return set(state, 'highlightRowId', null);
 
     default:
       return state;

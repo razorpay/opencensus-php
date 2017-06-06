@@ -8,9 +8,10 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import TableBody from 'merchant/components/TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
+import { Link } from 'react-router-dom';
 
 const ListItem = ({ item, value }) => {
   return (
@@ -29,9 +30,9 @@ const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/refunds/${refund.id}`}>
-          {refund.id}
-        </a>
+        <Link to={`/refunds/${refund.id}`}>
+          <code>{refund.id}</code>
+        </Link>
       </td>
       <td>
         <Amount value={refund.amount} />
@@ -91,26 +92,25 @@ const keysNotShown = entity => {
 };
 
 export default props => {
-  let { payment, card, refunds, isLoading, statusMsg, ngRouter } = props;
+  let { payment, card, refunds, isLoading, statusMsg } = props;
 
   let otherKeys = keysNotShown(payment);
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-detail-container">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
+        : <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              Payment ID: <b>{payment.id}</b>
+            </div>
 
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                Payment ID: <b>{payment.id}</b>
-              </div>
-
+            <div class="SliderPanel__Body">
               <div class="panel-body">
-                <div class="list-group">
+                <Alert type={statusMsg.type} message={statusMsg.message} />
+                <div class="list-group details-row-container">
                   <DetailRow
                     label="Amount"
                     value={() => <Amount value={payment.amount} />}
@@ -142,21 +142,23 @@ export default props => {
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        <table class="table table-hover table-striped">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={card.loading}
-                            rows={Object.keys(card.details)}
-                          >
-                            {Object.keys(card.details).map(key => (
-                              <ListItem
-                                key={key}
-                                item={titleCase(key)}
-                                value={card.details[key]}
-                              />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={card.loading}
+                              rows={Object.keys(card.details)}
+                            >
+                              {Object.keys(card.details).map(key => (
+                                <ListItem
+                                  key={key}
+                                  item={titleCase(key)}
+                                  value={card.details[key]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : null}
 
@@ -200,7 +202,6 @@ export default props => {
                       label={key}
                       value={payment[key]}
                       entity={payment}
-                      ngRouter={ngRouter}
                     />
                   ))}
                   {payment.error_code
@@ -213,21 +214,23 @@ export default props => {
                       />
                     : null}
                   {Object.keys(payment.notes).length > 0
-                    ? <ListGroupToggler label="Notes">
-                        <table class="table table-hover table-striped">
-                          <TableBody
-                            colSpan={2}
-                            rows={Object.keys(payment.notes)}
-                          >
-                            {Object.keys(payment.notes).map(note => (
-                              <ListItem
-                                key={note}
-                                item={note}
-                                value={payment.notes[note]}
-                              />
-                            ))}
-                          </TableBody>
-                        </table>
+                    ? <ListGroupToggler label="Notes" show={true}>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              rows={Object.keys(payment.notes)}
+                            >
+                              {Object.keys(payment.notes).map(note => (
+                                <ListItem
+                                  key={note}
+                                  item={note}
+                                  value={payment.notes[note]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : <DetailRow label="Notes" value="No Notes" />}
 
@@ -245,20 +248,22 @@ export default props => {
                         label="Refunds"
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
-                        <table class="table table-hover table-striped">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={refunds.loading}
-                            rows={refunds.items}
-                          >
-                            {refunds.items.map(refund => (
-                              <RefundsListItem
-                                key={refund.id}
-                                refund={refund}
-                              />
-                            ))}
-                          </TableBody>
-                        </table>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={refunds.loading}
+                              rows={refunds.items}
+                            >
+                              {refunds.items.map(refund => (
+                                <RefundsListItem
+                                  key={refund.id}
+                                  refund={refund}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
                       </ListGroupToggler>
                     : <DetailRow label="Refunds" value="No Refunds" />}
                 </div>

@@ -37,7 +37,7 @@ export default class Clipboard extends Component {
           value={this.props.value}
           class="form-control Clipboard__input"
           readOnly={true}
-          ref={input => this.input = input}
+          ref={input => (this.input = input)}
           onFocus={this.selectValue}
         />
         {this.supported &&

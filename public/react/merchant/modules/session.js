@@ -1,33 +1,60 @@
 import ajax from 'merchant/utils/ajax';
+import User from 'merchant/models/User';
 import { set, merge } from 'rzp/utils/immutable';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 const UPDATE_SESSION = 'UPDATE_SESSION';
 const USER_FETCH = 'USER_FETCH';
+const ORG_FETCH = 'ORG_FETCH';
+export const USER_LOGOUT = 'USER_LOGOUT';
 
 export const updateSession = payload => {
-  return dispatch => {
-    return dispatch({
-      type: UPDATE_SESSION,
-      payload,
-    });
+  return {
+    type: UPDATE_SESSION,
+    payload,
   };
 };
 
 export const fetchUser = () => {
-  return dispatch => {
-    return dispatch({
-      type: USER_FETCH,
-      payload: ajax({
-        url: '/user',
-        appendModeInURL: false,
-      }),
+  let user = new User();
+
+  return {
+    type: USER_FETCH,
+    payload: user.fetch(),
+  };
+};
+
+export const fetchOrg = () => {
+  return {
+    type: ORG_FETCH,
+    payload: ajax({
+      url: '/admin/org',
+      appendModeInURL: false,
+    }),
+  };
+};
+
+export const switchMerchant = merchantId => {
+  return () => {
+    return ajax({
+      url: `/settings/merchants/switch/${merchantId}`,
+      appendModeInURL: false,
     });
   };
 };
 
+export const logout = () => {
+  return {
+    type: USER_LOGOUT,
+    payload: ajax({
+      url: '/user/logout',
+      appendModeInURL: false,
+    }),
+  };
+};
+
 let initialState = {
-  user: null,
+  user: new User(),
   org: {},
   mode: 'test',
   modeFormatted: 'Test',
@@ -43,6 +70,13 @@ export default function(state = initialState, action) {
 
     case `${USER_FETCH}::SUCCESS`:
       return set(state, 'user', action.payload.data);
+
+    case `${USER_FETCH}::ERROR`:
+    case `${USER_LOGOUT}::SUCCESS`:
+      return set(state, 'user', new User());
+
+    case `${ORG_FETCH}::SUCCESS`:
+      return set(state, 'org', action.payload.data);
 
     default:
       return state;

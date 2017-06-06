@@ -11,10 +11,10 @@ const PlansListItem = props => {
       <td class="row-action">
         <div class="btn-group">
           <button class="btn btn-xs btn-default" onClick={props.onEdit}>
-            <i class="fa fa-edit" />
+            <i class="icon icon-edit" />
           </button>
           <button class="btn btn-xs btn-danger" onClick={props.onDelete}>
-            <i class="fa fa-trash" />
+            <i class="icon icon-trash" />
           </button>
         </div>
       </td>

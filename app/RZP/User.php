@@ -2,6 +2,8 @@
 
 namespace App\RZP;
 
+use Razorpay\Api\Request as ApiRequest;
+
 class User extends Entity
 {
     public function create($params = null)
@@ -9,11 +11,23 @@ class User extends Entity
         return parent::create($params);
     }
 
-    public function edit($params, $userId)
+    public function edit($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId;
 
-        return $this->request('PUT', $relativeUrl, $params);
+        // For some reason unknown the normal way was not working
+        ApiRequest::addHeader('Content-Type', 'application/json');
+
+        $body = json_encode($params);
+
+        return $this->request('PUT', $relativeUrl, $body);
+    }
+
+    public function get($userId, array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().$userId;
+
+        return $this->request('GET', $relativeUrl, $params);
     }
 
     public function attach($userId, array $params)
@@ -44,10 +58,24 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl);
     }
 
+    public function confirmByData($params)
+    {
+        $relativeUrl = $this->getEntityUrl().'confirm_user_by_data';
+
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
     public function changePassword($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/password';
 
         return $this->request('PUT', $relativeUrl, $params);
+    }
+
+    public function login(array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().'login';
+
+        return $this->request('POST', $relativeUrl, $params);
     }
 }

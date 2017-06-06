@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Invitation;
-use App\Http\AppResponse;
 use Auth;
 use Input;
+use App\Invitation;
+use App\Http\AppResponse;
 
 class InvitationsController extends Controller
 {

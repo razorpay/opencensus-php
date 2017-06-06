@@ -1,6 +1,5 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import store from 'merchant/store';
 
 // `GenericEntity will replace the `Entity` when all routes are migrated to `/generic` routes
 export default class GenericEntity extends Entity {
@@ -87,9 +86,5 @@ export default class GenericEntity extends Entity {
       data,
       appendModeInQueryParam: true,
     });
-  }
-
-  getSession() {
-    return store.getState().session;
   }
 }

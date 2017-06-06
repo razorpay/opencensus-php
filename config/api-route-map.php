@@ -1,13 +1,17 @@
 <?php
 
+// We use {orgId} when frontend is not supposed to pass it
+// and resolve (on the backend) automagically.
+
 return [
     // auth
     'admin' => [
         'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
-        'org_get'                           => 'orgs/{orgId}',
-        'org_edit'                          => 'orgs/{orgId}',
-        'org_delete'                        => 'orgs/{orgId}',
+        // this should not be {orgId}
+        'org_get'                           => 'orgs/{id}',
+        'org_edit'                          => 'orgs/{id}',
+        'org_delete'                        => 'orgs/{id}',
 
         // Roles
         'role_get_multiple'                 => 'orgs/{orgId}/roles',
@@ -80,6 +84,11 @@ return [
         // Admin Actions
         // Create Schedule
         'schedule_create'                   => 'schedules',
+        'schedule_assign'                   => 'merchants/{id}/schedules',
+        'schedule_fetch_multiple'           => 'schedules',
+
+        // Add Adjustment
+        'adj_add'                           => 'adjustments',
     ],
 
     // auth
@@ -251,6 +260,26 @@ return [
             'url'       => 'items/{id}',
             'routeName' => 'item_delete'
         ],
+
+        // Transfers
+        'transfer_fetch_multiple'           => [
+            'url'       => 'transfers',
+            'routeName' => 'marketplace_read'
+        ],
+        'transfer_fetch'           => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_read'
+        ],
+
+        // Reversals
+        'reversal_fetch_multiple'           => [
+            'url'       => 'reversals',
+            'routeName' => 'marketplace_read'
+        ],
+        'reversal_fetch'           => [
+            'url'       => 'reversals/{id}',
+            'routeName' => 'marketplace_read'
+        ],
     ],
 
     // auth
@@ -263,6 +292,16 @@ return [
             'url'       => 'balance',
             'routeName' => 'balance_get'
         ],
+
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        // Refund Payment
+        'payment_refund'                    => 'payments/{id}/refund',
+        // Capture Payment
+        'payment_capture'                   => 'payments/{id}/capture',
+        // View Payment Refunds
+        'payment_fetch_refunds'             => 'payments/{id}/refunds',
     ],
 
     // auth
@@ -320,5 +359,32 @@ return [
         'merchant_put_payment_methods'      => 'merchants/{mid}/methods',
 
         'feature_get_multiple'              => 'features/{entityId}',
+
+        'merchant_activation_update'        => 'merchant/activation/{id}/update',
+
+        'merchant_assign_pricing'           => 'merchants/{id}/pricing',
+
+        // Banks
+        'merchant_get_banks'                => 'merchants/{id}/banks',
+        'merchant_set_banks'                => 'merchants/{id}/banks',
+
+        'merchant_fetch_bank_account'       => 'merchants/{id}/bank_account',
+        'merchant_add_bank_account'         => 'merchants/{id}/bank_account',
+
+        'merchant_edit'                     => 'merchants/{id}',
+
+        // Entities
+        'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
+        'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
+        'admin_fetch_entity_multiple'       => 'admin/{type}',
+
+        'merchant_action'                   => 'merchants/{id}/action',
+        'merchant_live_enable'              => 'merchants/{id}/live/enable',
+        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
+        // Gateway Rules
+        'gateway_create_rule'               => 'gateway/rules',
+        'gateway_update_rule'               => 'gateway/rules/{id}',
+        'gateway_delete_rule'               => 'gateway/rules/{id}',
     ],
 ];

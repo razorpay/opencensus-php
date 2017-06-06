@@ -4,9 +4,12 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
-import { roles, sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
+import { roles } from 'rzp/utils/constants';
+import { without } from 'rzp/utils/rzp-utils';
+import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
+const ROLES = without(roles, 'owner');
 const selector = formValueSelector('newInvitation');
 @connect(
   state => {
@@ -69,8 +72,8 @@ export default class NewInvitation extends Component {
           <div class="col-md-4">
             <div class="form-group">
               <Field name="role" component="select" class="form-control">
-                {Object.keys(roles).map(role => (
-                  <option key={role} value={role}>{roles[role].label}</option>
+                {Object.keys(ROLES).map(role => (
+                  <option key={role} value={role}>{ROLES[role].label}</option>
                 ))}
               </Field>
             </div>
@@ -90,9 +93,9 @@ export default class NewInvitation extends Component {
         </div>
 
         <div class="form-group">
-          {roles[selectedRole] && roles[selectedRole].desc
+          {ROLES[selectedRole] && ROLES[selectedRole].desc
             ? <div class="alert alert-info text-center">
-                {roles[selectedRole].desc}
+                {ROLES[selectedRole].desc}
               </div>
             : null}
         </div>

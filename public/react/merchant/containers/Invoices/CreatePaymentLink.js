@@ -93,13 +93,12 @@ export default class CreatePaymentLink extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <Alert type="error" message={this.state.errors} />
-
         <form
           class="form-horizontal payment-link-form"
           onSubmit={handleSubmit(this.save)}
         >
           <div class="modal-body">
+            <Alert type="error" message={this.state.errors} />
             {isNewForm &&
               <div>
                 <div class="form-group">
@@ -263,7 +262,7 @@ export default class CreatePaymentLink extends Component {
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-default btn-rounded"
+              class="btn btn-default"
               onClick={this.props.closeModal}
             >
               Cancel
@@ -271,7 +270,7 @@ export default class CreatePaymentLink extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               text="Save"
               pendingText="Saving..."
               onClick={handleSubmit(this.save)}

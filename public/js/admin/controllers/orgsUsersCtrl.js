@@ -24,6 +24,20 @@ app.controller('OrgsUsersCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.groups = organization.fetchGroups();
 
+    $scope.roleFormatter = function(roles) {
+      var formattedRoles = '--';
+
+      if (roles.length) {
+        formattedRoles = roles.map(function(ob) {
+          return ob.name;
+        });
+
+        formattedRoles = formattedRoles.join(', ');
+      }
+
+      return formattedRoles;
+    };
+
     organization.fetchRoles().then(function(roles) {
       $scope.roles = {};
 

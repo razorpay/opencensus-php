@@ -715,7 +715,8 @@
           module.exports = {
             dataProp: function(possiblyFalsy, alternative) {
               if (
-                possiblyFalsy === null || typeof possiblyFalsy === 'undefined'
+                possiblyFalsy === null ||
+                typeof possiblyFalsy === 'undefined'
               ) {
                 return alternative;
               }

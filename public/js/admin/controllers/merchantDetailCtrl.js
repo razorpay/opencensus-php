@@ -13,6 +13,9 @@ app
     '$upload',
     'organization',
     'displayValue',
+    'utils',
+    'utilMapping',
+    '$state',
     function(
       $scope,
       $http,
@@ -24,7 +27,10 @@ app
       admin,
       $upload,
       organization,
-      displayValue
+      displayValue,
+      utils,
+      utilMapping,
+      $state
     ) {
       admin.identity().then(function(data) {
         $scope.admin = data;
@@ -43,16 +49,65 @@ app
         },
       };
 
-      organization.fetchGroups().then(function(groups) {
-        $scope.groups = groups;
+      admin.identity().then(function(adminData) {
+        if (adminData.permissions.indexOf('view_all_group') !== -1) {
+          organization.fetchGroups().then(function(groups) {
+            $scope.groups = groups;
+          });
+        }
       });
+
+      $scope.networkMap = utilMapping.getMap('networkMap');
+      $scope.methodMap = utilMapping.getMap('methodMap');
       $scope.selected_groups = {};
 
       generateMerchant();
+      getGatewayRulesOfMerchant();
+
+      // Gateway map is dependent upon method
+      $scope.getGatewayLabel = function(method, gateway) {
+        var map = null;
+        switch (method) {
+          case 'card':
+            map = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            map = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            map = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            map = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            map = utilMapping.getMap('gatewayUpiMap');
+            break;
+        }
+
+        if (!map) {
+          return gateway;
+        }
+
+        return map[gateway];
+      };
+
       $scope.lockForm = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/lock'
-        );
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            locked: true,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -75,25 +130,37 @@ app
       };
 
       $scope.setInternational = function(value) {
-        var url = '/admin/merchants/' + $scope.merchant.id + '/international';
-        var request = $http.post(url, { international: value });
+        var action = '';
+        var succesMsg = '';
+        if (value === 1) {
+          action = 'enable_international';
+          succesMsg = 'Merchant International enabled successfully';
+        } else if (value === 0) {
+          action = 'disable_international';
+          succesMsg = 'Merchant International disabled successfully';
+        }
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: action },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
-              var action;
-              if (value === 1) {
-                $scope.merchant.details.international = true;
-                action = 'enabled';
-              } else {
-                $scope.merchant.details.international = false;
-                action = 'disabled';
-              }
+              $scope.alerts.addAlert('success', succesMsg, true);
 
-              $scope.alerts.addAlert(
-                'success',
-                'Merchant International ' + action + ' successfully',
-                true
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -160,7 +227,7 @@ app
                 true
               );
               $scope.merchant.details.tags = data.data.tags;
-              $scope.referer = getReferer(data.tags.tags);
+              $scope.referer = getReferer(data.data.tags);
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -215,9 +282,21 @@ app
       };
 
       $scope.unlockForm = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unlock'
-        );
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            locked: false,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -272,17 +351,93 @@ app
           });
       };
       $scope.holdMerchantFunds = function() {
-        var merchantEdit = { hold_funds: 1 };
-        $scope.editMerchant(merchantEdit);
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'hold_funds' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Merchant funds put on hold successfully',
+                true
+              );
+
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
       };
       $scope.releaseMerchantFunds = function() {
-        var merchantEdit = { hold_funds: 0 };
-        $scope.editMerchant(merchantEdit);
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'release_funds' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Merchant funds released successfully',
+                true
+              );
+
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
       };
       $scope.enableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/enable'
-        );
+        var data = {
+          route_name: 'merchant_live_enable',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -304,9 +459,17 @@ app
           });
       };
       $scope.disableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/disable'
-        );
+        var data = {
+          route_name: 'merchant_live_disable',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -353,11 +516,17 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert('success', msg, true);
-              $scope.merchant.details.methods = $.extend(
-                $scope.merchant.details.methods,
-                methods
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert('success', msg, true);
+                $scope.merchant.details.methods = $.extend(
+                  $scope.merchant.details.methods,
+                  methods
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -370,27 +539,78 @@ app
           });
       };
       $scope.setReceiptEmail = function(value) {
-        var editMerchant = { receipt_email_enabled: value };
-        $scope.editMerchant(editMerchant);
-      };
-      $scope.assignPricing = function(data) {
-        data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
-
+        var action = '';
+        var succesMsg = '';
+        if (value === 1) {
+          action = 'enable_receipt_emails';
+          succesMsg = 'Receipt email enabled successfully';
+        } else if (value === 0) {
+          action = 'disable_receipt_emails';
+          succesMsg = 'Receipt email disabled successfully';
+        }
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: action },
+        };
         var request = $http({
-          method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/pricing',
-          transformRequest: transformRequestAsFormPost,
+          method: 'put',
+          url: '/admin/generic',
           data: data,
         });
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Plan Assigned successfully',
-                true
-              );
-              $scope.merchant.pricing_plan = data.data;
+              $scope.alerts.addAlert('success', succesMsg, true);
+
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
+      $scope.assignPricing = function(data) {
+        data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
+
+        var pricingData = {
+          route_name: 'merchant_assign_pricing',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: pricingData,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Plan Assigned successfully',
+                  true
+                );
+                $scope.merchant.pricing_plan = data.data;
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -403,21 +623,32 @@ app
           });
       };
       $scope.assignSchedule = function(data) {
+        var data = {
+          route_name: 'schedule_assign',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/schedules',
-          transformRequest: transformRequestAsFormPost,
+          url: '/admin/generic',
           data: data,
         });
-
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Schedule Assigned successfully',
-                true
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Schedule Assigned successfully',
+                  true
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -468,19 +699,32 @@ app
             data.banks.push(e);
           }
         });
+        var data = {
+          route_name: 'merchant_set_banks',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/banks',
-          data: angular.toJson(data),
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Banks Assigned successfully',
-                true
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Banks Assigned successfully',
+                  true
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -493,20 +737,37 @@ app
           });
       };
       $scope.addAdjustment = function(adjustment) {
+        var mode = adjustment.mode;
+        delete adjustment.mode;
+
+        adjustment.merchant_id = $scope.merchant.id;
+
+        var data = {
+          route_name: 'adj_add',
+          merchant_id: $scope.merchant.id,
+          body: adjustment,
+          mode: mode,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/addadjustment',
-          data: angular.toJson(adjustment),
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Adjustment added successfully',
-                true
-              );
-              fetchBalance();
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Adjustment added successfully',
+                  true
+                );
+                fetchBalance();
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -523,14 +784,32 @@ app
      * Sends the final edit merchant ajax call
      * @param  Object merchant
      */
-      $scope.editMerchant = function(merchant, selected_groups) {
+      $scope.editMerchant = function(
+        merchant,
+        selected_groups,
+        selected_admins
+      ) {
         // If the second parameter was not provided
         // we don't try to edit the groups and don't
         // send the field instead.
+        for (var key in selected_groups) {
+          if (selected_groups.hasOwnProperty(key)) {
+            if (!selected_groups[key]) {
+              delete selected_groups[key];
+            }
+          }
+        }
+
         if (typeof selected_groups === 'undefined') {
           selected_groups = {};
         } else {
           merchant.groups = Object.keys(selected_groups);
+        }
+
+        if (typeof selected_admins === 'undefined') {
+          selected_admins = [];
+        } else {
+          merchant.admins = selected_admins;
         }
 
         var dropUnchangedFields = function(merchant) {
@@ -605,11 +884,19 @@ app
           });
       };
 
-      $scope.changeBankAccountDetails = function(bankAccount) {
+      var updateMerchantBankDetails = function(data) {
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'put',
-          url: '/admin/merchant/' + $scope.merchant.id + '/bank_account',
-          data: angular.toJson(bankAccount),
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
         });
         request
           .success(function(data) {
@@ -619,6 +906,56 @@ app
                 'Merchant bank details changed successfully',
                 true
               );
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
+      $scope.changeBankAccountDetails = function(bankAccount) {
+        delete bankAccount.beneficiary_address4;
+        delete bankAccount.beneficiary_code;
+        delete bankAccount.beneficiary_country;
+        delete bankAccount.created_at;
+        delete bankAccount.entity_id;
+        delete bankAccount.type;
+        delete bankAccount.id;
+        delete bankAccount.merchant_id;
+        delete bankAccount.mpin_set;
+
+        var merchantDetailsData = {
+          bank_branch_ifsc: bankAccount.ifsc_code,
+          bank_account_name: bankAccount.beneficiary_name,
+          bank_account_number: bankAccount.account_number,
+          bank_beneficiary_address1: bankAccount.beneficiary_address1,
+          bank_beneficiary_address2: bankAccount.beneficiary_address2,
+          bank_beneficiary_address3: bankAccount.beneficiary_address3,
+          bank_beneficiary_pin: bankAccount.beneficiary_pin,
+          bank_beneficiary_city: bankAccount.beneficiary_city,
+          bank_beneficiary_state: bankAccount.beneficiary_state,
+        };
+        var data = {
+          route_name: 'merchant_add_bank_account',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: bankAccount,
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              updateMerchantBankDetails(merchantDetailsData);
               $scope.merchant.details.merchant_details = data.data;
             } else {
               $scope.alerts.resetAlerts();
@@ -632,11 +969,19 @@ app
           });
       };
       $scope.editComment = function(new_comment) {
-        var data = { comment: new_comment };
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            comment: new_comment,
+          },
+        };
         var request = $http({
-          method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/comment/edit',
-          data: angular.toJson(data),
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
@@ -646,7 +991,7 @@ app
                 'Merchant comment edited successfully',
                 true
               );
-              $scope.merchant.details.merchant_details.comment = data.data;
+              $scope.merchant.details.merchant_details.comment = new_comment;
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -659,9 +1004,18 @@ app
           });
       };
       $scope.archiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/archive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'archive' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -670,7 +1024,14 @@ app
                 'Merchant archived successfully',
                 true
               );
-              $scope.merchant.details.archived_at = Date.now() / 1000;
+
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.merchant.details.archived_at = Date.now() / 1000;
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -683,9 +1044,18 @@ app
           });
       };
       $scope.unarchiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unarchive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'unarchive' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -708,9 +1078,18 @@ app
       };
 
       $scope.suspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/suspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'suspend' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -733,9 +1112,18 @@ app
       };
 
       $scope.unsuspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unsuspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'unsuspend' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -904,13 +1292,23 @@ app
             groups: function() {
               return jQuery.extend({}, $scope.groups);
             },
+            organization: function() {
+              return jQuery.extend({}, organization);
+            },
             selected_groups: function() {
               return $scope.selected_groups;
+            },
+            selected_admins: function() {
+              return $scope.selected_admins;
             },
           },
         });
         modalInstance.result.then(function(merchant) {
-          $scope.editMerchant(merchant, $scope.selected_groups);
+          $scope.editMerchant(
+            merchant,
+            $scope.selected_groups,
+            $scope.selected_admins
+          );
         }, $.noop);
       };
       $scope.openEditMerchantEmail = function() {
@@ -929,9 +1327,15 @@ app
       };
       $scope.openChangeBankAccountDetails = function() {
         $scope.merchant.bank_account = {};
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/bank_account'
-        );
+        var data = {
+          route_name: 'merchant_fetch_bank_account',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request.success(function(data) {
           if (data.success) {
             $scope.merchant.bank_account = data.data;
@@ -1046,11 +1450,17 @@ app
           });
           request.success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Credits added successfully',
-                true
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Credits added successfully',
+                  true
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1067,16 +1477,22 @@ app
           merchant_id: $scope.merchant.id,
           mode: mode,
         };
-        var request = $http.get('/admin/generic', {
-          params: data,
-        });
-        request.success(function(data) {
-          if (data.success) {
-            $scope.merchant.creditsLog = data.data;
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function(value) {
-              $scope.alerts.addAlert('danger', value);
+        admin.identity().then(function(adminData) {
+          if (
+            adminData.permissions.indexOf('view_merchant_credits_log') !== -1
+          ) {
+            var request = $http.get('/admin/generic', {
+              params: data,
+            });
+            request.success(function(data) {
+              if (data.success) {
+                $scope.merchant.creditsLog = data.data;
+              } else {
+                $scope.alerts.resetAlerts();
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
             });
           }
         });
@@ -1134,6 +1550,38 @@ app
         $scope.terminals = terminals;
       }
 
+      function getGatewayRulesOfMerchant() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'gateway_rule',
+          },
+          mode: $scope.mode,
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.gatewayRules = data.data.items;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
       function generateMerchant() {
         var request = $http.get('/admin/merchant/' + $scope.merchant.id);
         request
@@ -1144,6 +1592,7 @@ app
               $scope.merchant = data.data;
               sortTerminals();
               $scope.scheduleKeys = [
+                'schedule_name',
                 'type',
                 'method',
                 'schedule_id',
@@ -1156,10 +1605,15 @@ app
               $scope.marketplace = data.data.details.parent_id;
               $scope.merchant.details.international =
                 data.data.details.international;
-              var merchantGroups = data.data.groups || [];
-              merchantGroups.map(function(group) {
-                $scope.selected_groups[group.id] = true;
+
+              var merchantAdmins = data.data.details.admins || [];
+              $scope.selected_admins = [];
+
+              // Re-populated array with selected admin ids
+              merchantAdmins.map(function(admin) {
+                $scope.selected_admins.push(admin.id);
               });
+
               fetchBalance();
               getMerchantFeatures();
 
@@ -1193,28 +1647,33 @@ app
             '{entityId}': $scope.merchant.id,
           },
         };
-        var request = $http.get('/admin/generic', {
-          params: data,
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              // Full list of features which can be assigned to merchant
-              $scope.merchant.details.allowedFeatures = data.data.all_features;
-              // List of features currently assigned to merchant
-              $scope.merchant.details.features = getFeatureNames(
-                data.data.assigned_features
-              );
-            } else {
-              $scope.alerts.resetAlerts(true);
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
+        admin.identity().then(function(adminData) {
+          if (adminData.permissions.indexOf('view_merchant_features') !== -1) {
+            var request = $http.get('/admin/generic', {
+              params: data,
+            });
+            request
+              .success(function(data) {
+                if (data.success) {
+                  // Full list of features which can be assigned to merchant
+                  $scope.merchant.details.allowedFeatures =
+                    data.data.all_features;
+                  // List of features currently assigned to merchant
+                  $scope.merchant.details.features = getFeatureNames(
+                    data.data.assigned_features
+                  );
+                } else {
+                  $scope.alerts.resetAlerts(true);
+                  angular.forEach(data.errors, function(value) {
+                    $scope.alerts.addAlert('danger', value);
+                  });
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null);
               });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null);
-          });
+          }
+        });
       }
 
       /**
@@ -1256,55 +1715,50 @@ app
         $scope.merchant.credits = {};
         $scope.merchant.fee_credits = {};
 
-        // live mode
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'balance_fetch',
-            merchant_id: $scope.merchant.id,
-            mode: 'live',
-          },
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              $scope.merchant.balance.live = data.data.balance;
-              $scope.merchant.credits.live = data.data.credits;
-              $scope.merchant.fee_credits.live = data.data.fee_credits;
-            } else {
-              $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
+        admin.identity().then(function(adminData) {
+          if (adminData.permissions.indexOf('view_merchant_balance') !== -1) {
+            // live mode
+            var request = $http.get('/admin/generic', {
+              params: {
+                route_name: 'balance_fetch',
+                merchant_id: $scope.merchant.id,
+                mode: 'live',
+              },
+            });
+            request
+              .success(function(data) {
+                if (data.success) {
+                  $scope.merchant.balance.live = data.data.balance;
+                  $scope.merchant.credits.live = data.data.credits;
+                  $scope.merchant.fee_credits.live = data.data.fee_credits;
+                } else {
+                  $scope.alerts.resetAlerts();
+                  angular.forEach(data.errors, function(value) {
+                    $scope.alerts.addAlert('danger', value);
+                  });
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null, true);
               });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null, true);
-          });
 
-        // test mode
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'balance_fetch',
-            merchant_id: $scope.merchant.id,
-            mode: 'test',
-          },
+            // test mode
+            var request = $http.get('/admin/generic', {
+              params: {
+                route_name: 'balance_fetch',
+                merchant_id: $scope.merchant.id,
+                mode: 'test',
+              },
+            });
+            request.success(function(data) {
+              if (data.success) {
+                $scope.merchant.balance.test = data.data.balance;
+                $scope.merchant.credits.test = data.data.credits;
+                $scope.merchant.fee_credits.test = data.data.fee_credits;
+              }
+            });
+          }
         });
-        request
-          .success(function(data) {
-            if (data.success) {
-              $scope.merchant.balance.test = data.data.balance;
-              $scope.merchant.credits.test = data.data.credits;
-              $scope.merchant.fee_credits.test = data.data.fee_credits;
-            } else {
-              $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
-              });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null, true);
-          });
       }
     },
   ])
@@ -1330,11 +1784,6 @@ app
             $scope.pricing_plans[value.id] = value.name;
           }
           $scope.loading = false;
-
-          // Trigger select2 on the dropdown
-          setTimeout(function() {
-            $('select[name="pricing_plan_id"]').select2();
-          }, 100);
         }
       });
 
@@ -1360,10 +1809,12 @@ app
       // This lets us display methods that are not returned
       // by the API as false
       var forcedMethods = [
+        'aeps',
         'mobikwik',
         'payzapp',
         'payumoney',
         'olamoney',
+        'mpesa',
         'upi',
         'airtelmoney',
         'freecharge',
@@ -1452,7 +1903,15 @@ app
           $scope.bankdata[e] = value;
         });
       };
-      var request = $http.get('/admin/merchant/' + current + '/banks');
+      var data = {
+        route_name: 'merchant_get_banks',
+        url_params: {
+          '{id}': current,
+        },
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request.success(function(data) {
         if (data.success) {
           $scope.banks = data.data;
@@ -1491,18 +1950,72 @@ app
     'current',
     'riskMap',
     'groups',
+    'organization',
     'selected_groups',
+    'selected_admins',
     function(
       $scope,
       $modalInstance,
       current,
       riskMap,
       groups,
-      selected_groups
+      organization,
+      selected_groups,
+      selected_admins
     ) {
       $scope.riskMap = riskMap;
       $scope.groups = groups;
       $scope.selected_groups = selected_groups;
+      $scope.selected_admins = selected_admins;
+
+      $scope.adminMap = {};
+
+      // Fetch list of admins
+      organization.fetchUsers().then(function(users) {
+        $scope.admins = [];
+        users.forEach(function(admin) {
+          var adminObj = {
+            id: admin.id,
+            name: admin.name,
+            email: admin.email,
+          };
+
+          $scope.admins.push(adminObj); // create admin users object
+          $scope.adminMap[admin.id] = admin.name; // create mapping id - name
+        });
+      });
+
+      // Remove role which is already selected
+      $scope.removeUser = function(adminId) {
+        var index = $scope.selected_admins.indexOf(adminId);
+        if (index > -1) {
+          $scope.selected_admins.splice(index, 1);
+        }
+      };
+
+      // Remove user from the list if already added in selected_admins
+      $scope.filterAdmins = function(admin) {
+        if ($scope.selected_admins.indexOf(admin.id) > -1) {
+          return false;
+        }
+        return true;
+      };
+
+      // Attach event listener for selection on custom select tag
+      // Called from directive - roleSelect
+      $scope.initRoleSelector = function(element) {
+        element.on('select2:select', function(e) {
+          var elem = e.params.data.element;
+          var adminId = elem.value;
+
+          // Add user in selected_admins if not already added
+          if ($scope.selected_admins.indexOf(adminId) === -1) {
+            $scope.selected_admins.push(adminId);
+          }
+
+          element.val(null).trigger('change');
+        });
+      };
 
       if (!current.website) {
         current.website = current.merchant_details.business_website;
@@ -1882,17 +2395,42 @@ app
       $scope.schedule_id = current.schedule;
       $scope.method = current.method;
 
-      var request = $http.get('/admin/schedule/list');
-      request.success(function(data) {
-        angular.forEach(data.data.items, function(value) {
-          $scope.schedule_list[value.id] = value.name;
-        });
-
-        $scope.type_list = { Settlement: 'settlement' };
-        $scope.methods = [null, 'card', 'netbanking', 'emi', 'wallet', 'upi'];
-
-        $scope.loading = false;
+      var data = {
+        route_name: 'schedule_fetch_multiple',
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
       });
+      request
+        .success(function(data) {
+          $scope.loading = false;
+
+          if (data.success) {
+            angular.forEach(data.data.items, function(value) {
+              $scope.schedule_list[value.id] = value.name;
+            });
+
+            $scope.type_list = { Settlement: 'settlement' };
+            $scope.methods = [
+              null,
+              'card',
+              'netbanking',
+              'emi',
+              'wallet',
+              'upi',
+            ];
+          } else {
+            var errors = [];
+            angular.forEach(data.errors, function(value) {
+              errors.push(value);
+            });
+            $scope.scheduleFetchError = errors.join(', ');
+          }
+        })
+        .error(function() {
+          $scope.loading = false;
+          $scope.scheduleFetchError = 'Server Error';
+        });
 
       $scope.scheduleListLength = function() {
         return Object.keys($scope.schedule_list).length;

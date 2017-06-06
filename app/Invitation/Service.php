@@ -4,9 +4,10 @@ namespace App\Invitation;
 
 use Auth;
 use Mail;
+use Session;
 use App\Base;
-use App\Merchant;
 use App\User;
+use App\Merchant;
 use App\Invitation;
 use App\Mailers\MiscMailer;
 
@@ -20,10 +21,7 @@ class Service extends Base\Service
 
     public function __construct()
     {
-        if ($user = Auth::user())
-        {
-            $this->loggedInUser = $user;
-        }
+        $this->loggedInUser = Auth::user();
     }
 
     /**
@@ -34,6 +32,7 @@ class Service extends Base\Service
     public function sendInvitation($input)
     {
         $errors = [];
+
         $data = null;
 
         $validation = (new Validator)->validateInput('sendInvitation', $input);
@@ -44,7 +43,9 @@ class Service extends Base\Service
         }
 
         // We need to change this to currentLoggedInMerchant later
-        $merchant = $this->loggedInUser->getOwnerMerchant();
+        $merchant = $this->loggedInUser->ownerMerchant();
+
+        $merchant = Merchant\Entity::findOrSoftFail($merchant->id);
 
         if ($merchant === false)
         {
@@ -99,11 +100,11 @@ class Service extends Base\Service
      */
     public function resendInvitationForUser($inviteId)
     {
-        $error = array();
+        $error = [];
 
-        $invitation = $this->loggedInUser->currentMerchant->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
-        if (! $invitation)
+        if ($invitation === null)
         {
             $error[] = static::INVALID_INVITE;
 
@@ -124,7 +125,7 @@ class Service extends Base\Service
     {
         $error = [];
 
-        $invitation = $user->currentMerchant->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -147,16 +148,30 @@ class Service extends Base\Service
      */
     public function acceptInvitationForUser($inviteId, $user)
     {
-        $invitation = $user->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
             return [static::INVALID_INVITE];
         }
 
-        $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+        $user = User\Entity::find($user->id);
 
-        $invitation->delete();
+        list($error, $response) = (new User\Service)->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
+
+        if (empty($error) === true)
+        {
+            $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+
+            list($error, $genericUser) = (new User\Service)->getUserFromApi($user->id);
+
+            if (empty($error) === true)
+            {
+                Session::put('dashboard_user_payload', $genericUser);
+            }
+
+            $invitation->delete();
+        }
     }
 
     /**
@@ -177,7 +192,7 @@ class Service extends Base\Service
             $error[] = $validation->messages();
         }
 
-        $invitation = $user->currentMerchant()->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -200,7 +215,7 @@ class Service extends Base\Service
      */
     public function rejectInvitationForUser($inviteId, $user)
     {
-        $invitation = $user->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -240,7 +255,9 @@ class Service extends Base\Service
      */
     public function getPendingInvitationsForUser()
     {
-        $invitations = $this->loggedInUser->invitations()->with('merchant')->get();
+        $user = User\Entity::find($this->loggedInUser->id);
+
+        $invitations = $user->invitations()->with('merchant')->get();
 
         foreach ($invitations as $invite)
         {
@@ -256,8 +273,12 @@ class Service extends Base\Service
     {
         $mailer = new MiscMailer();
 
-        $mailer
-            ->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
-            ->queueAndDeliver();
+        $mailer->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
+               ->queueAndDeliver();
+    }
+
+    public function getInvitationById(string $inviteId)
+    {
+        return Entity::find($inviteId);
     }
 }

@@ -4,41 +4,22 @@ import { set, merge, unshift } from 'rzp/utils/immutable';
 const WEBHOOKS_FETCH = 'WEBHOOKS_FETCH';
 const WEBHOOK_CREATE = 'WEBHOOK_CREATE';
 const WEBHOOK_EDIT = 'WEBHOOK_EDIT';
-const HIGHLIGHT_WEBHOOK = 'HIGHLIGHT_WEBHOOK';
-const REMOVE_WEBHOOK_HIGHLIGHT = 'REMOVE_WEBHOOK_HIGHLIGHT';
 
 export const fetchWebhooks = params => {
-  return dispatch => {
-    let webhook = new Webhook(params);
-    return dispatch({
-      type: WEBHOOKS_FETCH,
-      payload: webhook.fetchAll(params),
-    });
+  let webhook = new Webhook(params);
+
+  return {
+    type: WEBHOOKS_FETCH,
+    payload: webhook.fetchAll(params),
   };
 };
 
 export const saveWebhook = params => {
-  return dispatch => {
-    let webhook = new Webhook(params);
-    return dispatch({
-      type: webhook.isNew ? WEBHOOK_CREATE : WEBHOOK_EDIT,
-      payload: webhook.save(),
-    });
-  };
-};
+  let webhook = new Webhook(params);
 
-export const highlightWebhookRow = webhook => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_WEBHOOK,
-      payload: webhook,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_WEBHOOK_HIGHLIGHT,
-      });
-    }, 5000);
+  return {
+    type: webhook.isNew ? WEBHOOK_CREATE : WEBHOOK_EDIT,
+    payload: webhook.save(),
   };
 };
 
@@ -47,7 +28,6 @@ let initialState = {
   webhooks: [],
   count: 0,
   error: null,
-  highlightRowId: null,
 };
 
 export default function(state = initialState, action) {
@@ -77,12 +57,6 @@ export default function(state = initialState, action) {
         webhook => webhook.id === action.payload.id
       );
       return set(state, `webhooks.${webhookIndex}`, action.payload);
-
-    case HIGHLIGHT_WEBHOOK:
-      return set(state, 'highlightRowId', action.payload.id);
-
-    case REMOVE_WEBHOOK_HIGHLIGHT:
-      return set(state, 'highlightRowId', null);
 
     default:
       return state;

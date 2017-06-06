@@ -3,18 +3,18 @@
 namespace App\MerchantDetails;
 
 use Auth;
-use Aws\Laravel\AwsFacade as AWS;
-use Aws\Sdk;
-use Illuminate\Support\Facades\App as App;
-use Carbon\Carbon;
-use Config;
 use Mail;
+use Queue;
+use Trace;
+use Config;
+use Aws\Sdk;
+use Requests;
 use App\Base;
 use App\Merchant;
-use Queue;
+use Carbon\Carbon;
 use App\Mailers\MerchantMailer;
-use Requests;
-use Trace;
+use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
@@ -138,7 +138,7 @@ class Service extends Base\Service
 
         if ($user)
         {
-            $this->merchant = $user->currentMerchant;
+            $this->merchant = $user->currentMerchant();
 
             $this->user = $user;
         }
@@ -215,7 +215,8 @@ class Service extends Base\Service
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
         //
-        if (($this->merchant->isActive()) and ($step === $bankStep))
+
+        if (($this->merchant->activated === true) and ($step === $bankStep))
         {
             return ["Bank account updation not allowed after account is updated"];
         }
@@ -351,7 +352,7 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        $mailer = new MerchantMailer($user->currentMerchant, $merchantDetails);
+        $mailer = new MerchantMailer($user->currentMerchant(), $merchantDetails);
 
         // For marketplace linked accounts - skip sending this email
         if ($this->isLinkedAccount() === false)
@@ -489,11 +490,11 @@ class Service extends Base\Service
 
     protected function uploadFileToAPI(array $input)
     {
-        $this->setApiCredentials($this->merchant['id']);
+        $this->setApiCredentials($this->merchant->id);
 
         $response = $this->api
                          ->merchantDetail
-                         ->uploadActivationFile($this->merchant['id'], $input);
+                         ->uploadActivationFile($this->merchant->id, $input);
     }
 
     protected function unsetExtraValues(array $input)

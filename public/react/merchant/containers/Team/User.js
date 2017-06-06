@@ -3,13 +3,15 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { roles } from 'rzp/utils/constants';
+import { without } from 'rzp/utils/rzp-utils';
 import {
-  roles,
   updateUser,
   removeUser,
   fetchTeamDetails,
 } from 'merchant/modules/team';
 
+const ROLES = without(roles, 'owner');
 @connect(null, {
   fetchTeamDetails,
   updateUser,
@@ -69,8 +71,8 @@ export default class EditUser extends Component {
         <td>{user.name}</td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {Object.keys(roles).map(role => (
-              <option key={role} value={role}>{roles[role].label}</option>
+            {Object.keys(ROLES).map(role => (
+              <option key={role} value={role}>{ROLES[role].label}</option>
             ))}
           </Field>
         </td>

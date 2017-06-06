@@ -15,11 +15,11 @@ export default class ShowWhen extends Component {
     let myRoles = myRole.split(' ');
     let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
-    let tags = (user && user.tags) || [];
+    let tags = (user.isAuthenticated && user.tags) || [];
     let userRole;
 
-    if (user) {
-      userRole = user.merchants[user.id].pivot.role;
+    if (user.isAuthenticated) {
+      userRole = user.merchants[user.id].role;
     }
 
     if (
