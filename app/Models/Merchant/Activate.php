@@ -89,8 +89,8 @@ class Activate extends Base\Core
         $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
         $org = $merchant->org;
-
-        $subjectName = $merchant->getBillingLabelElseName();
+      
+        $subjectName = $merchant->getBillingLabel();
 
         if ($org === null)
         {

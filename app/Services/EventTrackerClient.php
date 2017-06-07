@@ -305,7 +305,7 @@ class EventTrackerClient extends Base\Core
             $properties = [
                 'payment_id'        => $payment->getPublicId(),
                 'merchant_id'       => $payment->merchant->getId(),
-                'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
+                'merchant_name'     => $payment->merchant->getBillingLabel(),
                 'amount'            => $payment->getAmount(),
                 'method'            => $payment->getMethod(),
                 'requestId'         => $this->request->getId(),

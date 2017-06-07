@@ -27,9 +27,9 @@ return [
     'matchSettlementAttempt' => [
         'channel'           => 'kotak',
         'version'           => 'V3',
-        'bank_status_code'  => 'P',
-        'status'            => 'created',
+        'merchant_id'       => '10000000000000',
         'bank_status_code'  => null,
+        'status'            => 'created',
         'utr'               => null,
         'remarks'           => null,
         'failure_reason'    => null,

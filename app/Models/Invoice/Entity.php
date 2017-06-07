@@ -528,7 +528,7 @@ class Entity extends Base\PublicEntity
         //
 
         $receipt = $this->getReceiptElsePublicId();
-        $from    = $this->merchant->getBillingLabelElseName();
+        $from    = $this->merchant->getBillingLabel();
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
 
         return sanitizeFilename("Invoice $receipt from $from ($status)");
