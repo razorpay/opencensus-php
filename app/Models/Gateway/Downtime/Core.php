@@ -109,7 +109,7 @@ class Core extends Base\Core
      * 3. `partial` : false (since we do not want to filter
      *                       downtimes with low success rate)
      *
-     * Fields for netbanking :
+     * Fields for netbanking : (not implemented, keeping for ref)
      * 1. `method` : netbanking
      * 2. `issuer` : bank name
      *
@@ -149,13 +149,6 @@ class Core extends Base\Core
                 $this->fillCardDetails($params, $payment);
 
                 break;
-
-            case Payment\Method::NETBANKING:
-
-                $params[Entity::METHOD] = Payment\Method::NETBANKING;
-                $params[Entity::ISSUER] = [$payment->getBank(), Entity::ALL];
-
-                break;
         }
 
         return $params;
@@ -171,7 +164,7 @@ class Core extends Base\Core
     {
         $params[Entity::METHOD] = [Payment\Method::CARD, Payment\Method::EMI];
 
-        $params[Entity::NETWORK] = [strtoupper($payment->card->getNetwork()), Entity::ALL];
+        $params[Entity::NETWORK] = [$payment->card->getNetworkCode(), Entity::ALL];
 
         $params[Entity::CARD_TYPE] = [$payment->card->getType(), Entity::ALL];
 
@@ -181,7 +174,6 @@ class Core extends Base\Core
         {
             $params[Entity::ISSUER] = [$issuer, Entity::ALL];
         }
-
         else
         {
             $params[Entity::ISSUER] = Entity::ALL;

@@ -2,14 +2,11 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Gateway\Downtime;
+use RZP\Trace\TraceCode;
 
-/*
- * Documentation here :
- * https://docs.google.com/document/d/1bsx1t21Q_n5cQBnM_REyolGbn92Fzscu0LrRYiKqqsU/
- *
- */
 class GatewayDowntimeSorter extends Terminal\Sorter
 {
     protected $properties = [
@@ -17,7 +14,17 @@ class GatewayDowntimeSorter extends Terminal\Sorter
     ];
 
     /**
+     * Lists down the methods for which `downtimeSorter` is applicable
+     */
+    protected $applicableForMethods = [
+        Payment\Method::CARD,
+        Payment\Method::EMI,
+    ];
+
+    /**
      * Sorts the terminals wrt the downtimes.
+     *
+     * Presently, we only sort terminals for card & emi payments
      *
      * The terminals whose gateways are down,
      * will be pushed to the bottom of the list.
@@ -32,11 +39,43 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      */
     public function downtimeSorter(array $terminals, array $input) : array
     {
-        $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals,$input);
+        if (in_array($input['payment']->getMethod(), $this->applicableForMethods) === false)
+        {
+            return $terminals;
+        }
 
-        $sortedTerminals = $this->sortTerminals($terminals, $downtimes);
+        try
+        {
+            // @note: Temporarily setting verbose to true here
+            // for logging of terminals of downtime sorter
+            $verbose = true;
 
-        return $sortedTerminals;
+            $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals,$input);
+
+            if (count($downtimes) === 0)
+            {
+                return $terminals;
+            }
+
+            $sortedTerminals = $this->sortTerminals($terminals, $downtimes);
+
+            if ($verbose === true)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_DOWNTIME_SORTING,
+                    [
+                        'downtimes'        => $downtimes->pluck(Downtime\Entity::ID)->toArray(),
+                        'sorted_terminals' => array_pluck($terminals, 'id'),
+                    ]);
+            }
+
+            return $sortedTerminals;
+
+        }
+        catch (Exception $e)
+        {
+            return $terminals;
+        }
     }
 
     /**
@@ -51,12 +90,9 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      */
     protected function sortTerminals(array $terminals, $downtimes) : array
     {
-        if (count($downtimes) === 0)
-        {
-            return $terminals;
-        }
-
         $demotedTerminals = [];
+
+        $nonDemotedTerminals = [];
 
         foreach ($terminals as $terminal)
         {
@@ -72,6 +108,8 @@ class GatewayDowntimeSorter extends Terminal\Sorter
                 if ($demoteTerminal === true)
                 {
                     $demotedTerminals[] = $terminal;
+
+                    break;
                 }
             }
         }
@@ -95,13 +133,9 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      */
     protected function shouldDemoteTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime) : bool
     {
-        if ($terminal->getId() === $downtime->getTerminalId())
-        {
-            return true;
-        }
-
-        if (($terminal->getGateway() === $downtime->getGateway()) or
-            ($downtime->getGateway() === Downtime\Entity::ALL))
+        if (($downtime->getGateway() === Downtime\Entity::ALL) or
+            ($terminal->getGateway() === $downtime->getGateway()) or
+            ($terminal->getId() === $downtime->getTerminalId()))
         {
             return true;
         }

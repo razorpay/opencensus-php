@@ -413,6 +413,7 @@ class TraceCode
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
     const GATEWAY_HDFC_CAPTURED                     = 'GATEWAY_HDFC_CAPTURED';
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
+    const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';

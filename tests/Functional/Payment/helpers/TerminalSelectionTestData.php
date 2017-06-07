@@ -20,43 +20,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL,
         ],
     ],
-
-    'ebsDowntimeData' => [
-        'gateway'     => 'ebs',
-        'reason_code' => 'LOW_SUCCESS_RATE',
-        'method'      => 'netbanking',
-        'comment'     => 'Test Reason',
-        'source'      => 'statuscake',
-        'issuer'      => 'ALL'
-    ],
-
-    'allNetbankingDowntimeData' => [
-        'gateway'     => 'ALL',
-        'reason_code' => 'LOW_SUCCESS_RATE',
-        'method'      => 'netbanking',
-        'issuer'      => 'ALL',
-        'source'      => 'other'
-    ],
-
-    'kkbkDowntimeData' => [
-        'gateway'     => 'netbanking_kotak',
-        'reason_code' => 'LOW_SUCCESS_RATE',
-        'method'      => 'netbanking',
-        'issuer'      => 'KKBK',
-        'source'      => 'other'
-    ],
-
-    'axisMigsAllNetworkDowntimeData' => [
-        'gateway'     => 'axis_migs',
-        'reason_code' => 'LOW_SUCCESS_RATE',
-        'network'     => 'ALL',
-        'source'      => 'other',
-    ],
-
-    'hdfcVisaDowntimeData' => [
-        'gateway'     => 'hdfc',
-        'reason_code' => 'LOW_SUCCESS_RATE',
-        'network'     => 'VISA',
-        'issuer'      => 'HDFC',
-    ],
 ];

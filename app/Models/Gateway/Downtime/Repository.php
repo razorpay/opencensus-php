@@ -118,38 +118,29 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildFetchQuery($query, $params);
+        foreach ($params as $key => $value)
+        {
+            // using this so we can add `end` & `begin` params
+            // to query using addQueryParamEnd / addQueryParamBegin
+            $func = 'addQueryParam' . studly_case($key);
+
+            if (method_exists($this, $func))
+            {
+                $this->$func($query, $params);
+            }
+            // case when the comparison has to be on an array of values
+            else if (is_array($value) === true)
+            {
+                $query->whereIn($key, $value);
+            }
+            // simple '=' comparator
+            else
+            {
+                $query->where($key, '=', $value);
+            }
+        }
 
         return $query->get();
-    }
-
-    /**
-     * Helper function to add param valus to the query
-     *
-     * Overrides the default `addQueryParamDefault` in Repository Fetch
-     * because we need to handle the case where the comparison could be
-     * on an array of values, e.g. : terminal gateways, networks etc.
-     *
-     * @param $query \RZP\Base\BuilderEx
-     * @param $params array
-     * @param $key string
-     */
-    protected function addQueryParamDefault($query, $params, $key)
-    {
-        $value = $params[$key];
-
-        if ($value === 'null')
-        {
-            $query->whereNull($key);
-        }
-        else if (is_array($value) === true)
-        {
-            $query->whereIn($key, $value);
-        }
-        else
-        {
-            $query->where($key, '=', $value);
-        }
     }
 
     protected function buildQuery(
@@ -171,8 +162,11 @@ class Repository extends Base\Repository
         //
         // If an end time does exist, downtime should have ended after
         // the start of the query begin time for there to be an overlap
-        $query->whereNull(Entity::END)
-              ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
+        $query->where(function ($query) use ($params)
+        {
+            $query->whereNull(Entity::END)
+                  ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
+        });
     }
 
     protected function addQueryParamEnd($query, $params)
