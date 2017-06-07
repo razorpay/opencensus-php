@@ -119,6 +119,10 @@ class Entity extends Base\PublicEntity
     //
     const DEFAULT_EXPIRY_DAYS      = 60;
 
+    // ------------------------ Relation Keys ------------------------
+
+    const ORDER                    = 'order';
+
     protected static $sign         = 'inv';
 
     protected $entity              = 'invoice';
