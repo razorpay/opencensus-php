@@ -27,7 +27,8 @@ class CreateCreditsTable extends Migration
 
             $table->char(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
 
-            $table->char(Credits::PROMOTION_ID, Merchant\Entity::ID_LENGTH);
+            $table->char(Credits::PROMOTION_ID, Merchant\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->integer(Credits::VALUE);
 
@@ -50,6 +51,11 @@ class CreateCreditsTable extends Migration
                 ->references(Merchant\Entity::ID)
                 ->on(Table::MERCHANT)
                 ->on_delete('restrict');
+
+            $table->foreign(Credits::PROMOTION_ID)
+                ->references(Promotion\Entity::ID)
+                ->on(Table::PROMOTION)
+                ->on_delete('restrict');
         });
     }
 
@@ -64,6 +70,9 @@ class CreateCreditsTable extends Migration
         {
             $table->dropForeign(
                 Table::CREDITS.'_'.Credits::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::PROMOTION.'_'.Credits::PROMOTION_ID.'_foreign');
         });
 
         Schema::drop(Table::CREDITS);
