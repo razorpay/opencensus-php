@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Schedule;
+use RZP\Models\Merchant\Credits\Entity as Credits;
 use RZP\Models\Promotion\Entity as Promotion;
 
 class CreatePromotionsTable extends Migration
@@ -49,6 +50,16 @@ class CreatePromotionsTable extends Migration
                   ->on(Table::SCHEDULE)
                   ->on_delete('restrict');
         });
+
+        // This needs to be done here because migrations are run in order of
+        // timestamps and promotions table gets created after credits.
+        Schema::table(Table::CREDITS, function(Blueprint $table)
+        {
+            $table->foreign(Credits::PROMOTION_ID)
+                ->references(Promotion::ID)
+                ->on(Table::PROMOTION)
+                ->on_delete('restrict');
+        });
     }
 
     /**
@@ -61,6 +72,12 @@ class CreatePromotionsTable extends Migration
         Schema::table(Table::PROMOTION, function($table)
         {
             $table->dropForeign(Table::PROMOTION.'_'.Promotion::SCHEDULE_ID.'_foreign');
+        });
+
+        Schema::table(Table::CREDITS, function($table)
+        {
+            $table->dropForeign(
+                Table::PROMOTION.'_'.Credits::PROMOTION_ID.'_foreign');
         });
 
         Schema::drop(Table::PROMOTION);

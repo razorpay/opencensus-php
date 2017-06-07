@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Credits\Transaction;
+namespace RZP\Models\Merchant\Credits\Transaction;
 
 use RZP\Models\Base;
 
