@@ -3,6 +3,8 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const bootstrap = require('bootstrap-styl');
 
@@ -22,10 +24,6 @@ const webpackConfig = {
     extensions: ['.js', '.jsx', '.styl', '.jst'],
   },
   module: {},
-  externals: {
-    jquery: 'jQuery',
-  },
-
   stats: {
     children: false,
   },
@@ -35,6 +33,28 @@ const webpackConfig = {
 // Entry Points
 // ------------------------------------
 webpackConfig.entry = {
+  vendor: [
+    'jquery',
+    'chart.js',
+    'classnames',
+    'moment',
+    'react',
+    'react-addons-shallow-compare',
+    'react-async-button',
+    'react-chartjs-2',
+    'react-dates',
+    'react-dom',
+    'react-modal',
+    'react-power-select',
+    'react-redux',
+    'react-router-dom',
+    'react-simple-dropdown',
+    'react-tabs',
+    'react-tether',
+    'react-time',
+    'redux',
+    'redux-form',
+  ],
   merchant: './merchant/index',
 };
 
@@ -42,8 +62,9 @@ webpackConfig.entry = {
 // Bundle Output
 // ------------------------------------
 webpackConfig.output = {
+  publicPath: '/dist/',
   path: path.resolve(__dirname, 'public/dist'),
-  filename: '[name]_react.js',
+  filename: '[name]_[chunkhash].js',
 };
 
 // ------------------------------------
@@ -122,12 +143,27 @@ webpackConfig.module.rules = [
 webpackConfig.plugins = [
   new CaseSensitivePathsPlugin(),
 
+  new webpack.optimize.CommonsChunkPlugin({
+    names: ['vendor', 'manifest'], // Specify the common bundle's name.
+  }),
+
   new webpack.ProvidePlugin({
     React: 'react',
+    $: 'jquery',
   }),
 
   new ExtractTextPlugin({
-    filename: '[name]_react.css',
+    filename: '[name]_[chunkhash].css',
+  }),
+
+  new HtmlWebpackPlugin({
+    template: path.resolve(
+      __dirname + '/resources/views/merchant/getIndex.blade.php'
+    ),
+    filename: path.resolve(
+      __dirname + '/resources/views/merchant/tmpgetIndex.blade.php'
+    ),
+    inject: false,
   }),
 ];
 
