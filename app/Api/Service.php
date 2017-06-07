@@ -279,7 +279,16 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            if (isset($params['user']) && $params['user'] === 'admin')
+            {
+                $this->setAdminCredentials();
+                unset($params['user']);
+            }
+            else
+            {
+                $this->setApiCredentials($this->merchantId, $mode);
+            }
+
             $data = $this->api
                          ->transaction
                          ->generateEntityReportFile($resource, $params)
