@@ -1728,7 +1728,6 @@ app
 
       // Get offers of merchant to display in the list
       function getOffersOfMerchant() {
-        console.log($scope.mode);
         var data = {
           route_name: 'admin_fetch_entity_multiple',
           url_params: {
@@ -1745,8 +1744,6 @@ app
 
         request
           .success(function(data) {
-            console.log('MODE', $scope.mode);
-
             if (data.success || true) {
               $scope.merchantOffers = data.data.items;
             } else {
@@ -1764,8 +1761,6 @@ app
 
       // Create merchant offer from the modal form
       $scope.createMerchantOffer = function(offer) {
-        console.log('OFFER', offer);
-
         var request = $http({
           url: 'admin/generic',
           method: 'POST',
@@ -2303,17 +2298,7 @@ app
     'dateFactory',
     '$modalInstance',
     function($scope, dateFactory, $modalInstance) {
-      $scope.offer = {
-        name: 'some special icici offer',
-        payment_method: 'card',
-        iins: '401200,4011111',
-        percent_rate: 31.12,
-        ends_at: 1501353000000,
-        max_payment_count: 2,
-        display_text: '10% discount on all ICICI credit and debit cards',
-        error_message: 'This offer is not valid on your card. Retry using an ICICI card.',
-        terms: 'some terms',
-      };
+      $scope.offer = {};
 
       $scope.date = dateFactory.getHandler($scope);
       $scope.date.dateOptions['showWeeks'] = false;
@@ -2329,7 +2314,6 @@ app
         var offer = Object.assign({}, $scope.offer);
         // 1. Convert command separate values to array
         if ($scope.offer['iins']) {
-          console.log('OFFER, TYPE OF', offer['iins'], typeof offer['iins']);
           offer['iins'] = offer['iins'].split(',');
         }
 
