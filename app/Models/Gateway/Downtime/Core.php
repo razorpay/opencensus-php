@@ -190,7 +190,7 @@ class Core extends Base\Core
      * @param $terminals array of Terminal\Entity
      * @return $terminalGateways array
      */
-    protected function getTerminalGateways($terminals)
+    protected function getTerminalGateways(array $terminals) : array
     {
         $gateways = array_pluck($terminals, 'gateway');
 

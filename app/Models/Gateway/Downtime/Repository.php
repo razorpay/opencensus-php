@@ -108,13 +108,10 @@ class Repository extends Base\Repository
      * Params are provided as [key => val]
      * where 'val' can either be an array or string
      *
-     * $timestamp is provided separately because
-     * it has to be compared to 'begin' & 'end'
-     *
      * @param $params array
      * @return collection
      */
-    public function fetchApplicableDowntimesForPayment(array $params)
+    public function fetchApplicableDowntimesForPayment(array $params) : Base\PublicCollection
     {
         $query = $this->newQuery();
 
