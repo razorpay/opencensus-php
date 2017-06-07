@@ -387,33 +387,6 @@ class MerchantTest extends TestCase
 
         $activatedAt = time();
 
-        // \Mail::shouldReceive('queue')
-        //       ->once()
-        //       ->with(
-        //             Mockery::any(),
-        //             Mockery::on(function ($data)
-        //             {
-        //                 $this->assertNotNull($data['merchant']);
-        //                 $this->assertNotNull($data['rules']);
-        //                 $this->assertNotNull($data['subject']);
-
-        //                 $this->assertNotNull($data['merchant']['name']);
-        //                 $this->assertNotNull($data['merchant']['website']);
-        //                 $this->assertNotNull($data['merchant']['billing_label']);
-        //                 $this->assertNotNull($data['merchant']['email']);
-        //                 $this->assertNotNull($data['merchant']['org']);
-
-        //                 $this->assertNotNull($data['merchant']['org']['business_name']);
-        //                 $this->assertNotNull($data['merchant']['org']['hostname']);
-        //                 $this->assertNotNull($data['merchant']['org']['custom_code']);
-
-        //                 $this->assertNotNull($data['rules']['amountRangeRules']);
-        //                 $this->assertNotNull($data['rules']['otherRules']);
-
-        //                 return true;
-        //             }),
-        //             Mockery::any());
-
         $content = $this->startTest();
 
         $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
@@ -428,7 +401,29 @@ class MerchantTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
 
-        Mail::assertSent(ActivationMail::class);
+        Mail::assertSent(ActivationMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotNull($mailData['merchant']);
+            $this->assertNotNull($mailData['rules']);
+            $this->assertNotNull($mailData['subject']);
+
+            $this->assertNotNull($mailData['merchant']['name']);
+            $this->assertNotNull($mailData['merchant']['website']);
+            $this->assertNotNull($mailData['merchant']['billing_label']);
+            $this->assertNotNull($mailData['merchant']['email']);
+            $this->assertNotNull($mailData['merchant']['org']);
+
+            $this->assertNotNull($mailData['merchant']['org']['business_name']);
+            $this->assertNotNull($mailData['merchant']['org']['hostname']);
+            $this->assertNotNull($mailData['merchant']['org']['custom_code']);
+
+            $this->assertNotNull($mailData['rules']['amountRangeRules']);
+            $this->assertNotNull($mailData['rules']['otherRules']);
+
+            return true;
+        });
 
         // Because rest of the tests require appAuth, reset it back
         $this->ba->appAuthLive();
