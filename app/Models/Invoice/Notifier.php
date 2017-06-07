@@ -468,7 +468,7 @@ class Notifier extends Base\Core
             'source' => 'api.invoice',
             'template' => 'sms.invoice',
             'params' => [
-                'merchant_name' => $merchant->getBillingLabelElseName(),
+                'merchant_name' => $merchant->getBillingLabel(),
                 'invoice_link'  => $this->invoice->getShortUrl(),
                 'amount'        => $this->invoice->getAmount() / 100,
             ]
