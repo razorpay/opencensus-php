@@ -88,36 +88,9 @@ class Core extends Base\Core
 
     protected function calculateCreditToExpire($merchant, $promotion)
     {
-        $creditLog = $this->repo->credit->findNonExpiredCreditLog(
-                    $merchant->getId(), $promotion->getId());
+        $credit = $this->repo->credit->findNonExpiredCredits(
+                    $merchant->getId(), $promotion->getId(), time());
 
-        $newCredits = $this->repo->credit->getNotExpiredNewCredits($creditLog->getCreatedAt(), $creditLog->getType());
-
-        $totalApplicableBalance = $creditLog->getValue();
-
-        foreach ($newCredits as $newCredit)
-        {
-            $totalApplicableBalance += $newCredit->getValue();
-        }
-
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
-
-        if ($creditLog->getType() === Credit\Type::FEE)
-        {
-            $balanceCredits = $balance->getFeeCredits();
-        }
-        else
-        {
-            $balanceCredits = $balance->getAmountCredits();
-        }
-
-        $usedCredits = $totalApplicableBalance - $balanceCredits;
-
-        if ($usedCredits > $creditLog->getValue())
-        {
-            return 0;
-        }
-
-        return ($creditLog->getValue() - $usedCredits);
+        return ($credit->getAmount() - $credit->getUsed());
     }
 }

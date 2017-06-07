@@ -958,4 +958,9 @@ class Core extends Base\Core
             $this->updateFeeCredits($txn);
         }
     }
+
+    protected function createCreditTransaction($amount, $txn, $creditType)
+    {
+        (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+    }
 }

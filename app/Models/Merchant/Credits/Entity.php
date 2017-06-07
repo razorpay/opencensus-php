@@ -12,8 +12,8 @@ class Entity extends Base\PublicEntity
     const PROMOTION_ID              = 'promotion_id';
     const VALUE                     = 'value';
     const TYPE                      = 'type';
-    const BALANCE                   = 'balance';
-    const EXPIRED                   = 'expired';
+    const EXPIRING_AT               = 'expiring_at';
+    const USED                      = 'used';
 
     protected $entity               = 'credits';
 
@@ -36,7 +36,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::VALUE,
         self::TYPE,
-        self::EXPIRED,
+        self::USED,
+        self::EXPIRING_AT,
         self::CREATED_AT
     );
 
@@ -45,7 +46,8 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,
-        self::EXPIRED,
+        self::USED,
+        self::EXPIRING_AT,
         self::CREATED_AT
     );
 
@@ -53,14 +55,14 @@ class Entity extends Base\PublicEntity
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
         self::TYPE              => 'amount',
-        self::EXPIRED           => false,
-        self::BALANCE           => 0,
+        self::USED              => 0,
+        self::EXPIRING_AT       => null,
     );
 
     // Casts the attributes to native types
     protected $casts = [
         self::VALUE             => 'integer',
-        self::EXPIRED           => 'bool',
+        self::USED              => 'integer',
     ];
 
     protected static $sign      = 'credits';
@@ -82,6 +84,11 @@ class Entity extends Base\PublicEntity
     public function setType(string $type)
     {
         $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setUsed(int $used)
+    {
+        $this->setAttribute(self::USED, $used);
     }
 
 // --------------------- End Setters -------------------------------------
@@ -131,6 +138,12 @@ class Entity extends Base\PublicEntity
 
     }
 
+
+    public function getUsed()
+    {
+        return $this->getAttribute(self::USED);
+    }
+
 // --------------------- End Getters -----------------------------------------
 
 // --------------------- Modifiers -------------------------------------------
@@ -149,6 +162,13 @@ class Entity extends Base\PublicEntity
         $this->setValue($credits);
     }
 
+    public function updateUsed($usedCount)
+    {
+        $creditsUsed = $this->getUsed() + $usedCount;
+
+        $this->setUsed($creditsUsed);
+    }
+
 // --------------------- End Modifiers ---------------------------------------
 
 // --------------------- Foreign Key Relations -------------------------------
@@ -159,4 +179,5 @@ class Entity extends Base\PublicEntity
     }
 
 // --------------------- End Foreign Key Relations ---------------------------
+
 }

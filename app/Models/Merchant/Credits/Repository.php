@@ -56,20 +56,28 @@ class Repository extends Base\Repository
         }
     }
 
-    public function findNonExpiredCredits(string $merchantId, string $promotionId)
+    public function getSortedCredits($timestamp, $merchantId, string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->where(function ($q)
+                        {
+                            $q->where(Entity::EXPIRING_AT, '>', $timestamp)
+                              ->orWhereNull(Entity::EXPIRING_AT);
+                        }
+                    )
+                    ->orderBy(\DB::raw('-`expiring_at`'), 'desc')
+                    ->get();
+
+    }
+
+    public function findNonExpiredCredits(string $merchantId, string $promotionId, int $timestamp)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::PROMOTION_ID, '=', $promotionId)
-                    ->where(Entity::EXPIRED, '=', false)
+                    ->where(Entity::EXPIRING_AT, '>' , $timestamp)
                     ->first();
-    }
-
-    public function getNotExpiredNewCredits($timestamp, string $type)
-    {
-        return $this->newQuery()
-                    ->where(Entity::EXPIRED, '=', false)
-                    ->where(Entity::CREATED_AT, '>', $timestamp)
-                    ->get();
     }
 }
