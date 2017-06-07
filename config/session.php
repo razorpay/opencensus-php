@@ -16,7 +16,7 @@ return array(
     |
     */
 
-    'driver' => 'file',
+    'driver' => 'custom_redis',
 
     'encrypt' => false,
 
