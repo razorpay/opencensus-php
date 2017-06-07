@@ -217,6 +217,10 @@ class ErrorCodes
         'N:03',
         'N:3',
 
+        // This is the error received when we try to do preauth for a card
+        // that doesn't allow it, eg. ICICI debit on FirstData
+        'N:57',
+
         // terminal_state_code error
         // Usually happens when Rupay/Maestro are not enabled for the terminal
         // Notify pghelpdesk, with the gateway_merchant_id
