@@ -910,9 +910,9 @@ class Service extends Base\Service
         //
         if ($linkedAccount === true)
         {
-            $data['beneficiary_address1']   = 'NA';
-            $data['beneficiary_city']       = 'NA';
-            $data['beneficiary_state']      = 'NA';
+            $data['beneficiary_address1']   = 'Bangalore';
+            $data['beneficiary_city']       = 'Bangalore';
+            $data['beneficiary_state']      = 'KA';
             $data['beneficiary_pin']        = 560001;
             $data['beneficiary_mobile']     = 9999999999;
         }
