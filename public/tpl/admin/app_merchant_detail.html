@@ -1619,16 +1619,14 @@
             <option value="order">Order</option>
             <option value="settlement">Settlement</option>
             <option value="transaction">Combined</option>
-            {{merchant.tags.indexOf('Broking_Report') === -1 || <option value="broking">Broking Report</option> }}
+            <option value="broking" ng-if="merchant.tags.indexOf('Broking_Report') !== -1">Broking Report</option>
 
             <option value="invoice">Monthly Invoice</option>
 
-            {{merchant.tags.indexOf('Marketplace') === -1 ||
-            <optgroup label="Marketplace">
+            <optgroup label="Marketplace" ng-if="merchant.tags.indexOf('Marketplace') !== -1">
               <option value="transfer">Transfer</option>
               <option value="reversal">Reversal</option>
             </optgroup>
-            }}
           </select>
         </div>
 

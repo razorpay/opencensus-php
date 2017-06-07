@@ -646,24 +646,27 @@ app
 
       // Prepare report
       $scope.prepareReport = function(reportOptions) {
-        console.log('OPTIONS: ', reportOptions);
-
         var entity = reportOptions.entity;
         var type = reportOptions.type;
         var month = reportOptions.month;
         var year = reportOptions.year;
         var day = reportOptions.day;
 
-        let data = {
-          month,
-          year,
+        var data = {
+          month: month,
+          year: year,
         };
 
         // Open new window if entity type is 'invoice'
         if (entity === 'invoice') {
           return Promise.resolve(
             window.open(
-              '/admin/live/reports/invoice?year=' + year + '&month=' + month,
+              '/admin/live/reports/invoice?year=' +
+                year +
+                '&month=' +
+                month +
+                '&merchant_id=' +
+                $scope.merchant.id,
               '_blank'
             )
           );
@@ -684,7 +687,10 @@ app
         }
 
         var request = $http.get(
-          '/admin/live/reports/' + entity + '?user=admin',
+          '/admin/live/reports/' +
+            entity +
+            '?merchant_id=' +
+            $scope.merchant.id,
           ajaxParams
         );
 
@@ -1584,7 +1590,7 @@ app
         });
       };
 
-      // Assign pricing modal
+      // Open download report modal
       $scope.openDownloadReport = function() {
         var modalInstance = $modal.open({
           templateUrl: 'downloadReportModalContent.html',
@@ -2536,7 +2542,7 @@ app
         }
       };
 
-      $scope.monthFields = moment.months().map((name, index) => {
+      $scope.monthFields = moment.months().map(function(name, index) {
         return { value: index + 1, name: name };
       });
 
@@ -2566,7 +2572,6 @@ app
       };
 
       $scope.ok = function() {
-        console.log('REPORT FORM', $scope.reportForm);
         $modalInstance.close($scope.reportForm);
       };
       $scope.cancel = function() {
