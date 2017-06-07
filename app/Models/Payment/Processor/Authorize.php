@@ -1006,6 +1006,39 @@ trait Authorize
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
+        // If global, create a local customer and use that local customer everywhere.
+        // To check that it's global, just see that payment's subscription does not
+        // have any customer_id set.
+        // Now, check that the customer retrieved in the last step is not null. Ideally,
+        // it'll never be null and we will always have a customer.
+
+        if ($payment->hasSubscription() === true)
+        {
+            $subscription = $payment->subscription;
+
+            //
+            // Check that the subscription is in the global
+            // customer flow and not in the local customer flow.
+            // This also ensures that the customer we received from
+            // the last step is a global customer.
+            //
+            if ($subscription->getCustomerId() === null)
+            {
+                if ($customer !== null)
+                {
+                    // TODO: Write this function!
+                    $localCustomer = (new Customer\Core)->createDuplicateLocalCustomer($customer);
+
+                    // TODO: Create the global association. Figure out where we would actually use this though.
+                    // Maybe in payment entity, we will store the global customer?
+                    // TODO: Write test cases to ensure that the associations happen correctly
+                    $localCustomer->globalCustomer()->associate($customer);
+
+                    $customer = $localCustomer;
+                }
+            }
+        }
+
         if ($customer === null)
         {
             $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
@@ -1018,6 +1051,9 @@ trait Authorize
         {
             $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
         }
+
+        // TODO: We should be associating the local customer and not the global customer
+        $this->associateCustomerToSubscription($payment->subscription, $customer);
 
         if ($payment->isEmi() === true)
         {
@@ -1039,6 +1075,18 @@ trait Authorize
         }
 
         $payment->setInternational();
+    }
+
+    protected function associateCustomerToSubscription(Subscription\Entity $subscription, Customer\Entity $customer)
+    {
+        //
+        // In case of global customer, the customer wouldn't have
+        // been associated during the subscription creation.
+        //
+        if ($subscription->hasCustomer() === false)
+        {
+            $subscription->customer()->associate($customer);
+        }
     }
 
     protected function associateSubscriptionIfApplicable(Payment\Entity $payment, array $input)
@@ -1088,6 +1136,14 @@ trait Authorize
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
     {
+        //
+        // In the subscription flow, card must always be saved.
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            // TODO: Throw exception
+        }
+
         // No card saving, normal simple flow
         if ($payment->isMethodCardOrEmi())
         {
@@ -1128,6 +1184,8 @@ trait Authorize
                                                           array & $input,
                                                           array & $gatewayInput)
     {
+        // TODO: Do something and all here.
+
         $this->payment->app()->associate($customerApp);
 
         $this->payment->globalCustomer()->associate($customer);
@@ -1183,6 +1241,14 @@ trait Authorize
         // Token should definitely exist in database.
         $tokenId = $input[Payment\Entity::TOKEN];
 
+        // TODO: We need to create a local token also for the local customer created
+        // and associated with the subscription?
+        // Or in case of subscriptions, we pass customer->globalCustomer ?
+        // Or for subscriptions, we create token for local customer which is
+        // associated with the subscription, instead of creating token for
+        // the global customer? But that would cause an issue where
+        // a customer adds a new card, but doesn't see that on other merchant
+        // websites of razorpay.
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())
@@ -1452,6 +1518,16 @@ trait Authorize
     {
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
+            //
+            // If a subscription_id is sent in the input, the customer_id should
+            // never be sent. It's either associated with the subscription (local customer)
+            // or we use the global customer and associate that later.
+            //
+            if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+            {
+                // TODO: Throw an exception
+            }
+
             $subscription = $payment->subscription;
 
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());

@@ -238,6 +238,11 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::SCHEDULE_ID);
     }
 
+    public function hasCustomer()
+    {
+        return $this->isAttributeNotNull(self::CUSTOMER_ID);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);

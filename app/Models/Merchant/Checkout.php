@@ -268,6 +268,9 @@ class Checkout
 
                 if ($customerId === null)
                 {
+                    //
+                    // Card saving is not enabled for the merchant.
+                    //
                     if ($data['options']['remember_customer'] === false)
                     {
                         // TODO: Throw an exception
