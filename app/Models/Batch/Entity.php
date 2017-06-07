@@ -20,16 +20,6 @@ class Entity extends Base\PublicEntity
     const UPLOAD_FILE_URL           = 'upload_file_url';
     const DOWNLOAD_FILE_URL         = 'download_file_url';
 
-    /**
-     * Input file's id. It's the file uploaded during batch entity creation.
-     */
-    const INPUT_FILE_ID             = 'input_file_id';
-
-    /**
-     * Processed file's id. It's the file created by us post processing.
-     */
-    const PROCESSED_FILE_ID         = 'processed_file_id';
-
     const STATUS                    = 'status';
     const TOTAL_COUNT               = 'total_count';
     const SUCCESS_COUNT             = 'success_count';
@@ -100,14 +90,25 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function files()
+    {
+        return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
+    }
+
     public function inputFile()
     {
-        return $this->belongsTo('RZP\Models\FileStore\Entity');
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_INPUT)
+                    ->latest()
+                    ->first();
     }
 
     public function processedFile()
     {
-        return $this->belongsTo('RZP\Models\FileStore\Entity');
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_PROCESSED)
+                    ->latest()
+                    ->first();
     }
 
     // ----------------------- Getters ---------------------------------------------

@@ -560,6 +560,7 @@ class TraceCode
     const PRICING_RULE_MISTMATCH                        = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 
+    const BATCH_CREATED                                 = 'BATCH_CREATED';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_PROCESS_FILE                            = 'BATCH_PROCESS_FILE';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
@@ -816,6 +817,7 @@ class TraceCode
         self::PRICING_RULE_MISTMATCH                    => 'Mismatch in the pricing rule during migration',
         self::PRICING_RULE_DOES_NOT_EXISTS              => 'Pricing Plan does not exist for this merchant',
 
+        self::BATCH_CREATED                             => 'Batch created',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',

@@ -5,7 +5,6 @@ namespace RZP\Models\Batch;
 use Config;
 use Mail;
 use RZP\Base\RuntimeManager;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -36,35 +35,29 @@ class Core extends Base\Core
 
         $batch->merchant()->associate($this->merchant);
 
-        // Parses input file and validates according to batch type.
+        $this->repo->transaction(function () use ($batch, $input)
+        {
+            $file = $this->processor->saveInputFile($batch, $input[Entity::FILE]);
 
-        $entries = $this->parseExcelSheets($input['file']);
 
-        $batch->getValidator()->validateEntries($entries, $batch->getType());
 
-        // Fills batch entity with relevant details of input file.
+            $entries = $this->parseExcelSheets($file);
 
-        $this->fillBatchEntityWithInputFileDetails($batch, $entries);
+            $batch->getValidator()->validateEntries($entries);
 
-        // Saves input file
+            $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
-        $this->processor->saveInputFile($batch, $input[Entity::FILE]);
+            $this->repo->saveOrFail($batch);
+        });
 
-        $this->repo->saveOrFail($batch);
-
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
         return $batch;
     }
 
     public function retryBatch(Entity $batch): Entity
     {
-        if (($batch->getStatus() === Status::PROCESSED) and
-            ($batch->getFailureCount() === 0))
-        {
-            throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED);
-        }
+        $batch->getValidator()->validateNotProcessedAlready();
 
         $batch->setStatus(Status::PROCESSING);
 
@@ -84,19 +77,20 @@ class Core extends Base\Core
      */
     public function downloadBatch(Entity $batch): string
     {
-        $processedFile = $batch->processedFile;
+        $file = ($batch->getStatus() === Status::CREATED) ?
+                    $batch->inputFile() : $batch->processedFile();
 
         // Backward compatibility:
         // - If processed file relation exists use that else to handle BC
         //   form the AWS key and get the signed URL as done previously.
 
-        if ($processedFile === null)
+        if ($file === null)
         {
-            $signedUrl = $this->getSignedUrlOrBatchFile($batch);
+            $signedUrl = $this->getSignedUrlOfBatchFile($batch);
         }
         else
         {
-            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($processedFile);
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
         }
 
         $this->trace->info(
@@ -117,39 +111,36 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            try
-            {
-                $batch->incrementAttempts();
-
-                $this->processor->process($batch);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::WARNING,
-                    TraceCode::BATCH_PROCESSING_ERROR,
-                    [
-                        'batch' => $batch->toArrayPublic(),
-                    ]);
-
-                // TODO: Remove this comment. Currently we will mark the final state as processed.
-                // if ($batch->getAttempts() >= 3)
-                // {
-                //     $batch->setStatus(Status::PROCESSED);
-                // }
-                // else
-                // {
-                //     $batch->setStatus(Status::PROCESSING);
-                // }
-
-                $batch->setStatus(Status::PROCESSED);
-
-                $this->repo->saveOrFail($batch);
-            }
+            $this->processBatch($batch);
         }
 
         return $batches;
+    }
+
+    public function processBatch(Entity $batch)
+    {
+        try
+        {
+            $batch->getValidator()->validateNotProcessedAlready();
+
+            $this->processor->process($batch);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::BATCH_PROCESSING_ERROR,
+                [
+                    'batch' => $batch->toArrayPublic(),
+                ]);
+
+            $batch->setStatus(Status::PROCESSED);
+
+            $this->repo->saveOrFail($batch);
+        }
+
+        return $batch;
     }
 
     /**
@@ -179,7 +170,7 @@ class Core extends Base\Core
      *
      * @return string
      */
-    protected function getSignedUrlOrBatchFile(Entity $batch): string
+    protected function getSignedUrlOfBatchFile(Entity $batch): string
     {
         $awsKey = $batch->getFilePrefix() . $batch->getFileKeyWithExt();
 

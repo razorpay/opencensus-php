@@ -47,36 +47,30 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    /**
-     * Saves given file as input against the batch entity. And then associates
-     * the same with the batch entity.
-     *
-     * @param Entity       $batch
-     * @param UploadedFile $file
-     */
-    public function saveInputFile(Entity $batch, UploadedFile $file)
+    public function saveInputFile(Entity $batch, UploadedFile $file): \SplFileInfo
     {
-        $file = $file->move($batch->getLocalSaveDir(), $batch->getFileKeyWithExt());
+        //
+        // PHP's upload file get's deleted automatically once request terminates.
+        // Moving this file to batch save location where UFH downloads the same
+        // from S3. This helps in smooth S3 mock working.
+        //
 
-        $filePath = $file->getPathname();
+        $movedFile = $file->move($batch->getLocalSaveDir(), $batch->getFileKeyWithExt());
+
+        $filePath = $movedFile->getPathname();
 
         $ufhFile = $this->saveFile($batch, $filePath, FileStore\Type::BATCH_INPUT);
 
-        $batch->inputFile()->associate($ufhFile);
+        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
+
+        $this->deleteFile($filePath);
+
+        return $movedFile;
     }
 
-    /**
-     * Saves given processed file against the batch entity. And then associates
-     * the same with batch entity.
-     *
-     * @param Entity  $batch
-     * @param string $filePath
-     */
     public function saveProcessedFile(Entity $batch, string $filePath)
     {
-        $ufhFile = $this->saveFile($batch, $filePath, FileStore\Type::BATCH_PROCESSED);
-
-        $batch->processedFile()->associate($ufhFile);
+        $this->saveFile($batch, $filePath, FileStore\Type::BATCH_PROCESSED);
     }
 
     /**
@@ -115,25 +109,32 @@ class Processor extends Base\Core
      */
     protected function getInputFile(Entity $batch): string
     {
-        $inputFile = $batch->inputFile;
+        $inputFile = $batch->inputFile();
 
-        // To handle backward compatibility. New entries will have reference to
-        // UFH but older ones unless migrated will not have reference. So using
-        // the old way of forming S3 object key and then fetches the same.
+        //
+        // Handles backward compatibility:
+        // New entries will have reference to UFH but older ones unless migrated
+        // will not have reference. So using the old way (else block) of forming
+        // S3 object key and then fetches the same.
+        //
 
-        if ($inputFile === null)
+        if ($inputFile !== null)
+        {
+            $filePath = (new FileStore\Accessor)
+                            ->id($inputFile->getId())
+                            ->merchantId($batch->getMerchantId())
+                            ->getFile();
+        }
+        else
         {
             $awsKey = $batch->getFilePrefix(Status::CREATED) . $batch->getFileKeyWithExt();
 
             $saveAs = $batch->getLocalSavePath(Status::CREATED);
 
-            return $this->getFileFromAws($awsKey, $saveAs);
+            $filePath = $this->getFileFromAws($awsKey, $saveAs);
         }
 
-        return (new FileStore\Accessor)
-                    ->id($inputFile->getId())
-                    ->merchantId($batch->getMerchantId())
-                    ->getFile();
+        return $filePath;
     }
 
     /**
@@ -144,6 +145,8 @@ class Processor extends Base\Core
     public function process(Entity $batch)
     {
         $this->batch = $batch;
+
+        $this->batch->incrementAttempts();
 
         $entries = $this->getEntriesToProcess();
 
@@ -343,13 +346,15 @@ class Processor extends Base\Core
 
         $fullpath = $fileMetadata['full'];
 
-        $downloadUrl = $this->saveProcessedFile($this->batch, $fullpath);
+        $this->saveProcessedFile($this->batch, $fullpath);
 
         $this->processedFileLocalPath = $fullpath;
     }
 
     public function deleteFile($filePath)
     {
+        return;
+
         if (file_exists($filePath))
         {
             $success = unlink($filePath);
