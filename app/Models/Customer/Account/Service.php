@@ -379,7 +379,7 @@ class Service extends Base\Service
         foreach ($payments as $payment)
         {
             $info = array(
-                'merchant'  => $payment->merchant->getBillingLabelElseName(),
+                'merchant'  => $payment->merchant->getBillingLabel(),
                 'card'      => $payment->card->getLast4(),
                 'amount'    => $payment->getAmount(),
                 'time'      => $payment->getCaptureTimestamp(),

@@ -2097,6 +2097,13 @@ ALTER TABLE merchant_banks
     ADD COLUMN mpesa TINYINT(1) DEFAULT 0 AFTER jiomoney,
     ADD INDEX merchant_banks_mpesa_index (mpesa);
 
+# Add merchant_id to fund_transfer_attempts
+
+alter table fund_transfer_attempts
+    add column merchant_id char(14) after source_id,
+    add constraint fund_transfer_attempts_merchant_id_foreign foreign key(merchant_id)
+    references merchants(id) on delete restrict;
+
 # Pre deployment of branch order-partial-payments
 
 ALTER TABLE orders

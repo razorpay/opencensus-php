@@ -110,7 +110,7 @@ class Inferno
 
         $mailData['to_emails'] = $toEmails;
 
-        $subjectName = $webhook->merchant->getBillingLabelElseName();
+        $subjectName = $webhook->merchant->getBillingLabel();
 
         $webhookId = $webhook->getPublicId();
 

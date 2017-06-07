@@ -34,6 +34,7 @@ class ProviderCode
     const IMOBILE           = 'imobile';
     const INDIANBANK        = 'indianbank';
     const INDUS             = 'indus';
+    const IOB               = 'iob';
     const KAYPAY            = 'kaypay';
     const KBL               = 'kbl';
     const KOTAK             = 'kotak';
@@ -87,6 +88,7 @@ class ProviderCode
         self::IMOBILE           => IFSC::ICIC,
         self::INDUS             => IFSC::INDB,
         self::INDIANBANK        => IFSC::IDIB,
+        self::IOB               => IFSC::IOBA,
         self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
         self::KOTAK             => IFSC::KKBK,

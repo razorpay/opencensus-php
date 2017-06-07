@@ -168,7 +168,7 @@ class Core extends Base\Core
             return;
         }
 
-        $label = $merchant->getBillingLabelElseName();
+        $label = $merchant->getBillingLabel();
 
         $subject = 'Razorpay | Bank account change successful for ' . $label;
 

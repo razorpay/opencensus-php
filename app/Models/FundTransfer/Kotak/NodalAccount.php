@@ -75,7 +75,7 @@ class NodalAccount
         {
             list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($entity);
 
-            $merchant = $source->merchant;
+            $merchant = $entity->merchant;
 
             $ba = $merchant->bankAccount;
 
