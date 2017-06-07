@@ -153,7 +153,6 @@ class Validator extends Base\Validator
     //
 
     protected static $createValidators =[
-        Entity::PARTIAL_PAYMENT,
         Entity::AMOUNT,
         Entity::CURRENCY,
     ];
@@ -163,7 +162,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $editDraftValidators = [
-        Entity::PARTIAL_PAYMENT,
         Entity::AMOUNT,
         self::EDIT_DRAFT . Entity::AMOUNT,
     ];
@@ -178,27 +176,6 @@ class Validator extends Base\Validator
         $this->checkIfAmountIsExpectedInInput($input);
 
         $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
-    }
-
-    /**
-     * Validates partial_payment input is sent only for type invoice.
-     *
-     * @param array $input
-     */
-    public function validatePartialPayment(array $input)
-    {
-        if (isset($input[Entity::PARTIAL_PAYMENT]) === false)
-        {
-            return;
-        }
-
-        $type = $input[Entity::TYPE] ?? $this->entity->getType();
-
-        if (($type !== null) and ($type !== Type::INVOICE))
-        {
-            throw new BadRequestValidationFailureException(
-                'partial_payment is not expected with link type');
-        }
     }
 
     /**
