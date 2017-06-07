@@ -48,12 +48,10 @@ app
       };
 
       admin.identity().then(function(data) {
-        console.log(data);
         $scope.admin = data;
       });
 
       function fetchEntity(entityType) {
-        console.log('ENTITY TYPE', entityType);
         var routeName = 'admin_fetch_entity_by_id';
         if (entityType === 'terminal') {
           routeName = 'admin_fetch_terminal_by_id';
@@ -74,6 +72,16 @@ app
             $scope.alerts.resetAlerts();
             if (data.success) {
               $scope.entity = data.data;
+
+              // api sends data in range 0-10000. Changing it into 0-100
+              if (entityType === 'offer') {
+                $scope.entity['percent_rate'] =
+                  $scope.entity['percent_rate'] / 100;
+
+                $scope.entity['iins'] = $scope.entity['iins']
+                  ? $scope.entity['iins'].join(',')
+                  : null;
+              }
             } else {
               angular.forEach(data.errors, function(error) {
                 $scope.alerts.addAlert('danger', error);
@@ -100,7 +108,6 @@ app
             method: 'PATCH',
             params: {
               route_name: 'offer_update',
-              content_type: 'application/json',
               mode: $scope.mode,
               url_params: {
                 '{id}': $scope.entity.id,
@@ -544,18 +551,19 @@ app
 
       $scope.offer = current;
 
-      $scope.offer['iins'] = $scope.offer['iins']
-        ? $scope.offer['iins'].join(',')
-        : null;
       $scope.offer['linked_offer_ids'] = $scope.offer['linked_offer_ids']
         ? $scope.offer['linked_offer_ids'].join(',')
         : null;
 
       $scope.ok = function() {
-        $scope.offer['iins'] = $scope.offer['iins'].split(',');
-        $scope.offer['linked_offer_ids'] = $scope.offer[
-          'linked_offer_ids'
-        ].split(',');
+        if ($scope.offer['iins']) {
+          $scope.offer['iins'] = $scope.offer['iins'].split(',');
+        }
+        if ($scope.offer['linked_offer_ids']) {
+          $scope.offer['linked_offer_ids'] = $scope.offer[
+            'linked_offer_ids'
+          ].split(',');
+        }
 
         $scope.offer = {
           name: $scope.offer.name,
@@ -566,6 +574,13 @@ app
           error_message: $scope.offer.error_message,
           terms: $scope.offer.terms,
         };
+
+        // Remove keys with null/empty value
+        Object.keys($scope.offer).forEach(function(key) {
+          if (!$scope.offer[key]) {
+            delete $scope.offer[key];
+          }
+        });
 
         $modalInstance.close($scope.offer);
       };

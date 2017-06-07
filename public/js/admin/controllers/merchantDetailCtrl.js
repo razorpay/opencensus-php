@@ -2344,17 +2344,30 @@ app
         var startTime = new Date($scope.offer_time.starts);
         var endTime = new Date($scope.offer_time.ends);
 
-        var offsetStart =
-          startTime.getHours() * 60 * 60 + startTime.getMinutes() * 60;
-        var offsetEnd =
-          endTime.getHours() * 60 * 60 + endTime.getMinutes() * 60;
+        if (offer.starts_at) {
+          var offsetStart =
+            startTime.getHours() * 60 * 60 + startTime.getMinutes() * 60;
 
-        offer.starts_at =
-          new Date(offer.starts_at).getTime() + offsetStart * 1000;
-        offer.ends_at = new Date(offer.ends_at).getTime() + offsetEnd * 1000;
+          offer.starts_at =
+            new Date(offer.starts_at).getTime() + offsetStart * 1000;
 
-        offer.starts_at = offer.starts_at / 1000;
-        offer.ends_at = offer.ends_at / 1000;
+          offer.starts_at = offer.starts_at / 1000;
+        }
+        if (offer.ends_at) {
+          var offsetEnd =
+            endTime.getHours() * 60 * 60 + endTime.getMinutes() * 60;
+
+          offer.ends_at = new Date(offer.ends_at).getTime() + offsetEnd * 1000;
+
+          offer.ends_at = offer.ends_at / 1000;
+        }
+
+        // Remove keys with null/empty value
+        Object.keys(offer).forEach(function(key) {
+          if (!offer[key]) {
+            delete offer[key];
+          }
+        });
 
         return offer;
       }

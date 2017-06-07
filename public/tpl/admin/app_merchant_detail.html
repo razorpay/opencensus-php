@@ -1449,14 +1449,14 @@
     <form class="form-horizontal">
 
       <div class="form-group">
-        <label for="name" class="col-lg-3 control-label">Name:</label>
+        <label for="name" class="col-lg-3 control-label">Name*:</label>
         <div class="col-lg-9" >
-          <input type="text" class="form-control m-b" name="name" ng-model="offer.name" required />
+          <input type="text" class="form-control m-b" name="name" ng-model="offer.name" />
         </div>
       </div>
 
       <div class="form-group col-lg-6">
-        <label for="payment_method" class="col-lg-6 control-label">Payment Method:</label>
+        <label for="payment_method" class="col-lg-6 control-label">Payment Method*:</label>
         <div class="col-lg-6" >
           <select class="form-control m-b"
                   name="payment_method"
@@ -1594,7 +1594,7 @@
       <div class="form-group">
         <label for="ends_at" class="col-lg-3 control-label"
                style="display:table-cell; vertical-align: middle">
-          Ends at:
+          Ends at*:
         </label>
         <div class="col-lg-9" style="display:table;">
           <!--Date picker-->
@@ -1673,7 +1673,7 @@
       <div class="form-group">
         <label for="display_text" class="col-lg-3 control-label">Display Text:</label>
         <div class="col-lg-9" >
-          <input type="text" class="form-control m-b" name="display_text" ng-model="offer.display_text" required/>
+          <input type="text" class="form-control m-b" name="display_text" ng-model="offer.display_text"/>
         </div>
       </div>
       <div class="form-group">
