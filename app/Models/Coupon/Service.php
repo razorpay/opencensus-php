@@ -68,7 +68,8 @@ class Service extends Base\Service
         return [$couponCode, $merchantId];
     }
 
-    public function apply(array $input)
+    //TODO add typehinting
+    protected function validateAndApplyMerchantPromotion($merchant, $promotion, $coupon)
     {
         $result = [
             'success'           => true,
@@ -77,51 +78,9 @@ class Service extends Base\Service
 
         try
         {
-            list($couponCode, $merchantId) = $this->parseInput($input);
-        }
-        catch (\Exception $e)
-        {
-            $result = [
-                'success' => false,
-                'error_description' => 'Invalid Request',
-            ];
-
-            return $result;
-        }
-
-        try
-        {
-            $coupon = $this->repo->coupon->fetchByCode($couponCode);
-        }
-        catch (\Exception $e)
-        {
-            $result = [
-                'success' => false,
-                'error_description' => 'Invalid Coupon Code',
-            ];
-
-            return $result;
-        }
-
-        try
-        {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-        }
-        catch (\Exception $e)
-        {
-            $result = [
-                'success' => false,
-                'error_description' => 'Invalid Merchant',
-            ];
-
-            return $result;
-        }
-
-        try
-        {
             $promotion = $coupon->source()->firstOrFail();
 
-            $this->validator->couponApplyValidator($coupon, $merchantId);
+            $this->validator->couponApplyValidator($coupon, $merchant->getId());
 
             $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
             {
@@ -143,16 +102,62 @@ class Service extends Base\Service
             //TODO move to constants
             $result = [
                 'success'           => false,
-                'error_description' => 'Coupon Already Applied/Could Not be Applied'
+                'error_description' => 'Coupon Already Applied/Could Not be Applied',
             ];
         }
         catch (\Exception $e)
         {
             $result = [
-                'success'           => false,
-                'error_description' => $e->getMessage()
+                'success'            => false,
+                'error_description' => $e->getMessage(),
             ];
         }
+
+        return $result;
+    }
+
+    public function apply(array $input)
+    {
+        try
+        {
+            list($couponCode, $merchantId) = $this->parseInput($input);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success'           => false,
+                'error_description' => 'Invalid Request',
+            ];
+        }
+
+        try
+        {
+            $coupon = $this->repo->coupon->fetchByCode($couponCode);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success'           => false,
+                'error_description' => 'Invalid Coupon Code',
+            ];
+        }
+
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success'           => false,
+                'error_description' => 'Invalid Merchant',
+            ];
+        }
+
+        $result = $this->validateAndApplyMerchantPromotion(
+            $merchant,
+            $promotion,
+            $coupon);
 
         return $result;
     }
