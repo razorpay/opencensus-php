@@ -279,7 +279,16 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $merchantId = $this->merchantId;
+
+            if (isset($params['merchant_id']))
+            {
+                $merchantId = $params['merchant_id'];
+                unset($params['merchant_id']);
+            }
+
+            $this->setApiCredentials($merchantId, $mode);
+
             $data = $this->api
                          ->transaction
                          ->generateEntityReportFile($resource, $params)
@@ -302,7 +311,14 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $merchantId = $this->merchantId;
+            if (isset($params['merchant_id']))
+            {
+                $merchantId = $params['merchant_id'];
+                unset($params['merchant_id']);
+            }
+
+            $this->setApiCredentials($merchantId, $mode);
 
             $data = $this->api
                          ->transaction
@@ -354,9 +370,17 @@ class Service extends Base\Service
 
     public function getInvoiceReportData($mode, array $input)
     {
+        $merchantId = $this->merchantId;
+
+        if (isset($input['merchant_id']))
+        {
+            $merchantId = $input['merchant_id'];
+            unset($input['merchant_id']);
+        }
+
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $this->setApiCredentials($merchantId, $mode);
 
             $data = $this->api
                          ->transaction
@@ -364,8 +388,8 @@ class Service extends Base\Service
                          ->toArray();
 
             $data['dates']      = $this->getDateRanges($input['year'], $input['month']);
-            $data['merchant']   = $this->merchant->toArray();
-            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
+            $data['merchant_id'] = $merchantId;
+            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month'], $merchantId);
 
             return [null, $data];
         }
@@ -408,10 +432,10 @@ class Service extends Base\Service
         return Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
     }
 
-    protected function getInvoiceId($year, $month)
+    protected function getInvoiceId($year, $month, $merchantId)
     {
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
-        return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
+        return $merchantId . '/' . $startDate->addMonth()->format('m/y');
     }
 
     public function uploadBatchFile($mode, $input)

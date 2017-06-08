@@ -68,7 +68,7 @@ export default class Profile extends Component {
     this.setState({
       merchantCount: Object.keys(user.merchants).length,
       loggedInUser: user.user,
-      loggedInUserRole: user.merchants[user.id].role,
+      loggedInUserRole: user.userRole,
       hasMerchant,
     });
   }

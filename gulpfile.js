@@ -133,7 +133,7 @@ gulp.task('js:prod', () => {
   return concatJs()
     .pipe(uglify())
     .on('error', function(e) {
-      console.log(e);
+      throw new Error('Uglify failed', e);
     })
     .pipe(rev())
     .pipe(gulp.dest('public'))

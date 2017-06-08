@@ -19,7 +19,7 @@ export default class ShowWhen extends Component {
     let userRole;
 
     if (user.isAuthenticated) {
-      userRole = user.merchants[user.id].role;
+      userRole = user.userRole;
     }
 
     if (
