@@ -5,6 +5,8 @@ namespace RZP\Models\Coupon;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -28,14 +30,14 @@ class Validator extends Base\Validator
             ($coupon->getUsedCount() === $coupon->getUsage()))
         {
             throw new Exception\BadRequestException(
-                'Coupon Code Already used');
+                ErrorCode::BAD_REQUEST_COUPON_ALREADY_USED);
         }
 
         if (($coupon->getMerchantId() !== null) and
             ($coupon->getMerchantId() !== $merchantId))
         {
             throw new Exception\BadRequestException(
-                'Coupon Code Not valid for this Merchant');
+                ErrorCode::BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT);
         }
     }
 }

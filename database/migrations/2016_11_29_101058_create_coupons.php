@@ -41,7 +41,10 @@ class CreateCoupons extends Migration
                   ->nullable();
 
             $table->integer(Coupon::USAGE)
-                  ->nullable();
+                ->nullable();
+
+            $table->integer(Coupon::USED_COUNT)
+                  ->default(0);
 
             $table->integer(Coupon::CREATED_AT);
 

@@ -17,6 +17,12 @@ $defaultRequestAndResponse = [
     ];
 
 return [
+    'testCouponWithUsage' => $defaultRequestAndResponse,
+
+    'testCouponExceedingUsage' => $defaultRequestAndResponse,
+
+    'createCoupon'     => $defaultRequestAndResponse,
+
     'testCreateCoupon' => $defaultRequestAndResponse,
 
     'testCreateCouponAndApplyOnMerchant' => $defaultRequestAndResponse,

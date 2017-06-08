@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const START_DATE  = 'start_date';
     const END_DATE    = 'end_date';
     const USAGE       = 'usage';
+    const USED_COUNT  = 'used_count';
 
     const ENTITY_TYPE_LENGTH = 20;
     const COUPON_CODE_LENGTH = 10;
@@ -56,12 +57,14 @@ class Entity extends Base\PublicEntity
         self::START_DATE => null,
         self::END_DATE   => null,
         self::USAGE      => null,
+        self::USED_COUNT => 0,
     ];
 
     protected $casts = [
         self::START_DATE => 'int',
         self::END_DATE   => 'int',
         self::USAGE      => 'int',
+        self::USED_COUNT => 'int',
     ];
 
     /**
@@ -82,5 +85,10 @@ class Entity extends Base\PublicEntity
     public function getUsedCount()
     {
         return $this->getAttribute(self::USED_COUNT);
+    }
+
+    public function setUsedCount($count)
+    {
+        return $this->setAttribute(self::USED_COUNT, $count);
     }
 }
