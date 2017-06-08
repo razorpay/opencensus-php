@@ -111,6 +111,12 @@ return [
         'live'       => env('AWS_INVOICE_EMAILS_QUEUE'),
     ],
 
+    'mail' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_EMAILS_QUEUE'),
+        'live'       => env('AWS_EMAILS_QUEUE'),
+    ],
+
     'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
     'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
     'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),
