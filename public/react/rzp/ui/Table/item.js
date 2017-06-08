@@ -8,14 +8,20 @@ const baseUrl = {
   rfnd: '/refunds/',
   order: '/orders/',
   trf: '/marketplace/transfers/',
-  acc: '/marketplace/accounts/',
+  // acc: '/marketplace/accounts/',
   rvrsl: '/marketplace/reversals/',
 };
 
 export const idItem = id => <code>{id}</code>;
-export const idLink = id => (
-  <Link to={baseUrl[id.split('_')[0]] + id}>{idItem(id)}</Link>
-);
+export const idLink = id => {
+  var url = baseUrl[id.split('_')[0]];
+  var item = idItem(id);
+  if (url) {
+    url += id;
+    return <Link to={url}>{item}</Link>;
+  }
+  return item;
+};
 export const id = type => item =>
   idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
 

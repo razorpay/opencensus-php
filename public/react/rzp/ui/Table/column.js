@@ -25,11 +25,11 @@ export const orderId = ['Order ID', items.orderId];
 export const attempts = ['Attempts', item => item.attempts];
 export const receipt = ['Receipt', item => item.receipt];
 
-export const transferId = ['Transfer ID', items.transferId];
-export const source = ['Source', item => idLink(item.source)];
-export const recipient = ['Recipient', item => idLink(item.recipient)];
+export const transferId = ['Transfer ID', item => items.idItem(item.id)];
+export const source = ['Source', item => items.idLink(item.source)];
+export const recipient = ['Recipient', item => items.idLink(item.recipient)];
 
-export const reversalId = ['Reversal ID', items.reversalId];
+export const reversalId = ['Transfer ID', item => items.idItem(item.id)];
 
 export const batchId = ['Batch ID', item => items.idItem(item.id)];
 export const batchCount = ['Count', item => item.total_count];
