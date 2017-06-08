@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
@@ -27,6 +29,32 @@ export default class BatchListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <TetherComponent
+          target="#transactions-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 0"
+        >
+          <div />{/* required by react-tether */}
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/batch-refunds"
+              target="_blank"
+            >
+              Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
+
+            <NavLink
+              class="btn btn-primary pull-right"
+              to="/refunds/batchupload"
+            >
+              Click here to upload
+            </NavLink>
+          </div>
+        </TetherComponent>
+
         <BatchListFilter
           form="batchListFilter"
           count={this.state.count}
