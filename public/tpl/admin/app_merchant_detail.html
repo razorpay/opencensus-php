@@ -621,7 +621,7 @@
                 <tbody>
                   <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
                     <td>{{row.id}}</td>
-                    <td>{{row.gateway}}</td>
+                    <td>{{getGatewayLabel(row.method, row.gateway)}}</td>
                     <td>{{row.gateway_acquirer || 'ALL'}}</td>
                     <td>{{methodMap[row.method]}}</td>
                     <td>{{row.method_type || 'ALL'}}</td>

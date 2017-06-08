@@ -30,6 +30,10 @@ class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
+    // Users who signed up before this date
+    // are not exposed to the pre signup flow
+
+    const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
     public function __construct()
     {
@@ -880,6 +884,11 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
+        if (!$user)
+        {
+            return [['Not logged in'], null];
+        }
+
         list($error, $genericUser) = $this->getUserFromApi($user->id);
 
         if (empty($error) === false)
@@ -894,6 +903,11 @@ class Service extends Base\Service
         $merchants = $userDetails['merchants'];
 
         $data['user'] = $userDetails;
+
+        // Default values in case no merchant is associated
+        // with the user account
+        $data['pre_signup'] = [];
+        $data['pre_signup_complete'] = true;
 
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
@@ -933,6 +947,36 @@ class Service extends Base\Service
 
                     $data['tags'] = $merchant['tags'];
                 }
+            }
+
+            $preSignupValues = array_values($data['pre_signup']);
+
+            // This is same as on UserController
+            $data['pre_signup_complete'] = array_reduce($preSignupValues, function($carry, $item)
+            {
+                return $carry and !empty($item);
+            }, true);
+
+            // We don't show presignup form for user
+            // created before this date
+            if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            $activated = (bool) $merchant['activated'];
+
+            // There are approx 3k merchants who have not
+            // filled "role" or "department", but are
+            // already activated.
+            if ($activated)
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            if ($currentMerchant->role !== 'owner')
+            {
+                $data['pre_signup_complete'] = true;
             }
         }
 

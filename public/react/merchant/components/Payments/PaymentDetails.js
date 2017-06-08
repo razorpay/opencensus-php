@@ -102,189 +102,199 @@ export default props => {
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel panel-default">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
-
+        : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               Payment ID: <b>{payment.id}</b>
             </div>
 
-            <div class="panel-body">
-              <div class="list-group details-row-container">
-                <DetailRow
-                  label="Amount"
-                  value={() => <Amount value={payment.amount} />}
-                />
-
-                <DetailRow
-                  label="Amount Refunded"
-                  value={() => <Amount value={payment.amount_refunded} />}
-                />
-
-                <DetailRow label="Currency" value={payment.currency} />
-                <DetailRow
-                  label="Status"
-                  value={() => <PaymentStatusLabel status={payment.status} />}
-                />
-
-                <DetailRow label="Captured" value={payment.captured} />
-
-                <DetailRow label="Method" value={titleCase(payment.method)} />
-
-                {payment.bank
-                  ? <DetailRow label="Bank" value={payment.bank} />
-                  : null}
-                {payment.wallet
-                  ? <DetailRow label="Wallet" value={payment.wallet} />
-                  : null}
-                {payment.method === 'card'
-                  ? <ListGroupToggler
-                      label="Card Details"
-                      onToggleClick={() => props.onToggleCardDetails(payment)}
-                    >
-                      <table class="table table-hover">
-                        <TableBody
-                          colSpan={2}
-                          isLoading={card.loading}
-                          rows={Object.keys(card.details)}
-                        >
-                          {Object.keys(card.details).map(key => (
-                            <ListItem
-                              key={key}
-                              item={titleCase(key)}
-                              value={card.details[key]}
-                            />
-                          ))}
-                        </TableBody>
-                      </table>
-                    </ListGroupToggler>
-                  : null}
-
-                <DetailRow
-                  label="Refund Status"
-                  value={titleCase(payment.refund_status)}
-                />
-
-                <DetailRow label="Description" value={payment.description} />
-
-                <DetailRow label="Email" value={payment.email} />
-
-                <DetailRow label="Contact" value={payment.contact} />
-
-                <DetailRow
-                  label="Fees"
-                  value={() => (
-                    <Amount value={payment.fee - payment.service_tax} />
-                  )}
-                />
-
-                <DetailRow
-                  label="Service Tax"
-                  value={() => <Amount value={payment.service_tax} />}
-                />
-
-                <DetailRow
-                  label="Total Fees"
-                  data-tip="Total Fees is inclusive of Service Tax charges"
-                  value={() => <Amount value={payment.fee} />}
-                />
-
-                <DetailRow
-                  label="International"
-                  value={() => <CheckIcon value={payment.international} />}
-                />
-
-                {otherKeys.map(key => (
-                  <OtherDetail
-                    key={key}
-                    label={key}
-                    value={payment[key]}
-                    entity={payment}
+            <div class="SliderPanel__Body">
+              <div class="panel-body">
+                <Alert type={statusMsg.type} message={statusMsg.message} />
+                <div class="list-group details-row-container">
+                  <DetailRow
+                    label="Amount"
+                    value={() => <Amount value={payment.amount} />}
                   />
-                ))}
-                {payment.error_code
-                  ? <DetailRow label="Error" value={payment.error_code} />
-                  : null}
-                {payment.error_description
-                  ? <DetailRow
-                      label="Error Description"
-                      value={payment.error_description}
-                    />
-                  : null}
-                {Object.keys(payment.notes).length > 0
-                  ? <ListGroupToggler label="Notes">
-                      <table class="table table-hover">
-                        <TableBody
-                          colSpan={2}
-                          rows={Object.keys(payment.notes)}
-                        >
-                          {Object.keys(payment.notes).map(note => (
-                            <ListItem
-                              key={note}
-                              item={note}
-                              value={payment.notes[note]}
-                            />
-                          ))}
-                        </TableBody>
-                      </table>
-                    </ListGroupToggler>
-                  : <DetailRow label="Notes" value="No Notes" />}
 
-                <DetailRow
-                  label="Created At"
-                  value={() => (
-                    <Time
-                      value={payment.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
+                  <DetailRow
+                    label="Amount Refunded"
+                    value={() => <Amount value={payment.amount_refunded} />}
+                  />
+
+                  <DetailRow label="Currency" value={payment.currency} />
+                  <DetailRow
+                    label="Status"
+                    value={() => <PaymentStatusLabel status={payment.status} />}
+                  />
+
+                  <DetailRow label="Captured" value={payment.captured} />
+
+                  <DetailRow label="Method" value={titleCase(payment.method)} />
+
+                  {payment.bank
+                    ? <DetailRow label="Bank" value={payment.bank} />
+                    : null}
+                  {payment.wallet
+                    ? <DetailRow label="Wallet" value={payment.wallet} />
+                    : null}
+                  {payment.method === 'card'
+                    ? <ListGroupToggler
+                        label="Card Details"
+                        onToggleClick={() => props.onToggleCardDetails(payment)}
+                      >
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={card.loading}
+                              rows={Object.keys(card.details)}
+                            >
+                              {Object.keys(card.details).map(key => (
+                                <ListItem
+                                  key={key}
+                                  item={titleCase(key)}
+                                  value={card.details[key]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
+                      </ListGroupToggler>
+                    : null}
+
+                  <DetailRow
+                    label="Refund Status"
+                    value={titleCase(payment.refund_status)}
+                  />
+
+                  <DetailRow label="Description" value={payment.description} />
+
+                  <DetailRow label="Email" value={payment.email} />
+
+                  <DetailRow label="Contact" value={payment.contact} />
+
+                  <DetailRow
+                    label="Fees"
+                    value={() => (
+                      <Amount value={payment.fee - payment.service_tax} />
+                    )}
+                  />
+
+                  <DetailRow
+                    label="Service Tax"
+                    value={() => <Amount value={payment.service_tax} />}
+                  />
+
+                  <DetailRow
+                    label="Total Fees"
+                    data-tip="Total Fees is inclusive of Service Tax charges"
+                    value={() => <Amount value={payment.fee} />}
+                  />
+
+                  <DetailRow
+                    label="International"
+                    value={() => <CheckIcon value={payment.international} />}
+                  />
+
+                  {otherKeys.map(key => (
+                    <OtherDetail
+                      key={key}
+                      label={key}
+                      value={payment[key]}
+                      entity={payment}
                     />
-                  )}
-                />
-                {payment.refund_status
-                  ? <ListGroupToggler
-                      label="Refunds"
-                      onToggleClick={() => props.onToggleRefundList(payment)}
-                    >
-                      <table class="table table-hover">
-                        <TableBody
-                          colSpan={2}
-                          isLoading={refunds.loading}
-                          rows={refunds.items}
-                        >
-                          {refunds.items.map(refund => (
-                            <RefundsListItem key={refund.id} refund={refund} />
-                          ))}
-                        </TableBody>
-                      </table>
-                    </ListGroupToggler>
-                  : <DetailRow label="Refunds" value="No Refunds" />}
-              </div>
-              <ShowWhen myRole="owner manager operations admin">
-                <div class="text-center">
-                  {payment.status === 'authorized'
-                    ? <button
-                        type="submit"
-                        class="btn btn-success"
-                        onClick={() => {
-                          props.confirmCapture(payment);
-                        }}
-                      >
-                        Capture Payment
-                      </button>
+                  ))}
+                  {payment.error_code
+                    ? <DetailRow label="Error" value={payment.error_code} />
                     : null}
-                  {payment.status === 'captured' &&
-                    payment.refund_status !== 'full'
-                    ? <button
-                        type="submit"
-                        class="btn btn-primary"
-                        onClick={() => {
-                          props.openRefundModal(payment);
-                        }}
-                      >
-                        Refund Payment
-                      </button>
+                  {payment.error_description
+                    ? <DetailRow
+                        label="Error Description"
+                        value={payment.error_description}
+                      />
                     : null}
+                  {Object.keys(payment.notes).length > 0
+                    ? <ListGroupToggler label="Notes" show={true}>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              rows={Object.keys(payment.notes)}
+                            >
+                              {Object.keys(payment.notes).map(note => (
+                                <ListItem
+                                  key={note}
+                                  item={note}
+                                  value={payment.notes[note]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
+                      </ListGroupToggler>
+                    : <DetailRow label="Notes" value="No Notes" />}
+
+                  <DetailRow
+                    label="Created At"
+                    value={() => (
+                      <Time
+                        value={payment.created_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
+                  />
+                  {payment.refund_status
+                    ? <ListGroupToggler
+                        label="Refunds"
+                        onToggleClick={() => props.onToggleRefundList(payment)}
+                      >
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={refunds.loading}
+                              rows={refunds.items}
+                            >
+                              {refunds.items.map(refund => (
+                                <RefundsListItem
+                                  key={refund.id}
+                                  refund={refund}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
+                      </ListGroupToggler>
+                    : <DetailRow label="Refunds" value="No Refunds" />}
                 </div>
-              </ShowWhen>
+                <ShowWhen myRole="owner manager operations admin">
+                  <div class="text-center">
+                    {payment.status === 'authorized'
+                      ? <button
+                          type="submit"
+                          class="btn btn-success"
+                          onClick={() => {
+                            props.confirmCapture(payment);
+                          }}
+                        >
+                          Capture Payment
+                        </button>
+                      : null}
+                    {payment.status === 'captured' &&
+                      payment.refund_status !== 'full'
+                      ? <button
+                          type="submit"
+                          class="btn btn-primary"
+                          onClick={() => {
+                            props.openRefundModal(payment);
+                          }}
+                        >
+                          Refund Payment
+                        </button>
+                      : null}
+                  </div>
+                </ShowWhen>
+              </div>
             </div>
           </div>}
     </div>

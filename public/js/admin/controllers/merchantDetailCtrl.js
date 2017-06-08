@@ -64,6 +64,34 @@ app
       generateMerchant();
       getGatewayRulesOfMerchant();
 
+      // Gateway map is dependent upon method
+      $scope.getGatewayLabel = function(method, gateway) {
+        var map = null;
+        switch (method) {
+          case 'card':
+            map = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            map = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            map = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            map = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            map = utilMapping.getMap('gatewayUpiMap');
+            break;
+        }
+
+        if (!map) {
+          return gateway;
+        }
+
+        return map[gateway];
+      };
+
       $scope.lockForm = function() {
         var data = {
           route_name: 'merchant_activation_update',
@@ -311,6 +339,13 @@ app
                 true
               );
               $scope.merchant.details.activated = 1;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -419,6 +454,13 @@ app
                 true
               );
               $scope.merchant.details.live = 1;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -451,6 +493,13 @@ app
                 true
               );
               $scope.merchant.details.live = 0;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1037,6 +1086,13 @@ app
                 true
               );
               $scope.merchant.details.archived_at = null;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1071,6 +1127,13 @@ app
                 true
               );
               $scope.merchant.details.suspended_at = Date.now() / 1000;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1105,6 +1168,13 @@ app
                 true
               );
               $scope.merchant.details.suspended_at = null;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {

@@ -5,22 +5,19 @@ const SETTLEMENT_FETCH = 'SETTLEMENT_FETCH';
 const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 
 export const fetchSettlement = id => {
-  return dispatch => {
-    let settlement = new Settlement();
-    return dispatch({
-      type: SETTLEMENT_FETCH,
-      payload: settlement.fetch(id),
-    });
+  let settlement = new Settlement();
+
+  return {
+    type: SETTLEMENT_FETCH,
+    payload: settlement.fetch(id),
   };
 };
 
 export const fetchBreakupDetails = params => {
-  return dispatch => {
-    let settlement = new Settlement(params);
-    return dispatch({
-      type: SETTLEMENT_BREAKUP_FETCH,
-      payload: settlement.fetchBreakupDetails(),
-    });
+  let settlement = new Settlement(params);
+  return {
+    type: SETTLEMENT_BREAKUP_FETCH,
+    payload: settlement.fetchBreakupDetails(),
   };
 };
 

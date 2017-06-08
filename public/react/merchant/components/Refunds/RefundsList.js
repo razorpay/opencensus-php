@@ -1,10 +1,11 @@
 import Time from 'rzp/ui/Time';
 import TableBody from 'rzp/ui/TableBody';
 import { NavLink } from 'react-router-dom';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const RefundsListItem = ({ refund }) => {
   return (
-    <tr>
+    <EntityItemRow id={refund.id}>
       <td>
         <NavLink to={`/refunds/${refund.id}`}>
           <code>{refund.id}</code>
@@ -16,11 +17,11 @@ const RefundsListItem = ({ refund }) => {
         </NavLink>
       </td>
       <td>{refund.currency}</td>
-      <td>{refund.amountInINR}</td>
+      <td class="text-right">{refund.amountInINR}</td>
       <td>
         <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
@@ -33,7 +34,7 @@ export default ({ refunds, isLoading }) => {
             <th>Refund Id</th>
             <th>Payment Id</th>
             <th>Currency</th>
-            <th>Amount (INR)</th>
+            <th class="text-right">Amount</th>
             <th>Created At</th>
           </tr>
         </thead>

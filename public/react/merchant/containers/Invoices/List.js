@@ -11,17 +11,18 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 @withRouter
 @connect(
   state => {
     return { ...state.invoices, ...state.session };
   },
-  { ...InvoiceActions, ...ModalActions }
+  { ...InvoiceActions, ...ModalActions, luminateRow }
 )
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
-    if (this.props.user.tags.indexOf('Newui') !== -1) {
+    if (this.props.user.isNewUIEnabled) {
       params.type = 'invoice';
     }
 
@@ -42,7 +43,7 @@ export default class InvoicesListContainer extends ListContainer {
         <CreatePaymentLink
           invoice={invoice}
           onSave={invoice => {
-            this.props.highLightInvoice(invoice.id);
+            this.props.luminateRow(invoice.id);
           }}
           closeModal={this.props.closeModal}
         />
@@ -52,7 +53,7 @@ export default class InvoicesListContainer extends ListContainer {
 
   render() {
     let { loading, invoices, user } = this.props;
-    let isNewUIEnabled = user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = user.isNewUIEnabled;
     let status = this.state.status;
 
     return (
@@ -61,7 +62,7 @@ export default class InvoicesListContainer extends ListContainer {
           target="#invoicing-header"
           attachment="top right"
           targetAttachment="top right"
-          offset="-8px 20px"
+          offset="-8px 0"
         >
           <div />{/* required by react-tether */}
 
@@ -74,13 +75,15 @@ export default class InvoicesListContainer extends ListContainer {
                 </NavLink>
               </ShowWhen>
 
-              <button
-                class="btn btn-primary"
-                onClick={() => this.showPaymentLinkModal()}
-              >
-                <i class="icon icon-plus" />
-                <span>Create Payment Link</span>
-              </button>
+              {!isNewUIEnabled
+                ? <button
+                    class="btn btn-primary"
+                    onClick={() => this.showPaymentLinkModal()}
+                  >
+                    <i class="icon icon-plus" />
+                    <span>Create Payment Link</span>
+                  </button>
+                : null}
             </div>
           </ShowWhen>
         </TetherComponent>
@@ -97,7 +100,6 @@ export default class InvoicesListContainer extends ListContainer {
           invoices={invoices}
           isNewUIEnabled={isNewUIEnabled}
           isLoading={loading}
-          highlightRow={invoice => invoice.id === this.props.highLightInvoiceId}
           onEdit={this.editInvoice}
         />
 

@@ -7,8 +7,8 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, email } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
-import { highlightReferral } from 'merchant/modules/referrals';
 import { fetchUser } from 'merchant/modules/session';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(
   state => {
@@ -16,7 +16,7 @@ import { fetchUser } from 'merchant/modules/session';
       ...state.session,
     };
   },
-  { fetchUser, highlightReferral, closeModal, ...NotificationsActions }
+  { fetchUser, luminateRow, closeModal, ...NotificationsActions }
 )
 @reduxForm({
   form: 'createMerchant',
@@ -35,7 +35,7 @@ export default class CreateMerchant extends Component {
       .onSave(props)
       .then(referral => {
         this.props.fetchUser();
-        this.props.highlightReferral(referral.id);
+        this.props.luminateRow(referral.id);
         this.props.showNotification({
           type: 'success',
           message: 'Merchant created',

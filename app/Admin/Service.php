@@ -9,6 +9,7 @@ use Cache;
 use Trace;
 use Queue;
 use Crypt;
+use Input;
 use Config;
 use Session;
 use Requests;
@@ -909,9 +910,9 @@ class Service extends Base\Service
         //
         if ($linkedAccount === true)
         {
-            $data['beneficiary_address1']   = 'NA';
-            $data['beneficiary_city']       = 'NA';
-            $data['beneficiary_state']      = 'NA';
+            $data['beneficiary_address1']   = 'Bangalore';
+            $data['beneficiary_city']       = 'Bangalore';
+            $data['beneficiary_state']      = 'KA';
             $data['beneficiary_pin']        = 560001;
             $data['beneficiary_mobile']     = 9999999999;
         }
@@ -930,6 +931,8 @@ class Service extends Base\Service
      */
     public function activateMerchant($id, $dashboardOnly = false)
     {
+        $error = $response = [];
+
         $this->setApiCredentials();
 
         $merchant = $this->api->merchant->fetch($id);
@@ -938,7 +941,7 @@ class Service extends Base\Service
 
         if ((int) $details['submitted'] === 0)
         {
-            return ['Activation form has not been submitted by merchant yet.'];
+            return [['Activation form has not been submitted by merchant yet.'], []];
         }
 
         $this->setApiCredentials();
@@ -964,23 +967,23 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials();
+            $this->setAdminCredentials();
 
             // Only if the merchant doesn't have the Bank Account associated
             // Do we add a bank account
             if ($bankAccountApi === false)
             {
-                $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+                $this->api->merchant->setId($id)->setBankAccount($bankAccount);
             }
 
             if ($merchant['activated'] === false)
             {
-                $this->api->merchant->fetch($id)->activate();
+                $response = $this->api->merchant->setId($id)->activate();
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return [$e->getMessage()];
+            return [[$e->getMessage()], []];
         }
 
         try
@@ -1002,7 +1005,9 @@ class Service extends Base\Service
         {
             $merchant = Merchant\Entity::findorfail($id);
 
-            return $this->activateMerchantOnDashboard($merchant);
+            $this->activateMerchantOnDashboard($merchant);
+
+            return [$error, $response->toArray()];
         }
     }
 
@@ -1520,14 +1525,59 @@ class Service extends Base\Service
         return $slack->getResponse();
     }
 
-    public function getMerchantAggregations($mode, $resource, $input)
+    /**
+     * This function is used to get the required timestamp based on the filters applied
+     * on merchant stats page [Eg: Last 1 week, Last 3 Months etc.]
+     * @param $duration_count int
+     * @param $type $type string
+    */
+    public function getMerchantStatsFilterTimestamp($duration_count, $type)
+    {
+        $current = Carbon::now();
+
+        $timestamp = '';
+
+        switch ($type) {
+            case 'day':
+                $timestamp = $current->startOfDay()->subDays($duration_count)->timestamp;
+                break;
+
+            case 'week':
+                $timestamp = $current->startOfWeek()->subWeeks($duration_count)->timestamp;
+                break;
+
+            case 'month':
+                $timestamp = $current->startOfMonth()->subMonths($duration_count)->timestamp;
+                break;
+
+            case 'year':
+                $timestamp = $current->startOfYear()->subYears($duration_count)->timestamp;
+                break;
+        }
+
+        return $timestamp;
+    }
+
+    public function getMerchantAggregations($mode, $input)
     {
         $error = (new Admin\Validator)->validateInput('merchant_stats', $input)->messages();
 
         if (empty($error))
         {
-            $sort = \Input::get('sort', 'total_amount');
-            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort)];
+            $sort = Input::get('sort', 'total_amount');
+
+            $count = Input::get('count', 10);
+
+            $duration_count = Input::get('duration_count', 1);
+
+            $type = Input::get('type', 'month');
+
+            $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+
+            $response =
+                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type);
+
+            return [null, $response];
         }
         else
         {
@@ -1536,14 +1586,17 @@ class Service extends Base\Service
 
     }
 
-    public function getSingleMerchantAggregations($merchantId, $mode, $resource)
+    public function getSingleMerchantAggregations($mode, $input, $merchantId)
     {
-        $data = [
-            'merchant_id'   =>  $merchantId,
-            'resource'      =>  $resource
-        ];
+        $sort = Input::get('sort', 'total_amount');
 
-        $response = Merchant\Entity::getAggregations($data, $mode);
+        $duration_count = Input::get('duration_count', 1);
+
+        $type = Input::get('type', 'month');
+
+        $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+
+        $response = Merchant\Entity::getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId);
 
         return [null, $response];
     }

@@ -6,63 +6,41 @@ const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH';
 const CUSTOMER_CREATE = 'CUSTOMER_CREATE';
 const CUSTOMER_EDIT = 'CUSTOMER_EDIT';
 const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
-const HIGHLIGHT_CUSTOMER = 'HIGHLIGHT_CUSTOMER';
-const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT';
 
 export const fetchCustomers = params => {
-  return dispatch => {
-    let customer = new Customer();
-    return dispatch({
-      type: CUSTOMERS_FETCH,
-      payload: customer.fetchAll(params),
-    });
+  let customer = new Customer();
+
+  return {
+    type: CUSTOMERS_FETCH,
+    payload: customer.fetchAll(params),
   };
 };
 
 export const fetchCustomersForAutocomplete = () => {
-  return dispatch => {
-    let customer = new Customer();
-    return dispatch({
-      type: CUSTOMERS_AUTOCOMPLETE_FETCH,
-      payload: customer.fetchForAutocomplete(),
-    });
+  let customer = new Customer();
+
+  return {
+    type: CUSTOMERS_AUTOCOMPLETE_FETCH,
+    payload: customer.fetchForAutocomplete(),
   };
 };
 
 export const saveCustomer = params => {
-  return dispatch => {
-    let customer = new Customer(params);
-    return dispatch({
-      type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
-      payload: customer.save(),
-    });
+  let customer = new Customer(params);
+
+  return {
+    type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
+    payload: customer.save(),
   };
 };
 
 export const deleteCustomer = params => {
-  return dispatch => {
-    let customer = new Customer(params);
-    return customer.delete().then(() => {
-      dispatch({
-        type: CUSTOMER_DELETED,
-        payload: customer,
-      });
-    });
-  };
-};
+  let customer = new Customer(params);
 
-export const highlightCustomerRow = params => {
-  return dispatch => {
-    dispatch({
-      type: HIGHLIGHT_CUSTOMER,
-      payload: params,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_HIGHLIGHT,
-      });
-    }, 6000);
+  return {
+    type: CUSTOMER_DELETED,
+    payload: customer.delete(),
+    id: customer.id,
   };
 };
 
@@ -70,17 +48,13 @@ let initialState = {
   loading: true,
   customers: [],
   count: 0,
-  highlightRowId: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${CUSTOMERS_FETCH}::PENDING`:
     case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return merge(state, {
-        loading: true,
-        highlightRowId: null,
-      });
+      return set(state, 'loading', true);
 
     case `${CUSTOMERS_FETCH}::SUCCESS`:
     case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`:
@@ -106,18 +80,12 @@ export default function(state = initialState, action) {
       );
       return set(state, `customers.${customerIndex}`, action.payload);
 
-    case CUSTOMER_DELETED:
+    case `${CUSTOMER_DELETED}::SUCCESS`:
       var customersList = remove(
         state.customers,
-        customer => customer.id === action.payload.id
+        customer => customer.id === action.id
       );
       return set(state, 'customers', customersList);
-
-    case HIGHLIGHT_CUSTOMER:
-      return set(state, 'highlightRowId', action.payload.id);
-
-    case REMOVE_HIGHLIGHT:
-      return set(state, 'highlightRowId', null);
 
     default:
       return state;

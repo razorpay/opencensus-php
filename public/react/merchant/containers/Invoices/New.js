@@ -25,11 +25,7 @@ import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import { fetchConfig } from 'merchant/modules/config';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import { fetchItemsForAutocomplete } from 'merchant/modules/items';
-import {
-  saveInvoice,
-  highLightInvoice,
-  deleteInvoice,
-} from 'merchant/modules/invoices/list';
+import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
 import * as InvoiceActions from 'merchant/modules/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -82,7 +78,6 @@ const selector = formValueSelector('newInvoice');
     fetchCustomersForAutocomplete,
     fetchItemsForAutocomplete,
     saveInvoice,
-    highLightInvoice,
     deleteInvoice,
     fetchConfig,
     ...InvoiceActions,
@@ -407,28 +402,32 @@ export default class InvoicesNewContainer extends Component {
   };
 
   handleBackNavClick = () => {
-    if (!(this.props.anyTouched && this.props.dirty)) {
-      return this.navigateToList();
-    }
+    this.navigateToList();
 
-    this.context
-      .confirm({
-        header: 'Unsaved changes',
-        message: 'You have some unsaved changes. Do you want to leave this page ?',
-        affirmativeLabel: 'Yes, leave',
-        abortLabel: 'No, stay',
-      })
-      .then(() => {
-        this.navigateToList();
-      });
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // if (!(this.props.anyTouched && this.props.dirty)) {
+    //   return this.navigateToList();
+    // }
+
+    // this.context
+    //   .confirm({
+    //     header: 'Unsaved changes',
+    //     message: 'You have some unsaved changes. Do you want to leave this page ?',
+    //     affirmativeLabel: 'Yes, leave',
+    //     abortLabel: 'No, stay',
+    //   })
+    //   .then(() => {
+    //     this.navigateToList();
+    //   });
   };
 
   handleWindowClose() {
-    window.onbeforeunload = function() {
-      return this.props.anyTouched && this.props.dirty
-        ? 'Unsaved changes will be deleted. Do you want to leave the page?'
-        : null;
-    }.bind(this);
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // window.onbeforeunload = function() {
+    //   return this.props.anyTouched && this.props.dirty
+    //     ? 'Unsaved changes will be deleted. Do you want to leave the page?'
+    //     : null;
+    // }.bind(this);
   }
 
   componentWillUnmount() {
@@ -459,7 +458,7 @@ export default class InvoicesNewContainer extends Component {
           : <div class="content-wrapper invoice-creation-container">
               <form onSubmit={handleSubmit(this.save)}>
                 <div class="row">
-                  <div class="col-md-8">
+                  <div class="col-md-8 col-sm-8">
                     <div class="invoice-container pull-right">
                       <InvoiceBreadcrumbNav
                         invoice={invoice}
@@ -655,7 +654,10 @@ export default class InvoicesNewContainer extends Component {
                   </div>
 
                   <ShowWhen notMyRole="support finance">
-                    <div class="col-md-4" style={{ marginTop: '48px' }}>
+                    <div
+                      class="col-md-4 col-sm-4"
+                      style={{ marginTop: '48px' }}
+                    >
                       {!locked &&
                         <div class="inv__cta">
                           <div class="btn-group-vertical">

@@ -1,5 +1,14 @@
 import moment from 'moment';
 
+moment.updateLocale('en', {
+  relativeTime: {
+    s: 'few secs',
+    ss: '%s secs',
+    m: 'a min',
+    mm: '%d mins',
+  },
+});
+
 export function titleCase(sentence) {
   return (sentence || '')
     .split(/\s+|_/)

@@ -2,19 +2,20 @@ import ajax from 'merchant/utils/ajax';
 import loadScript from 'rzp/utils/loadScript';
 
 export const fetchHost = () => {
-  return dispatch => {
+  return () => {
     return ajax('/apihost', { appendModeInURL: false });
   };
 };
 
 export const fetchKeys = currentUser => {
-  return dispatch => {
-    let params = {
-      route_name: 'merchant_fetch_keys',
-      url_params: {
-        '{id}': currentUser,
-      },
-    };
+  let params = {
+    route_name: 'merchant_fetch_keys',
+    url_params: {
+      '{id}': currentUser,
+    },
+  };
+
+  return () => {
     return ajax({
       url: '/user/generic',
       data: params,
@@ -23,13 +24,13 @@ export const fetchKeys = currentUser => {
       if (response.data.count) {
         return response.data.items[0].id;
       }
-      throw new Error('No valid api keys found, check Api Keys page');
+      throw ['No valid api keys found, check Api Keys page'];
     });
   };
 };
 
 export const loadCheckout = apiURL => {
-  return dispatch => {
+  return () => {
     let checkoutURL = 'https://checkout.razorpay.com/';
     let api = document.createElement('a');
     api.href = apiURL;
@@ -54,7 +55,7 @@ export const loadCheckout = apiURL => {
 };
 
 export const addFunds = (data = {}) => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: '/addfunds',
       method: 'post',

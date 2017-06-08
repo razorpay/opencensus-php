@@ -4,12 +4,10 @@ import { set, merge } from 'rzp/utils/immutable';
 const ORDERS_FETCH = 'ORDERS_FETCH';
 
 export const fetchOrders = params => {
-  return dispatch => {
-    let order = new Order();
-    return dispatch({
-      type: ORDERS_FETCH,
-      payload: order.fetchAll(params),
-    });
+  let order = new Order();
+  return {
+    type: ORDERS_FETCH,
+    payload: order.fetchAll(params),
   };
 };
 

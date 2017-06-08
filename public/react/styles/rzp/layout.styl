@@ -8,7 +8,6 @@ html, body {
 
 body {
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 60px;
 }
 
 *:focus {
@@ -22,13 +21,14 @@ body {
 
 .layout {
   position: relative;
-  min-height: 84vh;
+  min-height: 94vh;
+  padding-bottom: 45px;
 }
 
 .main-content {
   margin-left: 200px;
   margin-top: 51px;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     margin-left: 45px;
   }
 }
@@ -50,9 +50,8 @@ body {
   background-color: #2E3345;
   width: 200px;
   z-index: 1111;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     width: 45px;
-    overflow: hidden;
   }
 
   .brand-logo {
@@ -89,7 +88,7 @@ body {
     margin-bottom: 10px;
     padding-left: 20px;
     padding-top: 10px;
-    @media $sm-max {
+    @media (max-width $screen-sm-min) {
       display: none;
     }
 
@@ -106,9 +105,13 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    overflow: auto;
-    padding-bottom: 80px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 15px;
     padding-top: 15px;
+    @media (max-width $screen-sm-min) {
+      padding-bottom: 60px;
+    }
 
     .text-warning {
       color: #fbe165;
@@ -121,7 +124,7 @@ body {
     display: block;
     line-height: 40px;
     padding: 0 15px;
-    @media $sm-max {
+    @media (max-width $screen-sm-min) {
       white-space: nowrap;
     }
 
@@ -154,7 +157,7 @@ body {
   border-bottom: 0;
   background-color: #fff;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     margin-left: 45px;
   }
 }
@@ -174,12 +177,12 @@ body {
 
 .pagefooter {
   position: absolute;
-  top: 100%;
-  padding: 20px;
-  font-size: 10px;
+  bottom: 0;
+  padding: 10px 20px;
+  font-size: 12px;
   color: #8F96B3;
   margin-left: 200px;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     margin-left: 45px;
   }
 
@@ -228,7 +231,7 @@ body {
 
 .content-wrapper {
   padding: 20px;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     padding: 10px;
   }
 }
@@ -371,6 +374,7 @@ body.ReactModal__Body--open {
 .CalendarDay--selected:active {
   background-color: #6A5ACE;
   border-color: #6A5ACE;
+  color: #fff;
 }
 
 .DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
@@ -425,6 +429,10 @@ tr:hover .row-action > .btn-group {
 
 .details-row-container {
   .list-group-item {
+    span:first-child {
+      margin-right: 20px;
+    }
+
     .table > tbody > tr > td.empty-table {
       padding: 20px;
       border-top: 0;
@@ -433,6 +441,10 @@ tr:hover .row-action > .btn-group {
     &:not(.no-flex) {
       display: flex;
       justify-content: space-between;
+    }
+
+    .list-group, .table {
+      margin-bottom: 0;
     }
   }
 }

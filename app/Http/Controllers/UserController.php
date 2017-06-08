@@ -8,9 +8,15 @@ use App\User;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Http\AppResponse;
+use App\User\Helper as UserHelper;
 
 class UserController extends Controller
 {
+    // Users who signed up before this date
+    // are not exposed to the pre signup flow
+
+    const PRE_SIGNUP_TIMESTAMP = 1488306600;
+
     protected $guard = 'users';
     /**
      * Returns the base template for angular.
@@ -19,9 +25,39 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        $user = Auth::user();
+        list($error, $details) = (new User\Service)->getUserDetails();
 
-        return view('merchant.tmpgetIndex', [ 'isAuthenticated' =>  $user ]);
+        $data = [
+            'isAuthenticated'       => false,
+            'isConfirmed'           => false,
+            'preSignupData'         => [],
+            'isPreSignupComplete'   => false,
+        ];
+
+        if (empty($error))
+        {
+            $data = [
+                'isAuthenticated'       => (bool) $details['user'],
+                'isConfirmed'           => $details['user']['confirmed'],
+                'preSignupData'         => $details['pre_signup'],
+                'isPreSignupComplete'   => $details['pre_signup_complete'],
+            ];
+        }
+
+        // $data is used to run diferent pieces of JS
+        return view('merchant.tmpgetIndex', $data);
+    }
+
+    private function getPreSignupData($user)
+    {
+        $merchant = (new UserHelper)->getCurrentMerchant($user);
+
+        if ($merchant)
+        {
+            return (new Merchant\Service)->getPreSignupDetails($merchant->id);
+        }
+
+        return [];
     }
 
     /**
@@ -138,52 +174,6 @@ class UserController extends Controller
         $error = (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
 
         return AppResponse::jsonResponse($error);
-    }
-
-    /**
-     * @deprecated
-     * Please use `getUserDetailsV2`
-     * This is the one true method for all information
-     * @return [type] [description]
-     */
-    public function getUserDetailsV1()
-    {
-        $data = [
-            // Current merchant
-            'current'   =>  null
-        ];
-        $user = Auth::user();
-
-        $merchants = $user->merchants->toArray();
-
-        $currentMerchantId = $user->getCurrentMerchantId();
-
-        // If the user is logged in as someone
-        if ($currentMerchantId)
-        {
-            // Fetch merchant details for current merchant
-            $data = $data + (new MerchantDetails\Service)->fetchDetails();
-
-            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
-
-            foreach ($merchants as $merchant) {
-                $data['merchants'][$merchant['id']] = $merchant;
-
-                if ($merchant['id'] === $currentMerchantId)
-                {
-                    $data['current'] = $currentMerchantId;
-                }
-            }
-
-            // And finally, for backwards compatibility
-            $merchant = (new Merchant\Service)->fetchCurrentMerchantForUser($user);
-
-            $data = $data + $merchant;
-        }
-
-        $data['user'] = $user->toArray();
-
-        return AppResponse::jsonResponse(null, $data);
     }
 
     public function getUserDetailsV2()

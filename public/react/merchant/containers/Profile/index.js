@@ -68,7 +68,7 @@ export default class Profile extends Component {
     this.setState({
       merchantCount: Object.keys(user.merchants).length,
       loggedInUser: user.user,
-      loggedInUserRole: user.merchants[user.id].role,
+      loggedInUserRole: user.userRole,
       hasMerchant,
     });
   }
@@ -112,7 +112,7 @@ export default class Profile extends Component {
     const { user, profile } = this.props;
     const { bankAccount, invitations } = profile;
 
-    if (!user) {
+    if (!user.isAuthenticated) {
       return <div class="page-spinner-container"><Spinner /></div>;
     }
 

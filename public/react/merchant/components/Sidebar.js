@@ -15,14 +15,10 @@ export default class Sidebar extends Component {
   // populated with initial values
   routes = {
     transactions: '/payments',
-    account: '/activation',
+    account: '/profile',
     settings: '/config',
     invoices: '/invoices',
   };
-
-  componentWillMount() {
-    this.initializeRoutes(this.props.location);
-  }
 
   componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
@@ -31,7 +27,7 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
-    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
     let invoicesRegex = isNewUIEnabled
       ? INVOICES_ROUTES_REGEX
       : INVOICES_ROUTES_OLD_REGEX;
@@ -51,7 +47,7 @@ export default class Sidebar extends Component {
     let { user } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    let isNewUIEnabled = user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = user.isNewUIEnabled;
 
     return (
       <div class="sidebar">
@@ -243,6 +239,7 @@ export default class Sidebar extends Component {
                     icon="fa fa-gift text-danger"
                     to="/referrals"
                     notMyRole="sellerapp support"
+                    featureEnabled="Referral"
                   />
 
                   <div class="divider-old" data-label="Settings" />

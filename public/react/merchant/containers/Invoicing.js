@@ -11,7 +11,7 @@ import Items from 'merchant/containers/Items/List';
 @connect(state => state.session)
 export default class InvoicingContainer extends Component {
   render() {
-    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
     return (
       <tabbed-container>
         <header id="invoicing-header">

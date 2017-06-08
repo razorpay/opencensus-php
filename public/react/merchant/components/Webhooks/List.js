@@ -1,13 +1,14 @@
 import Time from 'rzp/ui/Time';
 import TableBody from 'rzp/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-const WebhooksListItem = ({ webhook, canHighlightRow }) => {
+const WebhooksListItem = ({ webhook }) => {
   let activeEventsCount = Object.keys(webhook.events).filter(
     key => webhook.events[key] === true
   ).length;
 
   return (
-    <tr class={canHighlightRow ? 'luminate' : ''}>
+    <EntityItemRow id={webhook.id}>
       <td>
         <code>{webhook.url}</code>
       </td>
@@ -22,12 +23,12 @@ const WebhooksListItem = ({ webhook, canHighlightRow }) => {
       <td>
         {activeEventsCount} {activeEventsCount > 1 ? 'events' : 'event'} enabled
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
 const WebhooksList = props => {
-  let { webhooks, isLoading, modeFormatted, highlightRow } = props;
+  let { webhooks, isLoading, modeFormatted } = props;
   let tableRowComponent;
 
   return (
@@ -59,11 +60,7 @@ const WebhooksList = props => {
           }
         >
           {webhooks.map(webhook => (
-            <WebhooksListItem
-              key={webhook.id}
-              canHighlightRow={highlightRow(webhook)}
-              webhook={webhook}
-            />
+            <WebhooksListItem key={webhook.id} webhook={webhook} />
           ))}
           {!isLoading &&
             <tr class="action-row">
@@ -82,10 +79,6 @@ const WebhooksList = props => {
       </table>
     </div>
   );
-};
-
-WebhooksList.defaultProps = {
-  highlightRow: () => {},
 };
 
 export default WebhooksList;

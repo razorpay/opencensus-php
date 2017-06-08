@@ -1,12 +1,13 @@
+import { Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from 'rzp/ui/TableBody';
-import { Link } from 'react-router-dom';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
   return (
-    <tr>
+    <EntityItemRow id={settlement.id}>
       <td>
         <Link to={`/settlements/${settlement.id}`}>
           <code>{settlement.id}</code>
@@ -32,7 +33,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
           Breakup
         </button>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 

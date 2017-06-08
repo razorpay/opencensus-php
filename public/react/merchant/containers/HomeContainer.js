@@ -67,7 +67,7 @@ export default class HomeContainer extends Component {
       refunds,
       settlements,
     } = this.props;
-    let isLive = this.props.mode === 'live';
+    let mode = this.props.mode;
     let graphData = this.props.analytics;
 
     return (
@@ -78,7 +78,7 @@ export default class HomeContainer extends Component {
               onDatesChange={params => {
                 this.props.fetchAnalytics({
                   ...params,
-                  isLive,
+                  mode,
                 });
               }}
             />

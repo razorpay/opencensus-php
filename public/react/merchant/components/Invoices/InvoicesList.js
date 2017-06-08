@@ -3,11 +3,12 @@ import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const InvoiceListItem = props => {
-  let { invoice, isNewUIEnabled, canHighlight, onEditClick } = props;
+  let { invoice, isNewUIEnabled, onEditClick } = props;
   return (
-    <tr class={canHighlight ? 'luminate' : ''}>
+    <EntityItemRow id={invoice.id}>
       <td>
         {
           do {
@@ -63,18 +64,12 @@ const InvoiceListItem = props => {
           </div>
         </div>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
 export default props => {
-  let {
-    type,
-    invoices,
-    isNewUIEnabled,
-    isLoading,
-    highlightRow = () => {},
-  } = props;
+  let { type, invoices, isNewUIEnabled, isLoading } = props;
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
@@ -88,7 +83,7 @@ export default props => {
             <th>Customer</th>
             <th>Payment Link</th>
             {!isNewUIEnabled ? <th>Type</th> : ''}
-            <th class="text-right">Amount (INR)</th>
+            <th class="text-right">Amount</th>
             <th class="text-right">Status</th>
             <th>Actions</th>
           </tr>
@@ -104,7 +99,6 @@ export default props => {
               key={invoice.id}
               invoice={invoice}
               isNewUIEnabled={isNewUIEnabled}
-              canHighlight={highlightRow(invoice)}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
             />

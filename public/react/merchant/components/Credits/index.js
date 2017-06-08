@@ -18,7 +18,7 @@ export default props => {
         target="#myaccount-header"
         attachment="top right"
         targetAttachment="top right"
-        offset="-8px 20px"
+        offset="-8px 0"
       >
         <div />{/* required by react-tether */}
         <div class="btn-toolbar pull-right">

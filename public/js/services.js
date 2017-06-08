@@ -62,20 +62,7 @@ angular
               ) {
                 _isPreSignupDone = true;
               } else {
-                // if any of the fields is missing, isPreSignupDone will be false
-                _isPreSignupDone =
-                  _identity.pre_signup &&
-                  (parseInt(_identity.activated) === 1 ||
-                  _identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
-                    !!Object.keys(_identity.pre_signup)
-                      // get all values
-                      .map(function(key) {
-                        return _identity.pre_signup[key];
-                      })
-                      // reduce all values using '&&'
-                      .reduce(function(x, y) {
-                        return x && y;
-                      }));
+                _isPreSignupDone = _identity.pre_signup_complete;
               }
 
               _isVerified = _identity.user.confirmed;
@@ -1069,6 +1056,40 @@ angular
           hdfc: 'HDFC',
           amex: 'Amex',
           icic: 'ICICI',
+        },
+        gatewayCardMap: {
+          first_data: 'First Data',
+          hdfc: 'FSS',
+          axis_migs: 'Axis Migs',
+          cybersource: 'Cybersource',
+          amex: 'Amex',
+        },
+        gatewayEmiMap: {
+          amex: 'Amex',
+          hdfc: 'FSS',
+          first_data: 'First Data',
+        },
+        gatewayNBMap: {
+          netbanking_hdfc: 'HDFC Netbanking',
+          netbanking_kotak: 'Kotak Netbanking',
+          netbanking_icici: 'ICICI Netbanking',
+          netbanking_axis: 'Axis Netbanking',
+          netbanking_federal: 'Federal Netbanking',
+          netbanking_airtel: 'Airtel Netbanking',
+          billdesk: 'Billdesk',
+          ebs: 'Ebs',
+        },
+        gatewayWalletMap: {
+          wallet_airtelmoney: 'Airtelmoney',
+          wallet_freecharge: 'Freecharge',
+          wallet_jiomoney: 'Jiomoney',
+          wallet_olamoney: 'Olamoney',
+          wallet_payumoney: 'Payumoney',
+          wallet_payzapp: 'Payzapp',
+        },
+        gatewayUpiMap: {
+          upi_idfc: 'IDFC UPI',
+          upi_icici: 'ICICI UPI',
         },
       };
 

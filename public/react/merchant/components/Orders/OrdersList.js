@@ -2,10 +2,11 @@ import Time from 'rzp/ui/Time';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from 'rzp/ui/TableBody';
 import { NavLink } from 'react-router-dom';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const OrdersListItem = ({ order }) => {
   return (
-    <tr>
+    <EntityItemRow id={order.id}>
       <td>
         <NavLink to={`/orders/${order.id}`}>
           <code>{order.id}</code>
@@ -13,7 +14,7 @@ const OrdersListItem = ({ order }) => {
       </td>
       <td>{order.attempts}</td>
       <td>{order.currency}</td>
-      <td>{order.amountInINR}</td>
+      <td class="text-right">{order.amountInINR}</td>
       <td>
         <OrderStatusLabel status={order.status} />
       </td>
@@ -21,7 +22,7 @@ const OrdersListItem = ({ order }) => {
       <td>
         <Time value={order.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
@@ -34,7 +35,7 @@ export default ({ orders, isLoading }) => {
             <th>Order Id</th>
             <th>Attempts</th>
             <th>Currency</th>
-            <th>Amount (INR)</th>
+            <th class="text-right">Amount</th>
             <th>Status</th>
             <th>Receipt</th>
             <th>Created At</th>

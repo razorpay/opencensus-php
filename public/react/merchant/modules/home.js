@@ -35,92 +35,73 @@ let initialState = {
   },
 };
 
-const getTransactionCountData = (data, isLive) => {
+const getTransactionCountData = (data, mode) => {
   return createLineData(
-    data.filter(d => {
-      if (isLive) {
-        return !d.mode;
-      }
-      return d.mode;
-    }),
+    data.filter(d => d.mode === mode),
     'count',
     'Successful Transactions'
   );
 };
 
-const getTransactionAmountData = (data, isLive) => {
+const getTransactionAmountData = (data, mode) => {
   data = JSON.parse(JSON.stringify(data));
   data = data.filter(d => {
-    if (isLive) {
-      return !d.mode;
-    }
     d.amount = d.amount / 100;
-    return d.mode;
+    return d.mode === mode;
   });
   return createLineData(data, 'amount', 'Transaction Volume');
 };
 
 export const fetchAnalytics = params => {
-  return dispatch => {
-    return dispatch({
-      type: ANALYTICS_FETCH,
-      payload: ajax({
-        url: '/analytics/transactions',
-        data: {
-          type: 'day',
-          from: params.from,
-          to: params.to,
-        },
-      }).then(response => {
-        let transaction_count = null, transaction_amount = null;
-        if (response.data) {
-          transaction_count = getTransactionCountData(
-            response.data,
-            params.isLive
-          );
-          transaction_amount = getTransactionAmountData(
-            response.data,
-            params.isLive
-          );
-        }
-        return {
-          transaction_count,
-          transaction_amount,
-        };
-      }),
-    });
+  return {
+    type: ANALYTICS_FETCH,
+    payload: ajax({
+      url: '/analytics/transactions',
+      data: {
+        type: 'day',
+        from: params.from,
+        to: params.to,
+      },
+    }).then(response => {
+      let transaction_count = null, transaction_amount = null;
+      if (response.data) {
+        transaction_count = getTransactionCountData(response.data, params.mode);
+        transaction_amount = getTransactionAmountData(
+          response.data,
+          params.mode
+        );
+      }
+      return {
+        transaction_count,
+        transaction_amount,
+      };
+    }),
   };
 };
 
 export const fetchEntityTotals = () => {
-  return dispatch => {
-    return dispatch({
-      type: ENTITY_TOTALS_FETCH,
-      payload: ajax('/analytics/aggregations'),
-    });
+  return {
+    type: ENTITY_TOTALS_FETCH,
+    payload: ajax('/analytics/aggregations'),
   };
 };
 
 export const fetchPaymentBreakup = () => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_BREAKUP_FETCH,
-      payload: ajax('/analytics/payment/aggregations'),
-    });
+  return {
+    type: PAYMENT_BREAKUP_FETCH,
+    payload: ajax('/analytics/payment/aggregations'),
   };
 };
 
 export const fetchCurrentBalance = () => {
-  return dispatch => {
-    return dispatch({
-      type: CURRENT_BALANCE_FETCH,
-      payload: ajax('/user/generic', {
-        appendModeInQueryParam: true,
-        data: {
-          route_name: 'balance_fetch',
-        },
-      }),
-    });
+  return {
+    type: CURRENT_BALANCE_FETCH,
+    payload: ajax('/user/generic', {
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'balance_fetch',
+      },
+    }),
   };
 };
 

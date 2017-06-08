@@ -11,10 +11,12 @@ import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 @connect(state => state.invoices, {
   ...InvoiceActions,
   ...ModalActions,
+  luminateRow,
 })
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -28,7 +30,7 @@ export default class PaymentLinksContainer extends ListContainer {
         <CreatePaymentLink
           invoice={invoice}
           onSave={invoice => {
-            this.props.highLightInvoice(invoice.id);
+            this.props.luminateRow(invoice.id);
           }}
           closeModal={this.props.closeModal}
         />
@@ -51,7 +53,7 @@ export default class PaymentLinksContainer extends ListContainer {
             target="#link-header"
             attachment="top right"
             targetAttachment="top right"
-            offset="-8px 20px"
+            offset="-8px 0"
           >
             <div />{/* required by react-tether */}
 
@@ -81,8 +83,6 @@ export default class PaymentLinksContainer extends ListContainer {
             invoices={invoices}
             isLoading={loading}
             type="link"
-            highlightRow={invoice =>
-              invoice.id === this.props.highLightInvoiceId}
             onEdit={this.showPaymentLinkModal}
           />
 

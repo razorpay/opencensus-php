@@ -93,13 +93,12 @@ export default class CreatePaymentLink extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <Alert type="error" message={this.state.errors} />
-
         <form
           class="form-horizontal payment-link-form"
           onSubmit={handleSubmit(this.save)}
         >
           <div class="modal-body">
+            <Alert type="error" message={this.state.errors} />
             {isNewForm &&
               <div>
                 <div class="form-group">

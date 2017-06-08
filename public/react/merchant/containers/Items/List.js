@@ -8,10 +8,11 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ItemsList from 'merchant/components/Items/ItemsList';
 import ItemCreation from 'merchant/containers/Items/New';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as ItemActions from 'merchant/modules/items';
 import * as ModalActions from 'rzp/modules/modals';
+import * as ItemActions from 'merchant/modules/items';
+import { luminateRow } from 'merchant/modules/app';
 
-@connect(state => state.items, { ...ItemActions, ...ModalActions })
+@connect(state => state.items, { ...ItemActions, ...ModalActions, luminateRow })
 @reduxForm({
   form: 'newItem',
 })
@@ -34,7 +35,7 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   highlightRowAndClose = item => {
-    this.props.highlightItemRow(item);
+    this.props.luminateRow(item.id);
     this.props.closeModal();
   };
 
@@ -66,7 +67,7 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, highlightRowId } = this.props;
+    let { loading, items } = this.props;
     let status = this.state.status;
 
     return (
@@ -75,7 +76,7 @@ export default class ItemsListContainer extends ListContainer {
           target="#invoicing-header"
           attachment="top right"
           targetAttachment="top right"
-          offset="-8px 20px"
+          offset="-8px 0"
         >
           <div />{/* required by react-tether */}
 
@@ -97,7 +98,6 @@ export default class ItemsListContainer extends ListContainer {
         <ItemsList
           items={items}
           isLoading={loading}
-          highlightRow={item => item.id === highlightRowId}
           onEdit={this.showItemModal}
           onDelete={this.deleteItem}
         />
