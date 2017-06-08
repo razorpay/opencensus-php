@@ -973,6 +973,11 @@ class Service extends Base\Service
             {
                 $data['pre_signup_complete'] = true;
             }
+
+            if ($currentMerchant->role !== 'owner')
+            {
+                $data['pre_signup_complete'] = true;
+            }
         }
 
         return [[], $data];
