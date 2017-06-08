@@ -6,7 +6,12 @@ use Carbon\Carbon;
 use Mockery;
 use DB;
 
+use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+
 use RZP\Models\Transaction;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -14,9 +19,6 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
-use RZP\Models\Merchant;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
@@ -59,7 +61,14 @@ class MerchantTest extends TestCase
         $this->startTest();
 
         $this->ba->appAuthLive();
-        $this->startTest();
+        $result = $this->startTest();
+
+        $methods = $result['methods'];
+
+        $this->assertArrayHasKey('payumoney', $methods);
+        $this->assertArrayHasKey('card', $methods);
+        $this->assertArrayHasKey('banks', $methods);
+        $this->assertArrayHasKey('debit_card', $methods);
     }
 
     public function testGetMerchantUsers()
