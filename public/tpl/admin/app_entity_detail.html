@@ -147,7 +147,7 @@
       </div>
 
       <!--IINS-->
-      <div class="form-group">
+      <div class="form-group" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
         <label for="iins" class="col-lg-3 control-label">iins:</label>
         <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="iins" ng-model="offer.iins" placeholder="Enter comma(,) separated values"/>
@@ -155,7 +155,7 @@
       </div>
 
       <!--MAX PAYMENT COUNT-->
-      <div class="form-group">
+      <div class="form-group" ng-if="offer.payment_method === 'card'">
         <label for="max_payment_count" class="col-lg-3 control-label">max Payment Count:</label>
         <div class="col-lg-9" >
           <input type="decimal" class="form-control m-b" name="max_payment_count" ng-model="offer.max_payment_count"/>

@@ -1781,6 +1781,8 @@ app
                 'Offer is successfully created',
                 true
               );
+
+              getOffersOfMerchant(); // Update offers list in merchant details when offer is created
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -2296,12 +2298,30 @@ app
   .controller('createMerchantOfferModalCtrl', [
     '$scope',
     'dateFactory',
+    'utilMapping',
     '$modalInstance',
-    function($scope, dateFactory, $modalInstance) {
+    function($scope, dateFactory, utilMapping, $modalInstance) {
       $scope.offer = {};
+
+      // Payment network map to have different dropdown values depending upon payment method
+      $scope.updatePaymentNetworkMap = function() {
+        console.log('PAYMENT METHOD', $scope.offer.payment_method);
+        switch ($scope.offer.payment_method) {
+          case 'card':
+          case 'emi':
+            $scope.paymentNetworkMap = utilMapping.getMap('networkMap');
+            break;
+          case 'wallet':
+            $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
+            break;
+          default:
+            $scope.paymentNetworkMap = {};
+        }
+      };
 
       $scope.date = dateFactory.getHandler($scope);
       $scope.date.dateOptions['showWeeks'] = false;
+      $scope.date.dateOptions['minDate'] = moment(); // Avoid selection of date before today
 
       var today = new Date();
       $scope.currentDate = today.getTime();
@@ -2312,19 +2332,27 @@ app
 
       function cleanFields() {
         var offer = Object.assign({}, $scope.offer);
-        // 1. Convert command separate values to array
-        if ($scope.offer['iins']) {
-          offer['iins'] = offer['iins'].split(',');
+        // 1. iins is for only card and emi.
+        if (['card', 'emi'].indexOf(offer['payment_method']) === -1) {
+          delete offer['iins'];
+        } else if (offer['iins']) {
+          offer['iins'] = offer['iins'].split(','); // Convert command separate values to array
         }
 
+        // 2. Max payment count to be sent only when payment method = card
+        if (offer['payment_method'] !== 'card') {
+          delete offer['max_payment_count'];
+        }
+
+        // 3. Convert to array
         if (offer['linked_offer_ids']) {
           offer['linked_offer_ids'] = offer['linked_offer_ids'].split(',');
         }
 
-        // 2. Percent rate has limit 0-10000 (view takes from 0-100)
+        // 4. Percent rate has limit 0-10000 (view takes from 0-100)
         offer['percent_rate'] = offer['percent_rate'] * 100;
 
-        // 3. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
+        // 5. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
         var startTime = new Date($scope.offer_time.starts);
         var endTime = new Date($scope.offer_time.ends);
 
@@ -2356,7 +2384,7 @@ app
         return offer;
       }
 
-      $scope.ok = function(offer) {
+      $scope.ok = function() {
         $modalInstance.close(cleanFields());
       };
       $scope.cancel = function() {
