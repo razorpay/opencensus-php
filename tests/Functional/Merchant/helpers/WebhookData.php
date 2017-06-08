@@ -215,7 +215,7 @@ return [
                 'order' => [
                     'entity' => [
                         'entity'          => 'order',
-                        'partial_payment' => false,
+                        // 'partial_payment' => false,
                         'amount'          => 50000,
                         'amount_paid'     => 50000,
                         'amount_due'      => 0,
@@ -297,7 +297,7 @@ return [
                     'entity' => [
                         'entity'          => 'order',
                         'id'              => 'order_100000000order',
-                        'partial_payment' => false,
+                        // 'partial_payment' => false,
                         'amount'          => 1000000,
                         'amount_paid'     => 1000000,
                         'amount_due'      => 0,
@@ -335,7 +335,7 @@ return [
                         'status'           => 'paid',
                         'sms_status'       => 'sent',
                         'email_status'     => 'sent',
-                        'partial_payment'  => false,
+                        // 'partial_payment'  => false,
                         'amount'           => 1000000,
                         'amount_paid'      => 1000000,
                         'amount_due'       => 0,
