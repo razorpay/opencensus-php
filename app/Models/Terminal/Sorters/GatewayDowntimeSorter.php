@@ -16,7 +16,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
     /**
      * Lists down the methods for which `downtimeSorter` is applicable
      */
-    protected $applicableForMethods = [
+    protected $allowedMethods = [
         Payment\Method::CARD,
         Payment\Method::EMI,
     ];
@@ -39,7 +39,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      */
     public function downtimeSorter(array $terminals, array $input) : array
     {
-        if (in_array($input['payment']->getMethod(), $this->applicableForMethods) === false)
+        if (in_array($input['payment']->getMethod(), $this->allowedMethods, true) === false)
         {
             return $terminals;
         }
@@ -52,7 +52,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
             $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals,$input);
 
-            if (count($downtimes) === 0)
+            if ($downtimes->isEmpty() === true)
             {
                 return $terminals;
             }
@@ -65,15 +65,21 @@ class GatewayDowntimeSorter extends Terminal\Sorter
                     TraceCode::GATEWAY_DOWNTIME_SORTING,
                     [
                         'downtimes'        => $downtimes->pluck(Downtime\Entity::ID)->toArray(),
-                        'sorted_terminals' => array_pluck($terminals, 'id'),
+                        'sorted_terminals' => array_pluck($sortedTerminals, 'id'),
                     ]);
             }
 
             return $sortedTerminals;
-
         }
-        catch (Exception $e)
+        catch (\Throwable $e)
         {
+            $this->trace->error(
+                TraceCode::GATEWAY_DOWNTIME_SORTING_FAILED,
+                [
+                    'terminal_ids'  => array_pluck($terminals, 'id'),
+                    'error_message' => $e->getMessage(),
+                ]);
+
             return $terminals;
         }
     }
@@ -96,11 +102,6 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
         foreach ($terminals as $terminal)
         {
-            if (in_array($terminal, $demotedTerminals) === true)
-            {
-                continue;
-            }
-
             foreach ($downtimes as $downtime)
             {
                 $demoteTerminal = $this->shouldDemoteTerminal($terminal, $downtime);
@@ -111,10 +112,12 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
                     break;
                 }
+                else
+                {
+                    $nonDemotedTerminals[] = $terminal;
+                }
             }
         }
-
-        $nonDemotedTerminals = array_diff($terminals, $demotedTerminals);
 
         return array_merge($nonDemotedTerminals, $demotedTerminals);
     }

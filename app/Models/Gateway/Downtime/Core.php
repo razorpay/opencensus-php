@@ -129,10 +129,12 @@ class Core extends Base\Core
 
         $gateways = $this->getTerminalGateways($terminals);
 
+        $gateways[] = Entity::ALL;
+
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $params = [
-            Entity::GATEWAY => array_merge($gateways, [Entity::ALL]),
+            Entity::GATEWAY => $gateways,
             Entity::PARTIAL => false,
             Entity::END     => $now,
             Entity::BEGIN   => $now,
@@ -140,7 +142,7 @@ class Core extends Base\Core
 
         $method = $payment->getMethod();
 
-        // Only handling Card & Netbanking cases
+        // Only handling Card & EMI cases
         switch($method)
         {
             case Payment\Method::CARD:
@@ -168,15 +170,13 @@ class Core extends Base\Core
 
         $params[Entity::CARD_TYPE] = [$payment->card->getType(), Entity::ALL];
 
+        $params[Entity::ISSUER] = (array) Entity::ALL;
+
         $issuer = $payment->card->getIssuer();
 
         if (empty($issuer) === false)
         {
-            $params[Entity::ISSUER] = [$issuer, Entity::ALL];
-        }
-        else
-        {
-            $params[Entity::ISSUER] = Entity::ALL;
+            $params[Entity::ISSUER][] = $issuer;
         }
     }
 
