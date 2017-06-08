@@ -2531,10 +2531,12 @@ app
         year: 2017,
       };
 
+      // return no. of days in a month
       function numberOfDays(month, year) {
         return moment(year + ' ' + month, 'YYYY M').daysInMonth();
       }
 
+      // Delete the dependent fields in the form
       $scope.checkValue = function() {
         // delete the key
         if ($scope.reportForm.entity === 'invoice') {
@@ -2542,11 +2544,12 @@ app
         }
       };
 
+      // returns array of objects with 1: Jan, 2: Feb kind of mapping.
       $scope.monthFields = moment.months().map(function(name, index) {
         return { value: index + 1, name: name };
       });
 
-      // Get array from range of Numbers
+      // Get array from range of Numbers (default step is 1). Used in getting range from 1 to total number of days in month
       $scope.range = function(min, max, step) {
         step = step || 1;
         var input = [];
