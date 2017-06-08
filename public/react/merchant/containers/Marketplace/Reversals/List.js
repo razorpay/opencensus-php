@@ -6,12 +6,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchReversals as fetchAll } from 'rzp/modules/collection';
 
-import {
-  reversalId as idColumn,
-  reversalTransfer,
-  amount,
-  createdAt,
-} from 'rzp/ui/Table/Column';
+import { reversalId, transferId, amount, createdAt } from 'rzp/ui/Table/column';
 
 @connect(state => state.collection, { fetchAll })
 export default class ReversalsListContainer extends ListContainer {
@@ -28,7 +23,7 @@ export default class ReversalsListContainer extends ListContainer {
 
         <DataTable
           title="Reversals"
-          columns={[idColumn, reversalTransfer, amount, createdAt]}
+          columns={[reversalId, transferId, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

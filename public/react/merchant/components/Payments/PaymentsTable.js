@@ -7,7 +7,7 @@ import {
   contact,
   createdAt,
   status,
-} from 'rzp/ui/Table/Column';
+} from 'rzp/ui/Table/column';
 
 import rowClass from 'merchant/utils/activeRow';
 

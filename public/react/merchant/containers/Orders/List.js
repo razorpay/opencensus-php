@@ -11,7 +11,7 @@ import {
   status,
   receipt,
   createdAt,
-} from 'rzp/ui/Table/Column';
+} from 'rzp/ui/Table/column';
 
 @connect(state => state.collection, { fetchAll, destroy })
 export default class OrdersListContainer extends ListContainer {

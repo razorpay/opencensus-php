@@ -7,11 +7,11 @@ import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTransfers as fetchAll, destroy } from 'rzp/modules/collection';
 import {
   transferId,
-  transferSource,
-  transferRecipient,
+  source,
+  recipient,
   amount,
   createdAt,
-} from 'rzp/ui/Table/Column';
+} from 'rzp/ui/Table/column';
 
 @connect(state => state.collection, { fetchAll, destroy })
 export default class TransfersListContainer extends ListContainer {
@@ -26,13 +26,7 @@ export default class TransfersListContainer extends ListContainer {
 
         <DataTable
           title="Transfers"
-          columns={[
-            transferId,
-            transferSource,
-            transferRecipient,
-            amount,
-            createdAt,
-          ]}
+          columns={[transferId, source, recipient, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

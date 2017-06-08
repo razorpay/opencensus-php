@@ -12,7 +12,7 @@ import {
   batchCount,
   status,
   batchDownload,
-} from 'rzp/ui/Table/Column';
+} from 'rzp/ui/Table/column';
 
 @connect(
   state => {
