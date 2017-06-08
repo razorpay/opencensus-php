@@ -108,6 +108,17 @@ class Repository extends Base\Repository
      * Params are provided as [key => val]
      * where 'val' can either be an array or string
      *
+     * Raw Sql :
+     * "select * from `gateway_downtimes` where
+     *  `gateway` in (?, ?, ?) and
+     *  `partial` = ? and
+     *  `begin` <= ? and
+     *  (`end` is null or `end` >= ?) and
+     *  `method` in (?, ?) and
+     *  `network` in (?, ?) and
+     *  `card_type` in (?, ?) and
+     *  `issuer` in (?, ?)"
+     *
      * @param $params array
      * @return collection
      */

@@ -121,7 +121,7 @@ class GatewayDowntimeSorterTest extends TestCase
     /**
      * Card/EMI Downtime
      *
-     * downtime for cybersource for all issuer, all network
+     * downtime for hdfc for all issuer, all network
      * payment via hdfc visa card
      *
      * payment goes through axis_migs
@@ -145,7 +145,7 @@ class GatewayDowntimeSorterTest extends TestCase
     /**
      * Card/EMI Downtime
      *
-     * card downtime for axis_migs for all networks
+     * card downtime for cybersource for all networks
      * payment via MC
      *
      * this payment should go through via hdfc
@@ -195,7 +195,7 @@ class GatewayDowntimeSorterTest extends TestCase
     /**
      * Card/EMI Downtime
      *
-     * card downtime for hdfc for all networks, all cards
+     * card downtime for hdfc for MC networks,
      * payment via MC
      *
      * this payment should go through via axis_migs
