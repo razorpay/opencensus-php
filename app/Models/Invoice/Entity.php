@@ -277,7 +277,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::DATE,
         self::TERMS,
-        self::PARTIAL_PAYMENT,
+        // self::PARTIAL_PAYMENT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
         self::AMOUNT,

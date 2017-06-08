@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::PARTIAL_PAYMENT,
+        // self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -153,12 +153,34 @@ class Entity extends Base\PublicEntity
 
     /** Appends */
 
-    public function getAmountDueAttribute()
+    public function getAmountDueAttribute(): int
     {
         return $this->getAmount() - $this->getAmountPaid();
     }
 
     /** End Appends */
+
+    /** Accessors */
+
+    /**
+     * TODO: Remove this once corresponding update queries is run post
+     *       partial payments pr deployment.
+     *
+     * Get amount paid attribute.
+     *
+     * @return int
+     */
+    public function getAmountPaidAttribute(int $amountPaid): int
+    {
+        if (($this->isPaid() === true) and ($amountPaid === 0))
+        {
+            return $this->getAmount();
+        }
+
+        return $amountPaid;
+    }
+
+    /** End Accessors */
 
     /** Setters And Getters */
     public function setStatus($status)
