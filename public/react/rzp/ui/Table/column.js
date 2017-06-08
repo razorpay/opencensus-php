@@ -1,6 +1,9 @@
 import * as items from './item';
 
-export const amount = ['Amount', items.amount()];
+export const amount = [
+  <div style={{ textAlign: 'right' }}>Amount</div>,
+  items.amount(),
+];
 export const amountRefunded = [
   'Amount Refunded',
   items.amount('amount_refunded'),
@@ -12,6 +15,7 @@ export const amountTransferred = [
 
 export const email = ['Email', items.email];
 export const contact = ['Contact', items.contact];
+export const currency = ['Currency', item => item.currency];
 export const status = ['Status', items.status];
 export const createdAt = ['Created At', items.createdAt];
 

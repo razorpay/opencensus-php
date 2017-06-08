@@ -6,10 +6,6 @@ import * as OrderActions from 'merchant/modules/orders/details';
 @connect(state => state.order, OrderActions)
 export default class OrderDetailsContainer extends Component {
   componentWillMount() {
-    this.props.fetchOrder(this.props.id);
-  }
-
-  componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
 

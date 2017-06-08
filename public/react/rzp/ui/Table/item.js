@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import FormattedAmount from 'rzp/ui/Amount';
+import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import Time from 'rzp/ui/Time';
 import StatusLabel from 'merchant/components/StatusLabel';
 
@@ -26,7 +26,9 @@ export const id = type => item =>
   idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
 
 export const amount = key => item => (
-  <FormattedAmount value={item[key || 'amount']} />
+  <div style={{ textAlign: 'right' }}>
+    {getFixedINRAmount(item[key || 'amount'])}
+  </div>
 );
 
 export const email = item => item.email;

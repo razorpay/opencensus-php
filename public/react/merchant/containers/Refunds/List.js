@@ -7,7 +7,13 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
 import { fetchRefunds as fetchAll, destroy } from 'rzp/modules/collection';
-import { refundId, paymentId, amount, createdAt } from 'rzp/ui/Table/column';
+import {
+  refundId,
+  paymentId,
+  currency,
+  amount,
+  createdAt,
+} from 'rzp/ui/Table/column';
 
 @connect(state => state.refunds, { fetchAll })
 export default class RefundsListContainer extends ListContainer {
@@ -42,7 +48,7 @@ export default class RefundsListContainer extends ListContainer {
 
         <DataTable
           title="Refunds"
-          columns={[refundId, paymentId, amount, createdAt]}
+          columns={[refundId, paymentId, currency, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

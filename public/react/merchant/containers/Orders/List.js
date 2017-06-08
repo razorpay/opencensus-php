@@ -7,6 +7,7 @@ import { fetchOrders as fetchAll, destroy } from 'rzp/modules/collection';
 import {
   orderId,
   attempts,
+  currency,
   amount,
   status,
   receipt,
@@ -26,7 +27,15 @@ export default class OrdersListContainer extends ListContainer {
 
         <DataTable
           title="Orders"
-          columns={[orderId, attempts, amount, status, receipt, createdAt]}
+          columns={[
+            orderId,
+            attempts,
+            currency,
+            amount,
+            status,
+            receipt,
+            createdAt,
+          ]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

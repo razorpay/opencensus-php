@@ -2,6 +2,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import {
   paymentId,
   paymentOrder,
+  currency,
   amount,
   email,
   contact,
@@ -39,14 +40,22 @@ const mapOrders = payments =>
   }, {});
 
 export default props => {
-  let paymentColumns = [paymentId, amount, email, contact, createdAt, status];
+  let paymentColumns = [
+    paymentId,
+    currency,
+    amount,
+    email,
+    contact,
+    createdAt,
+    status,
+  ];
 
   let orders = mapOrders(props.items);
 
   // if there is atleast one visible "order-id"
   if (Object.keys(orders).length) {
     paymentColumns = [paymentId, paymentOrder(orders)].concat(
-      paymentColumns.slice(2)
+      paymentColumns.slice(1)
     );
   }
 
