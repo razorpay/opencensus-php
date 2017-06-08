@@ -41,12 +41,56 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'code'        =>  'OFFER-123',
+            'coupon_code' =>  'RANDOM-123',
         ];
 
-        $this->applyCouponOnMerchant($content);
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+    }
+
+    public function testMultiCouponApply()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
+
+        $this->startTest();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' =>  'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
 
         $coupon = $this->getLastEntity('coupon', true);
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkInValidResponse($response, 'Coupon Already Applied');
+
+        $coupon = $this->getLastEntity('coupon', true);
+    }
+
+    public function checkValidResponse(array $response)
+    {
+        $this->assertEquals($response['success'], true);
+        $this->assertEquals($response['error_description'], '');
+    }
+
+    public function checkInValidResponse(array $response, string $errorCode)
+    {
+        $this->assertEquals($response['success'], false);
+
+        if ($errorCode !== null)
+        {
+            $this->assertEquals($response['error_description'], $errorCode);
+        }
     }
 
     public function applyCouponOnMerchant($content)

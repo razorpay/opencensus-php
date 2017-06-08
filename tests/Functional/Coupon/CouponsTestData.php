@@ -1,10 +1,9 @@
 <?php
 
-return [
-    'testCreateCoupon' => [
+$defaultRequestAndResponse = [
         'request' => [
             'content' => [
-                'coupon_code' => 'RANDOM_123'
+                'coupon_code' => 'RANDOM-123'
             ],
             'url'    => '/coupons',
             'method' => 'POST'
@@ -12,26 +11,17 @@ return [
         'response' => [
             'content' => [
                 'entity_type' => 'promotion',
-                'coupon_code' => 'RANDOM_123'
+                'coupon_code' => 'RANDOM-123'
             ]
         ]
-    ],
+    ];
 
-    'testCreateCouponAndApplyOnMerchant' => [
-        'request' => [
-            'content' => [
-                'coupon_code' => 'OFFER-123'
-            ],
-            'url'    => '/coupons',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'entity_type' => 'promotion',
-                'coupon_code' => 'OFFER-123'
-            ]
-        ]
-    ],
+return [
+    'testCreateCoupon' => $defaultRequestAndResponse,
+
+    'testCreateCouponAndApplyOnMerchant' => $defaultRequestAndResponse,
+
+    'testMultiCouponApply' => $defaultRequestAndResponse,
 
     'testGetCouponsByPromotionId' => [
         'request' => [
@@ -75,15 +65,14 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'code'        => 'RANDOM'
+                'coupon_code'  => 'RANDOM'
             ],
             'url'    => '/coupons/apply',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'entity_type' => 'promotion',
-                'coupon_code' => 'RANDOM'
+                'success' => true,
             ]
         ]
     ],
@@ -92,15 +81,14 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'code'        => 'RANDOM'
+                'coupon_code'  => 'RANDOM'
             ],
             'url'    => '/coupons/apply',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'entity_type' => 'promotion',
-                'coupon_code' => 'RANDOM'
+                'success' => true,
             ]
         ]
     ],

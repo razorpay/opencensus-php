@@ -17,6 +17,11 @@ class Validator extends Base\Validator
         Entity::USAGE       => 'sometimes|integer',
     ];
 
+    protected static $applyRules = [
+        Entity::COUPON_CODE => 'required|string|max:10',
+        'merchant_id'       => 'required|alpha_num|size:14',
+    ];
+
     public function couponApplyValidator($coupon, $merchantId)
     {
         if (($coupon->getUsage() !== null) and

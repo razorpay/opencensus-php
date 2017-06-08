@@ -7,6 +7,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
+use Illuminate\Database\QueryException;
 
 class Service extends Base\Service
 {
@@ -15,6 +16,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->validator = new Validator;
     }
 
     public function create(array $input)
@@ -48,37 +51,61 @@ class Service extends Base\Service
 
     public function apply(array $input)
     {
-        //TODO add validation here
-        $code = $input['code'];
+        $result = [
+            'success'           => true,
+            'error_description' => '',
+        ];
 
-        $merchantId = $input['merchant_id'];
-
-        $this->trace->info(
-            TraceCode::COUPON_APPLY_REQUEST,
-            [
-                'coupon_code' => $code,
-                'merchant_id' => $merchantId,
-            ]);
-
-        $coupon = $this->repo->coupon->fetchByCode($code);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $promotion = $coupon->source()->firstOrFail();
-
-        (new Validator)->couponApplyValidator($coupon, $merchantId);
-
-        $this->repo->transaction(function() use ($merchant, $promotion)
+        try
         {
-            $merchantPromotion = (new MerchantPromotion\Core);
+            $this->validator->validateInput('apply', $input);
 
-            $merchantPromotion->create($merchant, $promotion);
+            $couponCode = $input['coupon_code'];
 
-            // Initial apply of Credit is done instantly
-            // Subsequent run and expiry will be handled by cron
-            $merchantPromotion->applyCredits($merchant, $promotion);
-        });
+            $merchantId = $input['merchant_id'];
 
-        return ['success' => true];
+            $this->trace->info(
+                TraceCode::COUPON_APPLY_REQUEST,
+                [
+                    'coupon_code' => $couponCode,
+                    'merchant_id' => $merchantId,
+                ]);
+
+            $coupon = $this->repo->coupon->fetchByCode($couponCode);
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $promotion = $coupon->source()->firstOrFail();
+
+            $this->validator->couponApplyValidator($coupon, $merchantId);
+
+            $this->repo->transaction(function() use ($merchant, $promotion)
+            {
+                $merchantPromotion = (new MerchantPromotion\Core);
+
+                $merchantPromotion->create($merchant, $promotion);
+
+                // Initial apply of Credit is done instantly
+                // Subsequent run and expiry will be handled by cron
+                $merchantPromotion->applyCredits($merchant, $promotion);
+            });
+        }
+        catch (QueryException $e)
+        {
+            //TODO move to constants
+            $result = [
+                'success'           => false,
+                'error_description' => 'Coupon Already Applied'
+            ];
+        }
+        catch (\Exception $e)
+        {
+            $result = [
+                'success'           => false,
+                'error_description' => $e->getMessage()
+            ];
+        }
+
+        return $result;
     }
 }
