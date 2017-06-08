@@ -643,6 +643,83 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+
+      // Prepare report
+      $scope.prepareReport = function(reportOptions) {
+        var entity = reportOptions.entity;
+        var type = reportOptions.type;
+        var month = reportOptions.month;
+        var year = reportOptions.year;
+        var day = reportOptions.day;
+
+        var data = {
+          month: month,
+          year: year,
+        };
+
+        // Open new window if entity type is 'invoice'
+        if (entity === 'invoice') {
+          return Promise.resolve(
+            window.open(
+              '/admin/live/reports/invoice?year=' +
+                year +
+                '&month=' +
+                month +
+                '&merchant_id=' +
+                $scope.merchant.id,
+              '_blank'
+            )
+          );
+        }
+
+        if (type === 'daily') {
+          data.day = day;
+        }
+
+        var ajaxParams = {
+          params: data,
+        };
+
+        if (entity === 'broking') {
+          ajaxParams.headers = {
+            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          };
+        }
+
+        var request = $http.get(
+          '/admin/live/reports/' +
+            entity +
+            '?merchant_id=' +
+            $scope.merchant.id,
+          ajaxParams
+        );
+
+        request
+          .success(function(data) {
+            $scope.alerts.addAlert(
+              'success',
+              'Your report will download shortly',
+              true
+            );
+
+            if (entity === 'broking') {
+              var blob = new Blob([data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              });
+              return saveAs(blob, 'broking_report.xlsx');
+            }
+
+            location.href = data.data.url;
+          })
+          .error(function() {
+            $scope.alerts.addAlert(
+              'danger',
+              'No data found for given time range',
+              true
+            );
+          });
+      };
+
       $scope.assignSchedule = function(data) {
         var data = {
           route_name: 'schedule_assign',
@@ -1511,6 +1588,23 @@ app
             }
           });
         });
+      };
+
+      // Open download report modal
+      $scope.openDownloadReport = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'downloadReportModalContent.html',
+          controller: 'downloadReportModalCtrl',
+          resolve: {
+            merchant: function() {
+              return $scope.merchant.details;
+            },
+          },
+        });
+
+        modalInstance.result.then(function(reportOptions) {
+          $scope.prepareReport(reportOptions);
+        }, $.noop);
       };
 
       function getCreditsLog(mode) {
@@ -2418,6 +2512,70 @@ app
     function($scope, $modalInstance) {
       $scope.ok = function(credits) {
         $modalInstance.close(credits);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('downloadReportModalCtrl', [
+    '$scope',
+    '$modalInstance',
+    'merchant',
+    function($scope, $modalInstance, merchant) {
+      $scope.merchant = merchant;
+
+      $scope.reportForm = {
+        entity: 'payment',
+        type: 'monthly',
+        year: 2017,
+      };
+
+      // return no. of days in a month
+      function numberOfDays(month, year) {
+        return moment(year + ' ' + month, 'YYYY M').daysInMonth();
+      }
+
+      // Delete the dependent fields in the form
+      $scope.checkValue = function() {
+        // delete the key
+        if ($scope.reportForm.entity === 'invoice') {
+          delete $scope.reportForm.type;
+        }
+      };
+
+      // returns array of objects with 1: Jan, 2: Feb kind of mapping.
+      $scope.monthFields = moment.months().map(function(name, index) {
+        return { value: index + 1, name: name };
+      });
+
+      // Get array from range of Numbers (default step is 1). Used in getting range from 1 to total number of days in month
+      $scope.range = function(min, max, step) {
+        step = step || 1;
+        var input = [];
+        for (var i = min; i <= max; i += step) {
+          input.push(i);
+        }
+        return input;
+      };
+
+      // Update date as per changes in type, month, year
+      $scope.updateDates = function(month, year) {
+        $scope.daysInSelectedMonth = numberOfDays(month, year); // total days in that month-year
+
+        // Change the date if exceeding
+        if ($scope.daysInSelectedMonth < $scope.reportForm.date) {
+          $scope.reportForm.date = $scope.daysInSelectedMonth;
+        }
+
+        // Remove the date key if duration is no longer 'daily'
+        if ($scope.reportForm.type === 'monthly') {
+          delete $scope.reportForm.date;
+        }
+      };
+
+      $scope.ok = function() {
+        $modalInstance.close($scope.reportForm);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
