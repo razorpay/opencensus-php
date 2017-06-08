@@ -912,7 +912,7 @@ final class Route
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
-        'merchants_update_bank_account'
+        'merchants_update_bank_account',
     ];
 
     public static $proxy = [

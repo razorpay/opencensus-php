@@ -3,8 +3,6 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use Requests;
-use Requests_Response;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -258,31 +256,6 @@ class Server extends Base\Core
 
         $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
-    }
-
-    protected function makeAsyncRequest($request)
-    {
-        $method = $request['method'];
-
-        $response = Requests::$method(
-            $request['url'],
-            $request['headers'],
-            $request['content']);
-
-        return $response;
-    }
-
-    protected function makeUpiResponse(string $xml, string $url)
-    {
-        $response = new Requests_Response();
-
-        $response->url = $url;
-        $response->headers = ['Content-Type' => 'application/xml'];
-        $response->body = $xml;
-        $response->status_code = 200;
-        $response->success = true;
 
         return $response;
     }
