@@ -16,6 +16,7 @@ import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import { matchDetail } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 // Below will be removed with old navigation removal
 import PaymentsList from 'merchant/containers/Payments/List';
@@ -42,6 +43,35 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
         <NavLink to={to}>{navLabel}</NavLink>
       </header>
       <Route path={path || to} component={component} />
+    </tabbed-container>
+  );
+};
+
+// Can be removed with old navigation removal
+const RefundsTabbedContainer = () => {
+  return (
+    <tabbed-container>
+      <header id="transactions-header">
+        <NavLink to="/refunds" exact>Refunds</NavLink>
+        <ShowWhen
+          featureEnabled="Batchrefunds"
+          myRole="owner manager operations admin finance"
+        >
+          <NavLink
+            to="/refunds/batchuploads"
+            isActive={(match, { pathname }) =>
+              pathname === '/refunds/batchupload' ||
+              pathname === '/refunds/batchuploads'}
+          >
+            Batch Refunds
+          </NavLink>
+        </ShowWhen>
+      </header>
+      <Switch>
+        <Route path="/refunds/batchupload" component={BatchUpload} />
+        <Route path="/refunds/batchuploads" component={BatchUploads} />
+        <Route path="/refunds" component={RefundsList} />
+      </Switch>
     </tabbed-container>
   );
 };
@@ -133,44 +163,7 @@ export default class Content extends Component {
                   )}
                 />
 
-                <Route
-                  path="/refunds/batchupload"
-                  render={() => (
-                    <TabbedContent
-                      headerId="transactions-header"
-                      to="/refunds"
-                      path="/refunds/batchupload"
-                      navLabel="Refunds"
-                      component={BatchUpload}
-                    />
-                  )}
-                />
-
-                <Route
-                  path="/refunds/batchuploads"
-                  render={() => (
-                    <TabbedContent
-                      headerId="transactions-header"
-                      to="/refunds"
-                      path="/refunds/batchuploads"
-                      navLabel="Refunds"
-                      component={BatchUploads}
-                    />
-                  )}
-                />
-
-                <Route
-                  path="/refunds"
-                  exact
-                  render={() => (
-                    <TabbedContent
-                      headerId="transactions-header"
-                      to="/refunds"
-                      navLabel="Refunds"
-                      component={RefundsList}
-                    />
-                  )}
-                />
+                <Route path="/refunds" component={RefundsTabbedContainer} />
 
                 <Route
                   path="/orders"
