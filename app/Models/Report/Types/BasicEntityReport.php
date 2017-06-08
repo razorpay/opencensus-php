@@ -3,7 +3,6 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Report;
 use RZP\Trace\TraceCode;
@@ -95,7 +94,7 @@ class BasicEntityReport extends BaseReport
 
         // currently limiting the api response can break the merchant integration
         // so overwriting the limits for now
-        list($count, $skip) = [200000, 0];
+        list($count, $skip) = [self::BATCH_LIMIT, 0];
 
         list($data, $count) = $this->getReportData($from, $to, $count, $skip);
 
