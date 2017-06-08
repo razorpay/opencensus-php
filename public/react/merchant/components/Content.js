@@ -48,13 +48,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
 };
 
 // Can be removed with old navigation removal
-const RefundsTabbedContainer = ({
-  headerId,
-  navLabel,
-  path,
-  to,
-  component,
-}) => {
+const RefundsTabbedContainer = () => {
   return (
     <tabbed-container>
       <header id="transactions-header">
