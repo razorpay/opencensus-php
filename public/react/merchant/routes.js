@@ -28,7 +28,9 @@ function matcher(routeMap, pathname) {
       var MatchedComponent = routeMap[route];
       return {
         match,
-        component: props => <MatchedComponent match={match} {...props} />,
+        component: props => (
+          <MatchedComponent id={match.params.id} {...props} />
+        ),
       };
     }
   }

@@ -19,7 +19,10 @@ export const idLink = id => (
 export const id = type => item =>
   idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
 
-export const amount = item => <FormattedAmount value={item.amount} />;
+export const amount = key => item => (
+  <FormattedAmount value={item[key || 'amount']} />
+);
+
 export const email = item => item.email;
 export const contact = item => item.contact;
 export const status = item => StatusLabel(item);

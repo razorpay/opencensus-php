@@ -119,7 +119,7 @@ export default class InvoicesNewContainer extends Component {
       this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete(),
     ];
-    let invoiceId = this.props.match.params.id;
+    let invoiceId = this.props.id;
 
     if (invoiceId) {
       promises.push(this.props.fetchInvoice(invoiceId));

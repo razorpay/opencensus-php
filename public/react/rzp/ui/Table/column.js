@@ -1,6 +1,15 @@
 import * as items from './item';
 
-export const amount = ['Amount', items.amount];
+export const amount = ['Amount', items.amount()];
+export const amountRefunded = [
+  'Amount Refunded',
+  items.amount('amount_refunded'),
+];
+export const amountTransferred = [
+  'Amount Transferred',
+  items.amount('amount_transferred'),
+];
+
 export const email = ['Email', items.email];
 export const contact = ['Contact', items.contact];
 export const status = ['Status', items.status];
