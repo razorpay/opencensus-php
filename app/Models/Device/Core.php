@@ -37,13 +37,6 @@ class Core extends Base\Core
         return $device;
     }
 
-    public function createTest(array $input, Merchant\Entity $merchant)
-    {
-        unset($input['number']);
-
-        return $this->create($input, $merchant);
-    }
-
     public function verify(Entity $device, Customer\Entity $customer)
     {
         if ($device->hasBeenVerified() === true)
@@ -69,7 +62,7 @@ class Core extends Base\Core
         return $device;
     }
 
-    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer, $challengeType='initial')
+    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer, $challengeType = 'initial')
     {
         $gatewayInput['device'] = $device->toArray();
         $gatewayInput['customer'] = $customer->toArrayPublic();

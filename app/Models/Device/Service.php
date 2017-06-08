@@ -27,13 +27,6 @@ class Service extends Base\Service
         return $device->toArrayPublic();
     }
 
-    public function createTest(array $input)
-    {
-        $device = $this->core->createTest($input, $this->merchant);
-
-        return $device->toArrayPublic();
-    }
-
     public function fetch($deviceId)
     {
         $device = $this->repo->device->findByPublicIdAndMerchant($deviceId, $this->merchant);
@@ -64,13 +57,6 @@ class Service extends Base\Service
         {
             $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
         }
-    }
-
-    public function refreshTokenTest(array $input)
-    {
-        $device = $this->core->updateChallenge($this->device, $input[Entity::CHALLENGE]);
-
-        $response = $this->core->sendGetTokenRequestToGateway($device, $device->customer, 'rotate');
     }
 
     public function refreshToken(array $input)
