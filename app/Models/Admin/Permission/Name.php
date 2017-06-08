@@ -141,6 +141,7 @@ class Name
     const EDIT_GATEWAY_RULE                   = 'edit_gateway_rule';
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
     const VIEW_GATEWAY_RULE                   = 'view_gateway_rule';
+    const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
