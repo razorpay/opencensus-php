@@ -61,34 +61,23 @@ class MailServiceProvider extends LaravelMailServiceProvider
     {
         $mailer->setContainer($app);
 
-        $mode = 'live';
-
-        if (isset($app['rzp.mode']))
-        {
-            $mode = $this->app['rzp.mode'];
-        }
-
         if ($app['config']->get('queue.mock') === true)
         {
             $connectionName = $app['config']->get('queue.default');
-
-            $queueName = null;
         }
         else
         {
             $connectionName = $app['config']->get('queue.mail.connection');
-
-            $queueName = $app['config']->get('queue.mail.' . $mode);
         }
 
         if ($app->bound('queue'))
         {
-            $mailer->setQueue($this->getQueue($connectionName, $queueName));
+            $mailer->setQueue($this->getQueue($connectionName));
         }
     }
 
-    protected function getQueue($connection, $queue)
+    protected function getQueue($connection)
     {
-        return $this->app['queue']->connection($connection, $queue);
+        return $this->app['queue']->connection($connection);
     }
 }

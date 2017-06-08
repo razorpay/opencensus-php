@@ -112,9 +112,7 @@ return [
     ],
 
     'mail' => [
-        'connection' => 'sqs_multi_default',
-        'test'       => env('AWS_EMAILS_QUEUE'),
-        'live'       => env('AWS_EMAILS_QUEUE'),
+        'connection' => 'sqs_mail',
     ],
 
     'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
@@ -171,6 +169,15 @@ return [
             'secret' => env('AWS_KEY_SECRET'),
             'prefix' => env('AWS_QUEUE_PREFIX'),
             'queue'  => env('AWS_GENERAL_LIVE_QUEUE'),
+            'region' => env('AWS_REGION'),
+        ],
+
+        'sqs_mail'  => [
+            'driver' => 'sqs',
+            'key'    => env('AWS_KEY_ID'),
+            'secret' => env('AWS_KEY_SECRET'),
+            'prefix' => env('AWS_QUEUE_PREFIX'),
+            'queue'  => env('AWS_EMAILS_QUEUE'),
             'region' => env('AWS_REGION'),
         ],
 
