@@ -42,9 +42,14 @@ class Service extends Base\Service
 
         $device = $this->repo->device->findByVerificationToken($verificationToken);
 
+        // TODO: Fix this
+        $this->app['basicauth']->setMode('test');
+
         $customer = (new Customer\Core)->createLocalCustomer([Customer\Entity::CONTACT => $contact], $device->merchant, false);
 
         $device = $this->core->verify($device, $customer);
+
+        $this->device = $device;
 
         $response = [];
 
@@ -53,7 +58,6 @@ class Service extends Base\Service
             $response = $this->core->sendGetTokenRequestToGateway($device, $customer);
         }
     }
-
 
     public function refreshToken(array $input)
     {

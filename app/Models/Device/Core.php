@@ -62,7 +62,7 @@ class Core extends Base\Core
         return $device;
     }
 
-    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer, $challengeType='initial')
+    public function sendGetTokenRequestToGateway(Entity $device, Customer\Entity $customer, $challengeType = 'initial')
     {
         $gatewayInput['device'] = $device->toArray();
         $gatewayInput['customer'] = $customer->toArrayPublic();
