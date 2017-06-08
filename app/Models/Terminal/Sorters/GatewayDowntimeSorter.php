@@ -102,20 +102,27 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
         foreach ($terminals as $terminal)
         {
+            $shouldDemote = false;
+
             foreach ($downtimes as $downtime)
             {
-                $demoteTerminal = $this->shouldDemoteTerminal($terminal, $downtime);
+                $shouldDemote = $this->shouldDemoteTerminal($terminal, $downtime);
 
-                if ($demoteTerminal === true)
+                // we want to avoid multiple entries in demotedTerminals
+                // hence break
+                if ($shouldDemote === true)
                 {
-                    $demotedTerminals[] = $terminal;
-
                     break;
                 }
-                else
-                {
-                    $nonDemotedTerminals[] = $terminal;
-                }
+            }
+
+            if ($shouldDemote === true)
+            {
+                $demotedTerminals[] = $terminal;
+            }
+            else
+            {
+                $nonDemotedTerminals[] = $terminal;
             }
         }
 

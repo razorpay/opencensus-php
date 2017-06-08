@@ -70,4 +70,154 @@ class GatewayDowntimeSorterTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('axis_migs', $payment['gateway']);
     }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * downtime for axis migs for all issuer
+     * payment via hdfc visa card
+     *
+     * payment goes through cybersouce,
+     * axis migs is down, hdfc is disabled
+     */
+    public function testDowntimeSortingCardGatewayMigsIssuerAll()
+    {
+        $this->createCardTerminals();
+
+        $migsAllIssuerDowntimeData = $this->testData['migsAllIssuerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $migsAllIssuerDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001036275556';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('cybersource', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * downtime for cybersource for all issuer, all network
+     * payment via hdfc visa card
+     *
+     * payment goes through axis_migs
+     * cybersource is down, & hdfc terminal is disabled
+     */
+    public function testDowntimeSortingCardCybersourceAllNetworkAllIssuer()
+    {
+        $this->createCardTerminals();
+
+        $cybersourceDowntimeData = $this->testData['cybersourceDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $cybersourceDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001036275556';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * downtime for cybersource for all issuer, all network
+     * payment via hdfc visa card
+     *
+     * payment goes through axis_migs
+     * hdfc is down, & axis_migs support visa payments
+     */
+    public function testDowntimeSortingCardHdfcAllNetworkAllIssuerDowntimeData()
+    {
+        $this->createCardTerminals();
+
+        $hdfcAllNetworkAllIssuerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001036275556';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for axis_migs for all networks
+     * payment via MC
+     *
+     * this payment should go through via hdfc
+     * because cybersource is down for MC
+     */
+    public function testDowntimeSortingCardCybersourcePaymentMastercard()
+    {
+        $this->createCardTerminals();
+
+        $cybersourceDowntimeData = $this->testData['cybersourceDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $cybersourceDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for all networks, all cards
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because hdfc is down for all network & issuer
+     */
+    public function testDowntimeSortingCardHdfcPaymentMastercard()
+    {
+        $this->createCardTerminals();
+
+        $hdfcAllNetworkAllIssuerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for all networks, all cards
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because hdfc is down for MC
+     */
+    public function testDowntimeSortingCardHdfcMastercard()
+    {
+        $this->createCardTerminals();
+
+        $hdfcMastercardNetworkData = $this->testData['hdfcMastercardNetworkData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcMastercardNetworkData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
 }
