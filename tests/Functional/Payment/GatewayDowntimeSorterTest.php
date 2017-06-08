@@ -63,7 +63,6 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->fixtures->create('gateway_downtime:card', $hdfcVisaDowntimeData);
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4012001036275556';
 
         $this->doAuthAndCapturePayment($payment);
 
@@ -77,8 +76,8 @@ class GatewayDowntimeSorterTest extends TestCase
      * downtime for axis migs for all issuer
      * payment via hdfc visa card
      *
-     * payment goes through cybersouce,
-     * axis migs is down, hdfc is disabled
+     * payment goes through hdfc,
+     * axis migs is down
      */
     public function testDowntimeSortingCardGatewayMigsIssuerAll()
     {
@@ -88,12 +87,11 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->fixtures->create('gateway_downtime:card', $migsAllIssuerDowntimeData);
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4012001036275556';
 
         $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('cybersource', $payment['gateway']);
+        $this->assertEquals('hdfc', $payment['gateway']);
     }
 
     /**
@@ -102,8 +100,8 @@ class GatewayDowntimeSorterTest extends TestCase
      * downtime for cybersource for all issuer, all network
      * payment via hdfc visa card
      *
-     * payment goes through axis_migs
-     * cybersource is down, & hdfc terminal is disabled
+     * payment goes through hdfc
+     * cybersource is down.
      */
     public function testDowntimeSortingCardCybersourceAllNetworkAllIssuer()
     {
@@ -113,12 +111,11 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->fixtures->create('gateway_downtime:card', $cybersourceDowntimeData);
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4012001036275556';
 
         $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('axis_migs', $payment['gateway']);
+        $this->assertEquals('hdfc', $payment['gateway']);
     }
 
     /**
@@ -138,7 +135,6 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerDowntimeData);
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4012001036275556';
 
         $this->doAuthAndCapturePayment($payment);
 
