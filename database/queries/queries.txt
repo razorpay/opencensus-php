@@ -2121,5 +2121,3 @@ ALTER TABLE `refunds`
 
 ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
-# Pre deployment of branch 'use_ufh_in_batch'
-ALTER TABLE batches MODIFY COLUMN upload_file_url CHAR(100) DEFAULT NULL;

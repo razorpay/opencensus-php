@@ -27,8 +27,7 @@ class CreateBatchTable extends Migration
 
             $table->char(Batch::MERCHANT_ID, Batch::ID_LENGTH);
 
-            $table->char(Batch::UPLOAD_FILE_URL, Batch::FILE_URL_LENGTH)
-                  ->nullable();
+            $table->char(Batch::UPLOAD_FILE_URL, Batch::FILE_URL_LENGTH);
 
             $table->char(Batch::DOWNLOAD_FILE_URL, Batch::FILE_URL_LENGTH)
                   ->nullable();
