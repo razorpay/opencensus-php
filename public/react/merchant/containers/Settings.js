@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { Route, NavLink, withRouter } from 'react-router-dom';
+import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 import Applications from 'merchant/containers/Applications/';
+import ApplicationsNew from 'merchant/containers/Applications/new';
 
 @withRouter
 export default class Settings extends Component {
@@ -33,7 +34,10 @@ export default class Settings extends Component {
         <Route path="/config" component={Configuration} />
         <Route path="/webhooks" component={Webhooks} />
         <Route path="/keys" component={ApiKeys} />
-        <Route path="/applications" component={Applications} />
+        <Switch>
+          <Route exact path="/applications" component={Applications} />
+          <Route path="/applications/new" component={ApplicationsNew} />
+        </Switch>
       </tabbed-container>
     );
   }
