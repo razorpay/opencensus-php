@@ -69,7 +69,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns signed url of the processed batch file.
+     * Returns signed url of the batch file: output file if that exists else
+     * the input file itself.
      *
      * @param Entity $batch
      *
@@ -78,10 +79,10 @@ class Core extends Base\Core
     public function downloadBatch(Entity $batch): string
     {
         $file = ($batch->getStatus() === Status::CREATED) ?
-                    $batch->inputFile() : $batch->processedFile();
+                    $batch->inputFile() : $batch->outputFile();
 
         // Backward compatibility:
-        // - If processed file relation exists use that else to handle BC
+        // - If file relation exists use that else to handle BC
         //   form the AWS key and get the signed URL as done previously.
 
         if ($file === null)

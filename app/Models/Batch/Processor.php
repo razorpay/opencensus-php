@@ -31,12 +31,12 @@ class Processor extends Base\Core
     protected $batch;
 
     /**
-     * Holds local file path of input and processed file respectively.
+     * Holds local file path of input and output file respectively.
      * They are re-used in the flow. E.g. sending mails with attachment,
      * un-linking post processing etc.
      */
     protected $inputFileLocalPath;
-    protected $processedFileLocalPath;
+    protected $outputFileLocalPath;
 
     const MUTEX_LOCK_TIMEOUT = 2500;
 
@@ -68,9 +68,9 @@ class Processor extends Base\Core
         return $movedFile;
     }
 
-    public function saveProcessedFile(Entity $batch, string $filePath)
+    public function saveOutputFile(Entity $batch, string $filePath)
     {
-        $this->saveFile($batch, $filePath, FileStore\Type::BATCH_PROCESSED);
+        $this->saveFile($batch, $filePath, FileStore\Type::BATCH_OUTPUT);
     }
 
     /**
@@ -224,7 +224,7 @@ class Processor extends Base\Core
         $this->sendMailIfProcessed();
 
         // Delete download file from local instance
-        $this->deleteFile($this->processedFileLocalPath);
+        $this->deleteFile($this->outputFileLocalPath);
 
         // Delete upload file from local instance
         $this->deleteFile($this->inputFileLocalPath);
@@ -346,9 +346,9 @@ class Processor extends Base\Core
 
         $fullpath = $fileMetadata['full'];
 
-        $this->saveProcessedFile($this->batch, $fullpath);
+        $this->saveOutputFile($this->batch, $fullpath);
 
-        $this->processedFileLocalPath = $fullpath;
+        $this->outputFileLocalPath = $fullpath;
     }
 
     public function deleteFile($filePath)
@@ -417,7 +417,7 @@ class Processor extends Base\Core
     {
         $batch = $this->batch;
 
-        $filePath = $this->processedFileLocalPath;
+        $filePath = $this->outputFileLocalPath;
 
         if ($batch->isProcessed() === false)
         {

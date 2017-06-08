@@ -95,6 +95,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
     }
 
+    /**
+     * The file which user uploads when creating the batch entity.
+     *
+     * @return FileStore\Entity
+     */
     public function inputFile()
     {
         return $this->files()
@@ -103,10 +108,16 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
-    public function processedFile()
+    /**
+     * The file which our processor creates finally with processed results.
+     * This is available to user to download.
+     *
+     * @return FileStore\Entity
+     */
+    public function outputFile()
     {
         return $this->files()
-                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_PROCESSED)
+                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_OUTPUT)
                     ->latest()
                     ->first();
     }
@@ -164,7 +175,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * Returns prefix for the file. Prefix are mostly used to get a folder like
-     * structure on S3. We have different prefix for created and processed batch
+     * structure on S3. We have different prefix for created and output batch
      * files, for convenience.
      *
      * @param string|null $status
@@ -205,7 +216,7 @@ class Entity extends Base\PublicEntity
      *
      * Used in Processor:
      * - To move temp php request to this location and pass the same to UFH
-     * - To create processed file at proper location.
+     * - To create output file at proper location.
      *
      * @param string|null $status
      *
