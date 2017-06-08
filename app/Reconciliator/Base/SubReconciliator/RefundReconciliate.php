@@ -434,19 +434,19 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $arn = $rowDetails[BaseReconciliate::ARN];
+        $reconArn = $rowDetails[BaseReconciliate::ARN];
 
         $refund = $this->refund;
 
         $refundAcquirerData = $refund->getAcquirerData();
 
-        if (empty($refundAcquirerData[Refund\Entity::ARN]) === true)
+        if (empty($refundAcquirerData[Refund\Entity::ARN]) === false)
         {
             $currentArn = $refundAcquirerData[Refund\Entity::ARN];
 
             // if the arn in DB matches the arn from row
             // simply return
-            if ($currentArn === $arn)
+            if ($currentArn === $reconArn)
             {
                 return;
             }
@@ -468,7 +468,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             }
         }
 
-        $refund->setReference1($arn);
+        $refund->setReference1($reconArn);
         $refund->setStatusProcessed();
 
         $this->repo->saveOrFail($refund);
