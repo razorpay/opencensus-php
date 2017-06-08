@@ -288,9 +288,9 @@ class Core extends Base\Core
         //
         // If app_token is present, it would always be a global customer.
         //
-        // If both are present, we always give preference to the local customer. 
+        // If both are present, we always give preference to the local customer.
         //
-        
+
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
@@ -316,6 +316,11 @@ class Core extends Base\Core
         if ($customerId !== null)
         {
             $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
+
+            if ($customer->globalCustomer !== null)
+            {
+                $customer = $customer->globalCustomer;
+            }
         }
 
         $this->trace->info(

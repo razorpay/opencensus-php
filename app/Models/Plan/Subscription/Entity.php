@@ -297,6 +297,35 @@ class Entity extends Base\PublicEntity
         return (in_array($this->getStatus(), Status::$changeCardStatuses, true) === true);
     }
 
+    public function followLocalFlow()
+    {
+        $localCustomer = $this->customer;
+
+        if ($localCustomer === null)
+        {
+            return false;
+        }
+        else
+        {
+            $globalCustomer = $localCustomer->globalCustomer;
+
+            //
+            // If global customer is null, it means, that the subscription
+            // follows the local flow only.
+            // In case it's not null, it means that this is NOT the first 2FA
+            // txn and is a change card flow and follows global flow.
+            //
+            if ($globalCustomer === null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- ACCESSORS ---------------------

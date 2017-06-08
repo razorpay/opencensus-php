@@ -990,9 +990,12 @@ trait Authorize
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
-        $this->associateSubscriptionIfApplicable($payment, $input);
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            $this->associateSubscriptionToPayment($payment, $input);
 
-        $this->setCustomerIdForSubscriptionInput($payment, $input);
+            $this->addCustomerIdToSubscriptionInputAsApplicable($payment->subscription, $input);
+        }
 
         //
         // Either the customer ID or the app token ID is required to get the customer.
@@ -1006,37 +1009,16 @@ trait Authorize
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
-        // If global, create a local customer and use that local customer everywhere.
+        //
+        // If global, create a local customer and link that to the subscription.
         // To check that it's global, just see that payment's subscription does not
-        // have any customer_id set.
+        // have any customer associated.
         // Now, check that the customer retrieved in the last step is not null. Ideally,
         // it'll never be null and we will always have a customer.
-
+        //
         if ($payment->hasSubscription() === true)
         {
-            $subscription = $payment->subscription;
-
-            //
-            // Check that the subscription is in the global
-            // customer flow and not in the local customer flow.
-            // This also ensures that the customer we received from
-            // the last step is a global customer.
-            //
-            if ($subscription->getCustomerId() === null)
-            {
-                if ($customer !== null)
-                {
-                    // TODO: Write this function!
-                    $localCustomer = (new Customer\Core)->createDuplicateLocalCustomer($customer);
-
-                    // TODO: Create the global association. Figure out where we would actually use this though.
-                    // Maybe in payment entity, we will store the global customer?
-                    // TODO: Write test cases to ensure that the associations happen correctly
-                    $localCustomer->globalCustomer()->associate($customer);
-
-                    $customer = $localCustomer;
-                }
-            }
+            $this->associateCustomerToSubscription($payment->subscription, $customer);
         }
 
         if ($customer === null)
@@ -1049,11 +1031,16 @@ trait Authorize
         }
         else
         {
-            $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
-        }
+            $localCustomer = null;
 
-        // TODO: We should be associating the local customer and not the global customer
-        $this->associateCustomerToSubscription($payment->subscription, $customer);
+            if ($payment->hasSubscription())
+            {
+                $localCustomer = $payment->subscription->customer;
+            }
+
+            $this->preProcessPaymentForGlobalCustomer(
+                $customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);
+        }
 
         if ($payment->isEmi() === true)
         {
@@ -1080,22 +1067,81 @@ trait Authorize
     protected function associateCustomerToSubscription(Subscription\Entity $subscription, Customer\Entity $customer)
     {
         //
-        // In case of global customer, the customer wouldn't have
-        // been associated during the subscription creation.
+        // Check that the subscription is in the global
+        // customer flow and not in the local customer flow.
+        // This also ensures that the customer we received from
+        // the last step is a global customer.
+        //
+        // This flow should be run only for the first 2FA. From the
+        // second 2FA onwards, the subscription will have the customer.
         //
         if ($subscription->hasCustomer() === false)
         {
-            $subscription->customer()->associate($customer);
+            if ($customer === null)
+            {
+                // TODO: Throw an exception. For subscriptions, customer can never be null.
+            }
+
+            // TODO: Write this function! Assert in the function that the customer is actually global only.
+            $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer);
+
+            // TODO: Create the global association. Figure out where we would actually use this though.
+            // Maybe in payment entity, we will store the global customer?
+            // TODO: Write test cases to ensure that the associations happen correctly
+            $localCustomer->globalCustomer()->associate($customer);
+
+            $this->repo->saveOrFail($localCustomer);
+
+            // TODO: Ensure this gets saved later in the flow somewhere.
+            $subscription->customer()->associate($localCustomer);
+        }
+        else
+        {
+            if (($subscription->isCreated() === false) and
+                ($subscription->customer->globalCustomer !== $customer))
+            {
+                throw new Exception\BadRequestException();
+            }
         }
     }
 
-    protected function associateSubscriptionIfApplicable(Payment\Entity $payment, array $input)
+    protected function addCustomerIdToSubscriptionInputAsApplicable(Subscription\Entity $subscription, array & $input)
     {
-        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        //
+        // If a subscription_id is sent in the input, the customer_id should
+        // never be sent. It's either associated with the subscription (local customer)
+        // or we use the global customer and associate that later.
+        //
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
-            return;
+            // TODO: Throw an exception
         }
 
+        if ($subscription->followLocalFlow() === true)
+        {
+            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+        }
+        else
+        {
+            //
+            // Subscription follows global flow.
+            // In case of 2FA txns (first or second or.. ), the app_token is
+            // set, through which we get the global customer and all.
+            // In case of subsequent charges, no app_token would be set.
+            // Hence, we won't be able to get the customer nor the card of the
+            // token. Hence, we set the local_customer_id for subsequent charges so that
+            // we can get the corresponding global customer_id later in the flow and use
+            // it to get the card of the corresponding token sent in the request.
+            //
+            if ($subscription->hasCustomer() === true)
+            {
+                $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+            }
+        }
+    }
+
+    protected function associateSubscriptionToPayment(Payment\Entity $payment, array $input)
+    {
         $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
 
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
@@ -1179,16 +1225,20 @@ trait Authorize
     }
 
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
+                                                          Customer\Entity $localCustomer,
                                                           Customer\AppToken\Entity $customerApp,
                                                           Payment\Entity $payment,
                                                           array & $input,
                                                           array & $gatewayInput)
     {
-        // TODO: Do something and all here.
-
         $this->payment->app()->associate($customerApp);
 
         $this->payment->globalCustomer()->associate($customer);
+
+        if ($localCustomer !== null)
+        {
+            $this->payment->customer()->associate($localCustomer);
+        }
 
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
@@ -1511,26 +1561,6 @@ trait Authorize
         if ($appToken !== null)
         {
             $input['app_token'] = $appToken;
-        }
-    }
-
-    protected function setCustomerIdForSubscriptionInput(Payment\Entity $payment, array & $input)
-    {
-        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
-        {
-            //
-            // If a subscription_id is sent in the input, the customer_id should
-            // never be sent. It's either associated with the subscription (local customer)
-            // or we use the global customer and associate that later.
-            //
-            if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
-            {
-                // TODO: Throw an exception
-            }
-
-            $subscription = $payment->subscription;
-
-            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
         }
     }
 
@@ -1948,8 +1978,7 @@ trait Authorize
 
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        // TODO: This will have to be fixed when we bring in global for subscriptions
-        $paymentToken = $payment->localToken;
+        $paymentToken = $payment->getGlobalOrLocalTokenEntity();
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_TOKEN_ASSOCIATE,

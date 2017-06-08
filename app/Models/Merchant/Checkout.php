@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
-use RZP\Trace\Trace;
 use Session;
 
 use RZP\Exception;
@@ -18,6 +17,7 @@ use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Downtime;
 
@@ -27,6 +27,13 @@ class Checkout
     const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
 
     const SUBSCRIPTION_ID    = 'subscription_id';
+
+    protected $app;
+    /**
+     * @var Trace
+     */
+    protected $trace;
+    protected $repo;
 
     public function __construct()
     {
@@ -141,7 +148,8 @@ class Checkout
         }
         catch(\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
 
         return $orderData;
@@ -153,6 +161,11 @@ class Checkout
 
         try
         {
+            //
+            // For the second 2FA in global flow also, we will have the app_token. Hence,
+            // in this usage (preferences) of getCustomerAndApp, we don't need to have
+            // the global_customer_id in the input.
+            //
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
             if ($customer === null)
@@ -185,7 +198,8 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
 
         return $custData;
@@ -234,53 +248,15 @@ class Checkout
     {
         try
         {
-            /// we don't return the customer data if request is jsonp
+            // we don't return the customer data if request is jsonp
             if (isset($input['callback']) === true)
             {
                 return;
             }
 
-            //
-            // Since customer_id will always be associated with the subscription,
-            // it should not be sent in the input. If it is sent, we would
-            // not know whether to use the customer associated with the subscription
-            // or the one sent in the input.
-            // If the customer is not present in subscription AND not sent in
-            // the input, we use/create global customer.
-            //
             if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
             {
-                if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
-                {
-                    // TODO: Throw an exception
-                }
-
-                $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
-                    $input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
-
-                //
-                // If a customer is associated with the subscription, we assume
-                // that the merchant wants the local cards, and go ahead with
-                // that flow. We add customer_id to the input to force the local flow.
-                // If no customer is associated with the subscription, we go
-                // ahead with the global flow.
-                //
-                $customerId = $subscription->getCustomerId();
-
-                if ($customerId === null)
-                {
-                    //
-                    // Card saving is not enabled for the merchant.
-                    //
-                    if ($data['options']['remember_customer'] === false)
-                    {
-                        // TODO: Throw an exception
-                    }
-                    else
-                    {
-                        $input[Payment\Entity::CUSTOMER_ID] = $customerId;
-                    }
-                }
+                $this->doCustomerProcessingForSubscription($input, $data, $merchant);
             }
 
             //
@@ -336,7 +312,69 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+        }
+    }
+
+    /**
+     * If a customer is associated with the subscription, we assume
+     * that the merchant wants the local cards, and go ahead with
+     * that flow. We add customer_id to the input to force the local flow.
+     * If no customer is associated with the subscription, we go
+     * ahead with the global flow. (It involves more logic, though)
+     *
+     * @param array  $input
+     * @param array  $data
+     * @param Entity $merchant
+     */
+    protected function doCustomerProcessingForSubscription(array & $input, array $data, Merchant\Entity $merchant)
+    {
+        //
+        // Since customer_id will always be associated with the subscription,
+        // it should not be sent in the input. If it is sent, we would
+        // not know whether to use the customer associated with the subscription
+        // or the one sent in the input.
+        // If the customer is not present in subscription AND not sent in
+        // the input, we use/create global customer.
+        //
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            // TODO: Throw an exception
+        }
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
+            $input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
+
+        //
+        // If a customer is not associated with the subscription already,
+        // we go ahead with the global flow. But, for global flow, we need
+        // to ensure that noflashcheckout is not enabled for the merchant.
+        //
+        // For the first 2FA txn, this will always be null for a global flow.
+        // For the subsequent ones, this will NOT be null and the global flow
+        // is handled in the ELSE condition.
+        //
+        if ($subscription->hasCustomer() === false)
+        {
+            //
+            // Card saving is not enabled for the merchant.
+            //
+            if ($data['options']['remember_customer'] === false)
+            {
+                // TODO: Throw an exception
+            }
+        }
+        //
+        // If a customer is associated with the subscription, it can mean
+        // local OR global.
+        //
+        else
+        {
+            if ($subscription->followLocalFlow() === true)
+            {
+                $input[Payment\Entity::CUSTOMER_ID] = $subscription->getCustomerId();
+            }
         }
     }
 
@@ -497,7 +535,7 @@ class Checkout
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
         }
     }
 }
