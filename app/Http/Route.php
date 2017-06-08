@@ -598,7 +598,6 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
-        'device_fetch',
     ];
 
     public static $device = [
@@ -913,8 +912,7 @@ final class Route
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
-        'merchants_update_bank_account',
-        'upi_zero_call',
+        'merchants_update_bank_account'
     ];
 
     public static $proxy = [
@@ -1178,6 +1176,7 @@ final class Route
         'checkout_hosted',
         'mock_event_tracker',
         'upi_npci_request',
+        'upi_zero_call',
     ];
 
     public static $internalApps = [
