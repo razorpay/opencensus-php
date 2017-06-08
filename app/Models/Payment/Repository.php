@@ -810,6 +810,49 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    /**
+     * Gets all authorized payments which belongs to a paid order. All these
+     * payments are supposed to be refunded.
+     *
+     * @return Base\PublicCollection
+     */
+    public function getAuthorizedPaymentsOfPaidOrderForRefund()
+    {
+        // Raw SQL:
+        //
+        // SELECT payments.*
+        // FROM payments
+        //     INNER JOIN orders on orders.id = payments.order_id
+        // WHERE payments.created_at > ?
+        //     AND orders.status = 'PAID'
+        //     AND payments.status = 'AUTHORIZED'
+
+        $orderTable  = $this->repo->order->getTableName();
+        $orderId     = $this->repo->order->dbColumn(Order\Entity::ID);
+        $orderStatus = $this->repo->order->dbColumn(Order\Entity::STATUS);
+
+        $paymentCols      = $this->dbColumn('*');
+        $paymentStatus    = $this->dbColumn(Entity::STATUS);
+        $paymentOrderId   = $this->dbColumn(Entity::ORDER_ID);
+        $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        // For optimization purposes we only pick payments in last 10 days. This picked
+        // '10 days' is sufficient filter logically.
+
+        $nowMinus10Days = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+
+        $results = $this->newQuery()
+                        ->join($orderTable, $orderId, '=', $paymentOrderId)
+                        ->select($paymentCols)
+                        ->where($paymentCreatedAt, '>', $nowMinus10Days)
+                        ->where($orderStatus, Order\Status::PAID)
+                        ->where($paymentStatus, Status::AUTHORIZED)
+                        ->with('merchant')
+                        ->get();
+
+        return $results;
+    }
+
     protected function getPaymentVolumeBetweenTimestamp($from, $to)
     {
         $vol = $this->newQuery()

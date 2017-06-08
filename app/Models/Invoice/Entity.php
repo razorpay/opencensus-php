@@ -52,9 +52,27 @@ class Entity extends Base\PublicEntity
     const COMMENT                  = 'comment';
     const SHORT_URL                = 'short_url';
     const VIEW_LESS                = 'view_less';
+
+    /**
+     * If set to true, partial payments would be accepted
+     * against this invoice and invoice status would move
+     * to PARTIALLY_PAID in those cases.
+     * Once there is no due amount left, it goes to PAID.
+     */
+    const PARTIAL_PAYMENT          = 'partial_payment';
+
     const GROSS_AMOUNT             = 'gross_amount';
     const TAX_AMOUNT               = 'tax_amount';
     const AMOUNT                   = 'amount';
+
+    /**
+     * Following two attributes are looked up from corresponding
+     * order entity. Order maintains 'amount_paid'. If no order
+     * has been created for invoice till now, followings will be
+     * null.
+     */
+    const AMOUNT_PAID              = 'amount_paid';
+    const AMOUNT_DUE               = 'amount_due';
     const CURRENCY                 = 'currency';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
@@ -84,6 +102,7 @@ class Entity extends Base\PublicEntity
 
     const CUSTOMER_DETAILS         = 'customer_details';
     const PAYMENT_ID               = 'payment_id';
+    const URL                      = 'url';
 
     // ------------------------ Output Keys End ----------------------
 
@@ -99,6 +118,10 @@ class Entity extends Base\PublicEntity
     // later it can be configurable at merchant's level.
     //
     const DEFAULT_EXPIRY_DAYS      = 60;
+
+    // ------------------------ Relation Keys ------------------------
+
+    const ORDER                    = 'order';
 
     protected static $sign         = 'inv';
 
@@ -140,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS                => 1,
         self::TYPE                     => Type::INVOICE,
         self::USER_ID                  => null,
+        self::PARTIAL_PAYMENT          => false,
         self::GROSS_AMOUNT             => null,
         self::TAX_AMOUNT               => null,
         self::AMOUNT                   => null,
@@ -167,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::DATE,
         self::TERMS,
+        self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
@@ -216,8 +241,11 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS,
         self::SOURCE,
         self::TYPE,
+        self::PARTIAL_PAYMENT,
         self::GROUP_TAXES_DISCOUNTS,
         self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
         self::BILLING_START,
         self::BILLING_END,
         self::GROSS_AMOUNT,
@@ -249,9 +277,12 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::DATE,
         self::TERMS,
+        // self::PARTIAL_PAYMENT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
         self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
         self::CURRENCY,
         self::DESCRIPTION,
         self::NOTES,
@@ -272,6 +303,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::PAYMENT_ID,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
         self::INVOICE_NUMBER,
     ];
 
@@ -285,9 +318,12 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::VIEW_LESS             => 'bool',
+        self::PARTIAL_PAYMENT       => 'bool',
         self::GROSS_AMOUNT          => 'int',
         self::TAX_AMOUNT            => 'int',
         self::AMOUNT                => 'int',
+        self::AMOUNT_PAID           => 'int',
+        self::AMOUNT_DUE            => 'int',
         self::DATE                  => 'int',
         self::EXPIRE_BY             => 'int',
         self::EXPIRED_AT            => 'int',
@@ -352,9 +388,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function hasPartialPaymentEnabled()
+    {
+        return $this->getAttribute(self::PARTIAL_PAYMENT);
+    }
+
     public function getGrossAmount()
     {
         return $this->getAttribute(self::GROSS_AMOUNT);
+    }
+
+    public function getAmountPaid()
+    {
+        return $this->getAttribute(self::AMOUNT_PAID);
+    }
+
+    public function getAmountDue()
+    {
+        return $this->getAttribute(self::AMOUNT_DUE);
+    }
+
+    public function getFormattedAmount()
+    {
+        return number_format($this->getAmount() / 100, 2);
     }
 
     public function getAmount()
@@ -441,7 +497,7 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenPaid()
     {
-        return ($this->getPaidAt() !== null);
+        return ($this->getStatus() === Status::PAID);
     }
 
     public function getDueBy()
@@ -487,6 +543,11 @@ class Entity extends Base\PublicEntity
     public function isTypeInvoice(): bool
     {
         return ($this->getType() === Type::INVOICE);
+    }
+
+    public function isFullyPaid()
+    {
+        return ($this->getAmount() === $this->getAmountPaid());
     }
 
     /**
@@ -615,7 +676,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
 
         // Sets corresponding timestamps as per new status
-        if (in_array($status, Status::$timestampedStatuses, true))
+        if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
             $timestampKey = $status . '_at';
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
@@ -673,6 +734,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GROSS_AMOUNT, null);
         $this->setAttribute(self::TAX_AMOUNT, null);
         $this->setAttribute(self::AMOUNT, null);
+    }
+
+    /**
+     * Updates invoice status post capture.
+     * If all amount has been paid, move to PAID else PARTIALLY_PAID.
+     */
+    public function updateStatusPostCapture()
+    {
+        $newStatus = ($this->isFullyPaid() === true) ?
+                        Status::PAID : Status::PARTIALLY_PAID;
+
+        $this->setStatus($newStatus);
     }
 
     // -------------------------------------- End Setters ------------
@@ -750,6 +823,38 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    /**
+     * Looks up amount_paid attribute from corresponding
+     * order entity.
+     *
+     * @return null|int
+     */
+    public function getAmountPaidAttribute()
+    {
+        if ($this->getOrderId() === null)
+        {
+            return null;
+        }
+
+        return $this->order->getAmountPaid();
+    }
+
+    /**
+     * Looks up amount_due attribute from corresponding
+     * order entity.
+     *
+     * @return null|int
+     */
+    public function getAmountDueAttribute()
+    {
+        if ($this->getOrderId() === null)
+        {
+            return null;
+        }
+
+        return $this->order->getAmountDue();
     }
 
     public function getInvoiceNumberAttribute()
