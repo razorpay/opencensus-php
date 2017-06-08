@@ -109,6 +109,7 @@ class WebhookTest extends TestCase
         $this->mockInfernoFire(function ($data) use ($testData)
         {
             $data['event'] = json_decode($data['event'], true);
+
             $this->assertArraySelectiveEquals($testData, $data);
             $this->assertArrayHasKey('webhook_id', $data);
             $this->assertArrayHasKey('created_at', $data['event']);
@@ -117,7 +118,7 @@ class WebhookTest extends TestCase
         });
 
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
-        $this->fixtures->create('invoice');
+        $this->fixtures->create('invoice', ['amount' => 1000000]);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order->getPublicId();
@@ -150,6 +151,7 @@ class WebhookTest extends TestCase
 
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
         $this->fixtures->create('invoice', [
+                'amount'           => 1000000,
                 'customer_id'      => null,
                 'customer_name'    => null,
                 'customer_email'   => null,

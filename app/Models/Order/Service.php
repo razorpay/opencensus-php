@@ -39,14 +39,4 @@ class Service extends Base\Service
 
         return $payments->toArrayPublic();
     }
-
-    public function fetchOrderBankAndAccountNumberForMerchant($id)
-    {
-        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
-
-        return [
-            'bank'           => $order->getBank(),
-            'account_number' => $order->getMaskedAccountNumber(),
-        ];
-    }
 }

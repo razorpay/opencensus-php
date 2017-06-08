@@ -25,7 +25,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE           = 'commission';
     const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
     const COLUMN_ORDER_ID      = 'order_id';
-    const COLUMN_RRN           = 'rrn_no';
     const COLUMN_CARD_LOCALE   = 'lofo';
     const COLUMN_ISSUER        = 'transaction_category';
     const COLUMN_SETTLED_AT    = 'settlement_date';
@@ -237,10 +236,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $paymentService = new PaymentService();
 
         $paymentId = $this->payment->getPublicId();
-
-        // $vpcTransactionNo = $this->axisMigsRepo
-        //                          ->findByRrn($row[self::COLUMN_RRN])
-        //                          ->getTransactionId();
 
         $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
 
