@@ -66,7 +66,7 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
-    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
 
     return (
       <div>

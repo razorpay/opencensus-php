@@ -22,7 +22,7 @@ import { luminateRow } from 'merchant/modules/app';
 )
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
-    if (this.props.user.tags.indexOf('Newui') !== -1) {
+    if (this.props.user.isNewUIEnabled) {
       params.type = 'invoice';
     }
 
@@ -53,7 +53,7 @@ export default class InvoicesListContainer extends ListContainer {
 
   render() {
     let { loading, invoices, user } = this.props;
-    let isNewUIEnabled = user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = user.isNewUIEnabled;
     let status = this.state.status;
 
     return (

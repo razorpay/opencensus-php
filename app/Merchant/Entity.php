@@ -324,14 +324,48 @@ class Entity extends Base\Entity
         return $data;
     }
 
-    public static function getAllAggregations($mode, $resource, $sort)
+    public static function getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId)
     {
-        $data = \DB::table('aggregations')
-                    ->where('resource','=',$resource)
-                    ->where('mode','=',$mode)
-                    ->where('total_amount' , '>', 0)
+        $data = \DB::table('transactions')
+                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
+                    ->select(
+                        \DB::raw(
+                            'transactions.merchant_id,
+                            SUM(transactions.amount) as total_amount,
+                            SUM(transactions.count) as total_count,
+                            merchants.name as merchant_name'
+                        )
+                    )
+                    ->where('transactions.mode', '=', $mode)
+                    ->where('transactions.type', '=', $type)
+                    ->where('transactions.created_at', '>=', $filterTimestamp)
+                    ->where('transactions.merchant_id', '=', $merchantId)
+                    ->groupBy('transactions.merchant_id')
                     ->orderBy($sort, 'DESC')
                     ->get();
+
+        return $data;
+    }
+
+    public static function getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type)
+    {
+        $data = \DB::table('transactions')
+                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
+                    ->select(
+                        \DB::raw(
+                            'transactions.merchant_id,
+                            SUM(transactions.amount) as total_amount,
+                            SUM(transactions.count) as total_count,
+                            merchants.name as merchant_name'
+                        )
+                    )
+                    ->where('transactions.mode', '=', $mode)
+                    ->where('transactions.type', '=', $type)
+                    ->where('transactions.created_at', '>=', $filterTimestamp)
+                    ->groupBy('transactions.merchant_id')
+                    ->orderBy($sort, 'DESC')
+                    ->simplePaginate($count);
+
         return $data;
     }
 

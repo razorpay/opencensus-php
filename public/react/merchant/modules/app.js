@@ -7,20 +7,16 @@ const UPDATE_LOCATION = 'UPDATE_LOCATION';
 const UPDATE_ENTITY = 'UPDATE_ENTITY';
 
 export const setBaseLocation = location => {
-  return dispatch => {
-    return dispatch({
-      type: UPDATE_LOCATION,
-      payload: location,
-    });
+  return {
+    type: UPDATE_LOCATION,
+    payload: location,
   };
 };
 
 export const setActiveEntity = id => {
-  return dispatch => {
-    return dispatch({
-      type: UPDATE_ENTITY,
-      payload: id,
-    });
+  return {
+    type: UPDATE_ENTITY,
+    payload: id,
   };
 };
 

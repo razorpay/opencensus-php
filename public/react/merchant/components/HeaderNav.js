@@ -68,7 +68,7 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
                 <Link to="/activation">
                   Activation
                   {' '}
-                  {!user.activated &&
+                  {!user.isActivated &&
                     <span class="badge bg-danger pull-right">
                       {user.activation_progress}%
                     </span>}

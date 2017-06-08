@@ -54,7 +54,7 @@ class Merchant extends Entity
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/activate';
 
-        return $this->request('POST', $relativeUrl);
+        return $this->request('POST', $relativeUrl, []);
     }
 
     public function edit($params)

@@ -10,51 +10,41 @@ const INVOICE_INIT = 'INVOICE_INIT';
 const INVOICE_CANCEL = 'INVOICE_CANCEL';
 
 export const fetchInvoice = id => {
-  return dispatch => {
-    let invoice = new Invoice();
-    return dispatch({
-      type: INVOICE_FETCH,
-      payload: invoice.fetch(id),
-    });
+  let invoice = new Invoice();
+  return {
+    type: INVOICE_FETCH,
+    payload: invoice.fetch(id),
   };
 };
 
 export const notifyCustomer = (params, type) => {
-  return dispatch => {
-    let invoice = new Invoice(params);
-    return dispatch({
-      type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
-      payload: invoice.notify(type),
-    });
+  let invoice = new Invoice(params);
+  return {
+    type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
+    payload: invoice.notify(type),
   };
 };
 
 export const issueInvoice = params => {
-  return dispatch => {
-    let invoice = new Invoice(params);
-    return dispatch({
-      type: INVOICE_ISSUE,
-      payload: invoice.markAsIssued(),
-    });
+  let invoice = new Invoice(params);
+  return {
+    type: INVOICE_ISSUE,
+    payload: invoice.markAsIssued(),
   };
 };
 
 export const initializeInvoice = () => {
-  return dispatch => {
-    return dispatch({
-      type: INVOICE_INIT,
-      payload: new Invoice(initialState.invoice),
-    });
+  return {
+    type: INVOICE_INIT,
+    payload: new Invoice(initialState.invoice),
   };
 };
 
 export const cancelInvoice = params => {
-  return dispatch => {
-    let invoice = new Invoice(params);
-    return dispatch({
-      type: INVOICE_CANCEL,
-      payload: invoice.cancel(),
-    });
+  let invoice = new Invoice(params);
+  return {
+    type: INVOICE_CANCEL,
+    payload: invoice.cancel(),
   };
 };
 

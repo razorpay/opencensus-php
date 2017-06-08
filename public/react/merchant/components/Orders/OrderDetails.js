@@ -40,55 +40,61 @@ export default props => {
             <Spinner />
           </div>
         : <div class="panel panel-default SliderPanel">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
-
             <div class="panel-heading">
               Order ID: <b>{order.id}</b>
             </div>
 
-            <div class="panel-body SliderPanel__Body">
-              <div class="list-group details-row-container">
-                <DetailRow
-                  label="Amount"
-                  value={() => <Amount value={order.amount} />}
-                />
+            <div class="SliderPanel__Body">
+              <Alert type={statusMsg.type} message={statusMsg.message} />
+              <div class="panel-body">
+                <div class="list-group details-row-container">
+                  <DetailRow
+                    label="Amount"
+                    value={() => <Amount value={order.amount} />}
+                  />
 
-                <DetailRow label="Currency" value={order.currency} />
-                <DetailRow label="Attempts" value={order.attempts} />
+                  <DetailRow label="Currency" value={order.currency} />
+                  <DetailRow label="Attempts" value={order.attempts} />
 
-                <DetailRow
-                  label="Status"
-                  value={() => <OrderStatusLabel status={order.status} />}
-                />
+                  <DetailRow
+                    label="Status"
+                    value={() => <OrderStatusLabel status={order.status} />}
+                  />
 
-                {order.attempts > 0
-                  ? <ListGroupToggler
-                      label="Payments"
-                      onToggleClick={() => props.onTogglePayments(order)}
-                    >
-                      <table class="table table-hover">
-                        <TableBody
-                          colSpan={2}
-                          isLoading={payments.loading}
-                          rows={payments.items}
-                        >
-                          {payments.items.map(payment => (
-                            <PaymentList key={payment.id} payment={payment} />
-                          ))}
-                        </TableBody>
-                      </table>
-                    </ListGroupToggler>
-                  : <DetailRow label="Payments" value="No Payments" />}
+                  {order.attempts > 0
+                    ? <ListGroupToggler
+                        label="Payments"
+                        onToggleClick={() => props.onTogglePayments(order)}
+                      >
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={payments.loading}
+                              rows={payments.items}
+                            >
+                              {payments.items.map(payment => (
+                                <PaymentList
+                                  key={payment.id}
+                                  payment={payment}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
+                      </ListGroupToggler>
+                    : <DetailRow label="Payments" value="No Payments" />}
 
-                <DetailRow
-                  label="Created At"
-                  value={() => (
-                    <Time
-                      value={order.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
+                  <DetailRow
+                    label="Created At"
+                    value={() => (
+                      <Time
+                        value={order.created_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </div>}

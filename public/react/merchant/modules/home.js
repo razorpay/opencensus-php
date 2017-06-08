@@ -53,66 +53,55 @@ const getTransactionAmountData = (data, mode) => {
 };
 
 export const fetchAnalytics = params => {
-  return dispatch => {
-    return dispatch({
-      type: ANALYTICS_FETCH,
-      payload: ajax({
-        url: '/analytics/transactions',
-        data: {
-          type: 'day',
-          from: params.from,
-          to: params.to,
-        },
-      }).then(response => {
-        let transaction_count = null, transaction_amount = null;
-        if (response.data) {
-          transaction_count = getTransactionCountData(
-            response.data,
-            params.mode
-          );
-          transaction_amount = getTransactionAmountData(
-            response.data,
-            params.mode
-          );
-        }
-        return {
-          transaction_count,
-          transaction_amount,
-        };
-      }),
-    });
+  return {
+    type: ANALYTICS_FETCH,
+    payload: ajax({
+      url: '/analytics/transactions',
+      data: {
+        type: 'day',
+        from: params.from,
+        to: params.to,
+      },
+    }).then(response => {
+      let transaction_count = null, transaction_amount = null;
+      if (response.data) {
+        transaction_count = getTransactionCountData(response.data, params.mode);
+        transaction_amount = getTransactionAmountData(
+          response.data,
+          params.mode
+        );
+      }
+      return {
+        transaction_count,
+        transaction_amount,
+      };
+    }),
   };
 };
 
 export const fetchEntityTotals = () => {
-  return dispatch => {
-    return dispatch({
-      type: ENTITY_TOTALS_FETCH,
-      payload: ajax('/analytics/aggregations'),
-    });
+  return {
+    type: ENTITY_TOTALS_FETCH,
+    payload: ajax('/analytics/aggregations'),
   };
 };
 
 export const fetchPaymentBreakup = () => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_BREAKUP_FETCH,
-      payload: ajax('/analytics/payment/aggregations'),
-    });
+  return {
+    type: PAYMENT_BREAKUP_FETCH,
+    payload: ajax('/analytics/payment/aggregations'),
   };
 };
 
 export const fetchCurrentBalance = () => {
-  return dispatch => {
-    return dispatch({
-      type: CURRENT_BALANCE_FETCH,
-      payload: ajax('/user/generic', {
-        appendModeInQueryParam: true,
-        data: {
-          route_name: 'balance_fetch',
-        },
-      }),
-    });
+  return {
+    type: CURRENT_BALANCE_FETCH,
+    payload: ajax('/user/generic', {
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'balance_fetch',
+      },
+    }),
   };
 };
 

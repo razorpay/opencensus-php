@@ -402,28 +402,32 @@ export default class InvoicesNewContainer extends Component {
   };
 
   handleBackNavClick = () => {
-    if (!(this.props.anyTouched && this.props.dirty)) {
-      return this.navigateToList();
-    }
+    this.navigateToList();
 
-    this.context
-      .confirm({
-        header: 'Unsaved changes',
-        message: 'You have some unsaved changes. Do you want to leave this page ?',
-        affirmativeLabel: 'Yes, leave',
-        abortLabel: 'No, stay',
-      })
-      .then(() => {
-        this.navigateToList();
-      });
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // if (!(this.props.anyTouched && this.props.dirty)) {
+    //   return this.navigateToList();
+    // }
+
+    // this.context
+    //   .confirm({
+    //     header: 'Unsaved changes',
+    //     message: 'You have some unsaved changes. Do you want to leave this page ?',
+    //     affirmativeLabel: 'Yes, leave',
+    //     abortLabel: 'No, stay',
+    //   })
+    //   .then(() => {
+    //     this.navigateToList();
+    //   });
   };
 
   handleWindowClose() {
-    window.onbeforeunload = function() {
-      return this.props.anyTouched && this.props.dirty
-        ? 'Unsaved changes will be deleted. Do you want to leave the page?'
-        : null;
-    }.bind(this);
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // window.onbeforeunload = function() {
+    //   return this.props.anyTouched && this.props.dirty
+    //     ? 'Unsaved changes will be deleted. Do you want to leave the page?'
+    //     : null;
+    // }.bind(this);
   }
 
   componentWillUnmount() {

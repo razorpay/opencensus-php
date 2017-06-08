@@ -15,16 +15,14 @@ export const uploadBatchRefunds = file => {
   formData.append('file', file);
   formData.append('type', 'refund');
 
-  return dispatch => {
-    return dispatch({
-      type: BATCH_UPLOAD,
-      payload: ajax({
-        url: '/batches',
-        method: 'post',
-        data: formData,
-        processData: false,
-        contentType: false,
-      }),
-    });
+  return {
+    type: BATCH_UPLOAD,
+    payload: ajax({
+      url: '/batches',
+      method: 'post',
+      data: formData,
+      processData: false,
+      contentType: false,
+    }),
   };
 };

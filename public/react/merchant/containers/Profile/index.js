@@ -112,7 +112,7 @@ export default class Profile extends Component {
     const { user, profile } = this.props;
     const { bankAccount, invitations } = profile;
 
-    if (!user) {
+    if (!user.isAuthenticated) {
       return <div class="page-spinner-container"><Spinner /></div>;
     }
 

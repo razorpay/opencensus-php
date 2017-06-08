@@ -56,139 +56,143 @@ export default props => {
               </ShowWhen>
             </div>
 
-            <div class="panel-body SliderPanel__Body">
-              <div class="list-group details-row-container">
-                <DetailRow
-                  label="Amount"
-                  value={() => <Amount value={invoice.amount} />}
-                />
-                <DetailRow label="Summary" value={invoice.description} />
-                <DetailRow
-                  label="Invoice Date"
-                  value={() => <Time value={invoice.date} />}
-                />
-                <DetailRow label="Receipt" value={invoice.receipt} />
-                <DetailRow label="Payment Link" value={invoice.short_url} />
-                <DetailRow
-                  label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
-                />
-                <DetailRow
-                  label="Payment Id"
-                  value={() => {
-                    if (!invoice.payment_id) {
-                      return '--';
-                    }
-                    return (
-                      <NavLink to={`/payments/${invoice.payment_id}`}>
-                        <code>{invoice.payment_id}</code>
-                      </NavLink>
-                    );
-                  }}
-                />
-                <DetailRow
-                  label="Paid At"
-                  value={() => (
-                    <Time
-                      value={invoice.paid_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
-                <DetailRow label="Terms & Conditions" value={invoice.terms} />
-                {Object.keys(invoice.notes).length > 0
-                  ? <ListGroupToggler label="Notes" show={true}>
-                      {Object.keys(invoice.notes).map(note => (
-                        <DetailRow
-                          key={note}
-                          label={note}
-                          value={invoice.notes[note]}
-                        />
-                      ))}
-                    </ListGroupToggler>
-                  : <DetailRow label="Notes" value="No Notes" />}
-              </div>
-
-              <div class="panel panel-default">
-                <div class="panel-heading panel-heading-sm">
-                  Customer Details
-                </div>
+            <div class="SliderPanel__Body">
+              <div class="panel-body">
                 <div class="list-group details-row-container">
                   <DetailRow
-                    label="Name"
-                    value={invoice.customer_details.customer_name}
+                    label="Amount"
+                    value={() => <Amount value={invoice.amount} />}
+                  />
+                  <DetailRow label="Summary" value={invoice.description} />
+                  <DetailRow
+                    label="Invoice Date"
+                    value={() => <Time value={invoice.date} />}
+                  />
+                  <DetailRow label="Receipt" value={invoice.receipt} />
+                  <DetailRow label="Payment Link" value={invoice.short_url} />
+                  <DetailRow
+                    label="Status"
+                    value={() => <InvoiceStatusLabel status={invoice.status} />}
                   />
                   <DetailRow
-                    label="Email"
-                    value={() => (
-                      <span>
-                        {invoice.customer_details.customer_email}
-                        {invoice.email_status
-                          ? <span
-                              style={{ marginLeft: '10px' }}
-                              class={`${notificationClassMap[invoice.email_status]}`}
-                            >
-                              ({invoice.email_status})
-                            </span>
-                          : null}
-                      </span>
-                    )}
+                    label="Payment Id"
+                    value={() => {
+                      if (!invoice.payment_id) {
+                        return '--';
+                      }
+                      return (
+                        <NavLink to={`/payments/${invoice.payment_id}`}>
+                          <code>{invoice.payment_id}</code>
+                        </NavLink>
+                      );
+                    }}
                   />
                   <DetailRow
-                    label="Phone"
+                    label="Paid At"
                     value={() => (
-                      <span>
-                        {invoice.customer_details.customer_contact}
-                        {invoice.sms_status
-                          ? <span
-                              style={{ marginLeft: '10px' }}
-                              class={`${notificationClassMap[invoice.sms_status]}`}
-                            >
-                              ({invoice.sms_status})
-                            </span>
-                          : null}
-                      </span>
+                      <Time
+                        value={invoice.paid_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
                     )}
                   />
+                  <DetailRow label="Terms & Conditions" value={invoice.terms} />
+                  {Object.keys(invoice.notes).length > 0
+                    ? <ListGroupToggler label="Notes" show={true}>
+                        {Object.keys(invoice.notes).map(note => (
+                          <DetailRow
+                            key={note}
+                            label={note}
+                            value={invoice.notes[note]}
+                          />
+                        ))}
+                      </ListGroupToggler>
+                    : <DetailRow label="Notes" value="No Notes" />}
                 </div>
-              </div>
 
-              {invoice.line_items.length
-                ? <div class="panel panel-default">
-                    <div class="panel-heading">
-                      Item Details
-                    </div>
-
-                    <div class="panel-body">
-                      <LineItemReadOnlyTable line_items={invoice.line_items} />
-                    </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading panel-heading-sm">
+                    Customer Details
                   </div>
-                : ''}
-
-              <div class="panel panel-default">
-                <div class="panel-heading panel-heading-sm">
-                  Updates
+                  <div class="list-group details-row-container">
+                    <DetailRow
+                      label="Name"
+                      value={invoice.customer_details.customer_name}
+                    />
+                    <DetailRow
+                      label="Email"
+                      value={() => (
+                        <span>
+                          {invoice.customer_details.customer_email}
+                          {invoice.email_status
+                            ? <span
+                                style={{ marginLeft: '10px' }}
+                                class={`${notificationClassMap[invoice.email_status]}`}
+                              >
+                                ({invoice.email_status})
+                              </span>
+                            : null}
+                        </span>
+                      )}
+                    />
+                    <DetailRow
+                      label="Phone"
+                      value={() => (
+                        <span>
+                          {invoice.customer_details.customer_contact}
+                          {invoice.sms_status
+                            ? <span
+                                style={{ marginLeft: '10px' }}
+                                class={`${notificationClassMap[invoice.sms_status]}`}
+                              >
+                                ({invoice.sms_status})
+                              </span>
+                            : null}
+                        </span>
+                      )}
+                    />
+                  </div>
                 </div>
 
-                <div class="list-group details-row-container">
-                  <DetailRow
-                    label="Last Updated At"
-                    value={() => (
-                      <Time
-                        value={invoice.updated_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
-                  />
-                  <DetailRow
-                    label="Created At"
-                    value={() => (
-                      <Time
-                        value={invoice.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
-                  />
+                {invoice.line_items.length
+                  ? <div class="panel panel-default">
+                      <div class="panel-heading">
+                        Item Details
+                      </div>
+
+                      <div class="panel-body">
+                        <LineItemReadOnlyTable
+                          line_items={invoice.line_items}
+                        />
+                      </div>
+                    </div>
+                  : ''}
+
+                <div class="panel panel-default">
+                  <div class="panel-heading panel-heading-sm">
+                    Updates
+                  </div>
+
+                  <div class="list-group details-row-container">
+                    <DetailRow
+                      label="Last Updated At"
+                      value={() => (
+                        <Time
+                          value={invoice.updated_at}
+                          format="DD MMM YYYY, hh:mm:ss a"
+                        />
+                      )}
+                    />
+                    <DetailRow
+                      label="Created At"
+                      value={() => (
+                        <Time
+                          value={invoice.created_at}
+                          format="DD MMM YYYY, hh:mm:ss a"
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
