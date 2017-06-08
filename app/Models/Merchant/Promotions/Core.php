@@ -1,9 +1,10 @@
 <?php
 
-namespace RZP\Models\Merchant\Promotion;
+namespace RZP\Models\Merchant\Promotions;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Schedule\Task;
 
 class Core extends Base\Core
 {
@@ -19,6 +20,11 @@ class Core extends Base\Core
         $merchantPromotion->merchant()->associate($merchant);
 
         $merchantPromotion->promotion()->associate($promotion);
+
+        if ($promotion->areCreditsExpirable() === true)
+        {
+            $this->createScheduleTask($merchant, $promotion);
+        }
 
         $this->repo->saveOrFail($merchantPromotion);
 
@@ -54,9 +60,18 @@ class Core extends Base\Core
             }
             catch (\Exception $e)
             {
-                //Trace Log
+                //Trace Log fill me
             }
         }
+    }
+
+    public function createScheduleTask($merchant, $promotion)
+    {
+        $input[Task\Entity::TYPE] = Task\Type::PROMOTION;
+
+        $input[Task\Entity::SCHEDULE_ID] = $promotion->schedule->getId();
+
+        (new Task\Core)->create($merchant, $promotion, $input);
     }
 
     public function updateCredits(Entity $merchantPromotion)

@@ -95,4 +95,32 @@ class CouponsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testApplyOnetimeCoupon()
+    {
+         $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->startTest();
+    }
+
+    public function testApplyRecurringCoupon()
+    {
+        $promotion = $this->fixtures->create('promotion:recurring');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->startTest();
+    }
 }

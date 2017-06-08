@@ -70,4 +70,38 @@ return [
             ]
         ]
     ],
+
+    'testApplyOnetimeCoupon' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'code'        => 'RANDOM'
+            ],
+            'url'    => '/coupons/apply',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'promotion',
+                'coupon_code' => 'RANDOM'
+            ]
+        ]
+    ],
+
+    'testApplyRecurringCoupon' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'code'        => 'RANDOM'
+            ],
+            'url'    => '/coupons/apply',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'promotion',
+                'coupon_code' => 'RANDOM'
+            ]
+        ]
+    ],
 ];

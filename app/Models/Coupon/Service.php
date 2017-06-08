@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\Promotion as MerchantPromotion;
+use RZP\Models\Merchant\Promotions as MerchantPromotion;
 
 class Service extends Base\Service
 {
@@ -68,7 +68,7 @@ class Service extends Base\Service
 
         (new Validator)->couponApplyValidator($coupon, $merchantId);
 
-        return $this->repo->transaction(function() use ($merchant, $promotion)
+        $this->repo->transaction(function() use ($merchant, $promotion)
         {
             $merchantPromotion = (new MerchantPromotion\Core);
 
@@ -78,5 +78,7 @@ class Service extends Base\Service
             // Subsequent run and expiry will be handled by cron
             $merchantPromotion->applyCredits($merchant, $promotion);
         });
+
+        return ['success' => true];
     }
 }
