@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use RZP\Trace\Trace;
 use Session;
 
 use RZP\Exception;
@@ -184,7 +185,7 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
 
         return $custData;
