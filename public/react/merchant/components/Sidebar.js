@@ -5,7 +5,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
 

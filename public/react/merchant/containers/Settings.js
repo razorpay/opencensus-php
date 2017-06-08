@@ -5,6 +5,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
+import Applications from 'merchant/containers/Applications/';
 
 @withRouter
 export default class Settings extends Component {
@@ -23,11 +24,16 @@ export default class Settings extends Component {
           <ShowWhen myRole="owner admin">
             <NavLink to="/keys">API Keys</NavLink>
           </ShowWhen>
+
+          <ShowWhen myRole="owner admin">
+            <NavLink to="/applications">Applications</NavLink>
+          </ShowWhen>
         </header>
 
         <Route path="/config" component={Configuration} />
         <Route path="/webhooks" component={Webhooks} />
         <Route path="/keys" component={ApiKeys} />
+        <Route path="/applications" component={Applications} />
       </tabbed-container>
     );
   }

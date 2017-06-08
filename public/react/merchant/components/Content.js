@@ -99,6 +99,7 @@ export default class Content extends Component {
                 <Route path="/config" component={Settings} />
                 <Route path="/keys" component={Settings} />
                 <Route path="/webhooks" component={Settings} />
+                <Route path="/applications" component={Settings} />
 
                 <Redirect to="/dashboard" />
               </Switch>;
