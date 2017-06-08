@@ -73,12 +73,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
         }
         catch (\Throwable $e)
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_DOWNTIME_SORTING_FAILED,
-                [
-                    'terminal_ids'  => array_pluck($terminals, 'id'),
-                    'error_message' => $e->getMessage(),
-                ]);
+            $this->trace->traceException($e);
 
             return $terminals;
         }

@@ -140,20 +140,14 @@ class Core extends Base\Core
             Entity::BEGIN   => $now,
         ];
 
-        $method = $payment->getMethod();
-
-        // Only handling Card & EMI cases
-        switch($method)
+        if ($payment->isMethodCardOrEmi() === true)
         {
-            case Payment\Method::CARD:
-            case Payment\Method::EMI:
+            $this->fillCardDetails($params, $payment);
 
-                $this->fillCardDetails($params, $payment);
-
-                break;
+            return $params;
         }
 
-        return $params;
+        return;
     }
 
     /**
@@ -184,7 +178,7 @@ class Core extends Base\Core
      * Gets the list of gateways from the given terminals
      *
      * Sometimes the list might have duplicates,
-     * as two or more terminals can have same gateway
+     * as more than one terminal can have same gateway
      * Hence, we use `array_unique` before returning
      *
      * @param $terminals array of Terminal\Entity
