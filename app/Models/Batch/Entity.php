@@ -234,6 +234,16 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Setters ---------------------------------------------
 
+    public function setUploadFileUrl(string $url)
+    {
+        $this->setAttribute(self::UPLOAD_FILE_URL, $url);
+    }
+
+    public function setDownloadFileUrl(string $url)
+    {
+        $this->setAttribute(self::DOWNLOAD_FILE_URL, $url);
+    }
+
     public function setSuccessCount($count)
     {
         $this->setAttribute(self::SUCCESS_COUNT, $count);

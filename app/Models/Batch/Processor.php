@@ -55,22 +55,24 @@ class Processor extends Base\Core
         // from S3. This helps in smooth S3 mock working.
         //
 
-        $movedFile = $file->move($batch->getLocalSaveDir(), $batch->getFileKeyWithExt());
+        $file = $file->move($batch->getLocalSaveDir(), $batch->getFileKeyWithExt());
 
-        $filePath = $movedFile->getPathname();
+        $ufh = $this->saveFile($batch, $file->getPathname(), FileStore\Type::BATCH_INPUT);
 
-        $ufhFile = $this->saveFile($batch, $filePath, FileStore\Type::BATCH_INPUT);
+        $batch->setUploadFileUrl($ufh->getUrl());
+
+        $ufhFile = $ufh->getFileInstance();
 
         $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
 
-        $this->deleteFile($filePath);
-
-        return $movedFile;
+        return $file;
     }
 
     public function saveOutputFile(Entity $batch, string $filePath)
     {
-        $this->saveFile($batch, $filePath, FileStore\Type::BATCH_OUTPUT);
+        $ufh = $this->saveFile($batch, $filePath, FileStore\Type::BATCH_OUTPUT);
+
+        $batch->setDownloadFileUrl($ufh->getUrl());
     }
 
     /**
@@ -78,13 +80,14 @@ class Processor extends Base\Core
      * @param string $filePath
      * @param string $type
      *
-     * @return FileStore\Entity
+     * @return FileStore\Creator
+     *
      * @throws Exception\LogicException
      */
     protected function saveFile(
         Entity $batch,
         string $filePath,
-        string $type)
+        string $type): FileStore\Creator
     {
         $name = $batch->getFilePrefix() . $batch->getFileKey();
 
@@ -96,8 +99,7 @@ class Processor extends Base\Core
                     ->entity($batch)
                     ->merchant($batch->merchant)
                     ->type($type)
-                    ->save()
-                    ->getFileInstance();
+                    ->save();
     }
 
     /**
@@ -353,8 +355,6 @@ class Processor extends Base\Core
 
     public function deleteFile($filePath)
     {
-        return;
-
         if (file_exists($filePath))
         {
             $success = unlink($filePath);

@@ -39,8 +39,6 @@ class Core extends Base\Core
         {
             $file = $this->processor->saveInputFile($batch, $input[Entity::FILE]);
 
-
-
             $entries = $this->parseExcelSheets($file);
 
             $batch->getValidator()->validateEntries($entries);
