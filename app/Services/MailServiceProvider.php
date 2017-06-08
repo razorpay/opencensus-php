@@ -49,4 +49,35 @@ class MailServiceProvider extends LaravelMailServiceProvider
             return $mailer;
         });
     }
+
+    /**
+     * Set a few dependencies on the mailer instance.
+     *
+     * @param  \Illuminate\Mail\Mailer  $mailer
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return void
+     */
+    protected function setMailerDependencies($mailer, $app)
+    {
+        $mailer->setContainer($app);
+
+        if ($app['config']->get('queue.mock') === true)
+        {
+            $connectionName = $app['config']->get('queue.default');
+        }
+        else
+        {
+            $connectionName = $app['config']->get('queue.mail.connection');
+        }
+
+        if ($app->bound('queue'))
+        {
+            $mailer->setQueue($this->getQueue($connectionName));
+        }
+    }
+
+    protected function getQueue($connection)
+    {
+        return $this->app['queue']->connection($connection);
+    }
 }
