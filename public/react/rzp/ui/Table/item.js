@@ -26,7 +26,7 @@ export const id = type => item =>
   idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
 
 export const amount = key => item => (
-  <div style={{ textAlign: 'right' }}>
+  <div class="text-right">
     {getFixedINRAmount(item[key || 'amount'])}
   </div>
 );

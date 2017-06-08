@@ -1,15 +1,19 @@
 import * as items from './item';
 
-export const amount = [
-  <div style={{ textAlign: 'right' }}>Amount</div>,
-  items.amount(),
+export const withClick = onClick => column => [
+  column[0],
+  <div style={{ display: 'inline-block' }} onClick={onClick}>{column[1]}</div>,
 ];
+
+const amountLabel = label => <div class="text-right">{label}</div>;
+
+export const amount = [amountLabel('Amount'), items.amount()];
 export const amountRefunded = [
-  'Amount Refunded',
+  amountLabel('Amount Refunded'),
   items.amount('amount_refunded'),
 ];
 export const amountTransferred = [
-  'Amount Transferred',
+  amountLabel('Amount Transferred'),
   items.amount('amount_transferred'),
 ];
 
