@@ -11,6 +11,11 @@ class Coupon extends Base
         return $coupon;
     }
 
+    public function createApplyCoupon(array $attributes = [])
+    {
+        $merchantPromotion = $this->fixture->create('merchant_promotion', $attributes);
+    }
+
     public function create(array $attributes = [])
     {
         $defaultValues = [

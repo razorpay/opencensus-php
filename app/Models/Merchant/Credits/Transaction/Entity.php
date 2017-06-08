@@ -7,10 +7,12 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const TRANSACTION_ID = "transaction_id";
-    const CREDIT_ID      = "credit_id";
+    const CREDITS_ID      = "credits_id";
     const CREDITS_USED   = "credits_used";
 
     protected $entity = "credits_transaction";
+
+    protected $generateIdOnCreate = true;
 
     protected $casts = [
         self::CREDITS_USED => 'integer',
@@ -18,7 +20,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::TRANSACTION_ID,
-        self::CREDIT_ID,
+        self::CREDITS_ID,
         self::CREDITS_USED,
     ];
 
@@ -30,5 +32,17 @@ class Entity extends Base\PublicEntity
     public function credits()
     {
         return $this->belongsTo('RZP\Models\Merchant\Credits\Entity');
+    }
+
+    public function getCreditsUsed()
+    {
+        return $this->getAttribute(self::CREDITS_USED);
+    }
+
+    public function updateCreditsUsed($used)
+    {
+        $usedCount = $this->getCreditsUsed() + $used;
+
+         $this->setAttribute(self::CREDITS_USED, $used);
     }
 }

@@ -56,14 +56,14 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getSortedCredits($timestamp, $merchantId, string $type)
+    public function getSortedCredits(int $timestamp, $merchantId, string $type)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::TYPE, '=', $type)
-                    ->where(function ($q)
+                    ->where(function ($query) use ($timestamp)
                         {
-                            $q->where(Entity::EXPIRING_AT, '>', $timestamp)
+                            $query->where(Entity::EXPIRING_AT, '>', $timestamp)
                               ->orWhereNull(Entity::EXPIRING_AT);
                         }
                     )

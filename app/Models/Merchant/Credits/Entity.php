@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CAMPAIGN,
         self::MERCHANT_ID,
+        self::PROMOTION_ID,
         self::VALUE,
         self::TYPE,
         self::USED,

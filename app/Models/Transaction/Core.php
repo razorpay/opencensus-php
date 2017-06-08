@@ -23,6 +23,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -846,6 +847,9 @@ class Core extends Base\Core
 
         $merchantBalance->subtractAmountCredits($amount);
 
+        //create a credit transaction for the same
+        $this->createCreditTransaction($amount, $txn, Credits\Type::AMOUNT);
+
         // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
     }
@@ -876,6 +880,9 @@ class Core extends Base\Core
         // $nodalBalance->subtractFeeCredits($fee);
 
         $merchantBalance->subtractFeeCredits($fee);
+
+        //create a credit transaction for the same
+        $this->createCreditTransaction($fee, $txn, Credits\Type::FEE);
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);

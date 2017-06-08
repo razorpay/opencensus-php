@@ -1,15 +1,17 @@
 <?php
 
-namespace RZP\Models\Credits\Transaction;
+namespace RZP\Models\Merchant\Credits\Transaction;
+
+use RZP\Models\Base;
 
 class Core extends Base\Core
 {
 
     public function create($amount, $txn, $creditType)
     {
-        $timestamp= time();
+        $timestamp = time();
 
-        $credits = $this->repo->credit->getSortedCredits(
+        $credits = $this->repo->credits->getSortedCredits(
                         $timestamp, $txn->merchant->getId(), $creditType);
 
         $creditAmount = $amount;
@@ -21,15 +23,15 @@ class Core extends Base\Core
                 break;
             }
 
-            $creditTxn = new Transaction\Entity;
+            $creditTxn = new Entity;
 
             $creditTxn->transaction()->associate($txn);
 
-            $availableCredits = $credit->getAmount() - $credit->getUsed();
+            $availableCredits = $credit->getValue() - $credit->getUsed();
 
             if ($availableCredits < $creditAmount)
             {
-                $creditsUsed = $creditAmount - $availableCredits;
+                $creditsUsed = $availableCredits;
 
                 $creditAmount = $creditAmount - $creditsUsed;
             }
@@ -40,12 +42,11 @@ class Core extends Base\Core
                 $creditAmount = 0;
             }
 
-
             $credit->updateUsed($creditsUsed);
 
-            $creditTxn->credit()->associate($credit);
+            $creditTxn->credits()->associate($credit);
 
-            $creditTxn->setCreditsUsed($creditsUsed);
+            $creditTxn->updateCreditsUsed($creditsUsed);
 
             $this->repo->saveOrFail($credit);
 

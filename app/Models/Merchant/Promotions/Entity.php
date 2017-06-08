@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant_promotion';
 
+     protected $generateIdOnCreate = true;
+
     protected $defaults = [
         self::EXPIRED => false
     ];

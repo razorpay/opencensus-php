@@ -21,6 +21,8 @@ class CreateMerchantPromotion extends Migration
         {
             $table->engine = 'InnoDB';
 
+            $table->char(MerchantPromotion::ID, MerchantPromotion::ID_LENGTH);
+
             $table->char(MerchantPromotion::MERCHANT_ID, MerchantPromotion::ID_LENGTH);
 
             $table->char(MerchantPromotion::PROMOTION_ID, MerchantPromotion::ID_LENGTH);

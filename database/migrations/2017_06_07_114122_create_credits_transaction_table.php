@@ -22,15 +22,21 @@ class CreateCreditsTransactionTable extends Migration
         {
             $table->engine = 'InnoDB';
 
+            $table->char(CreditTransaction::ID, CreditTransaction::ID_LENGTH)
+                  ->primary();
+
             $table->char(CreditTransaction::TRANSACTION_ID, CreditTransaction::ID_LENGTH);
 
-            $table->char(CreditTransaction::CREDIT_ID, CreditTransaction::ID_LENGTH);
+            $table->char(CreditTransaction::CREDITS_ID, CreditTransaction::ID_LENGTH);
+
+            $table->integer(CreditTransaction::CREDITS_USED)
+                  ->default(0);
 
             $table->integer(CreditTransaction::CREATED_AT);
 
             $table->integer(CreditTransaction::UPDATED_AT);
 
-            $table->foreign(CreditTransaction::CREDIT_ID)
+            $table->foreign(CreditTransaction::CREDITS_ID)
                 ->references(Credits\Entity::ID)
                 ->on(Table::CREDITS)
                 ->on_delete('restrict');
@@ -40,7 +46,7 @@ class CreateCreditsTransactionTable extends Migration
                 ->on(Table::TRANSACTION)
                 ->on_delete('restrict');
 
-            $table->unique([CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDIT_ID]);
+            $table->unique([CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);
         });
     }
 
@@ -54,13 +60,13 @@ class CreateCreditsTransactionTable extends Migration
         Schema::table(Table::CREDITS_TRANSACTION, function (Blueprint $table)
         {
             $table->dropForeign(
-                Table::CREDITS_TRANSACTION.'_'.CreditTransaction::CREDIT_ID.'_foreign');
+                Table::CREDITS_TRANSACTION.'_'.CreditTransaction::CREDITS_ID.'_foreign');
 
             $table->dropForeign(
                 Table::CREDITS_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');
 
             $table->dropUnique(
-                [CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDIT_ID]);
+                [CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);
         });
 
         Schema::drop(Table::CREDITS_TRANSACTION);
