@@ -1,7 +1,6 @@
 import Spinner from 'rzp/ui/Spinner';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
-import rowClass from 'merchant/utils/activeRow';
 import Table from 'rzp/ui/Table/Index';
 
 export default function DataTable(props) {
@@ -11,7 +10,7 @@ export default function DataTable(props) {
     <div>
       {error && <Alert type="error" message={error} />}
 
-      <Table rows={items} columns={columns} rowClass={rowClass} />
+      <Table rows={items} columns={columns} />
       {loading && <div style={{ padding: 77 }}><Spinner /></div>}
       {!loading &&
         !items.length &&

@@ -2,7 +2,6 @@ import GenericEntity from './GenericEntity';
 import Refund from './Refund';
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
-import { fetchPayment } from 'merchant/modules/payments/details';
 
 export default class Payment extends GenericEntity {
   listRouteName = 'payment_fetch_multiple';

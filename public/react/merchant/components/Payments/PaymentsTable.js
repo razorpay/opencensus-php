@@ -1,5 +1,6 @@
 import DataTable from 'rzp/ui/Table/DataTable';
-import Link from 'react-router-dom';
+import { Link } from 'react-router-dom';
+
 import {
   paymentId,
   paymentOrder,

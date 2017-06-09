@@ -56,7 +56,7 @@ export default class ReferralsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items } = this.props.referrals;
+    let { loading, referrals } = this.props.referrals;
     let user = this.props.session.user;
     let status = this.state.status;
 
@@ -85,7 +85,7 @@ export default class ReferralsListContainer extends ListContainer {
         <Alert type={status.type} message={status.message} />
 
         <ReferralsList
-          referrals={items}
+          referrals={referrals}
           isLoading={loading}
           user={user}
           showCreateLoginModal={this.showCreateLoginModal}

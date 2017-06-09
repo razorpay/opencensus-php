@@ -18,7 +18,7 @@ import {
   state => {
     return {
       mode: state.session.mode,
-      ...state.batchrefunds,
+      ...state.batchuploads,
     };
   },
   { fetchAll }

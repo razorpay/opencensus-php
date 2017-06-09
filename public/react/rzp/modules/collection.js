@@ -17,13 +17,6 @@ export const fetchAll = (params, Entity, namespace) => {
   };
 };
 
-export const destroy = (Entity, namespace) => {
-  return {
-    type: getActionName(Entity, namespace) + '_RESET',
-    payload: null,
-  };
-};
-
 let initialState = {
   loading: true,
   items: [],

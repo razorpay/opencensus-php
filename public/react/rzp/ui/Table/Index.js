@@ -1,4 +1,6 @@
-export default ({ rows, columns, rowClass }) => {
+import EntityItemRow from 'merchant/containers/EntityItemRow';
+
+export default ({ rows, columns }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -10,11 +12,11 @@ export default ({ rows, columns, rowClass }) => {
         {rows &&
           <tbody>
             {rows.map(item => (
-              <tr key={item.id} className={rowClass && rowClass(item)}>
+              <EntityItemRow key={item.id}>
                 {columns.map((column, index) => (
                   <td key={index}>{column[1](item)}</td>
                 ))}
-              </tr>
+              </EntityItemRow>
             ))}
           </tbody>}
       </table>

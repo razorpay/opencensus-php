@@ -19,12 +19,6 @@ export default class ListContainer extends Component {
     this.fetchAll();
   }
 
-  componentWillUnmount() {
-    if (this.props.destroy) {
-      this.props.destroy();
-    }
-  }
-
   fetchAll = (params = this.getDefaultPageParams()) => {
     if (params) {
       this.setState(params);

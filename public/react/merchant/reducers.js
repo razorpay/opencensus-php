@@ -23,7 +23,7 @@ import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
-import batchReducer from 'merchant/modules/refunds/batchuploads';
+import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import referralsReducer from 'merchant/modules/referrals';
 
 import {
@@ -47,11 +47,14 @@ export default combineReducers({
   home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
+  subscriptions: subscriptionsReducer,
   plans: plansReducer,
   profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,
+  orders: ordersReducer,
   order: orderReducer,
+  payments: paymentsReducer,
   payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
@@ -63,13 +66,10 @@ export default combineReducers({
   activation: activationReducer,
   refunds: refundsReducer,
   refund: refundReducer,
+  referrals: referralsReducer,
+  batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
-  payments: paymentsReducer,
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,
   reversals: reversalsReducer,
-  orders: ordersReducer,
-  referrals: referralsReducer,
-  batchrefunds: batchReducer,
-  subscriptions: subscriptionsReducer,
 });
