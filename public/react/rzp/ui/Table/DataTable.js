@@ -12,7 +12,7 @@ export default function DataTable(props) {
       {error && <Alert type="error" message={error} />}
 
       <Table rows={items} columns={columns} rowClass={rowClass} />
-      {loading && <Spinner />}
+      {loading && <div style={{ padding: 77 }}><Spinner /></div>}
       {!loading &&
         !items.length &&
         <h4 class="empty-table-message">{`No ${title} Found!`}</h4>}
