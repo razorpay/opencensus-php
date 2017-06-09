@@ -1,6 +1,5 @@
 // Blame @aseem for suggesting this name
 
-import { Component } from 'react';
 import DetailRow from 'merchant/components/DetailRow';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import TableBody from 'rzp/ui/TableBody';
@@ -20,7 +19,6 @@ export default ({ label, value = {} }) => {
         </div>
       </ListGroupToggler>
     );
-  } else {
-    return <DetailRow label={label} value="--" />;
   }
+  return <DetailRow label={label} value="--" />;
 };
