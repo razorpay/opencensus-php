@@ -17,6 +17,8 @@ class RefundFile extends Mailable
 
     public function __construct(array $merchant, string $filePath)
     {
+        parent::__construct();
+
         $this->merchant = $merchant;
 
         $this->filePath = $filePath;

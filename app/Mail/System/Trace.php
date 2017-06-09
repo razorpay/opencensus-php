@@ -16,6 +16,8 @@ class Trace extends Mailable
 
     public function __construct(string $msg, string $mode)
     {
+        parent::__construct();
+
         $this->msg = $msg;
 
         $this->mode = $mode;

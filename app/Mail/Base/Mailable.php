@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Base;
 
+use App;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -14,6 +15,22 @@ class Mailable extends BaseMailable
     public $tries = 50;
 
     public $timeout = 120;
+
+    public function __construct()
+    {
+        $app = App::getFacadeRoot();
+
+        // If queue mock is set then we use the default sync connection
+        // else we use the dedicated sqs mail connection
+        if ($app['config']->get('queue.mock') === true)
+        {
+            $this->connection = $app['config']->get('queue.default');
+        }
+        else
+        {
+            $this->connection = $app['config']->get('queue.mail.connection');
+        }
+    }
 
     public function build()
     {

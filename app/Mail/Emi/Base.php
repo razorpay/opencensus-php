@@ -23,6 +23,8 @@ class Base extends Mailable
 
     public function __construct(string $bankName)
     {
+        parent::__construct();
+
         $this->bankName = $bankName;
     }
 

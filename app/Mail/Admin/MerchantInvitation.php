@@ -16,6 +16,8 @@ class MerchantInvitation extends Base\Mailable
 
     public function __construct(array $admin, array $org, array $invitation)
     {
+        parent::__construct();
+
         $this->admin = $admin;
 
         $this->org = $org;
