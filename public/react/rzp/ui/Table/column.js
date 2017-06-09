@@ -44,12 +44,12 @@ export const batchCount = ['Count', item => item.total_count];
 export const batchDownload = mode => [
   'Actions',
   item => (
-    <Link
+    <a
       class="btn btn-default btn-xs"
-      to={`/${mode}/batches/${item.id}/download`}
+      href={`/${mode}/batches/${item.id}/download`}
       target="_blank"
     >
       Download
-    </Link>
+    </a>
   ),
 ];
