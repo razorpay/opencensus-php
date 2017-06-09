@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
+        self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
@@ -103,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
+        self::ARN,
         self::ACQUIRER_DATA
     ];
 
@@ -327,10 +329,15 @@ class Entity extends Base\PublicEntity
 
         // We are hardcoding the merchant ids for now.
         // Will move this to feature flag.
-        if (in_array($currentMerchantId, $merchantIds, true) === false)
+        if (in_array($currentMerchantId, $merchantIds, true) === true)
         {
-            unset($array[self::ACQUIRER_DATA]);
+            $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
         }
+    }
+
+    public function setPublicArnAttribute(array & $array)
+    {
+        $array[self::ARN] = $this->getAttribute(self::REFERENCE1);
     }
 
     public function setReference1(string $value)
