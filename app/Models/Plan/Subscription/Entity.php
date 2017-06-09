@@ -301,29 +301,25 @@ class Entity extends Base\PublicEntity
     {
         $localCustomer = $this->customer;
 
+        // If local customer is null, then it needs to be created and mapped
+        // to global customer for subscription first 2FA txn.
         if ($localCustomer === null)
         {
             return false;
         }
-        else
-        {
-            $globalCustomer = $localCustomer->globalCustomer;
 
-            //
-            // If global customer is null, it means, that the subscription
-            // follows the local flow only.
-            // In case it's not null, it means that this is NOT the first 2FA
-            // txn and is a change card flow and follows global flow.
-            //
-            if ($globalCustomer === null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+
+        //
+        // If global customer is null, it means, that the subscription
+        // follows the local flow only.
+        // In case it's not null, it means that this is NOT the first 2FA
+        // txn and is a second charge or change card flow
+        // and follows global flow. The mapping happens in first txn.
+        //
+
+        $globalCustomer = $localCustomer->globalCustomer;
+
+        return ($globalCustomer === null);
     }
 
     // --------------------- END GETTERS ---------------------

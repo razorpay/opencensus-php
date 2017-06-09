@@ -994,7 +994,7 @@ trait Authorize
         {
             $this->associateSubscriptionToPayment($payment, $input);
 
-            $this->addCustomerIdToSubscriptionInputAsApplicable($payment->subscription, $input);
+            $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
         }
 
         //
@@ -1006,19 +1006,17 @@ trait Authorize
             $this->checkAndFillSavedAppToken($input);
         }
 
-        // First fetch the relevant customer
+        // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
         //
         // If global, create a local customer and link that to the subscription.
-        // To check that it's global, just see that payment's subscription does not
-        // have any customer associated.
-        // Now, check that the customer retrieved in the last step is not null. Ideally,
-        // it'll never be null and we will always have a customer.
+        // $customer is global here currently, create its local copy.
         //
-        if ($payment->hasSubscription() === true)
+        if (($payment->hasSubscription() === true) and
+            ($subscription->hasCustomer() === false))
         {
-            $this->associateCustomerToSubscription($payment->subscription, $customer);
+            $this->associateLocalCustomerToSubscription($payment->subscription, $customer);
         }
 
         if ($customer === null)
@@ -1031,12 +1029,8 @@ trait Authorize
         }
         else
         {
-            $localCustomer = null;
-
-            if ($payment->hasSubscription())
-            {
-                $localCustomer = $payment->subscription->customer;
-            }
+            $localCustomer = ($payment->hasSubscription()) ?
+                                $payment->subscription->customer : null;
 
             $this->preProcessPaymentForGlobalCustomer(
                 $customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);
@@ -1064,7 +1058,8 @@ trait Authorize
         $payment->setInternational();
     }
 
-    protected function associateCustomerToSubscription(Subscription\Entity $subscription, Customer\Entity $customer)
+    protected function associateLocalCustomerToSubscription(
+        Subscription\Entity $subscription, Customer\Entity $customer)
     {
         //
         // Check that the subscription is in the global
@@ -1105,7 +1100,7 @@ trait Authorize
         }
     }
 
-    protected function addCustomerIdToSubscriptionInputAsApplicable(Subscription\Entity $subscription, array & $input)
+    protected function addCustomerIdToSubscriptionInput(Subscription\Entity $subscription, array & $input)
     {
         //
         // If a subscription_id is sent in the input, the customer_id should
@@ -1117,27 +1112,32 @@ trait Authorize
             // TODO: Throw an exception
         }
 
-        if ($subscription->followLocalFlow() === true)
+        if ($subscription->hasCustomer() === true)
         {
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
         }
-        else
-        {
-            //
-            // Subscription follows global flow.
-            // In case of 2FA txns (first or second or.. ), the app_token is
-            // set, through which we get the global customer and all.
-            // In case of subsequent charges, no app_token would be set.
-            // Hence, we won't be able to get the customer nor the card of the
-            // token. Hence, we set the local_customer_id for subsequent charges so that
-            // we can get the corresponding global customer_id later in the flow and use
-            // it to get the card of the corresponding token sent in the request.
-            //
-            if ($subscription->hasCustomer() === true)
-            {
-                $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
-            }
-        }
+
+        // if ($subscription->followLocalFlow() === true)
+        // {
+        //     $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+        // }
+        // else
+        // {
+        //     //
+        //     // Subscription follows global flow.
+        //     // In case of 2FA txns (first or change card, etc), the app_token is
+        //     // set, through which we get the global customer and all.
+        //     // In case of subsequent charges, no app_token would be set.
+        //     // Hence, we won't be able to get the customer nor the card of the
+        //     // token. Hence, we set the local_customer_id for subsequent charges so that
+        //     // we can get the corresponding global customer_id later in the flow and use
+        //     // it to get the card of the corresponding token sent in the request.
+        //     //
+        //     if ($subscription->hasCustomer() === true)
+        //     {
+        //         $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+        //     }
+        // }
     }
 
     protected function associateSubscriptionToPayment(Payment\Entity $payment, array $input)

@@ -173,9 +173,9 @@ class Checkout
                 return null;
             }
 
-            if((Base\Utility::isUpdatedAndroidSdk($input)) and
-               ($appToken !== null) and
-               ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
+            if ((Base\Utility::isUpdatedAndroidSdk($input)) and
+                ($appToken !== null) and
+                ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
             {
                 return null;
             }
@@ -286,7 +286,7 @@ class Checkout
             // Otherwise, we don't send any tokens. (Refer the checkout flow to
             // find out what happens at checkout when we don't send any tokens).
             //
-            else if(isset($input['contact']))
+            else if (isset($input['contact']))
             {
                 $response = (new Customer\Service)->fetchGlobalCustomerStatus(
                     $input['contact'],
@@ -351,8 +351,9 @@ class Checkout
         // we go ahead with the global flow. But, for global flow, we need
         // to ensure that noflashcheckout is not enabled for the merchant.
         //
-        // For the first 2FA txn, this will always be null for a global flow.
-        // For the subsequent ones, this will NOT be null and the global flow
+        // For the first 2FA txn, subscription.customer_id will always be null
+        // for a global flow.
+        // For the next non-2FA txn, this will NOT be null and the global flow
         // is handled in the ELSE condition.
         //
         if ($subscription->hasCustomer() === false)
