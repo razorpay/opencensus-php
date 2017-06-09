@@ -198,6 +198,11 @@ class PublicCollection extends Collection
 
     public static function isPublicCollection($object)
     {
+        if (empty($object) === true)
+        {
+            return false;
+        }
+
         return (get_class($object) === static::class);
     }
 }

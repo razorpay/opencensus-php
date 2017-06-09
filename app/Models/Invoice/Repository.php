@@ -8,6 +8,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -16,8 +17,9 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID => 'sometimes|string|min:14|max:18',
-        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
+        Entity::PAYMENT_ID  => 'sometimes|string|min:14|max:18',
+        Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
+        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:20',
     ];
 
     protected $proxyFetchParamRules = [
@@ -89,6 +91,7 @@ class Repository extends Base\Repository
                     ->where($medium . '_status', '=', NotifyStatus::PENDING)
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
+                    ->with(Entity::ORDER)
                     ->get();
     }
 
@@ -114,6 +117,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::EXPIRE_BY, '<', $currentTime)
+                    ->with(Entity::ORDER)
                     ->get();
     }
 
@@ -122,6 +126,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->with(Entity::ORDER)
                     ->get();
     }
 
@@ -135,6 +140,7 @@ class Repository extends Base\Repository
                                 $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
                                       ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
                            })
+                         ->with(Entity::ORDER)
                          ->get();
 
         if ($invoices->count() !== 1)
@@ -191,6 +197,19 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable() . '.*');
     }
 
+    protected function addQueryParamCustomerId(
+        \RZP\Base\BuilderEx $query,
+        array $params)
+    {
+        $customerId = $params[Entity::CUSTOMER_ID];
+
+        Customer\Entity::stripSignWithoutValidation($customerId);
+
+        $customerIdAttr = $this->repo->invoice->dbColumn(Entity::CUSTOMER_ID);
+
+        $query->where($customerIdAttr, $customerId);
+    }
+
     protected function addQueryParamOrderId($query, $params)
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
@@ -218,5 +237,18 @@ class Repository extends Base\Repository
         $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
 
         $query->join($this->repo->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
+    }
+
+    /**
+     * @override
+     *
+     * To eager lazy load order relation along with invoices.
+     *
+     * @param array               $params
+     * @param \RZP\Base\BuilderEx $query
+     */
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        $query->with(Entity::ORDER);
     }
 }

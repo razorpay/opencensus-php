@@ -47,7 +47,17 @@ class NewTerminalLoadSorter extends Terminal\Sorter
 
             $ruleCore = new Rule\Core;
 
-            $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input, $verbose);
+            $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input);
+
+            if ($verbose === true)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_RULES_POST_FILTER,
+                    [
+                        'rules'          => $applicableRules->pluck(Rule\Entity::ID)->toArray(),
+                        'chance_percent' => $options->getChance(),
+                    ]);
+            }
 
             // If no rules are present for load sorting we return the terminals list as is
             if ($applicableRules->isEmpty() === true)

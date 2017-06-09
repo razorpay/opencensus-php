@@ -23,13 +23,14 @@ class Utility
         // check if timeout has occurred
         //
         if ((strpos($msg, 'operation timed out') !== false) or
-            (strpos($msg, 'network is unreachable') !==false) or
+            (strpos($msg, 'network is unreachable') !== false) or
             (strpos($msg, 'name or service not known') !== false) or
             (strpos($msg, 'failed to connect') !== false) or
             (strpos($msg, 'could not resolve host') !== false) or
             (strpos($msg, 'resolving timed out') !== false) or
             (strpos($msg, 'name lookup timed out') !== false) or
-            (strpos($msg, 'connection timed out') !== false))
+            (strpos($msg, 'connection timed out') !== false) or
+            (strpos($msg, 'aborted due to timeout') !== false))
         {
             return true;
         }

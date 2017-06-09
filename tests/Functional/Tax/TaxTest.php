@@ -15,7 +15,7 @@ class TaxTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
     }
 
     public function testGetTax()
@@ -72,5 +72,20 @@ class TaxTest extends TestCase
         $tax = $this->getLastEntity('tax', true);
 
         $this->assertEmpty($tax);
+    }
+
+    public function testDeleteTaxAndCacadeNullInItem()
+    {
+        $this->fixtures->create('tax', ['id' => '00000000000001']);
+
+        $this->fixtures->create('item', ['tax_id' => '00000000000001']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testDeleteTax'];
+
+        $this->startTest();
+
+        $item = $this->getLastEntity('item', true);;
+
+        $this->assertNull($item['tax_id']);
     }
 }

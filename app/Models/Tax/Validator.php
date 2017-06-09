@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME      => 'required|string|max:512',
-        Entity::RATE_TYPE => 'required|string|in:percentage,flat',
+        Entity::RATE_TYPE => 'sometimes|string|in:percentage,flat',
         Entity::RATE      => 'required|integer|min:0',
     ];
 

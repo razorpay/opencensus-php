@@ -327,6 +327,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testPaymentWithFailedOfferWithCustomErrorMessage' => [
         'response' => [
             'content' => [
@@ -341,5 +342,69 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+
+    'testPaymentWithMaxPaymentCountOfferAppliedOnOrderWithNoCardSaving' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testPaymentWithMaxPaymentCountAppliedOnOrderWithGlobalSavedCard' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testPaymentWithMaxPaymentCountAppliedOnOrderWithLocallySavedCard' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testPaymentWithMaxPaymentCountOfferButPaymentsAlreadyMadeOnLinkedOffers' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
     ]
 ];

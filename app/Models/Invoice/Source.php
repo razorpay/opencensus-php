@@ -2,20 +2,23 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Source
 {
     const SELLER_APP = 'seller_app';
 
-    public static function isSourceValid($source)
+    public static function isSourceValid(string $source): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($source)));
     }
 
-    public static function checkSource($source)
+    public static function checkSource(string $source)
     {
         if (self::isSourceValid($source) === false)
         {
-            throw new \InvalidArgumentException('Not a valid source: ' . $source);
+            throw new BadRequestValidationFailureException(
+                'Not a valid source: ' . $source);
         }
     }
 }

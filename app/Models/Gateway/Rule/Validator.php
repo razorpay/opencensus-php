@@ -156,11 +156,13 @@ class Validator extends Base\Validator
     {
         if ($issuer === null)
         {
-            if (in_array($gateway, Gateway::$netbankingGateways, true) === false)
+            if (in_array($gateway, Gateway::$netbankingGateways, true) === true)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'issuer can be null only for shared netbanking gateways');
+                return;
             }
+
+            throw new Exception\BadRequestValidationFailureException(
+                'issuer can be null only for shared netbanking gateways');
         }
 
         $gateways = Gateway::getGatewaysForNetbankingBank($issuer);

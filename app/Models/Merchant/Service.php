@@ -358,7 +358,9 @@ class Service extends Base\Service
         {
             try
             {
-                $schedule = $merchant->schedule;
+                $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+                $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
 
                 $input = [
                     ScheduleTask\Entity::METHOD      => null,
@@ -378,7 +380,7 @@ class Service extends Base\Service
                     TraceCode::SCHEDULE_MIGRATION_FAILED,
                     [
                         'merchant_id' => $merchantId,
-                        'schedule_id' => $merchant->getSettlementScheduleId(),
+                        'schedule_id' => $schedule->getId(),
                         'error'       => $ex->getMessage(),
                     ]);
 
@@ -414,6 +416,38 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function sendActivationEmail(array $input)
+    {
+        $act = new Activate($this->app);
+
+        $response = [];
+
+        foreach ($input['ids'] as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if ($merchant->isActivated())
+                {
+                    $act->sendActivationEmail($merchant);
+
+                    $response[$merchantId] = 'Queued merchant activation email';
+                }
+                else
+                {
+                    $response[$merchantId] = 'Merchant is not activated';
+                }
+            }
+            catch(\Exception $e)
+            {
+                $response[$merchantId] = $e->getMessage();
+            }
+        }
+
+        return $response;
+    }
+
     public function liveEnable($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -436,7 +470,14 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
         }
 
+        $oldMerchant = clone $merchant;
+
         $merchant->liveEnable();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
@@ -461,7 +502,14 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE);
         }
 
+        $oldMerchant = clone $merchant;
+
         $merchant->liveDisable();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 

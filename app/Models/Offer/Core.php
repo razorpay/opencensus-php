@@ -16,11 +16,15 @@ class Core extends Base\Core
     {
         $merchant = $this->merchant;
 
-        $offer = (new Entity)->build($input);
+        $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
-        $this->checkConflictingOffers($offer, $merchant);
+        $offer = new Entity;
 
         $offer->merchant()->associate($merchant);
+
+        $offer = $offer->build($input);
+
+        $this->checkConflictingOffers($offer);
 
         $this->repo->saveOrFail($offer);
 
@@ -32,6 +36,8 @@ class Core extends Base\Core
     public function update(Entity $offer, array $input)
     {
         $merchant = $this->merchant;
+
+        $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
         $offer->edit($input);
 
@@ -94,7 +100,7 @@ class Core extends Base\Core
                     'offer_id'   => $appliedOffer->getId()
                 ]);
 
-            if ($appliedOffer->shouldBlock() === true)
+            if ($appliedOffer->shouldBlockPayment() === true)
             {
                 $errorMessage = $appliedOffer->getErrorMessage();
 
@@ -135,15 +141,38 @@ class Core extends Base\Core
         return $offers;
     }
 
-    protected function checkConflictingOffers(Entity $offer, Merchant\Entity $merchant)
+    protected function checkConflictingOffers(Entity $offer)
     {
         // Check to see if there are any offers with same values for the set of attributes
         // required to uniquely define an offer
-        $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $merchant->getId());
+        $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
         if ($existingOffers->count() > 0)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
+        }
+    }
+
+    /**
+     * Checks if the offer ids provided in linked_offer_ids are valid and also
+     * removes public sign from them
+     *
+     * @param  Entity $offer new offer entity
+     */
+    protected function verifyIdAndStripSignForLinkedOfferIds(array & $input)
+    {
+        try
+        {
+            if (empty($input[Entity::LINKED_OFFER_IDS]) === false)
+            {
+                $input[Entity::LINKED_OFFER_IDS] = Entity::verifyIdAndStripSignMultiple(
+                                                    $input[Entity::LINKED_OFFER_IDS]);
+            }
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'linked_offer_ids are not valid');
         }
     }
 

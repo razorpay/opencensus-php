@@ -366,10 +366,10 @@ class PaymentCreateController extends Controller
 
     protected function redirectToGatewayPostForm($data)
     {
-        $merchant = \BasicAuth::getMerchant();
+        $merchant = $this->app['basicauth']->getMerchant();
         $postFormData = $data;
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
-        $postFormData['name'] = $merchant->getBillingLabelElseName();
+        $postFormData['name'] = $merchant->getBillingLabel();
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);

@@ -46,6 +46,26 @@ return [
         'on_hold_until' => 1586055431,
     ],
 
+    'testFetchTransferReversals' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+            ]
+        ],
+    ],
+
+    'testFetchSingleReversal' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testLiveModeTransferToNonActivatedAccount' => [
         'response'  => [
             'content' => [

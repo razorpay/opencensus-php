@@ -88,7 +88,7 @@ class Format
         if (in_array($mime, $allowedMime) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid Mime for file extension specified.');
+                'Invalid Mime for file extension specified.', null, ['mime' => $mime, 'extension' => $extension]);
         }
     }
 }

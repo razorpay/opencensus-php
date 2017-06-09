@@ -14,7 +14,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      *******************/
     const COLUMN_REFUND_ID      = ['merchant_trackid', 'MERCHANT_TRACKID'];
     const COLUMN_REFUND_AMOUNT  = ['domestic_amt', 'DOMESTIC AMT'];
-    const COLUMN_RRN            = ['arn_no', 'ARN NO'];
+    const COLUMN_ARN            = ['arn_no', 'ARN NO'];
 
     protected function getRefundId(array $row)
     {
@@ -51,23 +51,28 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $paymentId;
     }
 
-    protected function getRrn(array $row)
+    protected function getArn(array $row)
     {
-        $rrn = null;
+        $arn = null;
 
-        foreach (self::COLUMN_RRN as $cr)
+        foreach (self::COLUMN_ARN as $ca)
         {
-            if (empty($row[$cr]) === false)
+            if (empty($row[$ca]) === false)
             {
-                $rrn = $row[$cr];
+                $arn = $row[$ca];
 
-                $rrn = trim(str_replace("'", '', $rrn));
+                $arn = trim(str_replace("'", '', $arn));
+
+                if (strpos($arn, 'onus') !== false)
+                {
+                    $arn = 'NA';
+                }
 
                 break;
             }
         }
 
-        return $rrn;
+        return $arn;
     }
 
     protected function getRefundAmount(array $row)
@@ -101,8 +106,8 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $refundEntity;
     }
 
-    protected function setRrnInGateway(string $rrn, PublicEntity $gatewayRefund)
+    protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
-        $gatewayRefund->setArnNo($rrn);
+        $gatewayRefund->setArnNo($arn);
     }
 }

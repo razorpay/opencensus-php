@@ -279,7 +279,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
                         $today = Carbon::today('Asia/Kolkata')->format('d_m_Y');
 
-                        $emails = ['settlements@razorpay.com'];
+                        $emails = ['federal.netbanking.refunds@razorpay.com'];
 
                         $testData = [
                             'subject'     => 'Federal Netbanking claims and refund files for ' . $date,

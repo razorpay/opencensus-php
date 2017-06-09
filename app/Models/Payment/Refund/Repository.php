@@ -359,6 +359,7 @@ class Repository extends Base\Repository
         $rAttempts = $this->dbColumn(Refund\Entity::ATTEMPTS);
         $rStatus = $this->dbColumn(Refund\Entity::STATUS);
         $rLastAttemptedAt = $this->dbColumn(Refund\Entity::LAST_ATTEMPTED_AT);
+        $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
@@ -367,12 +368,16 @@ class Repository extends Base\Repository
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.
+        // Adding a createdAt check as refund entity as track ids were different
+        // for older refunds, 1493323209 is April 28, 2017 1:30:09 AM when 1st
+        // processed refund was done.
 
         return $this->newQuery()
                     ->select($attrs)
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
                     ->where($rStatus, '=', Refund\Status::FAILED)
+                    ->where($rCreatedAt, '>', 1493323209)
                     ->whereIn($pGateway, $gateways)
                     ->where($rLastAttemptedAt, '<', $timeLimit)
                     ->with(['payment','payment.terminal'])

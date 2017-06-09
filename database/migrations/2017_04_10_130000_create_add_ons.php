@@ -11,7 +11,7 @@ use RZP\Models\LineItem;
 use RZP\Constants\Table;
 use RZP\Models\Plan\Subscription;
 
-class CreateAddons extends Migration
+class CreateAddOns extends Migration
 {
     /**
      * Run the migrations.

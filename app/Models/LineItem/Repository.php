@@ -8,7 +8,9 @@ class Repository extends Base\Repository
 {
     protected $entity = 'line_item';
 
-    public function findByPublicIdAndMorphEntity($id, Base\PublicEntity $morphEntity)
+    public function findByPublicIdAndMorphEntity(
+        string $id,
+        Base\PublicEntity $morphEntity): Entity
     {
         $entity = $this->getEntityClass();
 
@@ -17,15 +19,18 @@ class Repository extends Base\Repository
         return $this->findByIdAndMorphEntityOrFail($id, $morphEntity);
     }
 
-    public function findByIdAndMorphEntityOrFail($id, Base\PublicEntity $morphEntity)
+    public function findByIdAndMorphEntityOrFail(
+        string $id,
+        Base\PublicEntity $morphEntity): Entity
     {
         return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, '=', $morphEntity->getId())
-                    ->where(Entity::ENTITY_TYPE, '=', $morphEntity->getEntity())
+                    ->entity($morphEntity)
                     ->findOrFailPublic($id);
     }
 
-    public function findManyByPublicIdsAndMorphEntity($ids, Base\PublicEntity $morphEntity)
+    public function findManyByPublicIdsAndMorphEntity(
+        array $ids,
+        Base\PublicEntity $morphEntity): Base\PublicCollection
     {
         $entity = $this->getEntityClass();
 
@@ -34,11 +39,12 @@ class Repository extends Base\Repository
         return $this->findManyByIdsAndMorphEntity($ids, $morphEntity);
     }
 
-    public function findManyByIdsAndMorphEntity($ids, Base\PublicEntity $morphEntity)
+    public function findManyByIdsAndMorphEntity(
+        array $ids,
+        Base\PublicEntity $morphEntity): Base\PublicCollection
     {
         return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, '=', $morphEntity->getId())
-                    ->where(Entity::ENTITY_TYPE, '=', $morphEntity->getEntity())
+                    ->entity($morphEntity)
                     ->findManyOrFailPublic($ids);
     }
 }

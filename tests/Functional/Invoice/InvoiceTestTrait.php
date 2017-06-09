@@ -23,7 +23,7 @@ trait InvoiceTestTrait
         );
     }
 
-    private function createIssuedInvoice(array $with = [])
+    protected function createIssuedInvoice(array $with = [])
     {
         return $this->fixtures->create(
             'invoice',
@@ -37,13 +37,43 @@ trait InvoiceTestTrait
     }
 
     /**
+     * Helper method to make payment for given invoice and do the necessary
+     * assertions.
+     */
+    protected function makePaymentForInvoiceAndAssert(array $invoice)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $invoice['order_id'];
+        $payment['amount']   = $invoice['amount'];
+
+        $payment = $this->doAuthAndGetPayment(
+            $payment,
+            [
+                'status'   => 'captured',
+                'order_id' => $invoice['order_id'],
+            ]
+        );
+
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($invoice['status'], 'paid');
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
+
+        return $payment;
+    }
+
+    /**
      * Returns expected upsert index params for ES client method bulkUpsert method.
      *
      * @param array $with
      *
      * @return array
      */
-    private function getExpectedUpsertIndexParams($with = [])
+    protected function getExpectedUpsertIndexParams($with = [])
     {
         $expected = $this->testData['expectedUpsertIndexParams'];
 

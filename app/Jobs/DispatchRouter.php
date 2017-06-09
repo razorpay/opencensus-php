@@ -22,6 +22,7 @@ class DispatchRouter extends Base\Core
     const DASHBOARD = 'dashboard';
     const WEBHOOK   = 'webhook';
     const REPORTS   = 'reports';
+    const INVOICE   = 'invoice';
 
     protected $mock;
 

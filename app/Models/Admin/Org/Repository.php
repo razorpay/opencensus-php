@@ -39,6 +39,13 @@ class Repository extends Base\Repository
         return false;
     }
 
+    public function getRazorpayOrg()
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', Entity::RAZORPAY_ORG_ID)
+                    ->firstOrFail();
+    }
+
     public function findOrFailByHostname(string $hostname)
     {
         // Collect different table names, and their columns to query on

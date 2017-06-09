@@ -38,6 +38,7 @@ class Entity extends Base\Entity
     ];
 
     protected $visible = [
+        self::ID,
         self::ADMIN_ID,
         self::ADMIN,
         self::ACTION_ID,

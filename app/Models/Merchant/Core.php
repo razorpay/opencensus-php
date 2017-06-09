@@ -19,6 +19,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Admin\AdminLead;
 
 class Core extends Base\Core
 {
@@ -40,7 +41,7 @@ class Core extends Base\Core
 
         $this->addMerchantSupportingEntities($merchant);
 
-        $this->syncHeimdallRelatedEntities($merchant, $input);
+        $this->syncHeimdallRelatedEntities($merchant, $input, true);
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
@@ -70,6 +71,10 @@ class Core extends Base\Core
 
         if ($aggregatorMerchant->isMarketplace() === true)
         {
+            // Use Startup Plan as the default for linked accounts
+            // where transfer method pricing is 0
+            $subMerchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+
             $subMerchant->parent()->associate($aggregatorMerchant);
         }
 
@@ -105,7 +110,7 @@ class Core extends Base\Core
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
 
-    public function syncHeimdallRelatedEntities(Entity $merchant, array $input)
+    public function syncHeimdallRelatedEntities(Entity $merchant, array $input, $create = false)
     {
         if (isset($input[Entity::GROUPS]) === true)
         {
@@ -115,6 +120,24 @@ class Core extends Base\Core
         if (isset($input[Entity::ADMINS]) === true)
         {
             $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
+
+            if ($create === true)
+            {
+                $firstAdminId = current($input[Entity::ADMINS]);
+
+                if ($firstAdminId !== false)
+                {
+                    // Update admin leads
+                    $adminLead = (new AdminLead\Core)->getByAdminId($firstAdminId);
+
+                    if (empty($adminLead) === false)
+                    {
+                        $adminLead->merchant()->associate($merchant);
+
+                        $this->repo->saveOrFail($adminLead);
+                    }
+                }
+            }
         }
     }
 
@@ -133,15 +156,6 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
-        if (isset($input['international']) === true)
-        {
-            $action = Merchant\Action::EDIT_INTERNATIONAL;
-
-            $admin = $this->app['basicauth']->getAdmin();
-
-            $admin->hasMerchantActionPermissionOrFail($action);
-        }
-
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
         $merchant->edit($input);
@@ -310,11 +324,20 @@ class Core extends Base\Core
         // Check for admin permissions
         $admin->hasMerchantActionPermissionOrFail($action);
 
+        if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
+        {
+            $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+            (new Methods\Core)->validatePricingForInternational($merchant, $plan);
+        }
+
         $routePermission = Permission\Name::$actionMap[$action];
 
         $originalMerchant = clone $merchant;
 
-        $merchant->$action();
+        $function = camel_case($action);
+
+        $merchant->$function();
 
         $this->app['workflow']->setPermission($routePermission)->handle(
             $originalMerchant, $merchant);

@@ -84,7 +84,6 @@ class Validator extends Base\Validator
     protected static $verifyRules = [
         'vpc_Command'               => 'required|in:queryDR',
         'vpc_MerchTxnRef'           => 'required|alpha_num|size:14',
-        'vpc_Amount'                => 'required|integer',
         'vpc_Version'               => 'required|in:1',
         'vpc_Merchant'              => 'required|alpha_num|max:16',
         'vpc_AccessCode'            => 'required|alpha_num|size:8',

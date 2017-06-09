@@ -122,14 +122,12 @@ class Repository extends Base\Repository
         // the start of the query begin time for there to be an overlap
         $query->whereNull(Entity::END)
               ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
+    }
 
-        // We allow queries without an end time, in which case everything goes.
-        //
+    protected function addQueryParamEnd($query, $params)
+    {
         // If query does have an endtime, then downtime should
         // have begun before it for there to be an overlap
-        if (isset($params[Entity::END]) === true)
-        {
-            $query->where(Entity::BEGIN, '<=', $params[Entity::END]);
-        }
+        $query->where(Entity::BEGIN, '<=', $params[Entity::END]);
     }
 }

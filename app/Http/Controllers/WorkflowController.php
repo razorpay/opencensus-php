@@ -17,12 +17,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-    public function closeWorkflowAction(string $id)
-    {
-        $data = (new Action\Service)->closeAction($id);
-
-        return ApiResponse::json($data);
-    }
 
     // Not being used
     public function postActionDiff(string $id)
@@ -60,6 +54,8 @@ class WorkflowController extends Controller
     public function postExecuteAction(string $id)
     {
         $input = Request::all();
+
+        $actionPublicId = $id;
 
         Action\Entity::verifyIdAndStripSign($id);
 
@@ -106,11 +102,11 @@ class WorkflowController extends Controller
         // the actual code (Controller@action) runs.
         $actionCore->initAuthDetails($authDetails);
 
-        $response = App::call([$controller, $functionName], array_values($routeParams));
+        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
 
         $state = State\Entity::EXECUTED;
 
-        if ($response->getStatusCode() !== 200)
+        if ($internalResponse->getStatusCode() !== 200)
         {
             $state = State\Entity::FAILED;
         }
@@ -125,7 +121,7 @@ class WorkflowController extends Controller
 
         $differCore->updateStateInEs($action->getId(), $state);
 
-        return $response;
+        return $this->getActionDetails($actionPublicId);
     }
 
     public function postActionChecker(string $id)
@@ -133,6 +129,13 @@ class WorkflowController extends Controller
         $input = Request::all();
 
         $data = (new Checker\Service)->create($id, $input);
+
+        return $this->getActionDetails($id);
+    }
+
+    public function closeWorkflowAction(string $id)
+    {
+        $data = (new Action\Service)->closeAction($id);
 
         return $this->getActionDetails($id);
     }

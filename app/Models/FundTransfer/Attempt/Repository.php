@@ -16,6 +16,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::SOURCE_TYPE            => 'sometimes|string|in:settlement',
         Entity::SOURCE_ID              => 'sometimes|alpha_dash|min:14|max:19',
+        Entity::MERCHANT_ID            => 'sometimes|alpha_num|size:14',
         Entity::STATUS                 => 'sometimes|string',
         Entity::UTR                    => 'sometimes|alpha_num',
         Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|size:14',

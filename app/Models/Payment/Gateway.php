@@ -30,6 +30,7 @@ class Gateway
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
     const NETBANKING_FEDERAL = 'netbanking_federal';
+    const NETBANKING_RBL     = 'netbanking_rbl';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
@@ -42,6 +43,7 @@ class Gateway
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_MPESA       = 'wallet_mpesa';
 
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
@@ -60,20 +62,30 @@ class Gateway
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
     ];
 
-    const POWER_WALLETS = array(
+    const POWER_WALLETS = [
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
         Wallet::OLAMONEY,
         Wallet::FREECHARGE,
-    );
+        Wallet::MPESA,
+    ];
 
-    const TOPUP_GATEWAYS = array(
+    /**
+     * These are the wallets that support both
+     * auth as well as power wallet flow
+     */
+    const AUTH_AND_POWER_WALLETS = [
+        // Commenting this out temporarily
+        // Wallet::MPESA,
+    ];
+
+    const TOPUP_GATEWAYS = [
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::SHARP,
-    );
+    ];
 
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
@@ -109,6 +121,11 @@ class Gateway
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::HDFC,
+        Payment\Gateway::MOBIKWIK,
+        Payment\Gateway::WALLET_OLAMONEY,
+        Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::AMEX,
+        Payment\Gateway::WALLET_JIOMONEY,
     ];
 
     public static $channels = [
@@ -128,6 +145,7 @@ class Gateway
         self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::NETBANKING_FEDERAL => Settlement\Channel::KOTAK,
+        self::NETBANKING_RBL     => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -135,6 +153,7 @@ class Gateway
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
         self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
+        self::WALLET_MPESA       => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
         self::AEPS_ICICI         => Settlement\Channel::KOTAK,
@@ -169,6 +188,7 @@ class Gateway
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
+            self::NETBANKING_RBL,
         ],
 
         Method::WALLET => [
@@ -181,6 +201,7 @@ class Gateway
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
             self::WALLET_OPENWALLET,
+            self::WALLET_MPESA,
         ],
 
         Method::EMI => [
@@ -315,7 +336,8 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
-        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET
+        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
+        Wallet::MPESA       => Gateway::WALLET_MPESA,
     );
 
     public static $upiToGatewayMap = array(
@@ -344,6 +366,7 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
+        self::NETBANKING_RBL,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -431,7 +454,8 @@ class Gateway
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::RATN => Gateway::NETBANKING_RBL);
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -444,7 +468,8 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL);
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN => Gateway::NETBANKING_RBL);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -631,6 +656,11 @@ class Gateway
     public static function isPowerWallet($wallet)
     {
         return (in_array($wallet, self::POWER_WALLETS));
+    }
+
+    public static function isAuthAndPowerWallet(string $wallet)
+    {
+        return (in_array($wallet, self::AUTH_AND_POWER_WALLETS, true));
     }
 
     public static function canGatewayTopup($gateway)

@@ -5,6 +5,7 @@ namespace RZP\Models\User;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Illuminate\Hashing\BcryptHasher;
@@ -109,7 +110,9 @@ class Core extends Base\Core
     {
         $userArray = $user->toArrayPublic();
 
-        $merchants = $user->merchants->callOnEveryItem('toArrayUser');
+        $merchants = $user->merchants
+                          ->where(Merchant\Entity::SUSPENDED_AT, NULL)
+                          ->callOnEveryItem('toArrayUser');
 
         $userArray[Entity::MERCHANTS] = $merchants;
 
