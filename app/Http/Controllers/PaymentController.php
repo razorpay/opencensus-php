@@ -286,9 +286,9 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRefundMultipleAuthorizedPaymentsForOrders()
+    public function postRefundAuthorizedPaymentsOfPaidOrders()
     {
-        $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();
+        $data = $this->payment->refundAuthorizedPaymentsOfPaidOrders();
 
         return ApiResponse::json($data);
     }

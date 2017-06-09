@@ -109,6 +109,7 @@ class WebhookTest extends TestCase
         $this->mockInfernoFire(function ($data) use ($testData)
         {
             $data['event'] = json_decode($data['event'], true);
+
             $this->assertArraySelectiveEquals($testData, $data);
             $this->assertArrayHasKey('webhook_id', $data);
             $this->assertArrayHasKey('created_at', $data['event']);
@@ -117,7 +118,7 @@ class WebhookTest extends TestCase
         });
 
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
-        $this->fixtures->create('invoice');
+        $this->fixtures->create('invoice', ['amount' => 1000000]);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order->getPublicId();
@@ -150,6 +151,7 @@ class WebhookTest extends TestCase
 
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
         $this->fixtures->create('invoice', [
+                'amount'           => 1000000,
                 'customer_id'      => null,
                 'customer_name'    => null,
                 'customer_email'   => null,
@@ -253,27 +255,10 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment();
     }
 
-    public function testDisableWebhookAfter3Attempts()
-    {
-        $webhook = $this->createWebhook();
-
-        $inferno = $this->mockInferno();
-
-        $response = new \GuzzleHttp\Psr7\Response;
-        $response->status_code = '501';
-
-        $inferno->shouldReceive('makeRequest')
-//                ->times(3)
-                ->andReturn($response);
-
-        $this->app->instance('webhook.inferno', $inferno);
-
-        $this->doAuthPayment();
-    }
-
     public function testWebhookShouldNotFireWhenInactive()
     {
         $webhook = $this->createWebhook();
+
         $this->fixtures->edit('webhook', $webhook['id'], ['active' => 0]);
 
         $inferno = $this->mockInferno();
@@ -304,13 +289,53 @@ class WebhookTest extends TestCase
         $this->assertEquals(true, $webhook['active']);
     }
 
+    public function testWebhookResponseStatusCodes()
+    {
+        $this->createWebhook();
+
+        // Webhook response with status code 200
+        $inferno = $this->mockInfernoWithResponseStatusCode(200);
+
+        // Is considered a success
+        $inferno->shouldReceive('sendRequest')
+                ->once()
+                ->andReturn(false);
+
+        $this->doAuthPayment();
+
+        // Webhook response with status code 204
+        $inferno = $this->mockInfernoWithResponseStatusCode(204);
+
+        // Is also considered a success
+        $inferno->shouldReceive('sendRequest')
+                ->once()
+                ->andReturn(false);
+
+        $this->doAuthPayment();
+
+        // Webhook response with status code 200
+        $inferno = $this->mockInfernoWithResponseStatusCode(400);
+
+        // Is not considered a success
+        $inferno->shouldReceive('sendRequest')
+                ->once()
+                ->andReturn(true);
+
+        $this->doAuthPayment();
+    }
+
     public function testWebhookDeactivationEmail()
     {
         $webhook = $this->createWebhook();
         $inferno = $this->mockInferno();
 
         $this->fixtures->edit(
-            'webhook', $webhook['id'], ['last_successful_at' => (time() - (25 * 3600)), 'active' => 1]);
+            'webhook',
+            $webhook['id'],
+            [
+                'last_successful_at' => (time() - (25 * 3600)),
+                'active' => 1
+            ]);
 
         $inferno->shouldReceive('sendRequest')
             ->once()
@@ -341,7 +366,7 @@ class WebhookTest extends TestCase
         $inferno = $this->app['webhook.inferno'];
 
         $inferno->shouldReceive('sendEmail')
-                ->with(Mockery::type('object'),'failure')
+                ->with(Mockery::type('object'), 'failure')
                 ->andReturn(false);
 
         $this->doAuthPayment();
@@ -365,6 +390,7 @@ class WebhookTest extends TestCase
 
         $this->assertEquals($webhook['active'], false);
     }
+
     public function testWebhookHittingTheDefinedRoute()
     {
         $this->markTestSkipped();
@@ -475,6 +501,7 @@ class WebhookTest extends TestCase
         $inferno = $this->mockInferno();
 
         $response = $this->getStandardWebhookResponse($statusCode);
+
         $inferno->shouldReceive($method)
                 ->andReturn($response);
 
@@ -519,17 +546,7 @@ class WebhookTest extends TestCase
 
     protected function getStandardWebhookResponse($statusCode = 200): ResponseInterface
     {
-        $response = new \GuzzleHttp\Psr7\Response;
-        $response->status_code = $statusCode;
-
-        $success = false;
-
-        if (($statusCode >= 200) and ($statusCode < 300))
-        {
-            $success = true;
-        }
-
-        $response->success = $success;
+        $response = new \GuzzleHttp\Psr7\Response($statusCode);
 
         return $response;
     }

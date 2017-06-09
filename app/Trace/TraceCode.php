@@ -21,6 +21,8 @@ class TraceCode
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                        = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                        = 'PAYMENT_REFUND_FAILURE';
+    const PAYMENT_REFUND_ORDER_UPDATE                   = 'PAYMENT_REFUND_ORDER_UPDATE';
+    const PAYMENT_REFUND_INVOICE_UPDATE                 = 'PAYMENT_REFUND_INVOICE_UPDATE';
     const PAYMENT_REVERSE_FAILURE                       = 'PAYMENT_REVERSE_FAILURE';
     const PAYMENT_VERIFY_CAPTURE_FAILURE                = 'PAYMENT_VERIFY_CAPTURE_FAILURE';
     const PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE        = 'PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE';
@@ -229,7 +231,7 @@ class TraceCode
     const SUBSCRIPTION_INVOICE_MANUAL_CHARGE            = 'SUBSCRIPTION_INVOICE_MANUAL_CHARGE';
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT        = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT';
     const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
-    const ADDON_CREATE_REQUEST                          = 'CREATE_ADDON_REQUEST';
+    const ADDON_CREATE_REQUEST                          = 'ADDON_CREATE_REQUEST';
     const RUN_CREATE_REQUEST                            = 'RUN_CREATE_REQUEST';
     const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
     const INVOICE_SEND_SUBSCRIPTION_NOTIFICATION        = 'INVOICE_SEND_SUBSCRIPTION_NOTIFICATION';
@@ -566,13 +568,12 @@ class TraceCode
     const PRICING_RULE_MISTMATCH                        = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 
-    const BATCH_UPLOAD_FILE_ENTRIES                     = 'BATCH_UPLOAD_FILE_ENTRIES';
+    const BATCH_CREATED                                 = 'BATCH_CREATED';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_PROCESS_FILE                            = 'BATCH_PROCESS_FILE';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
-    const BATCH_RETRY_FAILURE                           = 'BATCH_RETRY_FAILURE';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';
@@ -824,13 +825,12 @@ class TraceCode
         self::PRICING_RULE_MISTMATCH                    => 'Mismatch in the pricing rule during migration',
         self::PRICING_RULE_DOES_NOT_EXISTS              => 'Pricing Plan does not exist for this merchant',
 
-        self::BATCH_UPLOAD_FILE_ENTRIES                 => 'Entries of the uploaded file',
+        self::BATCH_CREATED                             => 'Batch created',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
         self::BATCH_RETRY                               => 'Manual retry for the batch file',
-        self::BATCH_RETRY_FAILURE                       => 'Failure in retrying batch file',
         self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',

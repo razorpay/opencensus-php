@@ -292,17 +292,19 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Order\Entity::class, [
-            'id' => $faker->uniqueid,
-            'merchant_id' => '10000000000000',
-            'amount' => 1000000,
-            'currency' => 'INR',
-            'status' => 'created',
-            'receipt' => $faker->uniqueid,
+            'id'              => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'partial_payment' => 0,
+            'amount'          => 1000000,
+            'amount_paid'     => 0,
+            'currency'        => 'INR',
+            'status'          => 'created',
+            'receipt'         => $faker->uniqueid,
             'payment_capture' => false,
-            'notes' => null,
-            'attempts' => 0,
-            'created_at' => $faker->timestamp,
-            'updated_at' => $faker->timestamp,
+            'notes'           => null,
+            'attempts'        => 0,
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Item\Entity::class, [
@@ -412,9 +414,10 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Batch\Entity::class, [
-            'id'            => $faker->uniqueid,
-            'merchant_id'   => '10000000000000',
-            'status'        => 'created'
+            'id'          => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'upload_file_url' => 'batch/upload/text.xlsx',
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
@@ -707,6 +710,23 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\Promotions\Entity::class, [
             'id'          => $faker->uniqueid,
             'merchant_id'
+        ]);
+
+        $factory(\RZP\Models\FileStore\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'type'        => 'batch_input',
+            'entity_type' => 'batch',
+            'extension'   => 'xlsx',
+            'mime'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'size'        => 10000,
+            'name'        => 'xyz.xlsx',
+            'store'       => 's3',
+            'location'    => 'xyz',
+            'bucket'      => 'rzp-test-bucket',
+            'region'      => 'us-east-1',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
         ]);
     }
 }

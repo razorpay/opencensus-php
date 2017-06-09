@@ -58,6 +58,7 @@ class CreateAxisGateway extends Migration
             $table->string('vpc_AcqCSCRespCode', 20)->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->char('arn', 40)->nullable();
 
             $table->string('terminal_id', UniqueIdEntity::ID_LENGTH)->nullable();
 

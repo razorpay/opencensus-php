@@ -283,6 +283,25 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
     }
 
+    public function testVerifyRefundFailedOnGateway()
+    {
+        $refund = $this->testRefundFailedPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'validateRefund')
+            {
+                unset($content['RESPONSE']['GETREQUESTSTATUS']);
+
+                $content['RESPONSE']['RESPONSE_HEADER']['API_MSG'] = 'TRANSACTION_NOT_FOUND';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
+    }
+
     public function testAuthorizedPaymentRefund()
     {
         $payment = $this->getDefaultPaymentArray();

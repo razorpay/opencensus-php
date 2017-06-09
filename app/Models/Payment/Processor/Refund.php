@@ -649,7 +649,7 @@ trait Refund
             // send notification to merchant/customer, this is outside transaction
             // as we dont want to to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
-        });
+        }, 120);
 
         return $this->refund;
     }
