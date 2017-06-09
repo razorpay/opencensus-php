@@ -261,7 +261,7 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']->isTPVRequired())
         {
-            $dataToEncrypt[RequestFields::ACCOUNT_NUMBER] = '.' . $input['order']['account_number'];
+            $dataToEncrypt[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
         }
 
         $data[RequestFields::QUERY_STRING] = $this->getHashOfArray($dataToEncrypt);
