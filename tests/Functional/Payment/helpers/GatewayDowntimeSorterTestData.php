@@ -48,4 +48,18 @@ return [
         'network'     => 'VISA',
         'issuer'      => 'HDFC',
     ],
+
+    'allGatewayAllIssuerNetworkHdfcData' => [
+        'gateway'     => 'ALL',
+        'reason_code' => 'ISSUER_DOWN',
+        'network'     => 'ALL',
+        'issuer'      => 'HDFC',
+    ],
+
+    'hdfcNetworkAllIssuerHdfc' => [
+        'gateway'     => 'hdfc',
+        'reason_code' => 'ISSUER_DOWN',
+        'network'     => 'ALL',
+        'issuer'      => 'HDFC',
+    ],
 ];

@@ -8,7 +8,6 @@ use RZP\Models\Terminal;
 use RZP\Models\Gateway\Downtime;
 use RZP\Trace\TraceCode;
 
-
 /**
  * Documentation here :
  * https://docs.google.com/document/d/1bsx1t21Q_n5cQBnM_REyolGbn92Fzscu0LrRYiKqqsU/
@@ -120,21 +119,17 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
     /**
      * Checks if priority of terminal should be demoted
-     *
-     * Compares on basis on terminal related data
-     * 1. Terminal Id
-     * 2. Terminal Gateway
-     * 3. Downtime Gateway
+     * against the list of terminals
      *
      * @param $terminal Terminal\Entity
-     * @param $downtime Downtime
+     * @param $downtimes Base\PublicCollection
      * @return bool
      */
     protected function shouldDemoteTerminal(Terminal\Entity $terminal, Base\PublicCollection $downtimes): bool
     {
         foreach ($downtimes as $downtime)
         {
-            if ($this->isDowntimeApplicableOnTerminal($downtime, $terminal) === true)
+            if ($this->isDowntimeApplicableOnTerminal($terminal, $downtime) === true)
             {
                 return true;
             }
@@ -143,7 +138,17 @@ class GatewayDowntimeSorter extends Terminal\Sorter
         return false;
     }
 
-    protected function isDowntimeApplicableOnTerminal(Downtime\Entity $downtime, Terminal\Entity $terminal): bool
+    /**
+     * Compares on basis on terminal related data
+     * 1. Terminal Id
+     * 2. Terminal Gateway
+     * 3. Downtime Gateway
+     *
+     * @param $terminal Terminal\Entity
+     * @param $downtimes Downtime\Entity
+     * @return bool
+     */
+    protected function isDowntimeApplicableOnTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime): bool
     {
         return (($downtime->getGateway() === Downtime\Entity::ALL) or
                 ($terminal->getGateway() === $downtime->getGateway()) or

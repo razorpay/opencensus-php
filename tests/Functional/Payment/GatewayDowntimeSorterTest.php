@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Carbon\Carbon;
+
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -229,7 +231,7 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->createCardTerminals();
 
         $hdfcUnkownIssuerNetworkData = $this->testData['hdfcUnkownIssuerNetworkData'];
-        $hdfcUnkownIssuerNetworkData['begin'] = time() + 86400;
+        $hdfcUnkownIssuerNetworkData['begin'] = Carbon::now('Asia/Kolkata')->addHours(24)->timestamp;
 
         $this->fixtures->create('gateway_downtime:card', $hdfcUnkownIssuerNetworkData);
 
@@ -263,5 +265,47 @@ class GatewayDowntimeSorterTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('hdfc', $payment['gateway']);
+    }
+/*
+gateway: <specific>,network: ALL , issuer: <specific issuer>
+*/
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for all gateways for network all and issuer HDFC,
+     *
+     * this payment should go through via hdfc
+     * the order remains the same because
+     * all gateways are down for all network & Issuer HDFC
+     */
+    public function testDowntimeSortingCardAllGatewayIssuerNetworkHdfc()
+    {
+        $this->createCardTerminals();
+
+        $allGatewayAllIssuerNetworkHdfcData = $this->testData['allGatewayAllIssuerNetworkHdfcData'];
+        $this->fixtures->create('gateway_downtime:card', $allGatewayAllIssuerNetworkHdfcData);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
+    public function testDowntimeSortingCardHdfcNetworkAllIssuerHdfc()
+    {
+        $this->createCardTerminals();
+
+        $hdfcNetworkAllIssuerHdfc = $this->testData['hdfcNetworkAllIssuerHdfc'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcNetworkAllIssuerHdfc);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
     }
 }
