@@ -15,13 +15,24 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY          => 'required|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::LOAD             => 'required|numeric|between:0,100',
+        Entity::TYPE             => 'required|string|in:sorter,filter',
+        Entity::GROUP            => 'sometimes|filled|string|max:50',
+        Entity::FILTER_TYPE      => 'required_if:type,filter|in:select,reject',
+        Entity::LOAD             => 'required_if:type,sorter|filled|numeric|between:0,100',
         Entity::METHOD           => 'required|string|max:30',
         Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
+        Entity::MIN_AMOUNT       => 'sometimes|filled|integer',
+        Entity::MAX_AMOUNT       => 'sometimes|filled|integer',
+        Entity::EMI_DURATION     => 'sometimes_if:method,emi|integer|in:3,6,9,12,18,24',
+        Entity::IINS             => 'sometimes|filled|array',
         Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
+        Entity::NETWORK_CATEGORY => 'sometimes|string|max:30',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
+        Entity::NETWORK_CATEGORY => 'sometimes|filled|string',
+        Entity::CATEGORY2        => 'sometimes|filled|string|max:30',
+        Entity::TERMINAL_TYPE    => 'sometimeds_if:type,filter|in:shared,direct'
     ];
 
     protected static $editRules = [
@@ -80,11 +91,11 @@ class Validator extends Base\Validator
                         $method . ' is not a valid payment method');
         }
 
-        if (Gateway::isMethodSupported($method, $gateway) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Gateway ' . $gateway . ' does not support ' . $method . ' method');
-        }
+        // if (Gateway::isMethodSupported($method, $gateway) === false)
+        // {
+        //     throw new Exception\BadRequestValidationFailureException(
+        //         'Gateway ' . $gateway . ' does not support ' . $method . ' method');
+        // }
     }
 
     public function validateMethodType(array $input)

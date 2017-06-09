@@ -18,7 +18,10 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        $this->validateNewRule($rule, $input);
+        if ($rule->getType() === 'sorter')
+        {
+            $this->validateNewRule($rule, $input);
+        }
 
         $this->repo->saveOrFail($rule);
 
@@ -67,14 +70,14 @@ class Core extends Base\Core
 
         // Checks if merchant specific rules are present. If present we only use them
         // and discard other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules(
-                                            $applicableRules,
-                                            $input['merchant']);
+        // $merchantSpecificRules = $this->getMerchantSpecificRules(
+        //                                     $applicableRules,
+        //                                     $input['merchant']);
 
-        if ($merchantSpecificRules->isEmpty() === false)
-        {
-            $applicableRules = $merchantSpecificRules;
-        }
+        // if ($merchantSpecificRules->isEmpty() === false)
+        // {
+        //     $applicableRules = $merchantSpecificRules;
+        // }
 
         return $applicableRules;
     }

@@ -69,12 +69,14 @@ class Filter
 
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalIds = [];
+            // $terminalIds = [];
 
-            foreach ($terminals as $terminal)
-            {
-                $terminalIds[] = $terminal->getId();
-            }
+            // foreach ($terminals as $terminal)
+            // {
+            //     $terminalIds[] = $terminal->getId();
+            // }
+
+            $terminalIds = array_pluck($terminals, 'id', 'gateway');
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 

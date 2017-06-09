@@ -15,13 +15,30 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT_ID      = 'merchant_id';
     const GATEWAY          = 'gateway';
+    const TYPE             = 'type';
+    const GROUP            = 'group';
+    const FILTER_TYPE      = 'filter_type';
     const LOAD             = 'load';
+
+    // Terminal properties
     const GATEWAY_ACQUIRER = 'gateway_acquirer';
+    const NETWORK_CATEGORY = 'network_category';
+    const TERMINAL_TYPE    = 'terminal_type';
     const INTERNATIONAL    = 'international';
+
+    // Payment properties
     const METHOD           = 'method';
     const METHOD_TYPE      = 'method_type';
     const NETWORK          = 'network';
     const ISSUER           = 'issuer';
+    const MIN_AMOUNT       = 'min_amount';
+    const MAX_AMOUNT       = 'max_amount';
+    const IINS             = 'iins';
+    const EMI_DURATION     = 'emi_duration';
+
+    // Merchant properties
+    const CATEGORY2        = 'category2';
+
     const DELETED_AT       = 'deleted_at';
 
     const MAX_LOAD = 10000;
@@ -33,6 +50,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::TERMINAL_TYPE
     ];
 
     /**
@@ -40,11 +59,16 @@ class Entity extends Base\PublicEntity
      * are acceptable for comparison
      */
     const NULLABLE_ATTRIBUTES = [
+        self::GROUP,
+        self::FILTER_TYPE,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::IINS,
     ];
 
     protected $entity = 'gateway_rule';
@@ -59,26 +83,46 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::TYPE,
+        self::GROUP,
+        self::FILTER_TYPE,
         self::LOAD,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
+        self::ISSUER,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::IINS,
+        self::EMI_DURATION,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
-        self::ISSUER,
+        self::NETWORK_CATEGORY,
+        self::TERMINAL_TYPE,
+        self::CATEGORY2,
     ];
 
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::TYPE,
+        self::GROUP,
+        self::FILTER_TYPE,
         self::LOAD,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::IINS,
+        self::EMI_DURATION,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::TERMINAL_TYPE,
+        self::CATEGORY2,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
@@ -95,16 +139,6 @@ class Entity extends Base\PublicEntity
         self::LOAD
     ];
 
-    protected function modifyLoad(& $input)
-    {
-        $load = $input[self::LOAD];
-
-        if (empty($load) === false)
-        {
-            $input[self::LOAD] = intval(round($load * 100));
-        }
-    }
-
     public function getLoad()
     {
         return $this->getAttribute(self::LOAD);
@@ -113,6 +147,11 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getMethodType()
@@ -145,13 +184,32 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isTypeFilter()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function isSelectFilter()
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === 'select');
+    }
+
+    public function isRejectFilter()
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === 'reject');
+    }
+
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
     {
-        $load = round(($this->getAttribute(self::LOAD) / 100), 2);
+        sd($this->getLoad());
+        if (empty($this->getAttribute(self::LOAD)) === false)
+        {
+            $load = round(($this->getAttribute(self::LOAD) / 100), 2);
 
-        $array[self::LOAD] = $load;
+            $array[self::LOAD] = $load;
+        }
     }
 
     //---------------- Public Setters End---------------------------------------
@@ -180,7 +238,10 @@ class Entity extends Base\PublicEntity
 
     public function setLoadAttribute($load)
     {
-        $this->attributes[self::LOAD] = intval(round($load * 100));
+        if (empty($load) === false)
+        {
+            $this->attributes[self::LOAD] = intval(round($load * 100));
+        }
     }
 
     //----------------- Mutators End--------------------------------------------

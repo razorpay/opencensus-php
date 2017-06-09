@@ -101,6 +101,8 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
+        $filteredTerminals = (new Filters\RuleFilter)->filter($filteredTerminals, $this->input);
+
         $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
 
         //
@@ -166,10 +168,12 @@ class Selector
         {
             $terminalIds = [];
 
-            foreach ($terminals as $terminal)
-            {
-                $terminalIds[] = $terminal->getId();
-            }
+            // foreach ($terminals as $terminal)
+            // {
+            //     $terminalIds[] = $terminal->getId();
+            // }
+
+            $terminalIds = array_pluck($terminals, 'id', 'gateway');
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
@@ -208,7 +212,7 @@ class Selector
             $options->setFailedTerminals([]);
         }
 
-        $terminalsSelected = $this->select($options);
+        $terminalsSelected = $this->select($options, true);
 
         if ($options->getMultiple() === false)
         {
