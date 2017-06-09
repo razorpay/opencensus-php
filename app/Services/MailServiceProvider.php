@@ -49,21 +49,4 @@ class MailServiceProvider extends LaravelMailServiceProvider
             return $mailer;
         });
     }
-
-    /**
-     * Set a few dependencies on the mailer instance.
-     *
-     * @param  \Illuminate\Mail\Mailer  $mailer
-     * @param  \Illuminate\Foundation\Application  $app
-     * @return void
-     */
-    protected function setMailerDependencies($mailer, $app)
-    {
-        $mailer->setContainer($app);
-
-        if ($app->bound('queue'))
-        {
-            $mailer->setQueue($app['queue.connection']);
-        }
-    }
 }
