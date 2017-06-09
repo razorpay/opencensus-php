@@ -458,7 +458,7 @@ class Gateway extends Base\Gateway
 
         if (($refundEntityPaymentId !== $paymentId) or
             ($refundEntityRefundAmount !== $refundAmount) or
-            ($refundEntityStatusCode !== 0))
+            ($refundEntityStatusCode !== '0'))
         {
             return false;
         }

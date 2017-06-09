@@ -23,7 +23,7 @@ class Repository extends Base\Repository
         $refundEntities =  $this->newQuery()
                                 ->where('refund_id', '=', $refundId)
                                 ->where('action', '=', Base\Action::REFUND)
-                                ->where('statuscode', '=' , 0)
+                                ->where('statuscode', '=' , '0')
                                 ->get();
         //
         // There should never be more than one successful gateway refund entity

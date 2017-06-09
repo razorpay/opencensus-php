@@ -91,9 +91,11 @@ class Entity extends Base\Entity
 
 // ----------------------- Accessors --------------------------------------------
 
-    public function getAmountAttribute(float $amount)
+    public function getAmountAttribute($amount)
     {
-        return $amount * 100;
+        $amount = intval(floatval($amount) * 100);
+
+        return $amount;
     }
 
 // ----------------------- Accessors End ----------------------------------------
