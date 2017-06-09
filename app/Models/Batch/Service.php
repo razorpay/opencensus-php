@@ -7,7 +7,6 @@ use Mail;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -22,7 +21,7 @@ class Service extends Base\Service
 
     public function createBatch($input)
     {
-        $batch = (new Batch\Core)->create($input);
+        $batch = (new Core)->create($input);
 
         return $batch->toArrayPublic();
     }
@@ -31,16 +30,12 @@ class Service extends Base\Service
     {
         $batches = $this->repo->batch->fetch($input, $this->merchant->getId());
 
-        // $this->trace->info(TraceCode::BATCH_LIST, $batches->toArrayPublic());
-
         return $batches->toArrayPublic();
     }
 
     public function getBatchById($id)
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
-
-        // $this->trace->info(TraceCode::BATCH_GET, $batch->toArrayPublic());
 
         return $batch->toArrayPublic();
     }
@@ -49,7 +44,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $batch = (new Batch\Core)->retryBatch($batch);
+        $batch = (new Core)->retryBatch($batch);
 
         return $batch->toArrayPublic();
     }
@@ -58,7 +53,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $awsPublicUrl = (new Batch\Core)->downloadBatch($batch);
+        $awsPublicUrl = (new Core)->downloadBatch($batch);
 
         $responseObj = [
             'url' => $awsPublicUrl,
@@ -69,8 +64,17 @@ class Service extends Base\Service
 
     public function processBatches()
     {
-        $batches = (new Batch\Core)->processBatches();
+        $batches = (new Core)->processBatches();
 
         return $batches->toArrayPublic();
+    }
+
+    public function processBatch(string $id): array
+    {
+        $batch = $this->repo->batch->findByPublicId($id);
+
+        $batch = (new Core)->processBatch($batch);
+
+        return $batch->toArrayPublic();
     }
 }

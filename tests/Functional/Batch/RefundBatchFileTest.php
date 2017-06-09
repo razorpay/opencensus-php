@@ -13,6 +13,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Batch\RefundFile as BatchRefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\FileStore;
 
 class RefundBatchFileTest extends TestCase
 {
@@ -91,6 +92,16 @@ class RefundBatchFileTest extends TestCase
 
         $this->startTest();
 
+        // Assert that the processed file exist
+
+        $file = FileStore\Entity::where(FileStore\Entity::TYPE, FileStore\Type::BATCH_OUTPUT)
+                                ->first();
+
+        $this->assertNotNull($file);
+
+        $this->assertEquals('batch/download/' . $batch->getFileKeyWithExt(), $file->getLocation());
+        $this->assertEquals('batch/download/' . $batch->getFileKey(), $file->getName());
+
         Mail::assertSent(BatchRefundFileMail::class);
     }
 
@@ -103,12 +114,6 @@ class RefundBatchFileTest extends TestCase
         $batch = $this->fixtures->create('batch:refund', $entries);
 
         $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
-
-        $filePath = $batch->getUploadFileUrl();
-        if (file_exists($filePath))
-        {
-            $success = unlink($filePath);
-        }
 
         $this->ba->appAuth();
 

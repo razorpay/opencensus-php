@@ -4,14 +4,14 @@ namespace RZP\Models\Batch;
 
 use Config;
 use RZP\Base\RuntimeManager;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 
 class Core extends Base\Core
 {
@@ -28,47 +28,33 @@ class Core extends Base\Core
         $this->processor = new Processor;
     }
 
-    public function create($input)
+    public function create($input): Entity
     {
-        $batch = (new Batch\Entity)->build($input);
+        $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);
 
-        $entries = $this->parseExcelSheets($input['file']);
+        $this->repo->transaction(function () use ($batch, $input)
+        {
+            $file = $this->processor->saveInputFile($batch, $input[Entity::FILE]);
 
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE_ENTRIES, $entries);
+            $entries = $this->parseExcelSheets($file);
 
-        $batch->getValidator()->validateEntries($entries, $batch->getType());
+            $batch->getValidator()->validateEntries($entries);
 
-        list($totalCount, $amount) = $this->getFileData($entries);
+            $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
-        $batch->setAmount($amount);
+            $this->repo->saveOrFail($batch);
+        });
 
-        $batch->setTotalCount($totalCount);
-
-        $awsUrl = $this->processor->saveBatchFileToAws($batch, $input['file']);
-
-        $this->processor->deleteFile($input['file']->getRealPath());
-
-        $batch->setUploadFileUrl($awsUrl);
-
-        $this->repo->saveOrFail($batch);
-
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
         return $batch;
     }
 
-    public function retryBatch(Batch\Entity $batch)
+    public function retryBatch(Entity $batch): Entity
     {
-        if (($batch->getStatus() === Status::PROCESSED) and
-            ($batch->getFailureCount() === 0))
-        {
-            $this->trace->info(TraceCode::BATCH_RETRY_FAILURE, $batch->toArrayPublic());
-
-            throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED);
-        }
+        $batch->getValidator()->validateNotProcessedAlready();
 
         $batch->setStatus(Status::PROCESSING);
 
@@ -79,20 +65,40 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function downloadBatch(Batch\Entity $batch)
+    /**
+     * Returns signed url of the batch file: output file if that exists else
+     * the input file itself.
+     *
+     * @param Entity $batch
+     *
+     * @return string
+     */
+    public function downloadBatch(Entity $batch): string
     {
-        $awsKey = $this->processor->getAwsKey($batch);
+        $file = ($batch->getStatus() === Status::CREATED) ?
+                    $batch->inputFile() : $batch->outputFile();
 
-        $publicUrl = $this->getPreSignedUrlFromAws($awsKey);
+        // Backward compatibility:
+        // - If file relation exists use that else to handle BC
+        //   form the AWS key and get the signed URL as done previously.
+
+        if ($file === null)
+        {
+            $signedUrl = $this->getSignedUrlOfBatchFile($batch);
+        }
+        else
+        {
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+        }
 
         $this->trace->info(
             TraceCode::BATCH_DOWNLOAD,
             [
-                'batch'         => $batch->toArrayPublic(),
-                'url'           => $publicUrl,
+                'batch_id' => $batch->getId(),
+                'url'      => $signedUrl,
             ]);
 
-        return $publicUrl;
+        return $signedUrl;
     }
 
     public function processBatches()
@@ -103,49 +109,70 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            try
-            {
-                $batch->incrementAttempts();
-
-                $this->processor->process($batch);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->warning(
-                    TraceCode::BATCH_PROCESSING_ERROR,
-                    [
-                        'batch'         => $batch->toArrayPublic(),
-                    ]);
-
-                // TODO: Remove this comment. Currently we will mark the final state as processed.
-                // if ($batch->getAttempts() >= 3)
-                // {
-                //     $batch->setStatus(Status::PROCESSED);
-                // }
-                // else
-                // {
-                //     $batch->setStatus(Status::PROCESSING);
-                // }
-
-                $batch->setStatus(Status::PROCESSED);
-                $this->repo->saveOrFail($batch);
-            }
+            $this->processBatch($batch);
         }
+
         return $batches;
     }
 
-    protected function getFileData($entries)
+    public function processBatch(Entity $batch)
     {
-        $totalAmount = 0;
-
-        $totalEntries = count($entries);
-
-        foreach ($entries as $entry)
+        try
         {
-            $totalAmount += $entry[Header::AMOUNT];
+            $batch->getValidator()->validateNotProcessedAlready();
+
+            $this->processor->process($batch);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::BATCH_PROCESSING_ERROR,
+                [
+                    'batch' => $batch->toArrayPublic(),
+                ]);
+
+            $batch->setStatus(Status::PROCESSED);
+
+            $this->repo->saveOrFail($batch);
         }
 
-        return array($totalEntries, $totalAmount);
+        return $batch;
+    }
+
+    /**
+     * Fills Batch entity with details extracted from the input file.
+     * Eg.
+     * - Total row count
+     * - Aggregate sum of amount field
+     *
+     * @param Entity $batch
+     * @param array  $entries
+     */
+    protected function fillBatchEntityWithInputFileDetails(
+        Entity $batch,
+        array $entries)
+    {
+        $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
+        $totalCount  = count($entries);
+
+        $batch->setAmount($totalAmount);
+        $batch->setTotalCount($totalCount);
+    }
+
+    /**
+     * Get signed URL of batch file in old way.
+     *
+     * @param Entity $batch
+     *
+     * @return string
+     */
+    protected function getSignedUrlOfBatchFile(Entity $batch): string
+    {
+        $awsKey = $batch->getFilePrefix() . $batch->getFileKeyWithExt();
+
+        return $this->getPreSignedUrlFromAws($awsKey);
     }
 
     protected function increaseAllowedSystemLimits()
