@@ -39,6 +39,7 @@ class Netbanking
         IFSC::KKBK,
         IFSC::AIRP,
         IFSC::FDRL,
+        IFSC::RATN,
         IFSC::INDB,
     ];
 
@@ -48,6 +49,7 @@ class Netbanking
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::FDRL,
+        IFSC::RATN,
     ];
 
     protected static $paytm = array(

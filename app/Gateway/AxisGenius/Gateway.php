@@ -37,16 +37,6 @@ class Gateway extends AxisMigs\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestContent($input, $payment)
-    {
-        $content = array(
-            'vpc_Command'       => AxisMigs\Command::QUERYDR,
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
-        );
-
-        return $content;
-    }
-
     protected function getPaymentRefundRequestContent($input, $payment)
     {
         $content = parent::getPaymentRefundRequestContent($input, $payment);

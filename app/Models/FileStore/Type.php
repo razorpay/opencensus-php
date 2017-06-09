@@ -22,6 +22,8 @@ class Type
 
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
+    const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
@@ -70,6 +72,7 @@ class Type
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::FEDERAL_NETBANKING_REFUND,
+            self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
@@ -113,6 +116,7 @@ class Type
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::FEDERAL_NETBANKING_REFUND,
+        self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::AIRTELMONEY_WALLET_REFUND,

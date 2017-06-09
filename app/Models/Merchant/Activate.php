@@ -28,8 +28,6 @@ class Activate extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
-
         //
         // Ensure that all payment methods enabled for the merchant
         // has an associated pricing assigned
@@ -75,7 +73,7 @@ class Activate extends Base\Core
 
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
 
-        $this->sendActivationEmail($merchant, $plan);
+        $this->sendActivationEmail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -86,13 +84,18 @@ class Activate extends Base\Core
      * @param  RZP\Models\Merchant\Entity $merchant merchant entity
      * @return null
      */
-    protected function sendActivationEmail($merchant, $plan)
+    public function sendActivationEmail($merchant)
     {
+        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
+
         $org = $merchant->org;
+      
+        $subjectName = $merchant->getBillingLabel();
 
-        $subjectName = $merchant->getBillingLabelElseName();
-
-        $businessName = $org->getBusinessName();
+        if ($org === null)
+        {
+            $org = $this->repo->org->getRazorpayOrg();
+        }
 
         $subject = $org->getBusinessName() . " | Account activated for $subjectName";
 
@@ -101,8 +104,16 @@ class Activate extends Base\Core
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant' => $merchant->toArray(),
-            'plan'     => $plan,
+            'merchant' => [
+                'name'          => $merchant->getName(),
+                'website'       => $merchant->getWebsite(),
+                'billing_label' => $merchant->getBillingLabel(),
+                'email'         => $merchant->getEmail(),
+                'org'           => [
+                    'business_name' => $org->getBusinessName(),
+                    'custom_code'   => $org->getCustomCode(),
+                ],
+            ],
             'rules'    => $this->formatPricingRules($rules),
             'subject'  => $subject,
         ];
@@ -127,7 +138,6 @@ class Activate extends Base\Core
             function ($message) use ($data, $config, $org)
             {
                 $message->to($data['merchant']['email']);
-                $message->from($data['from_email'], $data['from_name']);
 
                 if ($org->getId() === Org\Entity::RAZORPAY_ORG_ID)
                 {

@@ -52,11 +52,11 @@ class BankCodes
         IFSC::JSBP => 'JSB',                    // Janata Sahkari Bank Ltd Pune
         IFSC::NKGS => 'NKB',                    // Nkgsb Co-Op Bank Ltd
         IFSC::SBBJ => 'SBI',                    // State Bank of Bikaner and Jaipur - Silent redirect to SBI
-        IFSC::SBHY => 'SBH',                    // State Bank of Hyderabad
+        IFSC::SBHY => 'SBI',                    // State Bank of Hyderabad - Silent redirect to SBI
         IFSC::SBIN => 'SBI',                    // State Bank of India
         IFSC::SBMY => 'SBI',                    // State Bank of Mysore - Silent redirect to SBI
         IFSC::SCBL => 'SCB',                    // Standard Chartered Bank
-        IFSC::STBP => 'SBP',                    // State Bank of Patiala
+        IFSC::STBP => 'SBI',                    // State Bank of Patiala - Silent redirect to SBI
         IFSC::SBTR => 'SBI',                    // State Bank of Travancore - Silent redirect to SBI
         IFSC::DBSS => 'DBS',                    // DBS Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank

@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
+use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\Admin\Permission;
 
 class Validator extends Base\Validator
@@ -59,6 +60,26 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
                         null, $diffPerms);
+        }
+    }
+
+    public function validateCheckersExistForWorkflow()
+    {
+        $workflow = $this->entity;
+
+        $stepIds = $workflow->steps()->pluck(Step\Entity::ID)->toArray();
+
+        $checkers = (new Checker\Repository)->findManyByStepIds($stepIds);
+
+        $checkers = array_map(function ($checker){
+            return $checker['id'];
+        }, $checkers->toArray());
+
+        if (empty($checkers) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED,
+                'checkers', $checkers);
         }
     }
 }

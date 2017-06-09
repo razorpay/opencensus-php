@@ -34,6 +34,7 @@ class ProviderCode
     const IMOBILE           = 'imobile';
     const INDIANBANK        = 'indianbank';
     const INDUS             = 'indus';
+    const IOB               = 'iob';
     const KAYPAY            = 'kaypay';
     const KBL               = 'kbl';
     const KOTAK             = 'kotak';
@@ -44,6 +45,7 @@ class ProviderCode
     const OBC               = 'obc';
     const PINGPAY           = 'pingpay';
     const PNB               = 'pnb';
+    const PSB               = 'psb';
     const POCKETS           = 'pockets';
     const RBL               = 'rbl';
     const SBI               = 'sbi';
@@ -86,6 +88,7 @@ class ProviderCode
         self::IMOBILE           => IFSC::ICIC,
         self::INDUS             => IFSC::INDB,
         self::INDIANBANK        => IFSC::IDIB,
+        self::IOB               => IFSC::IOBA,
         self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
         self::KOTAK             => IFSC::KKBK,
@@ -96,6 +99,7 @@ class ProviderCode
         self::OBC               => IFSC::ORBC,
         self::PINGPAY           => IFSC::UTIB,
         self::PNB               => IFSC::PUNB,
+        self::PSB               => IFSC::PSIB,
         self::POCKETS           => IFSC::ICIC,
         self::RBL               => IFSC::RATN,
         self::SBI               => IFSC::SBIN,

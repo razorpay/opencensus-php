@@ -5,7 +5,6 @@ namespace RZP\Http\Response;
 use App;
 use View;
 use Request;
-use BasicAuth;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
@@ -19,6 +18,11 @@ class Response
     protected $jsonp;
 
     /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
+
+    /**
      * In case the callback parameter in the query string
      * is invalid like ?callback=<script>
      * We will use this instead
@@ -30,6 +34,8 @@ class Response
         $this->app = $app;
 
         $this->request = $app['request'];
+
+        $this->ba = $app['basicauth'];
     }
 
     /**
@@ -101,7 +107,7 @@ class Response
 
     public function getErrorResponseFields($error, $debug = false)
     {
-        $isPublicAuth = BasicAuth::isPublicAuth();
+        $isPublicAuth = $this->ba->isPublicAuth();
 
         if (($error instanceof Error) === false)
         {

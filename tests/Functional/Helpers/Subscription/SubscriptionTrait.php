@@ -6,12 +6,9 @@ use Mockery;
 use Closure;
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait SubscriptionTrait
 {
-    use PaymentTrait;
-
     public function getSubscriptionAuthTransactionRequest($subscription, $authAmount = null)
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
@@ -283,5 +280,12 @@ trait SubscriptionTrait
     protected function chargeSubscriptionInvoiceManually($invoice)
     {
         return $this->makeSubscriptionInvoiceChargeManualRequest($invoice['id']);
+    }
+
+    protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
+    {
+        $response = $this->fixtures->create('customer');
+
+        $response = $this->fixtures->plan->create($planAttributes);
     }
 }

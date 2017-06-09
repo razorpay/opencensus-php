@@ -8,6 +8,8 @@ use RZP\Gateway\Netbanking\Base;
 
 class DailyFiles extends Base\DailyFiles
 {
+    protected $emailIdsToSendTo = 'federal.netbanking.refunds@razorpay.com';
+
     public function generate($from, $to, $email = null)
     {
         $refundsData = $this->getRefundsData($from, $to);
@@ -72,7 +74,7 @@ class DailyFiles extends Base\DailyFiles
 
             $message->to($emails);
 
-            if (empty($data['refundsFile']) === false)
+            if (empty($data['refundsFile']['url']) === false)
             {
                 $message->attach($data['refundsFile']['url'], ['as' => $data['refundsFile']['name']]);
             }

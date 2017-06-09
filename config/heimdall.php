@@ -63,7 +63,8 @@ return [
             Permission::EDIT_MERCHANT_SUSPEND => '',
             Permission::EDIT_MERCHANT_UNSUSPEND => '',
             Permission::EDIT_MERCHANT_METHODS => '',
-            Permission::EDIT_MERCHANT_INTERNATIONAL => '',
+            Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL => '',
+            Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL => '',
             Permission::EDIT_MERCHANT_PRICING => '',
             Permission::EDIT_MERCHANT_COMMENTS => '',
@@ -120,6 +121,7 @@ return [
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
             Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
+            Permission::VIEW_MERCHANT_REPORT   => 'View Merchant Reports',
         ],
 
         PermissionCategory::PRICING => [
@@ -204,6 +206,7 @@ return [
             Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
             Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
             Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 
@@ -321,6 +324,7 @@ return [
             Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
             Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
             Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 
@@ -399,6 +403,7 @@ return [
             Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
             Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
             Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 

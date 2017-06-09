@@ -27,6 +27,44 @@ class TransferTest extends TestCase
         $this->customer = $this->fixtures->create('customer:customer_balance');
     }
 
+    public function testFetchTransferReversals()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->createReversal($transfer['id']);
+
+        $data['request']['url'] = '/transfers/' . $transfer['id'] . '/reversals';
+
+        $this->ba->privateAuth();
+
+        $this->startTest($data);
+    }
+
+    public function testFetchSingleReversal()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $reversal = $this->createReversal($transfer['id']);
+
+        $data['request']['url'] = '/reversals/' . $reversal['id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest($data);
+
+        $expected = [
+            'id'          => $reversal['id'],
+            'transfer_id' => $transfer['id'],
+            'amount'      => $transfer['amount']
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $response);
+    }
+
     public function testTransferToAccount()
     {
         $transfer = $this->createTransfer('account');

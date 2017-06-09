@@ -2,22 +2,25 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Type
 {
     const ECOD    = 'ecod';
     const INVOICE = 'invoice';
     const LINK    = 'link';
 
-    public static function isTypeValid($type)
+    public static function isTypeValid(string $type): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($type)));
     }
 
-    public static function checkType($type)
+    public static function checkType(string $type)
     {
         if (self::isTypeValid($type) === false)
         {
-            throw new \InvalidArgumentException('Not a valid type: ' . $type);
+            throw new BadRequestValidationFailureException(
+                'Not a valid type: ' . $type);
         }
     }
 
@@ -28,7 +31,7 @@ class Type
      *
      * @return string
      */
-    public static function getLabel($type)
+    public static function getLabel(string $type): string
     {
         self::checkType($type);
 

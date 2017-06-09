@@ -98,6 +98,9 @@ class Entity extends Base\PublicEntity
 
     const ACQUIRER_DATA         = 'acquirer_data';
 
+    // Query params
+    const TRANSFERRED           = 'transferred';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -809,6 +812,12 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
+        if (empty($acquirerData) === true)
+        {
+            // Show the field as an empty object on json_encoded response
+            $acquirerData = new \stdClass;
+        }
+
         return $acquirerData;
     }
 
@@ -1077,6 +1086,38 @@ class Entity extends Base\PublicEntity
         return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
     }
 
+    /**
+     * Checks if card should be saved depending on if the payment is emi or
+     * the payment was a card payment and has an associated order on which an offer
+     * was applied
+     *
+     * @return bool
+     */
+    public function shouldSaveCard(): bool
+    {
+        if (($this->isEmi() === true) or ($this->hasCardOffer() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function hasCardOffer(): bool
+    {
+        if (($this->isCard() === true) and ($this->hasOrder() === true))
+        {
+            $order = $this->order;
+
+            if ($order->hasOffer() === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getTransferId()
@@ -1122,6 +1163,25 @@ class Entity extends Base\PublicEntity
     public function getAmountUntransferred()
     {
         return $this->getAmount() - $this->getAmountTransferred();
+    }
+
+    /**
+     * Gets adjusted amount with respect to customer fee bearer merchants.
+     * This amount is compared against the requested capture amount by merchant
+     * and a few other places.
+     *
+     * @return int
+     */
+    public function getAdjustedAmountWrtCustFeeBearer(): int
+    {
+        $amount = $this->getAmount();
+
+        if ($this->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount -= $this->getFee();
+        }
+
+        return $amount;
     }
 
     public function getCurrency()
@@ -1542,7 +1602,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants and policy bazaar merchant.
+        // Adding test merchants and PolicyBazaar merchant ID's
         $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f'];
 
         $currentMerchantId = $this->getMerchantId();

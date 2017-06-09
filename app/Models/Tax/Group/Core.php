@@ -15,7 +15,7 @@ class Core extends Base\Core
 
         $group = (new Entity)->build($input);
 
-        // Id generation is needed for relationship associations
+        // Id generation is needed for relationship associations in
         // processTaxIdsOfInput() method.
         $group->generateId();
 
@@ -67,6 +67,11 @@ class Core extends Base\Core
      */
     protected function processTaxIdsOfInput(Entity $group, array $input)
     {
+        if (array_key_exists(Entity::TAX_IDS, $input) === false)
+        {
+            return;
+        }
+
         $inputTaxIds = $input[Entity::TAX_IDS] ?? [];
 
         Tax\Entity::verifyIdAndStripSignMultiple($inputTaxIds);

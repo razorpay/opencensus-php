@@ -7,8 +7,8 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods\Entity as Methods;
 
-class CreateMerchantBanks extends Migration {
-
+class CreateMerchantBanks extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -54,6 +54,9 @@ class CreateMerchantBanks extends Migration {
                   ->default(0);
 
             $table->tinyInteger(Methods::JIOMONEY)
+                  ->default(0);
+
+            $table->tinyInteger(Methods::MPESA)
                   ->default(0);
 
             $table->tinyInteger(Methods::EMI)

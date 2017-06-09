@@ -31,7 +31,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer'      => [
+                'customer_details' => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',
@@ -73,7 +73,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer'      => [
+                'customer_details' => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',

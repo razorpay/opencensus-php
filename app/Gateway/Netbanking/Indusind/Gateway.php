@@ -189,7 +189,7 @@ class Gateway extends Base\Gateway
     protected function getEncryptedString(array $input, $payment): string
     {
         $data = [
-            RequestFields::ITEM_CODE          => $input['payment']['id'],
+            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY_CODE      => Currency::INR,
@@ -207,7 +207,7 @@ class Gateway extends Base\Gateway
             $data[RequestFields::BANK_REFERENCE_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
         }
 
-        $queryString = http_build_query($data);
+        $queryString =urldecode(http_build_query($data));
 
         return $this->encryptString($queryString);
     }
@@ -325,13 +325,6 @@ class Gateway extends Base\Gateway
         {
             return $this->getLiveMerchantId();
         }
-    }
-
-    protected function getLiveSecret(): string
-    {
-        assert ($this->mode === Mode::LIVE);
-
-        return $this->config['live_hash_secret'];
     }
 
     public function getSecret(): string

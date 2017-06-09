@@ -40,11 +40,15 @@ class RefundFile extends Base\RefundFile
 
         $today = Carbon::now('Asia/Kolkata')->format('d_m_Y');
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'file_path' => $file['local_file_path'],
-            'emails'    => ['settlements@razorpay.com'],
-            'subject'   => 'Indusind Netbanking refunds file for ' . $today,
-            'body'      => self::EMAIL_BODY
+            'file_path'  => $file['local_file_path'],
+            'emails'     => ['settlements@razorpay.com'],
+            'subject'    => 'Indusind Netbanking refunds file for ' . $today,
+            'signed_url' => $signedFileUrl,
+            'file_name'  => basename($file['local_file_path']),
+            'body'       => self::EMAIL_BODY
         ];
 
         $this->sendRefundEmail($fileData);
@@ -93,6 +97,8 @@ class RefundFile extends Base\RefundFile
             $message->to($emails);
 
             $message->attach($fileData['file_path']);
+
+            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
 
             $headers = $message->getHeaders();
 

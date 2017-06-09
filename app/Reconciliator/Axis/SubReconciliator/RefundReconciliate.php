@@ -4,7 +4,7 @@ namespace RZP\Reconciliator\Axis;
 
 use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -13,6 +13,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      *******************/
     const COLUMN_PAYMENT_ID     = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_RRN            = 'rrn_no';
+    const COLUMN_ARN            = 'arn';
     const COLUMN_REFUND_AMOUNT  = 'txn_amount';
 
     /**
@@ -51,15 +52,20 @@ class RefundReconciliate extends Base\RefundReconciliate
         return null;
     }
 
-    protected function getRrn(array $row)
+    protected function getArn(array $row)
     {
-        if (empty($row[self::COLUMN_RRN]) === true)
+        if (empty($row[self::COLUMN_ARN]) === true)
         {
             return null;
         }
 
-        $rrn = $row[self::COLUMN_RRN];
+        $arn = $row[self::COLUMN_ARN];
 
-        return $rrn;
+        return $arn;
+    }
+
+    protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
+    {
+        $gatewayRefund->setArn($arn);
     }
 }

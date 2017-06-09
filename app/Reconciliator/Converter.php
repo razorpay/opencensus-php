@@ -9,6 +9,7 @@ use Box\Spout\Common\Type;
 use Box\Spout\Reader\ReaderFactory;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 
 class Converter
@@ -108,7 +109,11 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [], $delimiter = ',')
+    public function convertCsvToArray(
+        $fileDetails,
+        $columnHeaders = [],
+        array $linesToSkip = [],
+        $delimiter = ',')
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -334,10 +339,14 @@ class Converter
                 // breaking case when header count is not same as row.
                 else
                 {
-                    throw new Exception\ReconciliationException(
-                            'The number of columns in the row does not match the column headers count.',
-                            ['column_headers' => $sheetHeaders, 'row' => $row]
-                        );
+                    (new Messenger)->raiseReconAlert(
+                        [
+                            'trace_code'   => TraceCode::RECON_ALERT,
+                            'message'      => 'The number of columns in the row does not match the column headers count',
+                            'file_details' => ['column_headers' => $sheetHeaders, 'row' => $row],
+                        ]);
+
+                    continue;
                 }
             }
         }

@@ -6,12 +6,14 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Plan\Subscription;
 
 class SubscriptionAuthTransactionTest extends TestCase
 {
+    use PaymentTrait;
     use SubscriptionTrait;
 
     public function setUp()

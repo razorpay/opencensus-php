@@ -3,9 +3,15 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use Mockery;
 use DB;
 
+use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+
 use RZP\Models\Transaction;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -13,9 +19,6 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
-use RZP\Models\Merchant;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
@@ -58,7 +61,14 @@ class MerchantTest extends TestCase
         $this->startTest();
 
         $this->ba->appAuthLive();
-        $this->startTest();
+        $result = $this->startTest();
+
+        $methods = $result['methods'];
+
+        $this->assertArrayHasKey('payumoney', $methods);
+        $this->assertArrayHasKey('card', $methods);
+        $this->assertArrayHasKey('banks', $methods);
+        $this->assertArrayHasKey('debit_card', $methods);
     }
 
     public function testGetMerchantUsers()
@@ -381,6 +391,33 @@ class MerchantTest extends TestCase
         ]);
 
         $activatedAt = time();
+
+        \Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertNotNull($data['merchant']);
+                        $this->assertNotNull($data['rules']);
+                        $this->assertNotNull($data['subject']);
+
+                        $this->assertNotNull($data['merchant']['name']);
+                        $this->assertNotNull($data['merchant']['website']);
+                        $this->assertNotNull($data['merchant']['billing_label']);
+                        $this->assertNotNull($data['merchant']['email']);
+                        $this->assertNotNull($data['merchant']['org']);
+
+                        $this->assertNotNull($data['merchant']['org']['business_name']);
+                        $this->assertNotNull($data['merchant']['org']['hostname']);
+                        $this->assertNotNull($data['merchant']['org']['custom_code']);
+
+                        $this->assertNotNull($data['rules']['amountRangeRules']);
+                        $this->assertNotNull($data['rules']['otherRules']);
+
+                        return true;
+                    }),
+                    Mockery::any());
 
         $content = $this->startTest();
 
@@ -893,7 +930,7 @@ class MerchantTest extends TestCase
                 'starts_at'    => $startsAt
             ]);
 
-        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
@@ -1280,14 +1317,12 @@ class MerchantTest extends TestCase
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(null, $scheduleTask['method']);
     }
 

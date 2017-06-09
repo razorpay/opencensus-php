@@ -292,27 +292,33 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Order\Entity::class, [
-            'id' => $faker->uniqueid,
-            'merchant_id' => '10000000000000',
-            'amount' => 1000000,
-            'currency' => 'INR',
-            'status' => 'created',
-            'receipt' => $faker->uniqueid,
+            'id'              => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'partial_payment' => 0,
+            'amount'          => 1000000,
+            'amount_paid'     => 0,
+            'currency'        => 'INR',
+            'status'          => 'created',
+            'receipt'         => $faker->uniqueid,
             'payment_capture' => false,
-            'notes' => null,
-            'attempts' => 0,
-            'created_at' => $faker->timestamp,
-            'updated_at' => $faker->timestamp,
+            'notes'           => null,
+            'attempts'        => 0,
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Item\Entity::class, [
-            'id' => '1000000000item',
-            'merchant_id' => '10000000000000',
-            'name' => 'Some item name',
-            'description' => 'Some item description',
-            'type' => 'invoice',
-            'amount' => 100000,
-            'currency' => 'INR',
+            'id'            => '1000000000item',
+            'merchant_id'   => '10000000000000',
+            'name'          => 'Some item name',
+            'description'   => 'Some item description',
+            'type'          => 'invoice',
+            'amount'        => 100000,
+            'currency'      => 'INR',
+            'unit'          => null,
+            'tax_inclusive' => false,
+            'tax_id'        => null,
+            'tax_group_id'  => null,
         ]);
 
         $factory(\RZP\Models\Invoice\Entity::class, [
@@ -339,16 +345,19 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\LineItem\Entity::class, [
-            'id'          => '100000lineitem',
-            'merchant_id' => '10000000000000',
-            'entity_id'   => '1000000invoice',
-            'entity_type' => 'invoice',
-            'item_id'     => '1000000000item',
-            'name'        => 'Some item name',
-            'description' => 'Some item description',
-            'amount'      => 100000,
-            'currency'    => 'INR',
-            'quantity'    => 1,
+            'id'           => '100000lineitem',
+            'merchant_id'  => '10000000000000',
+            'entity_id'    => '1000000invoice',
+            'entity_type'  => 'invoice',
+            'item_id'      => '1000000000item',
+            'name'         => 'Some item name',
+            'description'  => 'Some item description',
+            'amount'       => 100000,
+            'currency'     => 'INR',
+            'quantity'     => 1,
+            'gross_amount' => 100000,
+            'tax_amount'   => 0,
+            'net_amount'   => 100000,
         ]);
 
         $factory(\RZP\Gateway\FirstData\Entity::class, [
@@ -431,6 +440,7 @@ final class FactoryData
             'display_name'  => 'Razorpay',
             'business_name' => 'Razorpay Software Pvt Ltd',
             'auth_type'     => 'password',
+            'custom_code'   => $faker->name,
         ]);
 
         $factory(\RZP\Models\Admin\Org\FieldMap\Entity::class, [

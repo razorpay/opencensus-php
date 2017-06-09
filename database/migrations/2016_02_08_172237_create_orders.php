@@ -29,8 +29,15 @@ class CreateOrders extends Migration
 
             $table->char(Order::OFFER_ID, Order::ID_LENGTH)->nullable();
 
+            $table->tinyInteger(Order::PARTIAL_PAYMENT)
+                  ->default(false);
+
             $table->integer(Order::AMOUNT)
                   ->unsigned();
+
+            $table->integer(Order::AMOUNT_PAID)
+                  ->unsigned()
+                  ->default(0);
 
             $table->char(Order::CURRENCY, Payment::CURRENCY_LENGTH);
 

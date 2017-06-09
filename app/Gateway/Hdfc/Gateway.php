@@ -90,7 +90,10 @@ class Gateway extends Base\Gateway
             'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
         'headers' => array('Content-Type' => 'text/xml'),
-        'data' => array());
+        'data' => array(),
+        'options' => array(
+            'timeout' => 15
+        ));
 
     /**
      * Response received after sending enroll card request
@@ -380,22 +383,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function verifyRefund(array $input)
-    {
-        // FSS returns an error when refund amount exceeds the remaining amount
-        // on FSS's end. We take advantage of this error and initiate refunds
-        // for all the pending refunds whose amount is either equal to payment, i.e,
-        // they are full refund or twice of refund amount is less than payment amount
-        if (($input['refund']['amount'] !== $input['payment']['amount']) and
-            ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
-        {
-            throw new Exception\LogicException(
-                'Verify refund is only supported for full refundsa and specific partial refunds');
-        }
-
-        return false;
-    }
-
     /**
      * HDFC gateway does not provide void
      */
@@ -485,8 +472,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_HDFC_CAPTURED,
             [
-                'input'     => $input,
-                'captured'  => $gatewayCaptured
+                'payment_id' => $input['payment']['id'],
+                'captured'   => $gatewayCaptured
             ]);
 
         return $gatewayCaptured;
@@ -665,7 +652,7 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-        $request['options'] = $this->getRequestOptions();
+        $request['options'] = $this->getRequestOptions($request);
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -674,10 +661,10 @@ class Gateway extends Base\Gateway
         return $this->response;
     }
 
-    protected function getRequestOptions()
+    protected function getRequestOptions($request)
     {
         $options['verify'] = false;
-        $options['timeout'] = $this->getTimeout();
+        $options['timeout'] = $request['options']['timeout'] ?? $this->getTimeout();
 
         return $options;
     }

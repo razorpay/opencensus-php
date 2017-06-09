@@ -87,7 +87,7 @@ class Fee extends Base\Core
 
     protected function getDefaultPricingPlan($merchant)
     {
-        $mode = \BasicAuth::getMode();
+        $mode = $this->app['basicauth']->getMode();
 
         // In live, pricing plan for merchant cannot be null.
         if ($mode === Mode::LIVE)

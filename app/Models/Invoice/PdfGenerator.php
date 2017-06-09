@@ -81,7 +81,7 @@ class PdfGenerator extends Base\Core
                     ->getFullFilePath();
     }
 
-    protected function getPdfContent(string $html)
+    protected function getPdfContent(string $html): string
     {
         $options = [
             'print-media-type',
@@ -105,7 +105,7 @@ class PdfGenerator extends Base\Core
         return $pdfContent;
     }
 
-    protected function getHtml(array $viewPayload)
+    protected function getHtml(array $viewPayload): string
     {
         $result = $this->getFilesFromRedisOrRemote();
 
@@ -129,7 +129,7 @@ class PdfGenerator extends Base\Core
         ";
     }
 
-    protected function getFilesFromRedisOrRemote()
+    protected function getFilesFromRedisOrRemote(): array
     {
         $result = $this->cache->get(self::INVOICE_PDF_TEMPLATES_KEY);
 
@@ -149,7 +149,7 @@ class PdfGenerator extends Base\Core
         return $result;
     }
 
-    protected function getFileFromRemote(string $path)
+    protected function getFileFromRemote(string $path): string
     {
         $url = $this->invoicejsBaseUrl . $path;
 

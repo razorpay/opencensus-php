@@ -173,7 +173,9 @@ class Dashboard
                     $array,
                     ['merchant_id' => $entity->getMerchantId()]);
 
-            $mode = \BasicAuth::getMode();
+            $app = App::getFacadeRoot();
+
+            $mode = $app['basicauth']->getMode();
 
             $job = new DashboardJob([
                 'mode'     => $mode,

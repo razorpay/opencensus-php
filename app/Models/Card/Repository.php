@@ -5,8 +5,9 @@ namespace RZP\Models\Card;
 use DB;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Payment;
 use RZP\Models\Customer\Token;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -117,6 +118,34 @@ class Repository extends Base\Repository
                       ]);
 
         return compact('count', 'countryCount', 'typeCount');
+    }
+
+    /**
+     * Fetches card id's with either own vault token or global card's vault token
+     * equal to the given vault token
+     *
+     * @param  string $vautltToken vault token to check
+     * @param  string $merchantId  merchant_id whose local cards needs to be checked
+     * @return array               card ids matching
+     */
+    public function fetchWithVaultToken(string $vautltToken, string $merchantId): array
+    {
+        $globalCardIdsWithToken = $this->newQuery()
+                                       ->select(Entity::ID)
+                                       ->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
+                                       ->where(Entity::VAULT_TOKEN, '=', $vautltToken)
+                                       ->pluck(Entity::ID)->toArray();
+
+        // Query Executed - select `id` from `cards` where `merchant_id` = ? and
+        // (`vault_token` = ? or `global_card_id` in (?))
+        return $this->newQuery()
+                    ->select(Entity::ID)
+                    ->where(Entity::MERCHANT_ID, '=',$merchantId)
+                    ->where(function ($query) use ($vautltToken, $globalCardIdsWithToken)
+                    {
+                        $query->where(Entity::VAULT_TOKEN, '=', $vautltToken)
+                              ->orWhereIn(Entity::GLOBAL_CARD_ID, $globalCardIdsWithToken);
+                    })->pluck(Entity::ID)->toArray();
     }
 
     protected function addQueryParamInternational($query, $params)
