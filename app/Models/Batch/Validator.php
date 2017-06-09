@@ -21,8 +21,21 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateEntries($entries, $type)
+    public function validateNotProcessedAlready()
     {
+        if ($this->entity->getStatus() === Status::PROCESSED)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
+                    Entity::STATUS,
+                    $this->entity->toArrayPublic());
+        }
+    }
+
+    public function validateEntries(array $entries)
+    {
+        $type = $this->entity->getType();
+
         $totalEntries = count($entries);
 
         if ($totalEntries === 0)
@@ -31,7 +44,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY,
                 null,
                 [
-                    'type' => $type,
+                    'type'          => $type,
                     'total_entries' => $totalEntries,
                 ]);
         }
@@ -42,7 +55,7 @@ class Validator extends Base\Validator
                ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
                null,
                [
-                   'type' => $type,
+                   'type'          => $type,
                    'total_entries' => $totalEntries,
                ]);
         }
