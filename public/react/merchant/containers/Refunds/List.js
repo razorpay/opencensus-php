@@ -5,7 +5,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
-import { fetchRefunds as fetchAll, destroy } from 'rzp/modules/collection';
+import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
 import {
   refundId,
   paymentId,

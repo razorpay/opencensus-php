@@ -7,7 +7,6 @@ import BatchListFilter from 'merchant/components/Refunds/BatchListFilter';
 import {
   fetchBatchUploads as fetchAll,
 } from 'merchant/modules/refunds/batchuploads';
-import { destroy } from 'rzp/modules/collection';
 import {
   batchId,
   batchCount,
@@ -19,10 +18,10 @@ import {
   state => {
     return {
       mode: state.session.mode,
-      ...state.collection,
+      ...state.batchrefunds,
     };
   },
-  { fetchAll, destroy }
+  { fetchAll }
 )
 export default class BatchListContainer extends ListContainer {
   render() {

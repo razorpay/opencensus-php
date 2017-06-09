@@ -1,5 +1,5 @@
 import Referral from 'merchant/models/Referral';
-import { fetchAll } from 'rzp/modules/collection';
+import { fetchAll, makeCollectionReducer } from 'rzp/modules/collection';
 
 const LOGIN_CREATE = 'LOGIN_CREATE';
 const MERCHANT_CREATE = 'MERCHANT_CREATE';
@@ -33,3 +33,5 @@ export const createMerchant = params => {
     payload: referral.createMerchant(),
   };
 };
+
+export default makeCollectionReducer(Referral);

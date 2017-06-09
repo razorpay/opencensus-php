@@ -23,11 +23,18 @@ import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
-// import mpTransferReducer from 'merchant/modules/marketplace/transfers/details';
+import batchReducer from 'merchant/modules/refunds/batchuploads';
+import referralsReducer from 'merchant/modules/referrals';
 
-import collectionReducer, {
+import {
+  paymentsReducer,
+  ordersReducer,
+  transfersReducer,
+  reversalsReducer,
+  mpPaymentsReducer,
   refundsReducer,
   settlementsReducer,
+  subscriptionsReducer,
 } from 'rzp/modules/collection';
 
 export default combineReducers({
@@ -57,5 +64,12 @@ export default combineReducers({
   refunds: refundsReducer,
   refund: refundReducer,
   accounts: mpAccountsReducer,
-  collection: collectionReducer,
+  payments: paymentsReducer,
+  mpPayments: mpPaymentsReducer,
+  transfers: transfersReducer,
+  reversals: reversalsReducer,
+  orders: ordersReducer,
+  referrals: referralsReducer,
+  batchrefunds: batchReducer,
+  subscriptions: subscriptionsReducer,
 });

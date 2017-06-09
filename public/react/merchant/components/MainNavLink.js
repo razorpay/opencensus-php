@@ -4,9 +4,11 @@ import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { merge } from 'rzp/utils/immutable';
 
-@connect(state => state.app, null, (stateProps, dispatchProps, ownProps) =>
-  merge(ownProps, { baseLocation: stateProps.baseLocation })
-)
+@connect(state => {
+  return {
+    baseLocation: state.app.baseLocation,
+  };
+}, {})
 export default class MainNavLink extends Component {
   render() {
     let {

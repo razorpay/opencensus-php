@@ -8,7 +8,7 @@ import { fetchReversals as fetchAll } from 'rzp/modules/collection';
 
 import { reversalId, transferId, amount, createdAt } from 'rzp/ui/Table/column';
 
-@connect(state => state.collection, { fetchAll })
+@connect(state => state.reversals, { fetchAll })
 export default class ReversalsListContainer extends ListContainer {
   render() {
     let { loading, items, error } = this.props;

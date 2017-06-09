@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Header from 'rzp/ui/Header';
 
-import { fetchSubscriptions, destroy } from 'rzp/modules/collection';
+import { fetchSubscriptions } from 'rzp/modules/collection';
 import { fetchPlans } from 'merchant/modules/plans';
 import SubscriptionsList
   from 'merchant/components/Subscriptions/SubscriptionsList';
@@ -10,7 +10,7 @@ import SubscriptionsList
 @connect(
   state => {
     let plansState = state.plans;
-    let subscriptionsState = state.collection;
+    let subscriptionsState = state.subscriptions;
 
     return {
       items: subscriptionsState.items,
@@ -18,7 +18,7 @@ import SubscriptionsList
       loading: subscriptionsState.loading && plansState.loading,
     };
   },
-  { fetchSubscriptions, fetchPlans, destroy }
+  { fetchSubscriptions, fetchPlans }
 )
 export default class SubscriptionsListContainer extends Component {
   componentWillMount() {

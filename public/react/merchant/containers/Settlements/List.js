@@ -7,12 +7,11 @@ import ListContainer from 'merchant/containers/ListContainer';
 import SettlementsList from 'merchant/components/Settlements/List';
 import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
-import { fetchSettlements as fetchAll, destroy } from 'rzp/modules/collection';
+import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 
 @connect(state => state.settlements, {
   fetchAll,
-  destroy,
   ...ModalActions,
 })
 export default class SettlementsListContainer extends ListContainer {

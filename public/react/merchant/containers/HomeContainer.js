@@ -38,7 +38,7 @@ defaults.global.layout = {
       entity_totals: state.home.entity_totals,
       payment_breakup: state.home.payment_breakup,
       current_balance: state.home.current_balance,
-      payments: state.collection,
+      payments: state.payments,
       refunds: state.refunds,
       settlements: state.settlements,
     };
