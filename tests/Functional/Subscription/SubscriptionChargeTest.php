@@ -2,11 +2,14 @@
 
 namespace RZP\Tests\Functional\Subscription;
 
+use Carbon\Carbon;
+use Mockery;
+
+use RZP\Models\Item;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Mockery;
-use Carbon\Carbon;
 
 class SubscriptionChargeTest extends TestCase
 {
@@ -832,5 +835,34 @@ class SubscriptionChargeTest extends TestCase
 
         // Reset time
         Carbon::setTestNow();
+    }
+
+    public function testToArrayPublicConversion()
+    {
+        $this->doAuthTxnForSubscriptionWithAddOn();
+
+        $addOn = $this->getLastEntity('addon', true);
+
+        $repo = (new Addon\Repository);
+
+        $id = Addon\Entity::verifyIdAndStripSign($addOn['id']);
+
+        $addOn = $repo->findOrFailPublicWithRelations($addOn['id'], ['item']);
+
+        $entityArray = $addOn->toArray();
+
+        $publicArray = $addOn->toArrayPublic();
+
+        // we verify item publicArray has a sign and id is same
+        // If it does not return a public id, verifyIdAndStripSign fails
+        $itemStrippedId = Item\Entity::verifyIdAndStripSign($publicArray['item']['id']);
+
+        $this->assertEquals($entityArray['item']['id'], $itemStrippedId);
+
+        // deleted_at is part of visible attributes but not public attributes
+        // in item entity, check for it
+        $this->assertArrayHasKey('deleted_at', $entityArray['item']);
+
+        $this->assertArrayNotHasKey('deleted_at', $publicArray['item']);
     }
 }

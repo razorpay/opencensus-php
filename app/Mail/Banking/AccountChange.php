@@ -31,12 +31,7 @@ class AccountChange extends Mailable
 
     protected function addSubject()
     {
-        $label = $this->merchant['billing_label'];
-
-        if (empty($label) === true)
-        {
-            $label = $this->merchant['name'];
-        }
+        $label = $this->merchant['billing_label'] ?? $this->merchant['name'];
 
         $subject = 'Razorpay | Bank account change successful for ' . $label;
 

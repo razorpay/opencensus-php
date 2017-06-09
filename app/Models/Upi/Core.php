@@ -62,22 +62,21 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::GATEWAY_UPI_REQUEST_CALLBACK,
             [
-                'api'   => $api,
-                'id'    => $id,
-                'body'  => $body
+                'api'  => $api,
+                'id'   => $id,
+                'body' => $body
             ]);
 
         $parsedRequest = $this->app['upi.client']->parse($body, $api);
 
         $requestData = [
-            'api'               => $api,
-            'id'                => $id,
-            'body'              => $body,
-            'parsed_request'    => $parsedRequest,
+            'api'            => $api,
+            'id'             => $id,
+            'body'           => $body,
+            'parsed_request' => $parsedRequest,
         ];
 
-        // TODO: Get the mode properly
-        $response = $this->app['gateway']->call('upi_npci', 'handle_request', $requestData, 'test');
+        $response = $this->app['gateway']->call('upi_npci', 'handle_request', $requestData, $this->mode);
 
         $this->trace->info(
             'PAYMENT_TOPUP_REQUEST',
@@ -90,7 +89,7 @@ class Core extends Base\Core
             $this->pushToQueue($response['job'], $response['params']);
         }
 
-        $ackXML = $this->app['gateway']->call('upi_npci', 'generateAckResponse', $requestData, 'test');
+        $ackXML = $this->app['gateway']->call('upi_npci', 'generateAckResponse', $requestData, $this->mode);
 
         return $ackXML;
     }

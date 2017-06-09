@@ -24,9 +24,13 @@ class Entity extends Base\PublicEntity
     const BATCH_ID          = 'batch_id';
 
     const GATEWAY_REFUNDED  = 'gateway_refunded';
-    const RRN               = 'rrn';
+    const REFERENCE1        = 'reference1';
+    const REFERENCE2        = 'reference2';
     const ATTEMPTS          = 'attempts';
     const LAST_ATTEMPTED_AT = 'last_attempted_at';
+
+    const ACQUIRER_DATA     = 'acquirer_data';
+    const ARN               = 'arn';
 
     protected static $sign = 'rfnd';
 
@@ -61,7 +65,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
-        self::RRN,
+        self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::CREATED_AT,
@@ -75,8 +79,11 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
+        self::ACQUIRER_DATA,
         self::CREATED_AT
     ];
+
+    protected $hiddenInReport = [self::ACQUIRER_DATA];
 
     protected $defaults = [
         self::NOTES             => [],
@@ -95,7 +102,8 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::PAYMENT_ID
+        self::PAYMENT_ID,
+        self::ACQUIRER_DATA
     ];
 
     protected $amounts = [
@@ -219,9 +227,38 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
-    public function getRrn()
+    public function getReference1()
     {
-        return $this->getAttribute(self::RRN);
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getAcquirerData()
+    {
+        return $this->getAttribute(self::ACQUIRER_DATA);
+    }
+
+    protected function getAcquirerDataAttribute()
+    {
+        $acquirerData = [];
+
+        $payment = $this->payment;
+
+        switch ($payment->getMethod())
+        {
+            case Payment\Method::CARD:
+                $acquirerData = [
+                    self::ARN   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+        }
+
+        if (empty($acquirerData) === true)
+        {
+            // Show the field as an empty object on json_encoded response
+            $acquirerData = new \stdClass;
+        }
+
+        return $acquirerData;
     }
 
     public function setGatewayRefunded($gatewayRefunded)
@@ -242,8 +279,6 @@ class Entity extends Base\PublicEntity
     public function setBaseAmount()
     {
         $amount = $this->getAttribute(self::AMOUNT);
-
-        $currency = $this->getAttribute(self::CURRENCY);
 
         $unrefundedAmount = $this->payment->getAmountUnrefunded();
 
@@ -283,9 +318,29 @@ class Entity extends Base\PublicEntity
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
     }
 
-    public function setRrn(string $rrn)
+    public function setPublicAcquirerDataAttribute(array & $array)
     {
-        $this->setAttribute(self::RRN, $rrn);
+        // Adding test merchants and PolicyBazaar merchant ID's
+        $merchantIds = ['10000000000000', '6gn7Xc2gqK40c9'];
+
+        $currentMerchantId = $this->getMerchantId();
+
+        // We are hardcoding the merchant ids for now.
+        // Will move this to feature flag.
+        if (in_array($currentMerchantId, $merchantIds, true) === false)
+        {
+            unset($array[self::ACQUIRER_DATA]);
+        }
+    }
+
+    public function setReference1(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
+    public function setReference2(string $value)
+    {
+        $this->setAttribute(self::REFERENCE2, $value);
     }
 
     public function getGateway()

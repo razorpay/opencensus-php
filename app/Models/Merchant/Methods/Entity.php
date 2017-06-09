@@ -39,7 +39,7 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::AMEX,
         self::BANKS,
@@ -59,9 +59,9 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::MERCHANT_ID,
         self::CARD,
         self::AMEX,
@@ -82,11 +82,31 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
+        self::MERCHANT_ID,
+        self::CARD,
+        self::AMEX,
+        self::BANKS,
+        self::PAYTM,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+        self::MOBIKWIK,
+        self::OLAMONEY,
+        self::JIOMONEY,
+        self::OPENWALLET,
+        self::MPESA,
+        self::EMI,
+        self::UPI,
+        self::AEPS,
+        self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
         self::ENTITY,
-        self::METHODS);
+    ];
 
     protected $defaults = array(
         self::AMEX          => false,

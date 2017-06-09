@@ -399,7 +399,7 @@ class Notify
                 'phone' => $this->payment->getContact()
             ],
             'merchant'  => [
-                'billing_label' => $this->payment->merchant->getBillingLabelElseName(),
+                'billing_label' => $this->payment->merchant->getBillingLabel(),
                 'website'       => $this->payment->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
                 'email'         => $this->payment->merchant->getTransactionReportEmail(),

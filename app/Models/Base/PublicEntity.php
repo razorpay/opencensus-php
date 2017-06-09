@@ -141,10 +141,13 @@ class PublicEntity extends UniqueIdEntity
 
         foreach ($publicRelations as $key => $value)
         {
-            if (($value !== null) and
-                (PublicCollection::isPublicCollection($value) === true))
+            if (PublicCollection::isPublicCollection($value) === true)
             {
                 $array[$key] = $value->toArrayPublicEmbedded();
+            }
+            else if (static::isPublicEntity($value) === true)
+            {
+                $array[$key] = $value->toArrayPublic();
             }
             else
             {
@@ -451,5 +454,15 @@ class PublicEntity extends UniqueIdEntity
             return [];
         }
         return array_keys(array_flip($this->public));
+    }
+
+    public static function isPublicEntity($object) : bool
+    {
+        if (empty($object) === true)
+        {
+            return false;
+        }
+
+        return ($object instanceof self);
     }
 }

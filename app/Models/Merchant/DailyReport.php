@@ -166,7 +166,7 @@ class DailyReport extends Base\Core
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             array(
                     'merchant_id'   => $merchant->getId(),
-                    'merchant_name' => $merchant->getBillingLabelElseName(),
+                    'merchant_name' => $merchant->getBillingLabel(),
                     'captured'      => $data['captured']['count'],
                     'authorized'    => $data['authorized']['count'],
                     'refunds'       => $data['refunds']['count'],
@@ -185,7 +185,7 @@ class DailyReport extends Base\Core
     protected function getMerchantData($merchant)
     {
         return [
-            'billing_label'  => $merchant->getBillingLabelElseName(),
+            'billing_label'  => $merchant->getBillingLabel(),
             'account_number' => $merchant->getRedactedAccountNumber(),
             'email'          => $merchant->getTransactionReportEmail(),
             'date'           => $this->date,

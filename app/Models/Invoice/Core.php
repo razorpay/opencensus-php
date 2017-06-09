@@ -443,6 +443,18 @@ class Core extends Base\Core
         ];
     }
 
+    /**
+     * Returns formatted invoice data for checkout usage.
+     * Includes:
+     * - Invoice basic attributes
+     * - Order amount fields
+     * - Customer details
+     *
+     * @param string          $invoiceId
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
     public function getFormattedInvoiceData(
         string $invoiceId,
         Merchant\Entity $merchant): array
@@ -450,19 +462,39 @@ class Core extends Base\Core
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($invoiceId, $merchant);
 
-        $orderId = $invoice->getOrderId();
+        $orderId       = $invoice->getOrderId();
+        $publicOrderId = Order\Entity::getSignedId($orderId);
 
         $customer = $invoice->customer;
 
+        // Currently EPOS application usage following attributes.
+        //
+        // Later amount specific attributes e.g. amount, amount_paid and amount_due
+        // etc would be send as part of 'order' key in checkout preferences. When
+        // EPOS starts supporting partial payment they will start consuming
+        // 'order' key and amount fields from here can be removed.
+        //
+        // Here, we would only append invoice specific stuff needed additionally.
+        // It's easier this way. As with partial payment on order checkout would
+        // find it easy to manage amounts for all cases with one data point.
+
         $data['invoice'] = [
-            'order_id'  => Order\Entity::getSignedId($orderId),
-            'url'       => $invoice->getShortUrl(),
-            'amount'    => $invoice->getAmount(),
+            Entity::ORDER_ID => $publicOrderId,
+            Entity::URL      => $invoice->getShortUrl(),
+            Entity::AMOUNT   => $invoice->getAmount(),
         ];
 
-        if ($customer)
+        // Add order data
+
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout(
+                                                $publicOrderId,
+                                                $merchant);
+
+        // Add customer data if available
+
+        if ($customer !== null)
         {
-            $data['customer'] = $customer->toArrayPublic();
+            $data[Entity::CUSTOMER] = $customer->toArrayPublic();
         }
 
         return $data;

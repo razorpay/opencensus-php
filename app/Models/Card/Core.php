@@ -161,7 +161,7 @@ class Core extends Base\Core
         $data = [
             'iin'       => $card->getIin(),
             'card_id'   => $card->getPublicId(),
-            'merchant'  => $card->merchant->getBillingLabelElseName()
+            'merchant'  => $card->merchant->getBillingLabel()
         ];
 
         $this->trace->warning(TraceCode::PAYMENT_CARD_IIN_MISSING, $data);

@@ -133,7 +133,8 @@ class Validator extends Base\Validator
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
-            (ProviderCode::validate($vpaParts[1]) === false))
+            (ProviderCode::validate($vpaParts[1]) === false) or
+            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
