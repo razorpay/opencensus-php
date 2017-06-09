@@ -15,6 +15,10 @@ export default class OrderDetailsContainer extends Component {
     }
   }
 
+  fetchOrderPayments = order => {
+    return this.props.fetchOrderPayments(order);
+  };
+
   render() {
     let { loading, error, order, payments } = this.props;
     let statusMsg = {};

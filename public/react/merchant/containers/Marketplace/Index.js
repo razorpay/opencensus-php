@@ -6,7 +6,7 @@ import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
 
-export default class TransactionsContainer extends Component {
+export default class MarketplaceContainer extends Component {
   render() {
     return (
       <tabbed-container>

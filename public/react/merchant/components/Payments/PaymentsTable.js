@@ -54,9 +54,7 @@ export default props => {
 
   // if there is atleast one visible "order-id"
   if (Object.keys(orders).length) {
-    paymentColumns = [paymentId, paymentOrder(orders)].concat(
-      paymentColumns.slice(1)
-    );
+    paymentColumns.splice(1, 0, paymentOrder(orders));
   }
 
   return <DataTable title="Payments" columns={paymentColumns} {...props} />;

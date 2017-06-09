@@ -8,17 +8,18 @@ import Settlement from 'merchant/models/Settlement';
 import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 
-export const fetchAll = (params, Entity, shouldNameAction) => {
+// useEntityReducer tells whether to use common reducer or entity-specific
+export const fetchAll = (params, Entity, useEntityReducer) => {
   let entity = new Entity();
   return {
-    type: getActionName(shouldNameAction && Entity),
+    type: getActionName(useEntityReducer && Entity),
     payload: entity.fetchAll(params),
   };
 };
 
-export const destroy = (Entity, shouldNameAction) => {
+export const destroy = (Entity, useEntityReducer) => {
   return {
-    type: getActionName(shouldNameAction && Entity) + '_RESET',
+    type: getActionName(useEntityReducer && Entity) + '_RESET',
     payload: null,
   };
 };
@@ -42,7 +43,6 @@ export function makeCollectionReducer(Entity) {
         let { items } = action.payload.data;
         return merge(state, {
           loading: false,
-          payments: action.payload.data.items,
           items,
           error: null,
         });

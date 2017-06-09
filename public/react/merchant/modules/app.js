@@ -1,21 +1,20 @@
 import { set } from 'rzp/utils/immutable';
 
-const ROW_HIGHLIGHT_ADD = 'ROW_HIGHLIGHT_ADD';
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
-const UPDATE_LOCATION = 'UPDATE_LOCATION';
-const UPDATE_ENTITY = 'UPDATE_ENTITY';
+const LOCATION_UPDATE = 'LOCATION_UPDATE';
+const ENTITY_UPDATE = 'ENTITY_UPDATE';
 
 export const setBaseLocation = location => {
   return {
-    type: UPDATE_LOCATION,
+    type: LOCATION_UPDATE,
     payload: location,
   };
 };
 
 export const setActiveEntity = id => {
   return {
-    type: UPDATE_ENTITY,
+    type: ENTITY_UPDATE,
     payload: id,
   };
 };
@@ -41,10 +40,10 @@ let initialState = {
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case UPDATE_ENTITY:
+    case ENTITY_UPDATE:
       return set(state, 'activeEntityId', action.payload);
 
-    case UPDATE_LOCATION:
+    case LOCATION_UPDATE:
       return set(state, 'baseLocation', action.payload);
 
     case ROW_LUMINATE_ADD:

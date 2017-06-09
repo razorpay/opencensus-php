@@ -70,10 +70,6 @@ export default class Payment extends GenericEntity {
     return this.makeGenericAjaxCall({ data });
   }
 
-  deserializeProperty(prop, value, allProps) {
-    return super.deserializeProperty(prop, value);
-  }
-
   didDeserialize() {
     let session = this.getSession();
     this.capturableAmount = this.amount;
