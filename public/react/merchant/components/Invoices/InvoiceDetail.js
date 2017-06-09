@@ -9,6 +9,7 @@ import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import DetailRow from 'merchant/components/DetailRow';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -97,17 +98,7 @@ export default props => {
                     )}
                   />
                   <DetailRow label="Terms & Conditions" value={invoice.terms} />
-                  {Object.keys(invoice.notes).length > 0
-                    ? <ListGroupToggler label="Notes" show={true}>
-                        {Object.keys(invoice.notes).map(note => (
-                          <DetailRow
-                            key={note}
-                            label={note}
-                            value={invoice.notes[note]}
-                          />
-                        ))}
-                      </ListGroupToggler>
-                    : <DetailRow label="Notes" value="No Notes" />}
+                  <NestedDetailRow label="Notes" value={invoice.notes} />
                 </div>
 
                 <div class="panel panel-default">
