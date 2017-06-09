@@ -502,6 +502,17 @@ class Entity extends Base\PublicEntity
         // Unsetting AIRP for now
         unset($names['AIRP']);
 
+        //
+        // Disabling HDFC netbanking for FxKart's two accounts
+        // Ref: https://razorpay.slack.com/archives/C0432SCD5/p1497018993519190
+        //
+        $fxKartMerchantIds = ['7dTJ1BmaZs62wG', '7b0Hl7t1Q5EnHo'];
+
+        if (in_array($this->getMerchantId(), $fxKartMerchantIds, true) === true)
+        {
+            unset($names['HDFC']);
+        }
+
         return $names;
     }
 
