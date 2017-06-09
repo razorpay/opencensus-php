@@ -7,6 +7,11 @@ use RZP\Models\Terminal;
 use RZP\Models\Gateway\Downtime;
 use RZP\Trace\TraceCode;
 
+
+/**
+ * Documentation here :
+ * https://docs.google.com/document/d/1bsx1t21Q_n5cQBnM_REyolGbn92Fzscu0LrRYiKqqsU/
+ */
 class GatewayDowntimeSorter extends Terminal\Sorter
 {
     protected $properties = [
