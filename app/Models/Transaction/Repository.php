@@ -148,6 +148,17 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    /**
+     * We need to fetch only those transactions which are settled.
+     *
+     * @param  [type] $merchantId               [description]
+     * @param  [type] $from                     [description]
+     * @param  [type] $to                       [description]
+     * @param  [type] $count                    [description]
+     * @param  [type] $skip                     [description]
+     * @param  [type] $entityToRelationFetchMap [description]
+     * @return [type]                           [description]
+     */
     public function fetchEntitiesForDSPReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
     {
         $settlements = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
