@@ -8,7 +8,7 @@ class Entity extends Base\PublicEntity
 {
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
-    const COUPON_CODE = 'coupon_code';
+    const CODE        = 'code';
     const START_DATE  = 'start_date';
     const END_DATE    = 'end_date';
     const USAGE       = 'usage';
@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::MERCHANT_ID,
-        self::COUPON_CODE,
+        self::CODE,
         self::START_DATE,
         self::END_DATE,
         self::USAGE,
@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::COUPON_CODE,
+        self::CODE,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::START_DATE,
@@ -43,9 +43,10 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::COUPON_CODE,
+        self::CODE,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::MERCHANT_ID,
         self::USAGE,
         self::START_DATE,
         self::END_DATE,
@@ -82,9 +83,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USAGE);
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
     public function getUsedCount()
     {
         return $this->getAttribute(self::USED_COUNT);
+    }
+
+    public function getStartDate()
+    {
+        return $this->getAttribute(self::START_DATE);
+    }
+
+    public function getEndDate()
+    {
+        return $this->getAttribute(self::END_DATE);
     }
 
     public function setUsedCount($count)

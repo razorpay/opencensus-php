@@ -173,7 +173,7 @@ return [
         'content' => [
             'entity_type' => 'promotion',
             'entity_id'   => '',
-            'coupon_code' => 'RANDOM'
+            'code' => 'RANDOM'
         ],
     ],
 ];

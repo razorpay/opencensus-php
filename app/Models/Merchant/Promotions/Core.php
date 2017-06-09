@@ -24,9 +24,9 @@ class Core extends Base\Core
         if ($promotion->areCreditsExpirable() === true)
         {
             $scheduleTask = $this->createScheduleTask($merchant, $promotion);
-        }
 
-        $this->repo->saveOrFail($scheduleTask);
+             $this->repo->saveOrFail($scheduleTask);
+        }
 
         $this->repo->saveOrFail($merchantPromotion);
 
@@ -100,15 +100,19 @@ class Core extends Base\Core
 
     public function applyCredits($merchant, $promotion)
     {
-        $scheduleTask = $this->repo->schedule_task->fetchByEntityAndMerchant($promotion, $merchant);
-
         $creditInput = [
-            'expiring_at'  => $scheduleTask->getNextRunAt(),
             'campaign'     => $promotion->getName(),
             'promotion_id' => $promotion->getId(),
             'value'        => $promotion->getAmount(),
             'type'         => $promotion->getCreditType(),
         ];
+
+         $scheduleTask = $this->repo->schedule_task->fetchByEntityAndMerchant($promotion, $merchant);
+
+         if ($scheduleTask !== null)
+         {
+            $creditInput['expiring_at'] = $scheduleTask->getNextRunAt();
+         }
 
         (new Credits\Core)->create($merchant, $creditInput);
     }

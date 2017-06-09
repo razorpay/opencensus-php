@@ -13,7 +13,8 @@ class Core extends Base\Core
     {
         $publicEntityId = $input[Entity::ENTITY_ID];
 
-        (PublicEntity::getEntityClass($input[Entity::ENTITY_TYPE]))::stripSignWithoutValidation($input[Entity::ENTITY_ID]);
+        (PublicEntity::getEntityClass($input[Entity::ENTITY_TYPE]))::
+            verifyIdAndSilentlyStripSign($input[Entity::ENTITY_ID]);
 
         $coupon = (new Entity)->build($input);
 

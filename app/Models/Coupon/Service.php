@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Coupon;
 
+use Illuminate\Database\QueryException;
+
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
 use RZP\Models\Merchant\Credits;
+use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
-use Illuminate\Database\QueryException;
 use Razorpay\Spine\Exception\DbQueryException;
 
 class Service extends Base\Service
@@ -43,29 +47,45 @@ class Service extends Base\Service
 
         $coupon = $this->repo->coupon->findOrFailPublic($id);
 
+        if ($this->isUsed($coupon) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deleting a used coupon is not allowed');
+        }
+
         $this->repo->coupon->deleteOrFail($coupon);
 
         $this->trace->info(TraceCode::COUPON_DELETED, $coupon->toArray());
 
-        return $coupon->toArrayAdmin();
+        return $coupon->toArrayDeleted();
     }
 
     protected function parseInput(array $input)
     {
         $this->validator->validateInput('apply', $input);
 
-        $couponCode = $input['coupon_code'];
+        $couponCode = $input['code'];
 
         $merchantId = $input['merchant_id'];
 
         $this->trace->info(
             TraceCode::COUPON_APPLY_REQUEST,
             [
-                'coupon_code' => $couponCode,
+                'code' => $couponCode,
                 'merchant_id' => $merchantId,
             ]);
 
         return [$couponCode, $merchantId];
+    }
+
+    protected function isUsed($coupon)
+    {
+        $entity = $coupon->source()->firstOrFail();
+
+        $entityNameSpace = Constants\Entity::getEntityNamespace(
+                                $coupon->getEntityType()) . '\Core';
+
+        return (new $entityNameSpace)->isUsed($entity);
     }
 
     //TODO add typehinting
@@ -80,7 +100,16 @@ class Service extends Base\Service
         {
             $promotion = $coupon->source()->firstOrFail();
 
-            $this->validator->couponApplyValidator($coupon, $merchant->getId());
+            $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
+                                    $merchant->getId(), $promotion->getId());
+
+            if ($merchantPromotion !== null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_COUPON_ALREADY_USED);
+            }
+
+            $this->validator->couponApplyValidator($coupon, $merchant);
 
             $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
             {
@@ -96,6 +125,11 @@ class Service extends Base\Service
 
                 $this->repo->saveOrFail($coupon);
             });
+
+            $result = [
+                'success' => true,
+                'error_description' => '',
+            ];
         }
         catch (QueryException $e)
         {

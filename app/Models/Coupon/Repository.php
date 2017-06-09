@@ -18,7 +18,7 @@ class Repository extends Base\Repository
     public function fetchByCode($code)
     {
         return $this->newQuery()
-                    ->where(Entity::COUPON_CODE, '=', $code)
+                    ->where(Entity::CODE, '=', $code)
                     ->firstOrFail();
     }
 }

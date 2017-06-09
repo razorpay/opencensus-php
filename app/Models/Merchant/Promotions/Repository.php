@@ -15,4 +15,11 @@ class Repository extends Base\Repository
                     ->where(Entity::PROMOTION_ID, '=', $promotionId)
                     ->first();
     }
+
+    public function findByPromotionId(string $promotionId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                    ->first();
+    }
 }

@@ -83,7 +83,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $entity->getId())
                     ->merchantId($merchant->getId())
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function fetchDueScheduleTasks($type, $timestamp)

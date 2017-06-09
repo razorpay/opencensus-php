@@ -48,7 +48,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'coupon_code' => 'RANDOM-123',
+            'code' => 'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
@@ -70,7 +70,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'coupon_code' => 'RANDOM-123',
+            'code' => 'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
@@ -79,12 +79,12 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '100000Razorpay',
-            'coupon_code' => 'RANDOM-123',
+            'code' => 'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
 
-        $this->checkInValidResponse($response, 'Coupon Code Already Used');
+        $this->checkInValidResponse($response, 'Coupon is expired');
     }
 
     public function testCreateCouponAndApplyOnMerchant()
@@ -93,7 +93,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'coupon_code' =>  'RANDOM-123',
+            'code' =>  'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
@@ -107,7 +107,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'coupon_code' =>  'RANDOM-123',
+            'code' =>  'RANDOM-123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);
@@ -118,7 +118,7 @@ class CouponsTest extends TestCase
 
         $response = $this->applyCouponOnMerchant($content);
 
-        $this->checkInValidResponse($response, 'Coupon Already Applied');
+        $this->checkInValidResponse($response, 'Coupon Code Already Used');
 
         $coupon = $this->getLastEntity('coupon', true);
     }
@@ -129,7 +129,7 @@ class CouponsTest extends TestCase
 
         $content = [
             'merchant_id' => '10000000000000',
-            'coupon_code' =>  'RAND123',
+            'code' =>  'RAND123',
         ];
 
         $response = $this->applyCouponOnMerchant($content);

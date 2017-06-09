@@ -41,14 +41,7 @@ class Core extends Base\Core
         {
             $schedule = $promotion->schedule;
 
-            if (empty($schedule) === true)
-            {
-                $schedule = $this->createSchedule($input);
-            }
-            else
-            {
-                $schedule = $this->editSchedule($schedule, $input);
-            }
+            $schedule = $this->addOrUpdateSchedule($schedule, $input);
 
             $promotion->schedule()->associate($schedule);
         }
@@ -63,10 +56,25 @@ class Core extends Base\Core
         return (new MerchantPromotion\Core)->processTasks($tasks);
     }
 
+    public function isUsed($promotion)
+    {
+        $merchantPromotion = $this->repo->merchant_promotion->
+                                findByPromotionId($promotion->getId());
+
+        if ($merchantPromotion === null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function createSchedule(array $input)
     {
+        $scheduleName =  $input[self::CREDITS_EXPIRY_INTERVAL] . '/' .
+                            $input[self::CREDITS_EXPIRY_PERIOD];
         $scheduleInput = [
-            Schedule\Entity::NAME       => $input[self::CREDITS_EXPIRY_INTERVAL] . '/' . $input[self::CREDITS_EXPIRY_PERIOD],
+            Schedule\Entity::NAME       => $scheduleName,
             Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],
             Schedule\Entity::PERIOD     => $input[self::CREDITS_EXPIRY_PERIOD],
         ];
@@ -87,8 +95,15 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    protected function isUsed()
+    protected function addOrUpdateSchedule($schedule, $input)
     {
-        //check entry in merchant promotions
+        if ($schedule === null)
+        {
+            return $this->createSchedule($input);
+        }
+        else
+        {
+            return $this->editSchedule($schedule, $input);
+        }
     }
 }

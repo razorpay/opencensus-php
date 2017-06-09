@@ -568,4 +568,6 @@ class ErrorCode
 
     const BAD_REQUEST_COUPON_ALREADY_USED                                           = 'BAD_REQUEST_COUPON_ALREADY_USED';
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                                 = 'BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT';
+    const BAD_REQUEST_COUPON_NOT_APPLICABLE                                         = 'BAD_REQUEST_COUPON_NOT_APPLICABLE';
+    const BAD_REQUEST_COUPON_EXPIRED                                                = 'BAD_REQUEST_COUPON_EXPIRED';
 }

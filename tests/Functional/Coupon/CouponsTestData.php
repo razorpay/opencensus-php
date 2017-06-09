@@ -3,7 +3,7 @@
 $defaultRequestAndResponse = [
         'request' => [
             'content' => [
-                'coupon_code' => 'RANDOM-123'
+                'code' => 'RANDOM-123'
             ],
             'url'    => '/coupons',
             'method' => 'POST'
@@ -11,7 +11,7 @@ $defaultRequestAndResponse = [
         'response' => [
             'content' => [
                 'entity_type' => 'promotion',
-                'coupon_code' => 'RANDOM-123'
+                'code' => 'RANDOM-123'
             ]
         ]
     ];
@@ -44,7 +44,7 @@ return [
                 'items'  => [
                     [
                         'entity_type' => 'promotion',
-                        'coupon_code' => 'RANDOM'
+                        'code' => 'RANDOM'
                     ]
                 ]
             ]
@@ -61,8 +61,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_type' => 'promotion',
-                'coupon_code' => 'RANDOM'
+                'deleted' => true
             ]
         ]
     ],
@@ -71,7 +70,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'coupon_code'  => 'RANDOM'
+                'code'  => 'RANDOM'
             ],
             'url'    => '/coupons/apply',
             'method' => 'POST'
@@ -87,7 +86,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'coupon_code'  => 'RANDOM'
+                'code'  => 'RANDOM'
             ],
             'url'    => '/coupons/apply',
             'method' => 'POST'

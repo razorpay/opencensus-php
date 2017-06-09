@@ -8,36 +8,15 @@ use RZP\Models\Coupon;
 
 class CouponController extends Controller
 {
-    public function create()
-    {
-        $input = Request::all();
+    use Traits\HasCrudMethods;
 
-        $data = (new Coupon\Service)->create($input);
-
-        return ApiResponse::json($data);
-    }
+    protected $service = \RZP\Models\Coupon\Service::class;
 
     public function apply()
     {
         $input = Request::all();
 
         $data = (new Coupon\Service)->apply($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function fetchMultiple()
-    {
-        $input = Request::all();
-
-        $data = (new Coupon\Service)->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function delete($id)
-    {
-        $data = (new Coupon\Service)->delete($id);
 
         return ApiResponse::json($data);
     }

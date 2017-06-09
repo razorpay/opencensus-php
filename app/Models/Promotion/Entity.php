@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity      = 'promotion';
 
-    protected static $sign = 'promotion';
+    protected static $sign = 'prom';
 
     protected $morphClass  = 'promotion';
 

@@ -19,7 +19,7 @@ class Coupon extends Base
     public function create(array $attributes = [])
     {
         $defaultValues = [
-            'coupon_code' => 'RANDOM',
+            'code' => 'RANDOM',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

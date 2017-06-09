@@ -233,7 +233,7 @@ class ScheduleTest extends TestCase
     {
         $content = [
             'merchant_id' => '10000000000000',
-            'coupon_code' =>  'RANDOM',
+            'code' =>  'RANDOM',
         ];
 
         $request = [
