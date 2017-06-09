@@ -414,9 +414,10 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Batch\Entity::class, [
-            'id'            => $faker->uniqueid,
-            'merchant_id'   => '10000000000000',
-            'status'        => 'created'
+            'id'          => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'upload_file_url' => 'batch/upload/text.xlsx',
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
