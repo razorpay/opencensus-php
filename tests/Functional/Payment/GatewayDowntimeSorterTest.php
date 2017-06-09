@@ -266,9 +266,6 @@ class GatewayDowntimeSorterTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('hdfc', $payment['gateway']);
     }
-/*
-gateway: <specific>,network: ALL , issuer: <specific issuer>
-*/
 
     /**
      * Card/EMI Downtime
@@ -294,6 +291,14 @@ gateway: <specific>,network: ALL , issuer: <specific issuer>
         $this->assertEquals('hdfc', $payment['gateway']);
     }
 
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc gateways for network all and issuer HDFC,
+     *
+     * this payment should go through via axis_migs
+     * hdfc gateways are down for all network & Issuer HDFC
+     */
     public function testDowntimeSortingCardHdfcNetworkAllIssuerHdfc()
     {
         $this->createCardTerminals();
