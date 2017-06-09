@@ -216,4 +216,76 @@ class GatewayDowntimeSorterTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('axis_migs', $payment['gateway']);
     }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for issued and network unknown,
+     *
+     * this payment should go through via axis_migs
+     * because hdfc is down
+     */
+    public function testDowntimeSortingCardHdfcUnknownIssuerNetwork()
+    {
+        $this->createCardTerminals();
+
+        $hdfcUnkownIssuerNetworkData = $this->testData['hdfcUnkownIssuerNetworkData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcUnkownIssuerNetworkData);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for issued and network unknown,
+     * but it starts 24 hours later from now
+     *
+     * this payment should go through via hdfc
+     */
+    public function testDowntimeSortingCardHdfcDowntimeBeginLater()
+    {
+        $this->createCardTerminals();
+
+        $hdfcUnkownIssuerNetworkData = $this->testData['hdfcUnkownIssuerNetworkData'];
+        $hdfcUnkownIssuerNetworkData['begin'] = time() + 86400;
+
+        $this->fixtures->create('gateway_downtime:card', $hdfcUnkownIssuerNetworkData);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for all gateways for network VISA and issuer HDFC,
+     *
+     * this payment should go through via hdfc
+     * the order remains the same because
+     * all gateways are down for given network & Issuer
+     */
+    public function testDowntimeSortingCardAllGatewayIssuerHdfcNetworkVisa()
+    {
+        $this->createCardTerminals();
+
+        $allGatewayIssuerHdfcNetworkVisaData = $this->testData['allGatewayIssuerHdfcNetworkVisaData'];
+        $this->fixtures->create('gateway_downtime:card', $allGatewayIssuerHdfcNetworkVisaData);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
 }
