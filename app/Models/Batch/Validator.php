@@ -4,114 +4,99 @@ namespace RZP\Models\Batch;
 
 use RZP\Base;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
+use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::FILE => 'required|file|mimes:xlsx|max:1024',
-        Entity::TYPE => 'required|string|max:100|custom'
-    );
+        Entity::TYPE => 'required|string|max:14|custom'
+    ];
 
-    protected function validateType($attribute, $type)
+    protected function validateType(string $attribute, string $type)
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
         }
     }
 
+    /**
+     * Throws error if batch is already processed.
+     */
     public function validateNotProcessedAlready()
     {
         if ($this->entity->getStatus() === Status::PROCESSED)
         {
-            throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
-                    Entity::STATUS,
-                    $this->entity->toArrayPublic());
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
+                        Entity::STATUS,
+                        $this->entity->toArrayPublic());
         }
     }
 
+    /**
+     * Validates entries(array) of batch input file before
+     * creating the batch entity.
+     *
+     * @param array $entries
+     */
     public function validateEntries(array $entries)
     {
         $type = $this->entity->getType();
 
-        $totalEntries = count($entries);
+        Limit::validate($type, count($entries));
 
-        if ($totalEntries === 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY,
-                null,
-                [
-                    'type'          => $type,
-                    'total_entries' => $totalEntries,
-                ]);
-        }
+        Header::validate($type, array_keys(current($entries)));
 
-        if ($totalEntries > 1000)
-        {
-           throw new Exception\BadRequestException(
-               ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
-               null,
-               [
-                   'type'          => $type,
-                   'total_entries' => $totalEntries,
-               ]);
-        }
+        // Calls validate method of corresponding type.
 
-        $validator = 'validate' .ucfirst($type) .'Entries';
+        $validator = 'validate' .ucfirst(camel_case($type)) .'Entries';
 
         $this->$validator($entries);
     }
 
-    protected function validateRefundEntries($entries)
+    protected function validateRefundEntries(array $entries)
     {
-        $existingPaymentIds = array();
-
-        $this->validateRefundHeaders($entries);
+        $existingPaymentIds = [];
 
         foreach ($entries as $entry)
         {
-            $amount = $entry[Header::AMOUNT];
+            $amount    = $entry[Header::AMOUNT];
             $paymentId = $entry[Header::PAYMENT_ID];
 
             if (empty($paymentId) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
             }
 
             if (empty($amount) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
             if ((is_numeric($amount) === false) or ($amount <= 0))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
-            // Batch File should not contain multiple entries for the same payment id
+            // Batch File should not contain multiple entries for the same
+            // payment id
+
             if (in_array($paymentId, $existingPaymentIds))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
             }
 
-            array_push($existingPaymentIds, $paymentId);
+            $existingPaymentIds[] = $paymentId;
         }
     }
 
-    protected function validateRefundHeaders($entries)
+    protected function validatePaymentLinkEntries(array $entries)
     {
-        $firstEntry = $entries[0];
-
-        $headers = array_keys($firstEntry);
-
-        $diffArray = array_diff($headers, Header::REFUND_INPUT_HEADERS);
-
-        if (count($diffArray) !== 0 )
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS);
-        }
     }
 }

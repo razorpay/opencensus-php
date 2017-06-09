@@ -2,9 +2,7 @@
 
 namespace RZP\Models\Batch;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch\Entity as Batch;
 
 class Repository extends Base\Repository
 {
@@ -20,12 +18,25 @@ class Repository extends Base\Repository
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
     ];
 
-    public function findUnprocessedEntries($limit = 10)
+    /**
+     * Finds unprocessed batches by type.
+     * We have choose a limit of estimated 10. For now it should work.
+     * If needs we'll increase the limit later or change the logic around it.
+     *
+     * @param string  $type
+     * @param integer $limit
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchUnprocessedByType(
+        string $type,
+        $limit = 10): Base\PublicCollection
     {
-        $status = array(Status::CREATED, Status::PROCESSING);
+        $status = [Status::CREATED, Status::PROCESSING];
 
         return $this->newQuery()
-                    ->whereIn(Batch::STATUS, $status)
+                    ->where(Entity::TYPE, $type)
+                    ->whereIn(Entity::STATUS, $status)
                     ->oldest()
                     ->limit($limit)
                     ->get();

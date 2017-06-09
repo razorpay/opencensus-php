@@ -2,42 +2,34 @@
 
 namespace RZP\Models\Batch;
 
-use Config;
-use Mail;
 use RZP\Base\RuntimeManager;
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Payment;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    protected static $fileToReadName = 'Batch_File';
-
-    protected $processor;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->processor = new Processor;
-    }
-
-    public function create($input): Entity
+    public function create(array $input): Entity
     {
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);
 
+        //
+        // Does following inside transaction:
+        // - Uploads file to s3 and gets FileStore\Entity created
+        // - Validates the file
+        // - Updates batch entity with aggregate details of file (if applicable)
+        // - Saves batch entity
+        //
+
         $this->repo->transaction(function () use ($batch, $input)
         {
-            $file = $this->processor->saveInputFile($batch, $input[Entity::FILE]);
+            $file = (Processor\Base::get($batch))->saveInputFile($input[Entity::FILE]);
 
             $entries = $this->parseExcelSheets($file);
 
@@ -53,6 +45,16 @@ class Core extends Base\Core
         return $batch;
     }
 
+    /**
+     * Retry batch entity.
+     *
+     * - Only sets the status to PROCESSING so it gets picked by
+     *   the next cron run.
+     *
+     * @param Entity $batch
+     *
+     * @return Entity
+     */
     public function retryBatch(Entity $batch): Entity
     {
         $batch->getValidator()->validateNotProcessedAlready();
@@ -102,11 +104,18 @@ class Core extends Base\Core
         return $signedUrl;
     }
 
-    public function processBatches()
+    /**
+     * Process all pending batches. Called via CRON.
+     *
+     * This CRON runs every 6 hours and is for now only handling REFUND type.
+     *
+     * @return Base\PublicCollection
+     */
+    public function processBatches(): Base\PublicCollection
     {
         $this->increaseAllowedSystemLimits();
 
-        $batches = $this->repo->batch->findUnprocessedEntries();
+        $batches = $this->repo->batch->fetchUnprocessedByType(Type::REFUND);
 
         foreach ($batches as $batch)
         {
@@ -116,23 +125,35 @@ class Core extends Base\Core
         return $batches;
     }
 
-    public function processBatch(Entity $batch)
+    /**
+     * Process a particular batch entity.
+     *
+     * @param Entity $batch
+     *
+     * @return Entity
+     */
+    public function processBatch(Entity $batch): Entity
     {
+        $batch->getValidator()->validateNotProcessedAlready();
+
         try
         {
-            $batch->getValidator()->validateNotProcessedAlready();
-
-            $this->processor->process($batch);
+            (Processor\Base::get($batch))->process();
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
-                Trace::WARNING,
+                Trace::ERROR,
                 TraceCode::BATCH_PROCESSING_ERROR,
                 [
                     'batch' => $batch->toArrayPublic(),
                 ]);
+
+            //
+            // Even if there is any error during processing of batch
+            // we for now still set the status as PROCESSED.
+            //
 
             $batch->setStatus(Status::PROCESSED);
 
