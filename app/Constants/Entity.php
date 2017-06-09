@@ -214,6 +214,7 @@ class Entity
         self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
+        self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Indusind::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
