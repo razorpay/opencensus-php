@@ -69,7 +69,7 @@ class Service extends Base\Service
     }
 
     //TODO add typehinting
-    protected function validateAndApplyMerchantPromotion($merchant, $promotion, $coupon)
+    protected function validateAndApplyMerchantPromotion($merchant, $coupon)
     {
         $result = [
             'success'           => true,
@@ -156,7 +156,6 @@ class Service extends Base\Service
 
         $result = $this->validateAndApplyMerchantPromotion(
             $merchant,
-            $promotion,
             $coupon);
 
         return $result;
