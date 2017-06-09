@@ -178,4 +178,72 @@ class ScheduleTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    public function testExpireCredits()
+    {
+        $this->ba->appAuth();
+
+        $promotion = $this->createRecurringPromotion();
+
+        $this->createCoupon($promotion['id']);
+
+        $this->applyCouponOnMerchant();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createCoupon($promotionId)
+    {
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['entity_id'] = $promotionId;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function createRecurringPromotion()
+    {
+        $content = [
+            'name'                    => 'Test-Promotion',
+            'amount'                  => 100,
+            'credit_type'             => 'fee',
+            'iterations'              => 2,
+            'credits_expirable'       => true,
+            'credits_expiry_period'   => 'daily',
+            'credits_expiry_interval' => 1,
+        ];
+
+        $request = [
+            'url'     => '/promotions',
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+
+    protected function applyCouponOnMerchant()
+    {
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' =>  'RANDOM',
+        ];
+
+        $request = [
+            'url'     => '/coupons/apply',
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
 }

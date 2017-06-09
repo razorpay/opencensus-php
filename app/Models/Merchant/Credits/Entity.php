@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ID,
+        self::PROMOTION_ID,
+        self::EXPIRING_AT,
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,

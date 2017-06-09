@@ -4,6 +4,7 @@ namespace RZP\Models\Promotion;
 
 use RZP\Models\Base;
 use RZP\Models\Schedule;
+use RZP\Models\Merchant\Promotions as MerchantPromotion;
 
 class Core extends Base\Core
 {
@@ -55,6 +56,11 @@ class Core extends Base\Core
         $this->repo->saveOrFail($promotion);
 
         return $promotion;
+    }
+
+    public function processTasks($tasks)
+    {
+        return (new MerchantPromotion\Core)->processTasks($tasks);
     }
 
     protected function createSchedule(array $input)

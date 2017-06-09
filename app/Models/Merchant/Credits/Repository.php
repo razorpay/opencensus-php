@@ -77,7 +77,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::PROMOTION_ID, '=', $promotionId)
-                    ->where(Entity::EXPIRING_AT, '>' , $timestamp)
+                    ->where(Entity::EXPIRING_AT, '<' , $timestamp)
                     ->first();
     }
 }

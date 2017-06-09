@@ -23,17 +23,25 @@ class Core extends Base\Core
 
         if ($promotion->areCreditsExpirable() === true)
         {
-            $this->createScheduleTask($merchant, $promotion);
+            $scheduleTask = $this->createScheduleTask($merchant, $promotion);
         }
+
+        $this->repo->saveOrFail($scheduleTask);
 
         $this->repo->saveOrFail($merchantPromotion);
 
         return $merchantPromotion;
     }
 
-    public function processTasks($scheduleTaks)
+    public function processTasks($scheduleTasks)
     {
-        foreach ($scheduleTaks as $scheduleTask)
+        $successIds = [];
+
+        $failedIds = [];
+
+        $successCount = 0;
+
+        foreach ($scheduleTasks as $scheduleTask)
         {
             try
             {
@@ -41,28 +49,39 @@ class Core extends Base\Core
 
                 $promotion = $scheduleTask->entity;
 
-                $merchantPromotion = $this->repo->findByMerchantAndPromotionId(
-                    $merchant->getId(), $promotion->getId());
-
                 $this->expireCredits($merchant, $promotion);
+
+                $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
+                    $merchant->getId(), $promotion->getId());
 
                if ($merchantPromotion->getRemainingRuns() > 0)
                {
-                    $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion)
+                    $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion,
+                        $scheduleTask)
                     {
-                        $this->applyCredits($merchant, $promotion);
+                        $this->applyCredits($merchant, $promotion, $scheduleTask);
 
                         $merchantPromotion->updateRemainingRuns();
 
                         $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
                     });
                }
+
+               $successIds[] = $scheduleTask->getId();
+
+               $successCount++;
             }
             catch (\Exception $e)
             {
-                //Trace Log fill me
+                $failedIds[] = $scheduleTask->getId();
             }
         }
+
+        return [
+            'success_ids'   => $successIds,
+            'failedIds'     => $failedIds,
+            'success_count' => $successCount,
+        ];
     }
 
     public function createScheduleTask($merchant, $promotion)
@@ -71,7 +90,7 @@ class Core extends Base\Core
 
         $input[Task\Entity::SCHEDULE_ID] = $promotion->schedule->getId();
 
-        (new Task\Core)->create($merchant, $promotion, $input);
+        return (new Task\Core)->create($merchant, $promotion, $input);
     }
 
     public function updateCredits(Entity $merchantPromotion)
@@ -81,10 +100,14 @@ class Core extends Base\Core
 
     public function applyCredits($merchant, $promotion)
     {
+        $scheduleTask = $this->repo->schedule_task->fetchByEntityAndMerchant($promotion, $merchant);
+
         $creditInput = [
-            'campaign' => $promotion->getName(),
-            'value'    => $promotion->getAmount(),
-            'type'     => $promotion->getCreditType(),
+            'expiring_at'  => $scheduleTask->getNextRunAt(),
+            'campaign'     => $promotion->getName(),
+            'promotion_id' => $promotion->getId(),
+            'value'        => $promotion->getAmount(),
+            'type'         => $promotion->getCreditType(),
         ];
 
         (new Credits\Core)->create($merchant, $creditInput);
@@ -93,9 +116,10 @@ class Core extends Base\Core
     public function expireCredits($merchant, $promotion)
     {
         $creditInput = [
-            'campaign' => $promotion->getName(),
-            'value'    => $this->calculateCreditToExpire() * -1,
-            'type'     => $promotion->getCreditType(),
+            'campaign'     => $promotion->getName() . 'Expired',
+            'promotion_id' => $promotion->getId(),
+            'value'        => $this->calculateCreditToExpire($merchant, $promotion) * -1,
+            'type'         => $promotion->getCreditType(),
         ];
 
         (new Credits\Core)->create($merchant, $creditInput);
@@ -103,9 +127,9 @@ class Core extends Base\Core
 
     protected function calculateCreditToExpire($merchant, $promotion)
     {
-        $credit = $this->repo->credit->findNonExpiredCredits(
-                    $merchant->getId(), $promotion->getId(), time());
+        $credit = $this->repo->credits->findNonExpiredCredits(
+                    $merchant->getId(), $promotion->getId(), time() + 1*24*60*60);
 
-        return ($credit->getAmount() - $credit->getUsed());
+        return ($credit->getValue() - $credit->getUsed());
     }
 }

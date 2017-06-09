@@ -156,5 +156,24 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+
+    'testExpireCredits' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/process_tasks',
+        'content' => [
+            'type'      => 'promotion',
+            'timestamp' => time() + 2*24*60*60
+        ],
+    ],
+
+    'createCoupon' => [
+        'method'  => 'POST',
+        'url'     => '/coupons',
+        'content' => [
+            'entity_type' => 'promotion',
+            'entity_id'   => '',
+            'coupon_code' => 'RANDOM'
+        ],
+    ],
 ];

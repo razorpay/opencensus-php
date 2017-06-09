@@ -924,6 +924,7 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'schedule_process_tasks',
         'promotion_create',
         'promotion_update',
         'promotion_fetch_by_id',

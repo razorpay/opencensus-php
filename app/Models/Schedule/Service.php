@@ -74,10 +74,11 @@ class Service extends Base\Service
 
     public function processTasks($input)
     {
-        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
+        //To do add validation on the input
+        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $input['timestamp']);
 
         $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
 
-        (new $entityNameSpace)->processTasks($scheduleTasksToProcess);
+        return (new $entityNameSpace)->processTasks($scheduleTasksToProcess);
     }
 }

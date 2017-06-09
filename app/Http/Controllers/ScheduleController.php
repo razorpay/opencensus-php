@@ -60,6 +60,8 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $this->service->processTasks($input);
+        $data = $this->service->processTasks($input);
+
+        return ApiResponse::json($data);
     }
 }
