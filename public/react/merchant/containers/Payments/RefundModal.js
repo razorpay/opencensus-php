@@ -101,11 +101,12 @@ export default class RefundModal extends Component {
               this.props.closeModal();
             })
             .catch(({ errors }) => {
-              this.props.showNotification({
-                type: 'error',
-                message: errors,
-                closeTimeout: 5000,
-              });
+              errors &&
+                this.props.showNotification({
+                  type: 'error',
+                  message: errors,
+                  closeTimeout: 5000,
+                });
             });
         },
       })
