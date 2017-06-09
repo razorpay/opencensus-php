@@ -97,30 +97,6 @@ class GatewayDowntimeSorterTest extends TestCase
     /**
      * Card/EMI Downtime
      *
-     * downtime for cybersource for all issuer, all network
-     * payment via hdfc visa card
-     *
-     * payment goes through hdfc
-     * cybersource is down.
-     */
-    public function testDowntimeSortingCardCybersourceAllNetworkAllIssuer()
-    {
-        $this->createCardTerminals();
-
-        $cybersourceDowntimeData = $this->testData['cybersourceDowntimeData'];
-        $this->fixtures->create('gateway_downtime:card', $cybersourceDowntimeData);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $this->doAuthAndCapturePayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('hdfc', $payment['gateway']);
-    }
-
-    /**
-     * Card/EMI Downtime
-     *
      * downtime for hdfc for all issuer, all network
      * payment via hdfc visa card
      *

@@ -160,11 +160,19 @@ class Core extends Base\Core
     {
         $params[Entity::METHOD] = [Payment\Method::CARD, Payment\Method::EMI];
 
-        $params[Entity::NETWORK] = [$payment->card->getNetworkCode(), Entity::ALL, Entity::UNKNOWN];
+        $params[Entity::NETWORK] = [$payment->card->getNetworkCode(),
+                                    Entity::ALL,
+                                    Entity::UNKNOWN,
+                                    strtolower(Entity::UNKNOWN)];
 
-        $params[Entity::CARD_TYPE] = [$payment->card->getType(), Entity::ALL, Entity::UNKNOWN];
+        $params[Entity::CARD_TYPE] = [$payment->card->getType(),
+                                      Entity::ALL,
+                                      Entity::UNKNOWN,
+                                      strtolower(Entity::UNKNOWN)];
 
-        $params[Entity::ISSUER] = [Entity::ALL, Entity::UNKNOWN];
+        $params[Entity::ISSUER] = [Entity::ALL,
+                                   Entity::UNKNOWN,
+                                   strtolower(Entity::UNKNOWN)];
 
         $issuer = $payment->card->getIssuer();
 
