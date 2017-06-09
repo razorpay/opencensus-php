@@ -148,6 +148,30 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchEntitiesForDSPReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
+    {
+        $settlements = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
+
+        $settlementIds = $settlements->pluck('id')->all();
+
+        $txns = $this->newQuery()
+                     ->merchantId($merchantId)
+                     ->whereIn(Entity::TYPE, ['payment', 'refund'])
+                     ->whereIn(Entity::SETTLEMENT_ID, $settlementIds)
+                     ->where(Entity::SETTLED, true)
+                     ->with('merchant')
+                     ->latest()
+                     ->get();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
+
+        return $txns;
+    }
+
     /**
      * Fetches and associates with Transaction entity
      *

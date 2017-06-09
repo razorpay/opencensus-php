@@ -282,6 +282,7 @@ final class Route
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
+        'reports_transaction_dsp'                 => ['get',      'reports/transaction/dsp',                    'MerchantController@getDSPTransactionReport'                        ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
@@ -913,6 +914,7 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'reports_transaction_dsp'
     ];
 
     public static $proxy = [

@@ -49,35 +49,6 @@ class DSPTransactionReport extends BasicEntityReport
     const STATUS                = "Status";
     const CREDIT_ACCOUNT_NUMBER = "CREDITACNO";
 
-
-
-
-    const MERCHANT_NAME     = 'Merchant Name';
-    const MERCHANT_ID       = 'Merchant ID';
-    const TXN_ID            = 'Txn Id';
-    const TXN_STATE         = 'Txn State';
-    const TXN_DATE          = 'Txn Date';
-    const CLIENT_CODE       = 'Client Code';
-    const MERCHANT_TXN_ID   = 'Merchant Txn Id';
-    const PRODUCT           = 'Product';
-    const DISCRIMINATOR     = 'Discriminator';
-    const BANK_NAME         = 'Bank Name';
-    const CARD_TYPE         = 'Card Type';
-    const CARD_NUMBER       = 'Card No';
-    const CARD_ISSUING_BANK = 'Card Issuing Bank';
-    const BANK_REF_NO       = 'Bank Ref No';
-    const GROSS_TXN_AMOUNT  = 'Gross Txn Amount';
-    const TXN_CHARGES       = 'Txn Charges';
-    const SERVICE_TAX       = 'Service Tax';
-    const SB_CESS           = 'SB Cess';
-    const KK_CESS           = 'Krishi Kalyan Cess';
-    const TOTAL_CHARGEABLE  = 'Total Chargeable';
-    const NET_AMOUNT        = 'Net Amount';
-    const PAYMENT_STATUS    = 'Payment Status';
-    const SETTLEMENT_DATE   = 'Settlement Date';
-    const REFUND_REFERENCE  = 'Refund Reference';
-    const REFUND_STATUS     = 'Refund Status';
-
     protected $allowed = [
         E::TRANSACTION
     ];
@@ -88,7 +59,7 @@ class DSPTransactionReport extends BasicEntityReport
 
         $repo = $this->repo->$entity;
 
-        return $repo->fetchEntitiesForBrokerReport(
+        return $repo->fetchEntitiesForDSPReport(
                         $merchantId,
                         $from,
                         $to,
@@ -104,13 +75,15 @@ class DSPTransactionReport extends BasicEntityReport
 
         foreach ($entities as $txn)
         {
+            $clientFields = $this->getClientFields($txn);
+
             $row = [
                 self::BILLER_ID             => 'DSPBMF',
                 self::BANK_ID               => $this->getBank($txn),
                 self::BANK_REF_NUMBER       => $this->getTxnBankReferenceNo($txn),
                 self::PGI_REF_NUMBER        => $txn->source->getPublicId(),
-                self::REF_1                 => 'NA',
-                self::REF_2                 => 'NA',
+                self::REF_1                 => $clientFields['ref1'],
+                self::REF_2                 => $clientFields['ref2'],
                 self::REF_3                 => 'NA',
                 self::REF_4                 => 'NA',
                 self::REF_5                 => 'NA',
@@ -121,7 +94,7 @@ class DSPTransactionReport extends BasicEntityReport
                 self::ACCOUNT_TYPES         => 'NA',
                 self::TRANSACTION_DATE      => $this->getTxnDate($txn),
                 self::AMOUNT                => $txn->getAmount(),
-                self::STATUS                => 'NA',
+                self::STATUS                => 'SUCCESS',
                 self::CREDIT_ACCOUNT_NUMBER => 'NA',
             ];
 
@@ -131,34 +104,28 @@ class DSPTransactionReport extends BasicEntityReport
         return $data;
     }
 
-    protected function getMerchantTxnId($txn)
+    protected function getClientFields($txn)
     {
-        $merchantTxnId = null;
-
-        if (($txn->isTypePayment()) and
-            ($txn->source->getApiOrderId() !== null))
-        {
-            $merchantTxnId = $txn->source->order->getReceipt();
-        }
-
-        return $merchantTxnId;
-    }
-
-    protected function getClientCode($txn)
-    {
-        $clientCode = null;
+        $fields = [
+            'ref1' => null,
+            'ref2' => null,
+        ];
 
         if ($txn->isTypePayment())
         {
-            $notes = $txn->source->getNotes();
+            $notes = $txn->source->order->getNotes();
 
-            if (isset($notes['clientid']) === true)
+            switch (true)
             {
-                $clientCode = $notes['clientid'];
+                case (isset($notes->field1) === true):
+                    $fields['ref1'] = $notes->field1;
+
+                case (isset($notes->field2) === true):
+                    $fields['ref2'] = $notes->field2;
             }
         }
 
-        return $clientCode;
+        return $fields;
     }
 
     protected function getBank($txn)
@@ -171,28 +138,11 @@ class DSPTransactionReport extends BasicEntityReport
         return $txn->source->payment->getBank();
     }
 
-    protected function getTxnState($txn)
-    {
-        if ($txn->isTypePayment())
-        {
-            return 'Sale';
-        }
-        elseif ($txn->isTypeRefund())
-        {
-            return 'Refund';
-        }
-        else
-        {
-            return null;
-        }
-    }
-
     protected function getTxnDate($txn)
     {
         $ts = $txn->source->getCreatedAt();
 
-        // Format yyyy-mm-dd hh:mm,
-        // hh is in 24 hrs
+        // Format dd/mm/yyyy hh:mm,
         $txnDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
                          ->format('d/m/Y H:i');
 
@@ -219,14 +169,6 @@ class DSPTransactionReport extends BasicEntityReport
         else
         {
             return null;
-        }
-    }
-
-    protected function getTxnPaymentStatus($txn)
-    {
-        if ($txn->isSettled())
-        {
-            return 'PAYMENT GIVEN';
         }
     }
 }
