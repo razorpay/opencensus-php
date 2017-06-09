@@ -2103,3 +2103,21 @@ alter table fund_transfer_attempts
     add column merchant_id char(14) after source_id,
     add constraint fund_transfer_attempts_merchant_id_foreign foreign key(merchant_id)
     references merchants(id) on delete restrict;
+    
+# Pre deployment of branch order-partial-payments
+ALTER TABLE orders
+    ADD COLUMN partial_payment TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id,
+    ADD COLUMN amount_paid INT(10) unsigned NOT NULL DEFAULT 0 AFTER partial_payment;
+
+ALTER TABLE invoices ADD COLUMN partial_payment TINYINT(4) NOT NULL DEFAULT 0 AFTER sms_status;
+
+# Add ARN data to refunds
+ALTER TABLE refunds
+    ADD COLUMN reference1 varchar(255) after rrn,
+    ADD COLUMN reference2 varchar(255) after reference1;
+
+ALTER TABLE `refunds`
+    DROP COLUMN `rrn`;
+
+ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
+

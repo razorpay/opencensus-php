@@ -90,7 +90,10 @@ class Gateway extends Base\Gateway
             'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
         'headers' => array('Content-Type' => 'text/xml'),
-        'data' => array());
+        'data' => array(),
+        'options' => array(
+            'timeout' => 15
+        ));
 
     /**
      * Response received after sending enroll card request
@@ -649,7 +652,7 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-        $request['options'] = $this->getRequestOptions();
+        $request['options'] = $this->getRequestOptions($request);
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -658,10 +661,10 @@ class Gateway extends Base\Gateway
         return $this->response;
     }
 
-    protected function getRequestOptions()
+    protected function getRequestOptions($request)
     {
         $options['verify'] = false;
-        $options['timeout'] = $this->getTimeout();
+        $options['timeout'] = $request['options']['timeout'] ?? $this->getTimeout();
 
         return $options;
     }

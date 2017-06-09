@@ -144,4 +144,9 @@ class Entity extends Base\Entity
             $this->attributes['vpc_TransactionNo'] = $txnNo;
         }
     }
+
+    public function setArn($arn)
+    {
+        $this->setAttribute('arn', $arn);
+    }
 }
