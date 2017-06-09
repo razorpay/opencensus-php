@@ -145,6 +145,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="My Account"
+                    id="myaccount-nav"
                     icon="icon icon-account"
                     to={routes.account}
                   />

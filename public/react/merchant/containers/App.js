@@ -10,6 +10,7 @@ import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
+import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
@@ -211,6 +212,8 @@ export default class App extends Component {
           onIdleEnd={this.props.closeModal}
           onIdleTimeout={this.lock}
         />
+
+        <MerchantTour user={user} />
       </div>
     );
   }
