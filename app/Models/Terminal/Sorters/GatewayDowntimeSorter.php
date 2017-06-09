@@ -119,7 +119,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
     /**
      * Checks if priority of terminal should be demoted
-     * against the list of terminals
+     * against the list of downtimes
      *
      * @param $terminal Terminal\Entity
      * @param $downtimes Base\PublicCollection

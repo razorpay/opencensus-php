@@ -17,6 +17,8 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeSorterTestData.php';
 
         parent::setUp();
+
+        $this->createCardTerminals();
     }
 
     protected function createCardTerminals()
@@ -35,8 +37,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardAxisMigs()
     {
-        $this->createCardTerminals();
-
         $axisMigsAllNetworkDowntimeData = $this->testData['axisMigsAllNetworkDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $axisMigsAllNetworkDowntimeData);
 
@@ -59,8 +59,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcVisa()
     {
-        $this->createCardTerminals();
-
         $hdfcVisaDowntimeData = $this->testData['hdfcVisaDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $hdfcVisaDowntimeData);
 
@@ -83,8 +81,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardGatewayMigsIssuerAll()
     {
-        $this->createCardTerminals();
-
         $migsAllIssuerDowntimeData = $this->testData['migsAllIssuerDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $migsAllIssuerDowntimeData);
 
@@ -107,8 +103,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcAllNetworkAllIssuerDowntimeData()
     {
-        $this->createCardTerminals();
-
         $hdfcAllNetworkAllIssuerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerDowntimeData);
 
@@ -131,8 +125,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardCybersourcePaymentMastercard()
     {
-        $this->createCardTerminals();
-
         $cybersourceDowntimeData = $this->testData['cybersourceDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $cybersourceDowntimeData);
 
@@ -156,8 +148,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcPaymentMastercard()
     {
-        $this->createCardTerminals();
-
         $hdfcAllNetworkAllIssuerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerDowntimeData);
 
@@ -181,8 +171,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcMastercard()
     {
-        $this->createCardTerminals();
-
         $hdfcMastercardNetworkData = $this->testData['hdfcMastercardNetworkData'];
         $this->fixtures->create('gateway_downtime:card', $hdfcMastercardNetworkData);
 
@@ -205,8 +193,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcUnknownIssuerNetwork()
     {
-        $this->createCardTerminals();
-
         $hdfcUnkownIssuerNetworkData = $this->testData['hdfcUnkownIssuerNetworkData'];
         $this->fixtures->create('gateway_downtime:card', $hdfcUnkownIssuerNetworkData);
 
@@ -228,8 +214,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcDowntimeBeginLater()
     {
-        $this->createCardTerminals();
-
         $hdfcUnkownIssuerNetworkData = $this->testData['hdfcUnkownIssuerNetworkData'];
         $hdfcUnkownIssuerNetworkData['begin'] = Carbon::now('Asia/Kolkata')->addHours(24)->timestamp;
 
@@ -254,8 +238,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardAllGatewayIssuerHdfcNetworkVisa()
     {
-        $this->createCardTerminals();
-
         $allGatewayIssuerHdfcNetworkVisaData = $this->testData['allGatewayIssuerHdfcNetworkVisaData'];
         $this->fixtures->create('gateway_downtime:card', $allGatewayIssuerHdfcNetworkVisaData);
 
@@ -278,8 +260,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardAllGatewayIssuerNetworkHdfc()
     {
-        $this->createCardTerminals();
-
         $allGatewayAllIssuerNetworkHdfcData = $this->testData['allGatewayAllIssuerNetworkHdfcData'];
         $this->fixtures->create('gateway_downtime:card', $allGatewayAllIssuerNetworkHdfcData);
 
@@ -301,8 +281,6 @@ class GatewayDowntimeSorterTest extends TestCase
      */
     public function testDowntimeSortingCardHdfcNetworkAllIssuerHdfc()
     {
-        $this->createCardTerminals();
-
         $hdfcNetworkAllIssuerHdfc = $this->testData['hdfcNetworkAllIssuerHdfc'];
         $this->fixtures->create('gateway_downtime:card', $hdfcNetworkAllIssuerHdfc);
 
