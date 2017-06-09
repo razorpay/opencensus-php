@@ -8,7 +8,7 @@ return [
     'testCreateOneTimePromotion' => [
         'request' => [
             'content' => [
-                'name'              => 'Test Promotion',
+                'name'              => 'Test-Promotion',
                 'amount'            => 100,
                 'credit_type'       => 'fee',
                 'iterations'        => 1,
@@ -19,7 +19,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'              => 'Test Promotion',
+                'name'              => 'Test-Promotion',
                 'amount'            => 100,
                 'credits_expirable' => false,
             ]
@@ -29,7 +29,7 @@ return [
     'testCreateRecurringPromotion' => [
         'request' => [
             'content' => [
-                'name'                    => 'Test Promotion',
+                'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 2,
@@ -42,7 +42,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'              => 'Test Promotion',
+                'name'              => 'Test-Promotion',
                 'amount'            => 100,
                 'credits_expirable' => true,
             ]
@@ -78,7 +78,7 @@ return [
         'response' => [
             'content' => [
                 'id'                => null,
-                'name'              => 'Test Promotion',
+                'name'              => 'Test-Promotion',
                 'amount'            => 100,
                 'credits_expirable' => true,
             ]
@@ -93,7 +93,7 @@ return [
         'response' => [
             'content' => [
                 'id'                => null,
-                'name'              => 'Test Promotion',
+                'name'              => 'Test-Promotion',
                 'amount'            => 100,
                 'credits_expirable' => false,
             ]
@@ -112,7 +112,7 @@ return [
                 'items'  => [
                     [
 
-                        'name'              => 'Test Promotion',
+                        'name'              => 'Test-Promotion',
                         'amount'            => 100,
                         'credits_expirable' => false,
                     ]
@@ -124,7 +124,7 @@ return [
     'testPromotionWithUnsupportedCreditType' => [
         'request' => [
             'content' => [
-                'name'              => 'Test Promotion',
+                'name'              => 'Test-Promotion',
                 'amount'            => 100,
                 'credit_type'       => 'random',
                 'iterations'        => 1,
@@ -151,7 +151,7 @@ return [
     'testPromotionWithInvalidInterval' => [
         'request' => [
             'content' => [
-                'name'                    => 'Test Promotion',
+                'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
@@ -180,7 +180,7 @@ return [
     'testPromotionWithInvalidPeriod' => [
         'request' => [
             'content' => [
-                'name'                    => 'Test Promotion',
+                'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
@@ -209,7 +209,7 @@ return [
     'testPromotionWithMissingPeriod' => [
         'request' => [
             'content' => [
-                'name'                    => 'Test Promotion',
+                'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,
@@ -237,7 +237,7 @@ return [
     'testPromotionWithMissingInterval' => [
         'request' => [
             'content' => [
-                'name'                    => 'Test Promotion',
+                'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
                 'credit_type'             => 'fee',
                 'iterations'              => 1,

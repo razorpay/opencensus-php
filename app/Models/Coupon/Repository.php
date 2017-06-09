@@ -11,7 +11,14 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-        Entity::ENTITY_ID           => 'required|alpha_num',
-        Entity::ENTITY_TYPE         => 'required|string',
+        Entity::ENTITY_ID           => 'sometimes|alpha_num',
+        Entity::ENTITY_TYPE         => 'sometimes|string',
     ];
+
+    public function fetchByCode($code)
+    {
+        return $this->newQuery()
+                    ->where(Entity::COUPON_CODE, '=', $code)
+                    ->firstOrFail();
+    }
 }

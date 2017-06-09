@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
+        self::ID,
         self::NAME,
         self::AMOUNT,
         self::CREDIT_TYPE,

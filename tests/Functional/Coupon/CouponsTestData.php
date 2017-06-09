@@ -1,10 +1,9 @@
 <?php
 
-return [
-    'testCreateCoupon' => [
+$defaultRequestAndResponse = [
         'request' => [
             'content' => [
-                'coupon_code' => 'RANDOM_123'
+                'coupon_code' => 'RANDOM-123'
             ],
             'url'    => '/coupons',
             'method' => 'POST'
@@ -12,10 +11,23 @@ return [
         'response' => [
             'content' => [
                 'entity_type' => 'promotion',
-                'coupon_code' => 'RANDOM_123'
+                'coupon_code' => 'RANDOM-123'
             ]
         ]
-    ],
+    ];
+
+return [
+    'testCouponWithUsage' => $defaultRequestAndResponse,
+
+    'testCouponExceedingUsage' => $defaultRequestAndResponse,
+
+    'createCoupon'     => $defaultRequestAndResponse,
+
+    'testCreateCoupon' => $defaultRequestAndResponse,
+
+    'testCreateCouponAndApplyOnMerchant' => $defaultRequestAndResponse,
+
+    'testMultiCouponApply' => $defaultRequestAndResponse,
 
     'testGetCouponsByPromotionId' => [
         'request' => [
@@ -51,6 +63,38 @@ return [
             'content' => [
                 'entity_type' => 'promotion',
                 'coupon_code' => 'RANDOM'
+            ]
+        ]
+    ],
+
+    'testApplyOnetimeCoupon' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'coupon_code'  => 'RANDOM'
+            ],
+            'url'    => '/coupons/apply',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ]
+    ],
+
+    'testApplyRecurringCoupon' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'coupon_code'  => 'RANDOM'
+            ],
+            'url'    => '/coupons/apply',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
             ]
         ]
     ],

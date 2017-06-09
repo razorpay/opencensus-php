@@ -55,4 +55,29 @@ class Repository extends Base\Repository
                 'Credits Id: ' . $creditsLog->getId());
         }
     }
+
+    public function getSortedCredits(int $timestamp, $merchantId, string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->where(function ($query) use ($timestamp)
+                        {
+                            $query->where(Entity::EXPIRING_AT, '>', $timestamp)
+                              ->orWhereNull(Entity::EXPIRING_AT);
+                        }
+                    )
+                    ->orderBy(\DB::raw('-`expiring_at`'), 'desc')
+                    ->get();
+
+    }
+
+    public function findNonExpiredCredits(string $merchantId, string $promotionId, int $timestamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                    ->where(Entity::EXPIRING_AT, '<' , $timestamp)
+                    ->first();
+    }
 }

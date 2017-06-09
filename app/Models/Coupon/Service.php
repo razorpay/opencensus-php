@@ -5,6 +5,10 @@ namespace RZP\Models\Coupon;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Promotions as MerchantPromotion;
+use Illuminate\Database\QueryException;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class Service extends Base\Service
 {
@@ -13,6 +17,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->validator = new Validator;
     }
 
     public function create(array $input)
@@ -42,5 +48,117 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::COUPON_DELETED, $coupon->toArray());
 
         return $coupon->toArrayAdmin();
+    }
+
+    protected function parseInput(array $input)
+    {
+        $this->validator->validateInput('apply', $input);
+
+        $couponCode = $input['coupon_code'];
+
+        $merchantId = $input['merchant_id'];
+
+        $this->trace->info(
+            TraceCode::COUPON_APPLY_REQUEST,
+            [
+                'coupon_code' => $couponCode,
+                'merchant_id' => $merchantId,
+            ]);
+
+        return [$couponCode, $merchantId];
+    }
+
+    //TODO add typehinting
+    protected function validateAndApplyMerchantPromotion($merchant, $promotion, $coupon)
+    {
+        $result = [
+            'success'           => true,
+            'error_description' => '',
+        ];
+
+        try
+        {
+            $promotion = $coupon->source()->firstOrFail();
+
+            $this->validator->couponApplyValidator($coupon, $merchant->getId());
+
+            $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
+            {
+                $merchantPromotion = (new MerchantPromotion\Core);
+
+                $merchantPromotion->create($merchant, $promotion);
+
+                // Initial apply of Credit is done instantly
+                // Subsequent run and expiry will be handled by cron
+                $merchantPromotion->applyCredits($merchant, $promotion);
+
+                $coupon->setUsedCount($coupon->getUsedCount() + 1);
+
+                $this->repo->saveOrFail($coupon);
+            });
+        }
+        catch (QueryException $e)
+        {
+            //TODO move to constants
+            $result = [
+                'success'           => false,
+                'error_description' => 'Coupon Already Applied/Could Not be Applied',
+            ];
+        }
+        catch (\Exception $e)
+        {
+            $result = [
+                'success'            => false,
+                'error_description' => $e->getMessage(),
+            ];
+        }
+
+        return $result;
+    }
+
+    public function apply(array $input)
+    {
+        try
+        {
+            list($couponCode, $merchantId) = $this->parseInput($input);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success'           => false,
+                'error_description' => 'Invalid Request',
+            ];
+        }
+
+        try
+        {
+            $coupon = $this->repo->coupon->fetchByCode($couponCode);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success'           => false,
+                'error_description' => 'Invalid Coupon Code',
+            ];
+        }
+
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success'           => false,
+                'error_description' => 'Invalid Merchant',
+            ];
+        }
+
+        $result = $this->validateAndApplyMerchantPromotion(
+            $merchant,
+            $promotion,
+            $coupon);
+
+        return $result;
     }
 }

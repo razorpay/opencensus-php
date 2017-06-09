@@ -626,6 +626,16 @@ class CaptureTest extends TestCase
     // Fee Credit > 0
     public function testTransactionOnCaptureWithFeeCreditForPrepaid()
     {
+        $this->fixtures->create('credits', [
+            'type'  => 'fee',
+            'value' => 14000,
+        ]);
+
+        $this->fixtures->create('credits', [
+            'type'  => 'fee',
+            'value' => 10000,
+        ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);
 
         $payment = $this->fixtures->create('payment:authorized', [
@@ -643,6 +653,12 @@ class CaptureTest extends TestCase
         $this->assertEquals('APPROVED', $hdfc['result']);
 
         $transaction = $this->getLastEntity('transaction', true);
+
+        $creditTransaction = $this->getLastEntity('credits_transaction', true);
+
+        $credit = $this->getLastEntity('credits', true);
+
+        //need to update the test case To fill
 
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23000);

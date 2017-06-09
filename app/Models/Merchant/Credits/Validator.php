@@ -14,9 +14,11 @@ class Validator extends Base\Validator
     const MIN_CREDITS        = -1000000;
 
     protected static $createRules = array(
-        Entity::CAMPAIGN => 'required|alpha_dash|max:255',
-        Entity::VALUE    => 'required|integer|min:'.self::MIN_CREDITS.'|max:'.self::MAX_AMOUNT_CREDITS,
-        Entity::TYPE     => 'required|alpha_dash|max:20',
+        Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
+        Entity::VALUE        => 'required|integer|min:'.self::MIN_CREDITS.'|max:'.self::MAX_AMOUNT_CREDITS,
+        Entity::TYPE         => 'required|alpha_dash|max:20',
+        Entity::EXPIRING_AT  => 'sometimes|integer',
+        Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
     );
 
     protected static $editRules = array(

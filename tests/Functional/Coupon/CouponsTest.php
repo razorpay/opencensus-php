@@ -18,7 +18,7 @@ class CouponsTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testCreateCoupon()
+    public function createCoupon()
     {
         $promotion = $this->fixtures->create('promotion:onetime');
 
@@ -27,6 +27,143 @@ class CouponsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
 
         $this->startTest();
+    }
+
+    public function testCreateCoupon()
+    {
+        $this->createCoupon();
+    }
+
+    public function testCouponWithUsage()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
+
+        $this->testData[__FUNCTION__]['request']['content']['usage'] = 1;
+
+        $this->startTest();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' => 'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+    }
+
+    public function testCouponExceedingUsage()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
+
+        $this->testData[__FUNCTION__]['request']['content']['usage'] = 1;
+
+        $this->startTest();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' => 'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+
+        $content = [
+            'merchant_id' => '100000Razorpay',
+            'coupon_code' => 'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkInValidResponse($response, 'Coupon Code Already Used');
+    }
+
+    public function testCreateCouponAndApplyOnMerchant()
+    {
+        $this->createCoupon();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' =>  'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+    }
+
+    public function testMultiCouponApply()
+    {
+        $this->createCoupon();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' =>  'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+
+        $coupon = $this->getLastEntity('coupon', true);
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkInValidResponse($response, 'Coupon Already Applied');
+
+        $coupon = $this->getLastEntity('coupon', true);
+    }
+
+    public function testInvaliCouponApply()
+    {
+        $this->createCoupon();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'coupon_code' =>  'RAND123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+        $this->checkInValidResponse($response, 'Invalid Coupon Code');
+    }
+
+
+    public function checkValidResponse(array $response)
+    {
+        $this->assertEquals($response['success'], true);
+        $this->assertEquals($response['error_description'], '');
+    }
+
+    public function checkInValidResponse(array $response, string $errorCode)
+    {
+        $this->assertEquals($response['success'], false);
+
+        if ($errorCode !== null)
+        {
+            $this->assertEquals($response['error_description'], $errorCode);
+        }
+    }
+
+    public function applyCouponOnMerchant($content)
+    {
+        $request = [
+            'url'     => '/coupons/apply',
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     public function testGetCouponsByPromotionId()
@@ -59,6 +196,34 @@ class CouponsTest extends TestCase
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/coupons/' . $coupon->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testApplyOnetimeCoupon()
+    {
+         $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->startTest();
+    }
+
+    public function testApplyRecurringCoupon()
+    {
+        $promotion = $this->fixtures->create('promotion:recurring');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->startTest();
     }

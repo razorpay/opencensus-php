@@ -196,6 +196,7 @@ final class Route
         'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
         'schedule_migration'                      => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
+        'schedule_process_tasks'                  => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -550,6 +551,7 @@ final class Route
         'promotion_fetch_multiple'               => ['get',      'promotions',                                      'PromotionController@fetchMultiple'                                 ],
         //coupon routes
         'coupon_create'                          => ['post',     'coupons',                                         'CouponController@create'                                           ],
+        'coupon_apply'                           => ['post',     'coupons/apply',                                   'CouponController@apply'                                            ],
         'coupon_fetch_multiple'                  => ['get',      'coupons',                                         'CouponController@fetchMultiple'                                    ],
         'coupon_delete'                          => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                           ],
     ];
@@ -922,11 +924,13 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'schedule_process_tasks',
         'promotion_create',
         'promotion_update',
         'promotion_fetch_by_id',
         'promotion_fetch_multiple',
         'coupon_create',
+        'coupon_apply',
         'coupon_fetch_multiple',
         'coupon_delete',
     ];
@@ -1245,6 +1249,7 @@ final class Route
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
             'refund_retry_failed',
+            'schedule_process_tasks',
         ],
 
         'kotak' => [
