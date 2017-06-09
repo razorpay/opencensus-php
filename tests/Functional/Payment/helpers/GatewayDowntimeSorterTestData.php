@@ -62,4 +62,11 @@ return [
         'network'     => 'ALL',
         'issuer'      => 'HDFC',
     ],
+
+    'cybersourceDowntimeData' => [
+        'gateway'     => 'cybersource',
+        'reason_code' => 'LOW_SUCCESS_RATE',
+        'network'     => 'ALL',
+        'issuer'      => 'ALL',
+    ],
 ];
