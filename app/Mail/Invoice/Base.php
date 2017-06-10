@@ -2,8 +2,6 @@
 
 namespace RZP\Mail\Invoice;
 
-use Config;
-
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;

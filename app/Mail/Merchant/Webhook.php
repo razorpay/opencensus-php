@@ -100,7 +100,7 @@ class Webhook extends Mailable
     {
         $this->withSwiftMessage(function ($message)
         {
-            $webhookId = $this->webhook->getPublicId();
+            $webhookId = $this->webhook['id'];
 
             $headers = $message->getHeaders();
 

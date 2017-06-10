@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\Banking;
+namespace RZP\Mail\Merchant;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;

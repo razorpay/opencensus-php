@@ -9,7 +9,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;

@@ -3,7 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Constants\Mode;
-use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Constants\MailTags;

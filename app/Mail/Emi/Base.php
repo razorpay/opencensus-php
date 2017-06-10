@@ -12,7 +12,7 @@ class Base extends Mailable
     const KOTAK    = 'Kotak';
     const RBL      = 'Rbl';
 
-    const BANK_RECIPIENTS_MAP = [
+    const RECIPIENTS = [
         self::AXIS     => ['axiscards.emi@razorpay.com'],
         self::INDUSIND => ['indusind.emi@razorpay.com'],
         self::KOTAK    => ['kotakcards.emi@razorpay.com'],
@@ -30,7 +30,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $emails = array_merge(self::BANK_RECIPIENTS_MAP[$this->bankName], ['settlements@razorpay.com']);
+        $emails = array_merge(self::RECIPIENTS[$this->bankName], ['settlements@razorpay.com']);
 
         $this->to($emails);
 
