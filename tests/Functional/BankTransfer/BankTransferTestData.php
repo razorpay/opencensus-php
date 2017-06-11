@@ -114,7 +114,7 @@ return [
         'mode' => 'test',
         'event' => [
             'entity' => 'event',
-            'event' => 'account.credited',
+            'event' => 'virtual_account.credited',
             'contains' => ['payment', 'bank_transfer'],
             'payload' => [
                 'bank_transfer' => [

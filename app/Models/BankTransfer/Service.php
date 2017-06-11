@@ -68,7 +68,7 @@ class Service extends Base\Service
 
                 $this->markReceiverUsed($bankTransfer);
 
-                $this->app['events']->fire('api.account.credited', [$bankTransfer]);
+                $this->app['events']->fire('api.virtual_account.credited', [$bankTransfer]);
             });
         }
 

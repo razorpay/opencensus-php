@@ -170,7 +170,7 @@ class ApiEventSubscriber extends Base\Core
     //     $this->prepareAndDispatchWebhook($payload);
     // }
 
-    protected function onAccountCredited($bankTransfer)
+    protected function onVirtualAccountCredited($bankTransfer)
     {
         $payload = $this->getBankTransferPayload($bankTransfer);
 

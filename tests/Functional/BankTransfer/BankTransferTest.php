@@ -106,7 +106,7 @@ class BankTransferTest extends TestCase
         $this->createWebhook(
             [
                 'events' => [
-                    'account.credited' => '1',
+                    'virtual_account.credited' => '1',
                 ]
             ]);
 
