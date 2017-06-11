@@ -192,16 +192,11 @@ class Event
 
     public static function validateEventName($event)
     {
-        $event = strtoupper(str_replace('.', '_', $event));
-
-        return (defined(__CLASS__ . '::' . $event));
+        return (in_array($event, self::$names) === true);
     }
 
     public static function getBitPosition($event)
     {
-        $event = str_replace('_', '.', $event);
-        $event = strtolower($event);
-
         return self::$bitPosition[$event];
     }
 }
