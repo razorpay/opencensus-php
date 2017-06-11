@@ -46,7 +46,7 @@ class Entity extends Base\Entity
 
     protected $entity = 'mobikwik';
 
-// ----------------------- Setters --------------------------------------------
+    // ----------------------- Setters --------------------------------------------
 
     public function setPaymentId($paymentId)
     {
@@ -63,9 +63,9 @@ class Entity extends Base\Entity
         $this->setAttribute('method', $method);
     }
 
-// ----------------------- Setters End ----------------------------------------
+    // ----------------------- Setters End ----------------------------------------
 
-// ----------------------- Getters --------------------------------------------
+    // ----------------------- Getters --------------------------------------------
 
     public function getRefundId()
     {
@@ -87,9 +87,9 @@ class Entity extends Base\Entity
         return $this->getAttribute('statuscode');
     }
 
-// ----------------------- Getters End -----------------------------------------
+    // ----------------------- Getters End -----------------------------------------
 
-// ----------------------- Accessors --------------------------------------------
+    // ----------------------- Accessors --------------------------------------------
 
     public function getAmountAttribute($amount)
     {
@@ -98,5 +98,5 @@ class Entity extends Base\Entity
         return $amount;
     }
 
-// ----------------------- Accessors End ----------------------------------------
+    // ----------------------- Accessors End ----------------------------------------
 }
