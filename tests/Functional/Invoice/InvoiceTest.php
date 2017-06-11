@@ -1525,16 +1525,6 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('line_item');
 
         $this->startTest();
-
-        // TODO: Check with Jitendra once  for this testCase
-        // Mail::assertSent(InvoiceExpiredMail::class, function ($mail)
-        // {
-        //     $testData = $this->testData['testExpireInvoice']['response']['content']['customer_details'];
-
-        //     $this->assertArraySelectiveEquals($testData, $mail->viewData['invoice']['customer_details']);
-
-        //     return $mail->hasTo('test@razorpay.com');
-        // });
     }
 
     public function testCancelPaymentInProgressInvoice()

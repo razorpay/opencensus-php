@@ -278,27 +278,12 @@ class NetbankingIciciGatewayTest extends TestCase
 
             $this->assertEquals($body, $mail->viewData['body']);
 
+            $this->assertEquals('1000.00', $mail->viewData['amount']);
+
+            $this->assertEquals('3', $mail->viewData['count']);
+
             return true;
         });
-
-        //  @note: Commented during move to 5.4
-        //  // Mail catch with amount and refund everywhere
-        // Mail::shouldReceive('queue')
-        //       ->once()
-        //       ->with(
-        //             Mockery::any(),
-        //             Mockery::on(function ($data)
-        //             {
-        //                 $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
-
-        //                 $this->assertEquals(1000.00, $data['amount']);
-        //                 $this->assertEquals('3', $data['count']);
-        //                 $this->assertEquals($date, $data['date']);
-
-        //                 return true;
-        //             }),
-        //             Mockery::any()
-        //         );
     }
 
     protected function mockPaymentFailure()

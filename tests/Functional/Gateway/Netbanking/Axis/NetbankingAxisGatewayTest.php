@@ -227,9 +227,6 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForNB('UTIB');
 
-        // @note: Commented during move to 5.4
-        // $this->checkMailQueue();
-
         $this->checkRefundTextData($data);
 
         $this->checkMailQueue();

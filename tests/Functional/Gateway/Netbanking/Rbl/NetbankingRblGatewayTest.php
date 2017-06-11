@@ -241,32 +241,12 @@ class NetbankingRblGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-        Mail::assertSent(RefundFileMail::class);
-         // Mail catch with amount and refund everywhere
-        // Mail::shouldReceive('queue')
-        //       ->once()
-        //       ->with(
-        //             Mockery::any(),
-        //             Mockery::on(function ($data)
-        //             {
-        //                 $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        Mail::assertSent(RefundFileMail::class, function ($mail)
+        {
+            $this->assertEquals('3', $mail->viewData['count']);
 
-        //                 $today = Carbon::today('Asia/Kolkata')->format('d_m_Y');
-
-        //                 $emails = ['settlements@razorpay.com'];
-
-        //                 $testData = [
-        //                     'subject'     => 'RBL Netbanking refunds file for ' . $date,
-        //                     'count'       => 3,
-        //                     'date'        => $date,
-        //                 ];
-
-        //                 $this->assertArraySelectiveEquals($testData, $data);
-
-        //                 return true;
-        //             }),
-        //             Mockery::any()
-        //         );
+            return true;
+        });
     }
 
     protected function mockFailedVerifyResponse()

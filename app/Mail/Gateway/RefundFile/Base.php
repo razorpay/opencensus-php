@@ -54,11 +54,13 @@ class Base extends Mailable
 
     protected function addMailData()
     {
-        $data = [
+        $mailData = [
             'body' => Constants::BODY_MAP[$this->type]
         ];
 
-        $this->with($data);
+        $mailData = array_merge($mailData, $this->data);
+
+        $this->with($mailData);
 
         return $this;
     }
