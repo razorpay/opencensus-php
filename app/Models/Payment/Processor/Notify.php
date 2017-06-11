@@ -237,7 +237,7 @@ class Notify
             // - dispatch a queue job which updates the invoice pdf,
             // - if invoice's email_notify is set to '0', just return.
 
-            if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+            if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
             {
                 $job = new InvoiceAction(
                             $this->mode,
@@ -435,6 +435,11 @@ class Notify
                 'payment_id' => $this->refund->payment->getId(),
                 'public_id'  => $this->refund->getPublicId(),
             ];
+        }
+
+        if ($this->payment->isFailed() === true)
+        {
+            $data['payment']['error_description'] = $this->payment->getErrorDescription();
         }
 
         return $data;

@@ -3,9 +3,9 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
-use Mockery;
-use RZP\Mail\Payment\Authorized as AuthorizedMail;
 
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Mail\Payment\Failed as PaymentFailedMail;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -305,6 +305,8 @@ class AuthorizeTest extends TestCase
 
     public function testFailPaymentWithPaymentFailureMailEnabled()
     {
+        Mail::fake();
+
         $this->failPaymentOnBankPage = true;
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
@@ -320,23 +322,22 @@ class AuthorizeTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPayment($payment);
+        });
 
-            Mail::shouldReceive('queue')
-                    ->once()
-                    ->with(
-                        Mockery::any(),
-                        Mockery::on(function ($data)
-                        {
-                            $this->assertArrayHasKey($data['payment']['error_description']);
+        Mail::assertSent(PaymentFailedMail::class, function ($mail)
+        {
+            $this->assertArrayHasKey('error_description', $mail->viewData['payment']);
 
-                            return true;
-                        }),
-                        Mockery::any());
-            });
+            $this->assertNotEmpty($mail->viewData['payment']['error_description']);
+
+            return true;
+        });
     }
 
     public function testFailPaymentWithPaymentFailureMailDisabled()
     {
+        Mail::fake();
+
         $this->failPaymentOnBankPage = true;
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
@@ -350,9 +351,9 @@ class AuthorizeTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPayment($payment);
-
-            Mail::shouldNotReceive('queue');
         });
+
+        Mail::assertNotSent(PaymentFailedMail::class);
     }
 
     public function testFailTimeoutOldPayments()

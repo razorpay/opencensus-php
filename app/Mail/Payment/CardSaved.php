@@ -3,7 +3,6 @@
 namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Constants;
 
 class CardSaved extends Base
 {

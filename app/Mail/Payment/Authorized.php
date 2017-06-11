@@ -2,8 +2,6 @@
 
 namespace RZP\Mail\Payment;
 
-use RZP\Mail\Base\Constants;
-
 class Authorized extends Base
 {
     protected function addHtmlView()

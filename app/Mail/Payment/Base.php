@@ -74,14 +74,9 @@ class Base extends Mailable
          * can do a survey later and remove this check from here and other
          * places
          */
-        if (isset($this->data['merchant']['billing_label']) === true)
-        {
-            $subject = "$action successful for {$this->data['merchant']['billing_label']}";
-        }
-        else
-        {
-            $subject = "$action successful for {$this->data['payment']['amount']}";
-        }
+        $label = $this->data['merchant']['billing_label'] ?? $this->data['payment']['amount'];
+
+        $subject = "$action successful for $label";
 
         if ($this->isMerchantEmail === true)
         {

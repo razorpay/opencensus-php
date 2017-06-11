@@ -10,6 +10,7 @@ class Event
     const CARD_SAVED                 = 'card_saved';
     const CAPTURED                   = 'captured';
     const REFUNDED                   = 'refunded';
+    const FAILED                     = 'failed';
     const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
     const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
     const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
@@ -25,6 +26,7 @@ class Event
     const MERCHANT_EVENTS = [
         self::CAPTURED,
         self::REFUNDED,
+        self::FAILED,
         self::FAILED_TO_AUTHORIZED,
         self::INVOICE_PAYMENT_CAPTURED,
     ];
@@ -37,6 +39,7 @@ class Event
     const MAIL_TAG_MAP = [
         self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
         self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
+        self::FAILED                     => MailTags::PAYMENT_FAILED,
         self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
         self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
         self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
