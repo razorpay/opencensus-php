@@ -27,6 +27,7 @@ class Event
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
+    // const VIRTUAL_ACCOUNT_CLOSED    = 'virtual_account.closed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -43,6 +44,7 @@ class Event
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
         self::VIRTUAL_ACCOUNT_CREDITED,
+        // self::VIRTUAL_ACCOUNT_CLOSED,
     ];
 
     protected static $bitMap = [
@@ -59,6 +61,7 @@ class Event
         self::SUBSCRIPTION_HALTED       => 0x11,
         // self::SUBSCRIPTION_EXPIRED      => 0x12,
         self::VIRTUAL_ACCOUNT_CREDITED  => 0x13,
+        // self::VIRTUAL_ACCOUNT_CLOSED    => 0x14,
     ];
 
     /**
@@ -80,6 +83,7 @@ class Event
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
         self::VIRTUAL_ACCOUNT_CREDITED,
+        // self::VIRTUAL_ACCOUNT_CLOSED,
     ];
 
     protected static $bitPosition = [
@@ -97,6 +101,7 @@ class Event
         self::SUBSCRIPTION_HALTED       => 12,
         // self::SUBSCRIPTION_EXPIRED      => 13,
         self::VIRTUAL_ACCOUNT_CREDITED  => 14,
+        // self::VIRTUAL_ACCOUNT_CLOSED    => 15,
     ];
 
     /**
@@ -118,6 +123,7 @@ class Event
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
         self::VIRTUAL_ACCOUNT_CREDITED,
+        // self::VIRTUAL_ACCOUNT_CLOSED,
     ];
 
     /**
@@ -137,6 +143,7 @@ class Event
         self::SUBSCRIPTION_HALTED       => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
         self::VIRTUAL_ACCOUNT_CREDITED  => Entity::BANK_TRANSFER,
+        // self::VIRTUAL_ACCOUNT_CLOSED    => Entity::VIRTUAL_ACCOUNT,
     ];
 
     /**

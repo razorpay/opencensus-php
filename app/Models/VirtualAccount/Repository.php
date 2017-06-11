@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Receiver;
+namespace RZP\Models\VirtualAccount;
 
 use RZP\Constants;
 use RZP\Models\Base;
@@ -8,7 +8,7 @@ use RZP\Models\BankAccount;
 
 class Repository extends Base\Repository
 {
-    protected $entity = Constants\Entity::RECEIVER;
+    protected $entity = Constants\Entity::VIRTUAL_ACCOUNT;
 
     const WITH_TRASHED = 'deleted';
 
@@ -42,5 +42,13 @@ class Repository extends Base\Repository
         }
 
         return $query->first();
+    }
+
+    public function getActiveVirtualAccountFromBankAccountId($bankAccountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
+                    ->first();
     }
 }

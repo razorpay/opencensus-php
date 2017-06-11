@@ -21,6 +21,7 @@ class Contains
         Type::SUBSCRIPTION_HALTED       => [Entity::SUBSCRIPTION],
         // Type::SUBSCRIPTION_EXPIRED      => [Entity::SUBSCRIPTION],
         Type::VIRTUAL_ACCOUNT_CREDITED  => [Entity::PAYMENT, Entity::BANK_TRANSFER],
+        // Type::VIRTUAL_ACCOUNT_CLOSED    => [Entity::VIRTUAL_ACCOUNT],
     ];
 
     public static function getEntityNamesForEvent($event)

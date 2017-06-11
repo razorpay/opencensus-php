@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Receiver;
+namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\BankAccount\Entity as BankAccount;
 

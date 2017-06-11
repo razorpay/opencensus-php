@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Receiver;
+namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
@@ -10,48 +10,20 @@ class Core extends Base\Core
 {
     const ACCOUNT_NUMBER_LENGTH = 20;
 
-    public function addVirtualBankAccountForCustomer($customer)
+    public function create($input, $merchant, $customer = null)
     {
-        $this->repo->transaction(function() use ($customer)
+        $virtualAccount = (new Entity)->build($input);
+
+        if ($customer !== null)
         {
-            $bankAccount = $this->buildBankAccount($this->merchant);
+            $virtualAccount->customer()->associate($customer);
+        }
 
-            $bankAccount->associateCustomer($customer);
+        $virtualAccount->merchant()->associate($merchant);
 
-            $bankAccount->setVirtual(true);
+        $this->repo->saveOrFail($virtualAccount);
 
-            $this->createReceiverFromBankAccount($bankAccount);
-
-            $this->repo->saveOrFail($bankAccount);
-        });
-
-        return $bankAccount;
-    }
-
-    public function addStandingBankAccount()
-    {
-        $bankAccount = $this->buildBankAccount($this->merchant);
-
-        $bankAccount->associateMerchant($this->merchant);
-
-        $bankAccount->setVirtual(true);
-
-        $this->createReceiverFromBankAccount($bankAccount, false);
-
-        $this->repo->saveOrFail($bankAccount);
-
-        return $bankAccount;
-    }
-
-    protected function createReceiverFromBankAccount($bankAccount, $singleUse = true)
-    {
-        $receiver = new Entity;
-
-        $receiver->entityAssociate($bankAccount);
-
-        $receiver->setSingleUse($singleUse);
-
-        $this->repo->saveOrFail($receiver);
+        return $virtualAccount;
     }
 
     protected function buildBankAccount($merchant)

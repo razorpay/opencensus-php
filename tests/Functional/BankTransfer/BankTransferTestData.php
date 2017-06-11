@@ -6,14 +6,8 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
-    'createVirtualBankAccount' => [
-        'url'     => '/ecollect/bank_account',
-        'method'  => 'post',
-        'content' => [],
-    ],
-
-    'createCustomerVirtualBankAccount' => [
-        'url'     => '/ecollect/customers/',
+    'createVirtualAccount' => [
+        'url'     => '/virtual_accounts',
         'method'  => 'post',
         'content' => [],
     ],

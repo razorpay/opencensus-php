@@ -353,6 +353,8 @@ class ErrorCode
     const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                            = 'BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED';
     const BAD_REQUEST_SCHEDULE_IN_USE                                               = 'BAD_REQUEST_SCHEDULE_IN_USE';
 
+    const BAD_REQUEST_INVALID_RECEIVER_TYPE                                         = 'BAD_REQUEST_INVALID_RECEIVER_TYPE';
+
     const BAD_REQUEST_PRICING_ID_REQURED                                            = 'BAD_REQUEST_PRICING_ID_REQURED';
     const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                                   = 'BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                      = 'BAD_REQUEST_PRICING_RATE_NOT_DEFINED';

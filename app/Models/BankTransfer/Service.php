@@ -38,7 +38,7 @@ class Service extends Base\Service
             $input
         );
 
-        $data = $this->validateReceiver($input);
+        $data = $this->validateVirtualAccount($input);
 
         return $data;
     }
@@ -56,20 +56,29 @@ class Service extends Base\Service
 
         if ($bankTransfer !== null)
         {
+            $this->setVirtualAccount($bankTransfer);
+
+            $paymentProcessor = new PaymentProcessor($this->merchant);
+
+            $paymentId = $bankTransfer->payment->getId();
+
             $this->repo->transaction(function() use ($bankTransfer)
             {
-                $this->setAssociatedEntities($bankTransfer);
-
-                $paymentProcessor = new PaymentProcessor($this->merchant);
-
-                $paymentId = $bankTransfer->payment->getId();
-
                 $paymentProcessor->processBankTransferPayment($paymentId);
 
-                $this->markReceiverUsed($bankTransfer);
-
-                $this->app['events']->fire('api.virtual_account.credited', [$bankTransfer]);
+                $this->updateVirtualAccount($bankTransfer);
             });
+
+            $this->app['events']->fire('api.virtual_account.credited', [$bankTransfer]);
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::BANK_TRANSFER_UNEXPECTED_PAY_NOTIFY,
+                [
+                    'input' => $input,
+                ]
+            );
         }
 
         return [
@@ -77,17 +86,6 @@ class Service extends Base\Service
             'message'        => null,
             Entity::UTR      => $input[Entity::UTR],
         ];
-    }
-
-    protected function setAssociatedEntities(Entity $bankTransfer)
-    {
-        $this->merchant = $bankTransfer->merchant;
-
-        // $this->customer = (new Customer\Core)->createLocalCustomer([], $this->merchant);
-
-        // $bankAccountInput = $this->customerBankAccountInput($bankTransfer);
-
-        // $this->customerAccount = (new BankAccount\Core)->addOrUpdateBankAccountForCustomer([], $this->customer);
     }
 
     protected function customerBankAccountInput(Entity $bankTransfer)
@@ -115,7 +113,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function validateReceiver(array $input): array
+    protected function validateVirtualAccount(array $input): array
     {
         $this->validator->validateInput('create', $input);
 
@@ -123,7 +121,9 @@ class Service extends Base\Service
 
         $uniqueUtr = $this->validateUniqueUtr($bankTransfer);
 
-        $expected = $this->transferExpected($bankTransfer);
+        $expected = $this->isTransferExpected($bankTransfer);
+
+        $this->setMerchant();
 
         if (($expected === true) and ($uniqueUtr === true))
         {
@@ -131,7 +131,7 @@ class Service extends Base\Service
 
             $paymentProcessor = new PaymentProcessor($this->merchant);
 
-            $payment = $paymentProcessor->processBankTransfer($paymentInput);
+            $payment = $paymentProcessor->processBankTransferValidation($paymentInput);
 
             $bankTransfer->payment()->associate($payment);
 
@@ -141,8 +141,6 @@ class Service extends Base\Service
                 'valid'          => true,
                 'message'        => null,
             ];
-
-            $this->repo->saveOrFail($bankTransfer);
         }
         else
         {
@@ -157,6 +155,8 @@ class Service extends Base\Service
                 $data['message'] = 'Duplicate UTR received';
             }
         }
+
+        $this->repo->saveOrFail($bankTransfer);
 
         $data[Entity::UTR] = $input[Entity::UTR];
 
@@ -175,7 +175,7 @@ class Service extends Base\Service
             return true;
         }
 
-        $this->trace->warning(
+        $this->trace->error(
             TraceCode::BANK_TRANSFER_VALIDATION_DUPLICATE_UTR,
             [
                 'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
@@ -186,25 +186,35 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function transferExpected(Entity $bankTransfer): bool
+    protected function isTransferExpected(Entity $bankTransfer): bool
     {
-        $this->receiver = $this->getReceiverFromBankTransfer($bankTransfer);
+        $this->setVirtualAccount($bankTransfer);
 
-        if ($this->receiver === null)
+        if ($this->virtualAccount === null)
         {
             return false;
         }
 
-        $this->merchant = $this->receiver->account->merchant;
-
         return true;
     }
 
-    protected function markReceiverUsed(Entity $bankTransfer)
+    protected function setVirtualAccount(Entity $bankTransfer)
     {
-        $this->receiver = $this->getReceiverFromBankTransfer($bankTransfer);
+        $this->virtualAccount = $this->getVirtualAccountFromBankTransfer($bankTransfer);
+    }
 
-        if ($this->receiver->isSingleUse() === true)
+    protected function setMerchant()
+    {
+        $this->merchant = $this->virtualAccount->merchant;
+    }
+
+    protected function updateVirtualAccount(Entity $bankTransfer)
+    {
+        $this->virtualAccount->incrementAmountPaid($bankTransfer->getAmount());
+
+        $this->virtualAccount->incrementAmountReceived($bankTransfer->getAmount());
+
+        if ($this->virtualAccount->isSingleUse() === true)
         {
             $this->receiver->setValid(false);
 
@@ -212,14 +222,24 @@ class Service extends Base\Service
         }
     }
 
-    protected function getReceiverFromBankTransfer(Entity $bankTransfer)
+    protected function getVirtualAccountFromBankTransfer(Entity $bankTransfer)
     {
         $accountNumber = $bankTransfer->getPayeeAccount();
 
-        $ifscCode = $bankTransfer->getPayeeIfsc();
+        // $ifscCode = $bankTransfer->getPayeeIfsc();
 
-        return $this->repo->receiver
-                    ->getValidVirtualBankAccountFromNumber($accountNumber, $ifscCode);
+        $bankAccount = $this->getBankAccountFromNumber($accountNumber);
+
+        return $this->repo->virtual_account
+                    ->getActiveVirtualAccountFromBankAccountId($bankAccount->getId());
+    }
+
+    protected function getBankAccountFromNumber(string $accountNumber)
+    {
+        $bankAccount = $this->repo->bank_account
+                            ->findFirstBankAccountByAccountNumber($accountNumber);
+
+        return $bankAccount;
     }
 
     protected function bankTransferPaymentArray(array $input): array

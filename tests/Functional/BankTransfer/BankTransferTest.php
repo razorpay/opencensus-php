@@ -25,7 +25,7 @@ class BankTransferTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->bankAccount = $this->createVirtualBankAccount();
+        $this->bankAccount = $this->createVirtualAccount();
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
 
@@ -101,42 +101,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
-    public function testAccountCreditedWebhook()
-    {
-        $this->createWebhook(
-            [
-                'events' => [
-                    'virtual_account.credited' => '1',
-                ]
-            ]);
-
-        $testData = [];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            $payload = $data['event']['payload'];
-
-            $bankTransfer = $payload['bank_transfer']['entity'];
-
-            $this->assertArrayHasKey('id', $bankTransfer);
-            $this->assertArrayHasKey('payment_id', $bankTransfer);
-            $this->assertArrayHasKey('transaction_id', $bankTransfer);
-
-            return true;
-        });
-
-        $this->ba->appAuth();
-
-        $this->testBankTransferPay();
-    }
-
     public function testBankTransferPayAgain()
     {
         $this->testBankTransferValidate();
@@ -168,7 +132,7 @@ class BankTransferTest extends TestCase
         $this->startTest();
     }
 
-    protected function createVirtualBankAccount()
+    protected function createVirtualAccount()
     {
         $request = $this->testData[__FUNCTION__];
 
@@ -177,11 +141,11 @@ class BankTransferTest extends TestCase
         return $response;
     }
 
-    protected function createCustomerVirtualBankAccount($customer)
+    protected function createVirtualAccountForCustomer($customer)
     {
-        $request = $this->testData[__FUNCTION__];
+        $request = $this->testData['createVirtualAccount'];
 
-        $request['url'] .= $customer['id'] . '/bank_account';
+        $request['content']['customer_id'] = $customer['id'];
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -222,20 +186,5 @@ class BankTransferTest extends TestCase
         $this->assertEquals($utr, $response[E::UTR]);
 
         return $response;
-    }
-
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
-
-        $inferno = Mockery::mock($class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
     }
 }

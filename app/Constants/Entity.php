@@ -48,7 +48,6 @@ class Entity
     const REVERSAL              = 'reversal';
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
-    const RECEIVER              = 'receiver';
     const TRANSFER              = 'transfer';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
@@ -63,6 +62,7 @@ class Entity
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
+    const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
