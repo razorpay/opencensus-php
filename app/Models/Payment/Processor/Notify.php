@@ -17,14 +17,6 @@ use RZP\Trace\TraceCode;
 
 class Notify
 {
-    const AUTHORIZED                 = 'authorized';
-    const CARD_SAVED                 = 'card_saved';
-    const CAPTURED                   = 'captured';
-    const REFUNDED                   = 'refunded';
-    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
-    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
-    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
-
     /**
      * The minimum amount for a transaction to be considered risky
      * This is used to decide low and high value transactions and pick

@@ -4,27 +4,27 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
-
-use RZP\Http;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Http;
 use RZP\Models\BankAccount;
-use RZP\Models\Terminal;
-use RZP\Models\Payment;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Card;
+use RZP\Models\Customer;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Models\Transaction;
+use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Customer;
-use RZP\Models\Transfer\Core as TransferCore;
-use RZP\Models\Card;
-use RZP\Models\Transaction;
-use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -564,6 +564,13 @@ class Processor
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();
+
+        if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
+        {
+            $notifier = new Notify($this->payment);
+
+            $notifier = $notifier->trigger(Notify::FAILED);
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
