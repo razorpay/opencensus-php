@@ -72,9 +72,4 @@ class Base extends Mailable
 
         return $this;
     }
-
-    protected function getMailTag()
-    {
-        ;
-    }
 }

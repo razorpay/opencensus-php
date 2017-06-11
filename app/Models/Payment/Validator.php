@@ -38,7 +38,6 @@ class Validator extends Base\Validator
         'description'             => 'sometimes',
         'email'                   => 'sometimes|nullable|email',
         'contact'                 => 'sometimes|nullable|contact_syntax',
-        'signature'               => 'sometimes',
         'signature'               => 'sometimes|nullable|string',
         'notes'                   => 'sometimes|notes',
         'notes.merchant_order_id' => 'required_with:signature',

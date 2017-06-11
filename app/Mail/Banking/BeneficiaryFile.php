@@ -4,7 +4,6 @@ namespace RZP\Mail\Banking;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
 
 class BeneficiaryFile extends Mailable
 {

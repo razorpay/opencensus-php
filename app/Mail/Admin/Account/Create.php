@@ -11,8 +11,6 @@ class Create extends Base
     public function __construct(array $admin, array $org, array $input)
     {
         parent::__construct($admin, $org, $input);
-
-        $this->header = MailTags::ADMIN_CREATE;
     }
 
     public function canSend()

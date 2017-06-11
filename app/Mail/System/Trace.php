@@ -60,7 +60,7 @@ class Trace extends Mailable
     protected function addMailData()
     {
         $this->with([
-                'msg' => $msg
+            'msg' => $msg
         ]);
 
         return $this;

@@ -175,7 +175,7 @@ class Trace extends Logger
 
             $traceMail = new TraceMail($msg, $mode);
 
-            Mail::send($traceMail);
+            Mail::queue($traceMail);
         }
         catch (\Throwable $exception)
         {

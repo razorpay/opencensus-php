@@ -42,7 +42,6 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         return [
@@ -92,13 +91,6 @@ class RefundFile extends Base\RefundFile
 
         return $txt;
     }
-
-    // protected function sendRefundEmail($fileData = [])
-    // {
-    //     $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_FEDERAL);
-
-    //     Mail::queue($refundFileMail);
-    // }
 
     protected function getFileToWriteNameWithoutExt()
     {

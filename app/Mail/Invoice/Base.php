@@ -5,7 +5,6 @@ namespace RZP\Mail\Invoice;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Exception;
 use RZP\Models\Invoice\Type;
 
 class Base extends Mailable

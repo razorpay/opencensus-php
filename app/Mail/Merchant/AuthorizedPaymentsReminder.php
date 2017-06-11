@@ -91,6 +91,13 @@ class AuthorizedPaymentsReminder extends Mailable
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.merchant.authorized_reminder');
+
+        return $this;
+    }
+
     protected function addHeaders()
     {
         $this->withSwiftMessage(function ($message)
@@ -101,7 +108,7 @@ class AuthorizedPaymentsReminder extends Mailable
 
             foreach ($this->data['payments'] as $payment)
             {
-                $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
+                $headers->addTextHeader(MailTags::HEADER, $payment['public_id']);
             }
         });
 

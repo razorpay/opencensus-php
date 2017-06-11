@@ -4,7 +4,6 @@ namespace RZP\Mail\Base;
 
 use Config;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable as BaseMailable;
 
 class Mailable extends BaseMailable
