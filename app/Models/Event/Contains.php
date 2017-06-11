@@ -3,25 +3,25 @@
 namespace RZP\Models\Event;
 
 use RZP\Models\Payment;
-use RZP\Constants;
+use RZP\Constants\Entity;
 
 class Contains
 {
-    protected static $data = array(
-        Type::PAYMENT_AUTHORIZED        => [Constants\Entity::PAYMENT],
-        Type::PAYMENT_FAILED            => [Constants\Entity::PAYMENT],
-        Type::ORDER_PAID                => [Constants\Entity::PAYMENT, Constants\Entity::ORDER],
-        Type::INVOICE_PAID              => [Constants\Entity::PAYMENT, Constants\Entity::ORDER, Constants\Entity::INVOICE],
-        Type::VPA_EDITED                => [Constants\Entity::VPA, Constants\Entity::CUSTOMER, Constants\Entity::BANK_ACCOUNT],
-        Type::P2P_CREATED               => [Constants\Entity::P2P, 'sink', 'source'],
-        Type::P2P_REJECTED              => [Constants\Entity::P2P, 'sink', 'source'],
-        Type::P2P_TRANSFERRED           => [Constants\Entity::P2P, 'sink', 'source'],
-        Type::SUBSCRIPTION_ACTIVATED    => [Constants\Entity::SUBSCRIPTION],
-        Type::SUBSCRIPTION_OVERDUE      => [Constants\Entity::SUBSCRIPTION],
-        Type::SUBSCRIPTION_HALTED       => [Constants\Entity::SUBSCRIPTION],
-        // Type::SUBSCRIPTION_EXPIRED      => [Constants\Entity::SUBSCRIPTION],
-        Type::VIRTUAL_ACCOUNT_CREDITED  => [Constants\Entity::PAYMENT, Constants\Entity::BANK_TRANSFER],
-    );
+    protected static $data = [
+        Type::PAYMENT_AUTHORIZED        => [Entity::PAYMENT],
+        Type::PAYMENT_FAILED            => [Entity::PAYMENT],
+        Type::ORDER_PAID                => [Entity::PAYMENT, Entity::ORDER],
+        Type::INVOICE_PAID              => [Entity::PAYMENT, Entity::ORDER, Entity::INVOICE],
+        Type::VPA_EDITED                => [Entity::VPA, Entity::CUSTOMER, Entity::BANK_ACCOUNT],
+        Type::P2P_CREATED               => [Entity::P2P, 'sink', 'source'],
+        Type::P2P_REJECTED              => [Entity::P2P, 'sink', 'source'],
+        Type::P2P_TRANSFERRED           => [Entity::P2P, 'sink', 'source'],
+        Type::SUBSCRIPTION_ACTIVATED    => [Entity::SUBSCRIPTION],
+        Type::SUBSCRIPTION_OVERDUE      => [Entity::SUBSCRIPTION],
+        Type::SUBSCRIPTION_HALTED       => [Entity::SUBSCRIPTION],
+        // Type::SUBSCRIPTION_EXPIRED      => [Entity::SUBSCRIPTION],
+        Type::VIRTUAL_ACCOUNT_CREDITED  => [Entity::PAYMENT, Entity::BANK_TRANSFER],
+    ];
 
     public static function getEntityNamesForEvent($event)
     {

@@ -28,7 +28,7 @@ class Event
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
 
-    protected static $events = array(
+    protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
@@ -43,9 +43,9 @@ class Event
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
         self::VIRTUAL_ACCOUNT_CREDITED,
-    );
+    ];
 
-    protected static $bitMap = array(
+    protected static $bitMap = [
         self::PAYMENT_AUTHORIZED        => 0x1,
         self::PAYMENT_FAILED            => 0x2,
         self::PAYMENT_CAPTURED          => 0x3,
@@ -59,14 +59,14 @@ class Event
         self::SUBSCRIPTION_HALTED       => 0x11,
         // self::SUBSCRIPTION_EXPIRED      => 0x12,
         self::VIRTUAL_ACCOUNT_CREDITED  => 0x13,
-    );
+    ];
 
     /**
      * Events which are present in the system and
      * can be enabled/disabled.
      * @var array
      */
-    protected static $names = array(
+    protected static $names = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
@@ -80,9 +80,9 @@ class Event
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
         self::VIRTUAL_ACCOUNT_CREDITED,
-    );
+    ];
 
-    protected static $bitPosition = array(
+    protected static $bitPosition = [
         self::PAYMENT_AUTHORIZED        => 1,
         self::PAYMENT_FAILED            => 2,
         self::PAYMENT_CAPTURED          => 3,
@@ -97,14 +97,14 @@ class Event
         self::SUBSCRIPTION_HALTED       => 12,
         // self::SUBSCRIPTION_EXPIRED      => 13,
         self::VIRTUAL_ACCOUNT_CREDITED  => 14,
-    );
+    ];
 
     /**
      * These are events which will displayed to merchants
      * for enabling/disabling.
      * @var array
      */
-    protected static $launchedEvents = array(
+    protected static $launchedEvents = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
@@ -118,7 +118,7 @@ class Event
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
         self::VIRTUAL_ACCOUNT_CREDITED,
-    );
+    ];
 
     /**
      * Defines the mapping to entity for respective event and also
