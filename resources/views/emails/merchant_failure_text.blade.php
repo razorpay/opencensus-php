@@ -1,6 +1,6 @@
 Hi,
 
-This is just a confirmation email to let you know that a payment was successful.
+This is to let you know that a payment failed.
 
 Date: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolkata")->format('jS F Y')}}
 Time: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolkata")->format('g:i a T (P)')}}
@@ -8,12 +8,12 @@ Time: {{\Carbon\Carbon::createFromTimestamp($payment['captured_at'], "Asia/Kolka
 Payment Id:         {{$payment['public_id']}}
 Amount:             {{$payment['amount']}}
 
+Failure Reason:     {{$payment['error_description']}}
+
 Customer Details:
 
 - Email:    {{$customer['email']}}
 - Contact:  {{$customer['phone']}}
-
-If this is correct, you don't need to take any further action.
 
 You can view more payment details on the Merchant Dashboard [0].
 

@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mail;
+use Mockery;
+
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -292,6 +295,58 @@ class AuthorizeTest extends TestCase
 
         $this->ba->privateAuth();
         $this->startTest();
+    }
+
+    public function testFailPaymentWithPaymentFailureMailEnabled()
+    {
+        $this->failPaymentOnBankPage = true;
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures('payment_failure_email');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+
+            Mail::shouldReceive('queue')
+                    ->once()
+                    ->with(
+                        Mockery::any(),
+                        Mockery::on(function ($data)
+                        {
+                            $this->assertArrayHasKey($data['payment']['error_description']);
+
+                            return true;
+                        }),
+                        Mockery::any());
+            });
+    }
+
+    public function testFailPaymentWithPaymentFailureMailDisabled()
+    {
+        $this->failPaymentOnBankPage = true;
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+
+            Mail::shouldNotReceive('queue');
+        });
     }
 
     public function testFailTimeoutOldPayments()

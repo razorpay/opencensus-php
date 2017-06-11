@@ -813,7 +813,7 @@ return [
         ],
     ],
 
-    'testCancelPaymentWithArrayReason' => [
+    'testCancelPaymentWithArrayReason' =>[
         'response' => [
             'content' => [
                 'error' => [
@@ -826,6 +826,40 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER
+        ],
+    ],
+
+    'testFailPaymentWithPaymentFailureMailEnabled' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'gateway_error_code'  => null
+        ],
+    ],
+
+    'testFailPaymentWithPaymentFailureMailDisabled' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'gateway_error_code'  => null
         ],
     ]
 ];
