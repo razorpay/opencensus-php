@@ -101,9 +101,12 @@ class Notify
 
             if ($this->invoice !== null)
             {
-                $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+                if (in_array($event, Payment\Event::INVOICE_EVENTS, true) === true)
+                {
+                    $invoiceData = (new ViewDataSerializer($this->invoice))->get();
 
-                $mailable->setInvoiceDetails($invoiceData);
+                    $mailable->setInvoiceDetails($invoiceData);
+                }
             }
 
             if ($this->isCustomerMailEnabled($mailable) === true)
@@ -118,9 +121,12 @@ class Notify
 
             if ($this->invoice !== null)
             {
-                $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+                if (in_array($event, Payment\Event::INVOICE_EVENTS, true) === true)
+                {
+                    $invoiceData = (new ViewDataSerializer($this->invoice))->get();
 
-                $mailable->setInvoiceDetails($invoiceData);
+                    $mailable->setInvoiceDetails($invoiceData);
+                }
             }
 
             if ($this->isMerchantMailEnabled($mailable) === true)
