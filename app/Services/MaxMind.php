@@ -95,7 +95,7 @@ class MaxMind
         $this->trace->info(TraceCode::MAXMIND_RESPONSE, [
             'payment_id' => $payment->getId(),
             'merchant_id' => $payment->getMerchantId(),
-            'merchant' => $payment->merchant->getBillingLabelElseName(),
+            'merchant' => $payment->merchant->getBillingLabel(),
             'response' => $response->jsonSerialize()]);
 
         $jsonResponse = $response->jsonSerialize();

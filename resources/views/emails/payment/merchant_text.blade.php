@@ -10,7 +10,7 @@ Amount:             {{$payment['amount']}}
 
 Customer Details:
 
-- EMail:    {{$customer['email']}}
+- Email:    {{$customer['email']}}
 - Contact:  {{$customer['phone']}}
 
 If this is correct, you don't need to take any further action.

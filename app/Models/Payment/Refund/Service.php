@@ -643,11 +643,11 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function retryFailedRefunds()
+    public function retryFailedRefunds($input)
     {
         $this->trace->info(TraceCode::REFUND_RETRY_INITIATED);
 
-        $gateways = Payment\Gateway::REFUND_RETRY_GATEWAYS;
+        $gateways = (array) ($input['gateways'] ?? Payment\Gateway::REFUND_RETRY_GATEWAYS);
 
         $status = [];
 

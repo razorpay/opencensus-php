@@ -434,8 +434,7 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund_amount'];
         $refundId = $input['refund_id'];
 
-        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId(
-            $refundId, Processor\Wallet::MOBIKWIK);
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
 
         if ($refundedEntities->count() === 0)
         {
@@ -459,7 +458,7 @@ class Gateway extends Base\Gateway
 
         if (($refundEntityPaymentId !== $paymentId) or
             ($refundEntityRefundAmount !== $refundAmount) or
-            ($refundEntityStatusCode === false))
+            ($refundEntityStatusCode !== '0'))
         {
             return false;
         }

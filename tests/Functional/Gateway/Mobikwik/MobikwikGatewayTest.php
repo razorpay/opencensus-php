@@ -35,7 +35,6 @@ class MobikwikGatewayTest extends TestCase
 
     public function testPayment()
     {
-
         $this->payment = $this->doAuthAndCapturePayment($this->payment);
         $this->payment = $this->getLastEntity('payment', true);
 

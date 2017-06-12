@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\FundTransfer\Attempt\Entity as FundTransferAttempt;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
+use RZP\Models\Merchant\Entity as Merchant;
 
 class CreateFundTransferAttemptsTable extends Migration
 {
@@ -27,6 +28,8 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->string(FundTransferAttempt::SOURCE_TYPE, 20);
 
             $table->string(FundTransferAttempt::SOURCE_ID, FundTransferAttempt::ID_LENGTH);
+
+            $table->string(FundTransferAttempt::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->char(FundTransferAttempt::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
@@ -71,6 +74,11 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->index(FundTransferAttempt::CREATED_AT);
 
+            $table->foreign(FundTransferAttempt::MERCHANT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
             $table->foreign(FundTransferAttempt::BATCH_FUND_TRANSFER_ID)
                   ->references(BatchFundTransfer::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
@@ -89,6 +97,9 @@ class CreateFundTransferAttemptsTable extends Migration
         {
             $table->dropForeign(
                 Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::BATCH_FUND_TRANSFER_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::FUND_TRANSFER_ATTEMPT);

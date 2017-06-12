@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -139,12 +140,14 @@ class TransactionFilter extends Terminal\Filter
         else if ($input['payment']->isCard())
         {
             $issuer = $input['payment']->card->getIssuer();
+            $type = $input['payment']->card->getType();
 
             if (($issuer === Issuer::ICIC) and
+                ($type !== Type::CREDIT) and
                 ($terminal->getGateway() === Gateway::FIRST_DATA) and
                 ($input['merchant']->getId() !== '5ubLZpACTmD8D4'))
             {
-                // ICICI cards currently don't work on FirstData
+                // ICICI debit cards currently don't work on FirstData
                 // This allows transactions only on test merchant
                 return false;
             }

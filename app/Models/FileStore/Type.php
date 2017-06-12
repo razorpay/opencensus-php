@@ -24,6 +24,8 @@ class Type
 
     const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
 
+    const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -31,7 +33,6 @@ class Type
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
     const BATCH_INPUT                       = 'batch_input';
-
     const BATCH_OUTPUT                      = 'batch_output';
 
     const BLANK                             = 'blank';
@@ -53,7 +54,6 @@ class Type
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
-    const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
@@ -71,6 +71,7 @@ class Type
             self::AXIS_NETBANKING_REFUND,
             self::FEDERAL_NETBANKING_REFUND,
             self::RBL_NETBANKING_REFUND,
+            self::INDUSIND_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -114,6 +115,7 @@ class Type
         self::AXIS_NETBANKING_REFUND,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
+        self::INDUSIND_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
@@ -135,10 +137,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
-            self::REPORT
-        ],
-
-        self::BATCH_BUCKET_CONFIG => [
+            self::REPORT,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
         ],

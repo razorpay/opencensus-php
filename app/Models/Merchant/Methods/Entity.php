@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::AMEX,
         self::BANKS,
@@ -61,9 +61,9 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::MERCHANT_ID,
         self::CARD,
         self::AMEX,
@@ -85,11 +85,31 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
+        self::MERCHANT_ID,
+        self::CARD,
+        self::AMEX,
+        self::BANKS,
+        self::PAYTM,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+        self::MOBIKWIK,
+        self::OLAMONEY,
+        self::JIOMONEY,
+        self::OPENWALLET,
+        self::MPESA,
+        self::EMI,
+        self::UPI,
+        self::AEPS,
+        self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
         self::ENTITY,
-        self::METHODS);
+    ];
 
     protected $defaults = array(
         self::AMEX          => false,
@@ -492,6 +512,17 @@ class Entity extends Base\PublicEntity
 
         // Unsetting AIRP for now
         unset($names['AIRP']);
+
+        //
+        // Disabling HDFC netbanking for FxKart's two accounts
+        // Ref: https://razorpay.slack.com/archives/C0432SCD5/p1497018993519190
+        //
+        $fxKartMerchantIds = ['7dTJ1BmaZs62wG', '7b0Hl7t1Q5EnHo'];
+
+        if (in_array($this->getMerchantId(), $fxKartMerchantIds, true) === true)
+        {
+            unset($names['HDFC']);
+        }
 
         return $names;
     }

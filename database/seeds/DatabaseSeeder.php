@@ -1029,6 +1029,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingFederalTerminal();
+        $this->createNetbankingIndusindTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1313,6 +1314,24 @@ class DatabaseSeeder extends Seeder
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
+        );
+    }
+
+    protected function createNetbankingIndusindTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_INDUSIND_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_INDUSIND,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_indusind',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_indusind_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
         );
     }
 

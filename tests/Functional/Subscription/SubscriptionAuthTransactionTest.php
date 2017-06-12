@@ -39,7 +39,19 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
-        $this->doAuthPayment($paymentRequest);
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $actualSignature = $response['razorpay_signature'];
+
+        $signatureData = [
+            'subscription_id' => $subscription['id'],
+            'razorpay_payment_id' => $response['razorpay_payment_id'],
+        ];
+
+        ksort($signatureData);
+        $exceptedSignature = $this->getSignature($signatureData, 'TheKeySecretForTests');
+
+        $this->assertEquals($exceptedSignature, $actualSignature);
 
         $subscription = $this->getLastEntity('subscription', true);
         $payment = $this->getLastEntity('payment', true);

@@ -628,17 +628,17 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            $this->repo->transaction(function() use ($data, $payment)
+            $this->repo->transaction(function()
             {
                 $this->recordTransactionForRefund();
 
                 // update the payment entity for refund
                 $this->updatePaymentRefunded();
-
-                $refunded = $this->callGatewayRefundFunction($payment, $data);
-
-                $this->refund->setGatewayRefunded($refunded);
             });
+
+            $refunded = $this->callGatewayRefundFunction($payment, $data);
+
+            $this->refund->setGatewayRefunded($refunded);
 
             $this->refund->incrementAttempts();
 
@@ -649,7 +649,7 @@ trait Refund
             // send notification to merchant/customer, this is outside transaction
             // as we dont want to to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
-        });
+        }, 120);
 
         return $this->refund;
     }

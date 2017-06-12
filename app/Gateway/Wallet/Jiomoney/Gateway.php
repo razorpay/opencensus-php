@@ -53,6 +53,8 @@ class Gateway extends Base\Gateway
 
     const NUM_SECONDS_IN_TWO_DAYS = 172800;
 
+    const TRANSACTION_NOT_FOUND = "TRANSACTION_NOT_FOUND";
+
     protected $gateway = 'wallet_jiomoney';
 
     protected $sortRequestContent = false;
@@ -236,8 +238,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
         [
-            'response' => $response,
-            'input'    => $input,
+            'response'  => $response,
+            'refund_id' => $input['refund']['id'],
         ]);
 
         $content = $this->jsonToArray($response->body);
@@ -612,8 +614,8 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MATCH;
 
             $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,[
-                'msg'     => 'Jiomoney payment verification after 2 days',
-                'payment' => $input['payment']
+                'msg'        => 'Jiomoney payment verification after 2 days',
+                'payment_id' => $input['payment']['id']
             ]);
         }
 
@@ -882,6 +884,15 @@ class Gateway extends Base\Gateway
             }
 
             return false;
+        }
+        else if (isset($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]) === true)
+        {
+            $responseHeader = $content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER];
+
+            if ($responseHeader[ResponseFields::API_MSG] === self::TRANSACTION_NOT_FOUND)
+            {
+                return false;
+            }
         }
 
         throw new Exception\LogicException(

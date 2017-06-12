@@ -457,21 +457,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY2);
     }
 
-    public function getBillingLabelElseName()
+    public function getBillingLabelNotName()
     {
-        $label = $this->getBillingLabel();
-
-        if (empty($label))
-        {
-            $label = $this->getName();
-        }
-
-        return $label;
+        return $this->attributes[self::BILLING_LABEL];
     }
 
     public function getFilteredDba()
     {
-        $label = $this->getBillingLabelElseName();
+        $label = $this->getBillingLabel();
 
         $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
 
@@ -531,6 +524,18 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::CATEGORY];
     }
 
+    protected function getBillingLabelAttribute()
+    {
+        $label = $this->attributes[self::BILLING_LABEL];
+
+        if (empty($label))
+        {
+            $label = $this->getName();
+        }
+
+        return $label;
+    }
+
     protected function getSettlementScheduleAttribute()
     {
         return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
@@ -543,7 +548,7 @@ class Entity extends Base\PublicEntity
 
     public function getBillingLabel()
     {
-        return $this->attributes[self::BILLING_LABEL];
+        return $this->getBillingLabelAttribute();
     }
 
     public function getEmail()
