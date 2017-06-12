@@ -32,6 +32,7 @@ class MailTags
 
     const PAYMENT_SUCCESSFUL              = 'payment_successful';
     const REFUND_SUCCESSFUL               = 'refund_successful';
+    const PAYMENT_FAILED                  = 'payment_failed';
     const FAILED_TO_AUTHORIZED            = 'failed_to_authorized';
     const CARD_SAVING                     = 'card_saving';
 
