@@ -223,7 +223,7 @@ class Gateway extends Base\Gateway
             RequestFields::MULTIPLE_RECORDS => Constants::NO,
             RequestFields::USER_PRINCIPAL   => $this->getUserPrincipal($input),
             RequestFields::ACCESS_CODE      => $this->getAccessCode($input),
-            RequestFields::V_PAYEE_ID       => $this->getMerchantId(),
+            RequestFields::V_PAYEE_ID       => $this->getMerchantId($input),
             RequestFields::BANK_REFERENCE   => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RequestFields::ENTITY_TYPE      => Constants::TYPE_PAYMENT,
             RequestFields::TRANS_CURRENCY   => Currency::INR,
@@ -253,7 +253,7 @@ class Gateway extends Base\Gateway
         [
             RequestFields::CURRENCY           => Currency::INR,
             RequestFields::AMOUNT             => $input['payment']['amount'] / 100,
-            RequestFields::PAYEE_ID           => $this->getMerchantId(),
+            RequestFields::PAYEE_ID           => $this->getMerchantId($input),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::MERCHANT_NAME      => Constants::MERCHANT_NAME
 
@@ -430,13 +430,20 @@ class Gateway extends Base\Gateway
         return $userPricipal;
     }
 
-    protected function getMerchantId()
+    protected function getMerchantId(array $input)
     {
         $mid = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
-            $mid = $this->getTestMerchantId();
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $mid = $this->config['test_merchant_id_tpv'];
+            }
+            else
+            {
+                $mid = $this->getTestMerchantId();
+            }
         }
 
         return $mid;
