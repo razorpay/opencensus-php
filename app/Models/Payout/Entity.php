@@ -39,10 +39,10 @@ class Entity extends Base\PublicEntity
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
-    const SETTLED_ON             = 'settled_on';
 
     // Public attribute
     const DESTINATION            = 'destination';
+    const SETTLED_ON             = 'settled_on';
 
     protected $entity = 'payout';
 

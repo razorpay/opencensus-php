@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
     const PROCESSED_AT           = 'processed_at';
+
+    // Public attribute
     const SETTLED_ON             = 'settled_on';
 
     protected static $sign = 'setl';
