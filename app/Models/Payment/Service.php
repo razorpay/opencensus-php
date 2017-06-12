@@ -988,6 +988,7 @@ class Service extends Base\Service
                         [
                             'merchant_id' => $merchantId,
                             'payments'    => count($payments),
+                            'message'     => $ex->getMessage(),
 
                         ]);
 

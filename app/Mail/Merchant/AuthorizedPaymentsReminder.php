@@ -30,7 +30,7 @@ class AuthorizedPaymentsReminder extends Mailable
 
         foreach ($emails as $email)
         {
-            $to[] = [$email. $name];
+            $to[] = [$email, $name];
         }
 
         $this->to($to);

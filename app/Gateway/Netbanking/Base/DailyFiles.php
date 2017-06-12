@@ -145,11 +145,11 @@ class DailyFiles
         $emails = $this->getEmailsToSendTo($email);
 
         $data = [
-            'amount'          => $amount,
-            'claimsFileData'  => $claimsFileData,
-            'refundsFileData' => $refundsFileData,
-            'bankName'        => $bankName,
-            'emails'          => $emails,
+            'amount'      => $amount,
+            'claimsFile'  => $claimsFileData,
+            'refundsFile' => $refundsFileData,
+            'bankName'    => $bankName,
+            'emails'      => $emails,
         ];
 
         $dailyFileMail = new DailyFileMail($data);

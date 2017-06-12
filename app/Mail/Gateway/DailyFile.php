@@ -67,14 +67,14 @@ class DailyFile extends Mailable
 
     protected function addAttachments()
     {
-        if (empty($data['claimsFileData']) === false)
+        if (empty($data['claimsFile']) === false)
         {
-            $message->attach($data['claimsFileData']['signed_url'], ['as' => $data['claimsFileData']['name']]);
+            $message->attach($data['claimsFile']['signed_url'], ['as' => $data['claimsFile']['name']]);
         }
 
-        if (empty($data['refundsFileData']) === false)
+        if (empty($data['refundsFile']) === false)
         {
-            $message->attach($data['refundsFileData']['signed_url'], ['as' => $data['refundsFileData']['name']]);
+            $message->attach($data['refundsFile']['signed_url'], ['as' => $data['refundsFile']['name']]);
         }
 
         return $this;
