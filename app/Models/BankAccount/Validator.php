@@ -15,19 +15,25 @@ class Validator extends Base\Validator
         'ifsc_code'             => 'required|alpha_num|size:11',
         'account_number'        => 'required|alpha_num|between:5,20',
         'beneficiary_name'      => 'required|min:4|max:40|alpha_space_num',
-        'beneficiary_address1'  => 'sometimes|max:30',
+        'beneficiary_address1'  => 'required|max:30',
         'beneficiary_address2'  => 'sometimes|max:30',
         'beneficiary_address3'  => 'sometimes|max:30',
         'beneficiary_address4'  => 'sometimes|max:30',
         'mobile_banking_enabled'=> 'sometimes|in:0,1',
         'mpin'                  => 'sometimes|max:6',
-        'beneficiary_city'      => 'sometimes|max:30',
-        'beneficiary_state'     => 'sometimes|max:2',
-        'beneficiary_pin'       => 'sometimes|integer|digits:6',
+        'beneficiary_city'      => 'required|max:30',
+        'beneficiary_state'     => 'required|max:2',
+        'beneficiary_pin'       => 'required|integer|digits:6',
         'beneficiary_country'   => 'sometimes|in:IN',
-        'beneficiary_email'     => 'sometimes|email',
-        'beneficiary_mobile'    => 'sometimes|numeric|digits_between:10,12',
+        'beneficiary_email'     => 'required|email',
+        'beneficiary_mobile'    => 'required|numeric|digits_between:10,12',
     );
+
+    protected static $addVirtualBankAccountRules = [
+        'ifsc_code'             => 'required|alpha_num|size:11',
+        'account_number'        => 'required|alpha_num|between:5,20',
+        'beneficiary_name'      => 'required|min:4|max:40|alpha_space_num',
+    ];
 
     protected static $addBankAccountValidators = array(
         'beneficiary_state');

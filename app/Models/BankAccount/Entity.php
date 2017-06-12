@@ -122,9 +122,9 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    public function build(array $input = array())
+    public function build(array $input = [], string $operation = 'addBankAccount')
     {
-        (new Validator)->validateInput('addBankAccount', $input);
+        (new Validator)->validateInput($operation, $input);
 
         $this->generate($input);
 
