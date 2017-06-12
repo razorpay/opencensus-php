@@ -37,6 +37,7 @@ class Repository extends Base\Repository
         return $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
                     ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -48,6 +49,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -89,6 +91,7 @@ class Repository extends Base\Repository
                     ->where('workflow_actions.state', '=', State\Entity::OPEN)
                     ->whereIn('workflow_steps.role_id', $roleIds)
                     ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -122,6 +125,7 @@ class Repository extends Base\Repository
                     ->where($acsState, '=', State\Entity::CLOSED)
                     ->where($acsAdminId, '=', $adminId)
                     ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -136,6 +140,7 @@ class Repository extends Base\Repository
         return $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
                     ->whereIn(Entity::STATE, $openStates)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 

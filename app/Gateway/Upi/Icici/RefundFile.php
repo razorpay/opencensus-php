@@ -3,9 +3,12 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
-use RZP\Gateway\Base;
-use RZP\Models\FileStore;
+use Mail;
 use RZP\Constants\MailTags;
+use RZP\Gateway\Base;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Models\FileStore;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -67,30 +70,9 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $data = [
-            'file_url'  => $fileData['signed_url'],
-            'body'      => 'Please find attached refunds information for UPI',
-            'file_name' => $fileData['file_name'],
-        ];
+        $refundFileMail = new RefundFileMail($fileData, Gateway::UPI_ICICI);
 
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('refunds@razorpay.com', 'UPI Icici Refunds');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('UPI Icici refunds file for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['file_url'], ['as' => $data['file_name']]);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_UPI_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 
     protected function getRefundData($input)

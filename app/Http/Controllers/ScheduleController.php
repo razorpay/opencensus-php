@@ -8,32 +8,25 @@ use RZP\Models\Schedule;
 
 class ScheduleController extends Controller
 {
-    protected $service;
-
-    public function __construct()
-    {
-        $this->service = new Schedule\Service;
-    }
-
     public function postSchedule()
     {
         $input = Request::all();
 
-        $data = $this->service->createSchedule($input);
+        $data = $this->service('schedule')->createSchedule($input);
 
         return ApiResponse::json($data);
     }
 
     public function getSchedule($id)
     {
-        $data = $this->service->getScheduleById($id);
+        $data = $this->service('schedule')->getScheduleById($id);
 
         return ApiResponse::json($data);
     }
 
     public function deleteSchedule($id)
     {
-        $data = $this->service->deleteSchedule($id);
+        $data = $this->service('schedule')->deleteSchedule($id);
 
         return ApiResponse::json($data);
     }
@@ -42,7 +35,7 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service->getAllSchedules($input);
+        $data = $this->service('schedule')->getAllSchedules($input);
 
         return ApiResponse::json($data);
     }
@@ -51,7 +44,7 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service->editSchedule($id, $input);
+        $data = $this->service('schedule')->editSchedule($id, $input);
 
         return ApiResponse::json($data);
     }

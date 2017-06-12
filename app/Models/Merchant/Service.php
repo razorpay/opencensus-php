@@ -5,11 +5,13 @@ namespace RZP\Models\Merchant;
 use DB;
 use Mail;
 use Config;
-use RZP\Exception;
 use Carbon\Carbon;
+
+use RZP\Exception;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Key;
-use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
@@ -152,20 +154,13 @@ class Service extends Base\Service
      */
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
-        $data = [
-            'name'  => $subMerchant->name,
-            'email' => $subMerchant->email
-        ];
+        $subMerchant = $subMerchant->toArray();
 
-        if ($subMerchant->email !== $aggregator->email)
-        {
-            $data['cc_email'] = $aggregator->email;
-        }
+        $aggregator = $aggregator->toArray();
 
-        $this->sendEmail(
-            'emails.merchant.welcome',
-            'Welcome to Razorpay',
-            $data);
+        $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
+
+        Mail::queue($createSubMerchantMail);
     }
 
     public function editEmail($id, array $input)
@@ -797,24 +792,6 @@ class Service extends Base\Service
     public function sendDailyReportForAllMerchants($input)
     {
         return (new DailyReport)->sendReportForAllMerchants($input);
-    }
-
-    protected function sendEmail($template, $subject, $data)
-    {
-        Mail::queue($template, $data, function($message) use ($data, $subject)
-        {
-            $message = $message->to($data['email'], $data['name'])
-                               ->subject($subject);
-
-            if (isset($data['cc_email']))
-            {
-                $message->cc($data['cc_email'], $data['name']);
-            }
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::WELCOME);
-        });
     }
 
     public function notifyMerchantsHoliday($input)

@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch;
 
 use Config;
-use Mail;
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
 use RZP\Models\Base;

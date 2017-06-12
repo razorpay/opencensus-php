@@ -512,7 +512,6 @@ class TraceCode
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
-    const QUEUE_JOB_LOOPING                         = 'QUEUE_JOB_LOOPING';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';

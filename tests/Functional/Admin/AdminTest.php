@@ -6,8 +6,8 @@ use Cache;
 use Carbon\Carbon;
 use Hash;
 use Mail;
-use Mockery;
 
+use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Role;
@@ -44,6 +44,8 @@ class AdminTest extends TestCase
 
     public function testCreateAdmin()
     {
+        Mail::fake();
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
@@ -58,27 +60,25 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
 
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $this->assertArrayHasKey('user', $data);
-
-                        $this->assertArrayHasKey('password', $data['user']);
-
-                        $this->assertArrayHasKey('url', $data['user']);
-
-                        return true;
-                    }),
-                    Mockery::any());
-
         $result = $this->startTest();
 
         $this->assertEquals($result['roles'][0]['id'], $superAdminRole);
 
         $this->assertEquals($result['groups'][0]['id'], $group);
+
+        Mail::assertSent(AdminMail\Create::class, function ($mail)
+        {
+            $testData = [
+                'user' => [
+                    'email' => 'xyz@rzp.com',
+                    'password' => 'random!12#'
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return $mail->hasTo('xyz@rzp.com');
+        });
     }
 
     public function testCreateAdminWithWrongEmailDomain()
@@ -528,6 +528,8 @@ class AdminTest extends TestCase
 
     public function testForgotPasswordSuccess()
     {
+        Mail::fake();
+
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
@@ -539,23 +541,18 @@ class AdminTest extends TestCase
 
         $this->ba->appAuth();
 
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $this->assertArrayHasKey('firstName', $data);
-
-                        $this->assertArrayHasKey('resetUrl', $data);
-
-                        $this->assertArrayHasKey('orgName', $data);
-
-                        return true;
-                    }),
-                    Mockery::any());
-
         $this->startTest();
+
+        Mail::assertSent(AdminMail\ForgotPassword::class, function ($mail)
+        {
+            $this->assertArrayHasKey('firstName', $mail->viewData);
+
+            $this->assertArrayHasKey('resetUrl', $mail->viewData);
+
+            $this->assertArrayHasKey('orgName', $mail->viewData);
+
+            return $mail->hasTo('abc@razorpay.com');
+        });
     }
 
     public function testForgotPasswordInvalidUser()

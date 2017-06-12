@@ -149,7 +149,7 @@ class ExceptionTest extends TestCase
     {
         $class = Exception\Handler::class;
 
-        $handler = Mockery::mock($class, [$this->app['trace']])->makePartial();
+        $handler = Mockery::mock($class, [$this->app])->makePartial();
 
         $handler->shouldReceive('isTesting')
                 ->once()
