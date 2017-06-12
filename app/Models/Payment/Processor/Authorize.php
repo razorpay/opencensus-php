@@ -112,6 +112,8 @@ trait Authorize
             {
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
 
+                $this->createAnalyticsLog($payment);
+
                 return $request;
             }
 
@@ -209,6 +211,8 @@ trait Authorize
      */
     protected function processAuthResponse($request, Payment\Entity $payment): array
     {
+        $this->createAnalyticsLog($payment);
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -2671,8 +2675,6 @@ trait Authorize
         // If payment has an associated order
         // set the order to be paid
         $this->updateAuthorizedOrderStatus($payment);
-
-        $this->createAnalyticsLog($payment);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
