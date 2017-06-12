@@ -45,12 +45,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
         self::BANK_ACCOUNT,
+        self::RECEIVER_TYPE,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
+        self::RECEIVER_TYPE,
     ];
 
     protected $casts = [
@@ -148,6 +150,23 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
+    }
+
+    protected function setPublicReceiverTypeAttribute(array & $array)
+    {
+        $receiverTypes = [];
+
+        foreach (Receiver::TYPES as $receiverType)
+        {
+            $func = 'has' . studly_case($receiverType);
+
+            if ($this->$func() === true)
+            {
+                $receiverTypes[] = $receiverType;
+            }
+        }
+
+        $array[self::RECEIVER_TYPE] = $receiverTypes;
     }
 
     public function incrementAmountPaid(int $amount)

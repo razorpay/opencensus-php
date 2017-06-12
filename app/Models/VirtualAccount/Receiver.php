@@ -13,6 +13,11 @@ class Receiver
     const BANK_ACCOUNT      = 'bank_account';
     // const VPA               = 'vpa';
 
+    const TYPES = [
+        self::BANK_ACCOUNT,
+        // self::VPA,
+    ];
+
     const ACCOUNT_NUMBER_LENGTH = 20;
 
     protected $merchant;
