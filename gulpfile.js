@@ -294,6 +294,7 @@ gulp.task('watch:full', ['dev:webpack'], () => {
     ],
     ['dev:webpack']
   );
+  gulp.watch('public/css/*.styl', ['css']);
 });
 
 gulp.task('watch', ['dev'], () => {
