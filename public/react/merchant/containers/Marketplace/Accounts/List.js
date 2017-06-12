@@ -86,65 +86,56 @@ export default class AccountsListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <tabbed-container>
-        <header id="accounts-header">
-          <NavLink to="/accounts">Marketplace</NavLink>
-        </header>
+      <div class="content-wrapper">
+        <TetherComponent
+          target="#marketplace-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 0"
+        >
+          <div />{/* required by react-tether */}
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/marketplace"
+              target="_blank"
+            >
+              Marketplace APIs Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
 
-        <div class="content-wrapper">
-          <TetherComponent
-            target="#accounts-header"
-            attachment="top right"
-            targetAttachment="top right"
-            offset="-8px 0"
-          >
-            <div />{/* required by react-tether */}
-            <div class="btn-toolbar pull-right">
-              <a
-                class="btn btn-link"
-                href="https://docs.razorpay.com/v1/page/marketplace"
-                target="_blank"
-              >
-                Marketplace APIs Documentation &nbsp;
-                <i class="icon icon-external-link" />
-              </a>
+            <button class="btn btn-default" onClick={this.exportAccountsCSV}>
+              <i class="icon icon-download" />
+              <span>Export All (CSV)</span>
+            </button>
+            <button class="btn btn-primary" onClick={this.showAddAccountModal}>
+              <i class="icon icon-plus" />
+              <span>Add Account</span>
+            </button>
+          </div>
+        </TetherComponent>
 
-              <button class="btn btn-default" onClick={this.exportAccountsCSV}>
-                <i class="icon icon-download" />
-                <span>Export All (CSV)</span>
-              </button>
-              <button
-                class="btn btn-primary"
-                onClick={this.showAddAccountModal}
-              >
-                <i class="icon icon-plus" />
-                <span>Add Account</span>
-              </button>
-            </div>
-          </TetherComponent>
+        <AccountsListFilter
+          form="accountsListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-          <AccountsListFilter
-            form="accountsListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+        <Alert type={status.type} message={status.message} />
 
-          <Alert type={status.type} message={status.message} />
+        <AccountsList
+          accounts={accounts}
+          isLoading={loading}
+          onEdit={this.showAccountDetailsModal}
+        />
 
-          <AccountsList
-            accounts={accounts}
-            isLoading={loading}
-            onEdit={this.showAccountDetailsModal}
-          />
-
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={accounts.length}
-            onClick={this.paginate}
-          />
-        </div>
-      </tabbed-container>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={accounts.length}
+          onClick={this.paginate}
+        />
+      </div>
     );
   }
 }

@@ -8,7 +8,10 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import Amount from 'rzp/ui/Amount';
 import { isBlank } from 'rzp/utils/rzp-utils';
-import { refundPayment, fetchPayment } from 'merchant/modules/payments/details';
+import {
+  refundPayment,
+  fetchItem as fetchPayment,
+} from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
 
 const amountValidation = (value, allValues, props) => {
@@ -101,11 +104,12 @@ export default class RefundModal extends Component {
               this.props.closeModal();
             })
             .catch(({ errors }) => {
-              this.props.showNotification({
-                type: 'error',
-                message: errors,
-                closeTimeout: 5000,
-              });
+              errors &&
+                this.props.showNotification({
+                  type: 'error',
+                  message: errors,
+                  closeTimeout: 5000,
+                });
             });
         },
       })

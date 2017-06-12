@@ -8,6 +8,7 @@ const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
+const MARKETPLACE_ROUTES_REGEX = /^\/marketplace\/(payments|transfers|reversals|accounts)/;
 
 @withRouter
 export default class Sidebar extends Component {
@@ -18,6 +19,7 @@ export default class Sidebar extends Component {
     account: '/profile',
     settings: '/config',
     invoices: '/invoices',
+    marketplace: '/marketplace/payments',
   };
 
   componentWillReceiveProps(nextProps) {
@@ -40,6 +42,8 @@ export default class Sidebar extends Component {
       routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
     } else if (invoicesRegex.test(pathname)) {
       routes.invoices = pathname.match(invoicesRegex)[0];
+    } else if (MARKETPLACE_ROUTES_REGEX.test(pathname)) {
+      routes.marketplace = pathname.match(MARKETPLACE_ROUTES_REGEX)[0];
     }
   }
 
@@ -118,7 +122,7 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Marketplace"
                     icon="icon icon-store"
-                    to="/accounts"
+                    to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
                     beta={true}
@@ -199,7 +203,7 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Marketplace"
                     icon="icon icon-store text-primary"
-                    to="/accounts"
+                    to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
                     beta={true}

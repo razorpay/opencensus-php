@@ -1,33 +1,32 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
+import TransfersListFilter
+  from 'merchant/components/Marketplace/TransfersListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
-import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
+import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
 import {
-  refundId,
-  paymentId,
-  currency,
+  transferId,
+  source,
+  recipient,
   amount,
   createdAt,
 } from 'rzp/ui/Table/column';
 
-@connect(state => state.refunds, { fetchAll })
-export default class RefundsListContainer extends ListContainer {
+@connect(state => state.transfers, { fetchAll })
+export default class TransfersListContainer extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
-        <RefundsListFilter
-          form="refundListFilter"
+        <TransfersListFilter
+          form="transfersListFilter"
           count={this.state.count}
           onSubmit={this.search}
         />
 
         <DataTable
-          title="Refunds"
-          columns={[refundId, paymentId, currency, amount, createdAt]}
+          title="Transfers"
+          columns={[transferId, source, recipient, amount, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

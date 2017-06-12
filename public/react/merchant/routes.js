@@ -13,6 +13,8 @@ const entityMap = {
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id': PaymentLinkDetails,
   '/invoices/:id/details': PaymentLinkDetails,
+
+  '/marketplace/payments/:id': PaymentsDetails,
 };
 
 export function matchDetail(pathname) {
@@ -24,7 +26,12 @@ function matcher(routeMap, pathname) {
     var match = matchPath(pathname, route);
     if (match) {
       var MatchedComponent = routeMap[route];
-      return props => <MatchedComponent match={match} {...props} />;
+      return {
+        match,
+        component: props => (
+          <MatchedComponent id={match.params.id} {...props} />
+        ),
+      };
     }
   }
 }

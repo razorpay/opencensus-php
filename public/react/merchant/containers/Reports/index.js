@@ -4,7 +4,6 @@ import { NavLink } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
-import Header from 'rzp/ui/Header';
 import moment from 'moment';
 import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
