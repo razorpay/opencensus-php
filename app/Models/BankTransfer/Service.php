@@ -15,34 +15,40 @@ class Service extends Base\Service
 
     protected $virtualAccount;
 
+    protected $input;
+
     const DEFAULT_BANK_TRANSFER_ARRAY = [
         Payment::CURRENCY => Currency::INR,
         Payment::METHOD   => Method::BANK_TRANSFER,
     ];
 
-    public function __construct()
+    public function __construct(array $input)
     {
         parent::__construct();
 
         $this->validator = new Validator;
 
         $this->core = new Core;
+
+        $this->input = $this->setUtr($input);
     }
 
-    public function validate(array $input): array
+    public function validate(): array
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
-            $input
+            $this->input
         );
 
-        $data = $this->validateVirtualAccount($input);
+        $data = $this->validateVirtualAccount($this->input);
 
         return $data;
     }
 
-    public function pay(array $input): array
+    public function pay(): array
     {
+        $input = $this->input;
+
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PAY_REQUEST,
             $input
@@ -84,7 +90,7 @@ class Service extends Base\Service
         return [
             'success'        => true,
             'message'        => null,
-            Entity::UTR      => $input[Entity::UTR],
+            'transaction_id' => $input[Entity::UTR],
         ];
     }
 
@@ -133,7 +139,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($bankTransfer);
 
-        $data[Entity::UTR] = $input[Entity::UTR];
+        $data['transaction_id'] = $input[Entity::UTR];
 
         return $data;
     }
@@ -228,5 +234,16 @@ class Service extends Base\Service
         $paymentArray[Payment::AMOUNT] = $input['amount'];
 
         return $paymentArray;
+    }
+
+    // Kotak is sending us transaction_id instead of UTR
+    // We unset this and set UTR early in the flow
+    protected function setUtr(array $input): array
+    {
+        $input[Entity::UTR] = $input['transaction_id'];
+
+        unset($input['transaction_id']);
+
+        return $input;
     }
 }

@@ -51,7 +51,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::BANK_ACCOUNT,
     ];
 
     protected $casts = [
@@ -149,19 +148,6 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
-    }
-
-    protected function setPublicBankAccountAttribute(array & $array)
-    {
-        if (isset($array[self::BANK_ACCOUNT]) === true)
-        {
-            $array[self::BANK_ACCOUNT] = $array[self::BANK_ACCOUNT]->toArrayPublic();
-        }
-    }
-
-    protected function setPublicVpaAttribute(array & $array)
-    {
-        //
     }
 
     public function incrementAmountPaid(int $amount)

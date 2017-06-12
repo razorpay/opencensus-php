@@ -9,18 +9,20 @@ use Request;
 
 class BankTransferController extends Controller
 {
+    protected $bankTransferService;
+
     public function __construct()
     {
         parent::__construct();
-
-        $this->bankTransferService = new BankTransfer\Service;
     }
 
     public function validateBankTransfer()
     {
         $input = Request::all();
 
-        $response = $this->bankTransferService->validate($input);
+        $this->bankTransferService = new BankTransfer\Service($input);
+
+        $response = $this->bankTransferService->validate();
 
         return ApiResponse::json($response);
     }
@@ -29,7 +31,9 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->bankTransferService->pay($input);
+        $this->bankTransferService = new BankTransfer\Service($input);
+
+        $response = $this->bankTransferService->pay();
 
         return ApiResponse::json($response);
     }

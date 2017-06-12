@@ -86,7 +86,7 @@ class Receiver
         }
         else
         {
-            return $this->merchant->getBillingLabelElseName() . ' Virtual Account';
+            return $this->merchant->getBillingLabel() . ' Virtual Account';
         }
     }
 
@@ -96,7 +96,7 @@ class Receiver
 
         if ($this->mode === Mode::TEST)
         {
-            $provider = Provider::BLADE;
+            $provider = Provider::GAVASKAR;
         }
 
         return $provider;

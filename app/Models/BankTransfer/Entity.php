@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const PAYEE_IFSC     = 'payee_ifsc';
     const AMOUNT         = 'amount';
     const MODE           = 'mode';
-    const UTR            = 'transaction_id';
+    const UTR            = 'utr';
     const TIME           = 'time';
     const DESCRIPTION    = 'description';
 
@@ -34,14 +34,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::PAYMENT_ID,
-        self::MERCHANT_ID,
-        self::PAYER_ACCOUNT,
-        self::PAYER_IFSC,
-        self::AMOUNT,
         self::MODE,
-        self::TIME,
-        self::DESCRIPTION,
+        self::UTR,
     ];
 
     protected $casts = [

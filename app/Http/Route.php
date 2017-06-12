@@ -1251,6 +1251,11 @@ final class Route
             'ecollect_pay',
         ],
 
+        'gavaskar' => [
+            'ecollect_validate',
+            'ecollect_pay',
+        ],
+
         'mailgun' => [
             'reconciliate'
         ],

@@ -29,7 +29,9 @@ class BankTransferTest extends TestCase
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
 
-        $this->ba->appAuth();
+        $gavaskarSecret = \Config::get('applications.gavaskar.secret');
+
+        $this->ba->appAuth('rzp_test', $gavaskarSecret);
     }
 
     public function testBankTransferValidate()
@@ -59,7 +61,7 @@ class BankTransferTest extends TestCase
 
         $response = $this->validateBankAccount($accountNumber, $ifsc);
 
-        $utr = $response[E::UTR];
+        $utr = $response['transaction_id'];
 
         $response = $this->validateBankAccount($accountNumber, $ifsc, $utr);
         $this->assertEquals(false, $response['valid']);
@@ -179,11 +181,11 @@ class BankTransferTest extends TestCase
             $utr = 'utr_'.rand(10000000,99999999);
         }
 
-        $request['content'][E::UTR] = $utr;
+        $request['content']['transaction_id'] = $utr;
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($utr, $response[E::UTR]);
+        $this->assertEquals($utr, $response['transaction_id']);
 
         return $response;
     }

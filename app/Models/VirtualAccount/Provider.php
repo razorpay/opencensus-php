@@ -9,13 +9,14 @@ class Provider
     const YES_BANK = 'yesbank';
     const KOTAK    = 'kotak';
 
-    // Provider for tests
-    const BLADE    = 'blade';
+    // Mock provider
+    // Named so because it only works in tests
+    const GAVASKAR = 'gavaskar';
 
     const MASTER = [
-        Provider::YES_BANK => 'RAZORP',
-        Provider::KOTAK    => 'RAZR',
-        Provider::BLADE    => 'RAZOR',
+        Provider::YES_BANK  => 'RAZORP',
+        Provider::KOTAK     => 'RAZR',
+        Provider::GAVASKAR  => 'RAZOR',
     ];
 
     const DEFAULT_DETAILS = [
@@ -25,7 +26,7 @@ class Provider
         Provider::KOTAK => [
             BankAccount::IFSC_CODE => 'KKBK0000958',
         ],
-        Provider::BLADE => [
+        Provider::GAVASKAR => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
     ];

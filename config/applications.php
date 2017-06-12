@@ -71,6 +71,9 @@ return array(
     Provider::YES_BANK => array(
         'secret'    => env('YESBANK_SECRET'),
     ),
+    Provider::GAVASKAR => array(
+        'secret'    => env('GAVASKAR_SECRET'),
+    ),
 
     'lumberjack' => array(
         'url'           => env('LUMBERJACK_URL'),
