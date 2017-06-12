@@ -207,7 +207,7 @@ class Gateway extends Base\Gateway
             $data[RequestFields::BANK_REFERENCE_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
         }
 
-        $queryString =urldecode(http_build_query($data));
+        $queryString = urldecode(http_build_query($data));
 
         return $this->encryptString($queryString);
     }
@@ -313,18 +313,6 @@ class Gateway extends Base\Gateway
     protected function parseResponseXml(string $response): array
     {
         return (array) simplexml_load_string(trim($response));
-    }
-
-    protected function getMerchantId(): string
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->getTestMerchantId();
-        }
-        else
-        {
-            return $this->getLiveMerchantId();
-        }
     }
 
     public function getSecret(): string
