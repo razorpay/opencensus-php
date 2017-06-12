@@ -1,4 +1,4 @@
-import { set, merge } from 'rzp/utils/immutable';
+import { merge } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
 import GenericEntity from 'merchant/models/GenericEntity';
 import Payment from 'merchant/models/Payment';
@@ -12,7 +12,7 @@ import Transfer from 'merchant/models/Transfer';
 export const fetchAll = (params, Entity, namespace) => {
   let entity = new Entity();
   return {
-    type: getActionName(Entity, namespace),
+    type: getActionName(namespace),
     payload: entity.fetchAll(params),
   };
 };
@@ -23,8 +23,8 @@ let initialState = {
   error: null,
 };
 
-export function makeCollectionReducer(Entity, namespace) {
-  var actionName = getActionName(Entity, namespace);
+export function makeCollectionReducer(namespace) {
+  var actionName = getActionName(namespace);
 
   return function(state = initialState, action) {
     switch (action.type) {
@@ -52,39 +52,36 @@ export function makeCollectionReducer(Entity, namespace) {
   };
 }
 
-export const getActionName = (Entity = GenericEntity, namespace) => {
-  var action = [Entity.name || Entity, 'FETCH_COLLECTION'];
-  if (namespace) {
-    action.unshift(namespace);
-  }
-  return action.join('_');
+export const getActionName = namespace => {
+  return namespace + '_FETCH';
 };
 
 // export default makeCollectionReducer();
 
-export const fetchPayments = params => fetchAll(params, Payment);
-export const paymentsReducer = makeCollectionReducer(Payment);
+export const fetchPayments = params => fetchAll(params, Payment, 'PAYMENTS');
+export const paymentsReducer = makeCollectionReducer('PAYMENTS');
 
-export const fetchOrders = params => fetchAll(params, Order);
-export const ordersReducer = makeCollectionReducer(Order);
+export const fetchOrders = params => fetchAll(params, Order, 'ORDERS');
+export const ordersReducer = makeCollectionReducer('ORDERS');
 
-export const fetchTransfers = params => fetchAll(params, Transfer);
-export const transfersReducer = makeCollectionReducer(Transfer);
+export const fetchTransfers = params => fetchAll(params, Transfer, 'TRANSFERS');
+export const transfersReducer = makeCollectionReducer('TRANSFERS');
 
-export const fetchReversals = params => fetchAll(params, Reversal);
-export const reversalsReducer = makeCollectionReducer(Reversal);
+export const fetchReversals = params => fetchAll(params, Reversal, 'REVERSALS');
+export const reversalsReducer = makeCollectionReducer('REVERSALS');
 
 export const fetchMarketplacePayments = params => {
   params.transferred = 1;
-  return fetchAll(params, Payment, 'MP');
+  return fetchAll(params, Payment, 'MP_PAYMENTS');
 };
-export const mpPaymentsReducer = makeCollectionReducer(Payment, 'MP');
+export const mpPaymentsReducer = makeCollectionReducer('MP_PAYMENTS');
 
-export const refundsReducer = makeCollectionReducer(Refund);
-export const fetchRefunds = params => fetchAll(params, Refund);
+export const fetchRefunds = params => fetchAll(params, Refund, 'REFUNDS');
+export const refundsReducer = makeCollectionReducer('REFUNDS');
 
-export const settlementsReducer = makeCollectionReducer(Settlement);
-export const fetchSettlements = params => fetchAll(params, Settlement);
+export const fetchSettlements = params =>
+  fetchAll(params, Settlement, 'SETTLEMENTS');
+export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
 
 export const fetchSubscriptions = () => {
   return {

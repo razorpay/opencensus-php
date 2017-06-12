@@ -1,9 +1,5 @@
 import ajax from 'merchant/utils/ajax';
-import {
-  getActionName,
-  fetchAll,
-  makeCollectionReducer,
-} from 'rzp/modules/collection';
+import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
 
 const BATCH_UPLOAD = 'BATCH_UPLOAD';
 
