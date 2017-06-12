@@ -46,10 +46,23 @@ class Core extends Base\Core
         $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
+    /**
+     * Creates invoice
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param object          $subscription - If created via subscription, this
+     *                                        is passed for associations.
+     * @param object          $batch        - If created via batch flow, this
+     *                                        is passed for association.
+     *
+     * @return Entity
+     */
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        $subscription = null): Entity
+        $subscription = null,
+        $batch = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
@@ -60,12 +73,10 @@ class Core extends Base\Core
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
+                        ->setBatch($batch)
                         ->generate($input);
 
-        $this->trace->info(
-            TraceCode::INVOICE_CREATED,
-            $invoice->toArrayPublic()
-        );
+        $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
 
         if ($invoice->isIssued())
         {

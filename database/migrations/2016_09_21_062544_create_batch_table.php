@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Batch\Entity as Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Invoice;
 
 
 class CreateBatchTable extends Migration
@@ -82,6 +83,20 @@ class CreateBatchTable extends Migration
                   ->on_delete('restrict');
 
         });
+
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->string(Invoice\Entity::BATCH_ID, Batch::ID_LENGTH)
+                  ->nullable()
+                  ->after(Invoice\Entity::SUBSCRIPTION_ID);
+
+            $table->index(Invoice\Entity::BATCH_ID);
+
+            $table->foreign(Invoice\Entity::BATCH_ID)
+                  ->references(Batch::ID)
+                  ->on(Table::BATCH)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -96,6 +111,13 @@ class CreateBatchTable extends Migration
             $table->dropForeign(Table::REFUND .'_' .Refund\Entity::BATCH_ID .'_foreign');
 
             $table->dropColumn(Refund\Entity::BATCH_ID);
+        });
+
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->dropForeign(Table::INVOICE .'_' .Invoice\Entity::BATCH_ID .'_foreign');
+
+            $table->dropColumn(Invoice\Entity::BATCH_ID);
         });
 
         Schema::table(Table::BATCH, function($table)

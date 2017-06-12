@@ -13,7 +13,8 @@ class PaymentLink extends Base
     {
         $input = Batch\Helper\PaymentLink::getEntityInput($entry);
 
-        $invoice = (new Invoice\Core)->create($input, $this->merchant);
+        $invoice = (new Invoice\Core)->create(
+                        $input, $this->merchant, null, $this->batch);
 
         //
         // Update the entry with output values
