@@ -26,15 +26,15 @@ class Header
      * Payment Link Headers
      */
 
-    const INVOICE_NUMBER    = 'invoice_number';
-    const CUSTOMER_NAME     = 'customer_name';
-    const CUSTOMER_EMAIL    = 'customer_email';
-    const CUSTOMER_CONTACT  = 'customer_contact';
-    const DESCRIPTION       = 'description';
-    const SMS_NOTIFY        = 'sms_notify';
-    const EMAIL_NOTIFY      = 'email_notify';
-    const EXPIRE_BY         = 'expire_by';
-    const PAYMENT_LINK_ID   = 'payment_link_id';
+    const INVOICE_NUMBER    = 'Invoice Number';
+    const CUSTOMER_NAME     = 'Customer Name';
+    const CUSTOMER_EMAIL    = 'Customer Email';
+    const CUSTOMER_CONTACT  = 'Customer Contact';
+    const DESCRIPTION       = 'Description';
+    const SMS_NOTIFY        = 'Sms Notify';
+    const EMAIL_NOTIFY      = 'Email Notify';
+    const EXPIRE_BY         = 'Expire By';
+    const PAYMENT_LINK_ID   = 'Payment Link Id';
 
     /**
      * Input and output file headers per type.

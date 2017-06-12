@@ -33,7 +33,7 @@ class Core extends Base\Core
 
             $entries = $this->parseExcelSheets($file);
 
-            $batch->getValidator()->validateEntries($entries);
+            $batch->getValidator()->validateEntries($entries, $this->merchant);
 
             $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 

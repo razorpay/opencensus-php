@@ -3,7 +3,10 @@
 namespace RZP\Models\Batch;
 
 use RZP\Base;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
@@ -17,7 +20,8 @@ class Validator extends Base\Validator
     {
         if (Type::exists($type) === false)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
         }
     }
 
@@ -41,7 +45,7 @@ class Validator extends Base\Validator
      *
      * @param array $entries
      */
-    public function validateEntries(array $entries)
+    public function validateEntries(array $entries, Merchant\Entity $merchant)
     {
         $type = $this->entity->getType();
 
@@ -53,10 +57,12 @@ class Validator extends Base\Validator
 
         $validator = 'validate' .ucfirst(camel_case($type)) .'Entries';
 
-        $this->$validator($entries);
+        $this->$validator($entries, $merchant);
     }
 
-    protected function validateRefundEntries(array $entries)
+    protected function validateRefundEntries(
+        array & $entries,
+        Merchant\Entity $merchant)
     {
         $existingPaymentIds = [];
 
@@ -96,7 +102,53 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validatePaymentLinkEntries(array $entries)
+    /**
+     * Validates payment link entries.
+     * - Creates dummy invoice object and validates them as it happens
+     *   otherwise in creation by API flow. This approach let us re-use code.
+     *
+     * @param array           $entries
+     * @param Merchant\Entity $merchant
+     */
+    protected function validatePaymentLinkEntries(
+        array & $entries,
+        Merchant\Entity $merchant)
     {
+        $validator = (new Invoice\Entity)->getValidator();
+
+        // Associative array with index as input file's row index and values
+        // as the error message.
+
+        $errors = [];
+
+        foreach ($entries as $idx => $entry)
+        {
+            try
+            {
+                $input = Helper\PaymentLink::getEntityInput($entry);
+
+                $invoice = new Invoice\Entity;
+
+                $invoice->merchant()->associate($merchant);
+
+                $invoice->build($input);
+
+                $invoice->getValidator()->validateInvoiceIssue();
+
+                unset($invoice);
+            }
+            catch (BaseException $e)
+            {
+                $errors[$idx + 1] = $e->getError()->getDescription();
+            }
+        }
+
+        if (count($errors) > 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_VALIDATION,
+                Entity::FILE,
+                $errors);
+        }
     }
 }

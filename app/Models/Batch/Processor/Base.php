@@ -312,21 +312,12 @@ class Base extends BaseModel\Core
 
     /**
      * Returns mail payload for processed mail.
-     * This method has defaults to Refund type.
      *
      * @return array
      */
     protected function getProcessedMailPayload(): array
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        return [
-            'from'       => 'refunds@razorpay.com',
-            'from_title' => 'Refunds File',
-            'to'         => $this->merchant->getTransactionReportEmail(),
-            'subject'    => 'Razorpay | Processed Refunds file for ' . $today,
-            'body'       => 'Please find attached processed Refunds File',
-        ];
+        throw new \BadMethodCallException();
     }
 
     public function saveInputFile(UploadedFile $file): \SplFileInfo
