@@ -23,7 +23,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         $this->bankAccount = $this->createVirtualAccount();
 
@@ -36,7 +36,7 @@ class BankTransferTest extends TestCase
     {
         $accountNumber = $this->bankAccount['account_number'];
 
-        $ifsc = $this->bankAccount['ifsc_code'];
+        $ifsc = $this->bankAccount['ifsc'];
 
         $response = $this->validateBankAccount($accountNumber, $ifsc);
         $this->assertEquals(true, $response['valid']);
@@ -55,7 +55,7 @@ class BankTransferTest extends TestCase
     {
         $accountNumber = $this->bankAccount['account_number'];
 
-        $ifsc = $this->bankAccount['ifsc_code'];
+        $ifsc = $this->bankAccount['ifsc'];
 
         $response = $this->validateBankAccount($accountNumber, $ifsc);
 
@@ -70,7 +70,7 @@ class BankTransferTest extends TestCase
     {
         $accountNumber = 'RAZORPINVALIDACCOUNT';
 
-        $ifsc = $this->bankAccount['ifsc_code'];
+        $ifsc = $this->bankAccount['ifsc'];
 
         $response = $this->validateBankAccount($accountNumber, $ifsc);
         $this->assertEquals(false, $response['valid']);
@@ -88,7 +88,7 @@ class BankTransferTest extends TestCase
 
         $accountNumber = $this->bankAccount['account_number'];
 
-        $ifsc = $this->bankAccount['ifsc_code'];
+        $ifsc = $this->bankAccount['ifsc'];
 
         $transfer =  $this->getLastEntity('bank_transfer', true);
 
@@ -107,7 +107,7 @@ class BankTransferTest extends TestCase
 
         $accountNumber = $this->bankAccount['account_number'];
 
-        $ifsc = $this->bankAccount['ifsc_code'];
+        $ifsc = $this->bankAccount['ifsc'];
 
         $transfer =  $this->getLastEntity('bank_transfer', true);
 
@@ -138,7 +138,7 @@ class BankTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        return $response;
+        return $response['bank_account'];
     }
 
     protected function createVirtualAccountForCustomer($customer)
@@ -149,7 +149,7 @@ class BankTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        return $response;
+        return $response['bank_account'];
     }
 
     protected function validateBankAccount($accountNumber, $ifsc, $utr = null)

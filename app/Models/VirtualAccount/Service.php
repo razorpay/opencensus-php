@@ -30,10 +30,15 @@ class Service extends Base\Service
         {
             $this->virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
-            // Make receivers
+            $this->buildReceivers($input);
+
+            $this->repo->saveOrFail($this->virtualAccount);
         });
 
-        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATED, $this->virtualAccount->toArray());
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_CREATED,
+            $this->virtualAccount->toArrayPublic()
+        );
 
         return $this->virtualAccount->toArrayPublic();
     }
@@ -80,9 +85,35 @@ class Service extends Base\Service
 
     protected function setDefaultReceiverTypeIfNeeded(array & $input)
     {
-        if(isset($input[Entity::RECEIVER_TYPE]) === false)
+        if ((isset($input[Entity::RECEIVER_TYPE]) === false) or
+            (empty($input[Entity::RECEIVER_TYPE]) === true))
         {
             $input[Entity::RECEIVER_TYPE] = self::DEFAULT_RECEIVER_TYPE;
+        }
+
+        if (is_array($input[Entity::RECEIVER_TYPE]) === false)
+        {
+            $input[Entity::RECEIVER_TYPE] = [$input[Entity::RECEIVER_TYPE]];
+        }
+    }
+
+    protected function buildReceivers(array $input)
+    {
+        $name = $input[Entity::NAME] ?? null;
+
+        $descriptor = $input[Entity::DESCRIPTOR] ?? null;
+
+        $receiverHelper = new Receiver($this->merchant, $name, $descriptor);
+
+        foreach ($input[Entity::RECEIVER_TYPE] as $receiverType)
+        {
+            $func = 'build' . studly_case($receiverType);
+
+            $receiver = $receiverHelper->$func();
+
+            $association = camel_case($receiverType);
+
+            $this->virtualAccount->$association()->associate($receiver);
         }
     }
 }

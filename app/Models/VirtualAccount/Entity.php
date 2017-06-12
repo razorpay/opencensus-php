@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID          = 'merchant_id';
 
     const RECEIVER_TYPE        = 'receiver_type';
+    const BANK_ACCOUNT         = 'bank_account';
 
     const DELETED_AT           = 'deleted_at';
 
@@ -42,12 +43,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_EXPECTED,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
+        self::BANK_ACCOUNT,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
+        self::BANK_ACCOUNT,
     ];
 
     protected $casts = [
@@ -94,6 +97,16 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::AMOUNT_EXPECTED));
     }
 
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA));
+    }
+
     // ----------------------- Getters -----------------------------------------
 
     public function getAmountPaid()
@@ -137,6 +150,16 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
+    protected function setPublicBankAccountAttribute(array & $array)
+    {
+        $array[self::BANK_ACCOUNT] = $array[self::BANK_ACCOUNT]->toArrayPublic();
+    }
+
+    protected function setPublicVpaAttribute(array & $array)
+    {
+        //
+    }
+
     public function incrementAmountPaid(int $amount)
     {
         $amountPaid = $this->getAmountPaid() + $amount;
@@ -154,6 +177,6 @@ class Entity extends Base\PublicEntity
     {
         $amountReceived = $this->getAmountReceived() + $amount;
 
-        $this->setAmountReceived($amountPaid);
+        $this->setAmountReceived($amountReceived);
     }
 }

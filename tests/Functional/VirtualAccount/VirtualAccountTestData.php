@@ -25,6 +25,10 @@ return [
                 'amount_expected' => 10000,
                 'customer_id'     => 'cust_100000customer',
                 'status'          => 'active',
+                'bank_account'    => [
+                    'entity' => 'bank_account',
+                    'ifsc'   => 'KKBK0000958',
+                ],
             ],
         ],
     ],

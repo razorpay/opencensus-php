@@ -58,12 +58,14 @@ class Service extends Base\Service
         {
             $this->setVirtualAccount($bankTransfer);
 
+            $this->setMerchant();
+
             $paymentProcessor = new PaymentProcessor($this->merchant);
 
-            $paymentId = $bankTransfer->payment->getId();
-
-            $this->repo->transaction(function() use ($bankTransfer)
+            $this->repo->transaction(function() use ($bankTransfer, $paymentProcessor)
             {
+                $paymentId = $bankTransfer->payment->getId();
+
                 $paymentProcessor->processBankTransferPayment($paymentId);
 
                 $this->updateVirtualAccount($bankTransfer);
@@ -123,10 +125,10 @@ class Service extends Base\Service
 
         $expected = $this->isTransferExpected($bankTransfer);
 
-        $this->setMerchant();
-
         if (($expected === true) and ($uniqueUtr === true))
         {
+            $this->setMerchant();
+
             $paymentInput = $this->bankTransferPaymentArray($input);
 
             $paymentProcessor = new PaymentProcessor($this->merchant);
@@ -214,12 +216,7 @@ class Service extends Base\Service
 
         $this->virtualAccount->incrementAmountReceived($bankTransfer->getAmount());
 
-        if ($this->virtualAccount->isSingleUse() === true)
-        {
-            $this->receiver->setValid(false);
-
-            $this->repo->saveOrFail($this->receiver);
-        }
+        $this->repo->saveOrFail($this->virtualAccount);
     }
 
     protected function getVirtualAccountFromBankTransfer(Entity $bankTransfer)
@@ -230,8 +227,15 @@ class Service extends Base\Service
 
         $bankAccount = $this->getBankAccountFromNumber($accountNumber);
 
+        if (count($bankAccount) === 0)
+        {
+            return null;
+        }
+
+        $bankAccountId = $bankAccount->getId();
+
         return $this->repo->virtual_account
-                    ->getActiveVirtualAccountFromBankAccountId($bankAccount->getId());
+                    ->getActiveVirtualAccountFromBankAccountId($bankAccountId);
     }
 
     protected function getBankAccountFromNumber(string $accountNumber)

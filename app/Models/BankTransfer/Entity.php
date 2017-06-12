@@ -38,11 +38,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
-        self::PAYEE_ACCOUNT,
-        self::PAYEE_IFSC,
         self::AMOUNT,
         self::MODE,
-        self::UTR,
         self::TIME,
         self::DESCRIPTION,
     ];
