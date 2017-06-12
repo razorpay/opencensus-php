@@ -108,16 +108,16 @@ deploy:
           application-name: api
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-code-deploy
+      - hashfyre/newrelic-deployment:
+          api_key: $NEWRELIC_API_KEY
+          app_name: "$APP_ENV-$APP_NAME"
+          skip: $SKIP
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
-      - hashfyre/newrelic-deployment:
-        api_key: $NEWRELIC_API_KEY
-        app_name: "$APP_ENV-$APP_NAME"
-        skip: $SKIP
       - script:
          name: post_deploy_notifier
          code: |
