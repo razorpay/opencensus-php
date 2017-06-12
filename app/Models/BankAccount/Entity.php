@@ -280,16 +280,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VIRTUAL);
     }
 
-    protected function getIfscCodeAttribute($code)
+    protected function getIfscCodeAttribute()
     {
-        $code = $this->attributes[self::IFSC_CODE] = $code;
+        $ifscCode = $this->attributes[self::IFSC_CODE];
 
-        return strtoupper($code);
+        return strtoupper($ifscCode);
     }
 
     protected function getIfscAttribute()
     {
-        return $code = $this->attributes[self::IFSC_CODE];
+        return $this->attributes[self::IFSC_CODE];
     }
 
     public function equals($baCopy)

@@ -8,7 +8,7 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const PAYMENT_ID     = 'payment_id';
-    const MERCHANT_ID     = 'merchant_id';
+    const MERCHANT_ID    = 'merchant_id';
     const PAYER_ACCOUNT  = 'payer_account';
     const PAYER_IFSC     = 'payer_ifsc';
     const PAYEE_ACCOUNT  = 'payee_account';

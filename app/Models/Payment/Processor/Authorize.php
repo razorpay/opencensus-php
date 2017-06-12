@@ -2674,6 +2674,7 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
+        // No gateway for bank transfer, everything is internal
         if ($payment->isBankTransfer() === true)
         {
             return false;

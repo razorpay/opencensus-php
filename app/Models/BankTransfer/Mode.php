@@ -2,8 +2,6 @@
 
 namespace RZP\Models\BankTransfer;
 
-use RZP\Exception;
-
 class Mode
 {
     const RTGS = 'rtgs';

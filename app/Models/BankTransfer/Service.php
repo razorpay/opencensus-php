@@ -3,23 +3,21 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
-use RZP\Models\Customer;
-use RZP\Models\BankAccount;
-USE RZP\Models\Currency;
 use RZP\Trace\TraceCode;
-use Razorpay\IFSC;
+use RZP\Models\Payment\Method;
+USE RZP\Models\Currency\Currency;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Service extends Base\Service
 {
     protected $validator;
 
-    protected $receiver;
+    protected $virtualAccount;
 
     const DEFAULT_BANK_TRANSFER_ARRAY = [
-        Payment\Entity::CURRENCY => Currency\Currency::INR,
-        Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
+        Payment::CURRENCY => Currency::INR,
+        Payment::METHOD   => Method::BANK_TRANSFER,
     ];
 
     public function __construct()
@@ -90,38 +88,13 @@ class Service extends Base\Service
         ];
     }
 
-    protected function customerBankAccountInput(Entity $bankTransfer)
-    {
-        $ifsc = $bankTransfer->getPayerIfsc();
-
-        $res = (new IFSC\Client)->lookupIFSC($ifsc);
-
-        $addressChunks = str_split($res->address, 30);
-
-        $accountDetails = [
-            BankAccount\Entity::ACCOUNT_NUMBER       => $bankTransfer->getPayerAccount(),
-            BankAccount\Entity::BENEFICIARY_NAME     => 'dummy value',
-            BankAccount\Entity::BENEFICIARY_EMAIL    => 'dummy value',
-            BankAccount\Entity::BENEFICIARY_MOBILE   => $res->contact,
-            BankAccount\Entity::IFSC_CODE            => $bankTransfer->getPayerIfsc(),
-            BankAccount\Entity::BENEFICIARY_PIN      => 'dummy value',
-            BankAccount\Entity::BENEFICIARY_CITY     => $res->city,
-            BankAccount\Entity::BENEFICIARY_STATE    => $res->state,
-        ];
-
-        foreach ($addressChunks as $index => $chunk)
-        {
-            $accountDetails['beneficiary_address' . ($index + 1)] = $chunk;
-        }
-    }
-
     protected function validateVirtualAccount(array $input): array
     {
         $this->validator->validateInput('create', $input);
 
         $bankTransfer = $this->core->create($input);
 
-        $uniqueUtr = $this->validateUniqueUtr($bankTransfer);
+        $uniqueUtr = $this->isUtrUnique($bankTransfer);
 
         $expected = $this->isTransferExpected($bankTransfer);
 
@@ -165,7 +138,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function validateUniqueUtr(Entity $bankTransfer): bool
+    protected function isUtrUnique(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
@@ -234,8 +207,10 @@ class Service extends Base\Service
 
         $bankAccountId = $bankAccount->getId();
 
-        return $this->repo->virtual_account
-                    ->getActiveVirtualAccountFromBankAccountId($bankAccountId);
+        $virtualAccount = $this->repo->virtual_account
+                               ->getActiveVirtualAccountFromBankAccountId($bankAccountId);
+
+        return $virtualAccount;
     }
 
     protected function getBankAccountFromNumber(string $accountNumber)
@@ -250,7 +225,7 @@ class Service extends Base\Service
     {
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
-        $paymentArray[Payment\Entity::AMOUNT] = $input['amount'];
+        $paymentArray[Payment::AMOUNT] = $input['amount'];
 
         return $paymentArray;
     }

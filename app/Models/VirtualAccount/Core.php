@@ -3,10 +3,12 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Customer\Entity as Customer;
 
 class Core extends Base\Core
 {
-    public function create($input, $merchant, $customer = null)
+    public function create(array $input, Merchant $merchant, Customer $customer = null)
     {
         $virtualAccount = (new Entity)->build($input);
 

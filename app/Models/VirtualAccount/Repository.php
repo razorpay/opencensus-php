@@ -4,7 +4,6 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\BankAccount;
 
 class Repository extends Base\Repository
 {
@@ -12,7 +11,7 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'deleted';
 
-    public function getActiveVirtualAccountFromBankAccountId($bankAccountId)
+    public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ACTIVE)

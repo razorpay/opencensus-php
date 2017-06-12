@@ -4,7 +4,6 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
