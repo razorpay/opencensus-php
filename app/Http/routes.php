@@ -242,6 +242,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
         Route::get('/admin/emailbounces/{email}', 'AdminController@getEmailBounce')->name('email_bounce_get');
         Route::delete('/admin/emailbounces/{email}', 'AdminController@deleteEmailBounce')->name('email_bounce_delete');
+
+        Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
+        Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
+        Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
     });
 });
 

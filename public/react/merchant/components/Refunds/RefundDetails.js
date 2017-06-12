@@ -2,27 +2,11 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
-import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import { Link } from 'react-router-dom';
+import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 export default ({ refund, isLoading, statusMsg }) => {
-  let refundNotes = null;
-  if (Object.keys(refund.notes).length) {
-    refundNotes = (
-      <div>
-        <DetailRow label="Notes" />
-        <div class="panel-body">
-          <div class="list-group">
-            {Object.keys(refund.notes).map(key => (
-              <DetailRow key={key} label={key} value={refund.notes[key]} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -64,7 +48,11 @@ export default ({ refund, isLoading, statusMsg }) => {
                     )}
                   />
 
-                  {refundNotes}
+                  <NestedDetailRow
+                    label="Acquirer Data"
+                    value={refund.acquirer_data}
+                  />
+                  <NestedDetailRow label="Notes" value={refund.notes} />
                 </div>
               </div>
             </div>

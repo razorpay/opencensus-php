@@ -155,7 +155,10 @@ class TransactionController extends Controller
 
         if ($error === null)
         {
-            $merchantId = $data['merchant']['id'];
+            $merchantId = $data['merchant_id'];
+
+            list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
+            $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
 

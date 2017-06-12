@@ -4,7 +4,7 @@ import { set, merge } from 'rzp/utils/immutable';
 const ORDER_FETCH = 'ORDER_FETCH';
 const ORDER_PAYMENTS_FETCH = 'ORDER_PAYMENTS_FETCH';
 
-export const fetchOrder = id => {
+export const fetchItem = id => {
   let order = new Order();
 
   return {

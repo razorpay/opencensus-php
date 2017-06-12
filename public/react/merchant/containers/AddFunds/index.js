@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
 import * as AddFundsActions from 'merchant/modules/addfunds';

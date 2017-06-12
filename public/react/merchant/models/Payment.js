@@ -2,7 +2,6 @@ import GenericEntity from './GenericEntity';
 import Refund from './Refund';
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
-import { fetchPayment } from 'merchant/modules/payments/details';
 
 export default class Payment extends GenericEntity {
   listRouteName = 'payment_fetch_multiple';
@@ -45,7 +44,6 @@ export default class Payment extends GenericEntity {
   refund(params) {
     let data = {};
     const method = 'post';
-    const Klass = this.constructor;
 
     data.body = {
       amount: params.amount,
@@ -64,20 +62,11 @@ export default class Payment extends GenericEntity {
 
   fetchCardDetails() {
     let data = {};
-    const Klass = this.constructor;
     data.url_params = JSON.stringify({
       '{id}': this.id,
     });
     data.route_name = 'payment_fetch_card_details';
     return this.makeGenericAjaxCall({ data });
-  }
-
-  deserializeProperty(prop, value, allProps) {
-    if (prop === 'amount') {
-      this.amountInINR = getFixedINRAmount(value);
-    }
-
-    return super.deserializeProperty(prop, value);
   }
 
   didDeserialize() {
