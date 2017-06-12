@@ -30,7 +30,13 @@ class Service extends Base\Service
         $customerId = $input[Entity::CUSTOMER_ID];
         $planId = $input[Entity::PLAN_ID];
 
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant, false);
+        $customer = null;
+
+        if (empty($customerId) === false)
+        {
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        }
+
         $plan = $this->repo->plan->findByPublicIdAndMerchant($planId, $this->merchant);
 
         $subscription = $this->core->create($input, $plan, $customer);

@@ -44,6 +44,43 @@ class Core extends Base\Core
         return $this->create($input, $this->getSharedAccount(), $failOnDuplicate);
     }
 
+    /**
+     * @param Entity          $globalCustomer
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function createLocalCustomerFromGlobal(Entity $globalCustomer, Merchant\Entity $merchant)
+    {
+        if ($globalCustomer->isGlobal() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_DUPLICATE_NOT_GLOBAL,
+                null,
+                $globalCustomer->toArray()
+            );
+        }
+
+        $createInput = [
+            Entity::NAME    => $globalCustomer->getName(),
+            Entity::EMAIL   => $globalCustomer->getEmail(),
+            Entity::CONTACT => $globalCustomer->getContact(),
+        ];
+
+        return $this->create($createInput, $merchant, false);
+    }
+
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param bool            $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
     protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         $customer = (new Customer\Entity)->build($input);
@@ -317,8 +354,24 @@ class Core extends Base\Core
         {
             $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
 
-            if ($customer->globalCustomer !== null)
+            //
+            // Even in case of global customer flow, we
+            // would be passing local customer only to
+            // this function. But, we need to finally return
+            // back the global customer for further processing.
+            //
+            // For global flow, we would either get app_token or
+            // local_customer which has global_customer associated.
+            //
+            if ($customer->hasGlobalCustomer() === true)
             {
+                // TODO: assert app_token is present.
+                // TODO: get the customer using the app_token
+                //       and check that the customer there
+                //       matches the global customer here.
+                // TODO: the above should not be done for
+                //       privilege_auth since no app_token there. lol
+
                 $customer = $customer->globalCustomer;
             }
         }

@@ -1014,7 +1014,7 @@ trait Authorize
         // $customer is global here currently, create its local copy.
         //
         if (($payment->hasSubscription() === true) and
-            ($subscription->hasCustomer() === false))
+            ($payment->subscription->hasCustomer() === false))
         {
             $this->associateLocalCustomerToSubscription($payment->subscription, $customer);
         }
@@ -1070,34 +1070,26 @@ trait Authorize
         // This flow should be run only for the first 2FA. From the
         // second 2FA onwards, the subscription will have the customer.
         //
-        if ($subscription->hasCustomer() === false)
+
+        if ($customer === null)
         {
-            if ($customer === null)
-            {
-                // TODO: Throw an exception. For subscriptions, customer can never be null.
-            }
-
-            // TODO: Write this function! Assert in the function that the customer is actually global only.
-            $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer);
-
-            // TODO: Create the global association. Figure out where we would actually use this though.
-            // Maybe in payment entity, we will store the global customer?
-            // TODO: Write test cases to ensure that the associations happen correctly
-            $localCustomer->globalCustomer()->associate($customer);
-
-            $this->repo->saveOrFail($localCustomer);
-
-            // TODO: Ensure this gets saved later in the flow somewhere.
-            $subscription->customer()->associate($localCustomer);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_NOT_FOUND,
+                'customer_id',
+                [
+                    'subscription_id' => $subscription->getId()
+                ]);
         }
-        else
-        {
-            if (($subscription->isCreated() === false) and
-                ($subscription->customer->globalCustomer !== $customer))
-            {
-                throw new Exception\BadRequestException();
-            }
-        }
+
+        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $subscription->merchant);
+
+        // TODO: Write test cases to ensure that the associations happen correctly
+        $localCustomer->globalCustomer()->associate($customer);
+
+        $this->repo->saveOrFail($localCustomer);
+
+        // TODO: Ensure this gets saved later in the flow somewhere.
+        $subscription->customer()->associate($localCustomer);
     }
 
     protected function addCustomerIdToSubscriptionInput(Subscription\Entity $subscription, array & $input)
@@ -1109,35 +1101,49 @@ trait Authorize
         //
         if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
-            // TODO: Throw an exception
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                ]);
         }
 
+        //
+        // A subscription can have a customer in case of local flow if it's first 2FA.
+        // A subscription can have a customer in case of local or global flow if it's
+        // second 2FA (change card) or subsequent charges.
+        // In case of global flow, local flow will be associated with the customer.
+        //
+        // First 2FA:
+        //  - Local flow: Subscription has customer_id associated with it.
+        //  - Global flow: Subscription does not have any customer_id associated with it.
+        //                 The input has app_token in it set by the session.
+        // Second 2FA (change card):
+        //  - Local flow: Subscription has customer_id already associated with it.
+        //  - Global flow: Subscription has customer_id already associated with it.
+        //                 But, it should also have app_token set in the input. Customer
+        //                 should be logged in.
+        //                 TODO: Handle the above global flow thing.
+        // Subsequent charges:
+        //  - Local flow: Subscription has customer_id associated with it.
+        //  - Global flow: Subscription has customer_id already associated with it.
+        //                 This customer_id is the local customer_id though.
+        //                 So, here, we add the customer_id to the input so that
+        //                 later in the flow, while fetching the customer entity,
+        //                 we use the local customer_id to fetch the global customer_id
+        //                 that would be associated with the local customer entity.
+        //                 From thereon, the flow follow global.
+        //
+        // In case local flow, merchant should always ensure that the correct customer of the
+        // subscription is logged in their checkout before sending us the payment request.
+        //
+        // In case of global flows, the subscription will always be associated with the global token.
+        //
         if ($subscription->hasCustomer() === true)
         {
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
         }
-
-        // if ($subscription->followLocalFlow() === true)
-        // {
-        //     $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
-        // }
-        // else
-        // {
-        //     //
-        //     // Subscription follows global flow.
-        //     // In case of 2FA txns (first or change card, etc), the app_token is
-        //     // set, through which we get the global customer and all.
-        //     // In case of subsequent charges, no app_token would be set.
-        //     // Hence, we won't be able to get the customer nor the card of the
-        //     // token. Hence, we set the local_customer_id for subsequent charges so that
-        //     // we can get the corresponding global customer_id later in the flow and use
-        //     // it to get the card of the corresponding token sent in the request.
-        //     //
-        //     if ($subscription->hasCustomer() === true)
-        //     {
-        //         $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
-        //     }
-        // }
     }
 
     protected function associateSubscriptionToPayment(Payment\Entity $payment, array $input)
@@ -1187,7 +1193,13 @@ trait Authorize
         //
         if ($payment->hasSubscription() === true)
         {
-            // TODO: Throw exception
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'subscription_id'   => $payment->subscription->getId()
+                ]);
         }
 
         // No card saving, normal simple flow
@@ -1291,14 +1303,6 @@ trait Authorize
         // Token should definitely exist in database.
         $tokenId = $input[Payment\Entity::TOKEN];
 
-        // TODO: We need to create a local token also for the local customer created
-        // and associated with the subscription?
-        // Or in case of subscriptions, we pass customer->globalCustomer ?
-        // Or for subscriptions, we create token for local customer which is
-        // associated with the subscription, instead of creating token for
-        // the global customer? But that would cause an issue where
-        // a customer adds a new card, but doesn't see that on other merchant
-        // websites of razorpay.
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
         if ($payment->isMethodCardOrEmi())

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use RZP\Error\ErrorCode;
 use Session;
 
 use RZP\Exception;
@@ -327,6 +328,8 @@ class Checkout
      * @param array  $input
      * @param array  $data
      * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
      */
     protected function doCustomerProcessingForSubscription(array & $input, array $data, Merchant\Entity $merchant)
     {
@@ -338,9 +341,12 @@ class Checkout
         // If the customer is not present in subscription AND not sent in
         // the input, we use/create global customer.
         //
-        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
-            // TODO: Throw an exception
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
+                'customer_id',
+                $input);
         }
 
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
@@ -363,7 +369,13 @@ class Checkout
             //
             if ($data['options']['remember_customer'] === false)
             {
-                // TODO: Throw an exception
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED,
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'input'             => $input
+                    ]);
             }
         }
         //

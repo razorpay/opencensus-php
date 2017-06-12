@@ -95,7 +95,7 @@ class CreateCards extends Migration
         Schema::table(Table::CARD, function($table)
         {
             $table->dropForeign(
-                Table::CARD.'_'.Card::MERCHANT_ID.'_foreign');
+                Table::CARD . '_' . Card::MERCHANT_ID . '_foreign');
         });
 
         Schema::drop(Table::CARD);

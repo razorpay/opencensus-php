@@ -308,7 +308,6 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
-
         //
         // If global customer is null, it means, that the subscription
         // follows the local flow only.
@@ -316,10 +315,9 @@ class Entity extends Base\PublicEntity
         // txn and is a second charge or change card flow
         // and follows global flow. The mapping happens in first txn.
         //
+        $hasGlobalCustomer = $localCustomer->hasGlobalCustomer();
 
-        $globalCustomer = $localCustomer->globalCustomer;
-
-        return ($globalCustomer === null);
+        return ($hasGlobalCustomer === false);
     }
 
     // --------------------- END GETTERS ---------------------
