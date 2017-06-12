@@ -2,10 +2,36 @@
 
 namespace RZP\Jobs;
 
+use App;
+
 use Illuminate\Bus\Queueable;
 
-abstract class Job
+class Job
 {
+    /**
+     * Mode of the RZP application: TEST|LIVE
+     *
+     * If it's not set by the child class application mode
+     * won't be set.
+     *
+     * @var string
+     */
+    protected $mode;
+
+    /**
+     * Repository manager
+     *
+     * @var \RZP\Base\RepositoryManager
+     */
+    protected $repoManager;
+
+    /**
+     * Trace instance
+     *
+     * @var \RZP\Trace
+     */
+    protected $trace;
+
     /*
     |--------------------------------------------------------------------------
     | Queueable Jobs
@@ -18,4 +44,44 @@ abstract class Job
     */
 
     use Queueable;
+
+    public function __construct(string $mode = null)
+    {
+        $this->mode = $mode;
+    }
+
+    public function handle()
+    {
+        $this->init();
+    }
+
+    /**
+     * Initializes most needed services in queued jobs.
+     *
+     * Why we initializes services out of constructor?
+     * - Because the constructed job instance gets serialized and sent over
+     * queue. We don't want to initialize services and increase the size of
+     * message. Additionally that throws error in most of the cases as not all
+     * services are serialized expectedly.
+     *
+     */
+    protected function init()
+    {
+        $app = App::getFacadeRoot();
+
+        $this->repoManager = $app['repo'];
+
+        $this->trace = $app['trace'];
+
+        //
+        // Sets application and db mode if $mode is set
+        //
+
+        if ($this->mode !== null)
+        {
+            $app['rzp.mode'] = $this->mode;
+
+            \Database\DefaultConnection::set($this->mode);
+        }
+    }
 }

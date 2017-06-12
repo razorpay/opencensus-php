@@ -29,6 +29,7 @@ class Validator extends Base\Validator
     const CREATE_ISSUED = 'createIssued';
     const EDIT_DRAFT    = 'editDraft';
     const EDIT_ISSUED   = 'editIssued';
+    const ISSUE_BATCH   = 'issueBatch';
 
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
@@ -146,6 +147,11 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+    ];
+
+    protected static $issueBatchRules = [
+        Entity::IDS                 => 'sometimes|array|min:1|max:100',
+        Entity::IDS . '.*'          => 'required|public_id|size:18',
     ];
 
     //

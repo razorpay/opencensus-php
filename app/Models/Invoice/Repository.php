@@ -186,6 +186,29 @@ class Repository extends Base\Repository
                        ->count();
     }
 
+    /**
+     * Gets list of invoices of given batch ids. If a non-empty array of ids
+     * are passed only those out of total invoices of batch are returned.
+     *
+     * @param string $batchId
+     * @param array  $ids
+     *
+     * @return Base\PublicCollection
+     */
+    public function findByBatchIdAndIds(
+        string $batchId,
+        array $ids): Base\PublicCollection
+    {
+        $query = $this->newQuery()->where(Entity::BATCH_ID, $batchId);
+
+        if (count($ids) > 0)
+        {
+            $query->whereIn(Entity::IDS, $ids);
+        }
+
+        return $query->get();
+    }
+
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);

@@ -324,6 +324,7 @@ final class Route
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
+        'invoice_issue_by_batch'                  => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_get_pdf'                         => ['get',      'invoices/{id}/pdf',                              'InvoiceController@getInvoicePdf'                                   ],
@@ -677,6 +678,7 @@ final class Route
         'invoice_update',
         'invoice_issue',
         'invoice_cancel',
+        'invoice_issue_by_batch',
         'invoice_delete',
         'item_create',
         'item_fetch',
@@ -1308,6 +1310,8 @@ final class Route
         'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
+        'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
+        'batch_create'                      => [Feature::INVOICE_BATCH],
     ];
 
     /*

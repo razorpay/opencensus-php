@@ -21,7 +21,12 @@ class PaymentLink
     public static function getEntityInput(array & $entry): array
     {
         return [
+
+            // All payment links are getting created in draft state.
+            Invoice\Entity::DRAFT        => '1',
+
             Invoice\Entity::TYPE         => Invoice\Type::LINK,
+
             Invoice\Entity::RECEIPT      => $entry[Batch\Header::INVOICE_NUMBER],
             Invoice\Entity::CUSTOMER     => [
                 Customer\Entity::NAME    => $entry[Batch\Header::CUSTOMER_NAME],

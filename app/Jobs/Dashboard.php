@@ -2,7 +2,6 @@
 
 namespace RZP\Jobs;
 
-use App;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Illuminate\Queue\SerializesModels;
@@ -30,17 +29,21 @@ class Dashboard extends Job implements ShouldQueue
      */
     public function handle()
     {
-        $app = App::getFacadeRoot();
-
-        $trace = $app['trace'];
+        parent::handle();
 
         if (isset($this->data['type']) === false)
         {
-            $trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, ['data' => $this->data]);
+            $this->trace->error(
+                            TraceCode::DASHBOARD_INTEGRATION_ERROR,
+                            [
+                                'data' => $this->data,
+                            ]);
 
             throw new Exception\IntegrationException(
                 'Dashboard job does not have a type key',
-                ['data' => $this->data]);
+                [
+                    'data' => $this->data,
+                ]);
         }
 
         $className  = '\RZP\Dashboard\\' . ucfirst($this->data['type']);

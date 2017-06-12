@@ -10,7 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
 use RZP\Constants\MailTags;
-use RZP\Jobs\InvoiceAction;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\DispatchRouter;
 
 class Notify
@@ -399,9 +399,9 @@ class Notify
 
             if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
             {
-                $job = new InvoiceAction(
+                $job = new InvoiceJob(
                             $this->mode,
-                            InvoiceAction::AUTHORIZED,
+                            InvoiceJob::AUTHORIZED,
                             $this->invoice->getId());
 
                 (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);

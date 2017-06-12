@@ -111,6 +111,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
     }
 
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
     /**
      * The file which user uploads when creating the batch entity.
      *

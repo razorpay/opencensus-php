@@ -2,7 +2,6 @@
 
 namespace RZP\Jobs;
 
-use App;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -22,13 +21,6 @@ class Batch extends Job implements ShouldQueue
     use InteractsWithQueue;
 
     /**
-     * Mode of the application: TEST|LIVE
-     *
-     * @var string
-     */
-    protected $mode;
-
-    /**
      * Batch entity id.
      *
      * @var string
@@ -37,65 +29,51 @@ class Batch extends Job implements ShouldQueue
 
     public function __construct(string $mode, string $id)
     {
-        $this->mode = $mode;
-        $this->id   = $id;
+        parent::__construct($mode);
+
+        $this->id = $id;
     }
 
     public function handle()
     {
-        // Initializes application services
-
-        $app = App::getFacadeRoot();
-
-        $repo = $app['repo'];
-
-        $trace = $app['trace'];
-
-        // Sets application and db mode
-
-        $app['rzp.mode'] = $this->mode;
-
-        \Database\DefaultConnection::set($this->mode);
+        parent::handle();
 
         try
         {
-            $batch = $repo->batch->findOrFail($this->id);
+            $batch = $this->repoManager->batch->findOrFail($this->id);
 
             $timeStarted = microtime(true);
 
-            $trace->debug(
-                TraceCode::BATCH_JOB_RECEIVED,
-                [
-                    BatchModel\Entity::ID => $this->id,
-                ]);
+            $this->trace->debug(
+                            TraceCode::BATCH_JOB_RECEIVED,
+                            [
+                                BatchModel\Entity::ID => $this->id,
+                            ]);
 
             (BatchModel\Processor\Base::get($batch))->process();
 
-            $this->delete();
-
             $timeTaken = microtime(true) - $timeStarted;
 
-            $trace->debug(
-                TraceCode::BATCH_JOB_HANDLED,
-                [
-                    BatchModel\Entity::ID => $this->id,
-                    'time_taken'          => $timeTaken,
-                ]);
+            $this->trace->debug(
+                            TraceCode::BATCH_JOB_HANDLED,
+                            [
+                                BatchModel\Entity::ID => $this->id,
+                                'time_taken'          => $timeTaken,
+                            ]);
         }
         catch (\Throwable $e)
         {
-            // We do not want to retry in case of batch jobs for
-            // obvious reasons.
-
+            $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::BATCH_JOB_ERROR,
+                            [
+                                BatchModel\Entity::ID => $this->id,
+                            ]);
+        }
+        finally
+        {
             $this->delete();
-
-            $trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::BATCH_JOB_ERROR,
-                [
-                    BatchModel\Entity::ID => $this->id,
-                ]);
         }
     }
 }

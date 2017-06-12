@@ -10,12 +10,14 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
+use RZP\Models\Batch;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\InvoiceAction;
-use RZP\Models\FileStore;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
@@ -80,9 +82,9 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceAction(
+            $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::ISSUED,
+                        InvoiceJob::ISSUED,
                         $invoice->getId());
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -136,9 +138,9 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceAction(
+            $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::UPDATED,
+                        InvoiceJob::UPDATED,
                         $invoice->getId());
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -164,9 +166,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceAction(
+        $job = new InvoiceJob(
                     $this->mode,
-                    InvoiceAction::ISSUED,
+                    InvoiceJob::ISSUED,
                     $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -430,9 +432,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceAction(
+        $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::EXPIRED,
+                        InvoiceJob::EXPIRED,
                         $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -634,6 +636,17 @@ class Core extends Base\Core
         $this->setPdfGenerator($invoice);
 
         return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    public function issueInvoicesOfBatch(Batch\Entity $batch, array $input)
+    {
+        $ids = $input[Entity::IDS] ?? [];
+
+        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $ids);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        return ['success' => true];
     }
 
     /**
