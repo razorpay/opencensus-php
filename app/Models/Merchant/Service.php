@@ -12,6 +12,7 @@ use RZP\Models\Key;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
+use RZP\Models\Coupon;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
@@ -71,6 +72,12 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $merchantData = $merchant->toArrayPublic();
+
+        $couponResponse = $this->applyCouponOnSignUp($input, $merchant);
+
+        $merchantData[Entity::COUPON] = $couponResponse;
+
         return $merchant->toArrayPublic();
     }
 
@@ -89,7 +96,30 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($subMerchant);
 
-        return $subMerchant->toArrayPublic();
+        $subMerchantData = $subMerchant->toArrayPublic();
+
+        $couponResponse = $this->applyCouponOnSignUp($input, $subMerchant);
+
+        $subMerchantData[Entity::COUPON] = $couponResponse;
+
+        return $subMerchantData;
+    }
+
+    protected function applyCouponOnSignUp(array $input, $merchant)
+    {
+        $result = [];
+
+        if (isset($input[Entity::COUPON_CODE]) === true)
+        {
+            $couponInput = [
+                Coupon\Entity::CODE        => $input[Entity::COUPON_CODE],
+                Coupon\Entity::MERCHANT_ID => $merchant->getId()
+            ];
+
+            $result = (new Coupon\Service)->apply($couponInput);
+        }
+
+        return $result;
     }
 
     public function edit($id, array $input)

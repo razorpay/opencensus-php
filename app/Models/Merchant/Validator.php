@@ -14,6 +14,7 @@ class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const maxImageSize = 1024 * 1024;
+
     const extensionMimeMap = array(
         "jpeg"  => "image/jpeg",
         "jpg"   => "image/jpeg",
@@ -27,6 +28,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
+        Entity::COUPON_CODE                 => 'sometimes|string'
     );
 
     protected static $editRules = array(

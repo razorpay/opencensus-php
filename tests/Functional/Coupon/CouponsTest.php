@@ -34,6 +34,65 @@ class CouponsTest extends TestCase
         $this->createCoupon();
     }
 
+    public function testMerchantSignUpWithCoupon()
+    {
+        $this->createCoupon();
+
+        $request = [
+            'content' => [
+                'id'    => '1X4hRFHFx4UiXt',
+                'name'  => 'Tester',
+                'email' => 'test@localhost.com',
+                'coupon_code' => 'RANDOM-123',
+            ],
+            'url'    => '/merchants',
+            'method' => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $balanceRequest = [
+            'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
+            'method' => 'GET',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($balanceRequest);
+
+        $this->assertEquals($response['fee_credits'], 100);
+    }
+
+    public function testMerchantSignUpWithInValidCoupon()
+    {
+        $this->createCoupon();
+
+        $request = [
+            'content' => [
+                'id'    => '1X4hRFHFx4UiXt',
+                'name'  => 'Tester',
+                'email' => 'test@localhost.com',
+                'coupon_code' => 'RANDOM-321',
+            ],
+            'url'    => '/merchants',
+            'method' => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $balanceRequest = [
+            'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
+            'method' => 'GET',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($balanceRequest);
+
+        $this->assertEquals($response['fee_credits'], 0);
+    }
+
+
     public function testCouponWithUsage()
     {
         $promotion = $this->fixtures->create('promotion:onetime');
