@@ -113,17 +113,21 @@ class Service extends Base\Service
 
             $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
             {
-                $merchantPromotion = (new MerchantPromotion\Core);
+                $merchantPromotionCore = (new MerchantPromotion\Core);
 
-                $merchantPromotion->create($merchant, $promotion);
+                $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
 
                 // Initial apply of Credit is done instantly
                 // Subsequent run and expiry will be handled by cron
-                $merchantPromotion->applyCredits($merchant, $promotion);
+                $merchantPromotionCore->applyCredits($merchant, $promotion);
 
                 $coupon->setUsedCount($coupon->getUsedCount() + 1);
 
+                $merchantPromotion->updateRemainingRuns();
+
                 $this->repo->saveOrFail($coupon);
+
+                $this->repo->saveOrFail($merchantPromotion);
             });
 
             $result = [

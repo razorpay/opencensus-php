@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Schedule;
 
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
@@ -12,7 +13,8 @@ class ScheduleTest extends TestCase
 {
     use ScheduleTrait;
     use SubscriptionTrait;
-    use RequestResponseFlowTrait;
+   // use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -185,43 +187,89 @@ class ScheduleTest extends TestCase
 
         $promotion = $this->createRecurringPromotion();
 
-        $this->createCoupon($promotion['id']);
+        $coupon = $this->createCoupon($promotion['id']);
 
-        $this->applyCouponOnMerchant();
+        $this->applyCouponOnMerchant($coupon['code']);
 
         $request = $this->testData[__FUNCTION__];
 
         $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -1000);
     }
 
-    protected function createCoupon($promotionId)
+    public function testExpireAndAssignCredits()
+    {
+        $this->ba->appAuth();
+
+        $promotion = $this->createRecurringPromotion(2);
+
+        $coupon = $this->createCoupon($promotion['id']);
+
+        $this->applyCouponOnMerchant($coupon['code']);
+
+        $request = $this->testData['testExpireCredits'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getEntities('credits', array(), true);
+
+        $this->assertEquals($credits['items'][1]['value'], -1000);
+
+        $this->assertEquals($credits['items'][2]['value'], 1000);
+    }
+
+    public function testExpireUsedCredits()
+    {
+        $this->ba->appAuth();
+
+        $promotion1 = $this->createRecurringPromotion(1);
+
+        $promotion2 = $this->createRecurringPromotion(1);
+
+        $coupon1 = $this->createCoupon($promotion1['id']);
+
+        $coupon2 = $this->createCoupon($promotion2['id'], 'RANDOM1');
+
+        $this->applyCouponOnMerchant($coupon1['code']);
+
+        $this->applyCouponOnMerchant($coupon2['code']);
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->ba->appAuth();
+
+        $request = $this->testData['testExpireCredits'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getEntities('credits', array(), true);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -1000);
+    }
+
+    protected function createCoupon($promotionId, $code = 'RANDOM')
     {
         $request = $this->testData[__FUNCTION__];
 
         $request['content']['entity_id'] = $promotionId;
 
+        $request['content']['code'] = $code;
+
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
     }
 
-    protected function createRecurringPromotion()
+    protected function createRecurringPromotion($iterations = 1)
     {
-        $content = [
-            'name'                    => 'Test-Promotion',
-            'amount'                  => 100,
-            'credit_type'             => 'fee',
-            'iterations'              => 2,
-            'credits_expirable'       => true,
-            'credits_expiry_period'   => 'daily',
-            'credits_expiry_interval' => 1,
-        ];
+        $request = $this->testData[__FUNCTION__];
 
-        $request = [
-            'url'     => '/promotions',
-            'method'  => 'post',
-            'content' => $content
-        ];
+        $request['content']['iterations'] = $iterations;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -229,18 +277,11 @@ class ScheduleTest extends TestCase
     }
 
 
-    protected function applyCouponOnMerchant()
+    protected function applyCouponOnMerchant($code)
     {
-        $content = [
-            'merchant_id' => '10000000000000',
-            'code' =>  'RANDOM',
-        ];
+        $request = $this->testData[__FUNCTION__];
 
-        $request = [
-            'url'     => '/coupons/apply',
-            'method'  => 'post',
-            'content' => $content
-        ];
+        $request['content']['code'] = $code;
 
         $response = $this->makeRequestAndGetContent($request);
 

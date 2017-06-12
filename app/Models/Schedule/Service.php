@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Service extends Base\Service
 {
@@ -74,8 +75,12 @@ class Service extends Base\Service
 
     public function processTasks($input)
     {
-        //To do add validation on the input
-        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $input['timestamp']);
+        (new ScheduleTask\Validator)->validateInput('processTasks', $input);
+
+        //all tasks which are due and less than time + 1 day
+        $timestamp = time() + 1*24*60*60;
+
+        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
 
         $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
 

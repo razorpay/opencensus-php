@@ -17,6 +17,10 @@ class Validator extends Base\Validator
         ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer'
     ];
 
+    protected static $processTasksRules = [
+        ScheduleTask::TYPE => 'required|string|max:20',
+    ];
+
     protected function validateMethod($attribute, $method)
     {
         if (Method::isValid($method) === false)

@@ -11,8 +11,10 @@ class Core extends Base\Core
     {
         $timestamp = time();
 
-        $credits = $this->repo->credits->getSortedCredits(
+        //Credits which will expire first will be used first
+        $credits = $this->repo->credits->getCreditsSortedWithExpiry(
                         $timestamp, $txn->merchant->getId(), $creditType);
+
 
         $creditAmount = $amount;
 
@@ -23,11 +25,16 @@ class Core extends Base\Core
                 break;
             }
 
+            $availableCredits = $credit->getValue() - $credit->getUsed();
+
+            if ($availableCredits === 0)
+            {
+                continue;
+            }
+
             $creditTxn = new Entity;
 
             $creditTxn->transaction()->associate($txn);
-
-            $availableCredits = $credit->getValue() - $credit->getUsed();
 
             if ($availableCredits < $creditAmount)
             {

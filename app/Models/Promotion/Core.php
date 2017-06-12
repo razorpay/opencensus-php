@@ -73,6 +73,7 @@ class Core extends Base\Core
     {
         $scheduleName =  $input[self::CREDITS_EXPIRY_INTERVAL] . '/' .
                             $input[self::CREDITS_EXPIRY_PERIOD];
+
         $scheduleInput = [
             Schedule\Entity::NAME       => $scheduleName,
             Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],

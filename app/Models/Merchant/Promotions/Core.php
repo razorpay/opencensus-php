@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Promotions;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Schedule\Task;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -25,7 +26,9 @@ class Core extends Base\Core
         {
             $scheduleTask = $this->createScheduleTask($merchant, $promotion);
 
-             $this->repo->saveOrFail($scheduleTask);
+            $scheduleTask->updateNextRunAndLastRun(false);
+
+            $this->repo->saveOrFail($scheduleTask);
         }
 
         $this->repo->saveOrFail($merchantPromotion);
@@ -49,39 +52,65 @@ class Core extends Base\Core
 
                 $promotion = $scheduleTask->entity;
 
-                $this->expireCredits($merchant, $promotion);
-
                 $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
                     $merchant->getId(), $promotion->getId());
 
-               if ($merchantPromotion->getRemainingRuns() > 0)
-               {
-                    $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion,
+                if ($merchantPromotion->getExpired() === true)
+                {
+                    continue;
+                }
+
+                $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion,
                         $scheduleTask)
+                {
+                    $this->expireCredits($merchant, $promotion);
+
+                    if ($merchantPromotion->getRemainingRuns() > 0)
                     {
+
                         $this->applyCredits($merchant, $promotion, $scheduleTask);
 
                         $merchantPromotion->updateRemainingRuns();
 
                         $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
-                    });
-               }
+                    }
+                    else
+                    {
+                        $merchantPromotion->setExpired();
+                    }
 
-               $successIds[] = $scheduleTask->getId();
+                    $this->repo->saveOrFail($merchantPromotion);
 
-               $successCount++;
+                    $this->repo->saveOrFail($scheduleTask);
+                });
+
+                $successIds[] = $scheduleTask->getId();
+
+                $successCount++;
             }
             catch (\Exception $e)
             {
+                $this->trace->traceException($e);
+
                 $failedIds[] = $scheduleTask->getId();
             }
         }
 
-        return [
+        $response = [
             'success_ids'   => $successIds,
             'failedIds'     => $failedIds,
             'success_count' => $successCount,
         ];
+
+        $this->trace->info(
+            TraceCode::SCHEDULE_TASKS_PROCESSED,
+            [
+                Task\Entity::TYPE => Task\Type::PROMOTION,
+                'response'        => $response,
+            ]
+        );
+
+        return $response;
     }
 
     public function createScheduleTask($merchant, $promotion)
@@ -115,18 +144,40 @@ class Core extends Base\Core
          }
 
         (new Credits\Core)->create($merchant, $creditInput);
+
+        $this->trace->info(
+            TraceCode::CREDITS_ADDED,
+            [
+                'merchant_id'  => $merchant->getId(),
+                'credit_input' => $creditInput,
+            ]
+        );
     }
 
     public function expireCredits($merchant, $promotion)
     {
+        $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion);
+
+        if ($creditsToExpire === 0)
+        {
+            return;
+        }
         $creditInput = [
             'campaign'     => $promotion->getName() . 'Expired',
             'promotion_id' => $promotion->getId(),
-            'value'        => $this->calculateCreditToExpire($merchant, $promotion) * -1,
+            'value'        => $creditsToExpire * -1,
             'type'         => $promotion->getCreditType(),
         ];
 
         (new Credits\Core)->create($merchant, $creditInput);
+
+        $this->trace->info(
+            TraceCode::CREDITS_EXPIRED,
+            [
+                'merchant_id'  => $merchant->getId(),
+                'credit_input' => $creditInput,
+            ]
+        );
     }
 
     protected function calculateCreditToExpire($merchant, $promotion)

@@ -41,10 +41,11 @@ class CreateCreditsTransactionTable extends Migration
                 ->on(Table::CREDITS)
                 ->on_delete('restrict');
 
-            $table->foreign(CreditTransaction::TRANSACTION_ID)
+            //This has to be removed because Credit Transaction is created before transaction
+           /* $table->foreign(CreditTransaction::TRANSACTION_ID)
                 ->references(Transaction::ID)
                 ->on(Table::TRANSACTION)
-                ->on_delete('restrict');
+                ->on_delete('restrict');*/
 
             $table->unique([CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);
         });
@@ -62,8 +63,8 @@ class CreateCreditsTransactionTable extends Migration
             $table->dropForeign(
                 Table::CREDITS_TRANSACTION.'_'.CreditTransaction::CREDITS_ID.'_foreign');
 
-            $table->dropForeign(
-                Table::CREDITS_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');
+            /*$table->dropForeign(
+                Table::CREDITS_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');*/
 
             $table->dropUnique(
                 [CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);

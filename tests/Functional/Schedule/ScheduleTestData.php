@@ -163,7 +163,6 @@ return [
         'url'     => '/schedules/process_tasks',
         'content' => [
             'type'      => 'promotion',
-            'timestamp' => time() + 2*24*60*60
         ],
     ],
 
@@ -174,6 +173,29 @@ return [
             'entity_type' => 'promotion',
             'entity_id'   => '',
             'code' => 'RANDOM'
+        ],
+    ],
+
+    'createRecurringPromotion' => [
+        'method'  => 'POST',
+        'url'     => '/promotions',
+        'content' => [
+            'name'                    => 'Test-Promotion',
+            'amount'                  => 1000,
+            'credit_type'             => 'fee',
+            'iterations'              => 2,
+            'credits_expirable'       => true,
+            'credits_expiry_period'   => 'daily',
+            'credits_expiry_interval' => 1,
+        ],
+    ],
+
+    'applyCouponOnMerchant' => [
+        'method' => 'POST',
+        'url'    => '/coupons/apply',
+        'content' => [
+            'merchant_id' => '10000000000000',
+            'code' =>  'RANDOM',
         ],
     ],
 ];

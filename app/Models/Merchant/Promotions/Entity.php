@@ -49,6 +49,16 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::REMAINING_RUNS];
     }
 
+    public function getExpired()
+    {
+        return $this->attributes[self::EXPIRED];
+    }
+
+    public function setExpired()
+    {
+        $this->setAttribute(self::EXPIRED, true);
+    }
+
     public function updateRemainingRuns()
     {
         $remainingRuns = $this->getRemainingRuns() - 1;

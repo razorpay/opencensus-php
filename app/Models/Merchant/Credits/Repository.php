@@ -56,7 +56,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getSortedCredits(int $timestamp, $merchantId, string $type)
+    public function getCreditsSortedWithExpiry(int $timestamp, $merchantId, string $type)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
@@ -67,6 +67,7 @@ class Repository extends Base\Repository
                               ->orWhereNull(Entity::EXPIRING_AT);
                         }
                     )
+                    //This is done because we want to keep the null expiring at the bottom
                     ->orderBy(\DB::raw('-`expiring_at`'), 'desc')
                     ->get();
 
