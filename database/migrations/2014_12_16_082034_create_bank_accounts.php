@@ -59,8 +59,10 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_CITY, 30)
                   ->nullable();
+
             $table->string(BankAccount::BENEFICIARY_STATE, 2)
                   ->nullable();
+
             $table->string(BankAccount::BENEFICIARY_COUNTRY, 2)
                   ->nullable();
 
