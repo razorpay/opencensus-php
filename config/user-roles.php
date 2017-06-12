@@ -74,5 +74,6 @@ return [
     'item_edit'                 => $writers,
     'item_delete'               => $writers,
 
-    'marketplace_read'          => $readers
+    'marketplace_read'          => $readers,
+    'oauth_read'                => ['owner']
 ];

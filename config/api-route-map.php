@@ -280,6 +280,28 @@ return [
             'url'       => 'reversals/{id}',
             'routeName' => 'marketplace_read'
         ],
+
+        // OAuth routes
+        'oauth_application_create'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch_multiple'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch'   => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_delete'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_update'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ]
     ],
 
     // auth
