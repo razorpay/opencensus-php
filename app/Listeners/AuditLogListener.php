@@ -159,7 +159,7 @@ class AuditLogListener
 
         $fields['internal'] = [
             // firing() - Gets the event that is currently firing
-            'event' => $event->name,
+            'event' => $event->action,
 
             // We can add more info like caller class/function/line,
             // environment, etc.
