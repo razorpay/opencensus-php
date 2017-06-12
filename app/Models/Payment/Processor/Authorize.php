@@ -2671,6 +2671,8 @@ trait Authorize
         // If payment has an associated order
         // set the order to be paid
         $this->updateAuthorizedOrderStatus($payment);
+
+        $this->createAnalyticsLog($payment);
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
