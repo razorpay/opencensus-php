@@ -321,7 +321,7 @@ class NodalAccount
     {
         // Don't send mail if mode is test and env is not dev or testing
         if (($this->getMode() === Mode::TEST) and
-            ($this->app->environment('dev', 'testing', 'beta') === false))
+            ($this->app->environment('dev', 'testing') === false))
         {
             return;
         }
