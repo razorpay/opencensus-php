@@ -47,14 +47,14 @@ class RefundFile extends Base\RefundFile
             'signed_url' => $signedFileUrl,
         ];
 
-        $this->sendRefundEmail($fileData);
+        $this->sendRefundEmail($fileData, $input['email']);
 
         return $file['local_file_path'];
     }
 
-    protected function sendRefundEmail($fileData = [])
+    protected function sendRefundEmail($fileData = [], $email = null)
     {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC);
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC, $email);
 
         Mail::queue($refundFileMail);
     }

@@ -12,13 +12,17 @@ class Base extends Mailable
 
     protected $data;
 
-    public function __construct(array $data, string $type)
+    protected $email;
+
+    public function __construct(array $data, string $type, string $email = null)
     {
         parent::__construct();
 
         $this->data = $data;
 
         $this->type = $type;
+
+        $this->email = $email;
     }
 
     protected function addSender()
@@ -34,7 +38,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $emails = Constants::RECIPIENT_EMAILS_MAP[$this->type];
+        $emails = $this->email ?? Constants::RECIPIENT_EMAILS_MAP[$this->type];
 
         $this->to($emails);
 

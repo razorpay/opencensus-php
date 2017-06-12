@@ -56,7 +56,7 @@ class RefundFile extends Base\RefundFile
             'date'       => $today
         ];
 
-        $this->sendRefundEmail($fileData);
+        $this->sendRefundEmail($fileData, $input['email']);
 
         return $file['local_file_path'];
     }
@@ -89,9 +89,9 @@ class RefundFile extends Base\RefundFile
         return [$totalAmount, $data];
     }
 
-    protected function sendRefundEmail($fileData = [])
+    protected function sendRefundEmail($fileData = [], $email = null)
     {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_ICICI);
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_ICICI, $email);
 
         Mail::queue($refundFileMail);
     }
