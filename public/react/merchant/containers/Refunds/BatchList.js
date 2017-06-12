@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import DataTable from 'rzp/ui/Table/DataTable';
 import TetherComponent from 'react-tether';
@@ -44,12 +45,9 @@ export default class BatchListContainer extends ListContainer {
               <i class="icon icon-external-link" />
             </a>
 
-            <NavLink
-              class="btn btn-primary pull-right"
-              to="/refunds/batchupload"
-            >
+            <Link class="btn btn-primary pull-right" to="/refunds/batchupload">
               Click here to upload
-            </NavLink>
+            </Link>
           </div>
         </TetherComponent>
 
