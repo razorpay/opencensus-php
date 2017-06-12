@@ -78,3 +78,84 @@
     padding: 0;
   }
 }
+
+
+// Onboarding Card
+
+.onboarding-card.media {
+  background-color: #fff;
+  margin-bottom: 20px;
+  box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
+  border-radius: 2px;
+  position: relative;
+
+  .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 18px;
+  }
+
+  > .media-left .media-object {
+    width: 382px;
+    height: 220px;
+  }
+
+  > .media-body {
+    padding: 24px;
+    max-width: 800px;
+
+    p {
+      margin-bottom: 16px;
+    }
+
+    ul.row {
+      margin-bottom: 16px;
+      padding-left: 30px;
+
+      > li {
+        padding-left: 0;
+      }
+    }
+
+    .btn-lg > span {
+      margin-right: 48px;
+    }
+  }
+
+  .media-heading {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .Onboarding__Step {
+    display: block;
+    color: #58666e;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.05);
+    border-radius: 2px;
+    background-color: #FAFAFA;
+    padding: 14px;
+    border: 1px solid #D8E1E3;
+
+    .media-heading {
+      margin-bottom: 0;
+    }
+
+    .media-object {
+      width: 53px;
+      height: 42px;
+    }
+
+    .activation-progress {
+      width: 75px;
+      display: inline-block;
+      margin-left: 12px;
+
+      .progress {
+        height: 8px;
+        margin-bottom: 0;
+      }
+    }
+  }
+}

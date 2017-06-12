@@ -13,7 +13,7 @@ app
     'organization',
     'transformRequestAsFormPost',
     '$window',
-    '$cookies',
+    '$localStorage',
     function(
       $scope,
       $timeout,
@@ -25,7 +25,8 @@ app
       user,
       organization,
       transformRequestAsFormPost,
-      $window
+      $window,
+      $localStorage
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -213,6 +214,8 @@ app
         showSpinner();
         request.success(function(data) {
           if (data.success) {
+            $localStorage.new_user_signup = true;
+
             $scope.signup.account_type = $scope.signup.data.invitation
               ? 'team_member'
               : 'merchant';

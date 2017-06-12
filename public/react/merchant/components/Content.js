@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Home from 'merchant/containers/HomeContainer';
+import Home from 'merchant/containers/Home';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/List';

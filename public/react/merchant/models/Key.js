@@ -18,6 +18,10 @@ export default class Key extends GenericEntity {
     };
 
     data.route_name = this.listRouteName;
+    if (params.mode) {
+      data.mode = params.mode;
+    }
+
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Klass().deserialize(item)

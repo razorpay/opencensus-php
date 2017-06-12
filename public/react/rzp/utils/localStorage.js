@@ -1,6 +1,6 @@
 // LocalStorage service that fallbacks to cookies in case of QUOTAEXCEEDED error in Safari Private mode
 
-import { getCookie, setCookie } from './cookies';
+import { getCookie, setCookie, removeCookie } from './cookies';
 
 export const getItem = key => {
   return window.localStorage.getItem(key) || getCookie(key);
@@ -14,4 +14,12 @@ export const setItem = (key, value) => {
   }
 };
 
-export default { getItem, setItem };
+export const removeItem = key => {
+  try {
+    return window.localStorage.removeItem(key);
+  } catch (e) {
+    removeCookie(key);
+  }
+};
+
+export default { getItem, setItem, removeItem };

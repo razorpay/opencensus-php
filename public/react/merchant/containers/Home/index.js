@@ -13,6 +13,7 @@ import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
 import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
+import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import { defaults } from 'react-chartjs-2';
 
 defaults.global.defaultFontColor = '#666';
@@ -93,6 +94,10 @@ export default class HomeContainer extends Component {
           }}
         >
           <div class="row">
+            <div class="col-md-12">
+              <NewUserOnboardingCard payments={payments.items} />
+            </div>
+
             <InfoCardList
               entity_totals={entity_totals}
               payment_breakup={payment_breakup}
