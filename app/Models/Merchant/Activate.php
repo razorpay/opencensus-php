@@ -90,7 +90,7 @@ class Activate extends Base\Core
 
         $org = $merchant->org;
 
-        $subjectName = $merchant->getBillingLabelElseName();
+        $subjectName = $merchant->getBillingLabel();
 
         if ($org === null)
         {

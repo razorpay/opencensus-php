@@ -49,14 +49,15 @@ class Manager
 
         $adminRoleIds = $admin->roles()->getRelatedIds()->toArray();
 
-        $actions = $this->repo->workflow_action->findActionsForChecker($adminRoleIds);
+        $actions = $this->repo->workflow_action->findActionsForChecker(
+            $adminRoleIds, ['admin']);
 
         return $actions->toArrayPublic();
     }
 
     public function getActionsByMaker(Admin\Entity $admin)
     {
-        $relations = ['workflow'];
+        $relations = ['workflow', 'admin'];
 
         $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
             $admin->getId(), $admin->getOrgId(), $relations);
@@ -69,7 +70,7 @@ class Manager
         $this->validateSuperAdminAccess();
 
         $actions = $this->repo->workflow_action->findByOrgId(
-            $orgId);
+            $orgId, ['admin']);
 
         return $actions;
     }
@@ -77,7 +78,8 @@ class Manager
     public function getClosedActionsByMaker(Admin\Entity $admin)
     {
         $actions = $this->repo->workflow_action
-                              ->getClosedActionsByAdmin($admin->getId());
+                              ->getClosedActionsByAdmin(
+                                  $admin->getId(), ['admin']);
 
         return $actions;
     }
@@ -87,7 +89,8 @@ class Manager
         $this->validateSuperAdminAccess();
 
         $actions = $this->repo->workflow_action
-                               ->findOpenActionsByOrgId($orgId);
+                               ->findOpenActionsByOrgId(
+                                   $orgId, ['admin']);
 
         return $actions;
     }
@@ -112,7 +115,8 @@ class Manager
         $admin = $this->app['basicauth']->getAdmin();
 
         $actions = $this->repo->workflow_action
-                              ->getActionsCheckedByAdmin($admin->getId());
+                              ->getActionsCheckedByAdmin(
+                                  $admin->getId(), ['admin']);
 
         return $actions->toArrayPublic();
     }

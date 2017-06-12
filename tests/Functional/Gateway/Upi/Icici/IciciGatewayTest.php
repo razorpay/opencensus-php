@@ -163,7 +163,11 @@ EOT;
             'nemo@razorpay.com',
             // See ProviderCode
             'nemo@statebank',
-            'fake@invalidbank'
+            'fake@invalidbank',
+            // \ not valid
+            'a\b@razorpay',
+            // ' ' not valid
+            ' a.b@razorpay',
         ];
 
         foreach ($vpas as $vpa)
