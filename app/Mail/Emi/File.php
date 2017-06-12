@@ -10,9 +10,9 @@ class File extends Base
 {
     protected $filePath;
 
-    public function __construct(string $bankName, string $filePath)
+    public function __construct(string $bankName, string $filePath, array $emails)
     {
-        parent::__construct($bankName);
+        parent::__construct($bankName, $emails);
 
         $this->filePath = $filePath;
     }

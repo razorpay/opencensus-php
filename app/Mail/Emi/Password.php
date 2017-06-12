@@ -10,9 +10,9 @@ class Password extends Base
 {
     protected $emiFilePassword;
 
-    public function __construct(string $bankName, string $emiFilePassword)
+    public function __construct(string $bankName, string $emiFilePassword, array $emails)
     {
-        parent::__construct($bankName);
+        parent::__construct($bankName, $emails);
 
         $this->emiFilePassword = $emiFilePassword;
     }
@@ -30,7 +30,7 @@ class Password extends Base
 
     protected function addRecipients()
     {
-        $emails = self::RECIPIENTS[$this->bankName];
+        $emails = $this->emails;
 
         $this->to($emails);
 

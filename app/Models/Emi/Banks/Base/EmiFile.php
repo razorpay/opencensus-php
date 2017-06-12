@@ -130,14 +130,14 @@ class EmiFile extends Base\Core
 
         $zipFile = $this->getZippedFile($fullPath);
 
-        $emiFileMail = new EmiMail\File($this->bankName, $zipFile);
+        $emiFileMail = new EmiMail\File($this->bankName, $zipFile, $this->emailIdsToSendTo);
 
         Mail::queue($emiFileMail);
     }
 
     protected function sendEmiPassword()
     {
-        $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword);
+        $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword, $this->emailIdsToSendTo);
 
         Mail::queue($emiPasswordMail);
     }

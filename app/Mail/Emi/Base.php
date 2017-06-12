@@ -7,30 +7,22 @@ use RZP\Mail\Base\Mailable;
 
 class Base extends Mailable
 {
-    const AXIS     = 'Axis';
-    const INDUSIND = 'IndusInd';
-    const KOTAK    = 'Kotak';
-    const RBL      = 'Rbl';
-
-    const RECIPIENTS = [
-        self::AXIS     => ['axiscards.emi@razorpay.com'],
-        self::INDUSIND => ['indusind.emi@razorpay.com'],
-        self::KOTAK    => ['kotakcards.emi@razorpay.com'],
-        self::RBL      => ['Rblcards.emi@razorpay.com']
-    ];
+    protected $emails;
 
     protected $bankName;
 
-    public function __construct(string $bankName)
+    public function __construct(string $bankName, array $emails)
     {
         parent::__construct();
 
         $this->bankName = $bankName;
+
+        $this->emails = $emails;
     }
 
     protected function addRecipients()
     {
-        $emails = array_merge(self::RECIPIENTS[$this->bankName], ['settlements@razorpay.com']);
+        $emails = array_merge($this->emails, ['settlements@razorpay.com']);
 
         $this->to($emails);
 
