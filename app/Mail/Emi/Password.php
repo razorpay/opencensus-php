@@ -28,6 +28,15 @@ class Password extends Base
         return $this;
     }
 
+    protected function addRecipients()
+    {
+        $emails = self::RECIPIENTS[$this->bankName];
+
+        $this->to($emails);
+
+        return $this;
+    }
+
     protected function addSubject()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
