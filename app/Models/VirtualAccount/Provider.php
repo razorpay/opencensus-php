@@ -6,27 +6,27 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
 {
-    const YES_BANK = 'yesbank';
+    const YESBANK = 'yesbank';
     const KOTAK    = 'kotak';
 
     // Mock provider
     // Named so because it only works in tests
-    const GAVASKAR = 'gavaskar';
+    const VVS      = 'vvs';
 
     const MASTER = [
-        Provider::YES_BANK  => 'RAZORP',
-        Provider::KOTAK     => 'RAZR',
-        Provider::GAVASKAR  => 'RAZOR',
+        Provider::YESBANK  => 'RAZORP',
+        Provider::KOTAK     => 'RZRP',
+        Provider::VVS       => 'RAZOR',
     ];
 
     const DEFAULT_DETAILS = [
-        Provider::YES_BANK => [
+        Provider::YESBANK => [
             BankAccount::IFSC_CODE => 'YESB0CMSNOC',
         ],
         Provider::KOTAK => [
             BankAccount::IFSC_CODE => 'KKBK0000958',
         ],
-        Provider::GAVASKAR => [
+        Provider::VVS => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
     ];

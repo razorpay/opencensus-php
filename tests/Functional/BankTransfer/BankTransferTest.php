@@ -29,9 +29,9 @@ class BankTransferTest extends TestCase
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
 
-        $gavaskarSecret = \Config::get('applications.gavaskar.secret');
+        $vvsSecret = \Config::get('applications.vvs.secret');
 
-        $this->ba->appAuth('rzp_test', $gavaskarSecret);
+        $this->ba->appAuth('rzp_test', $vvsSecret);
     }
 
     public function testBankTransferValidate()

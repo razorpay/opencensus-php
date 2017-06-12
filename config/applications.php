@@ -68,11 +68,11 @@ return array(
     Provider::KOTAK => array(
         'secret'    => env('KOTAK_SECRET'),
     ),
-    Provider::YES_BANK => array(
+    Provider::YESBANK => array(
         'secret'    => env('YESBANK_SECRET'),
     ),
-    Provider::GAVASKAR => array(
-        'secret'    => env('GAVASKAR_SECRET'),
+    Provider::VVS => array(
+        'secret'    => env('VVS_SECRET'),
     ),
 
     'lumberjack' => array(

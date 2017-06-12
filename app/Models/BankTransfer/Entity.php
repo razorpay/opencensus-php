@@ -7,17 +7,18 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const PAYMENT_ID     = 'payment_id';
-    const MERCHANT_ID    = 'merchant_id';
-    const PAYER_ACCOUNT  = 'payer_account';
-    const PAYER_IFSC     = 'payer_ifsc';
-    const PAYEE_ACCOUNT  = 'payee_account';
-    const PAYEE_IFSC     = 'payee_ifsc';
-    const AMOUNT         = 'amount';
-    const MODE           = 'mode';
-    const UTR            = 'utr';
-    const TIME           = 'time';
-    const DESCRIPTION    = 'description';
+    const PAYMENT_ID         = 'payment_id';
+    const MERCHANT_ID        = 'merchant_id';
+    const PAYER_ACCOUNT      = 'payer_account';
+    const PAYER_IFSC         = 'payer_ifsc';
+    const PAYEE_ACCOUNT      = 'payee_account';
+    const PAYEE_IFSC         = 'payee_ifsc';
+    const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
+    const AMOUNT             = 'amount';
+    const MODE               = 'mode';
+    const UTR                = 'utr';
+    const TIME               = 'time';
+    const DESCRIPTION        = 'description';
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -34,8 +35,9 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::MODE,
         self::UTR,
+        self::MODE,
+        self::VIRTUAL_ACCOUNT_ID,
     ];
 
     protected $casts = [
@@ -58,6 +60,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function virtualAccount()
+    {
+        return $this->hasOne('RZP\Models\VirtualAccount\Entity');
     }
 
     // ----------------------- Getters ---------------------------------------------

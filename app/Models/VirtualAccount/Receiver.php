@@ -56,7 +56,7 @@ class Receiver
 
         $bankAccountInput = $this->generateBankAccountInput();
 
-        $bankAccount = $bankAccount->build($bankAccountInput);
+        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
         $bankAccount->associateMerchant($this->merchant);
 
@@ -101,7 +101,7 @@ class Receiver
 
         if ($this->mode === Mode::TEST)
         {
-            $provider = Provider::GAVASKAR;
+            $provider = Provider::VVS;
         }
 
         return $provider;

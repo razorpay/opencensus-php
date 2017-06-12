@@ -36,6 +36,9 @@ class CreateBankTransfer extends Migration
 
             $table->string(BankTransfer::PAYEE_IFSC, 11);
 
+            $table->char(BankTransfer::VIRTUAL_ACCOUNT_ID, BankTransfer::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(BankTransfer::AMOUNT);
 
             $table->string(BankTransfer::MODE, 5);
@@ -49,6 +52,11 @@ class CreateBankTransfer extends Migration
 
             $table->integer(BankTransfer::CREATED_AT);
             $table->integer(BankTransfer::UPDATED_AT);
+
+            $table->foreign(BankTransfer::VIRTUAL_ACCOUNT_ID)
+                  ->references('id')
+                  ->on(Table::VIRTUAL_ACCOUNT)
+                  ->on_delete('restrict');
 
             $table->index(BankTransfer::UTR);
             $table->index(BankTransfer::PAYER_ACCOUNT);

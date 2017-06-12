@@ -1251,7 +1251,7 @@ final class Route
             'ecollect_pay',
         ],
 
-        'gavaskar' => [
+        'vvs' => [
             'ecollect_validate',
             'ecollect_pay',
         ],
