@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
     const PROCESSED_AT           = 'processed_at';
-    const PROCESSED_ON           = 'processed_on';
+    const SETTLED_ON             = 'settled_on';
 
     protected static $sign = 'setl';
 
@@ -61,7 +61,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
-        self::PROCESSED_ON,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -74,7 +74,7 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
-        self::PROCESSED_ON,
+        self::SETTLED_ON,
         self::CREATED_AT
     ];
 
@@ -98,10 +98,10 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::PROCESSED_ON,
+        self::SETTLED_ON,
     ];
 
-    protected $hiddenInReport = [self::PROCESSED_ON];
+    protected $hiddenInReport = [self::SETTLED_ON];
 
     // --------------------------------- relations -------------------------------
 
@@ -307,15 +307,15 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::REMARKS] = substr($remarks, 0, 255);
     }
 
-    protected function setPublicProcessedOnAttribute(array &$array)
+    protected function setPublicSettledOnAttribute(array &$array)
     {
         $processedAt = $this->getAttribute(self::PROCESSED_AT);
 
-        $array[self::PROCESSED_ON] = null;
+        $array[self::SETTLED_ON] = null;
 
         if ($processedAt !== null)
         {
-            $array[self::PROCESSED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
+            $array[self::SETTLED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
         }
     }
 

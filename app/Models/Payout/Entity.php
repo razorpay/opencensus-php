@@ -39,7 +39,7 @@ class Entity extends Base\PublicEntity
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
-    const PROCESSED_ON           = 'processed_on';
+    const SETTLED_ON             = 'settled_on';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -84,7 +84,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
-        self::PROCESSED_ON,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::UTR,
-        self::PROCESSED_ON,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -112,7 +112,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::DESTINATION,
         self::CUSTOMER_ID,
-        self::PROCESSED_ON,
+        self::SETTLED_ON,
     ];
 
     protected $defaults = [
@@ -319,11 +319,11 @@ class Entity extends Base\PublicEntity
     {
         $processedAt = $this->getAttribute(self::PROCESSED_AT);
 
-        $array[self::PROCESSED_ON] = null;
+        $array[self::SETTLED_ON] = null;
 
         if ($processedAt !== null)
         {
-            $array[self::PROCESSED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
+            $array[self::SETTLED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
         }
     }
 

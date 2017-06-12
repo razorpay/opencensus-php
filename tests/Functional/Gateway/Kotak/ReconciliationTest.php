@@ -62,6 +62,7 @@ class ReconciliationTest extends TestCase
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
         $this->assertNotNull($setl['utr']);
+        $this->assertNotNull($setl['settled_on']);
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
 
