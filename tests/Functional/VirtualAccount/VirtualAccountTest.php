@@ -4,10 +4,12 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class VirtualAccountTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use VirtualAccountTrait;
 
     public function setUp()
     {
@@ -24,7 +26,43 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccount()
     {
-        $this->startTest();
+        $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchVirtualAccount()
+    {
+        $response = $this->createVirtualAccount();
+
+        $response = $this->fetchVirtualAccount($response['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchVirtualAccounts()
+    {
+        $this->createVirtualAccount(['name' => 'First VA']);
+        $this->createVirtualAccount(['name' => 'Second VA']);
+
+        $response = $this->fetchVirtualAccounts();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCloseVirtualAccount()
+    {
+        $response = $this->createVirtualAccount();
+
+        $virtualAccount = $this->closeVirtualAccount($response['id']);
+
+        $this->assertEquals('closed', $virtualAccount['status']);
     }
 
     public function testAccountCreditedWebhook()

@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::NAME,
+        self::ENTITY,
         self::DESCRIPTOR,
         self::STATUS,
         self::AMOUNT_EXPECTED,
@@ -152,7 +153,10 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicBankAccountAttribute(array & $array)
     {
-        $array[self::BANK_ACCOUNT] = $array[self::BANK_ACCOUNT]->toArrayPublic();
+        if (isset($array[self::BANK_ACCOUNT]) === true)
+        {
+            $array[self::BANK_ACCOUNT] = $array[self::BANK_ACCOUNT]->toArrayPublic();
+        }
     }
 
     protected function setPublicVpaAttribute(array & $array)

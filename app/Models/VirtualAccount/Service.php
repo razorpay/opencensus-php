@@ -45,21 +45,28 @@ class Service extends Base\Service
 
     public function getVirtualAccount(string $id)
     {
-        $virtualAccount = $this->repo->virtual_account->findOrFailPublic($id);
+        Entity::verifyIdAndStripSign($id);
+
+        $virtualAccount = $this->repo->virtual_account
+                               ->findOrFailPublicWithRelations($id, ['bankAccount']);
 
         return $virtualAccount->toArrayPublic();
     }
 
     public function getVirtualAccounts(array $input)
     {
-        $virtualAccounts = $this->repo->virtual_account->fetch($input, $this->merchant);
+        $virtualAccounts = $this->repo->virtual_account
+                                ->fetch($input, $this->merchant->getId());
 
         return $virtualAccounts->toArrayPublic();
     }
 
     public function closeVirtualAccount(string $id)
     {
-        $virtualAccount = $this->repo->virtual_account->findOrFailPublic($id);
+        Entity::verifyIdAndStripSign($id);
+
+        $virtualAccount = $this->repo->virtual_account
+                               ->findOrFailPublicWithRelations($id, ['bankAccount']);
 
         $virtualAccount->setStatus(Status::CLOSED);
 

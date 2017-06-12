@@ -7,28 +7,46 @@ use RZP\Error\PublicErrorCode;
 
 return [
     'testCreateVirtualAccount' => [
-        'request' => [
-            'url'     => '/virtual_accounts',
-            'method'  => 'post',
-            'content' => [
-                'name'            => 'new virtual account',
-                'descriptor'      => 'banana',
-                'amount_expected' => 10000,
-                'customer_id'     => 'cust_100000customer',
-                'receiver_type'   => 'bank_account',
-            ],
+        'name'            => 'New virtual account',
+        'entity'          => 'virtual_account',
+        'descriptor'      => 'banana',
+        'amount_expected' => 10000,
+        'status'          => 'active',
+        'bank_account'    => [
+            'entity' => 'bank_account',
+            'ifsc'   => 'RAZR0000001',
         ],
-        'response' => [
-            'content' => [
-                'name'            => 'new virtual account',
+    ],
+
+    'testFetchVirtualAccount' => [
+        'name'            => 'New virtual account',
+        'entity'          => 'virtual_account',
+        'descriptor'      => 'banana',
+        'amount_expected' => 10000,
+        'status'          => 'active',
+        'bank_account'    => [
+            'entity' => 'bank_account',
+            'ifsc'   => 'RAZR0000001',
+        ],
+    ],
+
+    'testFetchVirtualAccounts' => [
+        'entity' => 'collection',
+        'count'  => 2,
+        'items'  => [
+            [
+                'name'            => 'Second VA',
+                'entity'          => 'virtual_account',
                 'descriptor'      => 'banana',
                 'amount_expected' => 10000,
-                'customer_id'     => 'cust_100000customer',
                 'status'          => 'active',
-                'bank_account'    => [
-                    'entity' => 'bank_account',
-                    'ifsc'   => 'KKBK0000958',
-                ],
+            ],
+            [
+                'name'            => 'First VA',
+                'entity'          => 'virtual_account',
+                'descriptor'      => 'banana',
+                'amount_expected' => 10000,
+                'status'          => 'active',
             ],
         ],
     ],

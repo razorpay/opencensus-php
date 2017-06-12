@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
@@ -24,6 +25,11 @@ class Receiver
         string $descriptor = null)
     {
         $this->app = App::getFacadeRoot();
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->repo = $this->app['repo'];
 
@@ -86,7 +92,14 @@ class Receiver
 
     protected function selectProvider()
     {
-        return Provider::KOTAK;
+        $provider = Provider::KOTAK;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $provider = Provider::BLADE;
+        }
+
+        return $provider;
     }
 
     /**
