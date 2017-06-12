@@ -95,6 +95,8 @@ class Header
      *
      * @param string $type
      * @param array  $keys
+     *
+     * @throws BadRequestException
      */
     public static function validate(string $type, array $keys)
     {

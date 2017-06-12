@@ -5,7 +5,6 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 
-
 class Entity extends Base\PublicEntity
 {
     /**

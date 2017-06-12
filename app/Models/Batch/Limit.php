@@ -18,6 +18,8 @@ class Limit
      *
      * @param string $type
      * @param int    $total
+     *
+     * @throws BadRequestException
      */
     public static function validate(string $type, int $total)
     {
@@ -34,7 +36,7 @@ class Limit
 
         if ($total > self::PER_TYPE[$type])
         {
-           throw new Exception\BadRequestException(
+           throw new BadRequestException(
                ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
                null,
                [

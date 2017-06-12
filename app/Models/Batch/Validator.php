@@ -109,6 +109,8 @@ class Validator extends Base\Validator
      *
      * @param array           $entries
      * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
      */
     protected function validatePaymentLinkEntries(
         array & $entries,
