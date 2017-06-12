@@ -14,15 +14,6 @@ import Spinner from 'rzp/ui/Spinner';
 import * as ApplicationActions from 'merchant/modules/config';
 import * as NotificationActions from 'rzp/modules/notifications';
 
-// @connect(
-//   state => {
-//     return {
-//       user: state.session.user,
-//     };
-//   },
-//   { ...ApplicationActions, ...NotificationActions }
-// )
-
 const INFO = {
   icon: 'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
   dev: 'End-point on your development server that we\'ll redirect your users back to after they connect with Razorpay. Can be localhost. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.',
@@ -38,7 +29,6 @@ const selector = formValueSelector('newApplicationForm');
 // }, null)
 @reduxForm({
   name: 'newApplicationForm',
-
 })
 class NewApplicationForm extends Component {
   componentWillMount() {
