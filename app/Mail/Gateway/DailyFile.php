@@ -77,7 +77,7 @@ class DailyFile extends Mailable
 
         if (empty($this->data['refundsFile']) === false)
         {
-            if (empty($this->data['claimsFile']['url']) === false)
+            if (empty($this->data['refundsFile']['url']) === false)
             {
                 $this->attach($this->data['refundsFile']['url'], ['as' => $this->data['refundsFile']['name']]);
             }
