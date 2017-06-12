@@ -48,8 +48,16 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path'  => $file['local_file_path'],
+<<<<<<< HEAD
             'signed_url' => $signedFileUrl,
             'file_name'  => basename($file['local_file_path']),
+=======
+            'emails'     => ['settlements@razorpay.com'],
+            'subject'    => 'Indusind Netbanking refunds file for ' . $today,
+            'signed_url' => $signedFileUrl,
+            'file_name'  => basename($file['local_file_path']),
+            'body'       => self::EMAIL_BODY
+>>>>>>> 78eb56489712ff0da5445dc11c054282761f3da8
         ];
 
         $this->sendRefundEmail($fileData);
@@ -87,9 +95,30 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
+<<<<<<< HEAD
         $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_INDUSIND);
 
         Mail::queue($refundFileMail);
+=======
+        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
+        {
+            $emails = $fileData['emails'];
+
+            $message->from('refunds@razorpay.com', 'Indusind Netbanking refunds');
+
+            $message->subject($fileData['subject']);
+
+            $message->to($emails);
+
+            $message->attach($fileData['file_path']);
+
+            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::INDUSIND_NETBANKING_REFUNDS_MAIL);
+        });
+>>>>>>> 78eb56489712ff0da5445dc11c054282761f3da8
     }
 
      /*
