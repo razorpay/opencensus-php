@@ -112,7 +112,7 @@ return [
     ],
 
     'mail' => [
-        'connection' => 'sqs_mail',
+        'connection' => 'sync',
     ],
 
     'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
