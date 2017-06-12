@@ -43,7 +43,7 @@ class BatchController extends Controller
 
     public function processBatch(string $id)
     {
-        $result = $this->batchService->processBatch($id);
+        $result = $this->service('batch')->processBatch($id);
 
         return ApiResponse::json($result);
     }
