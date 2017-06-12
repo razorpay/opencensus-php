@@ -116,7 +116,7 @@ class AdminAccess
      */
     private function getOrgIdForRoute($request)
     {
-        $orgId = $this->router->current()->getParameter('orgId');
+        $orgId = $this->router->current()->parameter('orgId');
 
         if ($orgId === null)
         {

@@ -11,10 +11,10 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Permission;
 
 class Entity extends Base\Entity
 {

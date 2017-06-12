@@ -2,16 +2,17 @@
 
 namespace RZP\Tests\Functional\Batch;
 
-use DB;
-use Mockery;
+use Mail;
 use Carbon\Carbon;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
+use Illuminate\Http\UploadedFile;
+
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Header;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use Illuminate\Http\UploadedFile;
+use RZP\Mail\Batch\RefundFile as BatchRefundFileMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\FileStore;
 
 class RefundBatchFileTest extends TestCase
@@ -79,6 +80,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundFile()
     {
+        Mail::fake();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund', $entries);
@@ -98,6 +101,8 @@ class RefundBatchFileTest extends TestCase
 
         $this->assertEquals('batch/download/' . $batch->getFileKeyWithExt(), $file->getLocation());
         $this->assertEquals('batch/download/' . $batch->getFileKey(), $file->getName());
+
+        Mail::assertSent(BatchRefundFileMail::class);
     }
 
     public function testProcessRefundFileWithInvalidFile()

@@ -1250,7 +1250,11 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return Netbanking::getName($bankId);
+
+        if ($bankId !== null)
+        {
+            return Netbanking::getName($bankId);
+        }
     }
 
     public function getWallet()

@@ -3,10 +3,14 @@
 namespace RZP\Gateway\Netbanking\Indusind;
 
 use Carbon\Carbon;
-use RZP\Gateway\Base;
-use RZP\Models\FileStore;
+use Mail;
+
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
+use RZP\Gateway\Base;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Models\FileStore;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -44,11 +48,8 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path'  => $file['local_file_path'],
-            'emails'     => ['settlements@razorpay.com'],
-            'subject'    => 'Indusind Netbanking refunds file for ' . $today,
             'signed_url' => $signedFileUrl,
             'file_name'  => basename($file['local_file_path']),
-            'body'       => self::EMAIL_BODY
         ];
 
         $this->sendRefundEmail($fileData);
@@ -86,24 +87,9 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
-        {
-            $emails = $fileData['emails'];
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_INDUSIND);
 
-            $message->from('refunds@razorpay.com', 'Indusind Netbanking refunds');
-
-            $message->subject($fileData['subject']);
-
-            $message->to($emails);
-
-            $message->attach($fileData['file_path']);
-
-            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::INDUSIND_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 
      /*

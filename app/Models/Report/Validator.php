@@ -22,7 +22,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::DAY             => 'sometimes|integer|between:1,31',
+        Entity::DAY             => 'sometimes|nullable|integer|between:1,31',
         Entity::MONTH           => 'required|integer|between:1,12',
         Entity::YEAR            => 'required|integer',
         Entity::TYPE            => 'required|string',

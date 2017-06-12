@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Indusind;
 use Mail;
 use Excel;
 use Mockery;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -97,6 +98,8 @@ class NetbankingIndusindGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        Mail::fake();
+
         // Generate 2 payments
         $this->createRefundsForExcel();
 
@@ -106,12 +109,12 @@ class NetbankingIndusindGatewayTest extends TestCase
         // date to now unlike first 2 payments
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $this->checkMailQueue();
-
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForNB($this->bank);
 
         $this->checkRefundFileData($data);
+
+        $this->checkMailQueue();
     }
 
 
@@ -238,21 +241,14 @@ class NetbankingIndusindGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $body = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
+        Mail::assertSent(RefundFileMail::class, function ($mail)
+        {
+            $body = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
 
-                        $this->assertEquals($body, $data['body']);
+            $this->assertEquals($body, $mail->viewData['body']);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function mockPaymentFailure()
