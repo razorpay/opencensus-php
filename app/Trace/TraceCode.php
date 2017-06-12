@@ -570,6 +570,9 @@ class TraceCode
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';
     const BATCH_FILE_DELETE                             = 'BATCH_FILE_DELETE';
+    const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
+    const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
+    const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
 

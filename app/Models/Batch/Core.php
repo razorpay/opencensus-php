@@ -8,9 +8,17 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Jobs\Batch as BatchJob;
+use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
 {
+    /**
+     * Queue delay in seconds. Only after 10 s we intend the
+     * asynchronous job to start processing.
+     */
+    const QUEUE_DELAY = 10;
+
     use FileHandlerTrait;
 
     public function create(array $input): Entity
@@ -41,6 +49,8 @@ class Core extends Base\Core
         });
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
+
+        $this->dispatchOnQueueForProcessing($batch);
 
         return $batch;
     }
@@ -202,5 +212,34 @@ class Core extends Base\Core
         RuntimeManager::setMemoryLimit('1024M');
 
         RuntimeManager::setTimeLimit(1000);
+    }
+
+    /**
+     * Dispatches new job onto queue for asynchronous processing of it.
+     *
+     * @param Entity $batch
+     */
+    protected function dispatchOnQueueForProcessing(Entity $batch)
+    {
+        // Currently REFUND type gets processed via CRON every 6 hours.
+        // And so not touching that flow currently.
+
+        if ($batch->getType() === Type::REFUND)
+        {
+            return;
+        }
+
+        // New type in use is PAYMENT_LINK. And we have a new asynchronous job
+        // file for Batch which we are using here.
+
+        // Also for now this is being pushed onto invoice_emails queue only and
+        // later we might have a new queue for this purpose only.
+
+        $job = (new BatchJob(
+                    $this->mode,
+                    $batch->getId()
+                ))->delay(self::QUEUE_DELAY);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }
 }
