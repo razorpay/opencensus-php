@@ -5,31 +5,32 @@ namespace RZP\Console\Commands;
 use Illuminate\Console\Command;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
-class GenerateEmailTemplates extends Command {
+class GenerateEmailTemplates extends Command
+{
 
-	/**
-	 * The console command name.
-	 *
-	 * @var string
-	 */
-	protected $name = 'email:gen';
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'email:gen';
 
-	/**
-	 * The console command description.
-	 *
-	 * @var string
-	 */
-	protected $description = 'Converts email templates to use inline styles';
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Converts email templates to use inline styles';
 
-	/**
-	 * Create a new command instance.
-	 *
-	 * @return void
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-	}
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
     /**
      * Execute the console command.
@@ -89,16 +90,6 @@ class GenerateEmailTemplates extends Command {
             $emailTemplate = file_get_contents($view_directory.$template.".email");
 
             $convertor = new CssToInlineStyles;
-
-            // @note: Commented during upgrade to laravel5.4
-            //      The CssToInlineStyles library in version 2.2 is behaving
-            //      differently from older 1.5 version which was previously being
-            //      used.
-            //
-            // $convertor->setHTML($emailTemplate);
-            // $convertor->setCleanup(false);
-            // $convertor->setExcludeMediaQueries(false);
-            // $convertor->setCSS($cssContent);
 
             $msg = $convert->convert($emailTemplate, $cssContent);
 

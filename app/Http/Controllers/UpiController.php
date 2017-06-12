@@ -17,9 +17,8 @@ class UpiController extends Controller
 {
     public function newHandle(string $api, string $id)
     {
-        $this->core = new Upi\Core;
-
         $body = Request::getContent();
+
         if (substr($id, 0, 3) === 'RAY')
         {
             $forwardUrl = 'http://api2.razorpay.dev/' . Request::path();
@@ -32,7 +31,7 @@ class UpiController extends Controller
         }
         else
         {
-            $xml = $this->core->handleUPIRequest($api, $id, $body);
+            $xml = (new Upi\Core)->handleUPIRequest($api, $id, $body);
 
             return $this->generateXmlResponse($xml);
         }
@@ -40,9 +39,7 @@ class UpiController extends Controller
 
     public function zeroCall($method)
     {
-        $this->core = new Upi\Core;
-
-        return $this->core->callUpiGateway('makeRequest', ['method' => $method, 'params' => []]);
+        return (new Upi\Core)->callUpiGateway('makeRequest', ['method' => $method, 'params' => []]);
     }
 
     public function getPublicKeyList()
@@ -57,9 +54,9 @@ class UpiController extends Controller
         $key = "UPI.$Id.response";
 
         $json =  Cache::get($key) ?? [
-            'success'   =>  false,
-            'error' =>  [],
-            'pending'   =>  true
+            'success' => false,
+            'error'   => [],
+            'pending' => true
         ];
 
         if (!isset($json['pending']))
@@ -79,36 +76,28 @@ class UpiController extends Controller
 
     public function getVpas()
     {
-        $this->core = new Upi\Core;
-
-        $data = $this->core->getVpas();
+        $data = (new Upi\Core)->getVpas();
 
         return ApiResponse::json($data);
     }
 
     public function getVpa(string $id)
     {
-        $this->core = new Upi\Core;
-
-        $data = $this->core->getVpa($id);
+        $data = (new Upi\Core)->getVpa($id);
 
         return ApiResponse::json($data);
     }
 
     public function getVpaPrivate(string $id)
     {
-        $this->core = new Upi\Core;
-
-        $data = $this->core->getVpaPrivate($id);
+        $data = (new Upi\Core)->getVpaPrivate($id);
 
         return ApiResponse::json($data);
     }
 
     public function deleteVpa($id)
     {
-        $this->core = new Upi\Core;
-
-        $data = $this->core->deleteVpa($id);
+        $data = (new Upi\Core)->deleteVpa($id);
 
         return ApiResponse::json($data);
     }
@@ -117,27 +106,21 @@ class UpiController extends Controller
     {
         $input = Request::all();
 
-        $this->core = new Upi\Core;
-
-        $data = $this->core->editVpa($id, $input);
+        $data = (new Upi\Core)->editVpa($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function isValidVpa($vpa)
     {
-        $this->core = new Upi\Core;
-
-        $data = $this->core->isValidVpa($vpa);
+        $data = (new Upi\Core)->isValidVpa($vpa);
 
         return ApiResponse::json($data);
     }
 
     public function isAvailableVpa($vpa)
     {
-        $this->core = new Upi\Core;
-
-        $data = $this->core->isAvailableVpa($vpa);
+        $data = (new Upi\Core)->isAvailableVpa($vpa);
 
         return ApiResponse::json($data);
     }
@@ -153,9 +136,7 @@ class UpiController extends Controller
     {
         $input = Request::all();
 
-        $this->core = new Upi\Core;
-
-        $data = $this->core->disallowVpaPsp($input);
+        $data = (new Upi\Core)->disallowVpaPsp($input);
 
         return ApiResponse::json($data);
     }
@@ -164,9 +145,7 @@ class UpiController extends Controller
     {
         $input = Request::all();
 
-        $this->core = new Upi\Core;
-
-        $data = $this->core->allowVpaPsp($input);
+        $data = (new Upi\Core)->allowVpaPsp($input);
 
         return ApiResponse::json($data);
     }

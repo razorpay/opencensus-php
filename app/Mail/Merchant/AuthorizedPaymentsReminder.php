@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Merchant;
 
 class AuthorizedPaymentsReminder extends Mailable
 {

@@ -317,7 +317,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testFailPayment'];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -346,7 +346,7 @@ class AuthorizeTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testFailPayment'];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {

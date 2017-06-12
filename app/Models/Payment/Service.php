@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error;
-use RZP\Mail\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
+use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
