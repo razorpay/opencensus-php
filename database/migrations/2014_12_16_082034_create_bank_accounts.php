@@ -39,7 +39,8 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_NAME, 40);
 
-            $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30);
+            $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30)
+                  ->nullable();
             $table->string(BankAccount::BENEFICIARY_ADDRESS2, 30)
                   ->nullable();
 
@@ -55,15 +56,21 @@ class CreateBankAccounts extends Migration
             $table->string(BankAccount::MPIN, 255)
                   ->nullable();
 
-            $table->string(BankAccount::BENEFICIARY_CITY, 30);
-            $table->string(BankAccount::BENEFICIARY_STATE, 2);
-            $table->string(BankAccount::BENEFICIARY_COUNTRY, 2);
+            $table->string(BankAccount::BENEFICIARY_CITY, 30)
+                  ->nullable();
+            $table->string(BankAccount::BENEFICIARY_STATE, 2)
+                  ->nullable();
+            $table->string(BankAccount::BENEFICIARY_COUNTRY, 2)
+                  ->nullable();
 
-            $table->char(BankAccount::BENEFICIARY_PIN, 6);
+            $table->char(BankAccount::BENEFICIARY_PIN, 6)
+                  ->nullable();
 
-            $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
+            $table->string(BankAccount::BENEFICIARY_EMAIL, 255)
+                  ->nullable();
 
-            $table->char(BankAccount::BENEFICIARY_MOBILE, 32);
+            $table->char(BankAccount::BENEFICIARY_MOBILE, 32)
+                  ->nullable();
 
             $table->tinyInteger(BankAccount::VIRTUAL)
                   ->default(0);

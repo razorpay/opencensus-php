@@ -80,7 +80,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function getAllOrderedByCreatedAt()

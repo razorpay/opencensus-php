@@ -34,6 +34,9 @@ class Entity extends Base\PublicEntity
     const MPIN                      = 'mpin';
     const VIRTUAL                   = 'virtual';
 
+    const NAME                      = 'name';
+    const IFSC                      = 'ifsc';
+
     // Mobile Banking Enabled
     const MPIN_SET              = 'mpin_set';
 
@@ -69,13 +72,15 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
+        self::IFSC,
+        self::IFSC_CODE,
+        self::NAME,
+        self::BENEFICIARY_NAME,
+        self::ACCOUNT_NUMBER,
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
         self::BENEFICIARY_CODE,
-        self::IFSC_CODE,
-        self::BENEFICIARY_NAME,
-        self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
@@ -95,25 +100,15 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::ENTITY,
-        self::BENEFICIARY_CODE,
-        self::IFSC_CODE,
-        self::BENEFICIARY_NAME,
+        self::IFSC,
+        self::NAME,
         self::ACCOUNT_NUMBER,
-        self::BENEFICIARY_ADDRESS1,
-        self::BENEFICIARY_ADDRESS2,
-        self::BENEFICIARY_ADDRESS3,
-        self::BENEFICIARY_ADDRESS4,
-        self::BENEFICIARY_EMAIL,
-        self::BENEFICIARY_MOBILE,
-        self::BENEFICIARY_CITY,
-        self::BENEFICIARY_STATE,
-        self::BENEFICIARY_COUNTRY,
-        self::BENEFICIARY_PIN,
-        self::MPIN_SET,
     );
 
     protected $appends = [
-        self::MPIN_SET
+        self::NAME,
+        self::IFSC,
+        self::MPIN_SET,
     ];
 
     protected $guarded = array(self::ID);
@@ -196,6 +191,11 @@ class Entity extends Base\PublicEntity
         $mpin = $this->attributes[self::MPIN];
 
         return Crypt::decrypt($mpin);
+    }
+
+    protected function getNameAttribute()
+    {
+        return $this->attributes[self::BENEFICIARY_NAME];
     }
 
     public function settlements()
@@ -285,6 +285,11 @@ class Entity extends Base\PublicEntity
         $code = $this->attributes[self::IFSC_CODE] = $code;
 
         return strtoupper($code);
+    }
+
+    protected function getIfscAttribute()
+    {
+        return $code = $this->attributes[self::IFSC_CODE];
     }
 
     public function equals($baCopy)
