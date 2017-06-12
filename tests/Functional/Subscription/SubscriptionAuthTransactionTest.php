@@ -277,7 +277,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('Recurring is not set for the subscription payment', $ex->getMessage());
+            $this->assertEquals('Subscription payment cannot be made without saving the card', $ex->getMessage());
 
             return;
         }

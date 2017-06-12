@@ -1237,7 +1237,7 @@ trait Authorize
     }
 
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
-                                                          Customer\Entity $localCustomer,
+                                                          $localCustomer,
                                                           Customer\AppToken\Entity $customerApp,
                                                           Payment\Entity $payment,
                                                           array & $input,
