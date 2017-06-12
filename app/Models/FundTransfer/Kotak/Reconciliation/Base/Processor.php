@@ -274,7 +274,7 @@ class Processor extends Base\Core
     protected function sendReconciliationSummaryMail($response)
     {
         if (($this->mode === Mode::TEST) and
-            ($this->app->environment('dev', 'testing') === false))
+            ($this->app->environment('dev', 'testing', 'beta') === false))
         {
             return;
         }

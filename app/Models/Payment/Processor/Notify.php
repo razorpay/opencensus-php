@@ -565,7 +565,7 @@ class Notify
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
         // so env=dev or env=testing overrides TEST mode
-        if ($this->app->environment('dev', 'testing'))
+        if ($this->app->environment('dev', 'testing', 'beta'))
         {
             return true;
         }
