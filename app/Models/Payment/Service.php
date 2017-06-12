@@ -1115,8 +1115,6 @@ class Service extends Base\Service
     {
         $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
 
-        $payments = $payments->toArrayPublic();
-
         $data = compact('merchant', 'payments', 'final');
 
         $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);

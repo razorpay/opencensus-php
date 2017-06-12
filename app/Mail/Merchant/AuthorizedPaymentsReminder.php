@@ -26,14 +26,7 @@ class AuthorizedPaymentsReminder extends Mailable
 
         $name = $this->data['merchant'][Merchant\Entity::NAME];
 
-        $to = [];
-
-        foreach ($emails as $email)
-        {
-            $to[] = [$email, $name];
-        }
-
-        $this->to($to);
+        $this->to($emails, $name);
 
         return $this;
     }
