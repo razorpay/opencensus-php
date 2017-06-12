@@ -1976,10 +1976,16 @@ trait Authorize
         // A hacky way to do this would be to override the cron auth
         // with merchant auth. This might cause other issues though.
         //
-        if (($payment->getApiOrderId() !== null) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
+        if ($this->app['basicauth']->isPrivilegeAuth() === false)
         {
-            $this->fillReturnDataWithOrder($payment, $returnData);
+            if ($payment->hasSubscription() === true)
+            {
+                $this->fillReturnDataWithSubscription($payment, $returnData);
+            }
+            else if ($payment->hasOrder() === true)
+            {
+                $this->fillReturnDataWithOrder($payment, $returnData);
+            }
         }
 
         if (($this->app['basicauth']->isPrivateAuth() === false) and
@@ -1989,6 +1995,13 @@ trait Authorize
         }
 
         return $returnData;
+    }
+
+    protected function fillReturnDataWithSubscription(Payment\Entity $payment, array & $data)
+    {
+        $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
+
+        $data['razorpay_signature'] = $this->getSignature($data);
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)

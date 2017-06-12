@@ -98,6 +98,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
+                <option value="INDB">Indusind Bank</option>
             </select>
         </td>
     </tr>
