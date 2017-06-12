@@ -315,7 +315,7 @@ class Entity extends Base\PublicEntity
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 
-    protected function setPublicProcessedOnAttribute(array &$array)
+    protected function setPublicSettledOnAttribute(array &$array)
     {
         $processedAt = $this->getAttribute(self::PROCESSED_AT);
 
