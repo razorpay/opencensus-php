@@ -24,6 +24,7 @@ import * as NotificationActions from 'rzp/modules/notifications';
 // )
 
 const INFO = {
+  icon: 'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
   dev: 'End-point on your development server that we\'ll redirect your users back to after they connect with Razorpay. Can be localhost. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.',
   prod: 'End-point on your production server that we\'ll redirect your users back to after they connect with Razorpay. Must be HTTPS. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.'
 }
@@ -86,7 +87,19 @@ class NewApplicationForm extends Component {
                     validate={[required()]}
                   />
                 </div>
-                
+              </div>
+
+              <div class="form-group">
+                <div className="col-md-offset-2 upload-container col-md-1">
+                  <i class="fa fa-folder-open"></i>
+                  <span>Upload App Icon</span>
+                </div>
+                <small class="col-md-9 help-block">
+                  <i class="icon icon-info-circle" />
+                  <span>
+                    {INFO.icon}
+                  </span>
+                </small>
               </div>
 
               <div class="col-md-offset-2 col-md-10">
@@ -193,6 +206,26 @@ class NewApplicationForm extends Component {
                     {INFO.prod}
                   </span>
                 </small>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                  <div class="btn-toolbar">
+                    <AsyncButton
+                      class="btn btn-primary pull-right"
+                      text="Save"
+                      pendingText="Saving..."
+                      onClick={() => {}}
+                    />
+
+                    <AsyncButton
+                      type="button"
+                      class="btn btn-default pull-right"
+                      text="Preview OAuth Page"
+                      onClick={() => {}}
+                    />
+                  </div>
+                </div>
               </div>
             </Fieldset>
           </form>
