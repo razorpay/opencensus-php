@@ -103,7 +103,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::END_DATE);
     }
 
-    public function setUsedCount($count)
+    public function setUsedCount(int $count)
     {
         return $this->setAttribute(self::USED_COUNT, $count);
     }

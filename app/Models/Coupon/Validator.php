@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -31,7 +32,7 @@ class Validator extends Base\Validator
         self::COUPON_EXPIRY,
     ];
 
-    public function validateCouponExpiry($input)
+    public function validateCouponExpiry(array $input)
     {
         if ((isset($input[Entity::START_DATE]) === false) or
             (isset($input[Entity::END_DATE]) === false))
@@ -46,7 +47,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function couponApplyValidator($merchant)
+    public function couponApplyValidator(Merchant\Entity $merchant)
     {
         if (($this->entity->getUsage() !== null) and
             ($this->entity->getUsedCount() === $this->entity->getUsage()))

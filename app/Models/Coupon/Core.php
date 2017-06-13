@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Schedule;
 use RZP\Models\Promotion;
 use RZP\Constants\Entity as PublicEntity;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
 
 class Core extends Base\Core
@@ -30,14 +31,14 @@ class Core extends Base\Core
         return $coupon;
     }
 
-    public function apply($merchant, $coupon)
+    public function apply(Merchant\Entity $merchant, Entity $coupon)
     {
         $this->validateAndApplyMerchantPromotion($merchant, $coupon);
 
         return ['msg' => 'Coupon Applied Successfully'];
     }
 
-    protected function validateAndApplyMerchantPromotion($merchant, $coupon)
+    protected function validateAndApplyMerchantPromotion(Merchant\Entity$merchant, Entity $coupon)
     {
         $promotion = $coupon->source()->firstOrFail();
 

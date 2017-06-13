@@ -78,7 +78,7 @@ class Service extends Base\Service
         return [$couponCode, $merchantId];
     }
 
-    protected function isUsed($coupon)
+    protected function isUsed(Entity $coupon)
     {
         $entity = $coupon->source()->firstOrFail();
 
