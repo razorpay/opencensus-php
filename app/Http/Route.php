@@ -1170,6 +1170,13 @@ final class Route
         'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
         'gateway_update_rule'              => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
+        'terminal_toggle'                  => '*',
+        'terminal_delete'                  => Permission::DELETE_TERMINAL,
+        'terminal_reassign_merchant'       => Permission::ASSIGN_MERCHANT_TERMINAL,
+        'terminal_add_merchant'            => '*',
+        'terminal_remove_merchant'         => '*',
+        'emi_plan_delete'                  => Permission::DELETE_EMI_PLAN,
+        'iin_edit'                         => Permission::EDIT_IIN_RULE,
     ];
 
     public static $direct = [

@@ -50,6 +50,15 @@ class BeneficiaryFile extends Mailable
         return $this;
     }
 
+    protected function addSubject()
+    {
+        $subject = 'Razorpay updated beneficiary file for Kotak';
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
     protected function addHtmlView()
     {
         $this->view('emails.message');

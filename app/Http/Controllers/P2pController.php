@@ -12,14 +12,14 @@ class P2pController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('p2p')->->create($input);
+        $data = $this->service('p2p')->create($input);
 
         return ApiResponse::json($data);
     }
 
     public function getP2p($id)
     {
-        $data = $this->service('p2p')->->getById($id);
+        $data = $this->service('p2p')->getById($id);
 
         return ApiResponse::json($data);
     }
@@ -28,14 +28,14 @@ class P2pController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('p2p')->->getMultiple($input);
+        $data = $this->service('p2p')->getMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function rejectP2p($id)
     {
-        $data = $this->service('p2p')->->reject($id);
+        $data = $this->service('p2p')->reject($id);
 
         return ApiResponse::json($data);
     }
@@ -51,11 +51,11 @@ class P2pController extends Controller
 
     public function fetchCollectRequests()
     {
-        return $this->service('p2p')->->fetchCollectRequests();
+        return $this->service('p2p')->fetchCollectRequests();
     }
 
     public function fetchCollectRequestsPrivate($id)
     {
-        return $this->service('p2p')->->fetchCollectRequestsForCustomer($id);
+        return $this->service('p2p')->fetchCollectRequestsForCustomer($id);
     }
 }
