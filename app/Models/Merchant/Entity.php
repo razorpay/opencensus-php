@@ -10,6 +10,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Invitation;
 use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
@@ -977,6 +978,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(Invitation\Entity::class)
+                    ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
     public function isEmailOptional()
