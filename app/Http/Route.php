@@ -1323,6 +1323,11 @@ final class Route
         'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
+        'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
     ];
 
     /*

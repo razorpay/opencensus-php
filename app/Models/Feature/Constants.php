@@ -34,6 +34,7 @@ class Constants
     const EXPOSE_DOWNTIMES      = 'expose_downtimes';
     const NEW_LOAD_SORTING      = 'new_load_sorting';
     const PAYMENT_FAILURE_EMAIL = 'payment_failure_email';
+    const VIRTUAL_ACCOUNTS      = 'virtual_accounts';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -64,6 +65,7 @@ class Constants
         self::EXPOSE_DOWNTIMES      => true,
         self::NEW_LOAD_SORTING      => true,
         self::PAYMENT_FAILURE_EMAIL => true,
+        self::VIRTUAL_ACCOUNTS      => true,
     ];
 
     public static $visibleFeaturesMap = [

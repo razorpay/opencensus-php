@@ -19,6 +19,8 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
         $this->ba->privateAuth();
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');

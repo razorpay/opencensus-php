@@ -14,7 +14,7 @@ class Provider
     const VVS      = 'vvs';
 
     const MASTER = [
-        Provider::YESBANK  => 'RAZORP',
+        Provider::YESBANK   => 'RAZORP',
         Provider::KOTAK     => 'RZRP',
         Provider::VVS       => 'RAZOR',
     ];
