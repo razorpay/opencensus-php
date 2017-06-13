@@ -59,8 +59,7 @@ class Entity extends Base\PublicEntity
 
     public function payment()
     {
-        return $this->belongsTo(
-            'RZP\Models\Payment\Entity', self::PAYMENT_ID);
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     public function merchant()
@@ -114,12 +113,5 @@ class Entity extends Base\PublicEntity
     public function getPayerIfsc()
     {
         return $this->getAttribute(self::PAYER_IFSC);
-    }
-
-    // ----------------------- Setters ---------------------------------------------
-
-    public function setAmount($amount)
-    {
-        return $this->setAttribute(self::AMOUNT, $amount);
     }
 }

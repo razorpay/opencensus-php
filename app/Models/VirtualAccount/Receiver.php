@@ -123,7 +123,7 @@ class Receiver
      */
     protected function generateAccountNumberForProvider($provider)
     {
-        $master = Provider::MASTER[$provider];
+        $master = Provider::ROOT[$provider];
 
         $timestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
 

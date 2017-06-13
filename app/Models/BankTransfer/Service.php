@@ -38,60 +38,6 @@ class Service extends Base\Service
             $input
         );
 
-        $data = $this->validateVirtualAccount($input);
-
-        return $data;
-    }
-
-    public function notify(array $input): array
-    {
-        $this->trace->info(
-            TraceCode::BANK_TRANSFER_NOTIFY_REQUEST,
-            $input
-        );
-
-        $this->validator->validateInput('notify', $input);
-
-        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
-
-        if ($bankTransfer !== null)
-        {
-            $this->setVirtualAccount($bankTransfer);
-
-            $this->setMerchant();
-
-            $paymentProcessor = new PaymentProcessor($this->merchant);
-
-            $this->repo->transaction(function() use ($bankTransfer, $paymentProcessor)
-            {
-                $paymentId = $bankTransfer->payment->getId();
-
-                $paymentProcessor->processBankTransferPayment($paymentId);
-
-                $this->updateVirtualAccount($bankTransfer);
-            });
-
-            $this->app['events']->fire('api.virtual_account.credited', [$bankTransfer]);
-        }
-        else
-        {
-            $this->trace->critical(
-                TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
-                [
-                    'input' => $input,
-                ]
-            );
-        }
-
-        return [
-            'success'        => true,
-            'message'        => null,
-            'transaction_id' => $input[Entity::REQ_UTR],
-        ];
-    }
-
-    protected function validateVirtualAccount(array $input): array
-    {
         $bankTransfer = $this->core->create($input);
 
         $uniqueUtr = $this->isUtrUnique($bankTransfer);
@@ -100,17 +46,7 @@ class Service extends Base\Service
 
         if (($expected === true) and ($uniqueUtr === true))
         {
-            $this->setMerchant();
-
-            $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
-
-            $paymentProcessor = new PaymentProcessor($this->merchant);
-
-            $payment = $paymentProcessor->processBankTransferValidation($paymentInput);
-
-            $bankTransfer->payment()->associate($payment);
-
-            $bankTransfer->merchant()->associate($this->merchant);
+            $this->validateExpectedBankTransfer($bankTransfer);
 
             $data = [
                 'valid'          => true,
@@ -136,6 +72,73 @@ class Service extends Base\Service
         $data[Entity::REQ_UTR] = $bankTransfer->getUtr();
 
         return $data;
+    }
+
+    public function notify(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_NOTIFY_REQUEST,
+            $input
+        );
+
+        $this->validator->validateInput('notify', $input);
+
+        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
+
+        if ($bankTransfer !== null)
+        {
+            $this->notifyExpectedBankTransfer($bankTransfer);
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
+                [
+                    'input' => $input,
+                ]
+            );
+        }
+
+        return [
+            'success'        => true,
+            'message'        => null,
+            'transaction_id' => $input[Entity::REQ_UTR],
+        ];
+    }
+
+    protected function validateExpectedBankTransfer(Entity $bankTransfer)
+    {
+        $this->setMerchant();
+
+        $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
+
+        $paymentProcessor = new PaymentProcessor($this->merchant);
+
+        $payment = $paymentProcessor->processBankTransferValidation($paymentInput);
+
+        $bankTransfer->payment()->associate($payment);
+
+        $bankTransfer->merchant()->associate($this->merchant);
+    }
+
+    protected function notifyExpectedBankTransfer(Entity $bankTransfer)
+    {
+        $this->setVirtualAccount($bankTransfer);
+
+        $this->setMerchant();
+
+        $paymentProcessor = new PaymentProcessor($this->merchant);
+
+        $this->repo->transaction(function() use ($bankTransfer, $paymentProcessor)
+        {
+            $paymentId = $bankTransfer->payment->getId();
+
+            $paymentProcessor->processBankTransferPayment($paymentId);
+
+            $this->updateVirtualAccount($bankTransfer);
+        });
+
+        $this->app['events']->fire('api.virtual_account.credited', [$bankTransfer]);
     }
 
     protected function isUtrUnique(Entity $bankTransfer): bool

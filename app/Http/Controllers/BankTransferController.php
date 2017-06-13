@@ -2,10 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Trace\TraceCode;
-use RZP\Models\BankTransfer;
-use ApiResponse;
 use Request;
+use ApiResponse;
+use RZP\Models\BankTransfer;
 
 class BankTransferController extends Controller
 {

@@ -16,34 +16,34 @@ class VirtualAccountController extends Controller
         $this->service = VirtualAccount\Service::class;
     }
 
-    public function createVirtualAccount()
+    public function create()
     {
         $input = Request::all();
 
-        $response = $this->service()->createVirtualAccount($input);
+        $response = $this->service()->create($input);
 
         return ApiResponse::json($response);
     }
 
-    public function editVirtualAccount(string $id)
+    public function edit(string $id)
     {
         $input = Request::all();
 
-        $response = $this->service()->editVirtualAccount($id, $input);
+        $response = $this->service()->edit($id, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function deleteVirtualAccount(string $id)
+    public function delete(string $id)
     {
-        $response = $this->service()->deleteVirtualAccount($id);
+        $response = $this->service()->delete($id);
 
         return ApiResponse::json($response);
     }
 
     public function getVirtualAccount(string $id)
     {
-        $response = $this->service()->getVirtualAccount($id);
+        $response = $this->service()->getSingle($id);
 
         return ApiResponse::json($response);
     }
@@ -52,7 +52,7 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->getVirtualAccounts($input);
+        $response = $this->service()->getMultiple($input);
 
         return ApiResponse::json($response);
     }

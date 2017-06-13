@@ -18,11 +18,11 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function createVirtualAccount(array $input)
+    public function create(array $input)
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST, $input);
 
-        $customer = $this->setCustomerIfGiven($input);
+        $customer = $this->getCustomerIfGiven($input);
 
         $this->setDefaultReceiverTypeIfNeeded($input);
 
@@ -43,7 +43,7 @@ class Service extends Base\Service
         return $this->virtualAccount->toArrayPublic();
     }
 
-    public function getVirtualAccount(string $id)
+    public function getSingle(string $id)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -57,7 +57,7 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
-    public function getVirtualAccounts(array $input)
+    public function getMultiple(array $input)
     {
         $virtualAccounts = $this->repo->virtual_account
                                 ->fetch($input, $this->merchant->getId());
@@ -65,7 +65,7 @@ class Service extends Base\Service
         return $virtualAccounts->toArrayPublic();
     }
 
-    public function editVirtualAccount(string $id, array $input)
+    public function edit(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -77,7 +77,7 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
-    public function deleteVirtualAccount(string $id)
+    public function delete(string $id)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -89,7 +89,7 @@ class Service extends Base\Service
         return $virtualAccount->toArrayDeleted();
     }
 
-    protected function setCustomerIfGiven(array $input)
+    protected function getCustomerIfGiven(array $input)
     {
         $customer = null;
 
