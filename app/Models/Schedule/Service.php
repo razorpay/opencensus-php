@@ -75,7 +75,7 @@ class Service extends Base\Service
         return $schedule->toArrayPublic();
     }
 
-    public function processTasks(arary $input)
+    public function processTasks(array $input)
     {
         (new ScheduleTask\Validator)->validateInput('processTasks', $input);
 

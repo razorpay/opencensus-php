@@ -16,7 +16,7 @@ class CouponController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Coupon\Service)->apply($input);
+        $data = $this->service()->apply($input);
 
         return ApiResponse::json($data);
     }

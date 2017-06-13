@@ -57,7 +57,7 @@ class Core extends Base\Core
         return (new MerchantPromotion\Core)->processTasks($tasks);
     }
 
-    public function isUsed(Entity $promotion)
+    public function isUsed(Entity $promotion): bool
     {
         $merchantPromotion = $this->repo->merchant_promotion->
                                 findByPromotionId($promotion->getId());

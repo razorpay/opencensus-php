@@ -471,7 +471,6 @@ return [
         ]
     ],
 
-
     'testTransactionOnCaptureForPostpaid' => [
         'response' => [
             'content' => [

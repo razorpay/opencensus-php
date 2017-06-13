@@ -3,10 +3,8 @@
 namespace RZP\Models\Coupon;
 
 use RZP\Models\Base;
-use RZP\Models\Schedule;
-use RZP\Models\Promotion;
-use RZP\Constants\Entity as PublicEntity;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity as PublicEntity;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
 
 class Core extends Base\Core
@@ -15,12 +13,13 @@ class Core extends Base\Core
     {
         $publicEntityId = $input[Entity::ENTITY_ID];
 
-        (PublicEntity::getEntityClass($input[Entity::ENTITY_TYPE]))::
-            verifyIdAndSilentlyStripSign($input[Entity::ENTITY_ID]);
+        $entityType = $input[Entity::ENTITY_TYPE];
+
+        $entityClass = PublicEntity::getEntityClass($entityType);
+
+        $entityClass::verifyIdAndSilentlyStripSign($input[Entity::ENTITY_ID]);
 
         $coupon = (new Entity)->build($input);
-
-        $entityType = $input[Entity::ENTITY_TYPE];
 
         $entity = $this->repo->$entityType->findByPublicId($publicEntityId);
 

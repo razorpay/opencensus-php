@@ -46,9 +46,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::START_DATE => null,
-        self::END_DATE   => null,
-        self::USAGE      => null,
         self::USED_COUNT => 0,
     ];
 

@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ITERATIONS);
     }
 
-    public function areCreditsExpirable()
+    public function areCreditsExpirable(): bool
     {
         return $this->getAttribute(self::CREDITS_EXPIRABLE);
     }

@@ -3,10 +3,11 @@
 namespace RZP\Models\Merchant\Credits\Transaction;
 
 use RZP\Models\Base;
+use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
-    public function create(int $amount, Entity $txn, string $creditType)
+    public function create(int $creditAmount, Transaction\Entity $txn, string $creditType)
     {
         $timestamp = time();
 

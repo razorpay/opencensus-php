@@ -4,23 +4,17 @@ namespace RZP\Models\Coupon;
 
 use Illuminate\Database\QueryException;
 
+use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Exception;
-use RZP\Models\Merchant\Credits;
-use RZP\Constants;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\Promotions as MerchantPromotion;
-use Razorpay\Spine\Exception\DbQueryException;
 
 class Service extends Base\Service
 {
     public function __construct()
     {
         parent::__construct();
-
-        $this->core = new Core;
 
         $this->validator = new Validator;
     }
@@ -29,7 +23,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::COUPON_CREATE_REQUEST, $input);
 
-        $coupon = $this->core->create($input);
+        $coupon = $this->core()->create($input);
 
         return $coupon->toArrayAdmin();
     }
@@ -58,35 +52,6 @@ class Service extends Base\Service
         return $coupon->toArrayDeleted();
     }
 
-    protected function parseInput(array $input)
-    {
-        $this->validator->validateInput('apply', $input);
-
-        $couponCode = $input['code'];
-
-        $merchantId = $input['merchant_id'];
-
-        $this->trace->info(
-            TraceCode::COUPON_APPLY_REQUEST,
-            [
-                'code'        => $couponCode,
-                'merchant_id' => $merchantId,
-            ]);
-
-        return [$couponCode, $merchantId];
-    }
-
-    protected function isUsed(Entity $coupon)
-    {
-        $entity = $coupon->source()->firstOrFail();
-
-        $entityNameSpace = Constants\Entity::getEntityNamespace(
-                                $coupon->getEntityType()) . '\Core';
-
-        return (new $entityNameSpace)->isUsed($entity);
-    }
-
-
     public function apply(array $input)
     {
         list($couponCode, $merchantId) = $this->parseInput($input);
@@ -95,8 +60,36 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $result = $this->core->apply($merchant, $coupon);
+        $result = $this->core()->apply($merchant, $coupon);
 
         return $result;
+    }
+
+    protected function parseInput(array $input)
+    {
+        $couponCode = $input[Entity::CODE];
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+         $this->trace->info(
+            TraceCode::COUPON_APPLY_REQUEST,
+            [
+                Entity::CODE        => $couponCode,
+                Entity::MERCHANT_ID => $merchantId,
+            ]);
+
+        $this->validator->validateInput('apply', $input);
+
+        return [$couponCode, $merchantId];
+    }
+
+    protected function isUsed(Entity $coupon): bool
+    {
+        $entity = $coupon->source()->firstOrFail();
+
+        $entityNameSpace = Constants\Entity::getEntityNamespace(
+                                $coupon->getEntityType()) . '\Core';
+
+        return (new $entityNameSpace)->isUsed($entity);
     }
 }
