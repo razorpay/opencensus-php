@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -57,6 +58,12 @@ class Service extends Base\Service
         list($couponCode, $merchantId) = $this->parseInput($input);
 
         $coupon = $this->repo->coupon->fetchByCode($couponCode);
+
+        if ($coupon === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE);
+        }
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
