@@ -23,7 +23,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
   showCreateVAModal = virtualAccount => {
     this.props.openModal({
       size: 'small',
-      component: <CreateVirtualAccount />,
+      component: <CreateVirtualAccount virtualAccount={virtualAccount} />,
     });
   };
 
@@ -56,6 +56,22 @@ export default class VirtualAccountsListContainer extends ListContainer {
               amountPaid,
               status,
               createdAt,
+              [
+                'Actions',
+                item => {
+                  return (
+                    <div class="row-action btn-group">
+                      <button
+                        class="btn btn-xs btn-default"
+                        onClick={() => this.showCreateVAModal(item)}
+                      >
+                        <i class="icon icon-edit" />
+                        <span>edit</span>
+                      </button>
+                    </div>
+                  );
+                },
+              ],
             ]}
             count={this.state.count}
             skip={this.state.skip}

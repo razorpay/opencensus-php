@@ -16,12 +16,14 @@ import { saveVirtualAccount } from 'merchant/modules/virtualaccounts/list';
 })
 @reduxForm({
   form: 'createVirtualAccount',
-  initialValues: {
-    name: '',
-    descriptor: '',
-  },
 })
 export default class CreateVirtualAccount extends Component {
+  componentWillMount() {
+    if (this.props.virtualAccount) {
+      this.props.initialize(this.props.virtualAccount);
+    }
+  }
+
   save = props => {
     debugger;
     return this.props
