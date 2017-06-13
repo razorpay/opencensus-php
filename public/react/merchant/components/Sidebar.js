@@ -128,6 +128,22 @@ export default class Sidebar extends Component {
                     beta={true}
                   />
 
+                  <ShowWhen
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtualaccounts"
+                  >
+                    <div class="divider" />
+                  </ShowWhen>
+
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-store"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtualaccounts"
+                    beta={true}
+                  />
+
                   <div class="divider" />
 
                   <MainNavLink
@@ -207,6 +223,15 @@ export default class Sidebar extends Component {
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
+                    beta={true}
+                  />
+
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-store text-primary"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtualaccounts"
                     beta={true}
                   />
 

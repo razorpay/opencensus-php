@@ -7,6 +7,7 @@ import Order from 'merchant/models/Order';
 import Settlement from 'merchant/models/Settlement';
 import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
+import VirtualAccount from 'merchant/models/VirtualAccount';
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
@@ -90,3 +91,9 @@ export const fetchSubscriptions = () => {
   };
 };
 export const subscriptionsReducer = makeCollectionReducer('SUBSCRIPTIONS');
+
+// Virtual Accounts
+
+export const fetchVirtualAccounts = params =>
+  fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
+export const virtualAccountsReducer = makeCollectionReducer('VIRTUAL_ACCOUNTS');

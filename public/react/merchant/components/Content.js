@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+import { matchDetail } from 'merchant/routes';
+import Slider from 'rzp/ui/Slider';
+import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/HomeContainer';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
@@ -14,9 +17,7 @@ import Reports from 'merchant/containers/Reports';
 import TeamManagement from 'merchant/containers/Team';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
-import { matchDetail } from 'merchant/routes';
-import Slider from 'rzp/ui/Slider';
-import ShowWhen from 'merchant/components/ShowWhen';
+import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 
 // Below will be removed with old navigation removal
 import PaymentsList from 'merchant/containers/Payments/List';
@@ -131,6 +132,7 @@ export default class Content extends Component {
                 />
 
                 <Route path="/marketplace" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
 
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
@@ -185,6 +187,7 @@ export default class Content extends Component {
                 <Route path="/customers" component={InvoicingContainer} />
 
                 <Route path="/marketplace" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
 

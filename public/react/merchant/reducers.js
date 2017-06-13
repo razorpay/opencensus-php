@@ -35,6 +35,7 @@ import {
   refundsReducer,
   settlementsReducer,
   subscriptionsReducer,
+  virtualAccountsReducer,
 } from 'rzp/modules/collection';
 
 export default combineReducers({
@@ -72,4 +73,5 @@ export default combineReducers({
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,
   reversals: reversalsReducer,
+  virtualaccounts: virtualAccountsReducer,
 });

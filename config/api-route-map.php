@@ -311,6 +311,25 @@ return [
             'routeName' => 'invitations_delete'
         ],
         'invitation_fetch'                  => 'invitations',
+
+        // Virtual Accounts
+        'virtual_account_fetch_multiple'    => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_account_fetch_multiple'
+        ],
+        'virtual_account_fetch'             => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_account_fetch'
+        ],
+        'virtual_account_create'            => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_account_create'
+        ],
+        'virtual_account_delete'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_account_close'
+        ]
+
     ],
 
     // auth
