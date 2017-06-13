@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Schedule;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
@@ -78,7 +80,7 @@ class Service extends Base\Service
         (new ScheduleTask\Validator)->validateInput('processTasks', $input);
 
         //all tasks which are due and less than time + 1 day
-        $timestamp = time() + 1*24*60*60;
+        $timestamp = Carbon::now('Asia/Kolkata')->timestamp + 1*24*60*60;
 
         $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
 

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Promotions;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
@@ -58,11 +60,6 @@ class Core extends Base\Core
                 $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
                     $merchant->getId(), $promotion->getId());
 
-                if ($merchantPromotion->getExpired() === true)
-                {
-                    continue;
-                }
-
                 $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion,
                         $scheduleTask)
                 {
@@ -76,15 +73,17 @@ class Core extends Base\Core
                         $merchantPromotion->updateRemainingRuns();
 
                         $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+
+                        $this->repo->saveOrFail($scheduleTask);
                     }
                     else
                     {
                         $merchantPromotion->setExpired();
+
+                        $this->repo->deleteOrFail($scheduleTask);
                     }
 
                     $this->repo->saveOrFail($merchantPromotion);
-
-                    $this->repo->saveOrFail($scheduleTask);
                 });
 
                 $successIds[] = $scheduleTask->getId();
@@ -160,6 +159,7 @@ class Core extends Base\Core
         {
             return;
         }
+
         $creditInput = [
             'campaign'     => $promotion->getName() . 'Expired',
             'promotion_id' => $promotion->getId(),
@@ -180,8 +180,13 @@ class Core extends Base\Core
 
     protected function calculateCreditToExpire(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
-        $credit = $this->repo->credits->findNonExpiredCredits(
-                    $merchant->getId(), $promotion->getId(), time());
+        $credit = $this->repo->credits->findCreditsToExpire(
+                    $merchant->getId(), $promotion->getId(), Carbon::now('Asia/Kolkata')->timestamp);
+
+        if ($credit === null)
+        {
+            return 0;
+        }
 
         return ($credit->getValue() - $credit->getUsed());
     }

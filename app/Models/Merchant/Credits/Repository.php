@@ -61,6 +61,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::TYPE, '=', $type)
+                    ->whereRaw(Entity::VALUE . '>' . Entity::USED)
                     ->where(function ($query) use ($timestamp)
                         {
                             $query->where(Entity::EXPIRING_AT, '>', $timestamp)
@@ -73,12 +74,13 @@ class Repository extends Base\Repository
 
     }
 
-    public function findNonExpiredCredits(string $merchantId, string $promotionId, int $timestamp)
+    public function findCreditsToExpire(string $merchantId, string $promotionId, int $timestamp)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::PROMOTION_ID, '=', $promotionId)
                     ->where(Entity::EXPIRING_AT, '<' , $timestamp)
+                    ->whereRaw(Entity::VALUE . '>' . Entity::USED)
                     ->first();
     }
 }

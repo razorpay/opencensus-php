@@ -50,6 +50,9 @@ class CreateCoupons extends Migration
 
             $table->integer(Coupon::UPDATED_AT);
 
+            $table->integer(Coupon::DELETED_AT)
+                  ->nullable();
+
             $table->foreign(COUPON::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

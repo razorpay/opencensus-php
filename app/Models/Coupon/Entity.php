@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Coupon;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -13,6 +15,7 @@ class Entity extends Base\PublicEntity
     const END_DATE    = 'end_date';
     const USAGE       = 'usage';
     const USED_COUNT  = 'used_count';
+    const DELETED_AT  = 'deleted_at';
 
     const ENTITY_TYPE_LENGTH = 20;
     const COUPON_CODE_LENGTH = 10;
@@ -27,18 +30,6 @@ class Entity extends Base\PublicEntity
         self::START_DATE,
         self::END_DATE,
         self::USAGE,
-    ];
-
-    protected $public = [
-        self::ID,
-        self::CODE,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
-        self::START_DATE,
-        self::END_DATE,
-        self::USAGE,
-        self::CREATED_AT,
-        self::UPDATED_AT,
     ];
 
     protected $visible = [

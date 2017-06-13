@@ -202,6 +202,12 @@ class ScheduleTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(1);
+
+        Carbon::setTestNow($time);
+
         $response = $this->makeRequestAndGetContent($request);
 
         $credits = $this->getLastEntity('credits', true);
@@ -230,6 +236,12 @@ class ScheduleTest extends TestCase
         $this->applyCouponOnMerchant($coupon['code']);
 
         $request = $this->testData['testExpireCredits'];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(1);
+
+        Carbon::setTestNow($time);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -277,6 +289,12 @@ class ScheduleTest extends TestCase
         $this->ba->appAuth();
 
         $request = $this->testData['testExpireCredits'];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(1);
+
+        Carbon::setTestNow($time);
 
         $response = $this->makeRequestAndGetContent($request);
 

@@ -14,49 +14,44 @@ class Core extends Base\Core
         $credits = $this->repo->credits->getCreditsSortedWithExpiry(
                         $timestamp, $txn->merchant->getId(), $creditType);
 
-
-        $creditAmount = $amount;
-
-        foreach ($credits as $credit)
+        $this->repo->transaction(function() use ($credits, $creditAmount, $txn)
         {
-            if ($creditAmount === 0)
+            foreach ($credits as $credit)
             {
-                break;
+                if ($creditAmount === 0)
+                {
+                    break;
+                }
+
+                $availableCredits = $credit->getValue() - $credit->getUsed();
+
+                $creditTxn = new Entity;
+
+                $creditTxn->transaction()->associate($txn);
+
+                if ($availableCredits < $creditAmount)
+                {
+                    $creditsUsed = $availableCredits;
+
+                    $creditAmount = $creditAmount - $creditsUsed;
+                }
+                else
+                {
+                    $creditsUsed = $creditAmount;
+
+                    $creditAmount = 0;
+                }
+
+                $credit->updateUsed($creditsUsed);
+
+                $creditTxn->credits()->associate($credit);
+
+                $creditTxn->updateCreditsUsed($creditsUsed);
+
+                $this->repo->saveOrFail($credit);
+
+                $this->repo->saveOrFail($creditTxn);
             }
-
-            $availableCredits = $credit->getValue() - $credit->getUsed();
-
-            if ($availableCredits === 0)
-            {
-                continue;
-            }
-
-            $creditTxn = new Entity;
-
-            $creditTxn->transaction()->associate($txn);
-
-            if ($availableCredits < $creditAmount)
-            {
-                $creditsUsed = $availableCredits;
-
-                $creditAmount = $creditAmount - $creditsUsed;
-            }
-            else
-            {
-                $creditsUsed = $creditAmount;
-
-                $creditAmount = 0;
-            }
-
-            $credit->updateUsed($creditsUsed);
-
-            $creditTxn->credits()->associate($credit);
-
-            $creditTxn->updateCreditsUsed($creditsUsed);
-
-            $this->repo->saveOrFail($credit);
-
-            $this->repo->saveOrFail($creditTxn);
-        }
+        });
     }
 }

@@ -55,8 +55,6 @@ class Service extends Base\Service
 
         $this->repo->coupon->deleteOrFail($coupon);
 
-        $this->trace->info(TraceCode::COUPON_DELETED, $coupon->toArray());
-
         return $coupon->toArrayDeleted();
     }
 
