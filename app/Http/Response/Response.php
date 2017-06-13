@@ -145,15 +145,19 @@ class Response
                     ],
                 );
 
-                return \View::make('gateway.callbackReturnUrl')
-                            ->with('data', $callbackArray);
+                $view = \View::make('gateway.callbackReturnUrl')
+                            ->with('data', $callbackArray)->render();
+
+                return \Response::make($view);
             }
         }
         else if ($this->isCallbackRoute($route))
         {
             $data['http_status_code'] = $status;
 
-            return \View::make('gateway.callback')->with('data', $data);
+            $view = \View::make('gateway.callback')->with('data', $data)->render();
+
+            return \Response::make($view);
         }
         else if ($this->isCheckoutRoute($route))
         {
@@ -238,8 +242,11 @@ class Response
 
     protected function generateCheckoutView($data)
     {
-        return \View::make('checkout.checkout')
-                    ->with($data);
+        $view = \View::make('checkout.checkout')
+                     ->with($data)
+                     ->render();
+
+        return \Response::make($view);
     }
 
     protected function isJsonpRequired($path)

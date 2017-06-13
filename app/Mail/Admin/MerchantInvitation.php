@@ -1,0 +1,111 @@
+<?php
+
+namespace RZP\Mail\Admin;
+
+use Carbon\Carbon;
+use RZP\Constants\MailTags;
+use RZP\Mail\Base;
+
+class MerchantInvitation extends Base\Mailable
+{
+    protected $admin;
+
+    protected $org;
+
+    protected $invitation;
+
+    public function __construct(array $admin, array $org, array $invitation)
+    {
+        parent::__construct();
+
+        $this->admin = $admin;
+
+        $this->org = $org;
+
+        $this->invitation = $invitation;
+    }
+
+    protected function addRecipients()
+    {
+        $email = $this->invitation['email'];
+
+        // TODO have a fallover when contact name is not given
+        $name = $this->invitation['format_data']['contact_name'] ?? '';
+
+        $this->to($email, $name);
+
+        return $this;
+    }
+
+    protected function addSender()
+    {
+        $this->from(Base\Constants::MAIL_ADDRESSES[Base\Constants::ADMIN]);
+
+        if ($this->org['custom_code'] !== 'rzp')
+        {
+            $this->from($this->org['from_email'], $this->org['display_name']);
+        }
+
+        return $this;
+    }
+
+    protected function addCc()
+    {
+        if ($this->org['custom_code'] === 'rzp')
+        {
+            $this->cc(Base\Constants::MAIL_ADDRESSES[Base\Constants::NOTIFICATIONS]);
+        }
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $orgName = $this->org['display_name'];
+
+        // date format = 6th July 2015
+        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+
+        $subject = sprintf("%s | Invitation for %s", $orgName, $date);
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = [
+            'invitation' => $this->invitation,
+            'adminName'  => $this->admin['name'],
+            'org'        => $this->org,
+            'hostname'   => $this->org['host_name'],
+        ];
+
+        $data['invitation']['token'] = $this->invitation['token'];
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(
+                MailTags::HEADER, MailTags::ADMIN_INVITE_MERCHANT);
+        });
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.admin.invite_merchant');
+
+        return $this;
+    }
+}

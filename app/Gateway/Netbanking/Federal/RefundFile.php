@@ -3,9 +3,13 @@
 namespace RZP\Gateway\Netbanking\Federal;
 
 use Carbon\Carbon;
-use RZP\Gateway\Base;
-use RZP\Models\FileStore;
+use Mail;
 use RZP\Constants\MailTags;
+use RZP\Gateway\Base;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\RefundFile\Constants as MailConstants;
+use RZP\Models\FileStore;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {

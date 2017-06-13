@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -16,9 +17,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Table;
 use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
@@ -218,7 +217,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
-        self::BASE_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -1252,7 +1250,11 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return Netbanking::getName($bankId);
+
+        if ($bankId !== null)
+        {
+            return Netbanking::getName($bankId);
+        }
     }
 
     public function getWallet()

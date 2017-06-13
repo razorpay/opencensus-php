@@ -32,6 +32,8 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         $mobikwik = $this->app['repo']->mobikwik;
 
+        // this is incorrect
+        // todo : need to fix it to handle partial & failed refunds.
         $refundId = $mobikwik->findRefundByPaymentId($paymentId)->getRefundId();
 
         return $refundId;

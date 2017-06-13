@@ -63,9 +63,14 @@ class Validator extends Base\Validator
         'supportedPaymentType'      => 'required|array',
     );
 
+    /**
+     * custMobile should match an indian mobile number
+     * of format +91 and then 10 digits
+     * @var array
+     */
     protected static $customerInfoRules = array(
         'custEmail'                 => 'required|email',
-        'custMobile'                => 'required|integer|digits_between:9,13',
+        'custMobile'                => 'required|regex:/^\+91[0-9]{10}$/',
     );
 
     protected static $wIapDefaultsRules = array(
