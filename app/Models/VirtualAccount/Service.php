@@ -48,7 +48,11 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($id);
 
         $virtualAccount = $this->repo->virtual_account
-                               ->findOrFailPublicWithRelations($id, ['bankAccount']);
+                               ->findByIdAndMerchantIdWithRelations(
+                                $id,
+                                $this->merchant,
+                                ['bankAccount']
+                               );
 
         return $virtualAccount->toArrayPublic();
     }
@@ -66,11 +70,23 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($id);
 
         $virtualAccount = $this->repo->virtual_account
-                               ->findOrFailPublicWithRelations($id, ['bankAccount']);
+                               ->findByIdAndMerchant($id, $this->merchant);
 
-        $this->core->edit($virtualAccount, $input);
+        $virtualAccount = $this->core->edit($virtualAccount, $input);
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    public function deleteVirtualAccount(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $virtualAccount = $this->repo->virtual_account
+                               ->findByIdAndMerchant($id, $this->merchant);
+
+        $this->repo->deleteOrFail($virtualAccount);
+
+        return $virtualAccount->toArrayDeleted();
     }
 
     protected function setCustomerIfGiven(array $input)

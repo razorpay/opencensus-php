@@ -34,6 +34,13 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function deleteVirtualAccount($id)
+    {
+        $response = $this->service()->deleteVirtualAccount($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function getVirtualAccount($id)
     {
         $response = $this->service()->getVirtualAccount($id);

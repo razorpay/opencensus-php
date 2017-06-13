@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const ID                   = 'id';
+    const MERCHANT_ID          = 'merchant_id';
     const STATUS               = 'status';
     const NAME                 = 'name';
     const DESCRIPTOR           = 'descriptor';
@@ -22,7 +23,6 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const VPA                  = 'vpa';
     const CUSTOMER_ID          = 'customer_id';
-    const MERCHANT_ID          = 'merchant_id';
 
     const RECEIVER_TYPE        = 'receiver_type';
     const BANK_ACCOUNT         = 'bank_account';

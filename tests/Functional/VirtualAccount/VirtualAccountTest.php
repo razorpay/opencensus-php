@@ -56,13 +56,26 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
-    public function testCloseVirtualAccount()
+    public function testEditVirtualAccount()
     {
-        $response = $this->createVirtualAccount();
+        $virtualAccount = $this->createVirtualAccount();
 
-        $virtualAccount = $this->closeVirtualAccount($response['id']);
+        $response = $this->closeVirtualAccount($virtualAccount['id']);
 
-        $this->assertEquals('closed', $virtualAccount['status']);
+        $this->assertEquals('closed', $response['status']);
+    }
+
+    public function testDeleteVirtualAccount()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $response = $this->deleteVirtualAccount($virtualAccount['id']);
+
+        $this->assertEquals(true, $response['deleted']);
+
+        $response = $this->fetchVirtualAccounts();
+
+        $this->assertEquals(0, $response['count']);
     }
 
     public function testAccountCreditedWebhook()
