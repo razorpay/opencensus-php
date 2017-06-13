@@ -70,6 +70,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED      => 0,
     ];
 
+    protected static $modifiers = [
+        self::NAME,
+    ];
+
     protected static $sign = 'va';
 
     protected $generateIdOnCreate = true;
@@ -91,6 +95,16 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    // ----------------------- Modifiers ---------------------------------------
+
+    public function modifyName(& $input)
+    {
+        if (isset($input[self::NAME]) === false)
+        {
+            $input[self::NAME] = $this->merchant->getBillingLabel();
+        }
     }
 
     // ----------------------- Checks ------------------------------------------

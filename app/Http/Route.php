@@ -167,7 +167,7 @@ final class Route
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'bank_transfer_validate'                  => ['post',     'ecollect/validate',                              'BankTransferController@validateBankTransfer'                       ],
-        'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@payBankTransfer'                            ],
+        'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@createVirtualAccount'                     ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@editVirtualAccount'                       ],
         'virtual_account_delete'                  => ['delete',   'virtual_accounts/{id}',                          'VirtualAccountController@deleteVirtualAccount'                     ],

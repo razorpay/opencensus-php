@@ -22,41 +22,37 @@ class Service extends Base\Service
         Payment::METHOD   => Method::BANK_TRANSFER,
     ];
 
-    public function __construct(array $input)
+    public function __construct()
     {
         parent::__construct();
 
         $this->validator = new Validator;
 
         $this->core = new Core;
-
-        $this->input = $this->setUtr($input);
     }
 
-    public function validate(): array
+    public function validate(array $input): array
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
-            $this->input
+            $input
         );
 
-        $data = $this->validateVirtualAccount($this->input);
+        $data = $this->validateVirtualAccount($input);
 
         return $data;
     }
 
-    public function pay(): array
+    public function notify(array $input): array
     {
-        $input = $this->input;
-
         $this->trace->info(
-            TraceCode::BANK_TRANSFER_PAY_REQUEST,
+            TraceCode::BANK_TRANSFER_NOTIFY_REQUEST,
             $input
         );
 
-        $this->validator->validateInput('create', $input);
+        $this->validator->validateInput('notify', $input);
 
-        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::UTR]);
+        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
 
         if ($bankTransfer !== null)
         {
@@ -80,7 +76,7 @@ class Service extends Base\Service
         else
         {
             $this->trace->critical(
-                TraceCode::BANK_TRANSFER_UNEXPECTED_PAY_NOTIFY,
+                TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
                 [
                     'input' => $input,
                 ]
@@ -90,14 +86,12 @@ class Service extends Base\Service
         return [
             'success'        => true,
             'message'        => null,
-            'transaction_id' => $input[Entity::UTR],
+            'transaction_id' => $input[Entity::REQ_UTR],
         ];
     }
 
     protected function validateVirtualAccount(array $input): array
     {
-        $this->validator->validateInput('create', $input);
-
         $bankTransfer = $this->core->create($input);
 
         $uniqueUtr = $this->isUtrUnique($bankTransfer);
@@ -108,7 +102,7 @@ class Service extends Base\Service
         {
             $this->setMerchant();
 
-            $paymentInput = $this->bankTransferPaymentArray($input);
+            $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
 
             $paymentProcessor = new PaymentProcessor($this->merchant);
 
@@ -139,7 +133,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($bankTransfer);
 
-        $data['transaction_id'] = $input[Entity::UTR];
+        $data[Entity::REQ_UTR] = $bankTransfer->getUtr();
 
         return $data;
     }
@@ -227,23 +221,12 @@ class Service extends Base\Service
         return $bankAccount;
     }
 
-    protected function bankTransferPaymentArray(array $input): array
+    protected function bankTransferPaymentArray(Entity $bankTransfer): array
     {
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
-        $paymentArray[Payment::AMOUNT] = $input['amount'];
+        $paymentArray[Payment::AMOUNT] = $bankTransfer->getAmount();
 
         return $paymentArray;
-    }
-
-    // Kotak is sending us transaction_id instead of UTR
-    // We unset this and set UTR early in the flow
-    protected function setUtr(array $input): array
-    {
-        $input[Entity::UTR] = $input['transaction_id'];
-
-        unset($input['transaction_id']);
-
-        return $input;
     }
 }

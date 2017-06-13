@@ -2,10 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
+use ApiResponse;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
-use ApiResponse;
-use Request;
 
 class VirtualAccountController extends Controller
 {
@@ -13,7 +13,7 @@ class VirtualAccountController extends Controller
     {
         parent::__construct();
 
-        $this->service = \RZP\Models\VirtualAccount\Service::class;
+        $this->service = VirtualAccount\Service::class;
     }
 
     public function createVirtualAccount()
@@ -25,7 +25,7 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function editVirtualAccount($id)
+    public function editVirtualAccount(string $id)
     {
         $input = Request::all();
 
@@ -34,14 +34,14 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function deleteVirtualAccount($id)
+    public function deleteVirtualAccount(string $id)
     {
         $response = $this->service()->deleteVirtualAccount($id);
 
         return ApiResponse::json($response);
     }
 
-    public function getVirtualAccount($id)
+    public function getVirtualAccount(string $id)
     {
         $response = $this->service()->getVirtualAccount($id);
 

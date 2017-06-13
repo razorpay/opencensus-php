@@ -10,14 +10,18 @@ class Core extends Base\Core
 {
     public function create(array $input, Merchant $merchant, Customer $customer = null)
     {
-        $virtualAccount = (new Entity)->build($input);
+        $virtualAccount = (new Entity);
+
+        // We associate the merchant before building the entity, as
+        // merchant billing label is used to modify the name attribute
+        $virtualAccount->merchant()->associate($merchant);
+
+        $virtualAccount->build($input);
 
         if ($customer !== null)
         {
             $virtualAccount->customer()->associate($customer);
         }
-
-        $virtualAccount->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($virtualAccount);
 

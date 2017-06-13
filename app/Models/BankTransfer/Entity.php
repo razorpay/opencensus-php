@@ -20,6 +20,8 @@ class Entity extends Base\PublicEntity
     const TIME               = 'time';
     const DESCRIPTION        = 'description';
 
+    const REQ_UTR            = 'transaction_id';
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_ACCOUNT,
@@ -44,12 +46,16 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
+    protected static $modifiers = [
+        self::UTR,
+    ];
+
     protected $entity = Constants\Entity::BANK_TRANSFER;
 
     protected $generateIdOnCreate = true;
 
 
-    // ----------------------- Associations ----------------------------------------
+    // ----------------------- Associations ------------------------------------
 
     public function payment()
     {
@@ -67,7 +73,18 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\VirtualAccount\Entity');
     }
 
-    // ----------------------- Getters ---------------------------------------------
+    // ----------------------- Modifers ----------------------------------------
+
+    // Kotak is sending us transaction_id instead of UTR
+    // We unset this and set UTR early in the flow
+    public function modifyUtr(& $input)
+    {
+        $input[self::UTR] = $input[self::REQ_UTR];
+
+        unset($input[self::REQ_UTR]);
+    }
+
+    // ----------------------- Getters -----------------------------------------
 
     public function getAmount()
     {

@@ -6,7 +6,7 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function create($input)
+    public function create(array $input)
     {
         $bankTransfer = (new Entity)->build($input);
 
