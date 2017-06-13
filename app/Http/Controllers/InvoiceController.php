@@ -201,7 +201,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service->issueInvoicesOfBatch($batchId, $input);
+        $response = $this->service('invoice')->issueInvoicesOfBatch($batchId, $input);
 
         return ApiResponse::json($response);
     }

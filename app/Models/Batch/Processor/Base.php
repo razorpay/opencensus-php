@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Batch;
@@ -12,7 +11,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
-use RZP\Constants\MailTags;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -280,6 +278,11 @@ class Base extends BaseModel\Core
         unset($entries);
     }
 
+    protected function sendProcessedMail()
+    {
+        ;
+    }
+
     public function deleteFile(string $filePath)
     {
         return;
@@ -288,36 +291,6 @@ class Base extends BaseModel\Core
         {
             $success = unlink($filePath);
         }
-    }
-
-    protected function sendProcessedMail()
-    {
-        $mailPayload = $this->getProcessedMailPayload();
-
-        Mail::send('emails.message', $mailPayload, function ($message) use ($mailPayload)
-        {
-            $message->from($mailPayload['from'], $mailPayload['from_title']);
-
-            $message->to($mailPayload['to']);
-
-            $message->subject($mailPayload['subject']);
-
-            $message->attach($this->outputFileLocalPath);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
-        });
-    }
-
-    /**
-     * Returns mail payload for processed mail.
-     *
-     * @return array
-     */
-    protected function getProcessedMailPayload(): array
-    {
-        throw new \BadMethodCallException();
     }
 
     public function saveInputFile(UploadedFile $file): \SplFileInfo

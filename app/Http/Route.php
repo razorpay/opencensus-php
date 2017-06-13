@@ -678,7 +678,6 @@ final class Route
         'invoice_update',
         'invoice_issue',
         'invoice_cancel',
-        'invoice_issue_by_batch',
         'invoice_delete',
         'item_create',
         'item_fetch',
@@ -957,6 +956,7 @@ final class Route
         'batch_fetch_by_id',
         'batch_retry',
         'batch_download_file',
+        'invoice_issue_by_batch',
         'invoice_add_line_items',
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
@@ -1311,7 +1311,6 @@ final class Route
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
         'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
-        'batch_create'                      => [Feature::INVOICE_BATCH],
     ];
 
     /*

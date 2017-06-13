@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Carbon\Carbon;
+use Mail;
 
 use RZP\Models\Batch;
+use RZP\Mail\Batch as BatchMail;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base
@@ -59,16 +60,13 @@ class Refund extends Base
         $this->batch->setProcessedAmount($processedAmount);
     }
 
-    protected function getProcessedMailPayload(): array
+    protected function sendProcessedMail()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $mail = new BatchMail\Refund(
+                        $this->batch->toArray(),
+                        $this->merchant->toArray(),
+                        $this->outputFileLocalPath);
 
-        return [
-            'from'       => 'refunds@razorpay.com',
-            'from_title' => 'Refunds File',
-            'to'         => $this->merchant->getTransactionReportEmail(),
-            'subject'    => 'Razorpay | Processed Refunds file for ' . $today,
-            'body'       => 'Please find attached processed Refunds File',
-        ];
+        Mail::send($mail);
     }
 }

@@ -280,7 +280,7 @@ class Service extends Base\Service
         return [$displayName, $path];
     }
 
-    public function issueInvoicesOfBatch(string $batchId, array $input)
+    public function issueInvoicesOfBatch(string $batchId, array $input): array
     {
         (new Validator)->validateInput(Validator::ISSUE_BATCH, $input);
 

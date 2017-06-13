@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Carbon\Carbon;
+use Mail;
 
 use RZP\Models\Invoice;
 use RZP\Models\Batch;
+use RZP\Mail\Batch as BatchMail;
 
 class PaymentLink extends Base
 {
@@ -24,16 +25,13 @@ class PaymentLink extends Base
         $entry[Batch\Header::PAYMENT_LINK_ID] = $invoice->getPublicId();
     }
 
-    protected function getProcessedMailPayload(): array
+    protected function sendProcessedMail()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $mail = new BatchMail\PaymentLink(
+                        $this->batch->toArray(),
+                        $this->merchant->toArray(),
+                        $this->outputFileLocalPath);
 
-        return [
-            'from'       => 'invoices@razorpay.com',
-            'from_title' => 'Payment Link',
-            'to'         => $this->merchant->getTransactionReportEmail(),
-            'subject'    => 'Razorpay | Processed payment link file for ' . $today,
-            'body'       => 'Please find attached processed payment link file',
-        ];
+        Mail::send($mail);
     }
 }

@@ -638,7 +638,7 @@ class Core extends Base\Core
         return $this->generatePdfWithRetry($invoice->getId());
     }
 
-    public function issueInvoicesOfBatch(Batch\Entity $batch, array $input)
+    public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
         $ids = $input[Entity::IDS] ?? [];
 
