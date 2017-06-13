@@ -183,7 +183,7 @@ class Core extends Base\Core
     protected function calculateCreditToExpire($merchant, $promotion)
     {
         $credit = $this->repo->credits->findNonExpiredCredits(
-                    $merchant->getId(), $promotion->getId(), time() + 1*24*60*60);
+                    $merchant->getId(), $promotion->getId(), time());
 
         return ($credit->getValue() - $credit->getUsed());
     }
