@@ -35,7 +35,7 @@ class Core extends Base\Core
     {
         $this->validateAndApplyMerchantPromotion($merchant, $coupon);
 
-        return ['msg' => 'Coupon Applied Successfully'];
+        return ['message' => 'Coupon Applied Successfully'];
     }
 
     protected function validateAndApplyMerchantPromotion(Merchant\Entity$merchant, Entity $coupon)

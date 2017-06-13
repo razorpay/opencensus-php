@@ -77,7 +77,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'message' => 'Coupon Applied Successfully',
             ]
         ]
     ],
@@ -93,7 +93,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'message' => 'Coupon Applied Successfully',
             ]
         ]
     ],
