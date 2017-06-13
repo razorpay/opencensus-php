@@ -14,13 +14,6 @@ class InvoiceController extends Controller
 {
     protected $service;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Invoice\Service;
-    }
-
     public function createInvoice()
     {
         $input = Request::all();
