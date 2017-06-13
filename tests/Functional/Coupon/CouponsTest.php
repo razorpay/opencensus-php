@@ -212,7 +212,7 @@ class CouponsTest extends TestCase
         }
     }
 
-    public function applyCouponOnMerchant($content)
+    public function applyCouponOnMerchant(array $content)
     {
         $request = [
             'url'     => '/coupons/apply',

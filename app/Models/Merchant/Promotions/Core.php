@@ -3,13 +3,15 @@
 namespace RZP\Models\Merchant\Promotions;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create($merchant, $promotion)
+    public function create(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $input = [
             Entity::REMAINING_RUNS => $promotion->getIterations(),
@@ -36,6 +38,7 @@ class Core extends Base\Core
         return $merchantPromotion;
     }
 
+    //TODO
     public function processTasks($scheduleTasks)
     {
         $successIds = [];
@@ -113,7 +116,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function createScheduleTask($merchant, $promotion)
+    public function createScheduleTask(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $input[Task\Entity::TYPE] = Task\Type::PROMOTION;
 
@@ -122,12 +125,7 @@ class Core extends Base\Core
         return (new Task\Core)->create($merchant, $promotion, $input);
     }
 
-    public function updateCredits(Entity $merchantPromotion)
-    {
-        //TODO fill me
-    }
-
-    public function applyCredits($merchant, $promotion)
+    public function applyCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $creditInput = [
             'campaign'     => $promotion->getName(),
@@ -154,7 +152,7 @@ class Core extends Base\Core
         );
     }
 
-    public function expireCredits($merchant, $promotion)
+    public function expireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion);
 
@@ -180,7 +178,7 @@ class Core extends Base\Core
         );
     }
 
-    protected function calculateCreditToExpire($merchant, $promotion)
+    protected function calculateCreditToExpire(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $credit = $this->repo->credits->findNonExpiredCredits(
                     $merchant->getId(), $promotion->getId(), time());

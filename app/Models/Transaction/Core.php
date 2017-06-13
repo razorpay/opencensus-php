@@ -966,7 +966,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function createCreditTransaction($amount, $txn, $creditType)
+    protected function createCreditTransaction(int $amount, Entity $txn, string $creditType)
     {
         (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
     }

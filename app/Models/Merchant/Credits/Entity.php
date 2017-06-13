@@ -165,7 +165,7 @@ class Entity extends Base\PublicEntity
         $this->setValue($credits);
     }
 
-    public function updateUsed($usedCount)
+    public function updateUsed(int $usedCount)
     {
         $creditsUsed = $this->getUsed() + $usedCount;
 

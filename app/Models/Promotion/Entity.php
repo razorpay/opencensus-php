@@ -63,7 +63,7 @@ class Entity extends Base\PublicEntity
         self::CREDITS_EXPIRABLE,
     ];
 
-    protected function modifyCreditsExpirable(& $input)
+    protected function modifyCreditsExpirable(array & $input)
     {
         if (empty($input[self::CREDITS_EXPIRABLE]) === true)
         {

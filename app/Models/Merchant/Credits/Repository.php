@@ -56,7 +56,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getCreditsSortedWithExpiry(int $timestamp, $merchantId, string $type)
+    public function getCreditsSortedWithExpiry(int $timestamp, string $merchantId, string $type)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)

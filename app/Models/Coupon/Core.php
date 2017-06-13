@@ -38,7 +38,7 @@ class Core extends Base\Core
         return ['message' => 'Coupon Applied Successfully'];
     }
 
-    protected function validateAndApplyMerchantPromotion(Merchant\Entity$merchant, Entity $coupon)
+    protected function validateAndApplyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
         $promotion = $coupon->source()->firstOrFail();
 

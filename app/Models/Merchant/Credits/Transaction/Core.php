@@ -6,8 +6,7 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-
-    public function create($amount, $txn, $creditType)
+    public function create(int $amount, Entity $txn, string $creditType)
     {
         $timestamp = time();
 

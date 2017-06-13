@@ -51,12 +51,13 @@ class Core extends Base\Core
         return $promotion;
     }
 
+    //TODO
     public function processTasks($tasks)
     {
         return (new MerchantPromotion\Core)->processTasks($tasks);
     }
 
-    public function isUsed($promotion)
+    public function isUsed(Entity $promotion)
     {
         $merchantPromotion = $this->repo->merchant_promotion->
                                 findByPromotionId($promotion->getId());
@@ -85,7 +86,7 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    protected function editSchedule($schedule, array $input)
+    protected function editSchedule(Schedule\Entity $schedule, array $input)
     {
         $scheduleInput = [
             Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],
@@ -96,7 +97,7 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    protected function addOrUpdateSchedule($schedule, $input)
+    protected function addOrUpdateSchedule(Schedule\Entity $schedule, array $input)
     {
         if ($schedule === null)
         {

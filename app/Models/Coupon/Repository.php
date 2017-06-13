@@ -15,7 +15,7 @@ class Repository extends Base\Repository
         Entity::ENTITY_TYPE         => 'sometimes|string',
     ];
 
-    public function fetchByCode($code)
+    public function fetchByCode(string $code)
     {
         return $this->newQuery()
                     ->where(Entity::CODE, '=', $code)

@@ -107,7 +107,7 @@ class Service extends Base\Service
         return $subMerchantData;
     }
 
-    protected function applyCouponOnSignUp(array $input, $merchant)
+    protected function applyCouponOnSignUp(array $input, Entity $merchant)
     {
         $result = [];
 

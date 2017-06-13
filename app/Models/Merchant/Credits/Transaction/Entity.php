@@ -39,7 +39,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CREDITS_USED);
     }
 
-    public function updateCreditsUsed($used)
+    public function updateCreditsUsed(int $used)
     {
         $usedCount = $this->getCreditsUsed() + $used;
 

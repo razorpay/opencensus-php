@@ -288,7 +288,7 @@ class ScheduleTest extends TestCase
     }
 
 
-    protected function applyCouponOnMerchant($code)
+    protected function applyCouponOnMerchant(array $code)
     {
         $request = $this->testData[__FUNCTION__];
 
