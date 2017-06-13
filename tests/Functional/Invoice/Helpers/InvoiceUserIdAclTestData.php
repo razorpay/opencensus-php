@@ -31,7 +31,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer'      => [
+                'customer_details' => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',
@@ -73,7 +73,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer'      => [
+                'customer_details' => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',
@@ -356,4 +356,59 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
+
+    // ----------------------------------------------------------------------
+    // Expectations for ES
+
+    'testListInvoiceWithUserIdHeaderEsExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'user_id' => [
+                                    'query' =>'10000000UserId',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testListInvoiceWithUserIdHeaderEsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000000invoice'
+                ],
+                [
+                    '_id' => '1000001invoice',
+                ]
+            ],
+        ],
+    ],
+
+    // ----------------------------------------------------------------------
 ];

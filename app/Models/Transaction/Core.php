@@ -18,7 +18,8 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Library as Schedule;
+use RZP\Models\Schedule\Library as ScheduleLibrary;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
@@ -41,6 +42,13 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
+    /**
+     * This will be called only in case of Non Auth Capture Flow
+     * We will create a dummy transaction with no fee split.
+     * The actual fee split will be calculated at the time of payment capture
+     * @param  Payment\Entity $payment
+     * @return [Transaction\Entity $txn, PublicCollection $feesSplit]
+     */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
         $this->trace->info(
@@ -49,36 +57,9 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
-
-        // $this->updateNodalBalance($txn);
-
-        $this->repo->balance->updateBalance($this->merchantBalance);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
         return [$txn, $feesSplit];
-    }
-
-    public function updateOnCapture(Payment\Entity $payment)
-    {
-        $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
-
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        $txn->setSettledAt($settledAt);
-
-        $this->updateCredits($txn, $payment);
-
-        $this->updateMerchantBalance($txn);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_UPDATE_TRANSACTION,
-            [
-                'payment_id'     => $payment->getId(),
-                'transaction_id' => $txn->getId(),
-            ]
-        );
-
-        return $txn;
     }
 
     /**
@@ -114,7 +95,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPaymentCaptured(Payment\Entity $payment)
+    public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
@@ -188,17 +169,32 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation($payment)
+    protected function txnCreationFromPaymentOperation(Payment\Entity $payment, bool $updateFees = true)
     {
         $txn = new Transaction\Entity;
-        $txn->generateId();
 
-        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
+        // Case 1: Non AuthCapture flow, a txn already exists with min data.
+        // Case 2: Auth-capture flow, we create a txn and associate merchant, payment with it.
+        if ($payment->hasTransaction() === true)
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+        else
+        {
+            $txn->generateId();
 
-        $txnData = array(
+            $txn->sourceAssociate($payment);
+
+            $txn->merchant()->associate($payment->merchant);
+        }
+
+        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment, $updateFees);
+
+        $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
             Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK
+        ];
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
         {
@@ -207,21 +203,40 @@ class Core extends Base\Core
 
         $txn->fill($txnData);
 
-        $txn->sourceAssociate($payment);
-        $txn->merchant()->associate($payment->merchant);
-
         $this->trace->info(
             TraceCode::TRANSACTION_CREATED,
             [
-                'payment_id' => $payment->getId(),
+                'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
             ]);
 
         return [$txn, $feesSplit];
     }
 
-    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
+    protected function fillEmptyTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
     {
+        $amount = $payment->getBaseAmount();;
+
+        $values = [
+            Transaction\Entity::DEBIT               => 0,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::FEE                 => 0,
+            Transaction\Entity::SERVICE_TAX         => 0,
+            Transaction\Entity::AMOUNT              => $amount,
+        ];
+
+        $txn->fill($values);
+
+        return [$txn, new Base\PublicCollection];
+    }
+
+    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment, bool $updateFees = true)
+    {
+        if ($updateFees === false)
+        {
+            return $this->fillEmptyTxnFeesAndAmount($txn, $payment);
+        }
+
         $pricingRuleId = null;
 
         $merchant = $payment->merchant;
@@ -451,7 +466,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::PAYMENT_TRANSACTION_OLD,
                 [
-                    'payment_id' => $payment->getId(),
+                    'payment_id'      => $payment->getId(),
                     'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
                                                ->toDateTimeString()
                 ]
@@ -471,7 +486,7 @@ class Core extends Base\Core
 
         $channel = Transaction\Channel::ATOM;
 
-        if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
+        if ($payment->terminal->isShared() === true)
         {
             $channel = Transaction\Channel::KOTAK;
 
@@ -549,7 +564,7 @@ class Core extends Base\Core
             case Payment\Status::REFUNDED:
                 $gateway = $payment->getGateway();
 
-                Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+                Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
 
                 //$this->updateNodalBalance($txn);
 
@@ -709,7 +724,7 @@ class Core extends Base\Core
 
         $payoutAmount = abs($amount + $fee);
 
-        $values = array(
+        $values = [
             Transaction\Entity::DEBIT               => $payoutAmount,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::CURRENCY            => 'INR',
@@ -724,7 +739,7 @@ class Core extends Base\Core
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
             Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
-        );
+        ];
 
         $txn->fillAndGenerateId($values);
 
@@ -902,15 +917,22 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        if ($merchant->getSettlementScheduleId() === null)
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+
+        // use schedule from pivot schedule_task if defined and use next run from there
+        if ($scheduleTask !== null)
+        {
+            $schedule = $scheduleTask->schedule;
+
+            $nextRunAt = $scheduleTask->getNextRunAt();
+
+            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
+        }
+        else
         {
             $addDays = $merchant->getSettlementSchedule();
 
             $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
-        }
-        else
-        {
-            $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
         }
 
         return $returnTime;
@@ -923,11 +945,6 @@ class Core extends Base\Core
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
         return $returnDay->timestamp;
-    }
-
-    protected function getSettlementSchedule($payment)
-    {
-        return $payment->merchant->getSettlementSchedule();
     }
 
     public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)

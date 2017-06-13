@@ -71,4 +71,9 @@ class Reconciliate extends Base\Reconciliate
 
         return $reconPassword;
     }
+
+    public function getDelimiter()
+    {
+        return "\t";
+    }
 }

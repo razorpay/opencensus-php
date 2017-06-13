@@ -8,4 +8,9 @@ use RZP\Constants\Table;
 class EsRepository extends Base\EsRepository
 {
     protected static $table = Table::ORDER;
+
+    protected $fields = [
+        Entity::ID,
+        Entity::NOTES,
+    ];
 }

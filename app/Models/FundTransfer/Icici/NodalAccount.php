@@ -7,6 +7,7 @@ use Mail;
 use phpseclib\Crypt;
 
 use RZP\Exception;
+use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
@@ -15,6 +16,8 @@ class NodalAccount extends Base\Core
 {
     // used in icici AES encrypter tool
     const ENCRYPTION_KEY = "1836204826394167";
+
+    const SIGNED_URL_DURATION = '1440';
 
     const HEADINGS = [
         "Payment Mode",
@@ -36,8 +39,6 @@ class NodalAccount extends Base\Core
 
     protected $queue = null;
 
-    protected $mail = null;
-
     protected $id = null;
 
     public function __construct()
@@ -45,8 +46,6 @@ class NodalAccount extends Base\Core
         parent::__construct();
 
         $this->date = Carbon::today('Asia/Kolkata');
-
-        $this->mail = \Mail::getFacadeRoot();
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
@@ -57,11 +56,11 @@ class NodalAccount extends Base\Core
 
         $encryptedText = $this->getEncryptedText($plainText);
 
-        $filePath = $this->createFile($encryptedText);
+        $fileData = $this->createFile($encryptedText);
 
-        $this->sendIciciTransferMail($filePath);
+        $this->sendIciciTransferMail($fileData);
 
-        return ['file' => $filePath];
+        return ['file' => $fileData['file_path']];
     }
 
     protected function getPlainText($amount)
@@ -113,13 +112,22 @@ class NodalAccount extends Base\Core
                         ->content($text)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)
-                        ->type(FileStore\Type::ICICI_NODAL_TRANSFER)
+                        ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->id($this->id)
                         ->metadata($metadata)
-                        ->save()
-                        ->get();
+                        ->save();
 
-        return $file['local_file_path'];
+        $fileInstance = $file->get();
+
+        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
+        $fileData = [
+            'file_path'  => $fileInstance['local_file_path'],
+            'file_name'  => basename($fileInstance['local_file_path']),
+            'signed_url' => $signedFileUrl,
+        ];
+
+        return $fileData;
     }
 
     protected function getH2HMetadata()
@@ -132,28 +140,14 @@ class NodalAccount extends Base\Core
         ];
     }
 
-    protected function sendIciciTransferMail(string $fullPath)
+    protected function sendIciciTransferMail(array $fileData)
     {
-        $data['file'] = $fullPath;
         $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
 
-        $this->mail->queue('emails.message', $data, function ($message) use ($fullPath)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $data['file_data'] = $fileData;
 
-            $message->from('settlements@razorpay.com', 'ICICI Transfer File');
+        $iciciSettlementMail = new SettlementMail\IciciSettlement($data);
 
-            $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject("Icici Transfer files for $today");
-
-            $message->to($emails);
-
-            $message->attach($fullPath);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_SETTLEMENT_FILES);
-        });
+        Mail::queue($iciciSettlementMail);
     }
 }

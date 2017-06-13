@@ -119,8 +119,6 @@ class SettledAtTimestampTest extends TestCase
         $this->runSettledAtFunc($map4, 4, $workingSaturdayWeek);
     }
 
-
-
     protected function runSettledAtFunc($map, $addDays, $workingSaturdayWeek)
     {
         $class = new ReflectionClass('\RZP\Models\Transaction\Core');

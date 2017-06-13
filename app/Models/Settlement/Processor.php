@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
@@ -24,9 +25,9 @@ class Processor extends Base\Core
 
     protected $mutex;
 
-    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s';
 
-    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY';
+    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -39,14 +40,21 @@ class Processor extends Base\Core
 
     public function processFailedSettlements(array $input)
     {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_RETRY_REQUEST,
+            $input
+        );
+
         $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
 
         if ($shouldProcess === true)
         {
+            $mutexResource = sprintf(self::MUTEX_RETRY_RESOURCE, $this->mode);
+
             $data = $this->mutex->acquireAndRelease(
-                self::MUTEX_RETRY_RESOURCE,
+                $mutexResource,
                 function () use ($input)
                 {
                     return $this->retryProcessFailedSettlements();
@@ -66,8 +74,10 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+
             $data = $this->mutex->acquireAndRelease(
-                self::MUTEX_RESOURCE,
+                $mutexResource,
                 function () use ($channel)
                 {
                     return $this->processSettlements($channel);
@@ -75,14 +85,6 @@ class Processor extends Base\Core
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
-
-        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-        $schedules->callOnEveryItem('updateNextRun');
-
-        $this->repo->saveOrFailCollection($schedules);
-
-        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
 
         return $data;
     }
@@ -97,6 +99,8 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
+                $this->batchFundTransfer = null;
+
                 list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
 
                 $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);
@@ -167,45 +171,67 @@ class Processor extends Base\Core
             $totalTxns += $setlTxnsCount;
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel, false);
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
 
         return $response;
     }
 
-    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel, $h2h=true)
+    protected function generateAndSendSettlementFile(
+        $settlements,
+        $setlAttempts,
+        $txnCount,
+        $channel,
+        $h2h = true)
     {
-        $data = [
+        $returnData = [
             'count'             => $settlements->count(),
             'transaction_count' => $txnCount,
         ];
 
         if ($setlAttempts->count() > 0)
         {
-            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel, $h2h);
+            list($txtFileEntity, $excelFileEntity) =
+                $this->generateSettlementFile($setlAttempts, $channel, $h2h);
+
+            $txtFileDetails = $txtFileEntity->get();
+            $excelFileDetails = $excelFileEntity->get();
+
+            $returnData['settlement_text_file'] = $txtFileDetails;
+            $returnData['settlement_excel_file'] = $excelFileDetails;
+
+            $txtUrl = $txtFileEntity->getUrl();
+            $excelUrl = $excelFileEntity->getUrl();
 
             $urls = [
-                'kotak_settlement_txt'   => $urlText,
-                'kotak_settlement_excel' => $urlExcel
+                'kotak_settlement_txt'   => $txtUrl,
+                'kotak_settlement_excel' => $excelUrl,
             ];
 
-            $this->updateBatchFundTransferEntityUrls($urls);
+            $this->updateFileDetailsInBatchFundTransferEntity(
+                [
+                    'urls' => $urls,
+                    'txt_file_id' => $txtFileDetails['id'],
+                    'excel_file_id' => $excelFileDetails['id'],
+                ]);
 
-            $data['settlement_text_file']  = $urlText;
-            $data['settlement_excel_file'] = $urlExcel;
+            $slackData = $returnData;
 
-            $this->successNotification($data, $settlements, TraceCode::SETTLEMENT_INITIATED);
+            $slackData['settlement_text_file'] = $txtUrl;
+            $slackData['settlement_excel_file'] = $excelUrl;
+
+            $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         else
         {
-            $data['message'] = 'No settlements found!';
+            $returnData['message'] = 'No settlements found!';
         }
 
-        return $data;
+        return $returnData;
     }
 
     protected function createSettlements($channel): array
     {
-        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime, $channel);
+        $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
             $this->processUnsettledTransactions($txns, $channel);
@@ -257,15 +283,20 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements()
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->env === 'testing'))
+        {
+            return [true, null];
+        }
+
         $today = Carbon::today('Asia/Kolkata');
 
-        if (($this->mode === Mode::LIVE) and
-            (Holidays::isWorkingDay($today) === false))
+        if (Holidays::isWorkingDay($today) === false)
         {
             return [false, Holidays::HOLIDAY_MESSAGE];
         }
 
-        if ($this->checkInvalidSettlementTime() === true)
+        if ($this->isInvalidSettlementTime() === true)
         {
             return [false, ['message' => 'settlements cannot be processed now']];
         }
@@ -276,9 +307,10 @@ class Processor extends Base\Core
     /**
      *  NEFT can be processed between 8am and 6 pm only, while batch file can be
      *  uploaded anytime.
-     * @return [boolean] [returns if settlement can be proessed now]
+     *
+     * @return bool returns if settlement can be processed now
      */
-    protected function checkInvalidSettlementTime()
+    protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
@@ -286,8 +318,7 @@ class Processor extends Base\Core
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->mode === Mode::LIVE) and
-            ($this->setlTime >= $fivePm))
+        if (($this->setlTime >= $fivePm) and ($this->env !== 'testing'))
         {
             return true;
         }

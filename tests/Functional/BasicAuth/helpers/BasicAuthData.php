@@ -100,10 +100,10 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
                 ],
             ],
-            'status_code' => 401,
+            'status_code' => 400,
         ]
     ],
 

@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -22,6 +23,9 @@ use RZP\Models\Gateway\Downtime;
 class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
+    const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
+
+    const SUBSCRIPTION_ID    = 'subscription_id';
 
     public function __construct()
     {
@@ -42,34 +46,57 @@ class Checkout
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
-        $this->checkAndAddOrderForTpv($merchant, $input, $data);
+        $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
+
         $this->checkAndFillOfferDetails($merchant, $input, $data);
+
+        $this->checkAndFillGatewayDowntime($merchant, $data);
 
         $this->tracePreferencesResponse($merchant, $data);
 
         return $data;
     }
 
-    protected function checkAndAddDetailsForInvoice(
-        array $input, Merchant\Entity $merchant, array & $data)
+    protected function checkAndAddDetailsForOrder(
+        array $input,
+        Merchant\Entity $merchant,
+        array & $data)
     {
-        if (empty($input['invoice_id']) === true)
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
             return;
         }
 
-        $invoiceId = $input['invoice_id'];
+        $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $invoiceCore = new Invoice\Core;
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+    }
 
-        $invoiceData = $invoiceCore->getFormattedInvoiceData($invoiceId, $merchant);
+    protected function checkAndAddDetailsForInvoice(
+        array $input,
+        Merchant\Entity $merchant,
+        array & $data)
+    {
+        if (empty($input[Payment\Entity::INVOICE_ID]) === true)
+        {
+            return;
+        }
+
+        $invoiceId = $input[Payment\Entity::INVOICE_ID];
+
+        // Gets formatted invoice data which includes invoice and customer details.
+
+        $invoiceData = (new Invoice\Core)->getFormattedInvoiceData($invoiceId, $merchant);
 
         $data['invoice'] = $invoiceData['invoice'];
 
-        // If invoice's customer data is set, merge it to existing data
+        // - Use invoice's customer data if no customer data exists already
+        // - Override existing customer data with invoice's customer details if exists.
+
         if (isset($invoiceData['customer']))
         {
             if (isset($data['customer']))
@@ -81,6 +108,22 @@ class Checkout
                 $data['customer'] = $invoiceData['customer'];
             }
         }
+
+        // Add invoice's order details
+
+        $data['order'] = $invoiceData['order'];
+    }
+
+    protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
+    {
+        if (empty($input[self::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[self::SUBSCRIPTION_ID];
+
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
@@ -105,23 +148,6 @@ class Checkout
                 'merchant_id' => $merchant->getId(),
                 'response' => $response,
             ]);
-    }
-
-    protected function fetchTPVOrderInfo(array $input)
-    {
-        $orderData = null;
-
-        try
-        {
-            $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                $input[Payment\Entity::ORDER_ID]);
-        }
-        catch(\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-        }
-
-        return $orderData;
     }
 
     protected function fetchCustomerData(array $input, Entity $merchant)
@@ -185,22 +211,6 @@ class Checkout
         if (empty($appToken) === false)
         {
             $input[Payment\Entity::APP_TOKEN] = $appToken;
-        }
-    }
-
-    protected function checkAndAddOrderForTpv(Entity $merchant, array $input, array & $data)
-    {
-        // If merchant is TPV enabled pass details for
-        // current order as part of preferences
-        if (($merchant->isTPVRequired()) and
-            (isset($input[Payment\Entity::ORDER_ID])))
-        {
-            $orderData = $this->fetchTPVOrderInfo($input);
-
-            if ($orderData !== null)
-            {
-                $data['order'] = $orderData;
-            }
         }
     }
 
@@ -296,21 +306,123 @@ class Checkout
     {
         $offerCore = new Offer\Core;
 
-        // Temporaily commenting fetching shared offers
-        // $sharedOffers = $offerCore->fetchSharedOffers();
-
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
-        if ($orderId === null)
+        if ($orderId !== null)
         {
-            return;
+            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
+
+            if ($orderOffer !== null)
+            {
+                // For offer applied on a particular order only enable methods eligible for the
+                // offer. Customer won't be able to select other payment methods
+                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
+
+                $data['offers'] = [
+                    $orderOffer->toArrayCheckout()
+                ];
+
+                return;
+            }
         }
 
-        $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
+        $this->checkAndFillNonOrderOffers($merchant, $data);
+    }
 
-        if ($directOffer !== null)
+    protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
+    {
+        $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
+
+        foreach ($nonOrderOffers as $offer)
         {
-            $data['offers'] = $directOffer->toArrayCheckout();
+            $data['offers'][] = $offer->toArrayCheckout();
+        }
+    }
+
+    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
+    {
+        $method = $offer->getPaymentMethod();
+
+        $enabledBanks = $data['methods']['netbanking'];
+
+        $enabledWallets = $data['methods']['wallet'];
+
+        $data['methods'] = [
+            'entity' => 'methods'
+        ];
+
+        switch ($method)
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+
+                // For card offers only set card method to true
+                $data['methods']['card'] = true;
+
+                break;
+
+            case Payment\Method::NETBANKING:
+
+                // Only allow payments through supported banks
+                $data['methods']['netbanking'] = $enabledBanks;
+
+                // Only allow payment through specific bank if network is specified
+                if ($offer->getPaymentNetwork() !== null)
+                {
+                    $bankCode = $offer->getPaymentNetwork();
+
+                    $bankName = Netbanking::getName($bankCode);
+
+                    $data['methods']['netbanking'] = [
+                        $bankCode => $bankName
+                    ];
+                }
+
+                break;
+
+            case Payment\Method::WALLET:
+
+                // Only allow payments through supported wallets
+                $data['methods']['wallet'] = $enabledWallets;
+
+                // For wallet offers if network is specified, lock method to only that wallet
+                if ($offer->getPaymentNetwork() !== null)
+                {
+                    $wallet = $offer->getPaymentNetwork();
+
+                    $data['methods']['wallet'] = [
+                        $wallet
+                    ];
+                }
+
+                break;
+
+            // For other methods like UPI, we currently handle it here, by just
+            // enabling the particular method.
+            default:
+                $data['methods'][$method] = true;
+
+                break;
+        }
+    }
+
+    public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        try
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            {
+                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+                if (empty($downtimeData) === false)
+                {
+                    $data['downtime'] = $downtimeData;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
         }
     }
 }

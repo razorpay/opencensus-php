@@ -28,6 +28,16 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAssignTerminalWithInvalidGatewayAcquirer()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAddEmiTerminal()
     {
         $merchant = $this->getEntityById('merchant', '100000Razorpay', true);
@@ -80,22 +90,24 @@ class TerminalTest extends TestCase
 
     public function testRestoreTerminal()
     {
-        $merchant = $this->fixtures
-                         ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
-                         ->addTerminal('atom', ['id' => 'testatomrandom', 'used_count' => 5])
-                         ->get();
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['gateway_recon_password' => 'boo']);
 
-        $t = $this->deleteTerminal2('testatomrandom');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->defaultAuthPayment();
+
+        $t = $this->deleteTerminal2('1000HdfcShared');
         $this->assertNotNull($t['deleted_at']);
 
-        $t = $this->restoreTerminal('testatomrandom');
+        $t = $this->restoreTerminal('1000HdfcShared');
         $this->assertNull($t['deleted_at']);
     }
 
     public function testCopyTerminal()
     {
         $this->markTestSkipped();
-        $terminal = $this->fixtures->create('terminal:ebs_terminal', ['used_count' => 2]);
+        $terminal = $this->fixtures->create('terminal:ebs_terminal', ['used' => true]);
 
         $tid = $terminal['id'];
         $mid = $terminal['merchant_id'];
@@ -115,14 +127,14 @@ class TerminalTest extends TestCase
         }
 
         $this->assertEquals('100000Razorpay', $newTerminal['merchant_id']);
-        $this->assertEquals(0, $newTerminal['used_count']);
+        $this->assertEquals(false, $newTerminal['used']);
         $this->assertArraySelectiveEquals($oldTerminal, $newTerminal);
     }
 
     public function testCopySharedTerminal()
     {
         $this->markTestSkipped();
-        $terminal = $this->fixtures->create('terminal:shared_axis_terminal', ['used_count' => 2]);
+        $terminal = $this->fixtures->create('terminal:shared_axis_terminal', ['used' => true]);
 
         $tid = $terminal['id'];
         $mid = $terminal['merchant_id'];
@@ -140,7 +152,7 @@ class TerminalTest extends TestCase
     public function testEditAxisMigsTerminal()
     {
         $terminal = $this->fixtures->create(
-            'terminal:shared_axis_terminal', ['used_count' => 2]);
+            'terminal:shared_axis_terminal', ['used' => true]);
 
         $tid = $terminal['id'];
 
@@ -154,7 +166,27 @@ class TerminalTest extends TestCase
     public function testEditHdfcTerminal()
     {
         $terminal = $this->fixtures->create(
-            'terminal:shared_hdfc_terminal', ['used_count' => 2, 'gateway_recon_password' => 'boo']);
+            'terminal:shared_hdfc_terminal', ['used' => true, 'gateway_recon_password' => 'boo']);
+
+        $tid = $terminal['id'];
+
+        $data = array('gateway_recon_password' => 'random');
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('random', $terminal->reload()->getGatewayReconPassword());
+    }
+
+    //For testing edit terminals with zero used count
+    //but some authorised payments
+    public function testEditHdfcTerminalWithPayments()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['gateway_recon_password' => 'boo']);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->defaultAuthPayment();
 
         $tid = $terminal['id'];
 
@@ -168,7 +200,7 @@ class TerminalTest extends TestCase
     public function testEditUpiIciciTerminal()
     {
         $terminal = $this->fixtures->create(
-            'terminal:shared_upi_terminal', ['used_count' => 2, 'upi' => 0]);
+            'terminal:shared_upi_terminal', ['used' => true, 'upi' => 0]);
 
         $tid = $terminal['id'];
 
@@ -182,7 +214,7 @@ class TerminalTest extends TestCase
     public function testToggleTerminal()
     {
         $terminal = $this->fixtures->create(
-            'terminal:shared_axis_terminal', ['used_count' => 2, 'enabled' => '1']);
+            'terminal:shared_axis_terminal', ['used' => true, 'enabled' => '1']);
 
         $tid = $terminal['id'];
 

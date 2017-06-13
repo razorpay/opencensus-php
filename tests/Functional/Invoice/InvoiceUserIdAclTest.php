@@ -7,6 +7,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class InvoiceUserIdAclTest extends TestCase
 {
+    use InvoiceTestTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -40,55 +41,58 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testGetInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId']);
 
         $this->startTest();
     }
 
     public function testGetInvoiceWithUserIdHeaderForbidden()
     {
-        $this->createInvoice(['user_id' => '10000001UserId']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId']);
 
         $this->startTest();
     }
 
     public function testGetInvoiceWithUserIdAndDifferentRoleHeaderSuccess()
     {
-        $this->createInvoice(['user_id' => '10000001UserId']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId']);
 
         $this->startTest();
     }
 
     public function testListInvoiceWithUserIdHeader()
     {
-        $this->createInvoice(['user_id' => '10000000UserId']);
-        $this->createInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
-        $this->createInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+
+        $expectedSearchParams = $this->testData[__FUNCTION__ . 'EsExpectedSearchParams'];
+        $expectedSearchRes    = $this->testData[__FUNCTION__ . 'EsExpectedSearchResponse'];
 
         $this->startTest();
     }
 
     public function testListInvoiceWithoutUserIdHeader()
     {
-        $this->createInvoice(['user_id' => '10000000UserId']);
-        $this->createInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
-        $this->createInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
 
         $this->startTest();
     }
 
     public function testListInvoiceWithUserIdAndDifferentRoleHeader()
     {
-        $this->createInvoice(['user_id' => '10000000UserId']);
-        $this->createInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
-        $this->createInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
 
         $this->startTest();
     }
 
     public function testUpdateInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId']);
 
         $this->startTest();
 
@@ -97,14 +101,14 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testUpdateInvoiceWithUserIdHeaderForbidden()
     {
-        $this->createInvoice(['user_id' => '10000001UserId']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId']);
 
         $this->startTest();
     }
 
     public function testDeleteInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => '10000000UserId']);
 
         $this->startTest();
 
@@ -115,14 +119,16 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testDeleteInvoiceWithUserIdHeaderForbidden()
     {
-        $this->createInvoice(['user_id' => '10000001UserId']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId']);
 
         $this->startTest();
     }
 
     public function testCancelInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createInvoice(['user_id' => '10000000UserId', 'status' => 'issued']);
+        $order = $this->fixtures->create('order');
+
+        $this->createIssuedInvoice(['user_id' => '10000000UserId', 'order_id' => $order->getId()]);
 
         $this->startTest();
 
@@ -131,13 +137,10 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testCancelInvoiceWithUserIdHeaderForbidden()
     {
-        $this->createInvoice(['user_id' => '10000001UserId', 'status' => 'issued']);
+        $order = $this->fixtures->create('order');
+
+        $this->createIssuedInvoice(['user_id' => '10000001UserId', 'order_id' => $order->getId()]);
 
         $this->startTest();
-    }
-
-    private function createInvoice(array $with = [])
-    {
-        return $this->fixtures->create('invoice', array_merge(['order_id' => null, 'status' => 'draft'], $with));
     }
 }

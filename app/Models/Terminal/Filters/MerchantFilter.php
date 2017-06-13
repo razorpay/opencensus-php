@@ -236,9 +236,10 @@ class MerchantFilter extends Terminal\Filter
      * network is Visa or Master
      *
      * @param Terminal\Entity $terminal
-     * @param Array $input Combined input
-     * @return bool Whether a terminal is to be chosen or
-     * */
+     * @param array           $input Combined input
+     *
+     * @return bool Whether a terminal is to be chosen or not
+     */
     public function pharmaFilter(Terminal\Entity $terminal, array $input) : bool
     {
         $category2 = $input['merchant']->getCategory2();
@@ -305,17 +306,46 @@ class MerchantFilter extends Terminal\Filter
 
     public function gatewayFilter(Terminal\Entity $terminal, array $input) : bool
     {
+        $method = $input['payment']->getMethod();
+
+        if (in_array($method, [Method::CARD, Method::EMI], true) === false)
+        {
+            return true;
+        }
+
         $merchantId = $input['payment']->getMerchantId();
 
-        $merchantList = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST;
+        $gateway = $terminal->getGateway();
 
-        if (isset($merchantList[$merchantId]) === true)
+        $excludeList = Merchant\Preferences::MERCHANT_GATEWAY_BLACKLIST;
+
+        if (isset($excludeList[$merchantId]) === true)
         {
-            $gateway = $terminal->getGateway();
-
-            $excludedGateways = $merchantList[$merchantId];
+            $excludedGateways = $excludeList[$merchantId];
 
             if (in_array($gateway, $excludedGateways, true) === true)
+            {
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (($network === Network::VISA) or
+                    ($network === Network::MC))
+                {
+                    return false;
+                }
+            }
+        }
+
+        $includeList = Merchant\Preferences::MERCHANT_GATEWAY_WHITELIST;
+
+        if (isset($includeList[$merchantId]) === true)
+        {
+            $includedGateways = $includeList[$merchantId];
+
+            if (in_array($gateway, $includedGateways, true) === true)
+            {
+                return true;
+            }
+            else
             {
                 $network = $input['payment']->card->getNetworkCode();
 

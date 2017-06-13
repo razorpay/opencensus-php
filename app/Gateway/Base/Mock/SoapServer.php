@@ -22,6 +22,7 @@ class SoapServer extends BaseSoapServer
         {
             if (strstr($ex->getMessage(), 'headers already sent') === false)
             {
+                ob_end_flush();
                 throw $ex;
             }
         }

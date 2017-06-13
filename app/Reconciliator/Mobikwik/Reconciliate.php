@@ -19,6 +19,6 @@ class Reconciliate extends Base\Reconciliate
      */
     protected function getTypeName($fileName)
     {
-        return self::PAYMENT;
+        return self::COMBINED;
     }
 }

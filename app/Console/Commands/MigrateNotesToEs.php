@@ -47,8 +47,17 @@ class MigrateNotesToEs extends Command
         assertTrue(!empty($this->databaseMode));
         assertTrue(!empty($this->entityType));
 
-        // TODO: Change to setSlaveDb later
-        \Database\DefaultConnection::set($this->databaseMode);
+        $shouldUseSlave = ($this->option('slave') === '1');
+
+        if ($shouldUseSlave === true)
+        {
+            \Database\DefaultConnection::setSlaveConnection($this->databaseMode);
+        }
+        else
+        {
+            \Database\DefaultConnection::set($this->databaseMode);
+        }
+
         $this->setUpEs();
 
         $this->migrateNotes();
@@ -58,8 +67,8 @@ class MigrateNotesToEs extends Command
     {
         $this->info("<info>Migrating $this->entityType notes from [$this->databaseMode mode] to ES index - [$this->indexName]...</info>");
 
-        $skip = 0;
-        $take = 5000;
+        $skip = (int) $this->option('skip');
+        $take = (int) $this->option('take');
 
         while(true)
         {
@@ -171,9 +180,13 @@ class MigrateNotesToEs extends Command
 
         array_push($array, ['mode', null, InputOption::VALUE_REQUIRED, '[Mandatory] Mode (test/live) to be migrated']);
 
+        array_push($array, ['slave', null, InputOption::VALUE_REQUIRED, '[Optional] Whether to read from slave database?', '1']);
+
         array_push($array, ['entity', null, InputOption::VALUE_REQUIRED, '[Mandatory] Entity (payments/refunds) to migrate']);
 
-        array_push($array, ['skip', null, InputOption::VALUE_REQUIRED, '[Optional] Pagination parameter']);
+        array_push($array, ['skip', null, InputOption::VALUE_REQUIRED, '[Optional] Pagination offset', '0']);
+
+        array_push($array, ['take', null, InputOption::VALUE_REQUIRED, '[Optional] Pagination count', '5000']);
 
         return $array;
     }

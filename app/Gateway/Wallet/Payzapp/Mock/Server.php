@@ -110,7 +110,7 @@ class Server extends Base\Mock\Server
 
     protected static function getAcosaTxnId()
     {
-        return mt_rand(10000000,99999999);
+        return random_int(10000000,99999999);
     }
 
     protected static function getDataPickupCode($wibmoTxnId)

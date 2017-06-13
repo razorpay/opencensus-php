@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class FieldMapTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -152,6 +154,17 @@ class FieldMapTest extends TestCase
 
         $url = sprintf($url, $this->org->getPublicId(),
                         $fieldMap->getNameOfEntity());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateFieldMapForPasswordAuth()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

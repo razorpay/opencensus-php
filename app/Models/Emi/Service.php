@@ -61,6 +61,8 @@ class Service extends Base\Service
     {
         list($from, $to) = $this->getTimestamps($input);
 
+        $email = $input['email'] ?? null;
+
         // default list of banks
         $emiFileBanks = Payment\Gateway::$emiBanksUsingCardTerminals;
 
@@ -80,13 +82,13 @@ class Service extends Base\Service
         {
             $bank = Emi\Issuer::$emiFileBanks[$bankIfsc];
 
-            $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $bank);
+            $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email);
         }
 
         return $returnValue;
     }
 
-    protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank)
+    protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email = null)
     {
         $emiPaymentsForBank = $this->repo->payment->fetchEmiPaymentsBetween($from, $to, $bankIfsc);
 
@@ -99,7 +101,7 @@ class Service extends Base\Service
 
         $class = $this->getEmiFileClass($bank);
 
-        return (new $class)->generate($emiPaymentsForBank);
+        return (new $class)->generate($emiPaymentsForBank, $email);
     }
 
     protected function getEmiFileClass($bank)

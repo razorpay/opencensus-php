@@ -719,6 +719,8 @@ class VerifyTest extends TestCase
 
         unset($content['authorize_time']);
 
+        unset($content['fetch_time']);
+
         // TODO : built it from previous values
         unset($content['verifiable_count']);
 

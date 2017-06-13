@@ -2,13 +2,12 @@
 
 namespace RZP\Models\Admin\Org;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use App;
-use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Base\Traits\RevisionableTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\Entity
 {
@@ -27,7 +26,11 @@ class Entity extends Base\Entity
     const DELETED_AT       = 'deleted_at';
     const CUSTOM_CODE      = 'custom_code';
     const ADMIN            = 'admin';
+    const FROM_EMAIL       = 'from_email';
+    const SIGNATURE_EMAIL  = 'signature_email';
     const CROSS_ORG_ACCESS = 'cross_org_access';
+
+    const WORKFLOW_PERMISSIONS = 'workflow_permissions';
 
     /**
      * Holds all the permissions as relation key.
@@ -58,6 +61,8 @@ class Entity extends Base\Entity
         self::INVOICE_LOGO_URL,
         self::CROSS_ORG_ACCESS,
         self::CUSTOM_CODE,
+        self::FROM_EMAIL,
+        self::SIGNATURE_EMAIL,
     ];
 
     protected $visible = [
@@ -75,7 +80,10 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::CUSTOM_CODE,
+        self::FROM_EMAIL,
+        self::SIGNATURE_EMAIL,
         self::PERMISSIONS,
+        self::WORKFLOW_PERMISSIONS,
     ];
 
     protected $public = [
@@ -92,7 +100,10 @@ class Entity extends Base\Entity
         self::AUTH_TYPE,
         self::CREATED_AT,
         self::CUSTOM_CODE,
+        self::FROM_EMAIL,
+        self::SIGNATURE_EMAIL,
         self::PERMISSIONS,
+        self::WORKFLOW_PERMISSIONS,
     ];
 
     protected $guarded = [
@@ -106,6 +117,10 @@ class Entity extends Base\Entity
 
     protected $defaults = [
         self::CROSS_ORG_ACCESS => false,
+    ];
+
+    protected $publicSetters = [
+        self::ID
     ];
 
     protected static function boot()
@@ -161,9 +176,29 @@ class Entity extends Base\Entity
         return $this->morphToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSION_MAP);
     }
 
+    public function workflow_permissions()
+    {
+        return $this->permissions()->where('enable_workflow', '=', 1);
+    }
+
     public function getAllowSignUp()
     {
         return $this->getAttribute(self::ALLOW_SIGN_UP);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getFromEmail()
+    {
+        return $this->getAttribute(self::FROM_EMAIL) ?? "support@razorpay.com";
+    }
+
+    public function getSignatureEmail()
+    {
+        return $this->getAttribute(self::SIGNATURE_EMAIL);
     }
 
     public function getEmailDomains()
@@ -174,6 +209,11 @@ class Entity extends Base\Entity
     public function getDisplayName()
     {
         return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
+    public function getBusinessName()
+    {
+        return $this->getAttribute(self::BUSINESS_NAME);
     }
 
     public function getAuthType()
@@ -211,5 +251,10 @@ class Entity extends Base\Entity
     public function getInputFields()
     {
         return $this->fillable;
+    }
+
+    public function getPrimaryHostName()
+    {
+        return $this->hostnames()->first()->getHostName();
     }
 }

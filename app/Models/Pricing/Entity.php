@@ -34,7 +34,6 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-
     protected $fillable = array(
         self::ID,
         self::PLAN_ID,

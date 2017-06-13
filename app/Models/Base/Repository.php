@@ -17,7 +17,7 @@ class Repository extends BaseRepository
      */
     protected function addQueryParamEmail($query, $params)
     {
-        $attribute = $this->getAttributeWithTableName('email');
+        $attribute = $this->dbColumn('email');
 
         // Email should be case insensitive
         $email = mb_strtolower($params['email']);

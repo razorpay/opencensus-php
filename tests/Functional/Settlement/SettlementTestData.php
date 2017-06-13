@@ -3,13 +3,14 @@
 use Carbon\Carbon;
 
 return [
-    'fetchAndMatchSettlementForV2' => [
+    'fetchAndMatchSettlement' => [
         'channel'           => "kotak",
         'merchant_id'       => '10000000000000',
         'amount'            => 4884500,
         'fees'              => 115000,
         'service_tax'       => 15000,
         'failure_reason'    => null,
+        'attempts'     => 1,
     ],
 
     'fetchAndMatchBatchDataSettlement' => [
@@ -25,10 +26,10 @@ return [
 
     'matchSettlementAttempt' => [
         'channel'           => 'kotak',
-        'version'           => 'V2',
-        'bank_status_code'  => 'P',
-        'status'            => 'created',
+        'version'           => 'V3',
+        'merchant_id'       => '10000000000000',
         'bank_status_code'  => null,
+        'status'            => 'created',
         'utr'               => null,
         'remarks'           => null,
         'failure_reason'    => null,

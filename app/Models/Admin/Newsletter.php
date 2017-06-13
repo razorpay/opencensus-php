@@ -355,13 +355,18 @@ EOT;
 
         $cssContent = $ink_css. PHP_EOL . $cssContent;
 
+        $convertor = new CssToInlineStyles;
 
-        $convertor = new CssToInlineStyles();
-        $convertor->setHTML($msg);
-        $convertor->setCleanup(false);
-        $convertor->setExcludeMediaQueries(false);
-        $convertor->setCSS($cssContent);
+        // @note: Commented during upgrade to laravel5.4
+        //      The CssToInlineStyles library in version 2.2 is behaving
+        //      differently from older 1.5 version which was previously being
+        //      used.
+        //
+        // $convertor->setHTML($msg);
+        // $convertor->setCleanup(false);
+        // $convertor->setExcludeMediaQueries(false);
+        // $convertor->setCSS($cssContent);
 
-        return $convertor->convert();
+        return $convertor->convert($msg, $cssContent);
     }
 }

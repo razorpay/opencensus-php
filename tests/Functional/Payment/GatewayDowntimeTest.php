@@ -80,13 +80,13 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'netbanking',
-                'issuer' => 'HDFC',
-                'comment' => 'Test Reason',
-                'source' => 'statuscake',
-                'begin' => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'netbanking',
+                'issuer'      => 'HDFC',
+                'comment'     => 'Test Reason',
+                'source'      => 'statuscake',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -122,15 +122,15 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'netbanking',
-                'issuer' => 'HDFC',
-                'comment' => 'Test Reason',
-                'source' => 'statuscake',
-                'scheduled' => true,
-                'begin' => Carbon::now()->subMinutes(60)->timestamp,
-                'end'  => Carbon::now()->addMinutes(60)->timestamp
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'netbanking',
+                'issuer'      => 'HDFC',
+                'comment'     => 'Test Reason',
+                'source'      => 'statuscake',
+                'scheduled'   => true,
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -163,11 +163,11 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'begin' => Carbon::now()->subMinutes(60)->timestamp,
-                'gateway' => 'axis_migs',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'card',
-                'source' => 'other'
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'axis_migs',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'card',
+                'source'      => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -175,7 +175,7 @@ class GatewayDowntimeTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $request['content']['network'] = 'visa';
+        $request['content']['network'] = 'VISA';
 
         $request['content']['card_type'] = 'debit';
 
@@ -189,7 +189,7 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals('OTHER', $response2['reason_code']);
 
-        $this->assertEquals('visa', $response2['network']);
+        $this->assertEquals('VISA', $response2['network']);
 
     }
 
@@ -272,13 +272,13 @@ class GatewayDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'begin'  => time(),
-                'method' => 'netbanking',
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'netbanking',
                 'terminal_id' => $tid,
-                'issuer' => 'HDFC',
-                'source' => 'other'
+                'issuer'      => 'HDFC',
+                'source'      => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -295,13 +295,13 @@ class GatewayDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'begin'  => time(),
-                'method' => 'netbanking',
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'netbanking',
                 'terminal_id' => $tid,
-                'issuer' => 'HDFC',
-                'source' => 'other'
+                'issuer'      => 'HDFC',
+                'source'      => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -319,13 +319,6 @@ class GatewayDowntimeTest extends TestCase
 
     // netbanking
     public function testGatewayCreateDowntimeNetbankingPartial()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testCreateDowntimeNBEmptyIssuer()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -497,33 +490,6 @@ class GatewayDowntimeTest extends TestCase
 
     //----- Fetch Tests -----
 
-    public function testGatewayDowntimeFetchForNullTo()
-    {
-        $content1 = $this->createGatewayDowntime();
-
-        $this->createGatewayDowntimeNullTo('netbanking_kotak');
-
-        $from = $content1['begin'];
-
-        $request = [
-            'content' => ['begin' => $from],
-            'url' => '/gateway/downtimes',
-            'method' => 'GET'
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(2, $content['count']);
-
-        $request['content']['gateway'] = 'netbanking_kotak';
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(1, $content['count']);
-
-        $this->assertEquals(null, $content['items'][0]['end']);
-    }
-
     public function testGatewayDowntimeFetch()
     {
         $content1 = $this->createGatewayDowntime();
@@ -546,18 +512,75 @@ class GatewayDowntimeTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['count'], 2);
+        // Downtime 1 starts at query begin time    |████████1████████         |
+        // Downtime 2 ends at query end time        |    ████████2████████     |
+        // Thus both overlap with query window      |██████████Q██████████     |
+        $this->assertEquals(2, $content['count']);
 
         $request['content']['gateway'] = 'netbanking_hdfc';
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['count'], 1);
+        $this->assertEquals(1, $content['count']);
     }
 
-    public function testGatewayDowntimeFetchWithEmptyTo()
+    public function testGatewayDowntimeFetchEmptyResponse()
     {
+        $oneHourAgo = Carbon::now()->subMinutes(60)->timestamp;
 
+        $content1 = $this->createGatewayDowntimeForOneHour('netbanking_hdfc', $oneHourAgo);
+
+        $oneHourOn = Carbon::now()->addMinutes(60)->timestamp;
+
+        $content2 = $this->createGatewayDowntimeForOneHour('netbanking_kotak', $oneHourOn);
+
+        $request = [
+            'content' => ['begin' => $content1['end']+1, 'end' => $content2['begin']-1],
+            'url' => '/gateway/downtimes',
+            'method' => 'GET'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // Downtime 1 ends before query begin time  |██1██                     |
+        // Downtime 2 starts after query end time   |                  ██2██   |
+        // Thus neither overlaps with query window  |       ████Q████          |
+        $this->assertEquals(0, $content['count']);
+    }
+
+    public function testGatewayDowntimeFetchForNullTo()
+    {
+        $content1 = $this->createGatewayDowntime();
+
+        $this->createGatewayDowntimeNullTo('netbanking_kotak');
+
+        $from = $content1['begin'];
+
+        $request = [
+            'content' => ['begin' => $from],
+            'url' => '/gateway/downtimes',
+            'method' => 'GET'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // Downtime 1 starts at query begin time    |████████1███████          |
+        // Downtime 2 extends indefinitely          |    ███████████2██████████|
+        // Query has no end time                    |████████████Q█████████████|
+        // Thus both overlap with query window
+        $this->assertEquals(2, $content['count']);
+
+        $request['content']['gateway'] = 'netbanking_kotak';
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $this->assertEquals(null, $content['items'][0]['end']);
+    }
+
+    public function testGatewayDowntimeFetchForIndefiniteDowntimes()
+    {
         $content1 = $this->createGatewayDowntimeWithEmptyTo('netbanking_hdfc',
             Carbon::now()->subMinutes(60)->timestamp);
 
@@ -574,7 +597,11 @@ class GatewayDowntimeTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['count'], 1);
+        // Downtime 1 extends indefinitely          |█████████████1████████████|
+        // Downtime 2 extends indefinitely          |       █████████2█████████|
+        // Query has no end time                    |   ███████████Q███████████|
+        // Thus both overlap with query window
+        $this->assertEquals(2, $content['count']);
     }
 
     // statuscake tests
@@ -605,6 +632,15 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testStatusCakeWebHookUPI()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
     public function testStatusCakeInvalidNB()
     {
         $this->ba->directAuth();
@@ -624,6 +660,15 @@ class GatewayDowntimeTest extends TestCase
     }
 
     public function testStatusCakeInvalidWallet()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeInvalidUPI()
     {
         $this->ba->directAuth();
 
@@ -715,6 +760,13 @@ class GatewayDowntimeTest extends TestCase
         $from = Carbon::now()->subMinutes(60)->timestamp;
 
         $to = null;
+
+        return $this->__createGatewayDowntime($gatewayName, $from, $to, null);
+    }
+
+    protected function createGatewayDowntimeForOneHour($gatewayName = 'netbanking_hdfc', $from)
+    {
+        $to = $from + 60*60;
 
         return $this->__createGatewayDowntime($gatewayName, $from, $to, null);
     }

@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
@@ -21,6 +22,8 @@ use RZP\Trace\TraceCode;
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
+
+    const CHECKSUM_ATTRIBUTE = ResponseFields::HASH;
 
     protected $canRunOtpFlow = false;
 
@@ -514,6 +517,17 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
+        $hashContent = [
+            ResponseFields::MID        => $content[ResponseFields::MID],
+            ResponseFields::TRAN_ID    => $content[ResponseFields::TRAN_ID],
+            ResponseFields::TXN_REF_NO => $content[ResponseFields::TXN_REF_NO],
+            ResponseFields::TRAN_AMT   => $content[ResponseFields::TRAN_AMT],
+            ResponseFields::TRAN_DATE  => $content[ResponseFields::TRAN_DATE],
+            ResponseFields::HASH       => $content[ResponseFields::HASH],
+        ];
+
+        $this->verifySecureHash($hashContent);
+
         $date = $this->getEpochTime(
             $content[ResponseFields::TRAN_DATE],
             DateFormat::TRAN_DATE_FORMAT);
@@ -532,10 +546,6 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-
-        //TODO Temporary solution for checksum
-        $this->verifyPaymentInAuthorize($input, $content);
-
     }
 
     protected function verifyPaymentInAuthorize(array $input, array $content)
@@ -579,7 +589,7 @@ class Gateway extends Base\Gateway
         // Secret should only be accessed here.
         $secret = $this->getSecret();
 
-        $hashString = $hashString.'#'.$secret;
+        $hashString = $hashString . '#' . $secret;
 
         return hash(HashAlgo::SHA512, $hashString, false);
     }
@@ -592,34 +602,34 @@ class Gateway extends Base\Gateway
             $payment['created_at'],
             DateFormat::REQUEST_DATE_FORMAT);
 
-        $content = [
+        $hashContent = [
             RequestFields::MID         => $this->getMerchantId(),
             RequestFields::TXN_REF_NO  => $payment['id'],
+            RequestFields::AMT         => ($input['payment']['amount'] / 100),
+            RequestFields::DATE        => $date,
+        ];
+
+        $content = [
             RequestFields::SU          => $input['callbackUrl'],
             RequestFields::FU          => $input['callbackUrl'],
-            RequestFields::AMT         => ($input['payment']['amount'] / 100),
-            RequestFields::CUR         => 'INR',
-            RequestFields::DATE        => $date,
+            RequestFields::CUR         => Currency::INR,
             RequestFields::CUST_MOBILE => $this->getFormattedContact($payment['contact']),
             RequestFields::CUST_EMAIL  => $payment['email'],
             RequestFields::END_MID     => $this->getEndMerchantId($input['terminal']),
         ];
 
-        $content[RequestFields::HASH] = $this->getHashOfArray($content);
+        $content = array_merge($content, $hashContent);
+
+        $content[RequestFields::HASH] = $this->getHashOfArray($hashContent);
 
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getStringToHash($content, $glue = '')
+    protected function getHashOfArray($content)
     {
-        $hashArray = [
-            $content['MID'],
-            $content['TXN_REF_NO'],
-            $content['AMT'],
-            $content['DATE'],
-        ];
+        $str = $this->getStringToHash($content, '#');
 
-        return implode('#', $hashArray);
+        return $this->getHashOfString($str);
     }
 
     protected function getRefundRequestArray(array $input)

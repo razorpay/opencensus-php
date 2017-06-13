@@ -6,16 +6,31 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
+use RZP\Models\Base\EsRepository;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Constants\Entity as E;
-use RZP\Trace\TraceCode;
 use RZP\Trace\Trace;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use RZP\Jobs\EsRepository;
+use RZP\Trace\TraceCode;
+use RZP\Jobs\EsSync;
+use RZP\Jobs\EsRepository as OldEsSync;
+use RZP\Jobs\DispatchRouter;
 
 class Repository extends \Razorpay\Spine\Repository
 {
-    use RepositoryFetch, DispatchesJobs;
+    /**
+     * Delay in making es job available for queue consumer.
+     * Value is in seconds.
+     *
+     * We need delay to not fall in a case where a set of saveOrFail() are
+     * wrapped in a transaction and the transaction is taking time. Meanwhile
+     * saveOrFail() has triggered es sync via queue and queue receives the job
+     * and attempts to get the entity by id(which is not committed yet, transaction
+     * in progress).
+     */
+    const ES_JOB_DELAY = 3;
+
+    use RepositoryFetch;
 
     protected $app;
 
@@ -27,6 +42,14 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $manager;
 
+    /**
+     * Corresponding esRepo instance of entity.
+     * When intending to use please set it first by calling setEsRepoIfExist().
+     *
+     * @var EsRepository
+     */
+    protected $esRepo = null;
+
     public function __construct()
     {
         parent::__construct();
@@ -37,14 +60,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->auth = $this->app['basicauth'];
 
-        //
-        // Currently, using $this->manager because
-        // we have $this->repo being used for creating queries.
-        // Once we shift to the new way of querying via newQuery()
-        // then we can change this back to $this->repo. Till then,
-        // we will need to keep use of $this->manager to minimum.
-        //
-        $this->manager = $this->app['repo'];
+        $this->repo = $this->app['repo'];
     }
 
     public static function getTableNameForEntity(string $entity)
@@ -126,19 +142,34 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
-        // Gets the attributes which are being newly inserted or updated.
+        // TODO: getDirty() doesn't handle related models update. Currently there
+        // is no such use case but will come very soon. Handle the same then.
+
         $dirty = $entity->getDirty();
 
-        // Saves the entity in MySql.
+        $esAction = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
+
         $entity->saveOrFail($options);
 
-        // [Queue] saves in ES if certain conditions are met.
-        $this->saveInEs($entity, $dirty);
+        $this->syncToEs($entity, $esAction, $dirty);
     }
 
-    public function sync($entity, $relation, $ids = [])
+    public function deleteOrFail($entity)
     {
-        $entity->$relation()->sync($ids);
+        parent::deleteOrFail($entity);
+
+        $this->syncToEs($entity, EsRepository::DELETE);
+    }
+
+    /**
+     * If detaching is true then all the previous relations for this entity would be removed,
+     * and fresh new relations will be created.
+     * If detaching is false, then it will not remove the previous relations
+     * and will update the given relation.
+     */
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
+    {
+        $entity->$relation()->sync($ids, $detaching);
 
         return $this;
     }
@@ -150,9 +181,14 @@ class Repository extends \Razorpay\Spine\Repository
         return $this;
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function attach(
+        $entity,
+        $relation,
+        array $ids = [],
+        array $attributes = [],
+        $touch = true)
     {
-        $entity->$relation()->attach($id, $attributes, $touch);
+        $entity->$relation()->attach($ids, $attributes, $touch);
 
         return $this;
     }
@@ -215,6 +251,11 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
+    public function assertTransactionActive()
+    {
+        assert ($this->isTransactionActive());
+    }
+
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
     {
         $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
@@ -249,7 +290,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         foreach ($relationships as $type => $ids)
         {
-            $typeEntities = $this->manager->$type->findMany($ids);
+            $typeEntities = $this->repo->$type->findMany($ids);
 
             foreach ($typeEntities as $entity)
             {
@@ -297,7 +338,7 @@ class Repository extends \Razorpay\Spine\Repository
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
      *
-     * @return null
+     * @return
      *
      * @throws Exception\LogicException
      */
@@ -343,43 +384,269 @@ class Repository extends \Razorpay\Spine\Repository
                     ->merchantId($merchantId);
     }
 
-    protected function saveInEs($entity, $dirty)
+    /**
+     * Sets $esRepo
+     *
+     * Needs to be called explicitly one time when intending to use. This cannot
+     * be put in _construct of this class as it needs rzp.mode and that is not
+     * set in few flows - tests etc.
+     */
+    public function setEsRepoIfExist()
+    {
+        $esRepoClassPath = $this->getEsRepoClassPath();
+
+        if (class_exists($esRepoClassPath) === true)
+        {
+            $this->esRepo = (new $esRepoClassPath($this->entity));
+        }
+    }
+
+    /**
+     * Gets $esRepo
+     *
+     * @return EsRepository|null
+     */
+    public function getEsRepo()
+    {
+        return $this->esRepo;
+    }
+
+    /**
+     * Find entity with given id for indexing.
+     *
+     * @param string $id
+     *
+     * @return array
+     */
+    public function findForIndexing(string $id): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $entity = $query->find($id);
+
+        return $this->serializeForIndexing($entity);
+    }
+
+    /**
+     * Finds many entities for indexing.
+     *
+     * @param int|integer $skip
+     * @param int|integer $take
+     *
+     * @return array
+     */
+    public function findManyForIndexing(int $skip = 0, int $take = 100): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->skip($skip)->take($take)->get();
+
+        return array_map(
+            function ($v)
+            {
+                return $this->serializeForIndexing($v);
+            },
+            $collection->all());
+    }
+
+    /**
+     * Updates the default query for getting models for indexing.
+     * E.g. In case of merchant, it needs join with merchant_detail, etc.
+     *
+     * @param BuilderEx $query
+     *
+     * @return
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query) {}
+
+    /**
+     * Serializes a given model for indexing.
+     * Please override this per need to avoid unnecessary MySQL queries.
+     *
+     * @param Models\Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Models\Base\PublicEntity $entity): array
+    {
+        // We use setVisible to make only select attributes available after
+        // toArray. The result from toArray is directly passed to es client for
+        // indexing.
+
+        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
+    }
+
+    /**
+     * @deprecated
+     *
+     * Saves dirtied entities to es if few conditions met.
+     *
+     * @param Models\Base\PublicEntity $entity
+     * @param array                    $dirty
+     *
+     * @return
+     */
+    protected function syncToEsDeprecated(Models\Base\PublicEntity $entity, array $dirty)
     {
         try
         {
-            // Checks if whitelisted es params is set. If yes, checks if $dirty contains any of them.
-            if ((isset($this->esWhitelistedParams) === true) and
-                (empty(array_intersect(array_keys($dirty), $this->esWhitelistedParams)) === false))
-            {
-                $esRepoClassPath = $this->getEsRepoClassPath();
+            $esRepoClassPath = $this->getEsRepoClassPath();
 
-                $esType = $this->getEsType();
+            $esType = $this->getEsType();
 
-                $queueData = [
-                    'es_type'           => $esType,
-                    // This entity object is converted into an array because Queue::push
-                    // decodes and encodes it with assoc array flag set to true.
-                    'entity'            => $entity->toArray(),
-                    'mode'              => $this->app['rzp.mode'],
-                    'es_repo_path'      => $esRepoClassPath,
-                ];
+            $mode = $this->app['rzp.mode'];
 
-                // Saving the entity in ES.
-                $this->dispatch(new EsRepository($queueData));
-            }
+            $queueData = [
+                'es_type'           => $esType,
+                // This entity object is converted into an array because Queue::push
+                // decodes and encodes it with assoc array flag set to true.
+                'entity'            => $entity->toArray(),
+                'mode'              => $mode,
+                'es_repo_path'      => $esRepoClassPath,
+            ];
+
+            // Saving the entity in ES.
+            $job = new OldEsSync($queueData);
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException(
-                $ex,
+                $ex, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $entity->toArray());
+        }
+    }
+
+    /**
+     * Syncs model changes to es.
+     * Upserts in case of addition/updates and deletes es document otherwise.
+     *
+     * @param Models\Base\PublicEntity $entity
+     * @param string                   $action
+     * @param array                    $dirty
+     */
+    protected function syncToEs(
+        Models\Base\PublicEntity $entity,
+        string $action,
+        array $dirty = [])
+    {
+        $this->setEsRepoIfExist();
+
+        if ($this->esRepo === null)
+        {
+            return;
+        }
+
+        if ($this->isEsSyncNeeded($action, $dirty) === false)
+        {
+            return;
+        }
+
+        // If entity is in old flow use the old method. To be removed later.
+        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
+        {
+            return $this->syncToEsDeprecated($entity, $dirty);
+        }
+
+        try
+        {
+            $mode = $this->app['rzp.mode'];
+
+            $job = (new EsSync(
+                        $mode,
+                        $action,
+                        $entity->getEntity(),
+                        $entity->getId()
+                    ))->delay(self::ES_JOB_DELAY);
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
                 Trace::ERROR,
-                TraceCode::ES_SAVE_FAILED,
-                $entity->toArray()
+                TraceCode::ES_SYNC_FAILED,
+                [
+                    'entity_id' => $entity->getId(),
+                    'action'    => $action,
+                ]
             );
         }
     }
 
-    protected function getEsRepoClassPath()
+    /**
+     * Checks if es sync after a model operation is needed or not.
+     *
+     * @param string $action
+     * @param array  $dirty
+     *
+     * @return bool
+     */
+    protected function isEsSyncNeeded(string $action, array $dirty): bool
+    {
+        $esFields = $this->esRepo->getFields();
+
+        // If no fields are configured to be in ES in the repository, return false.
+        if (count($esFields) === 0)
+        {
+            return false;
+        }
+
+        if ($action === EsRepository::DELETE)
+        {
+            return true;
+        }
+
+        // Checks if dirtied field($dirty) contains any of $esFields. If so, checks
+        // if they are non-empty. Eg. '{}'' json string in notes doesn't need to
+        // be indexed alone.
+
+        if (empty(array_intersect(array_keys($dirty), $esFields)) === true)
+        {
+            return false;
+        }
+
+        if ($action === EsRepository::UPDATE)
+        {
+            return true;
+        }
+
+        $shouldSync = false;
+
+        foreach ($esFields as $esField)
+        {
+            if (empty($dirty[$esField]) === false)
+            {
+                if (isJson($dirty[$esField]) === true)
+                {
+                    if (empty(json_decode($dirty[$esField], true)) === false)
+                    {
+                        $shouldSync = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    $shouldSync = true;
+                    break;
+                }
+            }
+        }
+
+        return $shouldSync;
+    }
+
+    /**
+     * @deprecated
+     *
+     * @return string
+     */
+    protected function getEsRepoClassPath(): string
     {
         $parentNamespace = $this->getParentNamespace();
 
@@ -396,12 +663,14 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * @deprecated
+     *
      * Override this method in entity/repository in case the type name is
      * different for that entity.
      *
      * @return string
      */
-    protected function getEsType()
+    protected function getEsType(): string
     {
         $parentNamespace = $this->getParentNamespace();
 
@@ -417,7 +686,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $typeName;
     }
 
-    protected function getAttributeWithTableName($col)
+    protected function dbColumn($col)
     {
         return $this->getTableName() . '.' . $col;
     }

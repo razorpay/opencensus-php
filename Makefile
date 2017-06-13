@@ -18,6 +18,7 @@ DOCKER_DEV_COMPOSE_FILE = docker-compose.dev.yml
 DOCKER_STATUS_CHECKER = dockerconf/docker-status-check.sh
 DOCKER_ES_API_NOTES_JSON = dockerconf/es_api_notes.json
 DOCKER_ES_AUDIT_LOGS_JSON = dockerconf/es_audit_logs.json
+DOCKER_ES_WORKFLOW_ACTIONS_JSON = dockerconf/es_workflow_actions.json
 DOCKER_INIT_SCRIPT = dockerconf/docker-init.sh
 #DOCKER_COMPOSE_PS = $(shell docker-compose ps -q)
 
@@ -44,6 +45,8 @@ build: clean
 	curl -X PUT "http://localhost:29200/api_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
 	curl -X PUT "http://localhost:29200/audit_logs_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_AUDIT_LOGS_JSON)
 	curl -X PUT "http://localhost:29200/audit_logs_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_AUDIT_LOGS_JSON)
+	curl -X PUT "http://localhost:29200/workflow_action_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_WORKFLOW_ACTIONS_JSON)
+	curl -X PUT "http://localhost:29200/workflow_action_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_WORKFLOW_ACTIONS_JSON)
 	@echo "\n===================="
 	@echo "Container build Setup Complete. You may now execute 'docker ps' to see if things are up"
 	docker ps

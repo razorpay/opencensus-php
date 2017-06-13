@@ -19,7 +19,7 @@ class Gateway extends Icici\Gateway
      * We use a tiny 128 bit key for mock
      * testing which is committed as well
      */
-    protected function getPublicKey()
+    protected function getPublicKey(): string
     {
         return file_get_contents(__DIR__ . '/keys/mockserver.pub');
     }
@@ -27,12 +27,12 @@ class Gateway extends Icici\Gateway
     /**
      * This is the privateKey for the Gateway Client
      */
-    protected function getPrivateKey()
+    protected function getPrivateKey(): string
     {
         return file_get_contents(__DIR__ . '/keys/mockclient.key');
     }
 
-    protected function getUrl($type = 'authorize')
+    protected function getUrl($type = 'authorize'): string
     {
         $url = $this->route->getUrlWithPublicAuth(
                         'mock_upi_icici_payment', ['bank' => 'icici']);

@@ -3,9 +3,13 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Constants\MailTags;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Constants\MailTags;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -21,8 +25,6 @@ class RefundFile extends Base\RefundFile
         'Merchant Code',
     ];
 
-    const EMAIL_BODY = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
-
     public function generate($input)
     {
         $data = $this->getRefundData($input);
@@ -37,38 +39,24 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'file_path' => $file['local_file_path'],
-            'body' => self::EMAIL_BODY,
+            'file_path'  => $file['local_file_path'],
+            'file_name'  => basename($file['local_file_path']),
+            'signed_url' => $signedFileUrl,
         ];
 
-        $this->sendRefundEmail($fileData);
+        $this->sendRefundEmail($fileData, $input['email']);
 
         return $file['local_file_path'];
     }
 
-    protected function sendRefundEmail($fileData = [])
+    protected function sendRefundEmail($fileData = [], $email = null)
     {
-        $fullpath = $fileData['file_path'];
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC, $email);
 
-        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
-        {
-            $emails = ['Directpay.Refunds@hdfcbank.com','settlements@razorpay.com'];
-
-            $message->from('refunds@razorpay.com', 'Hdfc Netbanking refunds');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('HDFC Netbanking refunds file for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($fileData['file_path']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 
     protected function getRefundData($input)

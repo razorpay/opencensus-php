@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const SOURCE                 = 'source';
     const SOURCE_TYPE            = 'source_type';
     const SOURCE_ID              = 'source_id';
+    const MERCHANT_ID            = 'merchant_id';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
@@ -22,6 +23,8 @@ class Entity extends Base\PublicEntity
     const DATE_TIME              = 'date_time';
     const CMS_REF_NO             = 'cms_ref_no';
     const FAILURE_REASON         = 'failure_reason';
+    const TXT_FILE_ID            = 'txt_file_id';
+    const EXCEL_FILE_ID          = 'excel_file_id';
 
     protected $entity = 'fund_transfer_attempt';
 
@@ -34,6 +37,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::SOURCE,
+        self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
@@ -45,6 +49,8 @@ class Entity extends Base\PublicEntity
         self::DATE_TIME,
         self::CMS_REF_NO,
         self::FAILURE_REASON,
+        self::TXT_FILE_ID,
+        self::EXCEL_FILE_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -66,6 +72,11 @@ class Entity extends Base\PublicEntity
     public function source()
     {
         return $this->morphTo('source', self::SOURCE_TYPE, self::SOURCE_ID);
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public function bankAccount()
@@ -188,7 +199,7 @@ class Entity extends Base\PublicEntity
 
     public function isPendingReconciliation()
     {
-        return $this->isStatusCreated();
+        return ($this->getStatus() === Status::PENDING_RECONCILIATION);
     }
 
     public function isStatusFailed()

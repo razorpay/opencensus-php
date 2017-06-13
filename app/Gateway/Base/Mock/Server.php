@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Server extends Base\Core
 {
@@ -164,6 +165,17 @@ class Server extends Base\Core
         return $this->validator;
     }
 
+    protected function assertAccountNumberLength($accountNumber)
+    {
+        $accountNumberLengths = Netbanking::getAccountNumberLengths();
+
+        if ((in_array($this->bank, $accountNumberLengths) === true) and
+            ($accountNumberLengths[$this->bank] !== $accountNumber))
+        {
+            throw new Exception\LogicException('WRONG_ACCOUNT_NUMBER_LENGTH');
+        }
+    }
+
     public function processSoap($input, $location, $action)
     {
         $wsdlFile = $this->getWsdlFile();
@@ -184,6 +196,11 @@ class Server extends Base\Core
     protected function validateAuthorizeInput($input)
     {
         $this->validateActionInput($input, 'auth');
+    }
+
+    protected function validateRefundInput($input)
+    {
+        $this->validateActionInput($input, 'refund');
     }
 
     protected function validateEnrollInput($input)

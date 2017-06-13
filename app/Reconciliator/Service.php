@@ -35,12 +35,12 @@ class Service extends Base\Service
 
             if ($success === true)
             {
-                $successCount += 1;
+                $successCount++;
             }
             else
             {
                 $failures[] = $transaction->getId();
-                $failureCount += 1;
+                $failureCount++;
             }
         }
 

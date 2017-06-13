@@ -105,6 +105,11 @@ class Server extends Base\Mock\Server
     {
         $this->content($responseArray);
 
+        if (empty($responseArray) === true)
+        {
+            return $responseArray;
+        }
+
         $responseArray = array_flip($responseArray);
 
         $xml = new \SimpleXMLElement('<VerifyOutput/>');

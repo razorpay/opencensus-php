@@ -174,4 +174,29 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreateFieldMapForPasswordAuth' => [
+        'request' => [
+            'url' => '/orgs/%s/field-map',
+            'method' => 'post',
+            'content' => [
+                'entity_name' => 'admin',
+                'fields' => [
+                    'password',
+                    'password_confirmation',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_name' => 'admin',
+                'fields' => [
+                    'password',
+                    'password_confirmation',
+                ],
+            ],
+
+            'status_code' => 200,
+        ],
+    ],
 ];

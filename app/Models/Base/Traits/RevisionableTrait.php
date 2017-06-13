@@ -112,7 +112,7 @@ trait RevisionableTrait
             // so for now we drop any object based items, like DateTime
             foreach ($this->updatedData as $key => $val)
             {
-                if (gettype($val) == 'object' and  !method_exists($val, '__toString'))
+                if (gettype($val) === 'object' and  !method_exists($val, '__toString'))
                 {
                     unset($this->originalData[$key]);
 

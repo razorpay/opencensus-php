@@ -1,0 +1,228 @@
+<?php
+
+namespace RZP\Models\Schedule\Task;
+
+use Config;
+use Carbon\Carbon;
+
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Schedule;
+
+class Core extends Base\Core
+{
+    /**
+     * Create a default settlement schedule for merchant
+     *
+     * @param Merchant\Entity $merchant
+     */
+    public function createDefaultSettlementSchedule(Merchant\Entity $merchant)
+    {
+        $schedule = $this->getDefaultMerchantSchedule($merchant);
+
+        $input = [
+            Entity::METHOD      => null,
+            Entity::TYPE        => Type::SETTLEMENT,
+            Entity::SCHEDULE_ID => $schedule->getId()
+        ];
+
+        $this->createOrUpdate($merchant, $merchant, $input);
+    }
+
+    /**
+     * Create a merchant schedule task entity and deletes the existing entity if any
+     *
+     * @param Merchant\Entity $merchant
+     * @param Base\Entity     $entity
+     * @param                 $input
+     *
+     * @return $this
+     * @throws \Exception
+     */
+    public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
+    {
+        $scheduleTask = $this->create($merchant, $entity, $input);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($scheduleTask)
+        {
+            // for settlements, we want to keep schedules in sync in test and live
+            if ($scheduleTask->isTypeSettlement() === true)
+            {
+                $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
+                $this->createOrUpdateInMode($scheduleTask, Mode::TEST);
+
+                // Notify slack only in the case of settlement schedule_task
+                $this->traceAndNotifyScheduleAssignment($scheduleTask);
+            }
+            else
+            {
+                $this->createOrUpdateInMode($scheduleTask, $this->mode);
+            }
+        });
+
+        return $scheduleTask;
+    }
+
+    /**
+     * Creates merchant schedule entity
+     *
+     * @param Merchant\Entity $merchant
+     * @param Base\Entity     $entity
+     * @param                 $input
+     *
+     * @return Entity
+     */
+    public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
+    {
+        $scheduleTask = (new Entity)->build($input);
+
+        $scheduleTask->merchant()->associate($merchant);
+
+        $scheduleTask->entity()->associate($entity);
+
+        $scheduleId = $input[Entity::SCHEDULE_ID];
+
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
+
+        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
+
+        $scheduleTask->schedule()->associate($schedule);
+
+        $scheduleTask->updateNextRunAt($scheduleTask->getNextRunAt());
+
+        return $scheduleTask;
+    }
+
+    /**
+     * Get All Settlement schedules assigned to merchant for payment method
+     *
+     * @param Merchant\Entity $merchant
+     * @param                 $method
+     *
+     * @return null|Entity
+     */
+    public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
+    {
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->fetchByMerchant($merchant, Type::SETTLEMENT);
+
+        $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
+                                    $scheduleTasks,
+                                    $method);
+
+        return $scheduleTask;
+    }
+
+    protected function createOrUpdateInMode(Entity $scheduleTask, string $mode)
+    {
+        $entity = clone $scheduleTask;
+
+        $entity->setConnection($mode);
+
+        $currentScheduleTask = $this->repo
+                                    ->schedule_task
+                                    ->connection($mode)
+                                    ->fetchExistingScheduleTask($entity);
+
+        if ($currentScheduleTask !== null)
+        {
+            $entity->updateNextRunAt($currentScheduleTask->getNextRunAt());
+
+            $this->repo->deleteOrFail($currentScheduleTask);
+        }
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    /**
+     * Fetch schedule to assign for a new merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @return Schedule\Entity
+     */
+    protected function getDefaultMerchantSchedule(Merchant\Entity $merchant)
+    {
+        $schedule = null;
+
+        //
+        // For marketplace linked accounts, use the parent merchants
+        // schedule, if available
+        //
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $parentMerchant = $merchant->parent;
+
+            $scheduleTask = $this->repo
+                                 ->schedule_task
+                                 ->findByMerchantAndMethod($parentMerchant, null);
+
+            $schedule = $scheduleTask->schedule;
+        }
+
+        if ($schedule === null)
+        {
+            $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+            $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
+        }
+
+        return $schedule;
+    }
+
+    /**
+     * Filter a schedule by method or default
+     *
+     * @param $scheduleTasks
+     * @param $method
+     *
+     * @return null|Entity
+     */
+    protected function filterAndGetScheduleByMethodOrDefault(
+        $scheduleTasks,
+        $method)
+    {
+        $defaultScheduleTask = null;
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $scheduleMethod = $scheduleTask->getMethod();
+
+            if ($scheduleMethod === $method)
+            {
+                return $scheduleTask;
+            }
+            else if ($scheduleMethod === null)
+            {
+                $defaultScheduleTask = $scheduleTask;
+            }
+        }
+
+        return $defaultScheduleTask;
+    }
+
+    protected function traceAndNotifyScheduleAssignment($scheduleTask)
+    {
+        $data = [
+            Entity::MERCHANT_ID => $scheduleTask->getMerchantId(),
+            Entity::SCHEDULE_ID => $scheduleTask->getScheduleId(),
+            Entity::TYPE        => $scheduleTask->getType(),
+            Entity::METHOD      => $scheduleTask->getMethod()
+        ];
+
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
+
+        $user = $this->getInternalUsernameOrEmail();
+
+        $this->app['slack']->queue(
+                "Schedule assigned to Merchant by $user",
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:',
+                ]);
+    }
+}

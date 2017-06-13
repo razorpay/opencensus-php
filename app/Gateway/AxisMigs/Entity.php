@@ -103,6 +103,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('vpc_TransactionNo');
     }
 
+    public function getReceiptNo()
+    {
+        return $this->getAttribute('vpc_ReceiptNo');
+    }
+
     public function setVpcTransactionNo($txnNo)
     {
         $this->setAttribute('vpc_TransactionNo', $txnNo);
@@ -138,5 +143,10 @@ class Entity extends Base\Entity
         {
             $this->attributes['vpc_TransactionNo'] = $txnNo;
         }
+    }
+
+    public function setArn($arn)
+    {
+        $this->setAttribute('arn', $arn);
     }
 }

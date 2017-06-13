@@ -18,6 +18,9 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
+use RZP\Models\Plan\Subscription\Addon;
+use RZP\Models\Plan\Subscription;
+use RZP\Models\Batch;
 use RZP;
 use Swift_Mailer;
 
@@ -67,7 +70,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('exception.handler', function($app)
         {
-            return new \RZP\Exception\Handler($app['trace']);
+            return new \RZP\Exception\Handler($app);
         });
 
         $this->app->singleton('card.tokenex', function($app)
@@ -124,6 +127,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerSesClient();
 
         $this->registerDrip();
+
+        $this->registerWorkflow();
     }
 
     /**
@@ -151,6 +156,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'webhook.inferno',
             'exchange',
             'pigeon',
+            'workflow',
         ];
     }
 
@@ -248,6 +254,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             // line items
             'invoice'         => Invoice\Entity::class,
+            'addon'           => Addon\Entity::class,
 
             // transfers
             'transfer'        => Transfer\Entity::class,
@@ -257,6 +264,8 @@ class ApiServiceProvider extends BaseServiceProvider
             // file store
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
+            'batch'           => Batch\Entity::class,
+
             'account'         => Merchant\Account\Entity::class,
 
             // transaction
@@ -267,6 +276,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'payout'          => Payout\Entity::class,
 
             'bank_account'    => BankAccount\Entity::class,
+
+            'subscription'    => Subscription\Entity::class,
         ]);
     }
 
@@ -303,6 +314,14 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Drip($app);
+        });
+    }
+
+    protected function registerWorkflow()
+    {
+        $this->app->singleton('workflow', function ($app)
+        {
+            return new Workflow\Service($app);
         });
     }
 }

@@ -18,10 +18,19 @@ class Entity extends Base\PublicEntity
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const BASE_AMOUNT       = 'base_amount';
-    const TRANSACTION_ID    = 'transaction_id';
+    const STATUS            = 'status';
     const NOTES             = 'notes';
+    const TRANSACTION_ID    = 'transaction_id';
     const BATCH_ID          = 'batch_id';
+
     const GATEWAY_REFUNDED  = 'gateway_refunded';
+    const REFERENCE1        = 'reference1';
+    const REFERENCE2        = 'reference2';
+    const ATTEMPTS          = 'attempts';
+    const LAST_ATTEMPTED_AT = 'last_attempted_at';
+
+    const ACQUIRER_DATA     = 'acquirer_data';
+    const ARN               = 'arn';
 
     protected static $sign = 'rfnd';
 
@@ -50,10 +59,16 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::BASE_AMOUNT,
-        self::TRANSACTION_ID,
+        self::STATUS,
+        self::GATEWAY_REFUNDED,
         self::NOTES,
+        self::TRANSACTION_ID,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
+        self::ARN,
+        self::ACQUIRER_DATA,
+        self::ATTEMPTS,
+        self::LAST_ATTEMPTED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -65,22 +80,32 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
+        self::ACQUIRER_DATA,
         self::CREATED_AT
     ];
 
+    protected $hiddenInReport = [self::ACQUIRER_DATA];
+
     protected $defaults = [
         self::NOTES             => [],
+        self::STATUS            => Status::CREATED,
         self::GATEWAY_REFUNDED  => null,
+        self::ATTEMPTS          => null,
+        self::LAST_ATTEMPTED_AT => null,
     ];
 
     protected $casts = [
+        self::AMOUNT           => 'int',
+        self::BASE_AMOUNT      => 'int',
         self::GATEWAY_REFUNDED => 'bool',
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::PAYMENT_ID
+        self::PAYMENT_ID,
+        self::ARN,
+        self::ACQUIRER_DATA
     ];
 
     protected $amounts = [
@@ -159,6 +184,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getFormattedAmount()
+    {
+        $currency = $this->getCurrency();
+
+        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = $this->getAmount() / $denominationFactor;
+
+        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+
+        return $currencySymbol . ' ' . $amount;
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -169,14 +209,58 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
+    public function isProcessed()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::PROCESSED);
+    }
+
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
-    public function getAmountAttribute()
+    public function getStatus()
     {
-        return (int) $this->attributes[self::AMOUNT];
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
+
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getAcquirerData()
+    {
+        return $this->getAttribute(self::ACQUIRER_DATA);
+    }
+
+    protected function getAcquirerDataAttribute()
+    {
+        $acquirerData = [];
+
+        $payment = $this->payment;
+
+        switch ($payment->getMethod())
+        {
+            case Payment\Method::CARD:
+                $acquirerData = [
+                    self::ARN   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+        }
+
+        if (empty($acquirerData) === true)
+        {
+            // Show the field as an empty object on json_encoded response
+            $acquirerData = new \stdClass;
+        }
+
+        return $acquirerData;
     }
 
     public function setGatewayRefunded($gatewayRefunded)
@@ -184,11 +268,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
     }
 
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setStatusProcessed()
+    {
+        $this->setAttribute(self::STATUS, Status::PROCESSED);
+    }
+
     public function setBaseAmount()
     {
         $amount = $this->getAttribute(self::AMOUNT);
-
-        $currency = $this->getAttribute(self::CURRENCY);
 
         $unrefundedAmount = $this->payment->getAmountUnrefunded();
 
@@ -208,10 +300,54 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
     }
 
+    public function incrementAttempts()
+    {
+        $attempts = $this->getAttribute(self::ATTEMPTS);
+
+        $this->setAttribute(self::ATTEMPTS, $attempts + 1);
+
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $this->freshTimestamp());
+    }
+
+    public function setLastAttemptedAt()
+    {
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $this->freshTimestamp());
+    }
+
     public function setPublicPaymentIdAttribute(array & $array)
     {
         $array[self::PAYMENT_ID] =
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function setPublicAcquirerDataAttribute(array & $array)
+    {
+        // Adding test merchants and PolicyBazaar merchant ID's
+        $merchantIds = ['10000000000000', '6gn7Xc2gqK40c9'];
+
+        $currentMerchantId = $this->getMerchantId();
+
+        // We are hardcoding the merchant ids for now.
+        // Will move this to feature flag.
+        if (in_array($currentMerchantId, $merchantIds, true) === true)
+        {
+            $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
+        }
+    }
+
+    public function setPublicArnAttribute(array & $array)
+    {
+        $array[self::ARN] = $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function setReference1(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
+    public function setReference2(string $value)
+    {
+        $this->setAttribute(self::REFERENCE2, $value);
     }
 
     public function getGateway()
@@ -232,7 +368,7 @@ class Entity extends Base\PublicEntity
         $data = parent::toArrayReport();
 
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
-        $data[Payment\Entity::EMAIL] = $this->payment->getEmail();
+        $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
 
         return $data;
     }
@@ -241,11 +377,11 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        if (($this->payment->isCard()) and
+        if (($this->payment->isCard() === true) and
             ($this->payment->getConvertCurrency() === true))
         {
-            $data['amount'] = $this->getBaseAmount();
-            $data['currency'] = Currency\Currency::INR;
+            $data[self::AMOUNT]   = $this->getBaseAmount();
+            $data[self::CURRENCY] = Currency\Currency::INR;
         }
 
         return $data;

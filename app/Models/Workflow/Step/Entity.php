@@ -11,8 +11,12 @@ class Entity extends Base\Entity
     const LEVEL          = 'level';
     const ROLE_ID        = 'role_id';
     const REVIEWER_COUNT = 'reviewer_count';
+    const OP_TYPE        = 'op_type';
 
     const WORKFLOW       = 'workflow';
+
+    const OP_TYPE_AND    = 'and';
+    const OP_TYPE_OR     = 'or';
 
     protected static $sign = 'w_step';
 
@@ -25,6 +29,7 @@ class Entity extends Base\Entity
         self::LEVEL,
         self::ROLE_ID,
         self::REVIEWER_COUNT,
+        self::OP_TYPE,
     ];
 
     protected $visible = [
@@ -32,8 +37,9 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::LEVEL,
         self::ROLE_ID,
-        'role',
+        self::OP_TYPE,
         self::REVIEWER_COUNT,
+        'role',
     ];
 
     protected $public = [
@@ -41,8 +47,9 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::LEVEL,
         self::ROLE_ID,
-        'role',
+        self::OP_TYPE,
         self::REVIEWER_COUNT,
+        'role',
     ];
 
     protected $publicSetters = [
@@ -56,7 +63,8 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::LEVEL => 1,
+        self::LEVEL   => 1,
+        self::OP_TYPE => self::OP_TYPE_AND,
     ];
 
     public function workflow()
@@ -67,6 +75,11 @@ class Entity extends Base\Entity
     public function role()
     {
         return $this->belongsTo('RZP\Models\Admin\Role\Entity');
+    }
+
+    public function getOpType()
+    {
+        return $this->getAttribute(self::OP_TYPE);
     }
 
     public function getLevel()

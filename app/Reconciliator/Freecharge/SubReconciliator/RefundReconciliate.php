@@ -25,6 +25,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $columnRefundId = $row[self::COLUMN_REFUND_ID];
 
+        if (empty($columnRefundId) === true)
+        {
+            return null;
+        }
+
         $columnRefundId = explode('_', $columnRefundId);
 
         $refundId = $columnRefundId[self::REFUND_ID_INDEX];

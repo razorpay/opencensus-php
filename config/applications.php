@@ -67,6 +67,10 @@ return array(
         'secret'    => env('KOTAK_SECRET'),
     ),
 
+    'yesbank' => array(
+        'secret'    => env('YESBANK_SECRET'),
+    ),
+
     'lumberjack' => array(
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),
@@ -83,7 +87,7 @@ return array(
             'base_url' => env('GIMLI_BASE_URL')
         ],
         'bitly'    => [
-            'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
+            'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC'),
         ],
         'allow_fallback' => true,
     ],
@@ -92,6 +96,10 @@ return array(
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
+    ],
+
+    'zoho' => [
+        'header'    => env('ZOHO_HEADER'),
     ],
 
     'drip' => [

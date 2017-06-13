@@ -2,10 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Card\Entity as Card;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 
@@ -133,12 +131,13 @@ class RecurringPaymentTest extends TestCase
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
         unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
 
         $payment[Payment::TOKEN] = $tokenId;
 
         $this->ba->privateAuth();
 
-        $content = $this->doS2SRecurringPayment($payment);
+        $content = $this->doS2sRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -240,11 +239,11 @@ class RecurringPaymentTest extends TestCase
                 'terminal_id' => '1000CybrsTrmnl',
             ]);
 
-        $content = $this->doS2SRecurringPayment($payment);
+        $content = $this->doS2sRecurringPayment($payment);
 
         $payment[Payment::CARD] = [];
 
-        $content = $this->doS2SRecurringPayment($payment);
+        $content = $this->doS2sRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 

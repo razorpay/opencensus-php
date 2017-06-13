@@ -10,11 +10,14 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\Core
 {
+    /**
+     * Minutes for which Signed Url is valid
+     */
+    const SIGNED_URL_DURATION = '1440';
+
     public function __construct()
     {
         parent::__construct();
-
-        $this->mail = Mail::getFacadeRoot();
     }
 
     public function generate($input)
@@ -27,7 +30,12 @@ class RefundFile extends Base\Core
         ;
     }
 
-    protected function createFile(string $extension, $content, string $fileName, string $type, string $store = FileStore\Store::S3)
+    protected function createFile(
+                        string $extension,
+                        $content,
+                        string $fileName,
+                        string $type,
+                        string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
 
@@ -62,7 +70,7 @@ class RefundFile extends Base\Core
 
         foreach ($data as $row)
         {
-            $txt .= implode($glue, array_values($row)) ;
+            $txt .= implode($glue, array_values($row));
 
             $count--;
 

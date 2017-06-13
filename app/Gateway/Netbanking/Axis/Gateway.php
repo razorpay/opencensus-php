@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
     protected $map = [
         RequestFields::AMOUNT             => 'amount',
         RequestFields::MERCHANT_REFERENCE => 'payment_id',
-        RequestFields::ITEM_CODE          => 'caps_payment_id'
+        RequestFields::ITEM_CODE          => 'reference1'
     ];
 
     public function authorize(array $input)
@@ -69,7 +69,9 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($attrs, $content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayEntity);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -149,7 +151,7 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+            ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -163,13 +165,47 @@ class Gateway extends Base\Gateway
 
         $data = [
             RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
-            RequestFields::VERIFY_ITC      => strtoupper($input['payment']['id']),
+            RequestFields::VERIFY_ITC      => $this->getVerifyItc($verify),
             RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
             RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
         ];
 
         return $data;
+    }
+
+    /**
+     * For payments before April 20th at 2pm, we need to send the
+     * caps_payment_id as the ITC. But after this date, we send the
+     * gateway_merchant_id due to a change in the auth request
+     *
+     * @param Verify $verify
+     * @return string $itc
+     */
+    protected function getVerifyItc(Verify $verify)
+    {
+        $input = $verify->input;
+        $gatewayPayment = $verify->payment;
+
+        $timestamp = $input['payment']['created_at'];
+
+        //
+        // 04/20/2017 @ 2:00pm IST
+        //
+        if ($timestamp < 1492677000)
+        {
+            $itc = $gatewayPayment->getCapsPaymentId();
+        }
+        else if (empty($gatewayPayment->getReference1()) === false)
+        {
+            $itc = $gatewayPayment->getReference1();
+        }
+        else
+        {
+            $itc = $this->getMerchantId();
+        }
+
+        return $itc;
     }
 
     protected function getPaymentRequestData(array $input)
@@ -190,7 +226,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID          => $this->getMerchantId(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Currency::INR,
-            RequestFields::CONFIRMATION      => Constants::YES,
+            RequestFields::CONFIRMATION      => Status::YES,
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
@@ -216,7 +252,7 @@ class Gateway extends Base\Gateway
     {
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
-            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
+            RequestFields::ITEM_CODE          => $this->getMerchantId(),
             RequestFields::AMOUNT             => $input['payment']['amount'] / 100
         ];
     }
@@ -275,7 +311,7 @@ class Gateway extends Base\Gateway
     protected function checkResponseStatus(array $attrs, array $content)
     {
         if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Constants::YES))
+            ($attrs['status'] !== Status::YES))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -302,7 +338,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
 
         if ((isset($content[ResponseFields::PAYMENT_STATUS])) and
-            ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+            ($content[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
             $attributes = $this->getVerifyAttributes($verify, $gatewayPayment);
 
@@ -320,17 +356,18 @@ class Gateway extends Base\Gateway
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
-        $attributes = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => Constants::YES,
-        ];
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            // We're saving the response only if status is a success
+            $attributes[Base\Entity::STATUS] = Status::YES;
+        }
 
         if (empty($bankPaymentId) === true)
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REFERENCE_ID];
         }
 
-        return $attributes;
+        return $attributes ?? [];
     }
 
     protected function parseResponseXml(string $response)
@@ -345,6 +382,11 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Status::getAuthSuccessStatus();
     }
 
     /*

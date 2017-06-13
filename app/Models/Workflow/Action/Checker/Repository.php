@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\Action\Checker;
 
+use DB;
 use RZP\Models\Workflow\Base;
 
 class Repository extends Base\Repository
@@ -30,14 +31,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchApprovedCountByActionId(string $actionId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->where(Entity::APPROVED, '=', 1) // checked
-                    ->count();
-    }
-
     public function fetchCountByActionIdForStep($actionId, $stepId)
     {
         return $this->newQuery()
@@ -51,11 +44,15 @@ class Repository extends Base\Repository
         string $actionId,
         array $stepIds)
     {
+        $countRaw = DB::raw('count(*) as total');
+
         return $this->newQuery()
+                    ->select(Entity::STEP_ID, $countRaw)
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->whereIn(Entity::STEP_ID, $stepIds)
                     ->where(Entity::APPROVED, '=', 1) // checked
-                    ->count();
+                    ->groupBy(Entity::STEP_ID)
+                    ->get();
     }
 
     public function findByIdAndActionId($checkerId, $actionId)
@@ -66,5 +63,12 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, '=', $checkerId)
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->firstOrFail();
+    }
+
+    public function findManyByStepIds(array $stepIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::STEP_ID, $stepIds)
+                    ->get();
     }
 }

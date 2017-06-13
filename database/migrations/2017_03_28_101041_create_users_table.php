@@ -1,11 +1,9 @@
 <?php
 
+use RZP\Constants\Table;
+use RZP\Models\User\Entity as User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-
-use RZP\Constants\Table;
-
-use RZP\Models\User\Entity as User;
 
 class CreateUsersTable extends Migration
 {

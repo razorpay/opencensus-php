@@ -16,7 +16,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payment)
         {
-            return (new \RZP\Models\Transaction\Core)->updateOnCapture($payment);
+            return (new \RZP\Models\Transaction\Core)->createOrUpdateFromPaymentCaptured($payment);
         });
     }
 

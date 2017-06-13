@@ -325,6 +325,8 @@ class Gateway extends Base\Gateway
                 $status,
                 $message);
         }
+
+        return [];
     }
 
     public function debit(array $input)

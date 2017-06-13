@@ -160,6 +160,11 @@ return array(
         'test' => env('ES_AUDIT_TEST_INDEX')
     ],
 
+    'es_invoice' => [
+        'live' => env('ES_INVOICE_LIVE_INDEX'),
+        'test' => env('ES_INVOICE_TEST_INDEX'),
+    ],
+
     'es_workflow_action' => [
         'live' => env('ES_WORKFLOW_ACTION_LIVE_INDEX'),
         'test' => env('ES_WORKFLOW_ACTION_TEST_INDEX')

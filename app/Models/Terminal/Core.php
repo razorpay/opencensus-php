@@ -13,6 +13,13 @@ class Core extends Base\Core
 {
     public function create($input, $merchant)
     {
+        $this->trace->info(
+            TraceCode::TERMINAL_CREATE_REQUEST,
+            [
+                'input'         => $this->removeSecretFieldsForTrace($input),
+                'merchant_id'   => $merchant->getId(),
+            ]);
+
         $input['merchant_id'] = $merchant->getKey();
 
         $terminal = (new Entity)->build($input);
@@ -26,6 +33,13 @@ class Core extends Base\Core
 
     public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
     {
+        $this->trace->info(
+            TraceCode::TERMINAL_REMOVE_FROM_MERCHANT,
+            [
+                'terminal_id' => $terminal->getId(),
+                'merchant_id' => $merchantId,
+            ]);
+
         $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchantId);
 
         return $terminal;
@@ -50,7 +64,16 @@ class Core extends Base\Core
 
     public function reassignMerchantForTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        if ($terminal->isShared() === true)
+        $this->trace->info(
+            TraceCode::TERMINAL_REASSIGN_MERCHANT,
+            [
+                'terminal_id'           => $terminal->getId(),
+                'current_merchant_id'   => $terminal->getMerchantId(),
+                'merchant_id'           => $merchant->getId(),
+            ]);
+
+        if (($terminal->isShared() === true) and
+            ($terminal->isEnabled() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
@@ -65,6 +88,13 @@ class Core extends Base\Core
 
     public function copy($input, $terminal)
     {
+        $this->trace->info(
+            TraceCode::TERMINAL_COPY,
+            [
+                'input'         => $this->removeSecretFieldsForTrace($input),
+                'terminal_id'   => $terminal->getId(),
+            ]);
+
         if ($terminal->isShared() === true)
         {
             throw new Exception\BadRequestException(
@@ -108,7 +138,7 @@ class Core extends Base\Core
                 TraceCode::TERMINAL_EDIT,
                 [
                     'terminal_id' => $terminal->getId(),
-                    'fields' => array_keys($input),
+                    'input' => $this->removeSecretFieldsForTrace($input),
                 ]);
 
             $terminal->edit($input);
@@ -151,31 +181,6 @@ class Core extends Base\Core
         $this->validateExistingTerminalGatewayMerchantId($terminal);
     }
 
-    protected function validateExistingTerminalGatewayMerchantId($terminal)
-    {
-        // Check no record with same 'gateway_merchant_id' exists
-        $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
-
-        $existingTerminals = $this->repo->terminal->fetch($params);
-
-        if ($existingTerminals->count() === 1)
-        {
-            $existingTerminal = $existingTerminals[0];
-
-            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
-            {
-                return;
-            }
-        }
-
-        if ($existingTerminals->count() !== 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
-                Entity::GATEWAY_MERCHANT_ID);
-        }
-    }
-
     public function createTerminalsInTestMode($merchant)
     {
         $this->createRandomTerminalInTestMode($merchant, 'hdfc');
@@ -205,5 +210,42 @@ class Core extends Base\Core
         $this->repo->saveOrFail($terminal);
 
         return $terminal;
-   }
+    }
+
+    protected function validateExistingTerminalGatewayMerchantId($terminal)
+    {
+        // Check no record with same 'gateway_merchant_id' exists
+        $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
+
+        $existingTerminals = $this->repo->terminal->fetch($params);
+
+        if ($existingTerminals->count() === 1)
+        {
+            $existingTerminal = $existingTerminals[0];
+
+            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
+            {
+                return;
+            }
+        }
+
+        if ($existingTerminals->count() !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
+                Entity::GATEWAY_MERCHANT_ID);
+        }
+    }
+
+    protected function removeSecretFieldsForTrace(array $input)
+    {
+        $terminalHiddenFields = (new Entity)->getHidden();
+
+        foreach ($terminalHiddenFields as $hidden)
+        {
+            unset($input[$hidden]);
+        }
+
+        return $input;
+    }
 }

@@ -21,6 +21,9 @@ class Core extends Base\Core
 
         $admin->org()->associate($org);
 
+        (new Validator)->validatePasswordAuthType(
+            $org->getAuthType(), $input);
+
         $admin->build($input);
 
         $this->repo->saveOrFail($admin);

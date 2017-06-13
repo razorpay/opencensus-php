@@ -84,16 +84,16 @@ class Repository extends Base\Repository
         $refundTable = Table::REFUND;
         $paymentTable = Table::PAYMENT;
 
-        $billdeskAttributes = $this->getAttributeWithTableName('*');
+        $billdeskAttributes = $this->dbColumn('*');
 
-        $billdeskRefundIdAttr = $this->getAttributeWithTableName('refund_id');
+        $billdeskRefundIdAttr = $this->dbColumn('refund_id');
 
-        $refundIdAttr = $this->manager->refund->getAttributeWithTableName(Payment\Refund\Entity::ID);
-        $refundPaymentIdAttr = $this->manager->refund->getAttributeWithTableName(Payment\Refund\Entity::PAYMENT_ID);
+        $refundIdAttr = $this->repo->refund->dbColumn(Payment\Refund\Entity::ID);
+        $refundPaymentIdAttr = $this->repo->refund->dbColumn(Payment\Refund\Entity::PAYMENT_ID);
 
-        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
-        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+        $paymentTransactionIdAttr = $this->repo->payment->dbColumn(Payment\Entity::TRANSACTION_ID);
 
         $response = $this->newQuery()
                          ->select($billdeskAttributes)

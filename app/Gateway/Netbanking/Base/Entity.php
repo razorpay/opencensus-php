@@ -125,4 +125,13 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::INT_PAYMENT_ID);
     }
 
+    public function getCapsPaymentId()
+    {
+        return $this->getAttribute(self::CAPS_PAYMENT_ID);
+    }
+
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
 }

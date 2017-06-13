@@ -3,9 +3,12 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use Mail;
+use RZP\Constants\MailTags;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Constants\MailTags;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -40,17 +43,20 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
         $fileData = [
-            'subject'   => 'Icici Netbanking refunds file for ' . $today,
-            'file_path' => $file['local_file_path'],
-            'count'     => count($data),
-            'amount'    => number_format($totalAmount, 2, '.', ''),
-            'date'      => $today
+            'file_path'  => $file['local_file_path'],
+            'file_name'  => basename($file['local_file_path']),
+            'signed_url' => $signedFileUrl,
+            'count'      => count($data),
+            'amount'     => number_format($totalAmount, 2, '.', ''),
+            'date'       => $today
         ];
 
-        $this->sendRefundEmail($fileData);
+        $this->sendRefundEmail($fileData, $input['email']);
 
         return $file['local_file_path'];
     }
@@ -83,23 +89,14 @@ class RefundFile extends Base\RefundFile
         return [$totalAmount, $data];
     }
 
-    protected function sendRefundEmail($fileData = [])
+    protected function sendRefundEmail($fileData = [], $email = null)
     {
-        $this->mail->queue('emails.admin.icici_refunds', $fileData, function ($message) use ($fileData)
-        {
-            $emails = ['icici.netbanking.refunds@razorpay.com'];
+        $refundFileMail = new RefundFileMail(
+                                $fileData,
+                                Gateway::NETBANKING_ICICI,
+                                $email,
+                                'emails.admin.icici_refunds');
 
-            $message->from('refunds@razorpay.com', 'Icici Netbanking refunds');
-
-            $message->subject($fileData['subject']);
-
-            $message->to($emails);
-
-            $message->attach($fileData['file_path']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader('x-mailgun-tag', MailTags::ICICI_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 }

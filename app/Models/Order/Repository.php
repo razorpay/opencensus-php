@@ -25,10 +25,6 @@ class Repository extends Base\Repository
         Entity::ACCOUNT_NUMBER  => 'sometimes|string|max:50|min:5',
     ];
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     public function fetchForPayment($payment)
     {
         if ($payment->hasRelation('order'))
@@ -43,38 +39,5 @@ class Repository extends Base\Repository
         $payment->order()->associate($order);
 
         return $order;
-    }
-
-    /**
-     * Gets all the orders which have more than 1 payment in authorized or captured state.
-     *
-     * @return Base\Collection
-     */
-    public function getOrdersWithMultipleAuthorizedOrCapturedPayments()
-    {
-        // select count(*), orders.id
-        // from `orders` inner join `payments` on `payments`.`order_id` = `orders`.`id`
-        // where `payments`.`status` in (?, ?)
-        // group by `orders`.`id`
-        // having count(*) > 1
-
-        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
-        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
-        $orderId = $this->getAttributeWithTableName(Entity::ID);
-        $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
-        $pTable = $this->manager->payment->getTableName();
-
-        $results = $this->newQuery()
-            ->join(
-                $pTable,
-                $paymentOrderId, '=', $orderId)
-            ->selectRaw('count(*), ' . $orderId)
-            ->whereIn($paymentStatus, $paymentStatusArray)
-            ->groupBy($orderId)
-            ->havingRaw('count(*) > 1')
-            ->with('payments')
-            ->get();
-
-        return $results;
     }
 }

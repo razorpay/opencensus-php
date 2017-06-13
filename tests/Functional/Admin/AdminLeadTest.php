@@ -3,14 +3,16 @@
 namespace RZP\Tests\Functional\Admin;
 
 use Mail;
-use Mockery;
 
+use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 
 class AdminLeadTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -21,9 +23,14 @@ class AdminLeadTest extends TestCase
 
         $this->org = $this->fixtures->create('org');
 
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => $this->org->getId(),
+            'hostname'  => 'dashboard.sampleorg.dev',
+        ]);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
     protected function getDefaultFields()
@@ -37,6 +44,8 @@ class AdminLeadTest extends TestCase
 
     public function testCreateAdminLead()
     {
+        Mail::fake();
+
         $fields = $this->getDefaultFields();
 
         $role = $this->ba->getAdmin()->roles()->get()[0];
@@ -52,22 +61,18 @@ class AdminLeadTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $this->assertArrayHasKey('invitation', $data);
-
-                        $this->assertArrayHasKey('adminName', $data);
-
-                        return true;
-                    }),
-                    Mockery::any()
-                );
-
         $this->startTest();
+
+        Mail::assertSent(MerchantInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
 
         $adminLead = $this->getLastEntity('admin_lead', true);
 
@@ -78,9 +83,9 @@ class AdminLeadTest extends TestCase
     {
         $fields = $this->getDefaultFields();
 
-        $role = $this->ba->getAdmin()->roles()->get()[0];
+        $role = $this->ba->getAdmin($this->authToken)->roles()->get()[0];
 
-        $adminEmail = $this->ba->getAdmin()->getEmail();
+        $adminEmail = $this->ba->getAdmin($this->authToken)->getEmail();
 
         $this->storeFieldsForEntity(
             $this->org->getPublicId(), 'admin_lead',

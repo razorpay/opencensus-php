@@ -2,35 +2,42 @@
 
 namespace RZP\Models\Merchant;
 
-use Carbon\Carbon;
-use Config;
-use Mail;
 use DB;
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
+use Mail;
+use Config;
+use Carbon\Carbon;
+
 use RZP\Exception;
-use RZP\Models\BankAccount;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\User;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Schedule;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Terminal;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Schedule;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
+use RZP\Models\BankAccount;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
+    use Notify;
+
     /**
      * Creates a merchant and saves in database
      *
@@ -39,20 +46,16 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        if (empty($input['admin_id']) === false)
+        if (empty($input[Entity::ADMINS]) === false)
         {
-            $adminId = $input['admin_id'];
-
-            $adminId = Admin\Admin\Entity::verifyIdAndStripSign($adminId);
-
-            unset($input['admin_id']);
+            Admin\Entity::verifyIdAndStripSignMultiple($input[Entity::ADMINS]);
         }
 
-        if (empty($input['org_id']) === true)
+        if (empty($input[Entity::ORG_ID]) === true)
         {
             // If the organization ID is not present,
             // assume the organization is razorpay
-            $orgId = Admin\Org\Entity::RAZORPAY_ORG_ID;
+            $input[Entity::ORG_ID] = Org\Entity::RAZORPAY_ORG_ID;
 
             $this->trace->info(
                 TraceCode::MERCHANT_ORG_NOT_GIVEN,
@@ -63,51 +66,14 @@ class Service extends Base\Service
         }
         else
         {
-            $orgId = $input['org_id'];
-
-            $orgId = Admin\Org\Entity::verifyIdAndStripSign($orgId);
-
-            unset($input['org_id']);
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
         $merchant = (new Merchant\Core)->create($input);
 
-        $this->assignDefaultSettlementSchedule($merchant);
-
-        //
-        // Once the merchant is created we must
-        // tag him to the admin referral
-        //
-        if (empty($adminId) === false)
-        {
-            //
-            // This step is important to ensure that we are
-            // attaching a valid admin in merchant_map table.
-            // This will throw an exception if adminId doesn't exist.
-            //
-            $admin = $this->repo->admin->findOrFailPublic($adminId);
-
-            // Attach merchant to admin
-            $this->repo->sync($merchant, 'admins', [$adminId]);
-        }
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
-
-        // Update merchant org
-        $merchant->org()->associate($org);
-
         $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
-    }
-
-    protected function assignDefaultSettlementSchedule($merchant)
-    {
-        $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
-
-        $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
-
-        $merchant->schedule()->associate($schedule);
     }
 
     public function createSubMerchant(array $input)
@@ -123,8 +89,6 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
-        $this->assignDefaultSettlementSchedule($subMerchant);
-
         $this->repo->saveOrFail($subMerchant);
 
         return $subMerchant->toArrayPublic();
@@ -134,19 +98,20 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if (isset($input['groups']) === true)
+        if (empty($input[Entity::GROUPS]) === false)
         {
-            $groupIds = [];
-
-            foreach ($input['groups'] as $id)
-            {
-                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
-            }
-
-            $input['groups'] = $groupIds;
+            Group\Entity::verifyIdAndStripSignMultiple($input[Entity::GROUPS]);
         }
 
-        $this->setSettlementScheduleIdIfNeeded($merchant, $input);
+        if (empty($input[Entity::ADMINS]) === false)
+        {
+            Admin\Entity::verifyIdAndStripSignMultiple($input[Entity::ADMINS]);
+        }
+
+        if (isset($input[Entity::ORG_ID]) === true)
+        {
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
+        }
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
@@ -159,20 +124,13 @@ class Service extends Base\Service
      */
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
-        $data = [
-            'name'  =>  $subMerchant->name,
-            'email' =>  $subMerchant->email
-        ];
+        $subMerchant = $subMerchant->toArray();
 
-        if ($subMerchant->email !== $aggregator->email)
-        {
-            $data['cc_email'] = $aggregator->email;
-        }
+        $aggregator = $aggregator->toArray();
 
-        $this->sendEmail(
-            'emails.merchant.welcome',
-            'Welcome to Razorpay',
-            $data);
+        $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
+
+        Mail::queue($createSubMerchantMail);
     }
 
     public function editEmail($id, array $input)
@@ -219,9 +177,8 @@ class Service extends Base\Service
     // This is on internal auth
     public function fetch(string $id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $methods = $merchant->methods;
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
 
         return $merchant->toArrayPublic();
     }
@@ -329,9 +286,29 @@ class Service extends Base\Service
 
         (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
 
+        $originalPricingPlan = null;
+
+        if (empty($merchant->pricing) === false)
+        {
+            $originalPricingPlan = $merchant->pricing->getPlanName();
+        }
+
+        list($original, $dirty) = [
+            // Current plan
+            ['pricing_plan' => $originalPricingPlan],
+            // New plan
+            ['pricing_plan' => $plan->first()->getPlanName()],
+        ];
+
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($original, $dirty);
+
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_PRICING, $input);
 
         return $plan->toArrayPublic();
     }
@@ -347,73 +324,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
-        {
-            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
+        $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
-            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, Account::SHARED_ACCOUNT);
-        }
-        else
-        {
-            $schedule = (new Schedule\Core)->createSchedule($input);
+        $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
-            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-        }
-
-        $merchant->schedule()->associate($schedule);
-
-        $this->setSettlementScheduleIfNeeded($merchant, $schedule);
-
-        $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
-
-        $this->repo->saveOrFail($merchant);
-
-        return $merchant->toArrayPublic();
-    }
-
-    protected function setSettlementScheduleIfNeeded($merchant, $schedule)
-    {
-        if (($schedule->getPeriod() === Schedule\Period::DAILY) and
-            ($schedule->getInterval() === 1))
-        {
-            $delay = $schedule->getDelay();
-
-            $merchant->setSettlementSchedule($delay);
-        }
-    }
-
-    protected function setSettlementScheduleIdIfNeeded($merchant, $input)
-    {
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE]) === true)
-        {
-            $requiredDelay = $input[Entity::SETTLEMENT_SCHEDULE];
-
-            $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
-
-            $merchant->schedule()->associate($schedule);
-        }
-    }
-
-    protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
-    {
-        $data = [
-            "schedule"    => $schedule->getName(),
-            "schedule_id" => $schedule->getId(),
-            "merchant"    => $merchant->getBillingLabelElseName(),
-            "merchant_id" => $merchant->getId(),
-        ];
-
-        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
-
-        $this->slack->queue(
-                "Schedule assigned to Merchant",
-                $data,
-                [
-                    'channel'  => Config::get('slack.channels.operations_log'),
-                    'username' => 'Jordan Belfort',
-                    'icon'     => ':boom:',
-                ]
-            );
+        return $scheduleTask->toArrayPublic();
     }
 
     public function migrateMerchantToSettlementSchedules($input)
@@ -426,7 +341,7 @@ class Service extends Base\Service
         }
         else
         {
-            $merchants = $this->repo->merchant->fetchMerchantsWithSettlementScheduleIdNull();
+            $merchants = $this->repo->merchant->getFewMerchantsWithNoCorrespondingScheduleTasks();
         }
 
         $migrationSummary = [
@@ -436,15 +351,19 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
-            $requiredDelay = $merchant->getSettlementSchedule();
-
             try
             {
-                $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
+                $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
-                $merchant->schedule()->associate($schedule);
+                $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
 
-                $this->repo->saveOrFail($merchant);
+                $input = [
+                    ScheduleTask\Entity::METHOD      => null,
+                    ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+                    ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+                ];
+
+                (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
                 $migrationSummary['migrated_ids_count'] += 1;
             }
@@ -452,12 +371,13 @@ class Service extends Base\Service
             {
                 $merchantId = $merchant->getId();
 
-                $this->trace->info(TraceCode::SCHEDULE_MIGRATION_FAILED,
-                                    [
-                                        'merchant_id' => $merchantId,
-                                        'delay'       => $requiredDelay,
-                                        'error'       => $ex->getMessage(),
-                                    ]);
+                $this->trace->info(
+                    TraceCode::SCHEDULE_MIGRATION_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'schedule_id' => $schedule->getId(),
+                        'error'       => $ex->getMessage(),
+                    ]);
 
                 $migrationSummary['failed_ids'][] = $merchantId;
             }
@@ -468,33 +388,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
 
         return $migrationSummary;
-    }
-
-    protected function getOrCreateDailySettlementSchedule($requiredDelay)
-    {
-        $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($requiredDelay);
-
-        if (is_null($schedule) === true)
-        {
-            $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
-
-            $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
-
-            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-        }
-
-        return $schedule;
-    }
-
-    protected function getRequiredScheduleData($requiredDelay)
-    {
-        return [
-            Schedule\Entity::NAME     => "Basic T$requiredDelay",
-            Schedule\Entity::TYPE     => Schedule\Type::SETTLEMENT,
-            Schedule\Entity::PERIOD   => Schedule\Period::DAILY,
-            Schedule\Entity::INTERVAL => 1,
-            Schedule\Entity::DELAY    => $requiredDelay,
-        ];
     }
 
     public function getPricingPlan($id)
@@ -524,6 +417,38 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function sendActivationEmail(array $input)
+    {
+        $act = new Activate($this->app);
+
+        $response = [];
+
+        foreach ($input['ids'] as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if ($merchant->isActivated())
+                {
+                    $act->sendActivationEmail($merchant);
+
+                    $response[$merchantId] = 'Queued merchant activation email';
+                }
+                else
+                {
+                    $response[$merchantId] = 'Merchant is not activated';
+                }
+            }
+            catch(\Exception $e)
+            {
+                $response[$merchantId] = $e->getMessage();
+            }
+        }
+
+        return $response;
+    }
+
     public function liveEnable($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -546,9 +471,18 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
         }
 
+        $oldMerchant = clone $merchant;
+
         $merchant->liveEnable();
 
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
+
         $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, 'enable');
 
         return $merchant->toArrayPublic();
     }
@@ -569,9 +503,18 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE);
         }
 
+        $oldMerchant = clone $merchant;
+
         $merchant->liveDisable();
 
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
+
         $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, 'disable');
 
         return $merchant->toArrayPublic();
     }
@@ -580,13 +523,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant->getValidator()->validateInput('action', $input);
-
-        $function = $input['action'];
-
-        $merchant->$function();
-
-        $this->repo->saveOrFail($merchant);
+        $merchant = (new Merchant\Core)->action($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -596,6 +533,8 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
 
         return $ba->toArray();
     }
@@ -633,7 +572,7 @@ class Service extends Base\Service
         $merchants = $this->repo->merchant->fetchMerchantWhereTestBankIsNull();
         $fetched = $merchants->count();
 
-        $core = new Merchant\Core;
+        $core = new BankAccount\Core;
 
         $count = 0;
 
@@ -671,8 +610,12 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+        $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
+
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_BANKS);
+
+        return $enabledDisabledBanks;
     }
 
     public function getFeeBearer()
@@ -785,7 +728,7 @@ class Service extends Base\Service
             $today = Carbon::today('Asia/Kolkata');
         }
 
-        if (Holidays::isWorkingDay($today) == false)
+        if (Holidays::isWorkingDay($today) === false)
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }
@@ -825,24 +768,6 @@ class Service extends Base\Service
     public function sendDailyReportForAllMerchants($input)
     {
         return (new DailyReport)->sendReportForAllMerchants($input);
-    }
-
-    protected function sendEmail($template, $subject, $data)
-    {
-        Mail::queue($template, $data, function($message) use ($data, $subject)
-        {
-            $message = $message->to($data['email'], $data['name'])
-                               ->subject($subject);
-
-            if (isset($data['cc_email']))
-            {
-                $message->cc($data['cc_email'], $data['name']);
-            }
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::WELCOME);
-        });
     }
 
     public function notifyMerchantsHoliday($input)
@@ -893,6 +818,106 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateHoldFundsForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateHoldFunds', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $holdFunds = $input['hold_funds'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->updateHoldFunds($merchantId, $holdFunds);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateBankAccountForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateBankAccount', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $bankAccount = $input['bank_account'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->addBankAccount($merchantId, $bankAccount);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     public function getOffers(string $mid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -932,6 +957,24 @@ class Service extends Base\Service
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
         return $data;
+    }
+
+    protected function updateHoldFunds(string $merchantId, bool $holdFunds)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->setHoldFunds($holdFunds);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
+    public function getUsers(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $users = (new Merchant\Core)->getUsers($merchant);
+
+        return $users;
     }
 
     /**

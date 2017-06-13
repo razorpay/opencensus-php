@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -25,6 +26,10 @@ class TransactionFilter extends Terminal\Filter
         IFSC::UTIB,
     ];
 
+    const PREPAID_IINS = [
+        457392,
+    ];
+
     protected $properties = [
         'method',
         'network',
@@ -35,6 +40,7 @@ class TransactionFilter extends Terminal\Filter
         'amount',
         'maestro',
         'recurring',
+        'iin',
     ];
 
     public function methodFilter($terminal, $input)
@@ -61,7 +67,10 @@ class TransactionFilter extends Terminal\Filter
                 return ($gateway === $terminal->getGateway());
 
             case Method::UPI:
-                return $terminal->isUPITerminal();
+                return $terminal->isUpiEnabled();
+
+            case Method::AEPS:
+                return $terminal->isAepsEnabled();
 
             default:
                 throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
@@ -131,10 +140,15 @@ class TransactionFilter extends Terminal\Filter
         else if ($input['payment']->isCard())
         {
             $issuer = $input['payment']->card->getIssuer();
+            $type = $input['payment']->card->getType();
 
             if (($issuer === Issuer::ICIC) and
-                ($terminal->getGateway() === Gateway::FIRST_DATA))
+                ($type !== Type::CREDIT) and
+                ($terminal->getGateway() === Gateway::FIRST_DATA) and
+                ($input['merchant']->getId() !== '5ubLZpACTmD8D4'))
             {
+                // ICICI debit cards currently don't work on FirstData
+                // This allows transactions only on test merchant
                 return false;
             }
         }
@@ -172,7 +186,7 @@ class TransactionFilter extends Terminal\Filter
                 ($input['mode'] === Mode::LIVE) and
                 ($terminal->getGateway() === Gateway::HDFC))
             {
-                return Shared::isSharedTerminal($terminal);
+                return $terminal->isShared();
             }
         }
 
@@ -201,10 +215,13 @@ class TransactionFilter extends Terminal\Filter
                 }
             }
 
+            $ba = app('basicauth');
+
             // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                (app('basicauth')->isPrivateAuth() === true))
+                (($ba->isPrivateAuth() === true) or
+                 ($ba->isPrivilegeAuth() === true)))
             {
                 // For second recurring payment, ensure that we select a terminal
                 // of the same gateway as for the first recurring payment.
@@ -267,5 +284,31 @@ class TransactionFilter extends Terminal\Filter
         $amount = $input['payment']->getAmount();
 
         return ($amount >= $minAmount);
+    }
+
+    // Filters few card terminals for prepaid iins to improve pricing on the cost
+    // of success rate
+    public function iinFilter(Terminal\Entity $terminal, array $input)
+    {
+        if ($input['payment']->isMethodCardOrEmi())
+        {
+            $iin = $input['payment']->card->getIin();
+
+            $acquirer = $terminal->getGatewayAcquirer();
+
+            $gateway = $terminal->getGateway();
+
+            // For certain iins prepaid cards Axis
+            // offers debit card pricing as opposed to
+            // HDFC who charge credit card pricing.
+            // For such iins allow only axis terminals
+            if (in_array($iin, self::PREPAID_IINS, true) === true)
+            {
+                return (($acquirer === Gateway::ACQUIRER_AXIS) or
+                        ($gateway === Gateway::AXIS_MIGS));
+            }
+        }
+
+        return true;
     }
 }

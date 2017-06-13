@@ -37,6 +37,11 @@ services:
       CACHE_DRIVER: redis
       SECURE_CACHE_DRIVER: redis
       ES_HOST: es
+      ES_AUDIT_HOST: es
+      ES_MOCK: "false"
+      ES_AUDIT_MOCK: "false"
+      ES_WORKFLOW_ACTION_MOCK: "false"
+      HEIMDALL_WORKFLOWS_MOCK: "false"
       MUTEX_MOCK: "false"
   api_db:
     image: mysql:5.6

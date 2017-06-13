@@ -25,33 +25,37 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
-        Entity::PAYMENT_METHOD            => 'required|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
-        Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha|custom',
-        Entity::IINS                      => 'sometimes_if:payment_method,card|array',
-        Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
-        Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
-        Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
-        Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
-        Entity::PROCESSING_TIME           => 'sometimes|integer',
-        Entity::TYPE                      => 'sometimes|in:instant,deferred',
-        Entity::STARTS_AT                 => 'sometimes|epoch',
-        Entity::ENDS_AT                   => 'required|epoch',
-        Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
-        Entity::ERROR_MESSAGE             => 'sometimes|string|max:255',
-        Entity::TERMS                     => 'required|string'
+        Entity::NAME                => 'sometimes|string|max:25',
+        Entity::PAYMENT_METHOD      => 'required|alpha|custom',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
+        Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
+        Entity::ISSUER              => 'sometimes_if:payment_method,card|alpha|custom',
+        Entity::IINS                => 'sometimes_if:payment_method,card|array',
+        Entity::PERCENT_RATE        => 'sometimes|integer|min:0|max:10000',
+        Entity::MAX_CASHBACK        => 'sometimes|integer|min:0',
+        Entity::FLAT_CASHBACK       => 'sometimes|integer|min:0',
+        Entity::MIN_AMOUNT          => 'sometimes|integer|min:0',
+        Entity::MAX_PAYMENT_COUNT   => 'sometimes_if:payment_method,card,emi|integer|min:1',
+        Entity::LINKED_OFFER_IDS    => 'sometimes_if:payment_method,card,emi|array',
+        Entity::PROCESSING_TIME     => 'sometimes|integer',
+        Entity::TYPE                => 'sometimes|in:instant,deferred',
+        Entity::CHECKOUT_DISPLAY    => 'sometimes|boolean',
+        Entity::STARTS_AT           => 'sometimes|epoch',
+        Entity::ENDS_AT             => 'required|epoch',
+        Entity::DISPLAY_TEXT        => 'sometimes|string|max:255',
+        Entity::ERROR_MESSAGE       => 'sometimes|string|max:255',
+        Entity::TERMS               => 'required|string'
     ];
 
     protected static $editRules = [
-        Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
-        Entity::IINS                      => 'sometimes|array',
-        Entity::ACTIVE                    => 'sometimes|in:0',
-        Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
-        Entity::ERROR_MESSAGE             => 'sometimes|string|max:255',
-        Entity::TERMS                     => 'sometimes|string'
+        Entity::NAME               => 'sometimes|alpha_space_num|max:25',
+        Entity::IINS               => 'sometimes|array',
+        Entity::MAX_PAYMENT_COUNT  => 'sometimes|integer|min:1',
+        Entity::LINKED_OFFER_IDS   => 'sometimes|array',
+        Entity::ACTIVE             => 'sometimes|in:0',
+        Entity::DISPLAY_TEXT       => 'sometimes|string|max:255',
+        Entity::ERROR_MESSAGE      => 'sometimes|string|max:255',
+        Entity::TERMS              => 'sometimes|string'
     ];
 
     protected static $createValidators = [
@@ -60,10 +64,13 @@ class Validator extends Base\Validator
         Entity::FLAT_CASHBACK,
         Entity::PAYMENT_NETWORK,
         Entity::IINS,
+        Entity::LINKED_OFFER_IDS,
     ];
 
     protected static $editValidators = [
         Entity::IINS,
+        Entity::MAX_PAYMENT_COUNT,
+        Entity::LINKED_OFFER_IDS
     ];
 
     protected function validatePaymentNetwork(array $input)
@@ -191,7 +198,7 @@ class Validator extends Base\Validator
 
     protected function validateIins(array $input)
     {
-        if (isset($input[Entity::IINS]) === false)
+        if (empty($input[Entity::IINS]) === true)
         {
             return;
         }
@@ -200,7 +207,9 @@ class Validator extends Base\Validator
 
         $paymentMethod = $this->entity->getPaymentMethod() ?? $input[Entity::PAYMENT_METHOD];
 
-        if ($paymentMethod !== Payment\Method::CARD)
+        $allowedPaymentMethods = [Payment\Method::CARD, Payment\Method::EMI];
+
+        if (in_array($paymentMethod, $allowedPaymentMethods, true) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER);
         }
@@ -208,6 +217,73 @@ class Validator extends Base\Validator
         if (is_associative_array($iins) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FORMAT_FOR_IINS);
+        }
+    }
+
+    protected function validateMaxPaymentCount(array $input)
+    {
+        if (empty($input[Entity::MAX_PAYMENT_COUNT]) === true)
+        {
+            return;
+        }
+
+        $paymentMethod = $this->entity->getPaymentMethod();
+
+        $allowedPaymentMethods = [Payment\Method::CARD, Payment\Method::EMI];
+
+        if (in_array($paymentMethod, $allowedPaymentMethods, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'max_payment_count can only be set for card or emi offera');
+        }
+    }
+
+    protected function validateLinkedOfferIds(array $input)
+    {
+        if (empty($input[Entity::LINKED_OFFER_IDS]) === true)
+        {
+            return;
+        }
+
+        $linkedOfferIds = $input[Entity::LINKED_OFFER_IDS];
+
+        // Checks if it is a valid sequential array
+        if (is_associative_array($linkedOfferIds) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                        'linked_offer_ids should be a valid array');
+        }
+
+        $paymentMethod = $this->entity->getPaymentMethod() ?? $input[Entity::PAYMENT_METHOD];
+
+        $allowedPaymentMethods = [Payment\Method::CARD, Payment\Method::EMI];
+
+        // Checks if the payment method for the offer is card or emi
+        if (in_array($paymentMethod, $allowedPaymentMethods, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                        'linked_offer_ids can only be set for card or emi offers');
+        }
+
+        // Checks if the offer on which we are linking offer ids has the max_payment_count attribute
+        $maxPaymentCount = $input[Entity::MAX_PAYMENT_COUNT] ?? $this->entity->getMaxPaymentCount();
+
+        if (empty($maxPaymentCount) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                        'linked_offer_ids can only be set for offer with max_payment_count');
+
+        }
+
+        // Checks if all the linked offer ids belong to the merchant
+        $merchantOfferIds = $this->entity->merchant->offers->pluck(Entity::ID)->toArray();
+
+        $result = array_diff($linkedOfferIds, $merchantOfferIds);
+
+        if (empty($result) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                        'Linked offer ids submitted are not valid');
         }
     }
 }

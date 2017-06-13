@@ -50,7 +50,7 @@ class RequestJob extends Job implements ShouldQueue
 
             $this->delete();
         }
-        catch(\Requests_Exception $e)
+        catch(\Throwable $e)
         {
             $this->handleException($e);
         }
@@ -63,9 +63,22 @@ class RequestJob extends Job implements ShouldQueue
         $this->trace = $app['trace'];
     }
 
+    protected function traceRequest()
+    {
+        $this->trace->info(
+            TraceCode::REQUESTS_JOB_REQUEST,
+            [
+                'request' => [
+                    'url'     => $this->request['url'],
+                    'content' => $this->request['content'],
+                    'options' => $this->request['options'],
+                ]
+            ]);
+    }
+
     private function handleRequest()
     {
-        $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $this->request]);
+        $this->traceRequest();
 
         $timeStarted = microtime(true);
 
@@ -101,7 +114,7 @@ class RequestJob extends Job implements ShouldQueue
 
         if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
         {
-            $this->deleted();
+            $this->delete();
         }
         else
         {

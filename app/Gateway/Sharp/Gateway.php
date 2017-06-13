@@ -18,7 +18,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ($this->isRecurringPaymentRequest($input))
+        if ($this->isSecondRecurringPaymentRequest($input))
         {
             return;
         }
@@ -104,6 +104,10 @@ class Gateway extends Base\Gateway
         }
 
         $this->verifyPaymentCreateResponse($input);
+
+        $acquirerData = $this->getAcquirerData($input);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -130,6 +134,24 @@ class Gateway extends Base\Gateway
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
         }
+
+        return [];
+    }
+
+    protected function getAcquirerData(array $input)
+    {
+        $acquirer = [];
+
+        if ($input['payment']['method'] === Payment\Method::NETBANKING)
+        {
+            $acquirer = [
+                'reference1' => (string) random_integer(7)
+            ];
+        }
+
+        return [
+            'acquirer' => $acquirer
+        ];
     }
 
     public function capture(array $input)
@@ -222,7 +244,7 @@ class Gateway extends Base\Gateway
         return Crypt::decrypt($encryptedCard);
     }
 
-    protected function isRecurringPaymentRequest($input)
+    protected function isSecondRecurringPaymentRequest($input)
     {
         if (($input['payment']['recurring'] === true) and
             ($input['token'] !== null) and

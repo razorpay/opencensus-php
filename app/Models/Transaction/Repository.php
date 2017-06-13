@@ -57,13 +57,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnsettledTransactions($timestamp)
+    public function fetchUnsettledTransactions($timestamp, $channel)
     {
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
-        $transactionData = $this->getAttributeWithTableName('*');
+        $transactionMerchantId = $this->dbColumn(Transaction\Entity::MERCHANT_ID);
+        $transactionId = $this->dbColumn(Transaction\Entity::ID);
+        $transactionData = $this->dbColumn('*');
 
         $txns = $this->newQuery()
                     ->select($transactionData)
@@ -71,59 +71,13 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
-
-        $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-                    $txns,
-                    'source',
-                    [
-                        E::PAYMENT => [],
-                        E::REFUND => [E::PAYMENT]
-                    ]);
-
-        return $txns;
-    }
-
-    public function fetchUnsettledTxnsForDueSchedules($timestamp, $channel)
-    {
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
-        $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
-
-        $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
-
-        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
-        $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
-        $transactionData = $this->getAttributeWithTableName('*');
-
-        $txns = $this->newQuery()
-                    ->select($transactionData)
-                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
-                    ->where(Entity::ON_HOLD, 0)
-                    ->where(Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Entity::SETTLED, '=', 0)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->where($transactionType, '!=', Type::SETTLEMENT)
-                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
-                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
-                    ->orderBy($transactionMerchantId)
-                    ->orderBy($transactionId)
-                    ->get();
-
-        // $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-        //             $txns,
-        //             'source',
-        //             [
-        //                 E::PAYMENT => [],
-        //                 E::REFUND => [E::PAYMENT]
-        //             ]);
 
         return $txns;
     }
@@ -231,7 +185,7 @@ class Repository extends Base\Repository
             $eagerLoadRelations = $entityToRelationFetchMap[$type] ?? [];
 
             // Queries to eager load the ids of the $type, and also the required relations
-            $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
+            $typeEntities = $this->repo->$type->findManyWithRelations($ids, $eagerLoadRelations);
 
             // Creates an id to entity map of the above queried entities
             foreach ($typeEntities as $entity)
@@ -399,16 +353,16 @@ class Repository extends Base\Repository
 
     public function getCancelledBilldeskTransactions()
     {
-        $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
-        $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
+        $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
 
-        $paymentId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
-        $transactionEntityId = $this->getAttributeWithTableName(Entity::ENTITY_ID);
-        $transactionReconciledAt = $this->getAttributeWithTableName(Entity::RECONCILED_AT);
+        $transactionEntityId = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->dbColumn(Entity::RECONCILED_AT);
 
-        $transactionData = $this->getAttributeWithTableName('*');
+        $transactionData = $this->dbColumn('*');
 
         return $this->newQuery()
                     ->select($transactionData)

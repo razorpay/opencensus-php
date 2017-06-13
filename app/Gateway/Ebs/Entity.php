@@ -53,4 +53,9 @@ class Entity extends Base\Entity
     ];
 
     protected $entity = Constants\Entity::EBS;
+
+    public function getGatewayPaymentId()
+    {
+        return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
+    }
 }

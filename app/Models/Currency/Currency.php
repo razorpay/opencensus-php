@@ -110,4 +110,9 @@ class Currency
         self::INR => 100,
         self::USD => 100,
     ];
+
+    const SYMBOL = [
+        self::INR => '₹',
+        self::USD => '$',
+    ];
 }

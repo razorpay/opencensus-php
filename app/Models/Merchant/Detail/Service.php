@@ -4,17 +4,20 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 use Throwable;
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
+use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
+    use NotifyTrait;
+
     /**
      * Sets the merchant entity for the current instance
      * Used in account onboarding
@@ -139,6 +142,27 @@ class Service extends Base\Service
 
     public function editMerchantDetails($id, array $input)
     {
+        $slackAction = null;
+
+        if (isset($input['locked']) === true or
+            isset($input['comment']) === true)
+        {
+            if (isset($input['locked']) === true)
+            {
+                $action = ($input['locked'] === true) ? Action::LOCK : Action::UNLOCK;
+
+                $slackAction = ($input['locked'] === true) ? SlackActions::LOCK : SlackActions::UNLOCK;
+            }
+            else
+            {
+                $action = Action::EDIT_COMMENT;
+            }
+
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $admin->hasMerchantActionPermissionOrFail($action);
+        }
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchantDetails = $this->getMerchantDetails($merchant);
@@ -146,6 +170,11 @@ class Service extends Base\Service
         $merchantDetails->edit($input);
 
         $this->repo->saveOrFail($merchantDetails);
+
+        if (isset($slackAction) === true)
+        {
+            $this->logActionToSlack($merchant, $slackAction);
+        }
 
         return $this->createResponse($merchantDetails);
     }

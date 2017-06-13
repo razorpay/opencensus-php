@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Base;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\MailTags;
@@ -12,7 +13,6 @@ use RZP\Constants\MailTags;
 class DailyFiles
 {
     protected $app;
-    protected $mail;
     protected $repo;
     protected $mode;
     protected $gateway;
@@ -22,10 +22,10 @@ class DailyFiles
     //                 is 86400
     const SECONDS_PER_DAY = 86400;
 
+    protected $emailIdsToSendTo = 'settlements@razorpay.com';
+
     public function __construct($bankCode)
     {
-        $this->mail = Mail::getFacadeRoot();
-
         $this->app = App::getFacadeRoot();
 
         $this->repo = $this->app['repo'];
@@ -37,7 +37,7 @@ class DailyFiles
         $this->bankCode = $bankCode;
     }
 
-    public function generate($from, $to)
+    public function generate($from, $to, $email = null)
     {
         list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to);
 
@@ -51,7 +51,7 @@ class DailyFiles
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
-            $this->sendMail($amount, $claimsFile, $refundsFile);
+            $this->sendMail($amount, $claimsFile, $refundsFile, $email);
         }
 
         return ['refunds' => $refundsFile, 'claims' => $claimsFile];
@@ -64,9 +64,14 @@ class DailyFiles
 
         $count = $refunds->count();
 
-        if ($count == 0)
+        if ($count === 0)
         {
-            return [0, ''];
+            return [
+                'total_amount'   => 0,
+                'count'          => 0,
+                'signed_url'     => '',
+                'local_file_path' => '',
+            ];
         }
 
         $data = [];
@@ -106,7 +111,12 @@ class DailyFiles
 
         if ($claims->count() === 0)
         {
-            return [0, ''];
+            return [
+                'total_amount'   => 0,
+                'count'          => 0,
+                'signed_url'     => '',
+                'local_file_path' => '',
+            ];
         }
 
         $data = [];
@@ -128,51 +138,39 @@ class DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile)
+    protected function sendMail($amount, $claimsFileData, $refundsFileData, $email = null)
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
         $bankName = $this->getBankName();
 
+        $emails = $this->getEmailsToSendTo($email);
+
         $data = [
-            'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
             'amount'      => $amount,
-            'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile
+            'claimsFile'  => $claimsFileData,
+            'refundsFile' => $refundsFileData,
+            'bankName'    => $bankName,
+            'emails'      => $emails,
         ];
 
-        $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
+        $dailyFileMail = new DailyFileMail($data);
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('settlement@razorpay.com', $bankName . ' Netbanking Refunds');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            if (empty($data['claimsFile']) === false)
-            {
-                $message->attach($data['claimsFile']);
-            }
-
-            if (empty($data['refundsFile']) === false)
-            {
-                $message->attach($data['refundsFile']);
-            }
-
-            $headers = $message->getHeaders();
-
-            $tag = strtolower($bankName) . '_' . MailTags::DAILY_FILE;
-
-            $headers->addTextHeader(MailTags::HEADER, $tag);
-        });
+        Mail::queue($dailyFileMail);
     }
 
     protected function getBankName()
     {
         return ucfirst(explode('_', $this->gateway)[1]);
+    }
+
+    protected function getEmailsToSendTo($email = null)
+    {
+        $returnEmail = $this->emailIdsToSendTo;
+
+        if (empty($email) === false)
+        {
+            $returnEmail = $email;
+        }
+
+        return [$returnEmail];
     }
 }

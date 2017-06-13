@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak;
 
 use AWS;
+use App;
 use Excel;
 use Config;
 use RZP\Trace\Trace;
@@ -20,11 +21,9 @@ trait FileHandlerTrait
 
     private $_zipCommand = "zip --junk-paths --move";
 
-    public function writeToTextFile($txt)
+    public function writeToTextFile($name, $txt)
     {
-        $name = $this->getFileToWriteName();
-
-        $fullpath = $this->saveLocally($name, $txt);
+        $fullpath = $this->createTxtFile($name, $txt);
 
         $url = $this->saveToAws($name, $fullpath, 'text/plain');
 
@@ -36,7 +35,7 @@ trait FileHandlerTrait
     {
         try
         {
-            $fullpath = $this->saveLocally($name, $txt);
+            $fullpath = $this->createTxtFile($name, $txt);
 
             $bucket = 'h2h_bucket';
 
@@ -208,16 +207,16 @@ trait FileHandlerTrait
         $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetName)
         {
             $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat)
+            {
+                // If a columnFormat variable is specified.
+                // Use it.
+                if (empty($columnFormat) === false)
                 {
-                    // If a columnFormat variable is specified.
-                    // Use it.
-                    if (empty($columnFormat) === false)
-                    {
-                        $sheet->setColumnFormat($columnFormat);
-                    }
+                    $sheet->setColumnFormat($columnFormat);
+                }
 
-                    $sheet->fromArray($data, null, 'A1', true, true);
-                });
+                $sheet->fromArray($data, null, 'A1', true, true);
+            });
         });
 
         $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
@@ -430,7 +429,7 @@ trait FileHandlerTrait
         return $presignedUrl;
     }
 
-    protected function saveLocally($name, $txt)
+    public function createTxtFile($name, $txt)
     {
         $fullpath = $this->getFullFilePath($name);
 
@@ -464,7 +463,7 @@ trait FileHandlerTrait
 
         foreach ($data as $row)
         {
-            $txt .= implode($glue, array_values($row)) ;
+            $txt .= implode($glue, array_values($row));
 
             $count--;
 
@@ -766,7 +765,9 @@ trait FileHandlerTrait
 
     protected function getMode()
     {
-        $mode = \BasicAuth::getMode();
+        $app = App::getFacadeRoot();
+
+        $mode = $app['basicauth']->getMode();
 
         return $mode;
     }

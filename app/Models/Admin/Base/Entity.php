@@ -4,10 +4,12 @@ namespace RZP\Models\Admin\Base;
 
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Admin\Permission\Entity as Permission;
 
 class Entity extends BaseModel\PublicEntity
 {
-    const ORG_ID      = 'org_id';
+    const ORG_ID            = 'org_id';
+    const PERMISSION_ID     = 'permission_id';
 
     const ROLES       = 'roles';
     const GROUPS      = 'groups';
@@ -21,6 +23,16 @@ class Entity extends BaseModel\PublicEntity
         if ($orgId !== null)
         {
             $attributes[static::ORG_ID] = Org::getSignedId($orgId);
+        }
+    }
+
+    public function setPublicPermissionIdAttribute(array &$attributes)
+    {
+        $permissionId = $this->getAttribute(static::PERMISSION_ID);
+
+        if ($permissionId !== null)
+        {
+            $attributes[static::PERMISSION_ID] = Permission::getSignedId($permissionId);
         }
     }
 

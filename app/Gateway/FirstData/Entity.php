@@ -62,6 +62,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AUTH_CODE);
     }
 
+    public function getEndpointTransactionId()
+    {
+        return $this->getAttribute(self::ENDPOINT_TRANSACTION_ID);
+    }
+
     // ----------------------- Setters ---------------------------------------------
 
     public function setTdate($tdate)

@@ -2,15 +2,14 @@
 
 namespace RZP\Tests\Functional\Item;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-
-use Carbon\Carbon;
-use Mockery;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class ItemTest extends TestCase
 {
-    use PaymentTrait;
+    use RequestResponseFlowTrait;
+
+    use \Illuminate\Foundation\Testing\DatabaseMigrations;
 
     public function setUp()
     {
@@ -20,16 +19,36 @@ class ItemTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['invoice']);
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
+
+        $this->seed('TaxGroupAndTaxSeeder');
     }
 
     public function testCreateItem()
     {
         $response = $this->startTest();
+    }
 
-        $item = $this->getLastEntity('item', true);
+    public function testCreateItem2()
+    {
+        $this->startTest();
 
-        $this->assertEquals($item['id'], $response['id']);
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
+    }
+
+    public function testCreateItemWithTaxId()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateItemWithTaxGroupId()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateItemWithBothTaxIdAndTaxGroupId()
+    {
+        $this->startTest();
     }
 
     public function testGetItem()
@@ -49,7 +68,51 @@ class ItemTest extends TestCase
 
     public function testUpdateItem()
     {
+        $this->fixtures->create(
+                            'item',
+                            [
+                                'unit'   => 'Kg',
+                                'tax_id' => '00000000000001',
+                            ]);
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
+    }
+
+    public function testUpdateItem2()
+    {
         $this->fixtures->create('item');
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
+    }
+
+    public function testUpdateItemWithNewTaxId()
+    {
+        $this->fixtures->create('item', ['tax_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateItemWithNewTaxGroupId()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateItemWithTaxIdWhenTaxGroupIdExists()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateItemWithTaxIdAndRemoveTaxGroupId()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
 
         $this->startTest();
 

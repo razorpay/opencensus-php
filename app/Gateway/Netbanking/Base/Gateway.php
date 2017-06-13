@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Action;
@@ -91,5 +92,29 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         $class = $namespace . '\\' . 'ClaimsFile';
 
         return (new $class)->generate($input);
+    }
+
+    protected function shouldStatusBeUpdated(Entity $gatewayPayment)
+    {
+        //
+        // If the authorize status is set to Y,
+        // we are not saving the verify response status
+        //
+        if ((isset($gatewayPayment[Entity::STATUS]) === true) and
+            ($gatewayPayment[Entity::STATUS] === $this->getAuthSuccessStatus()))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
+            ]
+        ];
     }
 }

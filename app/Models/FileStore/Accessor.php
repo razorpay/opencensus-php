@@ -42,6 +42,8 @@ class Accessor extends Base\Core
      */
     public function id(string $id)
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         $this->id = $id;
 
         return $this;

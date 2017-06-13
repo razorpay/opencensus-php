@@ -3,8 +3,12 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+
+use RZP\Constants\MailTags;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
@@ -14,7 +18,6 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -25,8 +28,6 @@ class Activate extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
-
-        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
         //
         // Ensure that all payment methods enabled for the merchant
@@ -52,11 +53,18 @@ class Activate extends Base\Core
 
         (new Merchant\Validator)->validateBeforeActivate($merchant);
 
-        (new Merchant\Core)->createBalance($merchant, 'live');
+        $oldMerchant = clone $merchant;
 
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
+
+        (new Merchant\Core)->createBalance($merchant, 'live');
 
         $this->repo->saveOrFail($merchant);
 
@@ -66,7 +74,7 @@ class Activate extends Base\Core
 
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
 
-        $this->sendActivationEmail($merchant, $plan);
+        $this->sendActivationEmail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -77,22 +85,41 @@ class Activate extends Base\Core
      * @param  RZP\Models\Merchant\Entity $merchant merchant entity
      * @return null
      */
-    protected function sendActivationEmail($merchant, $plan)
+    public function sendActivationEmail($merchant)
     {
-        $subjectName = $merchant->getBillingLabelElseName();
+        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
-        $subject = "Razorpay | Account activated for $subjectName";
+        $org = $merchant->org;
+
+        $subjectName = $merchant->getBillingLabel();
+
+        if ($org === null)
+        {
+            $org = $this->repo->org->getRazorpayOrg();
+        }
+
+        $subject = $org->getBusinessName() . " | Account activated for $subjectName";
 
         $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant' => $merchant->toArray(),
-            'plan'     => $plan,
+            'merchant' => [
+                'name'          => $merchant->getName(),
+                'website'       => $merchant->getWebsite(),
+                'billing_label' => $merchant->getBillingLabel(),
+                'email'         => $merchant->getEmail(),
+                'org'           => [
+                    'business_name' => $org->getBusinessName(),
+                    'custom_code'   => $org->getCustomCode(),
+                ],
+            ],
             'rules'    => $this->formatPricingRules($rules),
             'subject'  => $subject,
         ];
+
+        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
 
         $config = $this->app->config->get('applications.mailgun');
 
@@ -102,24 +129,9 @@ class Activate extends Base\Core
             $data['merchant']['email'] = $merchant->parent->getEmail();
         }
 
-        // Send the activation email
-        $this->app['mailer']->queue(
-            [
-                'html' => 'emails.merchant.activation',
-                'text' => 'emails.merchant.activation_text'
-            ],
-            $data,
-            function ($message) use ($data, $config)
-            {
-                $message->to($data['merchant']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->cc('notifications@razorpay.com');
-                $message->subject($data['subject']);
+        $activationMail = new ActivationMail($data, $org->toArray());
 
-                $headers = $message->getHeaders();
-                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
-            }
-        );
+        Mail::queue($activationMail);
     }
 
     /**
@@ -183,6 +195,7 @@ class Activate extends Base\Core
             if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
             {
                 $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN] / 100;
+
                 $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX] / 100;
 
                 if ($amountRangeMin === 0)
@@ -280,7 +293,7 @@ class Activate extends Base\Core
      * Current checks for International, Emi and Amex
      *
      * @param array $rules Array of rules
-     * @param entity $merchant Merchant entity
+     * @param Entity $merchant Merchant entity being activated
      * @return array Array of rules
      **/
     protected function filterActiveRulesForMerchant($rules, $merchant)

@@ -8,4 +8,9 @@ use RZP\Models\Base;
 class EsRepository extends Base\EsRepository
 {
     protected static $table = Table::REFUND;
+
+    protected $fields = [
+        Entity::ID,
+        Entity::NOTES,
+    ];
 }

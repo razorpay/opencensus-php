@@ -58,6 +58,7 @@ class CreateAxisGateway extends Migration
             $table->string('vpc_AcqCSCRespCode', 20)->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->char('arn', 40)->nullable();
 
             $table->string('terminal_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
@@ -70,6 +71,8 @@ class CreateAxisGateway extends Migration
             $table->index('amex');
             $table->index('vpc_ReceiptNo');
             $table->index('vpc_3DSstatus');
+            $table->index('vpc_Command');
+            $table->index('vpc_MerchTxnRef');
 
             $table->foreign('payment_id')
                   ->references('id')

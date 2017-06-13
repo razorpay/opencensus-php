@@ -5,6 +5,14 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testCreateSchedule' => [
+        'name'       => 'Every Wednesday',
+        'period'     => 'weekly',
+        'interval'   => 1,
+        'anchor'     => 3,
+        'delay'      => 1,
+    ],
+
     'testAssignSchedule' => [
         'method'  => 'POST',
         'url'     => '/merchants/10000000000000/schedules',
@@ -14,32 +22,6 @@ return [
     'testAssignScheduleById' => [
         'method'  => 'POST',
         'url'     => '/merchants/10000000000000/schedules',
-        'content' => [
-            'settlement_schedule_id' => null,
-        ],
-    ],
-
-    'createSchedule' => [
-        'method'  => 'POST',
-        'url'     => '/schedules',
-        'content' => [],
-    ],
-
-    'fetchSchedule' => [
-        'method'  => 'GET',
-        'url'     => '/schedules/',
-        'content' => [],
-    ],
-
-    'deleteSchedule' => [
-        'method'  => 'DELETE',
-        'url'     => '/schedules/',
-        'content' => [],
-    ],
-
-    'capturePayment' => [
-        'method'  => 'POST',
-        'url'     => '/payments/',
         'content' => [],
     ],
 
@@ -47,35 +29,12 @@ return [
         'method'  => 'PUT',
         'url'     => '/schedules/',
         'content' => [
-            "next_run" => 1451586600,
+            'anchor' => 3,
         ],
-    ],
-
-    'testMerchantSettlementScheduleSync' => [
-        'method'  => 'POST',
-        'url'     => '/merchants/10000000000000/schedules',
-        'content' => [
-            'name'       => 'Basic T5',
-            'type'       => 'settlement',
-            'period'     => 'daily',
-            'interval'   => 1,
-            'delay'      => 5,
-        ],
-    ],
-
-    'testScheduleBody' => [
-        'name'       => 'Every Wednesday',
-        'type'       => 'settlement',
-        'period'     => 'weekly',
-        'interval'   => 1,
-        'anchor'     => 3,
-        'delay'      => 1,
-        'next_run'   => 1452105000,
     ],
 
     'timedScheduleBody' => [
         'name'       => 'Timed Schedule',
-        'type'       => 'settlement',
         'period'     => 'daily',
         'interval'   => 5,
         'hour'       => 12,
@@ -160,4 +119,42 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED,
         ],
     ],
+
+    'testScheduleSyncLiveAndTest' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'createSubscriptionToSync' => [
+        'url' => '/subscriptions',
+        'method' => 'post',
+        'content' => [
+            'customer_id'     => '',
+            'plan_id'         => 'plan_1000000000plan',
+            'quantity'        => 1,
+            'total_count'     => 6, // Every two months
+            'start_at'        => 1516386600,
+            'customer_notify' => 0,
+            'addons'        => [
+                [
+                    'item' => [
+                        'amount' => 300,
+                        'currency' => 'INR',
+                        'name' => 'Sample Upfront Amount'
+                    ]
+                ]
+            ],
+        ],
+    ]
 ];

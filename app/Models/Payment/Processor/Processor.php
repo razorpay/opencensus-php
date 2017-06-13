@@ -3,28 +3,28 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use BasicAuth;
 use Carbon\Carbon;
-
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Http;
 use RZP\Models\BankAccount;
-use RZP\Models\Terminal;
-use RZP\Models\Payment;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Card;
+use RZP\Models\Customer;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Models\Transaction;
+use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Customer;
-use RZP\Models\Transfer\Core as TransferCore;
-use RZP\Models\Card;
-use RZP\Models\Transaction;
-use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -101,9 +101,14 @@ class Processor
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var \RZP\Http\Route
      */
     protected $route;
+
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -131,6 +136,8 @@ class Processor
 
         $this->segment = $this->app['segment'];
 
+        $this->ba = $this->app['basicauth'];
+
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
     }
@@ -148,14 +155,6 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
-        //
-        // Creates a payment entity in DB with the input values given.
-        // Also takes care of fee-bearer customer flow.
-        //
-        // This is in a transaction because we perform
-        // lockForUpdate on invoice in this flow.
-        //
-
         $this->repo->transaction(function() use ($input)
         {
             $this->createPaymentEntity($input);
@@ -166,7 +165,6 @@ class Processor
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        // The first step in talking to the respective gateway.
         return $this->authorize($payment, $input);
     }
 
@@ -262,7 +260,7 @@ class Processor
 
         $str = implode('|', $data);
 
-        return $this->app['basicauth']->sign($str);
+        return $this->ba->sign($str);
     }
 
     protected function checkMerchantPermissions()
@@ -414,6 +412,7 @@ class Processor
     /**
      * Returns the proper async response for the status checks
      * made by Checkout
+     *
      * @param  string $id payment id
      * @return array
      * @throws Exception\BadRequestException
@@ -565,6 +564,13 @@ class Processor
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();
+
+        if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
+        {
+            $notifier = new Notify($this->payment);
+
+            $notifier = $notifier->trigger(Payment\Event::FAILED);
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -647,7 +653,11 @@ class Processor
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
-        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        // Do not track payment when Gateway verify is called
+        if ($action !== Payment\Action::VERIFY)
+        {
+            $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        }
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
@@ -671,9 +681,11 @@ class Processor
             $this->verifyProvidedFee($payment, $input);
         }
 
-        $this->setOrderDetails($payment, $input);
+        $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
-        $this->setInvoiceDetails($payment);
+        $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
         $metadata = $payment->getMetadata();
 
@@ -691,6 +703,80 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
+    }
+
+    /**
+     * This is required when the first charge is done via auth transaction.
+     * We need to use the invoice which was created during subscription
+     * creation.
+     * For the subsequent charges, this is handled since we send order_id as
+     * part of the payment create request itself. Since, the payment is created internally.
+     * The first charge (payment) is created by the merchant and hence not feasible to ask
+     * them to send an order_id along with the subscription_id.
+     *
+     * @param array          $input
+     * @param Payment\Entity $payment
+     *
+     * @throws Exception\LogicException
+     */
+    protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
+    {
+        if (isset ($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        //
+        // In case the subscription is in active or halted state,
+        // we don't want to add the order_id to the input.
+        // 1. It would already be present if it's automated charge.
+        // 2. Change card flow is being done. Hence, no invoice and stuff.
+        //
+        if ($subscription->isCreated() === false)
+        {
+            return;
+        }
+
+        //
+        // Invoice would have been created if:
+        // - First charge needs to be done as part of authentication with or without addons
+        // - Only addons need to be added, and no first charge needs to be done as part of authentication.
+        //
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+        if ($subscriptionInvoices->count() === 0)
+        {
+            //
+            // Since the subscription is in created state at this point,
+            // the only addons that will be present will be of `upfront_amount`.
+            //
+            $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
+
+            if ($addons->count() === 0)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'There should have been one invoice created for a newly created subscription',
+                    ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                    [
+                        'invoices_count'    => $subscriptionInvoices->count(),
+                        'subscription_id'   => $subscriptionId,
+                        'payment_id'        => $payment->getId(),
+                        'addons_count'      => $addons->count(),
+                    ]);
+            }
+        }
+
+        $subscriptionInvoice = $subscriptionInvoices->first();
+
+        $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
     protected function createDummyPaymentEntity(array $input): Payment\Entity
@@ -761,11 +847,13 @@ class Processor
         return $order;
     }
 
-    protected function setOrderDetails(Payment\Entity $payment, array $input)
+    protected function validateAndSetOrderDetailsIfApplicable(
+        Payment\Entity $payment,
+        array $input)
     {
-        if (empty($input['order_id']) === true)
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($this->merchant->isTPVRequired())
+            if ($this->merchant->isTPVRequired() === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -777,27 +865,7 @@ class Processor
 
         $this->order = $this->fetchOrderFromInput($input);
 
-        $amount = $payment->getAmount();
-
-        // If the merchant is a customer-fee-bearer client, use the adjusted amount to
-        // match order amount.
-        if ($this->merchant->isFeeBearerCustomer())
-        {
-            $amount = $amount - $payment->getFee();
-        }
-
-        $currency = $payment->getCurrency();
-
-        // Move this to a common validate function.
-        $validator = new Order\Validator;
-
-        $validator->validateOrderAmount($this->order, $amount);
-
-        $validator->validateOrderCurrency($this->order, $currency);
-
-        $validator->validateOrderNotPaid($this->order);
-
-        $validator->validateMerchantSpecificData($this->order, $payment);
+        $this->order->getValidator()->validatePaymentCreation($payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
@@ -815,7 +883,7 @@ class Processor
         $payment->order()->associate($this->order);
     }
 
-    protected function setInvoiceDetails(Payment\Entity $payment)
+    protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
     {
         if ($this->order === null)
         {
@@ -978,15 +1046,19 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        //
         // We do an auto capture only if payment is associated with an order.
+        //
         if ($payment->hasOrder() === false)
         {
             return false;
         }
 
+        //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
         // the payment because of an internal issue.
+        //
         if ($payment->isAuthorized() === false)
         {
             $this->trace->error(
@@ -999,6 +1071,112 @@ class Processor
             return false;
         }
 
+        //
+        // The flow would reach till here because subscription creates
+        // an invoice, which in turn creates an order.
+        //
+        // Auto capturing a subscription payment is handled in a different
+        // flow, because of some pre-processing and post-processing
+        // that requires to be done.
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            return false;
+        }
+
+        return $this->shouldAutoCaptureOrder($payment);
+    }
+
+    protected function shouldAutoCaptureAlreadyAuthenticatedSubscription(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        //
+        // Late authorizations are not going to happen here because
+        // everything is S2S. On the off chance that it happens,
+        // we log it and see what to do about it.
+        //
+        if ($payment->isLateAuthorized() === true)
+        {
+            $this->trace->critical(
+                TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'late_authorized' => $payment->isLateAuthorized(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureNewSubscription(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        //
+        // This is commented out because all the attributes set
+        // for the subscription and not saved will get overridden
+        // with the values present in the DB.
+        // TODO: Handle this because race conditions.
+        //
+        // $this->repo->reload($subscription);
+
+        //
+        // This function can be used here since this flow is processed
+        // only for a new subscription.
+        //
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+        //
+        // We auto capture a subscription only if start_at is absent,
+        // which means that the first transaction is being used as the
+        // first charge also.
+        // OR we auto capture if upfront_amount (addon) is present.
+        //
+        // We create an invoice if any of the above two conditions are satisfied.
+        //
+        if ($subscriptionInvoices->count() === 0)
+        {
+            return false;
+        }
+
+        if ($subscriptionInvoices->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been only one invoice created for a newly created subscription',
+                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                [
+                    'invoices_count'    => $subscriptionInvoices->count(),
+                    'subscription_id'   => $subscription->getId(),
+                    'payment_id'        => $payment->getId(),
+                ]);
+        }
+
+        //
+        // Ideally, the flow shouldn't reach till here since this function
+        // is not called at all in case of a late auth payment.
+        //
+        if ($payment->isLateAuthorized() === true)
+        {
+            $this->trace->critical(
+                TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
+                [
+                    'payment_id'      => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'late_authorized' => $payment->isLateAuthorized(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureOrder(Payment\Entity $payment)
+    {
         $order = $payment->order;
 
         //
@@ -1018,7 +1196,7 @@ class Processor
             return false;
         }
 
-        if ($payment->isLateAuthorized())
+        if ($payment->isLateAuthorized() === true)
         {
             return $this->shouldAutoCaptureLateAuthorized($payment);
         }
@@ -1124,8 +1302,15 @@ class Processor
 
         if ($this->mutex->acquire($resource) === false)
         {
+            $data = [
+                'payment_id'  => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+                'gateway'     => $payment->getGateway(),
+                'terminal_id' => $payment->getTerminalId(),
+            ];
+
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS, null, $data);
         }
     }
 

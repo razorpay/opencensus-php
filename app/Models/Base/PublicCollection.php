@@ -37,6 +37,11 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    public function toArrayDiff()
+    {
+        return $this->itemsToArrayDiff();
+    }
+
     public function toArrayReport()
     {
         $data = $this->itemsToArrayReport();
@@ -155,6 +160,15 @@ class PublicCollection extends Collection
         }, $this->items);
     }
 
+    protected function itemsToArrayDiff()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayDiff();
+
+        }, $this->items);
+    }
+
     protected function itemsToArrayAdmin()
     {
         return array_map(function($item)
@@ -184,6 +198,11 @@ class PublicCollection extends Collection
 
     public static function isPublicCollection($object)
     {
+        if (empty($object) === true)
+        {
+            return false;
+        }
+
         return (get_class($object) === static::class);
     }
 }

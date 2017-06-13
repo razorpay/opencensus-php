@@ -10,7 +10,7 @@ require('config.php'); // Load API Credentials
 
 $baseUrl = $protocol . '://' . $hostname . '/v1/';
 
-Api::$baseUrl = $baseUrl;
+Api::setBaseUrl($baseUrl);
 
 $api = new Api(RZP_KEY_ID, RZP_KEY_SECRET);
 

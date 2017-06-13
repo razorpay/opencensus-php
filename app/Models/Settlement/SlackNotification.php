@@ -5,7 +5,10 @@ namespace RZP\Models\Settlement;
 use Queue;
 use Config;
 
-class SlackNotification
+use RZP\Models\Base;
+use RZP\Constants\Mode;
+
+class SlackNotification extends Base\Core
 {
     protected $operations = array(
         'setl_initiate',
@@ -40,19 +43,22 @@ class SlackNotification
 
     public function send($data)
     {
-        $message = $data['message'];
-        $color   = $data['status'];
-        $app = \App::getFacadeRoot();
+        // Send Slack Notification only for Live mode in Production
+        if ($this->mode === Mode::LIVE)
+        {
+            $message = $data['message'];
+            $color   = $data['status'];
 
-        unset($data['message'], $data['status']);
+            unset($data['message'], $data['status']);
 
-        $app['slack']->queue(
-            $message,
-            $data,
-            [
-                'channel'   => Config::get('slack.channels.settlements'),
-                'username'  => 'settlements',
-                'color'     => $color
-            ]);
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'   => Config::get('slack.channels.settlements'),
+                    'username'  => 'settlements',
+                    'color'     => $color
+                ]);
+        }
     }
 }

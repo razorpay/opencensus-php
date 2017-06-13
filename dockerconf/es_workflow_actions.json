@@ -3,51 +3,60 @@
 
   },
   "mappings": {
-    "audit_log": {
+    "action": {
       "_all": {
         "enabled": false
       },
       "properties": {
-      	 "id": {
-            "type": "string"
-        },
-        "type": {
-            "type": "string"
-        },
-        "url": {
-            "type": "string"
-        },
-        "method": {
-            "type": "string"
+        "id": {
+          "type": "text"
         },
         "entity_name": {
-            "type": "string"
+          "type": "text"
         },
         "entity_id": {
-            "type": "string"
+          "type": "text"
+        },
+        "admin_id": {
+          "type": "text"
+        },
+        "maker": {
+          "type": "text"
+        },
+        "type": {
+          "type": "text"
+        },
+        "url": {
+          "type": "text"
+        },
+        "route_params": {
+          "properties": {
+            "orgId": {
+              "type": "text"
+            },
+            "id": {
+              "type": "text"
+            }
+          }
+        },
+        "method": {
+          "type": "text"
         },
         "payload": {
-            "type": "object"
+          "type": "object",
+          "enabled": false
         },
-        "actor": {
-            "type": "string"
+        "controller": {
+          "type": "text"
         },
-        "headers": {
-            "type": "object"
+        "route": {
+          "type": "text"
         },
-        "diff": {
-            "type": "object",
-            "properties": {
-                "old": {
-                    "type": "object"
-                },
-                "new": {
-                    "type": "object"
-                }
-            }
+        "state": {
+          "type": "text"
         },
-        "created_at":{
-        	"type": "integer"
+        "permission": {
+          "type": "text"
         }
       }
     }

@@ -111,6 +111,11 @@ trait Authorize
 
         $this->traceAuthEnrolledResponse($authResponse);
 
+        if (isset($authResponse['data']['trackid']) === true)
+        {
+            $this->assertPaymentId($this->input['payment']['id'], $authResponse['data']['trackid']);
+        }
+
         if (($this->error === true) and
             ($this->callbackAlreadyProcessed($authResponse) === true))
         {

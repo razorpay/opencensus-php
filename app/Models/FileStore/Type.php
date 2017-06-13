@@ -22,21 +22,27 @@ class Type
 
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
+    const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
+
+    const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
-    const ICICI_NODAL_TRANSFER              = 'icici_nodal_transfer';
-
     const BATCH_INPUT                       = 'batch_input';
-
     const BATCH_OUTPUT                      = 'batch_output';
 
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+
+    const REPORT                            = 'report';
+
+    const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
+    const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -48,7 +54,6 @@ class Type
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
-    const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
@@ -65,11 +70,13 @@ class Type
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::FEDERAL_NETBANKING_REFUND,
+            self::RBL_NETBANKING_REFUND,
+            self::INDUSIND_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::ICICI_NODAL_TRANSFER,
+            self::REPORT,
         ],
 
         Constants\Entity::BATCH => [
@@ -90,6 +97,11 @@ class Type
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
         ],
+
+        Constants\Entity::BATCH_FUND_TRANSFER => [
+            self::FUND_TRANSFER_DEFAULT,
+            self::FUND_TRANSFER_H2H,
+        ],
     ];
 
     /**
@@ -102,11 +114,14 @@ class Type
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::FEDERAL_NETBANKING_REFUND,
+        self::RBL_NETBANKING_REFUND,
+        self::INDUSIND_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
-        self::ICICI_NODAL_TRANSFER,
+        self::FUND_TRANSFER_DEFAULT,
+        self::FUND_TRANSFER_H2H,
     ];
 
     /**
@@ -121,9 +136,8 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-        ],
-
-        self::BATCH_BUCKET_CONFIG => [
+            self::FUND_TRANSFER_DEFAULT,
+            self::REPORT,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
         ],
@@ -143,7 +157,7 @@ class Type
         ],
 
         self::H2H_BUCKET_CONFIG => [
-            self::ICICI_NODAL_TRANSFER,
+            self::FUND_TRANSFER_H2H,
         ],
     ];
 
@@ -178,7 +192,7 @@ class Type
      */
     public static function isTypeForSharedAccount(string $type)
     {
-        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true)
+        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES, true) === true)
         {
             return true;
         }

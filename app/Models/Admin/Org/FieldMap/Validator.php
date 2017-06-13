@@ -36,8 +36,8 @@ class Validator extends Base\Validator
         if (in_array($entity, array_keys($namespaces), true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The entity name is not registered in the api',
-                ['entity' => $entity]);
+                'The entity name is not registered in the api', 'entity',
+                $entity);
         }
     }
 
@@ -68,8 +68,8 @@ class Validator extends Base\Validator
             $data = ['entity' => $class, 'invalidFields' => $diffArray];
 
             throw new Exception\BadRequestValidationFailureException(
-                'Few fields are invalid for the given entity',
-                $data);
+                'Few fields are invalid for the given entity', 'entity',
+                $entity);
         }
     }
 }

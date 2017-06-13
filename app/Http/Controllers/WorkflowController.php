@@ -17,18 +17,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-    /*
-        Not exposed publicly. Called by Workflow middleware.
-    */
-    public function postWorkflowAction()
-    {
-        $input = Request::all();
-
-        // returns Workflow\Action\Entity
-        $data = (new Action\Service)->create($input);
-
-        return ApiResponse::json($data);
-    }
 
     // Not being used
     public function postActionDiff(string $id)
@@ -67,6 +55,8 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
+        $actionPublicId = $id;
+
         Action\Entity::verifyIdAndStripSign($id);
 
         $action = (new Action\Repository)->findOrFailPublic($id);
@@ -83,6 +73,12 @@ class WorkflowController extends Controller
                 ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
         }
 
+        list($actionCore, $stateCore, $differCore) = [
+            new Action\Core,
+            new State\Core,
+            new Differ\Core,
+        ];
+
         $diff = (new Differ\Service)->fetchRequest($id);
 
         $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
@@ -93,15 +89,24 @@ class WorkflowController extends Controller
 
         $functionName = $diff[Differ\Entity::FUNCTION_NAME];
 
+        $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
+
+        // Replace the current request's payload with the
+        // actual maker request payload.
         Request::replace($payload);
 
+        // Create controller object
         $controller = App::make($controller);
 
-        $response = App::call([$controller, $functionName], array_values($routeParams));
+        // Auth details have to be initialized before
+        // the actual code (Controller@action) runs.
+        $actionCore->initAuthDetails($authDetails);
+
+        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
 
         $state = State\Entity::EXECUTED;
 
-        if ($response->getStatusCode() !== 200)
+        if ($internalResponse->getStatusCode() !== 200)
         {
             $state = State\Entity::FAILED;
         }
@@ -110,13 +115,13 @@ class WorkflowController extends Controller
 
         // Update states
 
-        (new Action\Core)->updateState($action, $state);
+        $actionCore->updateState($action, $state);
 
-        (new State\Core)->changeActionState($action->getId(), $state, $adminId);
+        $stateCore->changeActionState($action->getId(), $state, $adminId);
 
-        (new Differ\Core)->updateStateInEs($action->getId(), $state);
+        $differCore->updateStateInEs($action->getId(), $state);
 
-        return $response;
+        return $this->getActionDetails($actionPublicId);
     }
 
     public function postActionChecker(string $id)
@@ -125,7 +130,14 @@ class WorkflowController extends Controller
 
         $data = (new Checker\Service)->create($id, $input);
 
-        return ApiResponse::json($data);
+        return $this->getActionDetails($id);
+    }
+
+    public function closeWorkflowAction(string $id)
+    {
+        $data = (new Action\Service)->closeAction($id);
+
+        return $this->getActionDetails($id);
     }
 
     public function getActionCheckerMultiple(string $id)
@@ -246,6 +258,7 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
+
     // Workflow Manager API
     public function getActionsForChecker()
     {
@@ -256,7 +269,16 @@ class WorkflowController extends Controller
 
     public function getActionsByMaker()
     {
-        $data = (new Workflow\Service)->getActionsByMaker();
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->getActionsByMakerAndType($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getActionsChecked()
+    {
+        $data = (new Workflow\Manager)->getActionsCheckedByAdmin();
 
         return ApiResponse::json($data);
     }

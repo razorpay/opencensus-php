@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Gateway\Rule;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
@@ -20,7 +21,7 @@ class GatewayController extends Controller
         $this->callbackGateway('axis');
     }
 
-    protected function processS2SCallback($input, $gateway)
+    protected function processServerCallback($input, $gateway)
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
@@ -28,7 +29,8 @@ class GatewayController extends Controller
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
-        $input = $gateway->preProcessS2sResponse($input);
+
+        $input = $gateway->preProcessServerCallback($input);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
@@ -94,7 +96,7 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
-                $data = $this->processS2SCallback($input, $gateway);
+                $data = $this->processServerCallback($input, $gateway);
                 break;
 
             case 'wallet_olamoney':
@@ -102,7 +104,7 @@ class GatewayController extends Controller
                 break;
 
             case 'wallet_freecharge':
-                $data = $this->processS2SCallback($input, $gateway);
+                $data = $this->processServerCallback($input, $gateway);
                 break;
 
             case 'upi':
@@ -110,7 +112,7 @@ class GatewayController extends Controller
                 $input = Request::getContent();
                 $gateway = 'upi_icici';
 
-                $data = $this->processS2SCallback($input, $gateway);
+                $data = $this->processServerCallback($input, $gateway);
 
                 break;
         }
@@ -363,6 +365,31 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = (new GatewayPriority\Service)->removePriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createGatewayRule(Rule\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteGatewayRule(Rule\Service $service, string $id)
+    {
+        $data = $service->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateGatewayRule(Rule\Service $service, string $id)
+    {
+        $input = Request::all();
+
+        $data = $service->update($id, $input);
 
         return ApiResponse::json($data);
     }

@@ -37,11 +37,35 @@ class CreateLineItems extends Migration
 
             $table->integer(Entity::AMOUNT);
 
+            $table->integer(Entity::GROSS_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Entity::TAX_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Entity::NET_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->char(Entity::CURRENCY, 3);
+
+            $table->tinyInteger(Entity::TAX_INCLUSIVE)
+                  ->default(0);
+
+            $table->string(Entity::UNIT, 512)
+                  ->nullable();
 
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::ENTITY_TYPE, 32);
+
+            $table->char(Entity::REF_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Entity::REF_TYPE, 32)
+                  ->nullable();
 
             $table->integer(Entity::QUANTITY);
 
@@ -55,6 +79,8 @@ class CreateLineItems extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::ENTITY_ID);
             $table->index(Entity::ENTITY_TYPE);
+            $table->index(Entity::REF_ID);
+            $table->index(Entity::REF_TYPE);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

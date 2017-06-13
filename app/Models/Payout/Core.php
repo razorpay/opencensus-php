@@ -145,7 +145,7 @@ class Core extends Base\Core
             'kotak_payout_txt'   => $urlText,
         ];
 
-        $this->updateBatchFundTransferEntityUrls($urls);
+        $this->updateFileDetailsInBatchFundTransferEntity(['urls' => $urls]);
 
         $data['payout_text_file'] = $urlText;
 
@@ -245,7 +245,7 @@ class Core extends Base\Core
 
     protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        $onHold = $merchant->holdFunds();
+        $onHold = $merchant->getHoldFunds();
 
         if ($onHold === true)
         {

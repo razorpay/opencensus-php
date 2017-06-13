@@ -25,7 +25,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE           = 'commission';
     const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
     const COLUMN_ORDER_ID      = 'order_id';
-    const COLUMN_RRN           = 'rrn_no';
     const COLUMN_CARD_LOCALE   = 'lofo';
     const COLUMN_ISSUER        = 'transaction_category';
     const COLUMN_SETTLED_AT    = 'settlement_date';
@@ -48,7 +47,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
-            if (isset($row[$cpi]) === true)
+            if (empty($row[$cpi]) === false)
             {
                 return $row[$cpi];
             }
@@ -63,6 +62,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         foreach(self::COLUMN_SERVICE_TAX as $cst)
         {
+            //
+            // This should be isset only and not empty
+            // because service tax can be 0 also.
+            //
             if (isset($row[$cst]) === true)
             {
                 $columnServiceTax = $cst;
@@ -150,7 +153,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnCardLocale = null;
 
-        if (isset($row[self::COLUMN_CARD_LOCALE]) === true)
+        if (empty($row[self::COLUMN_CARD_LOCALE]) === false)
         {
             $columnCardLocale = strtolower($row[self::COLUMN_CARD_LOCALE]);
         }
@@ -164,7 +167,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         foreach (self::COLUMN_CARD_TRIVIA as $cct)
         {
-            if (isset($row[$cct]) === true)
+            if (empty($row[$cct]) === false)
             {
                 $columnCardTrivia = $cct;
                 break;
@@ -234,10 +237,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $paymentId = $this->payment->getPublicId();
 
-        // $vpcTransactionNo = $this->axisMigsRepo
-        //                          ->findByRrn($row[self::COLUMN_RRN])
-        //                          ->getTransactionId();
-
         $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
 
         $this->messenger->raiseReconAlert(
@@ -260,7 +259,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             ]
         );
 
-        if ((empty($response['status']) === false) and 
+        if ((empty($response['status']) === false) and
             ($response['status'] === PaymentStatus::AUTHORIZED))
         {
             return true;

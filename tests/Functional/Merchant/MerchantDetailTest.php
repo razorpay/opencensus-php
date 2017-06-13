@@ -6,11 +6,13 @@ use DB;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class MerchantDetailTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -28,7 +30,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateIFSCCode()
+    public function testUpdateIfscCode()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -55,7 +57,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateIFSCCodeWithFailure()
+    public function testUpdateIfscCodeWithFailure()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -102,6 +104,13 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
     public function testLockMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -112,7 +121,9 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -127,7 +138,9 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -144,7 +157,9 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -159,7 +174,9 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -176,7 +193,9 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -193,7 +212,9 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -205,5 +226,34 @@ class MerchantDetailTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
 
         $this->startTest();
+    }
+
+    public function testZohoMerchantHeaders()
+    {
+        $this->fixtures->merchant->addFeatures(['zoho', 'recurring']);
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($payment);
+
+        // Set payment for second recurring payment
+        unset($payment['card']);
+        $payment['token'] = $response['token_id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        // Second recurring payment fails if attempted without the right headers
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doS2sRecurringPayment($payment);
+        });
+
+        // Second recurring payment succeeds with the header
+        $requestServer = [
+            'HTTP_X_AGGREGATOR' => \Config::get('applications.zoho.header')
+        ];
+
+        $this->doS2sRecurringPayment($payment, $requestServer);
     }
 }

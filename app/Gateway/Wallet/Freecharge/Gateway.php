@@ -1238,6 +1238,8 @@ class Gateway extends Base\Gateway
         {
             $this->verifyCheckSumForResponse($content);
         }
+
+        return [];
     }
 
     /*

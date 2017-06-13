@@ -25,6 +25,9 @@ return [
                     'location_code' => 'a',
                     'department_code' => 'a',
                     'supervisor_code' => 'a',
+                    'username' => 'xyz93',
+                    'password' => 'XYZ123!@#',
+                    'password_confirmation' => 'XYZ123!@#',
                 ],
             ],
         ],
@@ -73,6 +76,45 @@ return [
                 'custom_code'   => 'test custom code',
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testCreateWithoutPassword' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'post',
+            'content' => [
+                'hostname'  => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
+                'email' => 'test@hdfc.com',
+                'display_name' => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type' => 'password',
+                'custom_code' => 'test custom code',
+                'admin' => [
+                    'name' => 'superadmin',
+                    'branch_code' => 'a',
+                    'employee_code' => 'a',
+                    'location_code' => 'a',
+                    'department_code' => 'a',
+                    'supervisor_code' => 'a',
+                    'username' => 'xyz93',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The password field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
@@ -278,6 +320,9 @@ return [
                     'location_code' => 'a',
                     'department_code' => 'a',
                     'supervisor_code' => 'a',
+                    'username' => 'xyz93',
+                    'password' => 'XYZ123!@#',
+                    'password_confirmation' => 'XYZ123!@#',
                 ],
             ],
         ],
@@ -316,6 +361,9 @@ return [
                     'location_code' => 'a',
                     'department_code' => 'a',
                     'supervisor_code' => 'a',
+                    'username' => 'xyz93',
+                    'password' => 'XYZ123!@#',
+                    'password_confirmation' => 'XYZ123!@#',
                 ],
             ],
         ],

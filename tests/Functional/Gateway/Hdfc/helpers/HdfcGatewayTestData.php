@@ -32,6 +32,22 @@ return [
         'entity' => 'payment',
     ],
 
+    'testTamparedPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ],
+
     'testInternationalUSDPaymentOnApi' => [
         'merchant_id'       => '10000000000000',
         'amount'            => 5000,
@@ -62,11 +78,11 @@ return [
         'type' => 'payment',
         'merchant_id' => '10000000000000',
         'amount' => 50000,
-        'fee' => 1150,
+        'fee' => 1000,
         'debit' => 0,
-        'credit' => 48850,
+        'credit' => 49000,
         'currency' => 'INR',
-        'balance' => 1048850,
+        'balance' => 1049000,
         'gateway_fee' => 0,
         'api_fee' => 0,
 //        'escrow_balance' => 1048850,

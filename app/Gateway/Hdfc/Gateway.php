@@ -32,6 +32,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
@@ -89,7 +90,10 @@ class Gateway extends Base\Gateway
             'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
         'headers' => array('Content-Type' => 'text/xml'),
-        'data' => array());
+        'data' => array(),
+        'options' => array(
+            'timeout' => 15
+        ));
 
     /**
      * Response received after sending enroll card request
@@ -343,7 +347,19 @@ class Gateway extends Base\Gateway
 
         $this->postAuthEnrolledRequest($input);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($this->model);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                PaymentEntity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                PaymentEntity::REFERENCE1    => $gatewayPayment->getRef()
+            ]
+        ];
     }
 
     public function verify(array $input)
@@ -376,7 +392,7 @@ class Gateway extends Base\Gateway
             'Hdfc gateway does not support voids');
     }
 
-    public function verifyRefund(array $input)
+    public function verifyInternalRefund(array $input)
     {
         $isRefundRequired = $this->isRefundRequired($input);
 
@@ -456,8 +472,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_HDFC_CAPTURED,
             [
-                'input'     => $input,
-                'captured'  => $gatewayCaptured
+                'payment_id' => $input['payment']['id'],
+                'captured'   => $gatewayCaptured
             ]);
 
         return $gatewayCaptured;
@@ -636,7 +652,7 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-        $request['options'] = $this->getRequestOptions();
+        $request['options'] = $this->getRequestOptions($request);
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -645,10 +661,10 @@ class Gateway extends Base\Gateway
         return $this->response;
     }
 
-    protected function getRequestOptions()
+    protected function getRequestOptions($request)
     {
         $options['verify'] = false;
-        $options['timeout'] = $this->getTimeout();
+        $options['timeout'] = $request['options']['timeout'] ?? $this->getTimeout();
 
         return $options;
     }

@@ -7,6 +7,7 @@ use Mail;
 
 use RZP\Constants\MailTags;
 use RZP\Exception;
+use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
 
@@ -33,42 +34,18 @@ class Core extends Base\Core
 
     public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation)
     {
-        $orgName = $admin->org->getDisplayName();
+        $org = $admin->org->toArrayPublic();
+        $org['host_name'] = $admin->org->getPrimaryHostName();
 
-        // date format = 6th July 2015
-        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        $admin = $admin->toArrayPublic();
 
-        $subject = sprintf("%s | Invitation for %s", $orgName, $date);
+        $token = $invitation->getToken();
+        $invitation = $invitation->toArrayPublic();
+        $invitation['token'] = $token;
 
-        $email = $invitation->getEmail();
+        $merchantInvitationMail = new MerchantInvitationMail($admin, $org, $invitation);
 
-        // TODO have a fallover when contact name is not given
-        $contactName = $invitation->getFormData()['contact_name'] ?? '';
-
-        $data = [
-            'invitation' => $invitation->toArrayPublic(),
-            'adminName'  => $admin->getName(),
-        ];
-
-        $data['invitation']['token'] = $invitation->getToken();
-
-        Mail::queue(
-            'emails.admin.invite_merchant',
-            $data,
-            function ($message) use ($subject, $email, $contactName)
-            {
-                $message->to($email, $contactName);
-
-                $message->from('admin@razorpay.com');
-                $message->cc('notifications@razorpay.com');
-
-                $message->subject($subject);
-
-                $headers = $message->getHeaders();
-
-                $headers->addTextHeader(
-                    MailTags::HEADER, MailTags::ADMIN_INVITE_MERCHANT);
-            });
+        Mail::queue($merchantInvitationMail);
     }
 
     public function edit(Entity $adminLead, array $input)
@@ -78,5 +55,12 @@ class Core extends Base\Core
         $this->repo->saveOrFail($adminLead);
 
         return $adminLead;
+    }
+
+    public function getByAdminId(string $adminId)
+    {
+        return $this->repo
+                    ->admin_lead
+                    ->findByAdminId($adminId);
     }
 }

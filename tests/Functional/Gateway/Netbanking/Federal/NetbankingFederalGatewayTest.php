@@ -3,8 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Federal;
 
 use Mail;
-use Mockery;
 use Carbon\Carbon;
+
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -40,6 +41,41 @@ class NetbankingFederalGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
+    }
+
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_federal_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+                            $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
     /**
@@ -114,7 +150,22 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
+    }
+
+    public function testAuthFailedVerifyFailed()
+    {
+        $this->testAuthorizeFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFailedVerifyResponse();
+
+        $this->verifyPayment($payment['id']);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
     }
 
     /**
@@ -140,20 +191,22 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testVerifyFailedNetbankingEntity');
+        $this->assertTestResponse($gatewayPayment, 'testAuthSuccessVerifyFailedNetbankingEntity');
     }
 
     public function testExcelRefundFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundsForFileGeneration($payments);
 
-        $this->checkMailQueue();
-
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         $this->checkRefundFileData($data['netbanking_federal']);
+
+        $this->checkMailQueue();
     }
 
     public function testEmptyExcelRefundFileGeneration()
@@ -163,8 +216,7 @@ class NetbankingFederalGatewayTest extends TestCase
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         // Refund file is never generated as count is 0
-        $this->assertEquals(0, $data['netbanking_federal']['count']);
-        $this->assertFalse(array_key_exists('file', $data));
+        $this->assertEmpty($data['netbanking_federal']['refunds']);
     }
 
     protected function createPaymentsToClaim()
@@ -219,49 +271,47 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d_m_Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        $emails = ['settlements@razorpay.com'];
+        $testData = [
+            'subject' => 'Federal Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 1000,
+                    'total'   => 500,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 3,
+                ]
+        ];
 
-                        $testData = [
-                            'file_path' => 'FBK_REFUND_' . $date . '.txt',
-                            'subject'   => 'Federal Netbanking refunds file for ' . $date,
-                            'emails'    => $emails
-                        ];
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData, $date)
+        {
+            $expectedSubject = 'Federal Netbanking claims and refund files for ' . $date;
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+            $subject = $mail->subject;
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            $this->assertEquals($expectedSubject, $subject);
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return $mail->hasTo('federal.netbanking.refunds@razorpay.com');
+        });
     }
 
     protected function checkRefundFileData($data)
     {
-        //
         // Asserting that the file exists
-        // Asserting that the total amount is 1000 rupees
-        // asserting that the total number of refunds is 3
-        //
-        $this->assertTrue(file_exists($data['file'][1]));
-        $this->assertEquals(100000, $data['file'][0]);
-        $this->assertEquals(3, $data['count']);
+        $this->assertTrue(file_exists($data['refunds']));
 
-        $refundsFileContents = file($data['file'][1]);
+        $refundsFileContents = file($data['refunds']);
 
         // 3 refunds + 0 initial line
         assert(count($refundsFileContents) === 3);
 
         // Individual refund amounts to be asserted
-        $refundAmounts = ['10000', '40000', '50000'];
+        $refundAmounts = ['100', '400', '500'];
 
         foreach ($refundsFileContents as $row)
         {
@@ -278,10 +328,10 @@ class NetbankingFederalGatewayTest extends TestCase
 
             // Asserting that the refund amounts are correct
             $rowRefundAmount = trim($refundsFileRow[6]);
-            assert(in_array($rowRefundAmount, $refundAmounts));
+            assert(in_array($rowRefundAmount, $refundAmounts, true));
         }
 
-        unlink($data['file'][1]);
+        unlink($data['refunds']);
     }
 
     protected function mockFailedVerifyResponse()

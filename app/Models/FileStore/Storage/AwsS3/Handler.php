@@ -34,12 +34,7 @@ class Handler extends BaseHandler
     {
         $awsConfig = Config::get('aws');
 
-        if ($region === null)
-        {
-            $region = $awsConfig['bucket_region'];
-        }
-
-        $awsConfig['region'] = $region;
+        $awsConfig['region'] = $region ?: $awsConfig['bucket_region'];
 
         $client = new Aws\Sdk($awsConfig);
 
@@ -92,6 +87,11 @@ class Handler extends BaseHandler
      */
     public function saveAs($bucketConfig, $key, $filePath)
     {
+        if ($this->config['mock'] === true)
+        {
+            return $filePath;
+        }
+
         $s3 = self::getClient($bucketConfig['region']);
 
         try
@@ -161,6 +161,36 @@ class Handler extends BaseHandler
         }
 
         return $preSignedUrl;
+    }
+
+    /**
+     * Get Url for Given Key in a Bucket
+     *
+     * @param array  $bucketConfig bucket config
+     * @param string $key          File for which the signed url should be fetched
+     *
+     * @return string Url
+     * @throws \Exception
+     */
+    public function getUrl($bucketConfig, $key)
+    {
+        if ($this->config['mock'] === true)
+        {
+            return $key;
+        }
+
+        $s3 = self::getClient($bucketConfig['region']);
+
+        try
+        {
+            return $s3->getObjectUrl($bucketConfig['name'], $key);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
     }
 
     protected function getS3SaveObj($bucket, $fileDetails)

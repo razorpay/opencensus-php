@@ -69,6 +69,9 @@ class CreateHdfcGateway extends Migration
             $table->string('error_text')
                   ->nullable();
 
+            $table->string('arn_no')
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
             $table->integer('updated_at');

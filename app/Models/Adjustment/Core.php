@@ -13,44 +13,53 @@ class Core extends Base\Core
 {
     public function createAdjustment(array $input, $merchant)
     {
-        $traceData = [
-            'input'    => $input,
-            'merchant' => $merchant->getId(),
-        ];
-
         $this->trace->info(
-            TraceCode::ADJUSTMENT_CREATE_REQUEST, $traceData);
+            TraceCode::ADJUSTMENT_CREATE_REQUEST,
+            ['input' => $input, 'merchant' => $merchant->getId()]);
 
-        return $this->repo->transaction(function() use ($input, $merchant)
-            {
-                $adj = $this->createAdjInTransaction($input, $merchant);
+        $updateEscrow = $this->shouldUpdateEscrow($input);
 
-                $this->trace->info(
-                    TraceCode::ADJUSTMENT_CREATE_SUCCESS,
-                    $adj->toArrayPublic());
+        $adj = (new Adjustment\Entity)->build($input);
 
-                return $adj;
-            });
+        // Workflow
+        $this->app['workflow']
+             ->setEntityAndId($adj->getEntity(), $merchant->getId())
+             ->handle((new \stdClass), $adj);
+
+        return $this->transaction(
+            [$this, 'createAdjInTransaction'], $adj, $merchant, $updateEscrow);
     }
 
-    protected function createAdjInTransaction($input, $merchant)
+    protected function shouldUpdateEscrow(array & $input)
     {
-        $updateEscrow = true;
+        $updateEscrow = null;
 
         if (isset($input['update_escrow']))
         {
             if ($input['update_escrow'] === '1')
+            {
                 $updateEscrow = true;
+            }
             else if ($input['update_escrow'] === '0')
+            {
                 $updateEscrow = false;
+            }
             else
+            {
                 throw new BadRequestValidationFailureException(
-                    'update_escrow field shoudl be boolean', 'update_escrow');
+                    'update_escrow field should be boolean', 'update_escrow');
+            }
 
             unset($input['update_escrow']);
         }
 
-        $adj = (new Adjustment\Entity)->build($input);
+        return $updateEscrow;
+    }
+
+    protected function createAdjInTransaction($adj, $merchant, $updateEscrow)
+    {
+        $this->repo->assertTransactionActive();
+
         $adj->setChannel(Settlement\Channel::KOTAK);
 
         $adj->merchant()->associate($merchant);
@@ -61,6 +70,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
         $this->repo->saveOrFail($adj);
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_SUCCESS,
+            $adj->toArrayPublic());
 
         return $adj;
     }

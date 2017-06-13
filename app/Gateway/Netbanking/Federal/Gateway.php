@@ -21,6 +21,12 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'federal';
 
+    const VERIFY_TO_CALLBACK_STATUS = [
+        Status::SUCCESS => Status::YES,
+        Status::NO      => Status::NO,
+        Status::ERROR   => Status::NO,
+    ];
+
     protected $map = [
         RequestFields::AMOUNT     => Base\Entity::AMOUNT,
         RequestFields::PAYMENT_ID => Base\Entity::PAYMENT_ID,
@@ -59,6 +65,12 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        // If the payment requires TPV
+        if (strlen($content[ResponseFields::PAYMENT_ID]) > 14)
+        {
+            $content[ResponseFields::PAYMENT_ID] = explode('.', $content[ResponseFields::PAYMENT_ID])[0];
+        }
+
         $this->assertPaymentId(
             $input['payment']['id'],
             $content[ResponseFields::PAYMENT_ID]
@@ -70,9 +82,11 @@ class Gateway extends Base\Gateway
         $this->verifyCallback($input);
 
         // Saving callback response only if the above checks pass
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -184,8 +198,11 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        // content will contain status S or F
-        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
+        //
+        // Verify response will contain S or N or E, but we have already
+        // mapped the S status to Y in parseVerifyResponse
+        //
+        if ($content[ResponseFields::STATUS] === Status::getAuthSuccessStatus())
         {
             $verify->gatewaySuccess = true;
         }
@@ -222,6 +239,11 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL   => $input['callbackUrl']
         ];
 
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::PAYMENT_ID] .= '.' . $input['order']['account_number'];
+        }
+
         return $data;
     }
 
@@ -251,6 +273,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function checkCallbackStatus(array $content)
@@ -286,10 +310,10 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment)
     {
-        $attributes = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => $content[ResponseFields::STATUS]
-        ];
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::STATUS];
+        }
 
         //
         // Saving BID from Verify response only if BID from authorize hasn't been saved
@@ -312,7 +336,12 @@ class Gateway extends Base\Gateway
                 }
         }
 
-        return $attributes;
+        return $attributes ?? [];
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Status::getAuthSuccessStatus();
     }
 
     protected function parseVerifyResponse(string $body)
@@ -335,7 +364,13 @@ class Gateway extends Base\Gateway
 
         $keys = $this->getVerifyResponseKeys();
 
-        return array_combine($keys, $values);
+        $content = array_combine($keys, $values);
+
+        $status = self::VERIFY_TO_CALLBACK_STATUS[$content[ResponseFields::STATUS]];
+
+        $content[ResponseFields::STATUS] = $status;
+
+        return $content;
     }
 
     protected function getVerifyResponseKeys()
@@ -353,11 +388,18 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
+        $mode = $this->getLiveMerchantId();
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId();
+            $mode = $this->getTestMerchantId();
         }
 
-        return $this->getLiveMerchantId();
+        return $mode;
+    }
+
+    protected function getLiveMerchantId()
+    {
+        return $this->config['live_merchant_id'];
     }
 }

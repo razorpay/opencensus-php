@@ -12,4 +12,9 @@ class Confirmation
     // We use Y to generate bank_payment_id in callback response
     const YES     = 'Y';
     const NO      = 'N';
+
+    public static function getAuthSuccessStatus()
+    {
+        return self::YES;
+    }
 }

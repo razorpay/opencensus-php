@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'required|string',
         Entity::LOCATION_CODE         => 'required|string',
         Entity::EMPLOYEE_CODE         => 'required|string',
-        Entity::ROLES                 => 'sometimes|array',
+        Entity::ROLES                 => 'required|array|filled',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
@@ -55,7 +55,7 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'sometimes|string',
         Entity::LOCATION_CODE         => 'sometimes|string',
         Entity::EMPLOYEE_CODE         => 'sometimes|string',
-        Entity::ROLES                 => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array|filled',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
@@ -66,6 +66,12 @@ class Validator extends Base\Validator
     protected static $loginRules = [
         Entity::USERNAME              => 'required|email|max:255',
         Entity::PASSWORD              => 'required'
+    ];
+
+    protected static $passwordAuthRules = [
+        Entity::USERNAME              => 'required|alpha_dash|between:3,50',
+        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::PASSWORD_CONFIRMATION => 'required',
     ];
 
     protected static $resetRules = [
@@ -136,5 +142,33 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED);
         }
+    }
+
+    public function validatePasswordAuthType(
+        string $authType,
+        array $input)
+    {
+        if ($authType !== Org\AuthType::PASSWORD)
+        {
+            return;
+        }
+
+        $keys = [
+            Entity::USERNAME,
+            Entity::PASSWORD,
+            Entity::PASSWORD_CONFIRMATION,
+        ];
+
+        $adminInput = [];
+
+        foreach ($input as $key => $value)
+        {
+            if (in_array($key, $keys, true) === true)
+            {
+                $adminInput[$key] = $input[$key];
+            }
+        }
+
+        $this->validateInput('password_auth', $adminInput);
     }
 }

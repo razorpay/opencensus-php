@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Refund;
 use DB;
 use Mockery;
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
@@ -42,13 +45,15 @@ class RefundTest extends TestCase
 
     public function testRefund()
     {
+        Mail::fake();
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->mockDashboardRequest();
 //        $this->mockRefundEmail();
 
-        $refund = $this->startTest($payment['id'], (string)$payment['amount']);
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -57,6 +62,8 @@ class RefundTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals(true, $refund['gateway_refunded']);
+
+        Mail::assertSent(RefundedMail::class);
     }
 
     public function testRefundDirect()
@@ -175,25 +182,171 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['authorized']);
     }
 
-    public function testRefundOfMultipleAuthorizedPaymentsForOrder()
+    /**
+     * Tests if all the authorized payments of only paid order are getting
+     * refunded via CRON.
+     *
+     */
+    public function testRefundAuthorizedPaymentsOfPaidOrders()
     {
         $this->ba->appAuth();
-        $orders = $this->fixtures->times(2)->create('order');
 
-        $orderIdOne = $orders[0]->getId();
-        $orderIdTwo = $orders[1]->getId();
+        // Order 1: - Created, Partial payment allowed
+        //          - 2 Authorized payment exist, 1 Failed payment
+        //          - Payments NOT PICKED for refund
+        //
+        // Order 2: - Created
+        //          - 1 Authorized payment exist
+        //          - Payment NOT PICKED for refund
+        //
+        // Order 3: - Paid, Partial payment allowed
+        //          - 2 Captured payment exist
+        //          - Payments NOT PICKED for refund
+        //
+        // Order 4: - Paid
+        //          - 1 Captured payment exist
+        //          - Payment NOT PICKED for refund
+        //
+        // Order 5: - Paid, Partial payment allowed
+        //          - 2 Captured and 3 Authorized payments exist
+        //          - 3 Payments PICKED for refund
+        //
+        // Order 6: - Paid
+        //          - 1 Captured and 1 Authorized payment exist, 2 Failed payments
+        //          - 1 Payment PICKED for refund
+        //
+        // Order 7: - Attempted, Partial payment allowed
+        //          - 2 Captured and 2 Authorized payment exists
+        //          - Payments NOT PICKED for refund
 
-        // Card not getting created properly when using ->times(x)
-        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);
-        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);
 
-        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdTwo]);
-        $this->fixtures->payment->createAuthorized(['order_id' => $orderIdTwo]);
-        $this->fixtures->payment->createCaptured(['order_id' => $orderIdTwo]);
+        $order1 = $this->fixtures->order->create(['partial_payment' => true]);
+
+        $this->fixtures->times(2)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order1->getId(),
+                                        'amount'   => '500000',
+                                    ]);
+
+        $this->fixtures->times(1)->create(
+                                    'payment:failed',
+                                    [
+                                        'order_id' => $order1->getId(),
+                                        'amount'   => '500000',
+                                        'card_id'  => null,
+                                    ]);
+
+        $order2 = $this->fixtures->order->create();
+
+        $this->fixtures->times(1)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order2->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $order3 = $this->fixtures->order->createPaid(['partial_payment' => true]);
+
+        $this->fixtures->times(2)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order3->getId(),
+                                        'amount'   => '500000',
+                                    ]);
+
+        $order4 = $this->fixtures->order->createPaid();
+
+        $this->fixtures->times(1)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order4->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $order5 = $this->fixtures->order->createPaid(['partial_payment' => true]);
+
+        $this->fixtures->times(2)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order5->getId(),
+                                        'amount'   => '500000',
+                                    ]);
+
+        $this->fixtures->times(3)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order5->getId(),
+                                        'amount'   => '500000',
+                                    ]);
+
+        $order6 = $this->fixtures->order->createPaid();
+
+        $this->fixtures->times(1)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order6->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $this->fixtures->times(1)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order6->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $this->fixtures->times(2)->create(
+                                    'payment:failed',
+                                    [
+                                        'order_id' => $order1->getId(),
+                                        'amount'   => '500000',
+                                        'card_id'  => null,
+                                    ]);
+
+        $order7 = $this->fixtures->order->create(
+                                            [
+                                                'status'          => 'attempted',
+                                                'partial_payment' => true,
+                                            ]);
+
+        $this->fixtures->times(2)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order7->getId(),
+                                        'amount'   => '250000',
+                                    ]);
+
+        $this->fixtures->times(2)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order7->getId(),
+                                        'amount'   => '250000',
+                                    ]);
+
+        // Run test
 
         $testData = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($testData);
+
+        // Assert payment counts by status
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $authorizedCount = $capturedCount = $failedCount = $refundedCount = 0;
+
+        foreach ($payments['items'] as $payment)
+        {
+            $holder = $payment['status'] . 'Count';
+
+            $$holder += 1;
+        }
+
+        $this->assertEquals(5, $authorizedCount);
+        $this->assertEquals(9, $capturedCount);
+        $this->assertEquals(3, $failedCount);
+        $this->assertEquals(4, $refundedCount);
     }
 
     public function testRefundCreateOnGatewayForMissingRefunds()
@@ -367,6 +520,8 @@ class RefundTest extends TestCase
 
     public function testCreateMissingRefundTransaction()
     {
+        $this->markTestSkipped('Transactions are getting created now');
+
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
@@ -498,19 +653,20 @@ class RefundTest extends TestCase
                 Mockery::any(),
                 Mockery::on(function ($data)
                     {
-                        $testData = array(
-                            'payment'   =>  [
+                        $testData = [
+                            'payment' => [
                                 'amount'=>  'INR 500.00'
                             ],
-                            'merchant'  =>  [],
-                            'customer'   =>  [
-                                'email' =>  'a@b.com',
+                            'merchant' => [],
+                            'customer' => [
+                                'email' => 'a@b.com',
                                 'phone' => '9918899029'
                             ],
-                            'refund'  =>  [
+                            'refund'  => [
                                 'amount' => 'INR 500.00'
                             ]
-                        );
+                        ];
+
                         $this->assertArraySelectiveEquals($testData, $data);
 
                         return true;

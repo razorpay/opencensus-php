@@ -24,11 +24,11 @@ class RouteServiceProvider extends ServiceProvider
      * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    public function boot(Router $router)
+    public function boot()
     {
         $this->route = $this->app['api.route'];
 
-        parent::boot($router);
+        parent::boot();
     }
 
     /**
@@ -109,7 +109,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'api'],
             function ($router)
             {
-                $this->route->addRouteGroups(['internal', 'private', 'proxy', 'admin', 'device']);
+                $this->route->addRouteGroups(['internal', 'private', 'proxy', 'device', 'admin']);
             }
         );
     }

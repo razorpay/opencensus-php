@@ -28,8 +28,6 @@ class CreateSchedules extends Migration
 
             $table->char(Schedule::MERCHANT_ID, Schedule::ID_LENGTH);
 
-            $table->string(Schedule::TYPE, 15);
-
             $table->string(Schedule::PERIOD, 15);
 
             $table->tinyInteger(Schedule::INTERVAL)
@@ -41,11 +39,8 @@ class CreateSchedules extends Migration
             $table->tinyInteger(Schedule::HOUR)
                   ->default(0);
 
-            $table->tinyInteger(Schedule::DELAY);
-
-            // IST 2000-01-01 00:00:00
-            $table->integer(Schedule::NEXT_RUN)
-                  ->default(946665000);
+            $table->tinyInteger(Schedule::DELAY)
+                  ->default(0);
 
             $table->integer(Schedule::CREATED_AT);
             $table->integer(Schedule::UPDATED_AT);
@@ -54,27 +49,12 @@ class CreateSchedules extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->index(Schedule::TYPE);
             $table->index(Schedule::CREATED_AT);
-            $table->index(Schedule::NEXT_RUN);
 
             $table->foreign(Schedule::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-        });
-
-        Schema::table(Table::MERCHANT, function($table)
-        {
-            $table->char(Merchant::SETTLEMENT_SCHEDULE_ID, Merchant::ID_LENGTH)
-                  ->nullable()
-                  ->after(Merchant::SETTLEMENT_SCHEDULE);
-
-            $table->foreign(Merchant::SETTLEMENT_SCHEDULE_ID)
-                  ->references(Schedule::ID)
-                  ->on(Table::SCHEDULE)
-                  ->on_delete('restrict');
-
         });
     }
 
@@ -85,13 +65,6 @@ class CreateSchedules extends Migration
      */
     public function down()
     {
-        Schema::table(Table::MERCHANT, function($table)
-        {
-            $table->dropForeign(Table::MERCHANT . '_' . Merchant::SETTLEMENT_SCHEDULE_ID . '_foreign');
-
-            $table->dropColumn(Merchant::SETTLEMENT_SCHEDULE_ID);
-        });
-
         Schema::table(Table::SCHEDULE, function($table)
         {
             $table->dropForeign(Table::SCHEDULE.'_'.Schedule::MERCHANT_ID.'_foreign');

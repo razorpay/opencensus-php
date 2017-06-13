@@ -129,6 +129,12 @@ class Gateway
     protected $terminal;
 
     /**
+     * Laravel request class instance
+     * @var Request
+     */
+    protected $request;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -160,6 +166,8 @@ class Gateway
         $this->repo = $this->getRepository();
 
         $this->route = $this->app['api.route'];
+
+        $this->request = $this->app['request'];
     }
 
     public function authorize(array $input)
@@ -238,6 +246,12 @@ class Gateway
         $this->input = $input;
     }
 
+    public function verifyRefund(array $input)
+    {
+        throw new Exception\LogicException(
+            'Verify Refund is not implemented');
+    }
+
     public function canTopup()
     {
         return $this->topup;
@@ -279,14 +293,16 @@ class Gateway
         }
     }
 
-    protected function getCallbackResponseData(array $input)
+    protected function getCallbackResponseData(array $input, $response = [])
     {
+        $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
+
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
         {
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::UNAVAILABLE];
+            $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;
         }
 
-        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
+        return $response;
     }
 
     public function setInput(array $input)
@@ -326,6 +342,19 @@ class Gateway
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
+    }
+
+    protected function isSecondRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            (isset($input['token']) === true) and
+            ($input['token']->isRecurring() === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function generateRefunds($input)
@@ -403,7 +432,7 @@ class Gateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (Utility::checkActualTimeout($e))
+            if (Utility::checkTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
@@ -489,7 +518,7 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
-    public function preProcessS2sResponse($input)
+    public function preProcessServerCallback($input): array
     {
         return $input;
     }
@@ -533,7 +562,7 @@ class Gateway
             ]);
     }
 
-    protected function getPaymentToVerify($verify)
+    protected function getPaymentToVerify(Verify $verify)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                     $verify->input['payment']['id'], Action::AUTHORIZE);
@@ -818,6 +847,17 @@ class Gateway
     protected function getCacheKey($input)
     {
         return $this->gateway . '_' . $input['payment']['id'];
+    }
+
+    protected function isSecondRecurringPayment(array $input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getMappedAttributes($attributes)

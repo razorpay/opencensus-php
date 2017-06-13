@@ -23,10 +23,7 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         'RZP\Events\AuditLogEntry' => [
             'RZP\Listeners\AuditLogListener',
-        ],
-        'RZP\Events\DifferEvent' => [
-            'RZP\Listeners\DifferEventListener',
-        ],
+        ]
     ];
 
     /**
@@ -35,16 +32,12 @@ class EventServiceProvider extends ServiceProvider
      * @param  \Illuminate\Contracts\Events\Dispatcher  $events
      * @return void
      */
-    public function boot(DispatcherContract $events)
+    public function boot()
     {
-        parent::boot($events);
+        parent::boot();
 
         Queue::failing(function ($failedJob) {
             Trace::error(TraceCode::QUEUE_JOB_FAILURE, $failedJob->data);
-        });
-
-        Queue::looping(function ($failedJob) {
-            Trace::info(TraceCode::QUEUE_JOB_LOOPING);
         });
     }
 }

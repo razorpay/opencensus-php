@@ -132,6 +132,15 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getGatewayPaymentId()
+            ]
+        ];
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -582,7 +591,7 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRefundRequestContent($gatewayPayment, $input)
     {
-        $refundAmount = $input['refund']['amount']/100;
+        $refundAmount = $input['refund']['amount'] / 100;
 
         $content = [
             Req::API_ACTION         => 'refund',
@@ -652,7 +661,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
-        $amount = $input['payment']['amount']/100;
+        $amount = $input['payment']['amount'] / 100;
 
         $defaultContent = $this->getDefaultRequestContent();
 

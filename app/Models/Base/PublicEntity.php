@@ -19,6 +19,8 @@ class PublicEntity extends UniqueIdEntity
 
     protected static $delimiter = '_';
 
+    protected $hiddenInReport = [];
+
     /**
      * For an entity which is being exposed outside,
      * it is important to ensure that all the attributes
@@ -59,6 +61,19 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    /**
+     * When we are fetching diff for other entities while showing relations,
+     * this will help us to fetch data that is relevant to be shown in diff
+     */
+    public function toArrayDiff()
+    {
+        $attributes = $this->attributesToArray();
+
+        $this->setPublicAttributes($attributes);
+
+        return $this->arrangeDiffAttributes($attributes);
+    }
+
     public function toArrayReport()
     {
         $array = $this->toArrayPublic();
@@ -71,6 +86,12 @@ class PublicEntity extends UniqueIdEntity
             {
                 $array[$key] = $array[$key] / 100;
             }
+        }
+
+        // Remove fields hidden in reports
+        foreach ($this->getHiddenInReport() as $key)
+        {
+            unset($array[$key]);
         }
 
         $array[self::CREATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
@@ -120,10 +141,13 @@ class PublicEntity extends UniqueIdEntity
 
         foreach ($publicRelations as $key => $value)
         {
-            if (($value !== null) and
-                (PublicCollection::isPublicCollection($value) === true))
+            if (PublicCollection::isPublicCollection($value) === true)
             {
                 $array[$key] = $value->toArrayPublicEmbedded();
+            }
+            else if (static::isPublicEntity($value) === true)
+            {
+                $array[$key] = $value->toArrayPublic();
             }
             else
             {
@@ -157,6 +181,21 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return $publicArray;
+    }
+
+    protected function arrangeDiffAttributes(array $attributes)
+    {
+        $diffArray = [];
+
+        foreach ($this->diff as $attr)
+        {
+            if (array_key_exists($attr, $attributes))
+            {
+                $diffArray[$attr] = $attributes[$attr];
+            }
+        }
+
+        return $diffArray;
     }
 
     public function getPublicId()
@@ -254,6 +293,19 @@ class PublicEntity extends UniqueIdEntity
         return $newIds;
     }
 
+    public static function verifyIdAndSilentlyStripSignMultiple(array & $ids)
+    {
+        $newIds = array_map(function(&$id)
+        {
+            return static::verifyIdAndSilentlyStripSign($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
+    }
+
+
     protected static function stripSignOrFail(& $id)
     {
         if (static::stripSign($id) === false)
@@ -325,9 +377,23 @@ class PublicEntity extends UniqueIdEntity
         return static::getIdPrefix() . $id;
     }
 
+    public static function getSignedIdMultiple(array & $ids)
+    {
+        $newIds = array_map(function(& $id)
+        {
+            return static::getSignedId($id);
+        }, $ids);
+
+        $ids = $newIds;
+    }
+
     /**
      * Returns id with the sign prefix attached.
      * However, if the value is null, then simply return null.
+     *
+     * @param $id
+     *
+     * @return null|string
      */
     public static function getSignedIdOrNull($id)
     {
@@ -337,6 +403,11 @@ class PublicEntity extends UniqueIdEntity
     public function getEntity()
     {
         return $this->entity;
+    }
+
+    public function getHiddenInReport()
+    {
+        return $this->hiddenInReport;
     }
 
     public function getMerchantId()
@@ -374,5 +445,24 @@ class PublicEntity extends UniqueIdEntity
     public function toArrayDeleted()
     {
         return [static::ID => $this->getPublicId(), 'deleted' => true];
+    }
+
+    public function getPublicAttributes() : array
+    {
+        if (isset($this->public) === false)
+        {
+            return [];
+        }
+        return array_keys(array_flip($this->public));
+    }
+
+    public static function isPublicEntity($object) : bool
+    {
+        if (empty($object) === true)
+        {
+            return false;
+        }
+
+        return ($object instanceof self);
     }
 }

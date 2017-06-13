@@ -10,12 +10,16 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Jobs\RequestJob;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 use GuzzleHttp\Client;
 
 class EventTrackerClient extends Base\Core
 {
+    use DispatchesJobs;
+
     protected $mock;
 
     protected $request;
@@ -78,7 +82,7 @@ class EventTrackerClient extends Base\Core
      */
     public function buildRequestAndSend()
     {
-        $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
+        $url = $this->ljConfig['url'] . self::TRACK_EVENT_URLPATTERN;
 
         $headers = [
             'content-type'  => 'application/json',
@@ -116,16 +120,23 @@ class EventTrackerClient extends Base\Core
                 return;
             }
 
-            $options = ['json' => $eventData];
+            $request  = [
+                'method'    => 'post',
+                'url'       => $url,
+                'headers'   => $headers,
+                'content'   => json_encode($eventData),
+                'options'   => [
+                    'timeout' => 20
+                ],
+            ];
 
-            $client = new Client(['headers' => $headers, 'http_errors' => false]);
+            $job = new RequestJob($request);
 
-            $response = $client->request('POST', $url, $options);
-
+            $this->dispatch($job);
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_QUEUE_SEND_FAILED);
         }
         finally
         {
@@ -296,7 +307,7 @@ class EventTrackerClient extends Base\Core
             $properties = [
                 'payment_id'        => $payment->getPublicId(),
                 'merchant_id'       => $payment->merchant->getId(),
-                'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
+                'merchant_name'     => $payment->merchant->getBillingLabel(),
                 'amount'            => $payment->getAmount(),
                 'method'            => $payment->getMethod(),
                 'requestId'         => $this->request->getId(),
@@ -356,7 +367,8 @@ class EventTrackerClient extends Base\Core
                 'acquirer'  => $terminal->getGatewayAcquirer(),
                 'category'  => $terminal->getCategory(),
                 'shared'    => $terminal->getShared(),
-                'recurring' => $terminal->getRecurring(),
+                'type'      => $terminal->getType(),
+                'mode'      => $terminal->getMode(),
             ];
 
             return $data;
@@ -405,15 +417,13 @@ class EventTrackerClient extends Base\Core
      */
     protected function fetchPaymentAnalytics()
     {
-        $paymentId = $this->payment->getId();
+        $pa = $this->payment->analytics;
 
         // Return if no analytics entity for payment
-        if (count($this->payment->analytics()) === 0)
+        if ($pa === null)
         {
             return;
         }
-
-        $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
 
         $analytics = [];
 

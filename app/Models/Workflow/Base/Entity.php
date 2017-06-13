@@ -10,9 +10,14 @@ use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Admin\Permission;
 
 class Entity extends BaseModel\PublicEntity
 {
+    const ORG_ID            = 'org_id';
+    const STEP_ID           = 'step_id';
+    const PERMISSION_ID     = 'permission_id';
+
     public function setPublicOrgIdAttribute(array &$attributes)
     {
         $orgId = $this->getAttribute(static::ORG_ID);
@@ -30,6 +35,16 @@ class Entity extends BaseModel\PublicEntity
         if ($roleId !== null)
         {
             $attributes[Step\Entity::ROLE_ID] = Role\Entity::getSignedId($roleId);
+        }
+    }
+
+    public function setPublicStepIdAttribute(array &$attributes)
+    {
+        $stepId = $this->getAttribute(static::STEP_ID);
+
+        if ($stepId !== null)
+        {
+            $attributes[static::STEP_ID] = Step\Entity::getSignedId($stepId);
         }
     }
 
@@ -60,6 +75,16 @@ class Entity extends BaseModel\PublicEntity
         if ($actionId !== null)
         {
             $attributes[Comment\Entity::ACTION_ID] = Action\Entity::getSignedId($actionId);
+        }
+    }
+
+    public function setPublicPermissionIdAttribute(array &$attributes)
+    {
+        $permissionId = $this->getAttribute(static::PERMISSION_ID);
+
+        if ($permissionId !== null)
+        {
+            $attributes[static::PERMISSION_ID] = Permission\Entity::getSignedId($permissionId);
         }
     }
 }

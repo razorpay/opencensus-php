@@ -21,7 +21,7 @@ class Status
     const REFUNDED         = 'refunded';
     const REFUND_FAILED    = 'refund_failed';
     const REVERSED         = 'reversed';
-    const REVERSED_FAILED  = 'reversed_failed';
+    const REVERSE_FAILED   = 'reverse_failed';
     const VOIDED           = 'voided';
     const VOID_FAILED      = 'void_failed';
 }

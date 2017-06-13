@@ -14,11 +14,15 @@ class PermissionSeeder extends Seeder
 
     protected static $permissionIds;
 
+    protected static $enableWorkflowPermissions;
+
     public function __construct()
     {
         self::$permissions = Config::get('heimdall.permissions');
 
-        self::$assignablePermissions = Config::get('heimdall.assignablePermissions');
+        self::$assignablePermissions = Config::get('heimdall.assignable_permissions');
+
+        self::$enableWorkflowPermissions = Config::get('heimdall.enable_workflow_permissions');
     }
 
     /**
@@ -41,7 +45,9 @@ class PermissionSeeder extends Seeder
 
         $assignablePermissions = self::$assignablePermissions;
 
-        DB::transaction(function() use ($permissions, $assignablePermissions)
+        $enableWorkflowPermissions = self::$enableWorkflowPermissions;
+
+        DB::transaction(function() use ($permissions, $assignablePermissions, $enableWorkflowPermissions)
         {
             $index = 0;
 
@@ -71,22 +77,27 @@ class PermissionSeeder extends Seeder
                         'updated_at'  => time(),
                     ]);
 
+
                     DB::table(Table::PERMISSION_MAP)->insert([
-                        [
-                            'permission_id'     => $id,
-                            'entity_id'         => '6dLbNSpv5XbC5E',
-                            'entity_type'       => 'role',
-                        ]
+                        'permission_id'     => $id,
+                        'entity_id'         => '6dLbNSpv5XbC5E',
+                        'entity_type'       => 'role',
                     ]);
 
+                    $data = [
+                        'permission_id' => $id,
+                        'entity_id'     => '100000razorpay',
+                        'entity_type'   => 'org',
+                    ];
+
+                    if (isset($enableWorkflowPermissions[$category]) and
+                        isset($enableWorkflowPermissions[$category][$permission]))
+                    {
+                        $data['enable_workflow'] = 1;
+                    }
+
                     // Razorpay Org will have all permissions
-                    DB::table(Table::PERMISSION_MAP)->insert([
-                        [
-                            'permission_id' => $id,
-                            'entity_id'     => '100000razorpay',
-                            'entity_type'   => 'org',
-                        ]
-                    ]);
+                    DB::table(Table::PERMISSION_MAP)->insert($data);
 
                     // For trimmed down ones (like HDFC)
                     if (isset($assignablePermissions[$category]) and

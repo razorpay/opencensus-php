@@ -5,7 +5,6 @@ namespace RZP\Http\Response;
 use App;
 use View;
 use Request;
-use BasicAuth;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
@@ -19,6 +18,11 @@ class Response
     protected $jsonp;
 
     /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
+
+    /**
      * In case the callback parameter in the query string
      * is invalid like ?callback=<script>
      * We will use this instead
@@ -30,6 +34,8 @@ class Response
         $this->app = $app;
 
         $this->request = $app['request'];
+
+        $this->ba = $app['basicauth'];
     }
 
     /**
@@ -101,7 +107,7 @@ class Response
 
     public function getErrorResponseFields($error, $debug = false)
     {
-        $isPublicAuth = BasicAuth::isPublicAuth();
+        $isPublicAuth = $this->ba->isPublicAuth();
 
         if (($error instanceof Error) === false)
         {
@@ -139,15 +145,19 @@ class Response
                     ],
                 );
 
-                return \View::make('gateway.callbackReturnUrl')
-                            ->with('data', $callbackArray);
+                $view = \View::make('gateway.callbackReturnUrl')
+                            ->with('data', $callbackArray)->render();
+
+                return \Response::make($view);
             }
         }
         else if ($this->isCallbackRoute($route))
         {
             $data['http_status_code'] = $status;
 
-            return \View::make('gateway.callback')->with('data', $data);
+            $view = \View::make('gateway.callback')->with('data', $data)->render();
+
+            return \Response::make($view);
         }
         else if ($this->isCheckoutRoute($route))
         {
@@ -232,8 +242,11 @@ class Response
 
     protected function generateCheckoutView($data)
     {
-        return \View::make('checkout.checkout')
-                    ->with($data);
+        $view = \View::make('checkout.checkout')
+                     ->with($data)
+                     ->render();
+
+        return \Response::make($view);
     }
 
     protected function isJsonpRequired($path)

@@ -16,9 +16,7 @@ trait PaymentFirstDataTrait
 
         if ($mock)
         {
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
-
-            return $this->submitPaymentCallbackRequest($request);
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
 
         return $this->submitPaymentCallbackRedirect($url);
@@ -28,8 +26,11 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['approval_code'] = 'N:87:Bad Track Data';
-            $content['status'] = 'DECLINED';
+            if (is_array($content) === true)
+            {
+                $content['approval_code'] = 'N:87:Bad Track Data';
+                $content['status']        = 'DECLINED';
+            }
         });
     }
 
@@ -37,10 +38,13 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['approval_code'] = null;
-            $content['fail_rc']       = '5003';
-            $content['fail_reason']   = 'The order already exists in the database.';
-            $content['status']        = 'FAILED';
+            if (is_array($content) === true)
+            {
+                $content['approval_code'] = null;
+                $content['fail_rc']       = '5003';
+                $content['fail_reason']   = 'The order already exists in the database.';
+                $content['status']        = 'FAILED';
+            }
         });
     }
 
@@ -48,7 +52,10 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['approval_code'] = null;
+            if (is_array($content) === true)
+            {
+                $content['approval_code'] = null;
+            }
         });
     }
 
@@ -56,8 +63,11 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['approval_code'] = "N:666:Devil's Own Error";
-            $content['status'] = 'DECLINED';
+            if (is_array($content) === true)
+            {
+                $content['approval_code'] = "N:666:Devil's Own Error";
+                $content['status']        = 'DECLINED';
+            }
         });
     }
 
@@ -65,7 +75,7 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['ApprovalCode'] = 'N:-5008:Order does not exist.';
+            $content['ApprovalCode']      = 'N:-5008:Order does not exist.';
             $content['TransactionResult'] = 'FAILED';
         });
     }
@@ -74,7 +84,7 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['ApprovalCode'] = 'N:-10503:Invalid amount or currency';
+            $content['ApprovalCode']      = 'N:-10503:Invalid amount or currency';
             $content['TransactionResult'] = 'FAILED';
         });
     }

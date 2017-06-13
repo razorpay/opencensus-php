@@ -13,9 +13,14 @@ class DefaultConnection
     {
         $currentRoute = Route::currentRouteName();
 
-        $slaveRoutes = [];//Route::getSlaveRoutes();
+        // adding namespace above causes conflicts on Route class
+        $slaveRoutes = \RZP\Http\Route::getSlaveRoutes();
 
-        if (in_array($currentRoute, $slaveRoutes) === true)
+        // In the testing environment, we can't set slave connection because all
+        // entitites created during test execution are not commited and we can't
+        // fetch them using a different slave connection
+        if ((\App::getFacadeRoot()['env'] !== 'testing') and
+            (in_array($currentRoute, $slaveRoutes) === true))
         {
             self::setSlaveConnection($mode);
             return;
@@ -35,7 +40,6 @@ class DefaultConnection
             Config::set('database.default', 'slave-live');
         }
     }
-
 
     public static function setMasterConnection($mode)
     {

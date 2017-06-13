@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -24,7 +26,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
     }
 
     public function testPayment()
@@ -39,6 +41,10 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
     }
 
     public function testTpvPayment()
@@ -73,7 +79,11 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals($gatewayEntity['account_number'],
                             $data['request']['content']['account_number']);
 
-        $this->assertEquals($gatewayEntity['status'], 'Y');
+        $this->assertEquals('Y', $gatewayEntity['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
 
         $order = $this->getLastEntity('order', true);
 
@@ -94,13 +104,21 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
+
+        $this->assertEquals($gatewayEntity['reference1'], $verifyResponseContent['ITC']);
+
         $order = $this->getLastEntity('order', true);
 
         $data = $this->testData[__FUNCTION__];
 
         $this->assertEquals($gatewayEntity['account_number'], $data['account_number']);
 
-        $this->assertEquals($gatewayEntity['status'], 'Y');
+        $this->assertEquals('Y', $gatewayEntity['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
 
         $this->assertArraySelectiveEquals($data, $order);
     }
@@ -111,13 +129,56 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->mockSetBankPaymentId();
 
-        $content = $this->verifyPayment($payment['razorpay_payment_id']);
+        $verify = $this->verifyPayment($payment['razorpay_payment_id']);
 
-        assert($content['payment']['verified'] === 1);
+        assert($verify['payment']['verified'] === 1);
+
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'Y');
+        $this->assertEquals($gatewayPayment['reference1'], $verifyResponseContent['ITC']);
+
+        $this->assertEquals('Y', $gatewayPayment['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayPayment['reference1']);
+    }
+
+    /**
+     * This is to test that the payments before April 20th @ 2pm are verified
+     * with the ITC parameter set as caps_payment_id
+     */
+    public function testOldPaymentVerify()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit(
+            'payment',
+            $payment['id'],
+            [
+                'created_at'    => 1481696800,
+                'authorized_at' => 1481696810,
+                'captured_at'   => 1481696820
+            ]
+        );
+
+        $this->mockSetBankPaymentId();
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['caps_payment_id'], $verifyResponseContent['ITC']);
+
+        $this->assertEquals('Y', $gatewayPayment['status']);
     }
 
     public function testRefundInFull()
@@ -158,26 +219,30 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testDailyFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundForFileGeneration($payments);
 
-        $this->checkMailQueue();
-
-        $data = $this->generateRefundsExcelForNb('UTIB');
+        $data = $this->generateRefundsExcelForNB('UTIB');
 
         $this->checkRefundTextData($data);
+
+        $this->checkMailQueue();
     }
 
     public function testEmptyDailyFileGeneration()
     {
-        $payments = $this->createPaymentsToClaim();
+        Mail::fake();
 
-        $this->checkEmptyRefundsMailQueue();
+        $payments = $this->createPaymentsToClaim();
 
         $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkEmptyRefundTextData($data);
+
+        $this->checkEmptyRefundsMailQueue();
     }
 
     public function testFailedAuthPayment()
@@ -248,7 +313,11 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'Y');
+        $this->assertEquals('Y', $gatewayPayment['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayPayment['reference1']);
     }
 
     protected function createPaymentsToClaim()
@@ -298,69 +367,57 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        // Amounts are in rupees
-                        $testData = array(
-                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                            'amount' => [
-                                'claims'  => 1500,
-                                'refunds' => 500,
-                                'total'   => 1000,
-                            ],
-                            'count'   => [
-                                'claims'  => 3,
-                                'refunds' => 2,
-                                'total'   => 5
-                            ]
-                        );
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 500,
+                    'total'   => 1000,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 2,
+                    'total'   => 5
+                ]
+        ];
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+        // Mail catch with amount and refund everywhere
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkEmptyRefundsMailQueue()
     {
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        // Amounts are in rupees
-                        $testData = array(
-                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                            'amount' => [
-                                'claims'  => 1500,
-                                'refunds' => 0,
-                                'total'   => 1500,
-                            ],
-                            'count'   => [
-                                'claims'  => 3,
-                                'refunds' => 0,
-                                'total'   => 3
-                            ]
-                        );
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 0,
+                    'total'   => 1500,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 0,
+                    'total'   => 3
+                ]
+        ];
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkRefundTextData($data)

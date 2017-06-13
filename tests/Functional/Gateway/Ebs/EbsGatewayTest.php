@@ -268,15 +268,11 @@ class EbsGatewayTest extends TestCase
 
         $this->getErrorInRefund();
 
-        $data = $this->testData['testPaymentInvalidRefund'];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundPayment($payment['id']);
-        });
+        $refund = $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('ebs', true);
-        $this->assertEquals($refund['error_code'], "29");
-        $this->assertEquals($refund['error_description'], "Insufficient balance");
+        $this->assertEquals($refund['error_code'], '29');
+        $this->assertEquals($refund['error_description'], 'Insufficient balance');
     }
 
     public function testPaymentVerify()

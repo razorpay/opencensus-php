@@ -9,13 +9,13 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 trait EntityFetchTrait
 {
-    protected function getLastEntity($entity, $admin = false)
+    protected function getLastEntity($entity, $admin = false, $mode = 'test')
     {
         $this->ba->appAuth();
 
         $input = array('count' => 1);
 
-        $content = $this->getEntities($entity, $input, $admin);
+        $content = $this->getEntities($entity, $input, $admin, $mode);
 
         if ($content['count'])
             return $content['items'][0];
@@ -23,15 +23,19 @@ trait EntityFetchTrait
         return null;
     }
 
-    protected function getEntities(string $entity, array $input = array(), $admin = false)
+    protected function getEntities(string $entity, array $input = array(), $admin = false, $mode = 'test')
     {
-        $this->ba->proxyAuth();
+        $proxyAuth = 'proxyAuth' . camel_case($mode);
+
+        $this->ba->$proxyAuth();
 
         $url = '/'.$entity.'s';
 
         if ($admin)
         {
-            $this->ba->appAuth();
+            $appAuth = 'appAuth' . camel_case($mode);
+
+            $this->ba->$appAuth();
 
             $url = '/admin/'.$entity;
         }

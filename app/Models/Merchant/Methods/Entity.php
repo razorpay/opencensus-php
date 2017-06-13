@@ -22,10 +22,12 @@ class Entity extends Base\PublicEntity
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
     const OPENWALLET        = 'openwallet';
+    const MPESA             = 'mpesa';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
+    const AEPS              = 'aeps';
 
     const METHODS           = 'methods';
 
@@ -37,7 +39,7 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::AMEX,
         self::BANKS,
@@ -50,14 +52,16 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::MERCHANT_ID,
         self::CARD,
         self::AMEX,
@@ -71,16 +75,38 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
+        self::MERCHANT_ID,
+        self::CARD,
+        self::AMEX,
+        self::BANKS,
+        self::PAYTM,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+        self::MOBIKWIK,
+        self::OLAMONEY,
+        self::JIOMONEY,
+        self::OPENWALLET,
+        self::MPESA,
+        self::EMI,
+        self::UPI,
+        self::AEPS,
+        self::NETBANKING,
+        self::DEBIT_CARD,
+        self::CREDIT_CARD,
         self::ENTITY,
-        self::METHODS);
+    ];
 
     protected $defaults = array(
         self::AMEX          => false,
@@ -93,9 +119,11 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE    => false,
         self::JIOMONEY      => false,
         self::OPENWALLET    => false,
+        self::MPESA         => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
+        self::AEPS          => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -111,6 +139,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
     );
 
     protected static $methods = array(
@@ -118,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::AMEX,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -126,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::MPESA,
     );
 
     // Casts the attributes to native types
@@ -143,8 +174,10 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE  => 'bool',
         self::JIOMONEY    => 'bool',
         self::OPENWALLET  => 'bool',
+        self::MPESA       => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
+        self::AEPS        => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -181,6 +214,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isAepsEnabled()
+    {
+        return $this->getAttribute(self::AEPS);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -229,6 +267,11 @@ class Entity extends Base\PublicEntity
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function isMpesaEnabled()
+    {
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()
@@ -458,6 +501,17 @@ class Entity extends Base\PublicEntity
 
         // Unsetting AIRP for now
         unset($names['AIRP']);
+
+        //
+        // Disabling HDFC netbanking for FxKart's two accounts
+        // Ref: https://razorpay.slack.com/archives/C0432SCD5/p1497018993519190
+        //
+        $fxKartMerchantIds = ['7dTJ1BmaZs62wG', '7b0Hl7t1Q5EnHo'];
+
+        if (in_array($this->getMerchantId(), $fxKartMerchantIds, true) === true)
+        {
+            unset($names['HDFC']);
+        }
 
         return $names;
     }

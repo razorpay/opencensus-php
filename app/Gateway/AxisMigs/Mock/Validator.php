@@ -12,6 +12,23 @@ class Validator extends Base\Validator
         'vpc_Currency'              => 'required|in:INR|max:3',
         'vpc_MerchTxnRef'           => 'required|alpha_num|size:14',
         'vpc_Version'               => 'required|in:1',
+        'vpc_Locale'                => 'required|in:en',
+        'vpc_CardNum'               => 'required|numeric|luhn|digits_between:12,19',
+        'vpc_CardExp'               => 'required|size:4',
+        'vpc_Merchant'              => 'required|alpha_num|max:16',
+        'vpc_AccessCode'            => 'required|alpha_num|size:8',
+        'vpc_SecureHash'            => 'required|alpha_num|size:64',
+        'vpc_SecureHashType'        => 'required|in:SHA256',
+        'vpc_User'                  => 'required|string',
+        'vpc_Password'              => 'required|string'
+    ];
+
+    protected static $authenticateRules = [
+        'vpc_Command'               => 'required|in:pay',
+        'vpc_Amount'                => 'required|integer',
+        'vpc_Currency'              => 'required|in:INR|max:3',
+        'vpc_MerchTxnRef'           => 'required|alpha_num|size:14',
+        'vpc_Version'               => 'required|in:1',
         'vpc_ReturnURL'             => 'required|url',
         'vpc_Locale'                => 'required|in:en',
         'vpc_gateway'               => 'required|in:ssl,threeDSecure',
@@ -67,7 +84,6 @@ class Validator extends Base\Validator
     protected static $verifyRules = [
         'vpc_Command'               => 'required|in:queryDR',
         'vpc_MerchTxnRef'           => 'required|alpha_num|size:14',
-        'vpc_Amount'                => 'required|integer',
         'vpc_Version'               => 'required|in:1',
         'vpc_Merchant'              => 'required|alpha_num|max:16',
         'vpc_AccessCode'            => 'required|alpha_num|size:8',

@@ -48,6 +48,7 @@ return [
                 'supervisor_code'       => 'shk',
                 'location_code'         => '560030',
                 'department_code'       => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
             ],
         ],
         'response'  => [
@@ -83,6 +84,7 @@ return [
                 'supervisor_code'       => 'shk',
                 'location_code'         => '560030',
                 'department_code'       => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
             ],
         ],
         'response'  => [
@@ -118,6 +120,7 @@ return [
                 'supervisor_code'       => 'shk',
                 'location_code'         => '560030',
                 'department_code'       => 'tech',
+                'roles'                 => ['role_RzpMngerRoleId'],
             ],
         ],
         'response'  => [
@@ -140,8 +143,8 @@ return [
             'url' => '/orgs/%s/admin/authenticate',
             'method' => 'post',
             'content' => [
-                'username'                 => 'randomemail@rzp.com',
-                'password'              => 'test123456'
+                'username'  => 'randomemail@rzp.com',
+                'password'  => 'test123456'
             ],
         ],
         'response'  => [

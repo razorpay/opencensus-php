@@ -6,6 +6,8 @@ use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
+
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Terminal\Options;
@@ -95,6 +97,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        Mail::fake();
+
         // Generate 2 payments
         $this->createRefundsForExcel();
 
@@ -104,12 +108,12 @@ class NetbankingIciciGatewayTest extends TestCase
         // date to now unlike first 2 payments
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
-        $this->checkMailQueue();
-
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForNB('ICIC');
 
         $this->checkRefundFileData($data);
+
+        $this->checkMailQueue();
     }
 
     public function testTpvPayment()
@@ -170,6 +174,21 @@ class NetbankingIciciGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['razorpay_payment_id']);
             });
+    }
+
+    public function testEmptyVerifyResponse()
+    {
+        $data = $this->testData['testFailedPaymentEmptyVerify'];
+
+        $this->testFailedAuthPayment();
+
+        $this->mockNullVerifyResponse();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertArraySelectiveEquals($data, $verify);
     }
 
     public function testAuthResponseDecryptionFailure()
@@ -253,23 +272,20 @@ class NetbankingIciciGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
+        Mail::assertSent(RefundFileMail::class, function ($mail)
+        {
+            $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
 
-                        $this->assertEquals(1000.00, $data['amount']);
-                        $this->assertEquals('3', $data['count']);
-                        $this->assertEquals($date, $data['date']);
+            $this->assertEquals($body, $mail->viewData['body']);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            $this->assertEquals('1000.00', $mail->viewData['amount']);
+
+            $this->assertEquals('3', $mail->viewData['count']);
+
+            $this->assertEquals('emails.admin.icici_refunds', $mail->view);
+
+            return true;
+        });
     }
 
     protected function mockPaymentFailure()
@@ -285,6 +301,14 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['STATUS'] = 'FAILED';
+        });
+    }
+
+    protected function mockNullVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = "";
         });
     }
 

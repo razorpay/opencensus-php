@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         if (in_array($state, self::VALID_ACTION_STATES, true) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_INVALID_STATE,
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_INVALID_STATE, null,
                 ['state' => $state]);
         }
     }

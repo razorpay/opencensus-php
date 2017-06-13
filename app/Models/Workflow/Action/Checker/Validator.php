@@ -40,7 +40,7 @@ class Validator extends Base\Validator
             ];
 
             throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_INVALID_CHECKER,
+                ErrorCode::BAD_REQUEST_WORKFLOW_INVALID_CHECKER, null,
                 $data);
         }
     }

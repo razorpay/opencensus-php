@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call('PermissionSeeder');
         $this->call('GroupMapSeeder');
         $this->call('WorkflowSeeder');
+        $this->call('TaxGroupAndTaxSeeder');
     }
 
     private function seed()
@@ -59,6 +60,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'       => $currentTime,
                     'updated_at'       => $currentTime,
                     'cross_org_access' => true,
+                    'custom_code'      => 'rzp',
                 ]
             );
 
@@ -75,6 +77,7 @@ class DatabaseSeeder extends Seeder
                     'main_logo_url'     => null,
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
+                    'custom_code'      => 'hdfc',
                 ]
             );
 
@@ -277,6 +280,43 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  $currentTime,
                     )
                 );
+
+            DB::table(Table::USER)->insert([
+                'id'             => '20000000000000',
+                'name'           => 'Test User Account',
+                'email'          => 'test@razorpay.com',
+                'password'       => Hash::make('123456'),
+                'contact_mobile' => '9999999999',
+                'created_at'     => '1451606400', //1st Jan 2016.
+                'updated_at'     => '1451606400'
+            ]);
+
+            DB::table(Table::USER)->insert([
+                'id'             => '20000000000001',
+                'name'           => 'Test User Account2',
+                'email'          => 'test2@razorpay.com',
+                'password'       => Hash::make('123456'),
+                'contact_mobile' => '9999999999',
+                'created_at'     => '1451606400',
+                'updated_at'     => '1451606400'
+            ]);
+
+            DB::table(Table::MERCHANT_USERS)->insert([
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                    'user_id'     => '20000000000000',
+                    'role'        => 'owner',
+                    'created_at'  => '1451606400',
+                    'updated_at'  => '1451606400'
+                ],
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                    'user_id'     => '20000000000001',
+                    'role'        => 'manager',
+                    'created_at'  => '1451606400',
+                    'updated_at'  => '1451606400'
+                ]
+            ]);
 
             DB::table(Table::BALANCE)->insert(
                 array(
@@ -499,6 +539,15 @@ class DatabaseSeeder extends Seeder
                     'updated_at'          => $todayTime,
                     'allow_all_merchants' => true,
                 ]
+            ]);
+
+            // for curl/postman testing purposes
+            DB::table(Table::ADMIN_TOKEN)->insert([
+                    'id'                  => '7gyptrWlOKu6z9',
+                    'admin_id'            => '6dLbNSpv5Ycccc',
+                    'token'               => '1234567',
+                    'created_at'          => time(),
+                    'updated_at'          => time(),
             ]);
 
             DB::table(Table::ROLE)->insert([
@@ -749,6 +798,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '1n25f6uN5S1Z5a',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_hdfc',
                 'gateway_terminal_id'   => 'test_terminal_hdfc',
@@ -779,6 +829,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '1pnP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AXIS_MIGS,
+                'gateway_acquirer'      => 'axis',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_axis_migs',
                 'gateway_terminal_id'   => 'test_terminal_axis_migs',
@@ -824,6 +875,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '1VwJebUIU7hIhU',
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_hdfc',
                 'gateway_terminal_id'   => 'demo_terminal_hdfc',
@@ -869,6 +921,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::AXIS_MIGS,
+                'gateway_acquirer'      => 'axis',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_axis_migs',
                 'gateway_terminal_id'   => 'shared_terminal_axis_migs',
@@ -884,6 +937,7 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::FIRST_DATA,
+                'gateway_acquirer'          => 'icic',
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
                 'created_at'                => time(),
@@ -926,6 +980,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => 'djfksjfksjfdkj',
                 'merchant_id'           => Account::SHARED_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
                 'emi'                   => '1',
                 'shared'                => '1',
                 'emi_duration'          => 9,
@@ -971,12 +1026,14 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingFederalTerminal();
+        $this->createNetbankingIndusindTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
         $this->createFreechargeTerminals();
         $this->createJiomoneyTerminals();
         $this->createOpenwalletTerminals();
+        $this->createVodafoneMpesaTerminal();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -1020,6 +1077,7 @@ class DatabaseSeeder extends Seeder
             'id'                        => '1VwJebUIU7hIhd',
             'merchant_id'               => Account::TEST_ACCOUNT,
             'gateway'                   => Gateway::CYBERSOURCE,
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => '1',
             'gateway_merchant_id'       => 'test_merchant_cybersource',
             'gateway_terminal_id'       => 'test_terminal_cybersource',
@@ -1033,6 +1091,7 @@ class DatabaseSeeder extends Seeder
             'id'                        => Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL,
             'merchant_id'               => Account::DEMO_ACCOUNT,
             'gateway'                   => Gateway::CYBERSOURCE,
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => '1',
             'gateway_merchant_id'       => 'demo_merchant_cybersource',
             'gateway_terminal_id'       => 'demo_terminal_cybersource',
@@ -1248,11 +1307,28 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_federal',
-                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_federal_terminal_pass'),
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
+        );
+    }
+
+    protected function createNetbankingIndusindTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_INDUSIND_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_INDUSIND,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_indusind',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_indusind_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
         );
     }
 
@@ -1263,6 +1339,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '2eBIhcdN74TBMd',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AMEX,
+                'gateway_acquirer'      => 'amex',
                 'card'                  => '1',
                 'netbanking'            => '0',
                 'gateway_merchant_id'   => 'test_merchant_amex',
@@ -1279,6 +1356,7 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::AMEX_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::AMEX,
+                'gateway_acquirer'          => 'amex',
                 'card'                      => '0',
                 'netbanking'                => '0',
                 'gateway_merchant_id'       => 'demo_merchant_amex',
@@ -1537,6 +1615,23 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => null,
                 'gateway_terminal_password' => null,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createVodafoneMpesaTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::MPESA_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_MPESA,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'random_merchant_id',
+                'gateway_secure_secret'     => Crypt::encrypt('demo_account_mpesa_secure_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

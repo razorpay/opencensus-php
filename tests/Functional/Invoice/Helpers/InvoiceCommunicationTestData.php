@@ -28,10 +28,9 @@ return [
         'response' => [
             'content' => [
                 'customer_details' => [
-                    'customer_email'   => 'test@razorpay.com',
-                    'customer_contact' => '9999999999',
-                    'customer_name'    => 'test',
-                    'customer_address' => null,
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
                 ],
                 'status'       => 'issued',
                 'sms_status'   => 'pending',
@@ -63,10 +62,9 @@ return [
         'response' => [
             'content' => [
                 'customer_details' => [
-                    'customer_email'   => 'test@razorpay.com',
-                    'customer_contact' => '9999999999',
-                    'customer_name'    => 'test',
-                    'customer_address' => null,
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
                 ],
                 'status'       => 'issued',
                 'sms_status'   => null,
@@ -98,10 +96,9 @@ return [
         'response' => [
             'content' => [
                 'customer_details' => [
-                    'customer_email'   => null,
-                    'customer_contact' => '9999999999',
-                    'customer_name'    => 'test',
-                    'customer_address' => null,
+                    'email'   => null,
+                    'contact' => '9999999999',
+                    'name'    => 'test',
                 ],
                 'status'       => 'issued',
                 'sms_status'   => 'pending',
@@ -131,10 +128,9 @@ return [
         'response' => [
             'content' => [
                 'customer_details' => [
-                    'customer_email'   => null,
-                    'customer_contact' => null,
-                    'customer_name'    => 'test',
-                    'customer_address' => null,
+                    'email'   => null,
+                    'contact' => null,
+                    'name'    => 'test',
                 ],
                 'status'       => 'issued',
                 'sms_status'   => 'pending',
