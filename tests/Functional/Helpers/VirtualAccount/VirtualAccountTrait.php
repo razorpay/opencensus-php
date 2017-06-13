@@ -26,8 +26,11 @@ trait VirtualAccountTrait
     private function closeVirtualAccount($id)
     {
         $request = [
-            'method'  => 'DELETE',
+            'method'  => 'PUT',
             'url'     => '/virtual_accounts/'.$id,
+            'content' => [
+                'status' => 'closed',
+            ],
         ];
 
         $this->ba->privateAuth();

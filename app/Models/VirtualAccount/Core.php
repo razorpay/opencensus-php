@@ -23,4 +23,13 @@ class Core extends Base\Core
 
         return $virtualAccount;
     }
+
+    public function edit(Entity $virtualAccount, array $input)
+    {
+        $virtualAccount->edit($input);
+
+        $this->repo->saveOrFail($virtualAccount);
+
+        return $virtualAccount;
+    }
 }

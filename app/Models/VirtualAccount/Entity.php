@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::NAME,
+        self::STATUS,
         self::DESCRIPTOR,
         self::AMOUNT_EXPECTED,
     ];

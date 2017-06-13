@@ -166,10 +166,10 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
-        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'BankTransferController@validateBankTransfer'                       ],
-        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'BankTransferController@payBankTransfer'                            ],
+        'bank_transfer_validate'                  => ['post',     'ecollect/validate',                              'BankTransferController@validateBankTransfer'                       ],
+        'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@payBankTransfer'                            ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@createVirtualAccount'                     ],
-        'virtual_account_close'                   => ['delete',   'virtual_accounts/{id}',                          'VirtualAccountController@closeVirtualAccount'                      ],
+        'virtual_account_edit'                    => ['put',      'virtual_accounts/{id}',                          'VirtualAccountController@editVirtualAccount'                       ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@getVirtualAccount'                        ],
         'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@getVirtualAccounts'                       ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
@@ -721,7 +721,7 @@ final class Route
         'tax_group_update',
         'tax_group_delete',
         'virtual_account_create',
-        'virtual_account_close',
+        'virtual_account_edit',
         'virtual_account_fetch',
         'virtual_account_fetch_multiple',
         'transfer_fetch_reversals',
@@ -827,8 +827,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
-        'ecollect_validate',
-        'ecollect_pay',
+        'bank_transfer_validate',
+        'bank_transfer_notify',
         'iin_fetch_by_iin',
         'card_update_saved',
         'iin_fetch_multiple',
@@ -1242,18 +1242,18 @@ final class Route
         ],
 
         'kotak' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_validate',
+            'bank_transfer_notify',
         ],
 
         'yesbank' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_validate',
+            'bank_transfer_notify',
         ],
 
         'vvs' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_validate',
+            'bank_transfer_notify',
         ],
 
         'mailgun' => [

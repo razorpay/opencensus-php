@@ -61,16 +61,14 @@ class Service extends Base\Service
         return $virtualAccounts->toArrayPublic();
     }
 
-    public function closeVirtualAccount(string $id)
+    public function editVirtualAccount(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);
 
         $virtualAccount = $this->repo->virtual_account
                                ->findOrFailPublicWithRelations($id, ['bankAccount']);
 
-        $virtualAccount->setStatus(Status::CLOSED);
-
-        $this->repo->saveOrFail($virtualAccount);
+        $this->core->edit($virtualAccount, $input);
 
         return $virtualAccount->toArrayPublic();
     }
@@ -92,8 +90,7 @@ class Service extends Base\Service
 
     protected function setDefaultReceiverTypeIfNeeded(array & $input)
     {
-        if ((isset($input[Entity::RECEIVER_TYPE]) === false) or
-            (empty($input[Entity::RECEIVER_TYPE]) === true))
+        if (empty($input[Entity::RECEIVER_TYPE]) === true)
         {
             $input[Entity::RECEIVER_TYPE] = self::DEFAULT_RECEIVER_TYPE;
         }

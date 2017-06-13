@@ -25,9 +25,11 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function closeVirtualAccount($id)
+    public function editVirtualAccount($id)
     {
-        $response = $this->service()->closeVirtualAccount($id);
+        $input = Request::all();
+
+        $response = $this->service()->editVirtualAccount($id, $input);
 
         return ApiResponse::json($response);
     }
