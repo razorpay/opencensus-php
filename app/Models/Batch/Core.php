@@ -235,10 +235,7 @@ class Core extends Base\Core
         // Also for now this is being pushed onto invoice_emails queue only and
         // later we might have a new queue for this purpose only.
 
-        $job = (new BatchJob(
-                    $this->mode,
-                    $batch->getId()
-                ))->delay(self::QUEUE_DELAY);
+        $job = (new BatchJob($this->mode, $batch->getId()))->delay(self::QUEUE_DELAY);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }

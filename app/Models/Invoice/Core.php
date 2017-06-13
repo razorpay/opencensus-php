@@ -639,6 +639,18 @@ class Core extends Base\Core
         return $this->generatePdfWithRetry($invoice->getId());
     }
 
+    /**
+     * Issues all invoices of given $batch, if list of invoice ids are sent
+     * that is used (ensuring those ids are of given batch).
+     *
+     * The method returns success and the actual issue happens asynchronously
+     * in a queue job.
+     *
+     * @param Batch\Entity $batch
+     * @param array        $input
+     *
+     * @return array
+     */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
         $ids = $input[Entity::IDS] ?? [];
