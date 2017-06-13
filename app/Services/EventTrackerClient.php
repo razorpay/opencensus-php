@@ -125,7 +125,9 @@ class EventTrackerClient extends Base\Core
                 'url'       => $url,
                 'headers'   => $headers,
                 'content'   => json_encode($eventData),
-                'options'   => [],
+                'options'   => [
+                    'timeout' => 20
+                ],
             ];
 
             $job = new RequestJob($request);
