@@ -2085,8 +2085,6 @@ ALTER TABLE terminals
 ALTER TABLE payments
     ADD INDEX payments_amount_transferred_index (amount_transferred);
 
-DROP TABLE coupons;
-
 # Foreign Key on Merchants
 ALTER TABLE adjustment
     ADD CONSTRAINT adjustment_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants(id);
@@ -2105,7 +2103,7 @@ alter table fund_transfer_attempts
     add column merchant_id char(14) after source_id,
     add constraint fund_transfer_attempts_merchant_id_foreign foreign key(merchant_id)
     references merchants(id) on delete restrict;
-    
+
 # Pre deployment of branch order-partial-payments
 ALTER TABLE orders
     ADD COLUMN partial_payment TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id,
@@ -2123,3 +2121,12 @@ ALTER TABLE `refunds`
 
 ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
+DROP TABLE coupons;
+
+ALTER TABLE credits
+    ADD COLUMN promotion_id varchar(14) after merchant_id,
+    ADD COLUMN used INTEGER DEFAULT 0 AFTER type,
+    ADD COLUMN expiring_at INTEGER UNSIGNED AFTER used;
+
+ALTER TABLE schedule_tasks
+    ADD COLUMN expiring_at INT(11) DEFAULT NULL AFTER updated_at;
