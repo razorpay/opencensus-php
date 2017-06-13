@@ -54,7 +54,8 @@
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "2.*",
         "orchestra/testbench": "3.*",
-        "php-http/mock-client": "^0.3.3"
+        "php-http/mock-client": "^0.3.3",
+        "laravel/tinker": "^1.0"
     },
     "autoload": {
         "classmap": [
