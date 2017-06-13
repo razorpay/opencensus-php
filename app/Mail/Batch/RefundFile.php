@@ -24,6 +24,13 @@ class RefundFile extends Mailable
         $this->filePath = $filePath;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.message');
+
+        return $this;
+    }
+
     protected function addRecipients()
     {
         $emails = $this->merchant['transaction_report_email'];
