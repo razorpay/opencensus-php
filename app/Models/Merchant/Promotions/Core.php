@@ -6,10 +6,10 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Promotion;
-use RZP\Models\Merchant\Credits;
-use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
+use RZP\Models\Promotion;
+use RZP\Models\Schedule\Task;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -46,8 +46,6 @@ class Core extends Base\Core
         $successIds = [];
 
         $failedIds = [];
-
-        $successCount = 0;
 
         foreach ($scheduleTasks as $scheduleTask)
         {
@@ -87,8 +85,6 @@ class Core extends Base\Core
                 });
 
                 $successIds[] = $scheduleTask->getId();
-
-                $successCount++;
             }
             catch (\Exception $e)
             {
@@ -100,9 +96,7 @@ class Core extends Base\Core
 
         $response = [
             'success_ids'   => $successIds,
-            'failedIds'     => $failedIds,
-            'success_count' => $successCount,
-        ];
+            'failedIds'     => $failedIds,        ];
 
         $this->trace->info(
             TraceCode::SCHEDULE_TASKS_PROCESSED,
@@ -127,17 +121,17 @@ class Core extends Base\Core
     public function applyCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $creditInput = [
-            'campaign'     => $promotion->getName(),
-            'promotion_id' => $promotion->getId(),
-            'value'        => $promotion->getAmount(),
-            'type'         => $promotion->getCreditType(),
+            Credits\Entity::CAMPAIGN     => $promotion->getName(),
+            Credits\Entity::PROMOTION_ID => $promotion->getId(),
+            Credits\Entity::VALUE        => $promotion->getAmount(),
+            Credits\Entity::TYPE         => $promotion->getCreditType(),
         ];
 
          $scheduleTask = $this->repo->schedule_task->fetchByEntityAndMerchant($promotion, $merchant);
 
          if ($scheduleTask !== null)
          {
-            $creditInput['expiring_at'] = $scheduleTask->getNextRunAt();
+            $creditInput[Credits\Entity::EXPIRING_AT] = $scheduleTask->getNextRunAt();
          }
 
         (new Credits\Core)->create($merchant, $creditInput);
@@ -161,10 +155,10 @@ class Core extends Base\Core
         }
 
         $creditInput = [
-            'campaign'     => $promotion->getName() . 'Expired',
-            'promotion_id' => $promotion->getId(),
-            'value'        => $creditsToExpire * -1,
-            'type'         => $promotion->getCreditType(),
+            Credits\Entity::CAMPAIGN     => $promotion->getName() . 'Expired',
+            Credits\Entity::PROMOTION_ID => $promotion->getId(),
+            Credits\Entity::VALUE        => $creditsToExpire * -1,
+            Credits\Entity::TYPE         => $promotion->getCreditType(),
         ];
 
         (new Credits\Core)->create($merchant, $creditInput);

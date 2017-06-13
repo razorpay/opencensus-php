@@ -83,13 +83,17 @@ class Service extends Base\Service
         return [$couponCode, $merchantId];
     }
 
+    //This will check if the entity is used for any merchant
     protected function isUsed(Entity $coupon): bool
     {
         $entity = $coupon->source()->firstOrFail();
 
-        $entityNameSpace = Constants\Entity::getEntityNamespace(
-                                $coupon->getEntityType()) . '\Core';
+        $ns = Constants\Entity::getEntityNamespace($coupon->getEntityType());
 
-        return (new $entityNameSpace)->isUsed($entity);
+        $coreClass = $ns . '\Core';
+
+        $core = (new $coreClass);
+
+        return $core->isUsed($entity);
     }
 }
