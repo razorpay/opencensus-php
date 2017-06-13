@@ -2127,3 +2127,8 @@ ALTER TABLE invoices
     ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER subscription_id,
     ADD INDEX invoices_batch_id_index (batch_id),
     ADD CONSTRAINT invoices_batch_id_foreign FOREIGN KEY (batch_id) REFERENCES batches (id);
+
+ALTER TABLE batches
+    ADD INDEX batches_created_at_index (created_at),
+    ADD INDEX batches_type_index (type),
+    ADD INDEX batches_status_index (status);

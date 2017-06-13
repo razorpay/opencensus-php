@@ -1026,7 +1026,7 @@ class Entity extends Base\PublicEntity
     /**
      * The batch which created this invoice entity.
      *
-     * @return null|\RZP\Models\Batch\Entity
+     * @return null|\Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function batch()
     {

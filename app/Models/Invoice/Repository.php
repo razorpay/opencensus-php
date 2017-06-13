@@ -201,7 +201,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()->where(Entity::BATCH_ID, $batchId);
 
-        if (count($ids) > 0)
+        if (empty($ids) === false)
         {
             $query->whereIn(Entity::IDS, $ids);
         }

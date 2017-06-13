@@ -106,7 +106,7 @@ class Header
 
         $extraHeadersInInput = (count($expectedHeaders) !== count($keys));
 
-        if ($headersMissing or $extraHeadersInInput)
+        if (($headersMissing === true) or ($extraHeadersInInput === true))
         {
             throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS);

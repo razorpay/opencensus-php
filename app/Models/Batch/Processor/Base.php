@@ -285,8 +285,6 @@ class Base extends BaseModel\Core
 
     public function deleteFile(string $filePath)
     {
-        return;
-
         if (file_exists($filePath))
         {
             $success = unlink($filePath);

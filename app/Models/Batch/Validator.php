@@ -55,7 +55,7 @@ class Validator extends Base\Validator
 
         // Calls validate method of corresponding type.
 
-        $validator = 'validate' .ucfirst(camel_case($type)) .'Entries';
+        $validator = 'validate' . studly_case($type) .'Entries';
 
         $this->$validator($entries, $merchant);
     }
@@ -116,8 +116,6 @@ class Validator extends Base\Validator
         array & $entries,
         Merchant\Entity $merchant)
     {
-        $validator = (new Invoice\Entity)->getValidator();
-
         // Associative array with index as input file's row index and values
         // as the error message.
 

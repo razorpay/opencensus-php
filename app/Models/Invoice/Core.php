@@ -12,6 +12,7 @@ use RZP\Models\Order;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Models\Batch;
+use RZP\Models\Plan\Subscription;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -51,20 +52,20 @@ class Core extends Base\Core
     /**
      * Creates invoice
      *
-     * @param array           $input
-     * @param Merchant\Entity $merchant
-     * @param object          $subscription - If created via subscription, this
-     *                                        is passed for associations.
-     * @param object          $batch        - If created via batch flow, this
-     *                                        is passed for association.
+     * @param array               $input
+     * @param Merchant\Entity     $merchant
+     * @param Subscription\Entity $subscription - If created via subscription, this
+     *                                            is passed for associations.
+     * @param Batch\Entity        $batch        - If created via batch flow, this
+     *                                            is passed for association.
      *
      * @return Entity
      */
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        $subscription = null,
-        $batch = null): Entity
+        Subscription\Entity $subscription = null,
+        Batch\Entity $batch = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,

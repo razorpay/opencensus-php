@@ -87,7 +87,7 @@ class Generator extends Base\Core
      *
      * @return Generator
      */
-    public function setSubscription($subscription)
+    public function setSubscription(Subscription\Entity $subscription = null)
     {
         $this->subscription = $subscription;
 
@@ -99,7 +99,7 @@ class Generator extends Base\Core
      *
      * @return Generator
      */
-    public function setBatch($batch)
+    public function setBatch(Batch\Entity $batch = null)
     {
         $this->batch = $batch;
 
