@@ -91,7 +91,11 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [], $email = null)
     {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_ICICI, $email);
+        $refundFileMail = new RefundFileMail(
+                                $fileData,
+                                Gateway::NETBANKING_ICICI,
+                                $email,
+                                'emails.admin.icici_refunds');
 
         Mail::queue($refundFileMail);
     }

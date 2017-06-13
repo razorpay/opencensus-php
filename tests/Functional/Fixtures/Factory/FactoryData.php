@@ -715,5 +715,13 @@ final class FactoryData
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Invitation\Entity::class, [
+            'id'                       => $faker->uniqueid,
+            'email'                    => $faker->email,
+            'merchant_id'              => $faker->uniqueid,
+            'role'                     => 'manager',
+            'token'                    => $faker->name(30),
+        ]);
     }
 }

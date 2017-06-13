@@ -534,16 +534,24 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
-        'tax_get'                                => ['get',      'taxes/{id}',                                      'TaxController@get'                                                 ],
-        'tax_list'                               => ['get',      'taxes',                                           'TaxController@list'                                                ],
-        'tax_create'                             => ['post',     'taxes',                                           'TaxController@create'                                              ],
-        'tax_update'                             => ['patch',    'taxes/{id}',                                      'TaxController@update'                                              ],
-        'tax_delete'                             => ['delete',   'taxes/{id}',                                      'TaxController@delete'                                              ],
-        'tax_group_get'                          => ['get',      'tax_groups/{id}',                                 'TaxGroupController@get'                                            ],
-        'tax_group_list'                         => ['get',      'tax_groups',                                      'TaxGroupController@list'                                           ],
-        'tax_group_create'                       => ['post',     'tax_groups',                                      'TaxGroupController@create'                                         ],
-        'tax_group_update'                       => ['patch',    'tax_groups/{id}',                                 'TaxGroupController@update'                                         ],
-        'tax_group_delete'                       => ['delete',   'tax_groups/{id}',                                 'TaxGroupController@delete'                                         ],
+        'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
+        'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
+        'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
+        'tax_update'                              => ['patch',    'taxes/{id}',                                     'TaxController@update'                                              ],
+        'tax_delete'                              => ['delete',   'taxes/{id}',                                     'TaxController@delete'                                              ],
+        'tax_group_get'                           => ['get',      'tax_groups/{id}',                                'TaxGroupController@get'                                            ],
+        'tax_group_list'                          => ['get',      'tax_groups',                                     'TaxGroupController@list'                                           ],
+        'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
+        'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
+        'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
+
+        // Merchant invitation routes
+        'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
+        'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],
+        'invitation_resend'                       => ['post',     'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
+        'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],
+        'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
+        'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
     ];
 
     public static $public = [
@@ -757,7 +765,6 @@ final class Route
         'merchant_fetch_webhooks',
         'merchant_post_beneficiary_file',
         'merchant_notify_holiday',
-        'merchant_fetch_users',
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
@@ -915,6 +922,7 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'merchant_fetch_users',
     ];
 
     public static $proxy = [
@@ -972,6 +980,12 @@ final class Route
         'reports_fetch_multiple',
         'file_get_signed_url',
         'reports_generate',
+        'invitation_create',
+        'invitation_fetch',
+        'invitation_resend',
+        'invitation_edit',
+        'invitation_delete',
+        'invitation_action',
     ];
 
     // These will run on internal auth with the assurance
@@ -1150,6 +1164,13 @@ final class Route
         'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
         'gateway_update_rule'              => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
+        'terminal_toggle'                  => '*',
+        'terminal_delete'                  => Permission::DELETE_TERMINAL,
+        'terminal_reassign_merchant'       => Permission::ASSIGN_MERCHANT_TERMINAL,
+        'terminal_add_merchant'            => '*',
+        'terminal_remove_merchant'         => '*',
+        'emi_plan_delete'                  => Permission::DELETE_EMI_PLAN,
+        'iin_edit'                         => Permission::EDIT_IIN_RULE,
     ];
 
     public static $direct = [
