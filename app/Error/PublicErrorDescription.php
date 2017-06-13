@@ -462,6 +462,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
 
     const BAD_REQUEST_COUPON_ALREADY_USED                                       = 'Coupon Code Already Used';
+    const BAD_REQUEST_INVALID_COUPON_CODE                                       = 'Coupon Code Not Found';
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon Not valid for this merchant';
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                     = 'Coupon is not applicable right now';
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon is expired';

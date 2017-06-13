@@ -2,8 +2,12 @@
 
 namespace RZP\Models\Coupon;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Schedule;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Constants\Entity as PublicEntity;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
 

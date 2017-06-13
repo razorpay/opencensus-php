@@ -570,4 +570,5 @@ class ErrorCode
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                                 = 'BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT';
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                         = 'BAD_REQUEST_COUPON_NOT_APPLICABLE';
     const BAD_REQUEST_COUPON_EXPIRED                                                = 'BAD_REQUEST_COUPON_EXPIRED';
+    const BAD_REQUEST_INVALID_COUPON_CODE                                           = 'BAD_REQUEST_INVALID_COUPON_CODE';
 }

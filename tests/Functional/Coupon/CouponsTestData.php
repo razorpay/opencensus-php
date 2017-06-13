@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
 $defaultRequestAndResponse = [
         'request' => [
             'content' => [
@@ -21,6 +24,37 @@ return [
 
     'testCouponExceedingUsage' => $defaultRequestAndResponse,
 
+    'testCouponExceedingUsageExceptionData' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_EXPIRED
+        ],
+    ],
+
+    'testInvaliCouponApply' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE
+        ],
+    ],
+
+
     'createCoupon'     => $defaultRequestAndResponse,
 
     'testCreateCoupon' => $defaultRequestAndResponse,
@@ -28,6 +62,36 @@ return [
     'testCreateCouponAndApplyOnMerchant' => $defaultRequestAndResponse,
 
     'testMultiCouponApply' => $defaultRequestAndResponse,
+
+    'testMerchantSignUpWithInValidCoupon' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE
+        ],
+    ],
+
+    'testMultiCouponApplyExceptionData' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_ALREADY_USED
+        ],
+    ],
 
     'testGetCouponsByPromotionId' => [
         'request' => [

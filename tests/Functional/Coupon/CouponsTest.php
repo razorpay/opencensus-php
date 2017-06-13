@@ -78,7 +78,15 @@ class CouponsTest extends TestCase
             'method' => 'POST'
         ];
 
-        $response = $this->makeRequestAndGetContent($request);
+        $requestData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($request)
+            {
+                $response = $this->makeRequestAndGetContent($request);
+            });
+
 
         $balanceRequest = [
             'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
@@ -141,9 +149,14 @@ class CouponsTest extends TestCase
             'code' => 'RANDOM-123',
         ];
 
-        $response = $this->applyCouponOnMerchant($content);
+        $requestData = $this->testData[__FUNCTION__ . 'ExceptionData'];
 
-        $this->checkInValidResponse($response, 'Coupon is expired');
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
     }
 
     public function testCreateCouponAndApplyOnMerchant()
@@ -173,13 +186,14 @@ class CouponsTest extends TestCase
 
         $this->checkValidResponse($response);
 
-        $coupon = $this->getLastEntity('coupon', true);
+        $requestData = $this->testData[__FUNCTION__ . 'ExceptionData'];
 
-        $response = $this->applyCouponOnMerchant($content);
-
-        $this->checkInValidResponse($response, 'Coupon Code Already Used');
-
-        $coupon = $this->getLastEntity('coupon', true);
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
     }
 
     public function testInvaliCouponApply()
@@ -191,25 +205,19 @@ class CouponsTest extends TestCase
             'code' =>  'RAND123',
         ];
 
-        $response = $this->applyCouponOnMerchant($content);
-        $this->checkInValidResponse($response, 'Invalid Coupon Code');
-    }
+        $requestData = $this->testData[__FUNCTION__];
 
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
+    }
 
     public function checkValidResponse(array $response)
     {
-        $this->assertEquals($response['success'], true);
-        $this->assertEquals($response['error_description'], '');
-    }
-
-    public function checkInValidResponse(array $response, string $errorCode)
-    {
-        $this->assertEquals($response['success'], false);
-
-        if ($errorCode !== null)
-        {
-            $this->assertEquals($response['error_description'], $errorCode);
-        }
+        $this->assertEquals($response['message'], 'Coupon Applied Successfully');
     }
 
     public function applyCouponOnMerchant(array $content)

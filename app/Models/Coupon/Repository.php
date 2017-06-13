@@ -18,6 +18,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::CODE, '=', $code)
-                    ->firstOrFail();
+                    ->first();
     }
 }
