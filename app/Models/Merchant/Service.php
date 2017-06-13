@@ -80,7 +80,7 @@ class Service extends Base\Service
 
         $merchantData[Entity::COUPON] = $couponResponse;
 
-        return $merchant->toArrayPublic();
+        return $merchantData;
     }
 
     public function createSubMerchant(array $input)
@@ -118,7 +118,14 @@ class Service extends Base\Service
                 Coupon\Entity::MERCHANT_ID => $merchant->getId()
             ];
 
-            $result = (new Coupon\Service)->apply($couponInput);
+            try
+            {
+                $result = (new Coupon\Service)->apply($couponInput);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $result = ['message'=> $e->getMessage()];
+            }
         }
 
         return $result;

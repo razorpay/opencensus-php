@@ -78,15 +78,9 @@ class CouponsTest extends TestCase
             'method' => 'POST'
         ];
 
-        $requestData = $this->testData[__FUNCTION__];
+        $response = $this->makeRequestAndGetContent($request);
 
-        $this->runRequestResponseFlow(
-            $requestData,
-            function() use ($request)
-            {
-                $response = $this->makeRequestAndGetContent($request);
-            });
-
+        $this->assertEquals($response['coupon']['message'], 'Coupon Code Not Found');
 
         $balanceRequest = [
             'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
