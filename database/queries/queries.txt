@@ -2123,3 +2123,13 @@ ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
 ALTER TABLE merchants
     ADD COLUMN handle VARCHAR(4) AFTER brand_color;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN `virtual` TINYINT(1) NOT NULL DEFAULT 0 AFTER beneficiary_mobile,
+    MODIFY COLUMN beneficiary_address1 VARCHAR(30),
+    MODIFY COLUMN beneficiary_city VARCHAR(30),
+    MODIFY COLUMN beneficiary_state VARCHAR(2),
+    MODIFY COLUMN beneficiary_country VARCHAR(2),
+    MODIFY COLUMN beneficiary_pin CHAR(6),
+    MODIFY COLUMN beneficiary_email VARCHAR(255),
+    MODIFY COLUMN beneficiary_mobile CHAR(32);

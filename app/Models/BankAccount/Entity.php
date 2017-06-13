@@ -118,6 +118,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = array(
         self::MOBILE_BANKING_ENABLED => 'bool',
+        self::VIRTUAL                => 'bool',
     );
 
     protected $generateIdOnCreate = true;
@@ -267,16 +268,26 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
     }
 
-    protected function getIfscCodeAttribute($code)
+    public function setVirtual($virtual)
     {
-        $code = $this->attributes[self::IFSC_CODE] = $code;
+        return $this->setAttribute(self::VIRTUAL, $virtual);
+    }
 
-        return strtoupper($code);
+    public function isVirtual()
+    {
+        return $this->getAttribute(self::VIRTUAL);
+    }
+
+    protected function getIfscCodeAttribute()
+    {
+        $ifscCode = $this->attributes[self::IFSC_CODE];
+
+        return strtoupper($ifscCode);
     }
 
     protected function getIfscAttribute()
     {
-        return $code = $this->attributes[self::IFSC_CODE];
+        return $this->attributes[self::IFSC_CODE];
     }
 
     public function equals($baCopy)
