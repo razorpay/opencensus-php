@@ -18,20 +18,25 @@ export const fetchAll = (params, Entity, namespace) => {
   };
 };
 
-let initialState = {
+let defaultInitialState = {
   loading: true,
   items: [],
   error: null,
 };
 
-export function makeCollectionReducer(actionName) {
+export function makeCollectionReducer(
+  entityName,
+  initialState = defaultInitialState
+) {
+  let singularEntityName = entityName.slice(0, entityName.length - 1);
+
   return function(state = initialState, action) {
     switch (action.type) {
-      case `${actionName}_FETCH_RESET`:
-      case `${actionName}_FETCH::PENDING`:
+      case `${entityName}_FETCH_RESET`:
+      case `${entityName}_FETCH::PENDING`:
         return initialState;
 
-      case `${actionName}_FETCH::SUCCESS`:
+      case `${entityName}_FETCH::SUCCESS`:
         let { items } = action.payload.data;
         return merge(state, {
           loading: false,
@@ -39,14 +44,24 @@ export function makeCollectionReducer(actionName) {
           error: null,
         });
 
-      case `${actionName}_FETCH::ERROR`:
+      case `${entityName}_FETCH::ERROR`:
         return merge(state, {
           loading: false,
           error: action.payload.errors,
         });
 
-      case `${actionName}_CREATE::SUCCESS`:
+      case `${singularEntityName}_CREATE::SUCCESS`:
         return set(state, 'items', unshift(state.items, action.payload));
+
+      case `${singularEntityName}_EDIT::SUCCESS`:
+        let itemIndex = state.items.findIndex(
+          item => item.id === action.payload.id
+        );
+        return set(state, `items.${itemIndex}`, action.payload);
+
+      case `${singularEntityName}_DELETE::SUCCESS`:
+        let itemsList = remove(state.items, item => item.id === action.id);
+        return set(state, 'items', itemsList);
 
       default:
         return state;

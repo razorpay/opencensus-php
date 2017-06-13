@@ -128,13 +128,6 @@ export default class Sidebar extends Component {
                     beta={true}
                   />
 
-                  <ShowWhen
-                    notMyRole="sellerapp support"
-                    featureEnabled="Virtualaccounts"
-                  >
-                    <div class="divider" />
-                  </ShowWhen>
-
                   <MainNavLink
                     label="Virtual Accounts"
                     icon="icon icon-store"
