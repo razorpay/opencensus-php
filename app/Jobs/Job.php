@@ -63,7 +63,6 @@ class Job
      * queue. We don't want to initialize services and increase the size of
      * message. Additionally that throws error in most of the cases as not all
      * services are serialized expectedly.
-     *
      */
     protected function init()
     {

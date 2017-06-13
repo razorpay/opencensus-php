@@ -13,13 +13,13 @@ use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
 {
+    use FileHandlerTrait;
+
     /**
      * Queue delay in seconds. Only after 10 s we intend the
      * asynchronous job to start processing.
      */
     const QUEUE_DELAY = 10;
-
-    use FileHandlerTrait;
 
     public function create(array $input): Entity
     {
@@ -37,7 +37,7 @@ class Core extends Base\Core
 
         $this->repo->transaction(function () use ($batch, $input)
         {
-            $file = (Processor\Base::get($batch))->saveInputFile($input[Entity::FILE]);
+            $file = Processor\Base::get($batch)->saveInputFile($input[Entity::FILE]);
 
             $entries = $this->parseExcelSheets($file);
 
@@ -148,7 +148,7 @@ class Core extends Base\Core
 
         try
         {
-            (Processor\Base::get($batch))->process();
+            Processor\Base::get($batch)->process();
         }
         catch (\Throwable $e)
         {

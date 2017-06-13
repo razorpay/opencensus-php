@@ -112,21 +112,21 @@ class CreateBatchTable extends Migration
     {
         Schema::table(Table::REFUND, function($table)
         {
-            $table->dropForeign(Table::REFUND .'_' .Refund\Entity::BATCH_ID .'_foreign');
+            $table->dropForeign(Table::REFUND . '_' . Refund\Entity::BATCH_ID . '_foreign');
 
             $table->dropColumn(Refund\Entity::BATCH_ID);
         });
 
         Schema::table(Table::INVOICE, function($table)
         {
-            $table->dropForeign(Table::INVOICE .'_' .Invoice\Entity::BATCH_ID .'_foreign');
+            $table->dropForeign(Table::INVOICE . '_' . Invoice\Entity::BATCH_ID . '_foreign');
 
             $table->dropColumn(Invoice\Entity::BATCH_ID);
         });
 
         Schema::table(Table::BATCH, function($table)
         {
-            $table->dropForeign(Table::BATCH .'_' .Batch::MERCHANT_ID .'_foreign');
+            $table->dropForeign(Table::BATCH . '_' . Batch::MERCHANT_ID . '_foreign');
         });
 
         Schema::drop(Table::BATCH);
