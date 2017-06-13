@@ -41,12 +41,17 @@ export const batchUploadStatusMap = {
   failure: 'label-danger',
 };
 
+export const virtualAccountStatusMap = {
+  active: 'label-success',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   settlement: settlementStatusMap,
   invoice: invoiceStatusMap,
   order: orderStatusMap,
   batch: batchUploadStatusMap,
+  virtual_account: virtualAccountStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);

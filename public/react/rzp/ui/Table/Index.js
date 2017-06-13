@@ -14,7 +14,7 @@ export default ({ rows, columns }) => {
         {rows &&
           <tbody>
             {rows.map(item => (
-              <EntityItemRow key={item.id}>
+              <EntityItemRow key={item.id} id={item.id}>
                 {columns.map((column, index) => (
                   <td class={column.columnClass} key={index}>
                     {column.value(item)}

@@ -25,6 +25,7 @@ import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import referralsReducer from 'merchant/modules/referrals';
+import virtualAccountsReducer from 'merchant/modules/virtualaccounts/list';
 
 import {
   paymentsReducer,
@@ -35,7 +36,6 @@ import {
   refundsReducer,
   settlementsReducer,
   subscriptionsReducer,
-  virtualAccountsReducer,
 } from 'rzp/modules/collection';
 
 export default combineReducers({
