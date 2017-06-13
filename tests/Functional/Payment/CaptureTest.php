@@ -682,6 +682,43 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee_model'], 'prepaid');
     }
 
+    //This is to make sure that credits are used first which are expiring first
+    public function testCreditTransactionWithFeeCreditForPrepaid()
+    {
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 34000,
+                       'expiring_at' => time() + 2*24*60*60,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'fee',
+                       'value' => 10000,
+                       'expiring_at' => time() + 1*24*60*60,
+                   ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 44000]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credits_transaction', array(), true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+    }
+
+
+
     // Fee Model = Prepaid
     // Fee Bearer = Platform
     // Amount Credit > 0
@@ -733,6 +770,47 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
+    }
+
+    //This is to make sure that credits are used first which are expiring first
+    public function testCreditTransactionWithAmountCreditForPrepaid()
+    {
+        //These never expire. Should be used at last
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 50000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'amount',
+                       'value' => 10000,
+                       'expiring_at' => time() + 1*24*60*60,
+                   ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 44000]);
+
+        $pricing = $this->fixtures->base->createEntity('pricing', [
+            'plan_id'           => '10ZeroPricingP',
+            'feature'           => 'payment',
+            'payment_method'    => 'card'
+        ]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credits_transaction', array(), true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 34000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
     }
 
     // Fee Model = Prepaid

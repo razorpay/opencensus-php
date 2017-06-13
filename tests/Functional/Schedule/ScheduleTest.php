@@ -185,9 +185,18 @@ class ScheduleTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $promotion = $this->createRecurringPromotion();
+       $promotionAttributes = [
+            'amount' => '1000',
+        ];
 
-        $coupon = $this->createCoupon($promotion['id']);
+        $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion['id'],
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->applyCouponOnMerchant($coupon['code']);
 
@@ -204,9 +213,19 @@ class ScheduleTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $promotion = $this->createRecurringPromotion(2);
+        $promotionAttributes = [
+            'amount'     => '1000',
+            'iterations' => 2,
+        ];
 
-        $coupon = $this->createCoupon($promotion['id']);
+        $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion['id'],
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->applyCouponOnMerchant($coupon['code']);
 
@@ -225,13 +244,29 @@ class ScheduleTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $promotion1 = $this->createRecurringPromotion(1);
+        $promotionAttributes = [
+            'amount' => '1000',
+        ];
 
-        $promotion2 = $this->createRecurringPromotion(1);
+        $promotion1 = $this->fixtures->create('promotion:recurring', $promotionAttributes);
 
-        $coupon1 = $this->createCoupon($promotion1['id']);
+        $promotion2 = $this->fixtures->create('promotion:recurring', $promotionAttributes);
 
-        $coupon2 = $this->createCoupon($promotion2['id'], 'RANDOM1');
+        $couponAttributes = [
+            'entity_id'   => $promotion1['id'],
+            'entity_type' => 'promotion',
+            'code'        => 'RANDOM1'
+        ];
+
+        $coupon1 = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion2['id'],
+            'entity_type' => 'promotion',
+            'code'        => 'RANDOM2'
+        ];
+
+        $coupon2 = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->applyCouponOnMerchant($coupon1['code']);
 
@@ -250,30 +285,6 @@ class ScheduleTest extends TestCase
         $credits = $this->getLastEntity('credits', true);
 
         $this->assertEquals($credits['value'], -1000);
-    }
-
-    protected function createCoupon($promotionId, $code = 'RANDOM')
-    {
-        $request = $this->testData[__FUNCTION__];
-
-        $request['content']['entity_id'] = $promotionId;
-
-        $request['content']['code'] = $code;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
-    protected function createRecurringPromotion($iterations = 1)
-    {
-        $request = $this->testData[__FUNCTION__];
-
-        $request['content']['iterations'] = $iterations;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
     }
 
 

@@ -20,7 +20,7 @@ class Promotion extends Base
 
     public function createRecurring(array $attributes = [])
     {
-        $schedule = $this->fixtures->create('schedule', $attributes);
+        $schedule = $this->fixtures->create('schedule');
 
         $promotionAttributes = [
             'iterations'        => '1',

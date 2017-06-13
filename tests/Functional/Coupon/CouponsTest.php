@@ -271,6 +271,10 @@ class CouponsTest extends TestCase
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->startTest();
+
+        $credit = $this->getLastEntity('credits', true);
+
+        $this->assertNull($credit['expiring_at']);
     }
 
     public function testApplyRecurringCoupon()
@@ -285,5 +289,10 @@ class CouponsTest extends TestCase
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
         $this->startTest();
+
+        //This is to test if the credit created has expiring_at
+        $credit = $this->getLastEntity('credits', true);
+
+        $this->assertNotNull($credit['expiring_at']);
     }
 }
