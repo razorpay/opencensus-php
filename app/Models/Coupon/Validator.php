@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $applyRules = [
-        Entity::CODE => 'required|string|max:10',
+        Entity::CODE        => 'required|string|max:10',
         self::MERCHANT_ID   => 'required|alpha_num|size:14',
     ];
 
@@ -46,31 +46,31 @@ class Validator extends Base\Validator
         }
     }
 
-    public function couponApplyValidator($coupon, $merchant)
+    public function couponApplyValidator($merchant)
     {
-        if (($coupon->getUsage() !== null) and
-            ($coupon->getUsedCount() === $coupon->getUsage()))
+        if (($this->entity->getUsage() !== null) and
+            ($this->entity->getUsedCount() === $this->entity->getUsage()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_EXPIRED);
         }
 
-        if (($coupon->getStartDate() !== null) and
-            ($coupon->getStartDate() > time()))
+        if (($this->entity->getStartDate() !== null) and
+            ($this->entity->getStartDate() > time()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_NOT_APPLICABLE);
         }
 
-        if (($coupon->getEndDate() !== null) and
-            ($coupon->getEndDate() < time()))
+        if (($this->entity->getEndDate() !== null) and
+            ($this->entity->getEndDate() < time()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_EXPIRED);
         }
 
-        if (($coupon->getMerchantId() !== null) and
-            ($coupon->getMerchantId() !== $merchant->getId()))
+        if (($this->entity->getMerchantId() !== null) and
+            ($this->entity->getMerchantId() !== $merchant->getId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT);

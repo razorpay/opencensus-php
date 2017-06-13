@@ -71,7 +71,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::COUPON_APPLY_REQUEST,
             [
-                'code' => $couponCode,
+                'code'        => $couponCode,
                 'merchant_id' => $merchantId,
             ]);
 
@@ -88,113 +88,16 @@ class Service extends Base\Service
         return (new $entityNameSpace)->isUsed($entity);
     }
 
-    //TODO add typehinting
-    protected function validateAndApplyMerchantPromotion($merchant, $coupon)
-    {
-        $result = [
-            'success'           => true,
-            'error_description' => '',
-        ];
-
-        try
-        {
-            $promotion = $coupon->source()->firstOrFail();
-
-            $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
-                                    $merchant->getId(), $promotion->getId());
-
-            if ($merchantPromotion !== null)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_COUPON_ALREADY_USED);
-            }
-
-            $this->validator->couponApplyValidator($coupon, $merchant);
-
-            $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
-            {
-                $merchantPromotionCore = (new MerchantPromotion\Core);
-
-                $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
-
-                // Initial apply of Credit is done instantly
-                // Subsequent run and expiry will be handled by cron
-                $merchantPromotionCore->applyCredits($merchant, $promotion);
-
-                $coupon->setUsedCount($coupon->getUsedCount() + 1);
-
-                $merchantPromotion->updateRemainingRuns();
-
-                $this->repo->saveOrFail($coupon);
-
-                $this->repo->saveOrFail($merchantPromotion);
-            });
-
-            $result = [
-                'success' => true,
-                'error_description' => '',
-            ];
-        }
-        catch (QueryException $e)
-        {
-            //TODO move to constants
-            $result = [
-                'success'           => false,
-                'error_description' => 'Coupon Already Applied/Could Not be Applied',
-            ];
-        }
-        catch (\Exception $e)
-        {
-            $result = [
-                'success'            => false,
-                'error_description' => $e->getMessage(),
-            ];
-        }
-
-        return $result;
-    }
 
     public function apply(array $input)
     {
-        try
-        {
-            list($couponCode, $merchantId) = $this->parseInput($input);
-        }
-        catch (\Exception $e)
-        {
-            return [
-                'success'           => false,
-                'error_description' => 'Invalid Request',
-            ];
-        }
+        list($couponCode, $merchantId) = $this->parseInput($input);
 
-        try
-        {
-            $coupon = $this->repo->coupon->fetchByCode($couponCode);
-        }
-        catch (\Exception $e)
-        {
-            return [
-                'success'           => false,
-                'error_description' => 'Invalid Coupon Code',
-            ];
-        }
+        $coupon = $this->repo->coupon->fetchByCode($couponCode);
 
-        try
-        {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-        }
-        catch (\Exception $e)
-        {
-            return [
-                'success'           => false,
-                'error_description' => 'Invalid Merchant',
-            ];
-        }
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $result = $this->validateAndApplyMerchantPromotion(
-            $merchant,
-            $coupon);
+        $result = $this->core->apply($merchant, $coupon);
 
         return $result;
     }
