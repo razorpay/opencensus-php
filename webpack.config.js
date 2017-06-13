@@ -33,28 +33,6 @@ const webpackConfig = {
 // Entry Points
 // ------------------------------------
 webpackConfig.entry = {
-  vendor: [
-    'jquery',
-    'chart.js',
-    'classnames',
-    'moment',
-    'react',
-    'react-addons-shallow-compare',
-    'react-async-button',
-    'react-chartjs-2',
-    'react-dates',
-    'react-dom',
-    'react-modal',
-    'react-power-select',
-    'react-redux',
-    'react-router-dom',
-    'react-simple-dropdown',
-    'react-tabs',
-    'react-tether',
-    'react-time',
-    'redux',
-    'redux-form',
-  ],
   merchant: './merchant/index',
 };
 
@@ -84,7 +62,11 @@ webpackConfig.module.rules = [
             'transform-runtime',
             'transform-decorators-legacy',
           ],
-          presets: ['es2015', 'react', 'stage-0'],
+          presets: [
+            ['es2015', { loose: true, modules: false }],
+            'react',
+            'stage-0',
+          ],
         },
       },
     ],
@@ -144,7 +126,10 @@ webpackConfig.plugins = [
   new CaseSensitivePathsPlugin(),
 
   new webpack.optimize.CommonsChunkPlugin({
-    names: ['vendor', 'manifest'], // Specify the common bundle's name.
+    name: 'vendor',
+    minChunks: function(module) {
+      return module.context && module.context.indexOf('node_modules') !== -1;
+    },
   }),
 
   new webpack.ProvidePlugin({
