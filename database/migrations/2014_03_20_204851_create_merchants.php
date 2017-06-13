@@ -84,6 +84,9 @@ class CreateMerchants extends Migration
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
 
+            $table->char(Merchant::HANDLE, 4)
+                  ->nullable();
+
             $table->text(Merchant::LOGO_URL)
                   ->nullable();
 
