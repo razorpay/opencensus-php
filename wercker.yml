@@ -11,7 +11,6 @@ build:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
-          MYSQL_ROOT_PASSWORD: root
       - redis
     # The steps that will be executed on build
     steps:
@@ -109,6 +108,10 @@ deploy:
           application-name: api
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-code-deploy
+      - hashfyre/newrelic-deployment:
+          api_key: $NEWRELIC_API_KEY
+          app_name: "$APP_ENV-$APP_NAME"
+          skip: $SKIP
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -119,4 +122,3 @@ deploy:
          name: post_deploy_notifier
          code: |
             python scripts/post_deploy_notifier.py
-
