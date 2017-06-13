@@ -537,7 +537,7 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $key = $this->router->current()->getParameter('key');
+        $key = $this->router->current()->parameter('key');
 
         if ($key === null)
         {

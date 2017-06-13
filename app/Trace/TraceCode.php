@@ -413,6 +413,8 @@ class TraceCode
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
     const GATEWAY_HDFC_CAPTURED                     = 'GATEWAY_HDFC_CAPTURED';
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
+    const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
+    const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -505,7 +507,6 @@ class TraceCode
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
-    const QUEUE_JOB_LOOPING                         = 'QUEUE_JOB_LOOPING';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';

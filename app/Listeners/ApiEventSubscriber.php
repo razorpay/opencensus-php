@@ -57,9 +57,17 @@ class ApiEventSubscriber extends Base\Core
         return $this->app['rzp.mode'];
     }
 
-    public function onEvent($params)
+    public function onEvent($event, $params)
     {
-        $event = $this->getFiringEvent();
+        $event = $this->getFiringEvent($event);
+
+        //
+        // @todo: This is being done after laravel 5.4 upgrade.
+        //        Still need to figure out good explanation for this.
+        //
+        $params = $params[0];
+
+        $this->params = $params;
 
         $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
 
@@ -73,8 +81,6 @@ class ApiEventSubscriber extends Base\Core
         {
             return null;
         }
-
-        $this->params = $params;
 
         $event = str_replace('.', '_', $event);
 
@@ -94,10 +100,8 @@ class ApiEventSubscriber extends Base\Core
         $events->listen('api.*', 'RZP\Listeners\ApiEventSubscriber@onEvent');
     }
 
-    protected function getFiringEvent()
+    protected function getFiringEvent($event)
     {
-        $event = $this->event->firing();
-
         // This is being done because the event names start with "api."
         $event = substr($event, 4);
 

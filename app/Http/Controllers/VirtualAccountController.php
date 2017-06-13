@@ -13,28 +13,28 @@ class VirtualAccountController extends Controller
     {
         parent::__construct();
 
-        $this->virtualAccountService = new VirtualAccount\Service;
+        $this->service = \RZP\Models\VirtualAccount\Service::class;
     }
 
     public function createVirtualAccount()
     {
         $input = Request::all();
 
-        $response = $this->virtualAccountService->createVirtualAccount($input);
+        $response = $this->service()->createVirtualAccount($input);
 
         return ApiResponse::json($response);
     }
 
     public function closeVirtualAccount($id)
     {
-        $response = $this->virtualAccountService->closeVirtualAccount($id);
+        $response = $this->service()->closeVirtualAccount($id);
 
         return ApiResponse::json($response);
     }
 
     public function getVirtualAccount($id)
     {
-        $response = $this->virtualAccountService->getVirtualAccount($id);
+        $response = $this->service()->getVirtualAccount($id);
 
         return ApiResponse::json($response);
     }
@@ -43,7 +43,7 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->virtualAccountService->getVirtualAccounts($input);
+        $response = $this->service()->getVirtualAccounts($input);
 
         return ApiResponse::json($response);
     }

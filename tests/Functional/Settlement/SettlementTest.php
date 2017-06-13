@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
 use Mail;
-use Mockery;
 
+use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
+use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
+use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Entity as SettlementEntity;
@@ -97,8 +99,7 @@ class SettlementTest extends TestCase
             $request = ['url' => $url];
 
             $response = $this->sendRequest($request);
-
-            $this->assertResponseStatus(200);
+            $response->assertStatus(200);
         }
     }
 
@@ -380,6 +381,8 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2()
     {
+        Mail::fake();
+
         $this->ba->adminAuth();
 
         $payments = $this->createPaymentEntities();
@@ -459,6 +462,8 @@ class SettlementTest extends TestCase
 
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);
+
+        Mail::assertSent(KotakSettlementMail::class);
     }
 
     public function testSettlementIgnoredTxns()
@@ -552,6 +557,8 @@ class SettlementTest extends TestCase
 
     public function testIciciNodalTransfer()
     {
+        Mail::fake();
+
         $this->ba->appAuth();
 
         $request = [
@@ -565,6 +572,8 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content['file']);
+
+        Mail::assertSent(IciciSettlementMail::class);
     }
 
     public function testSettlementWithAccountTransfer()
@@ -576,12 +585,12 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->create(
             'transfer:to_account',
             [
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 5000,
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         // Generate settlements
@@ -606,13 +615,13 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->create(
             'transfer:to_account',
             [
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 5000,
-                'currency'   => 'INR',
-                'on_hold'    => '1',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'on_hold'     => '1',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         // Generate settlements
@@ -695,13 +704,13 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->times(2)->create(
             'transfer:to_account',
             [
-                'account'    => $account,
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 1000,
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'account'     => $account,
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         $reversal = $this->fixtures->create(

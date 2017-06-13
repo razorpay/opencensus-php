@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Testing\TestResponse;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MpesaGatewayTest extends TestCase
@@ -294,7 +294,7 @@ class MpesaGatewayTest extends TestCase
         });
     }
 
-    protected function runPaymentCallbackFlowWalletMpesa(Response $response, string &$callback = null)
+    protected function runPaymentCallbackFlowWalletMpesa(TestResponse $response, string &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 

@@ -3,8 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Federal;
 
 use Mail;
-use Mockery;
 use Carbon\Carbon;
+
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -195,15 +196,17 @@ class NetbankingFederalGatewayTest extends TestCase
 
     public function testExcelRefundFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundsForFileGeneration($payments);
 
-        $this->checkMailQueue();
-
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         $this->checkRefundFileData($data['netbanking_federal']);
+
+        $this->checkMailQueue();
     }
 
     public function testEmptyExcelRefundFileGeneration()
@@ -268,42 +271,33 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        $today = Carbon::today('Asia/Kolkata')->format('d_m_Y');
+        $testData = [
+            'subject' => 'Federal Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 1000,
+                    'total'   => 500,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 3,
+                ]
+        ];
 
-                        $emails = ['federal.netbanking.refunds@razorpay.com'];
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData, $date)
+        {
+            $expectedSubject = 'Federal Netbanking claims and refund files for ' . $date;
 
-                        $testData = [
-                            'subject'     => 'Federal Netbanking claims and refund files for ' . $date,
-                            'amount'      => [
-                                'claims'  => 1500,
-                                'refunds' => 1000,
-                                'total'   => 500
-                            ],
-                            'count'       => [
-                                'claims'  => 3,
-                                'refunds' => 3
-                            ],
-                            'emails'      => $emails,
-                            'date'        => $date,
-                        ];
+            $subject = $mail->subject;
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertEquals($expectedSubject, $subject);
 
-                        $this->assertEquals('FBK_REFUND_' . $today . '.txt', $data['refundsFile']['name']);
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return $mail->hasTo('federal.netbanking.refunds@razorpay.com');
+        });
     }
 
     protected function checkRefundFileData($data)
