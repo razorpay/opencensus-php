@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const gulp = require('gulp');
 const webpack = require('webpack');
+const BabiliPlugin = require('babili-webpack-plugin');
 const through = require('through2').obj;
 const plumber = require('gulp-plumber');
 const run = require('run-sequence');
@@ -203,6 +204,9 @@ gulp.task('webpack:prod', cb => {
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
       },
+    }),
+    new BabiliPlugin({
+      mangle: { topLevel: true },
     }),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
