@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                = 'deleted_at';
     const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
     const MPIN                      = 'mpin';
+    const VIRTUAL                   = 'virtual';
 
     const NAME                      = 'name';
     const IFSC                      = 'ifsc';
@@ -49,7 +50,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'bank_account';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
@@ -66,9 +67,9 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_CITY,
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_PIN,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::IFSC,
         self::IFSC_CODE,
@@ -93,15 +94,15 @@ class Entity extends Base\PublicEntity
         self::MPIN,
         self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::IFSC,
         self::NAME,
         self::ACCOUNT_NUMBER,
-    );
+    ];
 
     protected $appends = [
         self::NAME,
@@ -109,23 +110,23 @@ class Entity extends Base\PublicEntity
         self::MPIN_SET,
     ];
 
-    protected $guarded = array(self::ID);
+    protected $guarded = [self::ID];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::ID,
         self::BENEFICIARY_COUNTRY,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
         self::VIRTUAL                => 'bool',
-    );
+    ];
 
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')
     {
-        (new Validator)->validateInput($operation, $input);
+        $this->getValidator()->validateInput($operation, $input);
 
         $this->generate($input);
 

@@ -2132,4 +2132,5 @@ ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_country VARCHAR(2),
     MODIFY COLUMN beneficiary_pin CHAR(6),
     MODIFY COLUMN beneficiary_email VARCHAR(255),
-    MODIFY COLUMN beneficiary_mobile CHAR(32);
+    MODIFY COLUMN beneficiary_mobile CHAR(32),
+    ADD INDEX bank_accounts_account_number_index (account_number);
