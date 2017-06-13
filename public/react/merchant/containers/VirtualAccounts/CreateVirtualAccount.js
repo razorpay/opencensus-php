@@ -25,11 +25,9 @@ export default class CreateVirtualAccount extends Component {
   }
 
   save = props => {
-    debugger;
     return this.props
       .saveVirtualAccount(props)
       .then(virtualAccount => {
-        debugger;
         this.props.luminateRow(virtualAccount.id);
         this.props.showNotification({
           type: 'success',

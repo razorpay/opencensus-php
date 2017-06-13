@@ -22,6 +22,7 @@ import PaymentDetails from 'merchant/containers/Payments/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
 import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Details';
 import SettlementDetails from 'merchant/containers/Settlements/Details';
+import VirtualAccountDetails from 'merchant/containers/VirtualAccounts/Details';
 
 const TRANSACTION_COMPONENTS = {
   rfnd: RefundDetails,
@@ -29,6 +30,7 @@ const TRANSACTION_COMPONENTS = {
   order: OrderDetails,
   inv: PaymentLinkDetails,
   setl: SettlementDetails,
+  va: VirtualAccountDetails,
 };
 
 @connect(null, { openSlider })

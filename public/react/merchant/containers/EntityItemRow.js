@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 export default class EnityItemRow extends Component {
   render() {
     let { id, luminateRowId } = this.props;
-
     return (
       <tr class={luminateRowId === id ? 'luminate' : null}>
         {this.props.children}

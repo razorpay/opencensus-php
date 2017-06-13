@@ -59,5 +59,6 @@ export const OrderStatusLabel = StatusLabel(orderStatusMap);
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
+export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);
