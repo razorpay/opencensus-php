@@ -9,6 +9,10 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 
 export const updateSession = payload => {
+  if (payload.user) {
+    payload.user = new User(payload.user);
+  }
+
   return {
     type: UPDATE_SESSION,
     payload,

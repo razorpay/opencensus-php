@@ -33,7 +33,7 @@ export default class App extends Component {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
     Promise.all([
-      this.props.fetchUser().then(({ data }) => {
+      this.fetchUser().then(({ data }) => {
         let user = data;
         let role = user.userRole;
 
@@ -47,7 +47,7 @@ export default class App extends Component {
         this.redirectToRoute(role);
         this.initSmooch(user);
       }),
-      this.props.fetchOrg().then(({ data }) => {
+      this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
@@ -65,6 +65,28 @@ export default class App extends Component {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);
+    }
+  }
+
+  fetchUser() {
+    let user = window.rzp_user;
+    if (user) {
+      delete window.rzp_user;
+      this.props.updateSession({ user });
+      return Promise.resolve({ data: user });
+    } else {
+      return this.props.fetchUser();
+    }
+  }
+
+  fetchOrg() {
+    let org = window.rzp_org;
+    if (org) {
+      delete window.rzp_org;
+      this.props.updateSession({ org });
+      return Promise.resolve({ data: org });
+    } else {
+      return this.props.fetchOrg();
     }
   }
 
