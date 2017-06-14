@@ -39,7 +39,6 @@ class BankTransferTest extends TestCase
     public function testBankTransferValidate()
     {
         $accountNumber = $this->bankAccount['account_number'];
-
         $ifsc = $this->bankAccount['ifsc'];
 
         // Validate API always returns true
@@ -64,7 +63,6 @@ class BankTransferTest extends TestCase
     public function testBankTransferValidateDuplicateUtr()
     {
         $accountNumber = $this->bankAccount['account_number'];
-
         $ifsc = $this->bankAccount['ifsc'];
 
         // Validate API always returns true
@@ -103,7 +101,6 @@ class BankTransferTest extends TestCase
     public function testBankTransferValidateInvalidAccount()
     {
         $accountNumber = 'RAZORPINVALIDACCOUNT';
-
         $ifsc = $this->bankAccount['ifsc'];
 
         // Validate API always returns true
@@ -122,7 +119,6 @@ class BankTransferTest extends TestCase
         $this->testBankTransferValidate();
 
         $accountNumber = $this->bankAccount['account_number'];
-
         $ifsc = $this->bankAccount['ifsc'];
 
         // Created bank transfer is an expected one, but initially not marked as notified
@@ -152,7 +148,6 @@ class BankTransferTest extends TestCase
         $this->testBankTransferValidate();
 
         $accountNumber = $this->bankAccount['account_number'];
-
         $ifsc = $this->bankAccount['ifsc'];
 
         // Created bank transfer is an expected one, but initially not marked as notified
@@ -206,17 +201,6 @@ class BankTransferTest extends TestCase
         return $response['bank_account'];
     }
 
-    protected function createVirtualAccountForCustomer($customer)
-    {
-        $request = $this->testData['createVirtualAccount'];
-
-        $request['content']['customer_id'] = $customer['id'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response['bank_account'];
-    }
-
     protected function validateBankTransfer($accountNumber, $ifsc, $utr = null)
     {
         return $this->validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
@@ -245,6 +229,10 @@ class BankTransferTest extends TestCase
         }
 
         $request['content']['transaction_id'] = $utr;
+
+        $vvsSecret = \Config::get('applications.vvs.secret');
+
+        $this->ba->appAuth('rzp_test', $vvsSecret);
 
         $response = $this->makeRequestAndGetContent($request);
 

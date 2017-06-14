@@ -33,7 +33,7 @@ class Service extends Base\Service
         {
             $this->virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
-            $this->buildReceivers($input);
+            $this->buildReceivers($this->virtualAccount, $input[Entity::RECEIVER_TYPE]);
 
             $this->repo->saveOrFail($this->virtualAccount);
         });
@@ -120,15 +120,15 @@ class Service extends Base\Service
         }
     }
 
-    protected function buildReceivers(array $input)
+    protected function buildReceivers(Entity $virtualAccount, array $receiverTypes)
     {
-        $name = $input[Entity::NAME] ?? null;
+        $name = $virtualAccount->getName();
 
-        $descriptor = $input[Entity::DESCRIPTOR] ?? null;
+        $descriptor = $virtualAccount->getDescriptor();
 
         $receiverHelper = new Receiver($this->merchant, $name, $descriptor);
 
-        foreach ($input[Entity::RECEIVER_TYPE] as $receiverType)
+        foreach ($receiverTypes as $receiverType)
         {
             $func = 'build' . studly_case($receiverType);
 

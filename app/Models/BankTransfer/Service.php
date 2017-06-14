@@ -2,10 +2,14 @@
 
 namespace RZP\Models\BankTransfer;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 USE RZP\Models\Currency\Currency;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -29,6 +33,12 @@ class Service extends Base\Service
         $this->validator = new Validator;
 
         $this->core = new Core;
+
+        $this->provider = $this->auth->getInternalApp();
+
+        $this->ip = $this->app['request']->getRealClientIp();
+
+        $this->validateProviderIp($this->provider, $this->ip);
     }
 
     public function validate(array $input): array
@@ -213,8 +223,10 @@ class Service extends Base\Service
 
     protected function getBankAccountFromNumber(string $accountNumber)
     {
+        $bankCode = Provider::getBankCode($this->provider);
+
         $bankAccount = $this->repo->bank_account
-                            ->findFirstBankAccountByAccountNumber($accountNumber);
+                            ->findBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
         return $bankAccount;
     }
@@ -226,5 +238,14 @@ class Service extends Base\Service
         $paymentArray[Payment::AMOUNT] = $bankTransfer->getAmount();
 
         return $paymentArray;
+    }
+
+    protected function validateProviderIp(string $app, string $ip)
+    {
+        if (Provider::validateIp($app, $ip) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
     }
 }

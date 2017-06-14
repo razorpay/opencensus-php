@@ -77,22 +77,10 @@ class Receiver
 
         $merchantDetails = [
             BankAccount::ACCOUNT_NUMBER     => $this->generateAccountNumberForProvider($provider),
-            BankAccount::BENEFICIARY_NAME   => $this->getNameForAccount(),
+            BankAccount::BENEFICIARY_NAME   => $this->name,
         ];
 
         return array_merge($details, $merchantDetails);
-    }
-
-    protected function getNameForAccount()
-    {
-        if ($this->name !== null)
-        {
-            return $this->name;
-        }
-        else
-        {
-            return $this->merchant->getBillingLabel() . ' Virtual Account';
-        }
     }
 
     protected function selectProvider()

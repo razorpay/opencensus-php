@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -40,4 +41,40 @@ class Provider
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
     ];
+
+    const IP = [
+        Provider::YESBANK => [
+            // Todo
+        ],
+        Provider::KOTAK => [
+            '14.141.97.12',
+        ],
+        Provider::VVS => [
+            '*',
+        ],
+    ];
+
+    public static function getBankCode(string $provider)
+    {
+        $ifsc = self::DEFAULT_DETAILS[$provider][BankAccount::IFSC_CODE];
+
+        return substr($ifsc, 0, 4);
+    }
+
+    public static function validateIp(string $provider, string $ip)
+    {
+        $providerIps = self::IP[$provider];
+
+        if (in_array('*', $providerIps, true) === true)
+        {
+            return true;
+        }
+
+        if (in_array($ip, $providerIps, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

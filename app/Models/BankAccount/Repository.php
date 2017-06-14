@@ -60,6 +60,19 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function findBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber);
+
+        if ($bankCode !== null)
+        {
+            $query->where(Entity::IFSC_CODE, 'like', $bankCode.'%');
+        }
+
+        return $query->first();
+    }
+
     public function getRazarpayBankAccountsFromAccountNumber($accountNumber)
     {
         $ifsc = 'RAZR';

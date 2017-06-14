@@ -103,7 +103,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NAME]) === false)
         {
-            $input[self::NAME] = $this->merchant->getBillingLabel();
+            $input[self::NAME] = $this->merchant->getBillingLabel().' Virtual Account';
         }
     }
 
@@ -139,6 +139,16 @@ class Entity extends Base\PublicEntity
     public function getAmountReceived()
     {
         return $this->getAttribute(self::AMOUNT_RECEIVED);
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getDescriptor()
+    {
+        return $this->getAttribute(self::DESCRIPTOR);
     }
 
     // ----------------------- Setters -----------------------------------------
