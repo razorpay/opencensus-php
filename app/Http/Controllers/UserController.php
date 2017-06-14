@@ -44,8 +44,8 @@ class UserController extends Controller
                 'isConfirmed'           => $details['user']['confirmed'],
                 'preSignupData'         => $details['pre_signup'],
                 'isPreSignupComplete'   => $details['pre_signup_complete'],
-                'user'                  => $details,
-                'org'                   => $org,
+                'user'                  => json_encode($details),
+                'org'                   => json_encode($org),
             ];
         }
 
