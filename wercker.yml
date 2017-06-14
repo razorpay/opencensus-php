@@ -1,5 +1,7 @@
 box:
-  id:  razorpay/docker:php7
+  id: razorpay/containers:php7
+  username: $DOCKERHUB_USER
+  password: $DOCKERHUB_PASSWORD
 dev:
   steps:
     - internal/shell:
@@ -65,7 +67,9 @@ build:
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
 dockerhub-push:
     box:
-      id: razorpay/docker:base-php7
+      id: razorpay/containers:base-php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
       cmd: /bin/bash
     steps:
       - script:
@@ -88,7 +92,7 @@ dockerhub-push:
       - internal/docker-push:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
-          repository: razorpay/gimli
+          repository: razorpay/api
           entrypoint: /app/entrypoint.sh
           ports: 80/tcp
           working-dir: /app/
