@@ -29,6 +29,38 @@ class CouponsTest extends TestCase
         $this->startTest();
     }
 
+    public function testMissingParams()
+    {
+        $this->createCoupon();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+        ];
+
+        $requestData = $this->testData[__FUNCTION__ . 'MissingCode'];
+
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
+
+
+        $content = [
+            'code' => 'RANDOM-123',
+        ];
+
+        $requestData = $this->testData[__FUNCTION__ . 'MissingMerchant'];
+
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
+    }
+
     public function testCreateCoupon()
     {
         $this->createCoupon();
