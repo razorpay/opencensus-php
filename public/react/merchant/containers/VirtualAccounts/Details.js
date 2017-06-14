@@ -1,13 +1,13 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import VirtualAccountDetails from 'merchant/components/VirtualAccounts/Details';
 import * as VirtualAccountActions from 'merchant/modules/virtualaccounts/list';
 import { showNotification } from 'rzp/modules/notifications';
-import { closeSlider } from 'rzp/modules/slider';
 
+@withRouter
 @connect(state => state.virtualaccount, {
   showNotification,
-  closeSlider,
   ...VirtualAccountActions,
 })
 export default class VirtualAccountDetailsContainer extends Component {
@@ -57,7 +57,7 @@ export default class VirtualAccountDetailsContainer extends Component {
         this.props
           .deleteVirtualAccount(virtualaccount)
           .then(response => {
-            this.props.closeSlider();
+            this.props.history.push('/virtualaccounts');
             this.props.showNotification({
               type: 'success',
               message: 'Account deleted successfully',
