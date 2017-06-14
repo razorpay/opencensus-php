@@ -7,16 +7,40 @@ use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Batch as BatchModel;
+use RZP\Mail\Base\Constants;
 
 class Base extends Mailable
 {
+    // Following static variables are internal to Mail\Batch model for
+    // re-usability as they followed very same construct.
+
     /**
-     * Map of mail tags per type of batch
+     * Mail tag to add in mail headers
+     *
+     * @var string
      */
-    const MAIL_TAGS_PER_TYPE = [
-        BatchModel\Type::REFUND       => MailTags::BATCH_REFUNDS_FILE,
-        BatchModel\Type::PAYMENT_LINK => MailTags::BATCH_PAYMENT_LINK_FILE,
-    ];
+    protected static $mailTag;
+
+    /**
+     * Accessors key for sender's address and header
+     *
+     * @var string
+     */
+    protected static $sender;
+
+    /**
+     * The subject line
+     *
+     * @var string
+     */
+    protected static $subjectLine;
+
+    /**
+     * Body text
+     *
+     * @var string
+     */
+    protected static $body;
 
     /**
      * @var array - BatchModel\Entity's toArray()
@@ -47,11 +71,39 @@ class Base extends Mailable
         $this->outputFileLocalPath = $outputFileLocalPath;
     }
 
+    protected function addSender()
+    {
+        $fromEmail  = Constants::MAIL_ADDRESSES[static::$sender];
+        $fromHeader = Constants::HEADERS[static::$sender];
+
+        $this->from($fromEmail, $fromHeader);
+
+        return $this;
+    }
+
     protected function addRecipients()
     {
         $emails = $this->merchant['transaction_report_email'];
 
         $this->to($emails);
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $this->subject(sprintf(static::$subjectLine, $today));
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = ['body' => static::$body];
+
+        $this->with($data);
 
         return $this;
     }
@@ -76,9 +128,7 @@ class Base extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $tag = self::MAIL_TAGS_PER_TYPE[$this->batch[BatchModel\Entity::TYPE]];
-
-            $headers->addTextHeader(MailTags::HEADER, $tag);
+            $headers->addTextHeader(MailTags::HEADER, static::$mailTag);
         });
 
         return $this;

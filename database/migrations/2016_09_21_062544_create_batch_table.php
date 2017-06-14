@@ -85,17 +85,10 @@ class CreateBatchTable extends Migration
                   ->references(Batch::ID)
                   ->on(Table::BATCH)
                   ->on_delete('restrict');
-
         });
 
         Schema::table(Table::INVOICE, function($table)
         {
-            $table->string(Invoice\Entity::BATCH_ID, Batch::ID_LENGTH)
-                  ->nullable()
-                  ->after(Invoice\Entity::SUBSCRIPTION_ID);
-
-            $table->index(Invoice\Entity::BATCH_ID);
-
             $table->foreign(Invoice\Entity::BATCH_ID)
                   ->references(Batch::ID)
                   ->on(Table::BATCH)
@@ -120,8 +113,6 @@ class CreateBatchTable extends Migration
         Schema::table(Table::INVOICE, function($table)
         {
             $table->dropForeign(Table::INVOICE . '_' . Invoice\Entity::BATCH_ID . '_foreign');
-
-            $table->dropColumn(Invoice\Entity::BATCH_ID);
         });
 
         Schema::table(Table::BATCH, function($table)

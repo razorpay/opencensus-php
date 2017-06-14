@@ -14,28 +14,26 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
-        Entity::TYPE        => 'sometimes|in:refund',
+        Entity::TYPE        => 'sometimes|in:refund,payment_link',
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
     ];
 
     /**
-     * Finds unprocessed batches by type.
+     * Finds unprocessed batches to be processed via CRON.
+     *
      * We have choose a limit of estimated 10. For now it should work.
      * If needs we'll increase the limit later or change the logic around it.
      *
-     * @param string  $type
      * @param integer $limit
      *
      * @return Base\PublicCollection
      */
-    public function fetchUnprocessedByType(
-        string $type,
-        $limit = 10): Base\PublicCollection
+    public function fetchUnprocessedForCron($limit = 10): Base\PublicCollection
     {
         $status = [Status::CREATED, Status::PROCESSING];
 
         return $this->newQuery()
-                    ->where(Entity::TYPE, $type)
+                    ->whereIn(Entity::TYPE, Type::CRON_GROUP)
                     ->whereIn(Entity::STATUS, $status)
                     ->oldest()
                     ->limit($limit)

@@ -84,6 +84,8 @@ class Base extends BaseModel\Core
 
     public function process()
     {
+        $this->batch->getValidator()->validateNotProcessedAlready();
+
         $this->batch->incrementAttempts();
 
         $this->downloadAndSetInputFile();

@@ -4,39 +4,16 @@ namespace RZP\Mail\Batch;
 
 use Carbon\Carbon;
 
+use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 
 class Refund extends Base
 {
-    protected function addSender()
-    {
-        $fromEmail  = Constants::MAIL_ADDRESSES[Constants::REFUNDS];
-        $fromHeader = Constants::HEADERS[Constants::REFUNDS];
+    protected static $mailTag     = MailTags::BATCH_REFUNDS_FILE;
 
-        $this->from($fromEmail, $fromHeader);
+    protected static $sender      = Constants::REFUNDS;
 
-        return $this;
-    }
+    protected static $subjectLine = "Razorpay | Processed Refunds file for %s";
 
-    protected function addSubject()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = "Razorpay | Processed Refunds file for  $today";
-
-        $this->subject($subject);
-
-        return $this;
-    }
-
-    protected function addMailData()
-    {
-        $data = [
-            'body' => 'Please find attached processed Refunds File',
-        ];
-
-        $this->with($data);
-
-        return $this;
-    }
+    protected static $body        = 'Please find attached processed Refunds File';
 }

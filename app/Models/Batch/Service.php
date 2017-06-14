@@ -69,7 +69,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicId($id);
 
-        $batch = (new Core)->processBatch($batch);
+        $batch = (new Core)->processBatchViaApi($batch);
 
         return $batch->toArrayPublic();
     }

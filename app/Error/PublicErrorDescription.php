@@ -346,7 +346,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_INVALID_HEADERS                                = 'The uploaded file has invalid headers';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                          = 'The uploaded file does not have any entries';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID                           = 'The file should not have multiple entries for the same Payment Id';
-    const BAD_REQUEST_BATCH_FILE_VALIDATION                                     = 'The uploaded file does not contain proper values';
+    const BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS                            = 'The uploaded batch payment link file does not contain proper values';
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                              = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another batch operation is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';

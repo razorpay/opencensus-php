@@ -45,6 +45,9 @@ class CreateInvoices extends Migration
             $table->char(Entity::SUBSCRIPTION_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::BATCH_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Entity::DATE)
                   ->nullable();
 
@@ -147,6 +150,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::STATUS);
             $table->index(Entity::SUBSCRIPTION_STATUS);
+            $table->index(Entity::BATCH_ID);
             $table->index(Entity::DUE_BY);
             $table->index(Entity::SCHEDULED_AT);
             $table->index(Entity::EMAIL_STATUS);

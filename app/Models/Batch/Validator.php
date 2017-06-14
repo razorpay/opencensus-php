@@ -130,13 +130,15 @@ class Validator extends Base\Validator
             {
                 $input = Helpers\PaymentLink::getEntityInput($entry);
 
+                // Need to create dummy entity and associate merchant
+                // for the validation around max allowed payment to happen.
+
                 $invoice = new Invoice\Entity;
 
                 $invoice->merchant()->associate($merchant);
 
-                $invoice->build($input);
-
-                $invoice->getValidator()->validateInvoiceIssue();
+                $invoice->getValidator()
+                        ->validateInput(Invoice\Validator::CREATE_DRAFT, $input);
 
                 unset($invoice);
             }
@@ -149,7 +151,7 @@ class Validator extends Base\Validator
         if (count($errors) > 0)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_VALIDATION,
+                ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
                 Entity::FILE,
                 $errors);
         }

@@ -9,7 +9,6 @@ class Constants
     const REFUNDS       = 'refunds';
     const SETTLEMENTS   = 'settlements';
     const INVOICES      = 'invoices';
-    const PAYMENT_LINK  = 'payment_link';
     const NOTIFICATIONS = 'notifications';
     const REPORTS       = 'reports';
     const CARE          = 'care';
@@ -36,13 +35,12 @@ class Constants
     ];
 
     const HEADERS = [
-        self::SUPPORT      => 'Team Razorpay',
-        self::SCORECARD    => 'Razorpay Scorecard',
-        self::REFUNDS      => 'Refunds File',
-        self::INVOICES     => 'Razorpay Invoices',
-        self::PAYMENT_LINK => 'Razorpay Payment Link',
-        self::REPORTS      => 'Team Razorpay',
-        self::CARE         => 'Team Razorpay',
-        self::ALERTS       => 'Razorpay Webhook Support'
+        self::SUPPORT   => 'Team Razorpay',
+        self::SCORECARD => 'Razorpay Scorecard',
+        self::REFUNDS   => 'Refunds File',
+        self::INVOICES  => 'Razorpay Invoices',
+        self::REPORTS   => 'Team Razorpay',
+        self::CARE      => 'Team Razorpay',
+        self::ALERTS    => 'Razorpay Webhook Support'
     ];
 }

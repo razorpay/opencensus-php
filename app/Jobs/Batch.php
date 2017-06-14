@@ -50,6 +50,8 @@ class Batch extends Job implements ShouldQueue
                                 BatchModel\Entity::ID => $this->id,
                             ]);
 
+            $batch->getValidator()->validateNotProcessedAlready();
+
             BatchModel\Processor\Base::get($batch)->process();
 
             $timeTaken = microtime(true) - $timeStarted;

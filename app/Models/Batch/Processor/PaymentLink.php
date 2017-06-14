@@ -17,9 +17,7 @@ class PaymentLink extends Base
         $invoice = (new Invoice\Core)->create(
                         $input, $this->merchant, null, $this->batch);
 
-        //
         // Update the entry with output values
-        //
 
         $entry[Batch\Header::STATUS]          = Batch\Status::SUCCESS;
         $entry[Batch\Header::PAYMENT_LINK_ID] = $invoice->getPublicId();

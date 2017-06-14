@@ -110,11 +110,6 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
     }
 
-    public function invoices()
-    {
-        return $this->hasMany('RZP\Models\Invoice\Entity');
-    }
-
     /**
      * The file which user uploads when creating the batch entity.
      *
@@ -142,7 +137,7 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
-    // Getters
+    // ----------------------- Getters -------------------------------
 
     public function getAmount()
     {
@@ -223,7 +218,9 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
     }
 
-    // Setters
+    // ----------------------- End  Getters --------------------------
+
+    // ----------------------- Setters -------------------------------
 
     public function setUploadFileUrl(string $url)
     {
@@ -284,4 +281,6 @@ class Entity extends Base\PublicEntity
     {
         $this->increment(self::ATTEMPTS);
     }
+
+    // ----------------------- End Setters ---------------------------
 }

@@ -15,12 +15,6 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    /**
-     * Queue delay in seconds. Only after 10 s we intend the
-     * asynchronous job to start processing.
-     */
-    const QUEUE_DELAY = 10;
-
     public function create(array $input): Entity
     {
         $batch = (new Entity)->build($input);
@@ -50,7 +44,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
-        $this->dispatchOnQueueForProcessing($batch);
+        $this->dispatchOnQueueForProcessingIfApplicable($batch);
 
         return $batch;
     }
@@ -125,7 +119,7 @@ class Core extends Base\Core
     {
         $this->increaseAllowedSystemLimits();
 
-        $batches = $this->repo->batch->fetchUnprocessedByType(Type::REFUND);
+        $batches = $this->repo->batch->fetchUnprocessedForCron();
 
         foreach ($batches as $batch)
         {
@@ -136,18 +130,34 @@ class Core extends Base\Core
     }
 
     /**
-     * Process a particular batch entity.
+     * Processes individual batch via API
      *
      * @param Entity $batch
      *
      * @return Entity
      */
-    public function processBatch(Entity $batch): Entity
+    public function processBatchViaApi(Entity $batch)
     {
-        $batch->getValidator()->validateNotProcessedAlready();
+        return $this->processBatch($batch, true);
+    }
 
+    /**
+     * Process a particular batch entity.
+     *
+     * @param Entity  $batch
+     * @param boolean $bubbleEx - When called iteratively over batch collection
+     *                            we don't break execution. But when called via
+     *                            API for individual batch we bubble exception
+     *                            to response.
+     *
+     * @return Entity
+     */
+    public function processBatch(Entity $batch, bool $bubbleEx = false): Entity
+    {
         try
         {
+            $batch->getValidator()->validateNotProcessedAlready();
+
             Processor\Base::get($batch)->process();
         }
         catch (\Throwable $e)
@@ -160,14 +170,17 @@ class Core extends Base\Core
                     'batch' => $batch->toArrayPublic(),
                 ]);
 
-            //
             // Even if there is any error during processing of batch
             // we for now still set the status as PROCESSED.
-            //
 
             $batch->setStatus(Status::PROCESSED);
 
             $this->repo->saveOrFail($batch);
+
+            if ($bubbleEx === true)
+            {
+                throw $e;
+            }
         }
 
         return $batch;
@@ -216,26 +229,22 @@ class Core extends Base\Core
 
     /**
      * Dispatches new job onto queue for asynchronous processing of it.
+     * Only batch entity's of type in Type::QUEUE_GROUP gets pushed onto queue,
+     * others are processed via CRON.
      *
      * @param Entity $batch
      */
-    protected function dispatchOnQueueForProcessing(Entity $batch)
+    protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch)
     {
-        // Currently REFUND type gets processed via CRON every 6 hours.
-        // And so not touching that flow currently.
-
-        if ($batch->getType() === Type::REFUND)
+        if (Type::isQueueGroup($batch->getType()) == false)
         {
             return;
         }
 
-        // New type in use is PAYMENT_LINK. And we have a new asynchronous job
-        // file for Batch which we are using here.
-
-        // Also for now this is being pushed onto invoice_emails queue only and
+        // For now this is being pushed onto invoice_emails queue only and
         // later we might have a new queue for this purpose only.
 
-        $job = (new BatchJob($this->mode, $batch->getId()))->delay(self::QUEUE_DELAY);
+        $job = new BatchJob($this->mode, $batch->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }
