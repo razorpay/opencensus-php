@@ -8,7 +8,6 @@ use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
-use RZP\Constants\Entity as PublicEntity;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
 
 class Core extends Base\Core
@@ -17,19 +16,11 @@ class Core extends Base\Core
 
     public function create(array $input)
     {
-        $publicEntityId = $input[Entity::ENTITY_ID];
-
         $entityType = $input[Entity::ENTITY_TYPE];
 
-        $entityClass = PublicEntity::getEntityClass($entityType);
-
-        $entityClass::verifyIdAndSilentlyStripSign($input[Entity::ENTITY_ID]);
+        $entity = $this->repo->$entityType->findByPublicId($input[Entity::ENTITY_ID]);
 
         $coupon = (new Entity)->build($input);
-
-        $entity = $this->repo->$entityType->findByPublicId($publicEntityId);
-
-        $coupon->source()->associate($entity);
 
         $this->repo->saveOrFail($coupon);
 

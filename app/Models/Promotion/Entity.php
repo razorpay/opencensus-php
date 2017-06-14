@@ -15,10 +15,6 @@ class Entity extends Base\PublicEntity
     const ITERATIONS          = 'iterations';
     const CREDITS_EXPIRABLE   = 'credits_expirable';
 
-    //Attribute lengths
-    const NAME_LENGTH         = 50;
-    const CREDIT_TYPE_LENGTH  = 10;
-
     protected $entity      = 'promotion';
 
     protected static $sign = 'prom';

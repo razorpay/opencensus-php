@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -24,12 +24,12 @@ class CreatePromotionsTable extends Migration
             $table->char(Promotion::ID, Promotion::ID_LENGTH)
                   ->primary();
 
-            $table->string(Promotion::NAME, Promotion::NAME_LENGTH);
+            $table->string(Promotion::NAME, 50);
 
             $table->integer(Promotion::AMOUNT)
                   ->unsigned();
 
-            $table->string(Promotion::CREDIT_TYPE, Promotion::CREDIT_TYPE_LENGTH);
+            $table->string(Promotion::CREDIT_TYPE, 10);
 
             $table->char(Promotion::SCHEDULE_ID, Promotion::ID_LENGTH)
                   ->nullable();

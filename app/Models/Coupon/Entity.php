@@ -5,6 +5,7 @@ namespace RZP\Models\Coupon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Constants\Entity as PublicEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -17,15 +18,14 @@ class Entity extends Base\PublicEntity
     const USED_COUNT  = 'used_count';
     const DELETED_AT  = 'deleted_at';
 
-    const ENTITY_TYPE_LENGTH = 20;
-    const COUPON_CODE_LENGTH = 10;
-
     protected $entity = 'coupon';
 
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::MERCHANT_ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::CODE,
         self::START_DATE,
         self::END_DATE,
@@ -56,6 +56,10 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT => 'int',
     ];
 
+    protected static $modifiers = [
+        self::ENTITY_ID,
+    ];
+
     /**
      * Creates a polymorphic relation with entities
      * implementing a morphMany association on the
@@ -64,6 +68,13 @@ class Entity extends Base\PublicEntity
     public function source()
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
+    }
+
+    protected function modifyEntityId(array & $input)
+    {
+        $entityClass = PublicEntity::getEntityClass($input[Entity::ENTITY_TYPE]);
+
+        $entityClass::verifyIdAndSilentlyStripSign($input[Entity::ENTITY_ID]);
     }
 
     public function getUsage()
