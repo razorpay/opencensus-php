@@ -47,7 +47,7 @@ class Core extends Base\Core
 
     protected function validateAndApplyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
-        $promotion = $coupon->source()->firstOrFail();
+        $promotion = $coupon->source;
 
         $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
                                 $merchant->getId(),
