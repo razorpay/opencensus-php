@@ -16,6 +16,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
+import User from 'merchant/models/User';
 
 @withRouter
 @connect(state => state.session, {
@@ -69,7 +70,7 @@ export default class App extends Component {
   }
 
   fetchUser() {
-    let user = window.rzp_user;
+    let user = new User(window.rzp_user);
     if (user) {
       delete window.rzp_user;
       this.props.updateSession({ user });
