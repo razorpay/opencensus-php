@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
@@ -18,7 +20,7 @@ trait Reversal
      * Fetches and refunds the transfer payment and
      * create a reversal for the transfer
      *
-     * @param  Transfer\Entity $transfer
+     * @param Transfer\Entity  $transfer
      * @param array            $input
      *
      * @return ReversalEntity
@@ -74,6 +76,8 @@ trait Reversal
 
         $refund->setBaseAmount();
 
+        $this->validateLinkedAccountBalanceForReversal($refund);
+
         $txn = (new Transaction\Core)->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
@@ -89,6 +93,34 @@ trait Reversal
         $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($refund);
+    }
+
+    /**
+     * Before processing a reversal with internal refund, validate that
+     * the linked account has enough balance for the refund.
+     *
+     * @param Refund\Entity $refund
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateLinkedAccountBalanceForReversal(Refund\Entity $refund)
+    {
+        $linkedAccount = $refund->merchant;
+
+        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($linkedAccount);
+
+        if ($balance->getBalance() < $refund->getBaseAmount())
+        {
+            $exceptionData = [
+                'account_balance'  => $balance->getBalance(),
+                'refund_amount'    => $refund->getBaseAmount()
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE,
+                null,
+                $exceptionData);
+        }
     }
 
     /**
