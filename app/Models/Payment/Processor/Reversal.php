@@ -76,7 +76,7 @@ trait Reversal
 
         $refund->setBaseAmount();
 
-        $this->validateLinkedAccountBalanceForReversal($refund);
+        $this->validateMerchantBalance($refund, 'reversal');
 
         $txn = (new Transaction\Core)->createFromRefund($refund);
 
@@ -93,34 +93,6 @@ trait Reversal
         $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($refund);
-    }
-
-    /**
-     * Before processing a reversal with internal refund, validate that
-     * the linked account has enough balance for the refund.
-     *
-     * @param Refund\Entity $refund
-     *
-     * @throws Exception\BadRequestException
-     */
-    protected function validateLinkedAccountBalanceForReversal(Refund\Entity $refund)
-    {
-        $linkedAccount = $refund->merchant;
-
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($linkedAccount);
-
-        if ($balance->getBalance() < $refund->getBaseAmount())
-        {
-            $exceptionData = [
-                'account_balance'  => $balance->getBalance(),
-                'refund_amount'    => $refund->getBaseAmount()
-            ];
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE,
-                null,
-                $exceptionData);
-        }
     }
 
     /**
