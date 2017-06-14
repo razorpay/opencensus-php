@@ -133,7 +133,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-store"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
-                    featureEnabled="Virtualaccounts"
+                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
@@ -224,7 +224,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-primary"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
-                    featureEnabled="Virtualaccounts"
+                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
