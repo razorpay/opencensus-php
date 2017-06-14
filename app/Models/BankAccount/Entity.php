@@ -122,6 +122,10 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL                => 'bool',
     ];
 
+    protected $defaults = [
+        self::VIRTUAL                => false,
+    ];
+
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')
