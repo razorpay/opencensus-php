@@ -1,4 +1,5 @@
 import AsyncButton from 'react-async-button';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
@@ -8,7 +9,7 @@ import DetailRow from 'merchant/components/DetailRow';
 import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 export default props => {
-  let { virtualaccount, isLoading, statusMsg } = props;
+  let { virtualaccount, isLoading, statusMsg, onClose, onDelete } = props;
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -19,6 +20,34 @@ export default props => {
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               Virtual Account ID: <b>{virtualaccount.id}</b>
+
+              <div class="btn-toolbar pull-right">
+                <Dropdown>
+                  <DropdownTrigger class="dropdown-toggle">
+                    <button
+                      class="btn btn-default btn-sm dropdown-toggle"
+                      type="button"
+                    >
+                      Actions {' '}
+                      <span class="caret" />
+                    </button>
+                  </DropdownTrigger>
+                  <DropdownContent>
+                    <ul class="dropdown-menu pull-right">
+                      <li>
+                        <a onClick={() => onClose(virtualaccount)}>
+                          Close Account
+                        </a>
+                      </li>
+                      <li>
+                        <a onClick={() => onDelete(virtualaccount)}>
+                          Delete Account
+                        </a>
+                      </li>
+                    </ul>
+                  </DropdownContent>
+                </Dropdown>
+              </div>
             </div>
 
             <div class="SliderPanel__Body">

@@ -44,12 +44,14 @@ export default class CreateVirtualAccount extends Component {
   };
 
   render() {
-    const { handleSubmit, referral } = this.props;
+    const { handleSubmit, virtualAccount } = this.props;
 
     return (
       <div>
         <ModalHeader
-          title="Create Virtual Account"
+          title={
+            virtualAccount ? 'Edit Virtual Account' : 'Create Virtual Account'
+          }
           onCloseClick={this.props.closeModal}
         />
 

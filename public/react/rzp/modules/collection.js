@@ -29,7 +29,6 @@ export function makeCollectionReducer(
   initialState = defaultInitialState
 ) {
   let singularEntityName = entityName.slice(0, entityName.length - 1);
-
   return function(state = initialState, action) {
     switch (action.type) {
       case `${entityName}_FETCH_RESET`:

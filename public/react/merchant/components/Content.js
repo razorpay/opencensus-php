@@ -35,6 +35,7 @@ import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
 import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
+import { openSlider } from 'rzp/modules/slider';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -78,7 +79,7 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, { setBaseLocation, setActiveEntity })
+@connect(null, { setBaseLocation, setActiveEntity, openSlider })
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity } = this.props;
@@ -298,11 +299,14 @@ export default class Content extends Component {
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
     if (DetailView) {
-      DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation}>
-            <DetailView />
-          </Slider>
-        : <DetailView />;
+      if (BaseView) {
+        DetailView = (
+          <Slider closeUrl={this.baseLocation}> <DetailView /> </Slider>
+        );
+        this.props.openSlider();
+      } else {
+        DetailView = <DetailView />;
+      }
     }
 
     return (

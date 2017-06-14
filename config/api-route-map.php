@@ -325,9 +325,13 @@ return [
             'url'       => 'virtual_accounts',
             'routeName' => 'virtual_account_create'
         ],
+        'virtual_account_update'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_account_update'
+        ],
         'virtual_account_delete'            => [
             'url'       => 'virtual_accounts/{id}',
-            'routeName' => 'virtual_account_close'
+            'routeName' => 'virtual_account_delete'
         ]
 
     ],
