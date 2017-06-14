@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     const UTR                = 'utr';
     const TIME               = 'time';
     const DESCRIPTION        = 'description';
+    const EXPECTED           = 'expected';
+    const NOTIFIED           = 'notified';
 
     const REQ_UTR            = 'transaction_id';
 
@@ -43,11 +45,18 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT => 'int',
+        self::AMOUNT   => 'int',
+        self::EXPECTED => 'bool',
+        self::NOTIFIED => 'bool',
     ];
 
     protected static $modifiers = [
         self::UTR,
+    ];
+
+    protected $defaults = [
+        self::EXPECTED => false,
+        self::NOTIFIED => false,
     ];
 
     protected $entity = Constants\Entity::BANK_TRANSFER;
@@ -113,5 +122,22 @@ class Entity extends Base\PublicEntity
     public function getPayerIfsc()
     {
         return $this->getAttribute(self::PAYER_IFSC);
+    }
+
+    public function isNotified()
+    {
+        return $this->getAttribute(self::NOTIFIED);
+    }
+
+    // ----------------------- Setters -----------------------------------------
+
+    public function setExpected(bool $expected)
+    {
+        $this->setAttribute(self::EXPECTED, $expected);
+    }
+
+    public function setNotified(bool $notified)
+    {
+        $this->setAttribute(self::NOTIFIED, $notified);
     }
 }

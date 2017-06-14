@@ -12,19 +12,19 @@ return [
         'content' => [],
     ],
 
-    'validateBankAccount' => [
+    'validateBankTransfer' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
         'content' => [],
     ],
 
-    'payBankAccount' => [
+    'notifyBankTransfer' => [
         'url'     => '/ecollect/pay',
         'method'  => 'post',
         'content' => [],
     ],
 
-    'validateOrPayBankAccount' => [
+    'validateOrNotifyBankTransfer' => [
         'url'     => null,
         'method'  => 'post',
         'content' => [
@@ -72,7 +72,7 @@ return [
         ],
     ],
 
-    'testBankTransferPayFailure' => [
+    'testBankTransferNotifyFailure' => [
         'request' => [
             'url' => '/ecollect/pay',
             'method' => 'post',

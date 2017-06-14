@@ -42,17 +42,23 @@ class BankTransferTest extends TestCase
 
         $ifsc = $this->bankAccount['ifsc'];
 
-        $response = $this->validateBankAccount($accountNumber, $ifsc);
+        // Validate API always returns true
+        $response = $this->validateBankTransfer($accountNumber, $ifsc);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
+        // Created bank transfer is an expected one
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
 
+        // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('created', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('pay_'.$bankTransfer['payment_id'], $payment['id']);
     }
 
     public function testBankTransferValidateDuplicateUtr()
@@ -61,24 +67,49 @@ class BankTransferTest extends TestCase
 
         $ifsc = $this->bankAccount['ifsc'];
 
-        $response = $this->validateBankAccount($accountNumber, $ifsc);
+        // Validate API always returns true
+        $response = $this->validateBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('pay_'.$bankTransfer['payment_id'], $payment['id']);
 
         $utr = $response['transaction_id'];
 
-        $response = $this->validateBankAccount($accountNumber, $ifsc, $utr);
-        $this->assertEquals(false, $response['valid']);
-        $this->assertEquals('Duplicate UTR received', $response['message']);
+        // Validate API always returns true
+        $response = $this->validateBankTransfer($accountNumber, $ifsc, $utr);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is not expected, not linked to a payment
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferValidateFalse()
+    public function testBankTransferValidateInvalidAccount()
     {
         $accountNumber = 'RAZORPINVALIDACCOUNT';
 
         $ifsc = $this->bankAccount['ifsc'];
 
-        $response = $this->validateBankAccount($accountNumber, $ifsc);
-        $this->assertEquals(false, $response['valid']);
-        $this->assertEquals('Invalid account number', $response['message']);
+        // Validate API always returns true
+        $response = $this->validateBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
     }
 
     public function testBankTransferValidateFailure()
@@ -86,7 +117,7 @@ class BankTransferTest extends TestCase
         $this->startTest();
     }
 
-    public function testBankTransferPay()
+    public function testBankTransferNotify()
     {
         $this->testBankTransferValidate();
 
@@ -94,18 +125,29 @@ class BankTransferTest extends TestCase
 
         $ifsc = $this->bankAccount['ifsc'];
 
-        $transfer =  $this->getLastEntity('bank_transfer', true);
+        // Created bank transfer is an expected one, but initially not marked as notified
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(false, $bankTransfer['notified']);
+        $this->assertNotNull($bankTransfer['payment_id']);
 
-        $response = $this->payBankAccount($accountNumber, $ifsc, $transfer[E::UTR]);
+        // Notify API always returns true
+        $response = $this->notifyBankTransfer($accountNumber, $ifsc, $bankTransfer[E::UTR]);
         $this->assertEquals(true, $response['success']);
         $this->assertNull($response['message']);
 
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
+        // Bank transfer is now marked as notified
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(true, $bankTransfer['notified']);
+        $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferPayAgain()
+    public function testBankTransferNotifyAgain()
     {
         $this->testBankTransferValidate();
 
@@ -113,25 +155,44 @@ class BankTransferTest extends TestCase
 
         $ifsc = $this->bankAccount['ifsc'];
 
-        $transfer =  $this->getLastEntity('bank_transfer', true);
+        // Created bank transfer is an expected one, but initially not marked as notified
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(false, $bankTransfer['notified']);
+        $this->assertNotNull($bankTransfer['payment_id']);
 
-        $utr = $transfer[E::UTR];
+        $utr = $bankTransfer[E::UTR];
 
-        $response = $this->payBankAccount($accountNumber, $ifsc, $utr);
-
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-
-        $response = $this->payBankAccount($accountNumber, $ifsc, $utr);
+        // Notify API always returns true
+        $response = $this->notifyBankTransfer($accountNumber, $ifsc, $utr);
         $this->assertEquals(true, $response['success']);
         $this->assertNull($response['message']);
 
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('captured', $payment['status']);
+        // Bank transfer is now marked as notified
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(true, $bankTransfer['notified']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Notify API still returns true
+        $response = $this->notifyBankTransfer($accountNumber, $ifsc, $utr);
+        $this->assertEquals(true, $response['success']);
+        $this->assertNull($response['message']);
+
+        // Bank transfer is still marked as notified
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(true, $bankTransfer['notified']);
+        $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferPayFailure()
+    public function testBankTransferNotifyFailure()
     {
         $this->startTest();
     }
@@ -156,17 +217,17 @@ class BankTransferTest extends TestCase
         return $response['bank_account'];
     }
 
-    protected function validateBankAccount($accountNumber, $ifsc, $utr = null)
+    protected function validateBankTransfer($accountNumber, $ifsc, $utr = null)
     {
-        return $this->validateOrPayBankAccount($accountNumber, $ifsc, $utr);
+        return $this->validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
-    protected function payBankAccount($accountNumber, $ifsc, $utr = null)
+    protected function notifyBankTransfer($accountNumber, $ifsc, $utr = null)
     {
-        return $this->validateOrPayBankAccount($accountNumber, $ifsc, $utr);
+        return $this->validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
-    protected function validateOrPayBankAccount($accountNumber, $ifsc, $utr)
+    protected function validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr)
     {
         $request = $this->testData[__FUNCTION__];
 

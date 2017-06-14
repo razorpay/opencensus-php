@@ -50,6 +50,12 @@ class CreateBankTransfer extends Migration
             $table->text(BankTransfer::DESCRIPTION)
                   ->nullable();
 
+            $table->tinyInteger(BankTransfer::EXPECTED)
+                  ->default(0);
+
+            $table->tinyInteger(BankTransfer::NOTIFIED)
+                  ->default(0);
+
             $table->integer(BankTransfer::CREATED_AT);
             $table->integer(BankTransfer::UPDATED_AT);
 

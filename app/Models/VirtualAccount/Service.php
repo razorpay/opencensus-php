@@ -2,8 +2,11 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -135,5 +138,38 @@ class Service extends Base\Service
 
             $this->virtualAccount->$association()->associate($receiver);
         }
+    }
+
+    protected function verifyMerchantIsLiveForLiveRequest()
+    {
+        // On live request, ensure that merchant isn't blocked temporarily
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isLive() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
+        }
+    }
+
+    protected function verifyBankTransferEnabled()
+    {
+        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isBankTransferEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function getMethodsForMerchant(Merchant\Entity $merchant)
+    {
+        if ($merchant->hasRelation('methods') === false)
+        {
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+        }
+
+        return $merchant->methods;
     }
 }

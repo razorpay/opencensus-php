@@ -40,36 +40,32 @@ class Service extends Base\Service
 
         $bankTransfer = $this->core->create($input);
 
-        $uniqueUtr = $this->isUtrUnique($bankTransfer);
-
-        $expected = $this->isTransferExpected($bankTransfer);
-
-        if (($expected === true) and ($uniqueUtr === true))
+        if (($this->isUtrUnique($bankTransfer) === true) and
+            ($this->isTransferExpected($bankTransfer) === true))
         {
+            $bankTransfer->setExpected(true);
+
+            $this->setMerchant();
+
             $this->validateExpectedBankTransfer($bankTransfer);
 
-            $data = [
-                'valid'          => true,
-                'message'        => null,
-            ];
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_VALIDATION_SUCCESSFUL,
+                $bankTransfer->toArrayPublic()
+            );
         }
         else
         {
-            $data['valid'] = false;
-
-            if ($expected === false)
-            {
-                $data['message'] = 'Invalid account number';
-            }
-            else if ($uniqueUtr === false)
-            {
-                $data['message'] = 'Duplicate UTR received';
-            }
+            $bankTransfer->setExpected(false);
         }
 
         $this->repo->saveOrFail($bankTransfer);
 
-        $data[Entity::REQ_UTR] = $bankTransfer->getUtr();
+        $data = [
+            'valid'          => true,
+            'message'        => null,
+            'transaction_id' => $bankTransfer->getUtr(),
+        ];
 
         return $data;
     }
@@ -87,11 +83,16 @@ class Service extends Base\Service
 
         if ($bankTransfer !== null)
         {
-            $this->notifyExpectedBankTransfer($bankTransfer);
+            if ($bankTransfer->isNotified() === false)
+            {
+                $bankTransfer->setNotified(true);
+
+                $this->repo->saveOrFail($bankTransfer);
+            }
         }
         else
         {
-            $this->trace->critical(
+            $this->trace->error(
                 TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
                 [
                     'input' => $input,
@@ -108,32 +109,17 @@ class Service extends Base\Service
 
     protected function validateExpectedBankTransfer(Entity $bankTransfer)
     {
-        $this->setMerchant();
-
-        $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
-
-        $paymentProcessor = new PaymentProcessor($this->merchant);
-
-        $payment = $paymentProcessor->processBankTransferValidation($paymentInput);
-
-        $bankTransfer->payment()->associate($payment);
-
-        $bankTransfer->merchant()->associate($this->merchant);
-    }
-
-    protected function notifyExpectedBankTransfer(Entity $bankTransfer)
-    {
-        $this->setVirtualAccount($bankTransfer);
-
-        $this->setMerchant();
-
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
         $this->repo->transaction(function() use ($bankTransfer, $paymentProcessor)
         {
-            $paymentId = $bankTransfer->payment->getId();
+            $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
 
-            $paymentProcessor->processBankTransferPayment($paymentId);
+            $payment = $paymentProcessor->processBankTransferPayment($paymentInput);
+
+            $bankTransfer->payment()->associate($payment);
+
+            $bankTransfer->merchant()->associate($this->merchant);
 
             $this->updateVirtualAccount($bankTransfer);
         });
@@ -156,6 +142,7 @@ class Service extends Base\Service
         $this->trace->error(
             TraceCode::BANK_TRANSFER_VALIDATION_DUPLICATE_UTR,
             [
+                'message'           => 'Duplicate UTR received',
                 'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
                 'received_utr'      => $bankTransfer->getUtr(),
             ]
@@ -170,6 +157,14 @@ class Service extends Base\Service
 
         if ($this->virtualAccount === null)
         {
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_VALIDATION_FAILED,
+                [
+                    'message'      => 'Invalid account number',
+                    'bankTransfer' => $bankTransfer->toArrayPublic(),
+                ]
+            );
+
             return false;
         }
 

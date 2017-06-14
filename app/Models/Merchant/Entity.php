@@ -442,7 +442,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
     }
 
-    protected function setHandleAttribute($handle)
+    protected function setHandleAttribute(string $handle = null)
     {
         $this->attributes[self::HANDLE] = $handle ? strtoupper($handle) : null;
     }

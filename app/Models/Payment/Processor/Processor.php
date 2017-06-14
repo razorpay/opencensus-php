@@ -168,15 +168,11 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    public function processBankTransferValidation(array $input): Payment\Entity
+    public function processBankTransferPayment(array $input): Payment\Entity
     {
         $this->repo->transaction(function() use ($input) {
             $this->createPaymentEntity($input);
         });
-
-        $this->verifyMerchantIsLiveForLiveRequest();
-
-        $this->verifyPaymentMethodEnabled($this->payment);
 
         $this->verifyFeesLessThanAmount($this->payment);
 
@@ -184,29 +180,15 @@ class Processor
 
         $this->repo->saveOrFail($this->payment);
 
-        return $this->payment;
-    }
-
-    public function processBankTransferPayment(string $id)
-    {
-        $this->payment = $this->repo->payment->findByIdAndMerchant(
-                                                $id, $this->merchant);
-
-        $updated = $this->updatePaymentAuthorized();
-
-        // This is probably because payment was already in authorized/captured
-        // state, and this is the second time the Pay API has been hit by the
-        // bank. In this case, do not attempt to capture the payment again.
-        if ($updated === false)
-        {
-            return;
-        }
+        $this->updatePaymentAuthorized();
 
         $this->eventPaymentAuthorized();
 
         $this->notifyAuthorized(false);
 
-        return $this->autoCapturePaymentIfApplicable($this->payment);
+        $this->autoCapturePaymentIfApplicable($this->payment);
+
+        return $this->payment;
     }
 
     public function processAndReturnFees(array & $input)
