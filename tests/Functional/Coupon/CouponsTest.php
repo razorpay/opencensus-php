@@ -66,6 +66,25 @@ class CouponsTest extends TestCase
         $this->createCoupon();
     }
 
+    public function testCreateCouponWithInvalidTime()
+    {
+       $promotion = $this->fixtures->create('promotion:onetime');
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
+
+        $this->testData[__FUNCTION__]['request']['content']['start_date'] = time() + 1*24*60*60;
+
+        $this->testData[__FUNCTION__]['request']['content']['end_date'] = time();
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__ . 'ExceptionData']['response'];
+
+        $this->testData[__FUNCTION__]['exception'] = $this->testData[__FUNCTION__ . 'ExceptionData']['exception'];
+
+        $this->startTest();
+    }
+
     public function testMerchantSignUpWithCoupon()
     {
         $this->createCoupon();
@@ -295,7 +314,7 @@ class CouponsTest extends TestCase
 
     public function testApplyOnetimeCoupon()
     {
-         $promotion = $this->fixtures->create('promotion:onetime');
+        $promotion = $this->fixtures->create('promotion:onetime');
 
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
@@ -328,5 +347,82 @@ class CouponsTest extends TestCase
         $credit = $this->getLastEntity('credits', true);
 
         $this->assertNotNull($credit['expiring_at']);
+    }
+
+    public function testDeleteUsedCoupon()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code' => 'RANDOM',
+        ];
+
+        $this->applyCouponOnMerchant($content);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/coupons/' . $coupon->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testApplyExpiredCoupon()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'end_date'    => time() - 1*24*60*60,
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code' => 'RANDOM',
+        ];
+
+        $requestData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
+    }
+
+     public function testApplyNotApplicableCoupon()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'start_date'  => time() + 1*24*60*60,
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code' => 'RANDOM',
+        ];
+
+        $requestData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $response = $this->applyCouponOnMerchant($content);
+            });
     }
 }

@@ -85,6 +85,29 @@ return [
         ]
     ],
 
+    'testUpdateUsedPromotion' => [
+        'request' => [
+            'url'      => '',
+            'method'   => 'PATCH',
+            'content'  => [
+                'name'  => 'Updated name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Editing a used promotion is not allowed'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testFetchPromotionById' => [
         'request' => [
             'url'      => '',

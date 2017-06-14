@@ -3,6 +3,7 @@
 namespace RZP\Models\Promotion;
 
 use RZP\Models\Base;
+use RZP\Exception;
 use RZP\Models\Schedule;
 use RZP\Models\Merchant\Promotions as MerchantPromotion;
 

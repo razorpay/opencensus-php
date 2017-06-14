@@ -24,6 +24,8 @@ return [
 
     'testCouponExceedingUsage' => $defaultRequestAndResponse,
 
+    'testCreateCouponWithInvalidTime' => $defaultRequestAndResponse,
+
     'testCouponExceedingUsageExceptionData' => [
         'response' => [
             'content' => [
@@ -85,6 +87,21 @@ return [
         ],
     ],
 
+    'testCreateCouponWithInvalidTimeExceptionData' => [
+       'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Start date can not be greater than end date',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 
     'createCoupon'     => $defaultRequestAndResponse,
 
@@ -93,6 +110,7 @@ return [
     'testCreateCouponAndApplyOnMerchant' => $defaultRequestAndResponse,
 
     'testMultiCouponApply' => $defaultRequestAndResponse,
+
 
     'testMerchantSignUpWithInValidCoupon' => [
         'response' => [
@@ -191,5 +209,58 @@ return [
                 'message' => 'Coupon Applied Successfully',
             ]
         ]
+    ],
+
+    'testDeleteUsedCoupon' => [
+        'request' => [
+            'content' => [
+
+            ],
+            'url'    => '/coupons',
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Deleting a used coupon is not allowed'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testApplyExpiredCoupon' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_EXPIRED
+        ],
+    ],
+
+    'testApplyNotApplicableCoupon' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_NOT_APPLICABLE
+        ],
     ],
 ];

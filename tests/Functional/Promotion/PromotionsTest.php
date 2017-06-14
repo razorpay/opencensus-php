@@ -60,6 +60,43 @@ class PromotionsTest extends TestCase
         $this->assertEquals($schedule['interval'], 3);
     }
 
+    public function testUpdateUsedPromotion()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code' => 'RANDOM',
+        ];
+
+        $this->applyCouponOnMerchant($content);
+
+        $this->testData[__FUNCTION__]['request']['url'] ='/promotions/' . $promotion->getPublicId();
+
+        $this->startTest();
+
+    }
+
+    public function applyCouponOnMerchant(array $content)
+    {
+        $request = [
+            'url'     => '/coupons/apply',
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     public function testGetMultiplePromotions()
     {
         $offer = $this->fixtures->create('promotion:onetime');
