@@ -1009,16 +1009,6 @@ trait Authorize
         // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
-        //
-        // If global, create a local customer and link that to the subscription.
-        // $customer is global here currently, create its local copy.
-        //
-        if (($payment->hasSubscription() === true) and
-            ($payment->subscription->hasCustomer() === false))
-        {
-            $this->associateLocalCustomerToSubscription($payment->subscription, $customer);
-        }
-
         if ($customer === null)
         {
             $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
@@ -1029,8 +1019,23 @@ trait Authorize
         }
         else
         {
-            $localCustomer = ($payment->hasSubscription()) ?
-                                $payment->subscription->customer : null;
+            $localCustomer = null;
+
+            if ($payment->hasSubscription() === true)
+            {
+                $subscription = $payment->subscription;
+
+                //
+                // If global, create a local customer and link that to the subscription.
+                // $customer is global here currently, create its local copy.
+                //
+                if ($subscription->hasCustomer() === false)
+                {
+                    $this->associateLocalCustomerToSubscription($subscription, $customer);
+                }
+
+                $localCustomer = $subscription->customer;
+            }
 
             $this->preProcessPaymentForGlobalCustomer(
                 $customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);

@@ -386,7 +386,7 @@ class Checkout
         {
             if ($subscription->followLocalFlow() === true)
             {
-                $input[Payment\Entity::CUSTOMER_ID] = $subscription->getCustomerId();
+                $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
             }
         }
     }

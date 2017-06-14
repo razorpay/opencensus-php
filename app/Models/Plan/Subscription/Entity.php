@@ -101,7 +101,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END,
         self::ENDED_AT,
         self::QUANTITY,
-        self::TOKEN_ID,
+        // self::TOKEN_ID,
         self::NOTES,
         self::CHARGE_AT,
         self::START_AT,
@@ -110,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::TOTAL_COUNT,
         self::PAID_COUNT,
         self::CUSTOMER_NOTIFY,
+        self::CREATED_AT,
     ];
 
     protected $casts = [
