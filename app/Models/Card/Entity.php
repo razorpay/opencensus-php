@@ -4,7 +4,6 @@ namespace RZP\Models\Card;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
-use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
@@ -106,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::LAST4,
         self::NETWORK,
         self::TYPE,
+        self::ISSUER,
         self::INTERNATIONAL,
     );
 
