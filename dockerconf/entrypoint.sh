@@ -40,12 +40,12 @@ if [[ "${APP_CONTEXT}" == "dev" ]]; then
   echo 'memory_limit = 128M' | sed -E 's/memory_limit\s*=\s*\d*M/memory_limit = 3048M/g' /etc/php7/php.ini > /tmp/php.ini
   mv /tmp/php.ini /etc/php7/php.ini
 else
-  # copy nginx config
-  cp dockerconf/api.docker.conf /etc/nginx/conf.d/api.conf
+  # copy apache2 config
+  cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf
 
   # change log path
-  ACCESS_LOG_PATH="access_log /var/log/nginx/api.razorpay.dev.access.log combined"
-  sed -i "s|access_log|${ACCESS_LOG_PATH}|g" /etc/apache2/conf.d/api.conf
+  ACCESS_LOG_PATH="CustomLog /var/log/apache2/api.razorpay.dev.access.log custom_combined"
+  sed -i "s|CustomLog|${ACCESS_LOG_PATH}|g" /etc/apache2/conf.d/api.conf
 
   # change domain reference
   if [[ "${APP_CONTEXT}" != "prod" ]]; then
