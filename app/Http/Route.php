@@ -1592,7 +1592,7 @@ final class Route
 
     public function defineAllExtraRoutes()
     {
-        $this->router->any('{all}', function ($uri)
+        $this->router->any('{all}', function ($uri = null)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
