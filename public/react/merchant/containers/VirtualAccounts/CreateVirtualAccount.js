@@ -18,12 +18,6 @@ import { saveVirtualAccount } from 'merchant/modules/virtualaccounts/list';
   form: 'createVirtualAccount',
 })
 export default class CreateVirtualAccount extends Component {
-  componentWillMount() {
-    if (this.props.virtualAccount) {
-      this.props.initialize(this.props.virtualAccount);
-    }
-  }
-
   save = props => {
     return this.props
       .saveVirtualAccount(props)
@@ -49,9 +43,7 @@ export default class CreateVirtualAccount extends Component {
     return (
       <div>
         <ModalHeader
-          title={
-            virtualAccount ? 'Edit Virtual Account' : 'Create Virtual Account'
-          }
+          title={'Create Virtual Account'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -75,7 +67,18 @@ export default class CreateVirtualAccount extends Component {
                 component="input"
                 class="form-control"
                 placeholder="Optional"
+                onChange={event => {
+                  let value = event.target.value;
+                  if (/^[a-z0-9]{0,10}$/i.test(value)) {
+                    this.props.change('descriptor', value);
+                  } else {
+                    event.preventDefault();
+                  }
+                }}
               />
+              <small class="help-block">
+                Accepts alphanumberic, upto 10 chars
+              </small>
             </div>
 
             <div class="Modal__actions">

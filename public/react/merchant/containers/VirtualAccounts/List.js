@@ -20,10 +20,10 @@ import {
 
 @connect(state => state.virtualaccounts, { fetchAll, openModal })
 export default class VirtualAccountsListContainer extends ListContainer {
-  showCreateVAModal = virtualAccount => {
+  showCreateVAModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <CreateVirtualAccount virtualAccount={virtualAccount} />,
+      component: <CreateVirtualAccount />,
     });
   };
 
