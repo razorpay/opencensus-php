@@ -86,24 +86,6 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function parseInput(array $input)
-    {
-        $couponCode = $input[Entity::CODE];
-
-        $merchantId = $input[Entity::MERCHANT_ID];
-
-         $this->trace->info(
-            TraceCode::COUPON_APPLY_REQUEST,
-            [
-                Entity::CODE        => $couponCode,
-                Entity::MERCHANT_ID => $merchantId,
-            ]);
-
-        $this->validator->validateInput('apply', $input);
-
-        return [$couponCode, $merchantId];
-    }
-
     //This will check if the entity is used for any merchant
     protected function isUsed(Entity $coupon): bool
     {
