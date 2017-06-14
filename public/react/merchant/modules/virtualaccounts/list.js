@@ -1,4 +1,5 @@
 import VirtualAccount from 'merchant/models/VirtualAccount';
+import { set, merge } from 'rzp/utils/immutable';
 import { makeCollectionReducer, fetchAll } from 'rzp/modules/collection';
 import makeEntityReducer from 'rzp/modules/entity';
 
@@ -36,5 +37,15 @@ export const deleteVirtualAccount = params => {
   };
 };
 
+const updateVirtualAccount = (state, action) => {
+  let entity = merge(state.entity, action.payload);
+  return set(state, 'entity', entity);
+};
+
+// List Reducer
 export const virtualAccountsReducer = makeCollectionReducer('VIRTUAL_ACCOUNTS');
-export const virtualAccountReducer = makeEntityReducer(VIRTUAL_ACCOUNT_FETCH);
+
+// Virtual Accounts Details Reducer
+export const virtualAccountReducer = makeEntityReducer(VIRTUAL_ACCOUNT_FETCH, {
+  [`${VIRTUAL_ACCOUNT_EDIT}::SUCCESS`]: updateVirtualAccount,
+});

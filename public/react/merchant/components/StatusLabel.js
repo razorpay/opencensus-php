@@ -42,7 +42,9 @@ export const batchUploadStatusMap = {
 };
 
 export const virtualAccountStatusMap = {
-  active: 'label-success',
+  active: 'label-info',
+  closed: 'label-danger',
+  paid: 'label-success',
 };
 
 const entityMap = {

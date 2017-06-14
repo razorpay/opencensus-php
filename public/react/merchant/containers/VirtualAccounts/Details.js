@@ -32,7 +32,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       affirmativePendingLabel: 'Closing...',
       action: () =>
         this.props
-          .saveVirtualAccount({ ...virtualaccount, status: 'close' })
+          .saveVirtualAccount({ ...virtualaccount, status: 'closed' })
           .then(response => {
             this.props.showNotification({
               type: 'success',

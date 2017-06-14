@@ -34,11 +34,13 @@ export default props => {
                   </DropdownTrigger>
                   <DropdownContent>
                     <ul class="dropdown-menu pull-right">
-                      <li>
-                        <a onClick={() => onClose(virtualaccount)}>
-                          Close Account
-                        </a>
-                      </li>
+                      {virtualaccount.status !== 'closed'
+                        ? <li>
+                            <a onClick={() => onClose(virtualaccount)}>
+                              Close Account
+                            </a>
+                          </li>
+                        : null}
                       <li>
                         <a onClick={() => onDelete(virtualaccount)}>
                           Delete Account
