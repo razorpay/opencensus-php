@@ -159,7 +159,7 @@ export default class App extends Component {
   };
 
   lock = () => {
-    let email = this.props.user.contact_email;
+    let email = this.props.user.user.email;
     return this.props.logout().then(() => {
       location.hash = `/access/lockme/${email}`;
       location.reload();
