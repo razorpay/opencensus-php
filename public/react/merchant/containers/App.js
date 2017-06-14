@@ -32,19 +32,20 @@ export default class App extends Component {
   componentWillMount() {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
-    if (currentMode) {
-      this.props.updateSession({ mode: currentMode });
-    }
     Promise.all([
       this.props.fetchUser().then(({ data }) => {
-        let role = data.userRole;
+        let user = data;
+        let role = user.userRole;
 
         if (!currentMode) {
-          currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
-          this.props.updateSession({ mode: currentMode });
+          currentMode = user.isActivated ? 'live' : 'test';
+        } else if (!user.isActivated) {
+          currentMode = 'test';
         }
+
+        this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(data);
+        this.initSmooch(user);
       }),
       this.props.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);

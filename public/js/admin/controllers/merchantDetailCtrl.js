@@ -1686,6 +1686,30 @@ app
         $scope.terminals = terminals;
       }
 
+      // Create mapping for is vs admin details to be shown in table
+      function createMapping(admins) {
+        $scope.adminMap = {};
+
+        admins.forEach(function(admin) {
+          var adminObj = {
+            id: admin.id,
+            name: admin.name,
+            role: admin.roles[0].name,
+          };
+
+          $scope.adminMap[admin.id] = adminObj; // create mapping id - name
+        });
+      }
+
+      // Fetch list of admins
+      var users = organization.fetchUsers();
+
+      if (typeof users.then === 'function') {
+        users.then(createMapping);
+      } else {
+        createMapping(users);
+      }
+
       function getGatewayRulesOfMerchant() {
         var data = {
           route_name: 'admin_fetch_entity_multiple',
@@ -2106,8 +2130,7 @@ app
 
       $scope.adminMap = {};
 
-      // Fetch list of admins
-      organization.fetchUsers().then(function(users) {
+      function createMapping(users) {
         $scope.admins = [];
         users.forEach(function(admin) {
           var adminObj = {
@@ -2119,7 +2142,16 @@ app
           $scope.admins.push(adminObj); // create admin users object
           $scope.adminMap[admin.id] = admin.name; // create mapping id - name
         });
-      });
+      }
+
+      // Fetch list of admins
+      $scope.users = organization.fetchUsers();
+
+      if (typeof $scope.users.then === 'function') {
+        $scope.users.then(createMapping);
+      } else {
+        createMapping($scope.users);
+      }
 
       // Remove role which is already selected
       $scope.removeUser = function(adminId) {
