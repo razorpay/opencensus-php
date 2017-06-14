@@ -130,8 +130,6 @@ class PaymentLinkTest extends TestCase
                 Header::CUSTOMER_CONTACT => '9999998888',
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link',
-                Header::SMS_NOTIFY       => '1',
-                Header::EMAIL_NOTIFY     => '1',
                 Header::EXPIRE_BY        => null,
             ],
             // Following one should fail
@@ -142,8 +140,6 @@ class PaymentLinkTest extends TestCase
                 Header::CUSTOMER_CONTACT => '9999997777',
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link - 2',
-                Header::SMS_NOTIFY       => '1',
-                Header::EMAIL_NOTIFY     => '1',
                 Header::EXPIRE_BY        => null,
             ],
             [
@@ -153,8 +149,6 @@ class PaymentLinkTest extends TestCase
                 Header::CUSTOMER_CONTACT => '9999996666',
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link - 3',
-                Header::SMS_NOTIFY       => '1',
-                Header::EMAIL_NOTIFY     => '1',
                 Header::EXPIRE_BY        => null,
             ],
         ];

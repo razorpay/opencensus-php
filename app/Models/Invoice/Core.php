@@ -653,9 +653,7 @@ class Core extends Base\Core
      */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
-        $ids = $input[Entity::IDS] ?? [];
-
-        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $ids);
+        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 

@@ -12,7 +12,7 @@ class PaymentLink extends Base
 {
     protected function processEntry(array & $entry)
     {
-        $input = Batch\Helper\PaymentLink::getEntityInput($entry);
+        $input = Batch\Helpers\PaymentLink::getEntityInput($entry);
 
         $invoice = (new Invoice\Core)->create(
                         $input, $this->merchant, null, $this->batch);

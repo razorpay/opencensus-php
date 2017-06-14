@@ -31,8 +31,6 @@ class Header
     const CUSTOMER_EMAIL    = 'Customer Email';
     const CUSTOMER_CONTACT  = 'Customer Contact';
     const DESCRIPTION       = 'Description';
-    const SMS_NOTIFY        = 'Sms Notify';
-    const EMAIL_NOTIFY      = 'Email Notify';
     const EXPIRE_BY         = 'Expire By';
     const PAYMENT_LINK_ID   = 'Payment Link Id';
 
@@ -68,8 +66,6 @@ class Header
                 self::CUSTOMER_CONTACT,
                 self::AMOUNT,
                 self::DESCRIPTION,
-                self::SMS_NOTIFY,
-                self::EMAIL_NOTIFY,
                 self::EXPIRE_BY,
             ],
 
@@ -80,8 +76,6 @@ class Header
                 self::CUSTOMER_CONTACT,
                 self::AMOUNT,
                 self::DESCRIPTION,
-                self::SMS_NOTIFY,
-                self::EMAIL_NOTIFY,
                 self::EXPIRE_BY,
                 self::PAYMENT_LINK_ID,
                 self::ERROR_CODE,

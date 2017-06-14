@@ -152,6 +152,8 @@ class Validator extends Base\Validator
     protected static $issueBatchRules = [
         Entity::IDS                 => 'sometimes|array|min:1|max:100',
         Entity::IDS . '.*'          => 'required|public_id|size:18',
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
     ];
 
     //

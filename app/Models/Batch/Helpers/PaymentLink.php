@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Batch\Helper;
+namespace RZP\Models\Batch\Helpers;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
@@ -24,6 +24,8 @@ class PaymentLink
 
             // All payment links are getting created in draft state.
             Invoice\Entity::DRAFT        => '1',
+            Invoice\Entity::SMS_NOTIFY   => '0',
+            Invoice\Entity::EMAIL_NOTIFY => '0',
 
             Invoice\Entity::TYPE         => Invoice\Type::LINK,
 
@@ -35,8 +37,6 @@ class PaymentLink
             ],
             Invoice\Entity::AMOUNT       => $entry[Batch\Header::AMOUNT],
             Invoice\Entity::DESCRIPTION  => $entry[Batch\Header::DESCRIPTION],
-            Invoice\Entity::SMS_NOTIFY   => (string) $entry[Batch\Header::SMS_NOTIFY],
-            Invoice\Entity::EMAIL_NOTIFY => (string) $entry[Batch\Header::EMAIL_NOTIFY],
             Invoice\Entity::EXPIRE_BY    => $entry[Batch\Header::EXPIRE_BY],
         ];
     }

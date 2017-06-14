@@ -12,14 +12,13 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 /**
- * Asynchronously issues all invoices/payment links of given batch.
- * Also takes input list of ids and if passed only issues these invoices
- * of the batch.
- *
+ * - Asynchronously issues all invoices/payment links of given batch.
  */
 class BatchIssue extends BaseJob implements ShouldQueue
 {
     use InteractsWithQueue;
+
+    const INPUT = 'input';
 
     /**
      * Batch entity id.
@@ -29,11 +28,14 @@ class BatchIssue extends BaseJob implements ShouldQueue
     protected $batchId;
 
     /**
-     * Optional: List of invoice ids passed
+     * Input passed in request. Holds few additional parameters
      *
-     * @var null|array
+     * - ids: Only these invoices of batch are issued
+     * - sms_notify, email_notify: Used to decided whether to send notifications or not
+     *
+     * @var array
      */
-    protected $ids;
+    protected $input;
 
     /**
      * Invoice's Core instance
@@ -42,12 +44,12 @@ class BatchIssue extends BaseJob implements ShouldQueue
      */
     protected $core;
 
-    public function __construct(string $mode, string $batchId, array $ids)
+    public function __construct(string $mode, string $batchId, array $input)
     {
         parent::__construct($mode);
 
         $this->batchId = $batchId;
-        $this->ids     = $ids;
+        $this->input   = $input;
     }
 
     public function handle()
@@ -62,20 +64,23 @@ class BatchIssue extends BaseJob implements ShouldQueue
             $this->trace->debug(
                             TraceCode::INVOICE_BATCH_ISSUE_JOB_RECEIVED,
                             [
-                                Batch\Entity::ID         => $this->batchId,
-                                InvoiceModel\Entity::IDS => $this->ids,
+                                Batch\Entity::ID => $this->batchId,
+                                self::INPUT      => $this->input,
                             ]);
+
+            $ids         = $this->input[InvoiceModel\Entity::IDS] ?? [];
+            $smsNotify   = boolval($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
+            $emailNotify = boolval($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
 
             $timeStarted = microtime(true);
 
-            $invoices = $this->repoManager->invoice
-                                          ->findByBatchIdAndIds(
-                                                $this->batchId,
-                                                $this->ids);
+            $invoices = $this->repoManager
+                             ->invoice
+                            ->findByBatchIdAndIds($this->batchId, $ids);
 
             foreach ($invoices as $invoice)
             {
-                $this->issueInvoiceAndNotify($invoice);
+                $this->issueInvoiceAndNotify($invoice, $smsNotify, $emailNotify);
             }
 
             $this->delete();
@@ -107,8 +112,13 @@ class BatchIssue extends BaseJob implements ShouldQueue
      * Issues invoice and notifies customer.
      *
      * @param InvoiceModel\Entity $invoice
+     * @param boolean             $smsNotify
+     * @param boolean             $emailNotify
      */
-    protected function issueInvoiceAndNotify(InvoiceModel\Entity $invoice)
+    protected function issueInvoiceAndNotify(
+        InvoiceModel\Entity $invoice,
+        bool $smsNotify,
+        bool $emailNotify)
     {
         try
         {
@@ -121,7 +131,22 @@ class BatchIssue extends BaseJob implements ShouldQueue
 
             $pdfPath = $this->core->createInvoicePdf($invoice);
 
-            (new InvoiceModel\Notifier($invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+            $notifier = new InvoiceModel\Notifier($invoice, $pdfPath);
+
+            if ($smsNotify === true)
+            {
+                $notifier->smsInvoiceIssuedToCustomer();
+            }
+
+            if ($emailNotify === true)
+            {
+                $notifier->emailInvoiceIssuedToCustomer();
+            }
+
+            if (($smsNotify === true) or ($emailNotify === true))
+            {
+                $this->repoManager->invoice->saveOrFail($invoice);
+            }
         }
         catch (\Throwable $e)
         {

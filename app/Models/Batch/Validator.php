@@ -128,7 +128,7 @@ class Validator extends Base\Validator
         {
             try
             {
-                $input = Helper\PaymentLink::getEntityInput($entry);
+                $input = Helpers\PaymentLink::getEntityInput($entry);
 
                 $invoice = new Invoice\Entity;
 
