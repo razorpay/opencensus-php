@@ -98,7 +98,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     );
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::NAME,
@@ -107,23 +107,23 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::ISSUER,
         self::INTERNATIONAL,
-    );
+        self::EMI,
+    ];
 
-    protected $appends = array(
-        self::NETWORK_CODE);
+    protected $appends = [self::NETWORK_CODE];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::EMI);
+    ];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::INTERNATIONAL     => null,
         self::EMI               => false,
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
-    );
+    ];
 
     public function merchant()
     {
@@ -367,21 +367,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRIVIA, $trivia);
     }
 
-    protected function setPublicEmiAttribute(array & $array)
-    {
-        $array[self::ISSUER] = null;
-        $array[self::EMI] = $this->getEmi();
-
-        if ($this->getEmi() === true)
-        {
-            $array[self::ISSUER] = $this->getIssuer();
-        }
-        else
-        {
-            unset($array[self::ISSUER]);
-        }
-    }
-
     public function getIin()
     {
         return $this->getAttribute(self::IIN);
@@ -438,7 +423,7 @@ class Entity extends Base\PublicEntity
 
     public function getFormatted()
     {
-        return 'XXXX-XXXX-XXXX-'.$this->getLast4();
+        return 'XXXX-XXXX-XXXX-' . $this->getLast4();
     }
 
     public function getCountry()
