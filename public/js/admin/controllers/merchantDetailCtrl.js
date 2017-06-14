@@ -33,8 +33,6 @@ app
       $state
     ) {
       // TODO: change default to live
-      $scope.mode = 'test';
-
       admin.identity().then(function(data) {
         $scope.admin = data;
       });
@@ -1441,8 +1439,8 @@ app
           controller: 'createMerchantOfferModalCtrl',
           backdrop: 'static',
         });
-        modalInstance.result.then(function(offer) {
-          $scope.createMerchantOffer(offer);
+        modalInstance.result.then(function(data) {
+          $scope.createMerchantOffer(data.offer, data.mode);
         }, $.noop);
       };
 
@@ -1733,7 +1731,7 @@ app
           url_params: {
             '{type}': 'offer',
           },
-          mode: $scope.mode,
+          mode: 'live',
           query_params: {
             merchant_id: $scope.merchant.id,
           },
@@ -1760,14 +1758,14 @@ app
       }
 
       // Create merchant offer from the modal form
-      $scope.createMerchantOffer = function(offer) {
+      $scope.createMerchantOffer = function(offer, mode) {
         var request = $http({
           url: 'admin/generic',
           method: 'POST',
           data: {
             route_name: 'offer_create',
             content_type: 'application/json',
-            mode: $scope.mode,
+            mode: mode,
             merchant_id: $scope.merchant.id,
             body: offer,
           },
@@ -1801,7 +1799,7 @@ app
           url_params: {
             '{type}': 'gateway_rule',
           },
-          mode: $scope.mode,
+          mode: 'live',
           query_params: {
             merchant_id: $scope.merchant.id,
           },
@@ -2302,10 +2300,10 @@ app
     '$modalInstance',
     function($scope, dateFactory, utilMapping, $modalInstance) {
       $scope.offer = {};
+      $scope.mode = { value: 'test' }; //set default mode as test
 
       // Payment network map to have different dropdown values depending upon payment method
       $scope.updatePaymentNetworkMap = function() {
-        console.log('PAYMENT METHOD', $scope.offer.payment_method);
         switch ($scope.offer.payment_method) {
           case 'card':
           case 'emi':
@@ -2324,7 +2322,7 @@ app
       $scope.date.dateOptions['minDate'] = moment(); // Avoid selection of date before today
 
       var today = new Date();
-      $scope.currentDate = today.getTime();
+      $scope.currentDate = today.setHours(0, 0, 0, 0);
       $scope.offer_time = {
         starts: today,
         ends: today,
@@ -2385,7 +2383,10 @@ app
       }
 
       $scope.ok = function() {
-        $modalInstance.close(cleanFields());
+        $modalInstance.close({
+          offer: cleanFields(),
+          mode: $scope.mode.value,
+        });
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
