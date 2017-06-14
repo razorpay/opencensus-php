@@ -47,7 +47,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function couponApplyValidator(Merchant\Entity $merchant)
+    public function validateApplyCoupon(Merchant\Entity $merchant)
     {
         if (($this->entity->getUsage() !== null) and
             ($this->entity->getUsedCount() === $this->entity->getUsage()))

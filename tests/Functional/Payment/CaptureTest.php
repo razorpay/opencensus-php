@@ -709,7 +709,7 @@ class CaptureTest extends TestCase
 
         $this->startTest();
 
-        $creditTransactions = $this->getEntities('credits_transaction', array(), true);
+        $creditTransactions = $this->getEntities('credits_transaction', [], true);
 
         $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13000);
         $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
@@ -756,7 +756,7 @@ class CaptureTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
-        $creditTransactions = $this->getEntities('credits_transaction', array(), true);
+        $creditTransactions = $this->getEntities('credits_transaction', [], true);
 
         $this->assertEquals($creditTransactions['items'][0]['credits_used'], 10000);
         $this->assertEquals($creditTransactions['items'][1]['credits_used'], 14000);
