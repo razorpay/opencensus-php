@@ -14,6 +14,7 @@ app
     'getType',
     'displayClass',
     'displayValue',
+    '$state',
     function(
       $scope,
       $http,
@@ -25,7 +26,8 @@ app
       getState,
       getType,
       displayClass,
-      displayValue
+      displayValue,
+      $state
     ) {
       //Intialise alerts and scope functions
       $scope.getStatusClass = statusClass;
@@ -78,13 +80,24 @@ app
       // Terminal Specific actions
       $scope.terminal = {
         delete: function(id) {
-          var request = $http.delete(
-            '/admin/' + $scope.mode + '/terminal/' + id
-          );
+          var data = {
+            route_name: 'terminal_delete',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http.delete('/admin/generic', {
+            params: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
                 alert('Terminal deleted');
+                $state.go('app.entities', {
+                  mode: $scope.mode,
+                  type: 'terminal',
+                });
               } else {
                 alert(data.errors);
               }
@@ -120,10 +133,19 @@ app
         },
         disable: function(id) {
           var data = { toggle: 0 };
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id + '/toggle',
-            data
-          );
+          var TerminalData = {
+            route_name: 'terminal_toggle',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: TerminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -139,10 +161,19 @@ app
         },
         enable: function(id) {
           var data = { toggle: 1 };
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id + '/toggle',
-            data
-          );
+          var TerminalData = {
+            route_name: 'terminal_toggle',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: TerminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -157,15 +188,19 @@ app
             });
         },
         addSubMerchant: function(id, merchant_id) {
-          var request = $http.put(
-            '/admin/' +
-              $scope.mode +
-              '/terminal/' +
-              id +
-              '/merchant/' +
-              merchant_id
-          );
-
+          var data = {
+            route_name: 'terminal_add_merchant',
+            url_params: {
+              '{id}': id,
+              '{mid}': merchant_id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -190,12 +225,21 @@ app
             });
         },
         changePrimaryMerchant: function(terminal_id, merchant_id) {
-          var url =
-            '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/reassign';
-          var request = $http.put(url, {
-            merchant_id: merchant_id,
+          var data = {
+            route_name: 'terminal_reassign_merchant',
+            url_params: {
+              '{id}': terminal_id,
+            },
+            body: {
+              merchant_id: merchant_id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
           });
-
           request
             .success(function(data) {
               if (data.success) {
@@ -254,7 +298,18 @@ app
               delete iin[i];
             }
           }
-          var request = $http.put('/admin/iin/' + iinId, iin);
+          var data = {
+            route_name: 'iin_edit',
+            url_params: {
+              '{id}': iinId,
+            },
+            body: iin,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -274,11 +329,23 @@ app
       $scope.emi = {
         delete: function(id) {
           // EMI plans are also modeless
-          var request = $http.delete('/admin/emi/' + id);
+          var data = {
+            route_name: 'emi_plan_delete',
+            url_params: {
+              '{id}': id,
+            },
+          };
+          var request = $http.delete('/admin/generic', {
+            params: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
                 alert('EMI Plan deleted');
+                $state.go('app.entities', {
+                  mode: $scope.mode,
+                  type: 'emi_plan',
+                });
               } else {
                 alert(data.errors);
               }
@@ -457,23 +524,20 @@ app
       $scope.alerts = alertsFactory.getHandler();
 
       $scope.deleteSubMerchant = function(merchantId) {
-        var request = $http.delete(
-          '/admin/' +
-            mode +
-            '/terminal/' +
-            current.id +
-            '/merchant/' +
-            merchantId
-        );
-
+        var data = {
+          route_name: 'terminal_remove_merchant',
+          url_params: {
+            '{id}': current.id,
+            '{mid}': merchantId,
+          },
+          mode: mode,
+        };
+        var request = $http.delete('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
-              var index = $scope.subMerchants.indexOf(merchantId);
-              if (index > -1) {
-                $scope.subMerchants.splice(index, 1);
-              }
-
               $scope.alerts.addAlert(
                 'success',
                 'Sub merchant unassigned from the terminal successfully'

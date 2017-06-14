@@ -1309,20 +1309,6 @@ class Service extends Base\Service
         }
     }
 
-    public function deleteTerminal($mode, $terminalId)
-    {
-        $this->setApiCredentials(null, $mode);
-        try
-        {
-            $response = $this->api->terminal->delete($terminalId);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
     public function editTerminal($mode, $terminalId, $input)
     {
         $this->setApiCredentials(null, $mode);
@@ -1354,74 +1340,6 @@ class Service extends Base\Service
         }
 
         return [$response, $error];
-    }
-
-    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->unassignSubMerchant($terminalId, $merchantId)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->assignSubMerchant($terminalId, $merchantId)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function changeTerminalPrimaryMerchant($mode, $terminalId, $input)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function toggleTerminal($mode, $terminalId, $input)
-    {
-        $this->setApiCredentials(null, $mode);
-        try
-        {
-            $response = $this->api->terminal->toggle($terminalId, $input);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
     }
 
     public function editCredits($merchantId, $input)
@@ -1589,38 +1507,6 @@ class Service extends Base\Service
     public function confirmUser($email)
     {
         list($error, $data) = (new User\Service)->confirmUserByEmail($email);
-
-        return [$error, $data];
-    }
-
-    public function editIIN($iin, $input)
-    {
-        // Auth as admin, live mode
-        $this->setApiCredentials(null);
-
-        $this->api->IIN->edit($iin, $input);
-
-        return [null, 'IIN Edit successful'];
-    }
-
-    /**
-     * deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     * @return array
-     */
-    public function deleteEmi($emiId)
-    {
-        $this->setApiCredentials(null);
-        $error = $data = [];
-
-        try
-        {
-            $data = $this->api->EMI->setId($emiId)->delete($emiId);
-        }
-        catch (ApiError $e)
-        {
-            $error = $e->getMessage();
-        }
 
         return [$error, $data];
     }
