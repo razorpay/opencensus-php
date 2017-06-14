@@ -535,26 +535,6 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
-        'tax_get'                                => ['get',      'taxes/{id}',                                      'TaxController@get'                                                 ],
-        'tax_list'                               => ['get',      'taxes',                                           'TaxController@list'                                                ],
-        'tax_create'                             => ['post',     'taxes',                                           'TaxController@create'                                              ],
-        'tax_update'                             => ['patch',    'taxes/{id}',                                      'TaxController@update'                                              ],
-        'tax_delete'                             => ['delete',   'taxes/{id}',                                      'TaxController@delete'                                              ],
-        'tax_group_get'                          => ['get',      'tax_groups/{id}',                                 'TaxGroupController@get'                                            ],
-        'tax_group_list'                         => ['get',      'tax_groups',                                      'TaxGroupController@list'                                           ],
-        'tax_group_create'                       => ['post',     'tax_groups',                                      'TaxGroupController@create'                                         ],
-        'tax_group_update'                       => ['patch',    'tax_groups/{id}',                                 'TaxGroupController@update'                                         ],
-        'tax_group_delete'                       => ['delete',   'tax_groups/{id}',                                 'TaxGroupController@delete'                                         ],
-        //promotion routes
-        'promotion_create'                       => ['post',     'promotions',                                      'PromotionController@create'                                        ],
-        'promotion_update'                       => ['patch',    'promotions/{id}',                                 'PromotionController@update'                                        ],
-        'promotion_fetch_by_id'                  => ['get',      'promotions/{id}',                                 'PromotionController@get'                                           ],
-        'promotion_fetch_multiple'               => ['get',      'promotions',                                      'PromotionController@list'                                          ],
-        //coupon routes
-        'coupon_create'                          => ['post',     'coupons',                                         'CouponController@create'                                           ],
-        'coupon_apply'                           => ['post',     'coupons/apply',                                   'CouponController@apply'                                            ],
-        'coupon_fetch_multiple'                  => ['get',      'coupons',                                         'CouponController@list'                                             ],
-        'coupon_delete'                          => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                           ],
         'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
         'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
         'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
@@ -565,7 +545,16 @@ final class Route
         'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
         'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
         'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
-
+        //promotion routes
+        'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
+        'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
+        'promotion_fetch_by_id'                   => ['get',      'promotions/{id}',                                'PromotionController@get'                                           ],
+        'promotion_fetch_multiple'                => ['get',      'promotions',                                     'PromotionController@list'                                          ],
+        //coupon routes
+        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
+        'coupon_fetch_multiple'                   => ['get',      'coupons',                                         'CouponController@list'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],

@@ -2121,7 +2121,9 @@ ALTER TABLE `refunds`
 
 ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
-<<<<<<< HEAD
+ALTER TABLE merchants
+    ADD COLUMN handle VARCHAR(4) AFTER brand_color;
+
 DROP TABLE coupons;
 
 ALTER TABLE credits
@@ -2131,6 +2133,3 @@ ALTER TABLE credits
 
 ALTER TABLE schedule_tasks
     ADD COLUMN expiring_at INT(11) DEFAULT NULL AFTER updated_at;
-
-ALTER TABLE merchants
-    ADD COLUMN handle VARCHAR(4) AFTER brand_color;
