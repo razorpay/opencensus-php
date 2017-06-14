@@ -13,7 +13,7 @@ import {
 } from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
+@connect(state => state.session, {
   fetchTeamDetails,
   resendInvitation,
   cancelInvitation,
@@ -66,8 +66,11 @@ export default class EditInvitation extends Component {
 
   resendInvitation = () => {
     let invite = this.props.invite;
+    let data = {
+      sender_name: this.props.user.user.name,
+    };
     return this.props
-      .resendInvitation(invite.id)
+      .resendInvitation(invite.id, data)
       .then(() => {
         this.props.fetchTeamDetails();
         this.props.showNotification({

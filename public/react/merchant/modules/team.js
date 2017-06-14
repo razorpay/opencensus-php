@@ -23,21 +23,31 @@ export const sendInvitation = data => {
   return {
     type: INVITATION_SEND,
     payload: ajax({
-      url: '/settings/invitations',
+      url: '/user/generic',
       method: 'post',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'invitation_create',
+        body: data,
+      },
     }),
   };
 };
 
-export const resendInvitation = inviteId => {
+export const resendInvitation = (inviteId, data) => {
   return {
     type: INVITATION_RESEND,
     payload: ajax({
-      url: `/settings/invitations/${inviteId}/resend`,
-      method: 'get',
+      url: '/user/generic',
+      method: 'post',
       appendModeInURL: false,
+      data: {
+        route_name: 'invitation_resend',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+        }),
+        body: data,
+      },
     }),
   };
 };
@@ -46,10 +56,16 @@ export const updateInvitation = (inviteId, data) => {
   return {
     type: INVITATION_UPDATE,
     payload: ajax({
-      url: `/settings/invitations/${inviteId}`,
-      method: 'put',
+      url: '/user/generic',
+      method: 'patch',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'invitation_edit',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+        }),
+        body: data,
+      },
     }),
   };
 };
@@ -58,9 +74,15 @@ export const cancelInvitation = inviteId => {
   return {
     type: INVITATION_REMOVE,
     payload: ajax({
-      url: `/settings/invitations/${inviteId}`,
+      url: '/user/generic',
       method: 'delete',
       appendModeInURL: false,
+      data: {
+        route_name: 'invitation_delete',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+        }),
+      },
     }),
   };
 };

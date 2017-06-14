@@ -15,6 +15,7 @@ const selector = formValueSelector('newInvitation');
   state => {
     return {
       selectedRole: selector(state, 'role'),
+      ...state.session,
     };
   },
   {
@@ -32,8 +33,17 @@ const selector = formValueSelector('newInvitation');
 })
 export default class NewInvitation extends Component {
   save = props => {
+    let user = this.props.user.user;
+    if (user.email === props.email) {
+      this.props.showNotification({
+        type: 'error',
+        message: "You can't invite yourself",
+      });
+      return;
+    }
+
     return this.props
-      .sendInvitation(props)
+      .sendInvitation({ ...props, sender_name: user.name })
       .then(() => {
         this.props.fetchTeamDetails();
         this.props.initialize(this.props.initialValues);
