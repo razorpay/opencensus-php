@@ -70,9 +70,7 @@ export default class ListContainer extends Component {
     };
   }
 
-  fetchEntityList() {
-    throw new Error(
-      `Implement \`fetchEntityList\` func in the ${this.constructor.name} component`
-    );
+  fetchEntityList(params) {
+    return this.props.fetchAll(params);
   }
 }

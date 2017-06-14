@@ -3,7 +3,7 @@ import { set, merge } from 'rzp/utils/immutable';
 
 const REFUND_FETCH = 'REFUND_FETCH';
 
-export const fetchRefund = id => {
+export const fetchItem = id => {
   let refund = new Refund();
 
   return {

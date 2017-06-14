@@ -141,6 +141,12 @@
         <a href class="list-group-item" ng-click="openCredits()" dynamic-tooltip="add_merchant_credits" ng-show="admin.permissions.indexOf('add_merchant_credits') !== -1">
           Add Credits
         </a>
+        <a href class="btn btn-primary" ng-click="openDownloadReport()"
+           style="width: 100%;"
+           dynamic-tooltip="view_merchant_report"
+           ng-show="admin.permissions.indexOf('view_merchant_report') !== -1">
+          Download Report
+        </a>
       </div>
     </div>
   </div>
@@ -629,6 +635,73 @@
                     <td>{{row.issuer || 'ALL'}}</td>
                     <td>{{row.international || 'BOTH'}}</td>
                     <td>{{row.load}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!--Group Details-->
+        <a href class="list-group-item" ng-init="isGroupDetailsCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isGroupDetailsCollapsed = !isGroupDetailsCollapsed"
+                      ng-show="groups && groups.length != 0">Show/Hide</button>
+              <span ng-if="groups && groups.length === 0">
+                No Group details found
+              </span>
+            </span>
+          Group Details
+        </a>
+
+        <div collapse="isGroupDetailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="groups.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light">
+                <thead>
+                  <tr>
+                    <th>Group</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="(key, row) in groups">
+                    <td>{{row.name}}</td>
+                    <td>{{row.description}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!--Admin Details-->
+        <a href class="list-group-item" ng-init="isAdminDetailsCollapsed = true" style="background-color: rgba(255, 255, 0, 0.20)">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isAdminDetailsCollapsed = !isAdminDetailsCollapsed"
+                      ng-show="selected_admins && selected_admins.length != 0">Show/Hide</button>
+              <span ng-if="selected_admins && selected_admins.length === 0">
+                No Admins found
+              </span>
+            </span>
+          Admins
+        </a>
+
+        <div collapse="isAdminDetailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="selected_admins.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light">
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="adminId in selected_admins track by $index" class="merchants-table-body">
+                    <td>{{adminMap[adminId].role}}</td>
+                    <td>{{adminMap[adminId].name}}</td>
                   </tr>
                 </tbody>
               </table>
@@ -1179,29 +1252,29 @@
         </div>
       </div>
       <div class="form-group">
-          <div class="col-lg-2 text-right">Groups</div>
-          <div class="col-lg-10 scrollable-table">
-            <table ui-jq="footable" data-page-size="100000000" class="table table-striped b-t b-light">
-              <thead>
-                <tr>
-                  <th data-sort-ignore="true">
-                    <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
-                    <label for="select_all" class="select-all-label">Select all</label>
-                  </th>
-                  <th>Group</th>
-                  <th>Group description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="(key, row) in groups">
-                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
-                  <td>{{row.name}}</td>
-                  <td>{{row.description}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="col-lg-2 text-right">Groups</div>
+        <div class="col-lg-10 scrollable-table">
+          <table ui-jq="footable" data-page-size="100000000" class="table table-striped b-t b-light">
+            <thead>
+              <tr>
+                <th data-sort-ignore="true">
+                  <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
+                  <label for="select_all" class="select-all-label">Select all</label>
+                </th>
+                <th>Group</th>
+                <th>Group description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, row) in groups">
+                <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
+                <td>{{row.name}}</td>
+                <td>{{row.description}}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
       <!-- Select Admins -->
       <div class="form-group">
         <div class="col-lg-2 text-right">Admins</div>
@@ -1593,5 +1666,73 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(credits)">OK</button>
+  </div>
+</script>
+
+<!--Options to download report-->
+<script type="text/ng-template" id="downloadReportModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Download Reports</h3>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal">
+      <!--TODO: Set it to current YEAR and MONTH instead of hard code-->
+      <div class="form-group">
+        <div class="col-lg-6" >
+          <select class="form-control m-b" name="entity" ng-model="reportForm.entity" ng-change="checkValue()">
+            <option value="payment">Payment</option>
+            <option value="refund">Refund</option>
+            <option value="order">Order</option>
+            <option value="settlement">Settlement</option>
+            <option value="transaction">Combined</option>
+            <option value="broking" ng-if="merchant.tags.indexOf('Broking_Report') !== -1">Broking Report</option>
+
+            <option value="invoice">Monthly Invoice</option>
+
+            <optgroup label="Marketplace" ng-if="merchant.tags.indexOf('Marketplace') !== -1">
+              <option value="transfer">Transfer</option>
+              <option value="reversal">Reversal</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="col-lg-6" ng-if="reportForm.entity !== 'invoice'">
+          <select class="form-control m-b" name="type" ng-model="reportForm.type"
+                  ng-change="reportForm.month && updateDates(reportForm.month, reportForm.year)">
+            <option value="daily">Daily</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="col-lg-6">
+          <select class="form-control m-b" name="year" ng-model="reportForm.year"
+                  ng-change="reportForm.month && updateDates(reportForm.month, reportForm.year)">
+            <option value="2017">2017</option>
+            <option value="2016">2016</option>
+            <option value="2015">2015</option>
+          </select>
+        </div>
+        <div class="col-lg-3">
+          <select class="form-control m-b" name="month" ng-model="reportForm.month"
+                  ng-change="reportForm.type === 'daily' && updateDates(reportForm.month, reportForm.year)">
+            <option ng-repeat="(index, month) in monthFields" value={{month.value}}>{{month.name}}</option>
+          </select>
+        </div>
+        <div class="col-lg-3" ng-show="reportForm.type === 'daily'">
+          <select class="form-control m-b" name="date" ng-model="reportForm.date">
+            <option ng-repeat="date in range(1, daysInSelectedMonth)" value={{date}}>{{date}}</option>
+          </select>
+        </div>
+      </div>
+    </form>
+
+    <div>
+      Combined reports will include transactions on the given date, as well as payments settled on that given date.
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Close</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok()">Download</button>
   </div>
 </script>

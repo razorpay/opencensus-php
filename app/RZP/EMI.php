@@ -9,12 +9,6 @@ class EMI extends Entity
         return parent::create($params);
     }
 
-    public function delete()
-    {
-        $url = $this->getEntityUrl() . $this->id;
-        return $this->request('DELETE', $url);
-    }
-
     public function setId($emiId)
     {
         $this->attributes['id'] = $emiId;

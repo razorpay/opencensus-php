@@ -1,0 +1,29 @@
+import React, { Component } from 'react';
+import { Route, Switch, NavLink } from 'react-router-dom';
+
+import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
+import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
+import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
+import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
+
+export default class MarketplaceContainer extends Component {
+  render() {
+    return (
+      <tabbed-container>
+        <header id="marketplace-header">
+          <NavLink to="/marketplace/payments">Payments</NavLink>
+          <NavLink to="/marketplace/transfers">Transfers</NavLink>
+          <NavLink to="/marketplace/reversals">Reversals</NavLink>
+          <NavLink to="/marketplace/accounts">Accounts</NavLink>
+        </header>
+
+        <Switch>
+          <Route path="/marketplace/payments" component={PaymentsList} />
+          <Route path="/marketplace/transfers" component={TransfersList} />
+          <Route path="/marketplace/reversals" component={ReversalsList} />
+          <Route path="/marketplace/accounts" component={AccountsList} />
+        </Switch>
+      </tabbed-container>
+    );
+  }
+}

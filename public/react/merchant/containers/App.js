@@ -32,19 +32,20 @@ export default class App extends Component {
   componentWillMount() {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
-    if (currentMode) {
-      this.props.updateSession({ mode: currentMode });
-    }
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        let role = data.merchants[data.current].role;
+        let user = data;
+        let role = user.userRole;
 
         if (!currentMode) {
-          currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
-          this.props.updateSession({ mode: currentMode });
+          currentMode = user.isActivated ? 'live' : 'test';
+        } else if (!user.isActivated) {
+          currentMode = 'test';
         }
+
+        this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(data);
+        this.initSmooch(user);
       }),
       this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
@@ -62,7 +63,7 @@ export default class App extends Component {
 
   componentWillReceiveProps({ user, history }) {
     if (user.isAuthenticated) {
-      let role = user.merchants[user.current].role;
+      let role = user.userRole;
       this.redirectToRoute(role);
     }
   }
@@ -100,12 +101,15 @@ export default class App extends Component {
           return this.props.history.replace(url);
         case 'support':
           return this.props.history.replace('/payments');
+
+        case null:
+          return this.props.history.replace('/profile');
       }
     }
   }
 
   initSmooch(data) {
-    let role = data.merchants[data.current].role;
+    let role = data.userRole;
     if (window.smoochScript) {
       smoochScript.then(function() {
         var sk_user = function() {

@@ -436,60 +436,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function deleteTerminal($mode, $terminalId)
-    {
-        list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function editTerminal($mode, $terminalId)
     {
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        list($error, $data) = (new Admin\Service)->unassignSubMerchantToTerminal(
-            $mode,
-            $terminalId,
-            $merchantId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-
-    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        list($error, $data) = (new Admin\Service)->assignSubMerchantToTerminal(
-            $mode,
-            $terminalId,
-            $merchantId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function changePrimaryMerchant($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->changeTerminalPrimaryMerchant(
-            $mode,
-            $terminalId,
-            $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function toggleTerminal($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -565,19 +516,6 @@ class AdminController extends Controller
     }
 
     /**
-     * Edit an existing IIN
-     * @param  int $iin 6 digit IIN
-     */
-    public function putEditIIN($iin)
-    {
-        $input = Input::all();
-        list($error, $data) = $response = (new Admin\Service)
-            ->editIIN($iin, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
      * This is currently not supported on the API
      * so we just return an error
      * @param  int $iin IIN to delete
@@ -590,18 +528,6 @@ class AdminController extends Controller
         $error = ["IIN Delete not implemented on API"];
 
         return AppResponse::jsonResponse($error, []);
-    }
-
-    /**
-     * Deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     */
-    public function deleteEMIPlan($emiId)
-    {
-        list($error, $data) = $response = (new Admin\Service)
-            ->deleteEmi($emiId);
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postSlackQuery()

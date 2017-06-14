@@ -1,6 +1,8 @@
 import ajax from 'merchant/utils/ajax';
 
 export default class User {
+  merchants = {};
+
   constructor(props) {
     Object.assign(this, props);
   }
@@ -15,8 +17,15 @@ export default class User {
     });
   }
 
+  get userRole() {
+    if (this.current && Object.keys(this.merchants).length) {
+      return this.merchants[this.current].role;
+    }
+    return null;
+  }
+
   get isAuthenticated() {
-    return !!this.current;
+    return !!this.user;
   }
 
   get isVerified() {

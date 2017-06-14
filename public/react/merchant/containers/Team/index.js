@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
-import Header from 'rzp/ui/Header';
 import { fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import NewInvitation from './NewInvitation';

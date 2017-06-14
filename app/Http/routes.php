@@ -187,9 +187,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/password', 'AdminController@postPassword');
         Route::put('/admin/{id}/edit', 'AdminController@putEdit');
 
-        // EMI Routes
-        Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
-
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
@@ -204,9 +201,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // IIN Routes
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
-        Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
-        // EMI Plan Routes
-        Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
@@ -214,13 +208,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
         // Terminal Routes
-        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
         Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
-        Route::put('/admin/{mode}/terminal/{id}/toggle', 'AdminController@toggleTerminal');
-
-        Route::put('/admin/{mode}/terminal/{id}/merchant/{mid}', 'AdminController@assignSubMerchantToTerminal');
-        Route::delete('/admin/{mode}/terminal/{id}/merchant/{mid}', 'AdminController@unassignSubMerchantToTerminal');
-        Route::put('/admin/{mode}/terminal/{id}/reassign', 'AdminController@changePrimaryMerchant');
 
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
@@ -254,6 +242,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
         Route::get('/admin/emailbounces/{email}', 'AdminController@getEmailBounce')->name('email_bounce_get');
         Route::delete('/admin/emailbounces/{email}', 'AdminController@deleteEmailBounce')->name('email_bounce_delete');
+
+        Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
+        Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
+        Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
     });
 });
 

@@ -14,8 +14,9 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.getStateClass = function(state) {
       switch (state) {
         case 'approved':
-        case 'executed':
           return 'approved-bg-color';
+        case 'executed':
+          return 'executed-bg-color';
         case 'closed':
           return 'rejected-bg-color';
         case 'rejected':
