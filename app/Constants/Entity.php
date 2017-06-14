@@ -51,6 +51,7 @@ class Entity
     const TRANSFER              = 'transfer';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
+    const INVITATION            = 'invitation';
     const ADJUSTMENT            = 'adjustment';
     const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
@@ -168,6 +169,7 @@ class Entity
         self::MERCHANT              => \RZP\Models\Merchant::class,
         self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
+        self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,

@@ -282,6 +282,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
             $this->assertEquals('3', $mail->viewData['count']);
 
+            $this->assertEquals('emails.admin.icici_refunds', $mail->view);
+
             return true;
         });
     }

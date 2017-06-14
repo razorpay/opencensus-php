@@ -383,6 +383,7 @@ return [
         'request' => [
             'content' => [
                 'brand_color' => '00bcd4',
+                'handle'      => 'lol',
             ],
             'url' => '/account/config',
             'method' => 'put',
@@ -393,8 +394,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '10000000000000',
-                'brand_color' => '#00BCD4'
+                'id'          => '10000000000000',
+                'brand_color' => '#00BCD4',
+                'handle'      => 'LOL',
             ]
         ]
     ],
