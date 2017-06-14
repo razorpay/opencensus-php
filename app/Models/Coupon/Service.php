@@ -53,23 +53,9 @@ class Service extends Base\Service
 
     public function apply(array $input)
     {
-        if (empty($input[Entity::CODE]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'No Coupon Code Specified');
-        }
-
-        $couponCode = $input[Entity::CODE];
-
-        if (empty($input[Entity::MERCHANT_ID]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'No Merchant Specified for which Coupon has to be applied');
-        }
+        $coupon = $this->repo->coupon->fetchByCode($input);
 
         $merchantId = $input[Entity::MERCHANT_ID];
-
-        $coupon = $this->repo->coupon->fetchByCode($couponCode);
 
         if ($coupon === null)
         {
