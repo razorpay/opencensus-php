@@ -5,6 +5,7 @@ namespace RZP\Mail\Gateway\RefundFile;
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Payment\Gateway;
 
 class Base extends Mailable
 {
@@ -14,7 +15,12 @@ class Base extends Mailable
 
     protected $email;
 
-    public function __construct(array $data, string $type, string $email = null)
+    protected $template;
+
+    public function __construct(array $data,
+                                string $type,
+                                string $email = null,
+                                string $template = 'emails.message')
     {
         parent::__construct();
 
@@ -23,6 +29,8 @@ class Base extends Mailable
         $this->type = $type;
 
         $this->email = $email;
+
+        $this->template = $template;
     }
 
     protected function addSender()
@@ -47,9 +55,7 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
+        $subject = $this->getSubject();
 
         $this->subject($subject);
 
@@ -59,8 +65,15 @@ class Base extends Mailable
     protected function addMailData()
     {
         $mailData = [
-            'body' => Constants::BODY_MAP[$this->type]
+            'body' => Constants::BODY_MAP[$this->type],
         ];
+
+        // For ICICI netbanking refunds we are adding the subject to template data
+        // as the template used for this requires the subject
+        if ($this->type === Gateway::NETBANKING_ICICI)
+        {
+            $mailData['subject'] = $this->getSubject();
+        }
 
         $mailData = array_merge($mailData, $this->data);
 
@@ -69,9 +82,18 @@ class Base extends Mailable
         return $this;
     }
 
+    protected function getSubject()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
+
+        return $subject;
+    }
+
     protected function addHtmlView()
     {
-        $this->view('emails.message');
+        $this->view($this->template);
 
         return $this;
     }

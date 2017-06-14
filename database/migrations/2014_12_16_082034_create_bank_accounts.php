@@ -19,7 +19,6 @@ class CreateBankAccounts extends Migration
     {
         Schema::create(Table::BANK_ACCOUNT, function(Blueprint $table)
         {
-
             $table->char(BankAccount::ID, BankAccount::ID_LENGTH)
                   ->primary();
 
@@ -86,6 +85,8 @@ class CreateBankAccounts extends Migration
             $table->index(BankAccount::ENTITY_ID);
 
             $table->index(BankAccount::TYPE);
+
+            $table->index(BankAccount::ACCOUNT_NUMBER);
 
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

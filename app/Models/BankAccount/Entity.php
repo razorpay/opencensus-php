@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'bank_account';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
@@ -68,9 +68,9 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_PIN,
         self::VIRTUAL,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::IFSC,
         self::IFSC_CODE,
@@ -95,15 +95,23 @@ class Entity extends Base\PublicEntity
         self::MPIN,
         self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT
-    );
+    ];
 
-    protected $public = array(
+    // @TODO
+    // Dashboard expects ifsc_code and beneficiary_name in the response
+    // We'll send both these and the new fields (ifsc and name) for now
+    // The old fields can be removed after dashboard has been updated
+    //
+    // Tests to be updated: testAddCustomerBankAccount
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::IFSC,
+        self::IFSC_CODE,
         self::NAME,
+        self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
-    );
+    ];
 
     protected $appends = [
         self::NAME,
@@ -111,23 +119,27 @@ class Entity extends Base\PublicEntity
         self::MPIN_SET,
     ];
 
-    protected $guarded = array(self::ID);
+    protected $guarded = [self::ID];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::ID,
         self::BENEFICIARY_COUNTRY,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
         self::VIRTUAL                => 'bool',
-    );
+    ];
+
+    protected $defaults = [
+        self::VIRTUAL                => false,
+    ];
 
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')
     {
-        (new Validator)->validateInput($operation, $input);
+        $this->getValidator()->validateInput($operation, $input);
 
         $this->generate($input);
 

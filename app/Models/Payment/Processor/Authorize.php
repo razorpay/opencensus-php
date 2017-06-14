@@ -265,6 +265,13 @@ trait Authorize
         }
     }
 
+    protected function updateLateAuthFlag(Payment\Entity $payment)
+    {
+        $payment->setLateAuthorized(false);
+
+        $this->repo->saveOrFail($payment);
+    }
+
     protected function getVerifyCaller(): string
     {
         $route = $this->route->getCurrentRouteName();
@@ -1618,6 +1625,8 @@ trait Authorize
      */
     protected function postPaymentAuthorizeProcessing(Payment\Entity $payment): array
     {
+        $this->updateLateAuthFlag($payment);
+
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
@@ -1988,6 +1997,11 @@ trait Authorize
             }
             else if ($payment->hasOrder() === true)
             {
+                if ($payment->order->getPaymentCapture() === true)
+                {
+                    assertTrue($payment->isCaptured() === true);
+                }
+
                 $this->fillReturnDataWithOrder($payment, $returnData);
             }
         }

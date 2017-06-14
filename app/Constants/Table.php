@@ -13,7 +13,6 @@ class Table
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
     const USER                  = 'users';
-    const FILE_STORE            = 'files';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
@@ -40,6 +39,8 @@ class Table
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
     const LINE_ITEM             = 'line_items';
+    const INVITATION            = 'invitations';
+    const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const FEE_BREAKUP           = 'fees_breakup';

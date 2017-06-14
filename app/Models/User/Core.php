@@ -114,7 +114,12 @@ class Core extends Base\Core
                           ->where(Merchant\Entity::SUSPENDED_AT, NULL)
                           ->callOnEveryItem('toArrayUser');
 
+        $invitations = $user->invitations
+                            ->callOnEveryItem('toArrayPublic');
+
         $userArray[Entity::MERCHANTS] = $merchants;
+
+        $userArray[Entity::INVITATIONS] = $invitations;
 
         return $userArray;
     }

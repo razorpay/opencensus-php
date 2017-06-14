@@ -226,7 +226,7 @@ class Service extends Base\Service
         $bankCode = Provider::getBankCode($this->provider);
 
         $bankAccount = $this->repo->bank_account
-                            ->findBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
+                            ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
         return $bankAccount;
     }

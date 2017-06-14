@@ -10,6 +10,8 @@ class Repository extends Base\Repository
 {
     protected $entity = 'bank_account';
 
+    protected $fetchVirtual = false;
+
     const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = array(
@@ -18,6 +20,13 @@ class Repository extends Base\Repository
         Entity::TYPE            => 'sometimes|in:customer,merchant',
         Entity::ENTITY_ID       => 'sometimes|alpha_num'
     );
+
+    protected function newQuery()
+    {
+        $query = parent::newQuery();
+
+        return $query->where(Entity::VIRTUAL, '=', $this->fetchVirtual);
+    }
 
     public function getBankAccount($merchant)
     {
@@ -60,8 +69,10 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
+    public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
+        $this->fetchVirtual = true;
+
         $query = $this->newQuery()
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber);
 

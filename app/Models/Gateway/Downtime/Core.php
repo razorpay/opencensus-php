@@ -147,7 +147,7 @@ class Core extends Base\Core
             return $params;
         }
 
-        return;
+        return [];
     }
 
     /**

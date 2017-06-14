@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::BANK_ACCOUNT,
         self::RECEIVER_TYPE,
+        self::CREATED_AT,
     ];
 
     protected $publicSetters = [
