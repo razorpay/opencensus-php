@@ -15,13 +15,13 @@ class Validator extends Base\Validator
     // Maximum image size - 1M.
     const maxImageSize = 1024 * 1024;
 
-    const extensionMimeMap = array(
+    const extensionMimeMap = [
         "jpeg"  => "image/jpeg",
         "jpg"   => "image/jpeg",
         "png"   => "image/png",
-    );
+    ];
 
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
@@ -29,9 +29,9 @@ class Validator extends Base\Validator
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string'
-    );
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
@@ -54,30 +54,31 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-    );
+    ];
 
-    protected static $uniqueEmailRules = array(
+    protected static $uniqueEmailRules = [
         Entity::EMAIL                       => 'required|email|unique:merchants'
-    );
+    ];
 
-    protected static $editCreditsRules = array(
+    protected static $editCreditsRules = [
         Balance\Entity::AMOUNT_CREDITS      => 'required|integer|min:0|max:50000000'
-    );
+    ];
 
-    protected static $editEmailRules = array(
+    protected static $editEmailRules = [
         Entity::EMAIL                       => 'required|email|unique:merchants'
-    );
+    ];
 
-    protected static $editConfigRules = array(
+    protected static $editConfigRules = [
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
-        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean'
-    );
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
+        Entity::HANDLE                      => 'sometimes|filled|alpha_num|max:4',
+    ];
 
-    protected static $actionRules = array(
+    protected static $actionRules = [
         Entity::ACTION                      => 'required|custom'
-    );
+    ];
 
     protected static $featureRules = [
         'features'          => 'required|array',

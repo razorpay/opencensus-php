@@ -14,7 +14,12 @@ class Base extends Mailable
 
     protected $email;
 
-    public function __construct(array $data, string $type, string $email = null)
+    protected $template;
+
+    public function __construct(array $data,
+                                string $type,
+                                string $email = null,
+                                string $template = 'emails.message')
     {
         parent::__construct();
 
@@ -23,6 +28,8 @@ class Base extends Mailable
         $this->type = $type;
 
         $this->email = $email;
+
+        $this->template = $template;
     }
 
     protected function addSender()
@@ -71,7 +78,7 @@ class Base extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.message');
+        $this->view($this->template);
 
         return $this;
     }
