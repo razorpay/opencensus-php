@@ -96,11 +96,19 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT
     ];
 
+    // @TODO
+    // Dashboard expects ifsc_code and beneficiary_name in the response
+    // We'll send both these and the new fields (ifsc and name) for now
+    // The old fields can be removed after dashboard has been updated
+    //
+    // Tests to be updated: testAddCustomerBankAccount
     protected $public = [
         self::ID,
         self::ENTITY,
         self::IFSC,
+        self::IFSC_CODE,
         self::NAME,
+        self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
     ];
 

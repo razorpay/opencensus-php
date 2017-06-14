@@ -28,10 +28,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'ifsc'           => 'ICIC0001206',
-                'account_number' => '0002020000304030434',
-                'name'           => 'Test R4zorpay',
-                'entity'         => 'bank_account',
+                'entity'           => 'bank_account',
+                'ifsc'             => 'ICIC0001206',
+                'ifsc_code'        => 'ICIC0001206',
+                'name'             => 'Test R4zorpay',
+                'beneficiary_name' => 'Test R4zorpay',
+                'account_number'   => '0002020000304030434',
             ]
         ]
     ],
