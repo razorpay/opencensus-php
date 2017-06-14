@@ -123,6 +123,11 @@ app
             .success(function(data) {
               if (data.success) {
                 $scope.alerts.addAlert('success', successMsg, true);
+
+                // Update UI if request for deactivation is successful
+                if (offer.active === 0) {
+                  $scope.entity.active = false;
+                }
               } else {
                 $scope.alerts.resetAlerts();
                 angular.forEach(data.errors, function(value) {

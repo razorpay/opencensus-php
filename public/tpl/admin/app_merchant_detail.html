@@ -810,7 +810,7 @@
                 <tbody>
                   <tr ng-repeat="row in merchantOffers" class="merchants-table-body">
                     <td>
-                      <a target="_blank" ui-sref="app.entitiesdetail({type:'offer', id: row['id'], mode: mode})">
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'offer', id: row['id'], mode: 'live'})">
                         <code>{{row['id']}}</code>
                       </a>
                     </td>
@@ -1447,7 +1447,7 @@
   <div class="modal-header">
     <h3 class="modal-title col-lg-8">Create Merchant Offer</h3>
     <div class="col-lg-4">
-      Mode:{{mode.value}}
+      Mode:
       <select class="form-control input-sm w-xs inline" ng-model="mode.value">
         <option value="live">Live</option>
         <option value="test">Test</option>
@@ -1581,14 +1581,6 @@
         </div>
       </div>
 
-      <!--Processing time-->
-      <div class="form-group">
-        <label for="processing_time" class="col-lg-3 control-label">Processing Time:</label>
-        <div class="col-lg-9" >
-          <input type="text" class="form-control m-b" name="processing_time" ng-model="offer.processing_time" />
-        </div>
-      </div>
-
       <!-- Start date-->
       <div class="form-group">
         <label for="starts_at" class="col-lg-3 control-label"
@@ -1631,7 +1623,7 @@
       <div class="form-group">
         <label for="ends_at" class="col-lg-3 control-label"
                style="display:table-cell; vertical-align: middle">
-          Ends at*:
+          Ends at<span style="color:red">*</span>:
         </label>
         <div class="col-lg-9" style="display:table;">
           <!--Date picker-->

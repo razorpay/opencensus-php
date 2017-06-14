@@ -32,7 +32,6 @@ app
       utilMapping,
       $state
     ) {
-      // TODO: change default to live
       admin.identity().then(function(data) {
         $scope.admin = data;
       });
@@ -2300,7 +2299,7 @@ app
     '$modalInstance',
     function($scope, dateFactory, utilMapping, $modalInstance) {
       $scope.offer = {};
-      $scope.mode = { value: 'test' }; //set default mode as test
+      $scope.mode = { value: 'live' }; //set default mode as test
 
       // Payment network map to have different dropdown values depending upon payment method
       $scope.updatePaymentNetworkMap = function() {
