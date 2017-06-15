@@ -9,12 +9,7 @@ class Service extends Base\Service
     /**
      * Create invitation for a merchant.
      *
-     * @param  array  $input [
-     *                            id      => as generated from Dashboard
-     *                            email   => member's email to whom invite has to be sent
-     *                            role    => member's role
-     *                            token   => as generated from Dashboard
-     *                        ]
+     * @param  array  $input
      * @return array
      */
     public function create(array $input): array
@@ -39,6 +34,7 @@ class Service extends Base\Service
 
     /**
      * Get all pending invitations of a merchant
+     *
      * @return array
      */
     public function list(): array
