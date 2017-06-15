@@ -150,6 +150,35 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function issueAndNotifySync(
+        Entity $invoice,
+        Merchant\Entity $merchant): Entity
+    {
+        $this->issue($invoice, $merchant);
+
+        $pdfPath = $this->createInvoicePdf($invoice);
+
+        (new Notifier($invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+
+        return $invoice;
+    }
+
+    public function issueAndNotifyAsync(
+        Entity $invoice,
+        Merchant\Entity $merchant): Entity
+    {
+        $this->issue($invoice, $merchant);
+
+        $job = new InvoiceJob(
+                    $this->mode,
+                    InvoiceJob::ISSUED,
+                    $invoice->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        return $invoice;
+    }
+
     public function issue(Entity $invoice, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
@@ -166,13 +195,6 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($invoice);
             });
-
-        $job = new InvoiceJob(
-                    $this->mode,
-                    InvoiceJob::ISSUED,
-                    $invoice->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 
         return $invoice;
     }

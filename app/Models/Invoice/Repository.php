@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Batch;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Base\BuilderEx;
@@ -197,7 +198,7 @@ class Repository extends Base\Repository
      */
     public function findByBatchIdAndIds(
         string $batchId,
-        array $ids): Base\PublicCollection
+        array $ids = []): Base\PublicCollection
     {
         $query = $this->newQuery()->where(Entity::BATCH_ID, $batchId);
 

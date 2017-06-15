@@ -2,15 +2,17 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Mail;
 use Carbon\Carbon;
+
 use RZP\Exception;
-use RZP\Models\Batch;
-use RZP\Models\Base as BaseModel;
 use RZP\Trace\Trace;
+use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Models\Base as BaseModel;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -125,38 +127,53 @@ class Base extends BaseModel\Core
         {
             try
             {
+                $this->trace->debug(
+                                TraceCode::BATCH_PROCESSING_ENTRY,
+                                [
+                                    Batch\Entity::ID => $this->batch->getId(),
+                                    'entry'          => $entry,
+                                ]);
+
                 $this->processEntry($entry);
+
+                // Set status as success and errors as null
+
+                $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
+                $entry[Batch\Header::ERROR_CODE]        = null;
+                $entry[Batch\Header::ERROR_DESCRIPTION] = null;
             }
             catch (Exception\BaseException $e)
             {
-                //
                 // All RZP Exceptions have public error code and public error
                 // description which can be exposed in the output file.
-                //
 
                 $this->trace->traceException(
                                 $e,
                                 Trace::ERROR,
-                                TraceCode::BATCH_PROCESSING_ERROR);
+                                TraceCode::BATCH_PROCESSING_ERROR,
+                                [
+                                    Batch\Entity::ID => $this->batch->getId(),
+                                ]);
 
                 $error = $e->getError();
 
+                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE]        = $error->getPublicErrorCode();
                 $entry[Batch\Header::ERROR_DESCRIPTION] = $error->getDescription();
-                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
             }
             catch (\Throwable $e)
             {
-                //
                 // All non RZP exception/errors case:
                 // - Log critical error
                 // - Just expose error code SERVER_ERROR in output file.
-                //
 
                 $this->trace->traceException(
                                 $e,
                                 Trace::CRITICAL,
-                                TraceCode::BATCH_PROCESSING_ERROR);
+                                TraceCode::BATCH_PROCESSING_ERROR,
+                                [
+                                    Batch\Entity::ID => $this->batch->getId(),
+                                ]);
 
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
@@ -282,7 +299,16 @@ class Base extends BaseModel\Core
 
     protected function sendProcessedMail()
     {
-        ;
+        $type = studly_case($this->batch->getType());
+
+        $mailerClass = "\\RZP\\Mail\\Batch\\$type";
+
+        $mail = new $mailerClass(
+                        $this->batch->toArray(),
+                        $this->merchant->toArray(),
+                        $this->outputFileLocalPath);
+
+        Mail::send($mail);
     }
 
     public function deleteFile(string $filePath)

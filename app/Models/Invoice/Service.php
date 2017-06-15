@@ -90,7 +90,7 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
-        $invoice = $this->core->issue($invoice, $this->merchant);
+        $invoice = $this->core->issueAndNotifyAsync($invoice, $this->merchant);
 
         return $invoice->toArrayPublic();
     }

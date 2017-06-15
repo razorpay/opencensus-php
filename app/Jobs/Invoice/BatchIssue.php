@@ -60,7 +60,6 @@ class BatchIssue extends BaseJob implements ShouldQueue
 
         try
         {
-
             $this->trace->debug(
                             TraceCode::INVOICE_BATCH_ISSUE_JOB_RECEIVED,
                             [
@@ -69,8 +68,8 @@ class BatchIssue extends BaseJob implements ShouldQueue
                             ]);
 
             $ids         = $this->input[InvoiceModel\Entity::IDS] ?? [];
-            $smsNotify   = boolval($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
-            $emailNotify = boolval($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
+            $smsNotify   = (bool) ($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
+            $emailNotify = (bool) ($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
 
             $timeStarted = microtime(true);
 
@@ -83,8 +82,6 @@ class BatchIssue extends BaseJob implements ShouldQueue
                 $this->issueInvoiceAndNotify($invoice, $smsNotify, $emailNotify);
             }
 
-            $this->delete();
-
             $timeTaken = microtime(true) - $timeStarted;
 
             $this->trace->debug(
@@ -96,8 +93,6 @@ class BatchIssue extends BaseJob implements ShouldQueue
         }
         catch (\Throwable $e)
         {
-            $this->delete();
-
             $this->trace->traceException(
                             $e,
                             Trace::ERROR,
@@ -105,6 +100,10 @@ class BatchIssue extends BaseJob implements ShouldQueue
                             [
                                 Batch\Entity::ID => $this->batchId,
                             ]);
+        }
+        finally
+        {
+            $this->delete();
         }
     }
 
@@ -120,33 +119,19 @@ class BatchIssue extends BaseJob implements ShouldQueue
         bool $smsNotify,
         bool $emailNotify)
     {
+        if ($emailNotify === true)
+        {
+            $invoice->setEmailStatus(InvoiceModel\NotifyStatus::PENDING);
+        }
+
+        if ($smsNotify === true)
+        {
+            $invoice->setSmsStatus(InvoiceModel\NotifyStatus::PENDING);
+        }
+
         try
         {
-            $this->repoManager->invoice->transaction(function () use ($invoice)
-            {
-                (new InvoiceModel\Generator($invoice->merchant, $invoice))->issueInvoice();
-
-                $this->repoManager->invoice->saveOrFail($invoice);
-            });
-
-            $pdfPath = $this->core->createInvoicePdf($invoice);
-
-            $notifier = new InvoiceModel\Notifier($invoice, $pdfPath);
-
-            if ($smsNotify === true)
-            {
-                $notifier->smsInvoiceIssuedToCustomer();
-            }
-
-            if ($emailNotify === true)
-            {
-                $notifier->emailInvoiceIssuedToCustomer();
-            }
-
-            if (($smsNotify === true) or ($emailNotify === true))
-            {
-                $this->repoManager->invoice->saveOrFail($invoice);
-            }
+            $this->core->issueAndNotifySync($invoice, $invoice->merchant);
         }
         catch (\Throwable $e)
         {

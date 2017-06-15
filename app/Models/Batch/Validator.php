@@ -21,7 +21,11 @@ class Validator extends Base\Validator
         if (Type::exists($type) === false)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE,
+                        Entity::TYPE,
+                        [
+                            Entity::TYPE => $type,
+                        ]);
         }
     }
 

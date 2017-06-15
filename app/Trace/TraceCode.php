@@ -568,6 +568,7 @@ class TraceCode
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';

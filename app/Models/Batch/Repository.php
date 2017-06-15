@@ -9,12 +9,11 @@ class Repository extends Base\Repository
     protected $entity = 'batch';
 
     protected $proxyFetchParamRules = [
-        Entity::TYPE        => 'sometimes|in:refund',
+        Entity::TYPE        => 'sometimes|in:refund,payment_link',
     ];
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
-        Entity::TYPE        => 'sometimes|in:refund,payment_link',
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
     ];
 

@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Mail;
-
 use RZP\Models\Batch;
-use RZP\Mail\Batch as BatchMail;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base
@@ -30,11 +27,8 @@ class Refund extends Base
         // Update the entry with output values
         //
 
-        $entry[Batch\Header::REFUND_ID]         = $refund->getPublicId();
-        $entry[Batch\Header::REFUNDED_AMOUNT]   = $refund->getAmount();
-        $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
-        $entry[Batch\Header::ERROR_CODE]        = null;
-        $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+        $entry[Batch\Header::REFUND_ID]       = $refund->getPublicId();
+        $entry[Batch\Header::REFUNDED_AMOUNT] = $refund->getAmount();
     }
 
     /**
@@ -58,15 +52,5 @@ class Refund extends Base
         }
 
         $this->batch->setProcessedAmount($processedAmount);
-    }
-
-    protected function sendProcessedMail()
-    {
-        $mail = new BatchMail\Refund(
-                        $this->batch->toArray(),
-                        $this->merchant->toArray(),
-                        $this->outputFileLocalPath);
-
-        Mail::send($mail);
     }
 }
