@@ -76,9 +76,6 @@ class CreateBankAccounts extends Migration
             $table->char(BankAccount::BENEFICIARY_MOBILE, 32)
                   ->nullable();
 
-            $table->tinyInteger(BankAccount::VIRTUAL)
-                  ->default(0);
-
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);
             $table->integer(BankAccount::DELETED_AT)

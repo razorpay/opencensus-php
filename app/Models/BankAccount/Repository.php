@@ -22,7 +22,6 @@ class Repository extends Base\Repository
     public function getBankAccount($merchant)
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->first();
@@ -31,7 +30,6 @@ class Repository extends Base\Repository
     public function getBankAccountsForCustomer($customer, $ifsc = null)
     {
         $query = $this->newQuery()
-                      ->where(Entity::VIRTUAL, '=', false)
                       ->where(Entity::ENTITY_ID, '=', $customer->getId())
                       ->where(Entity::TYPE, '=', Type::CUSTOMER);
 
@@ -51,7 +49,6 @@ class Repository extends Base\Repository
     public function getBankAccountsFromAccountNumber($accountNumber, $ifsc = null)
     {
         $query = $this->newQuery()
-                      ->where(Entity::VIRTUAL, '=', false)
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
                       ->where(Entity::TYPE, '=', Type::CUSTOMER);
 
@@ -67,8 +64,8 @@ class Repository extends Base\Repository
     {
 
         $query = $this->newQuery()
-                      ->where(Entity::VIRTUAL, '=', true)
-                      ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber);
+                      ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL);
 
         if ($bankCode !== null)
         {
@@ -88,7 +85,6 @@ class Repository extends Base\Repository
     public function findByCustomerIdAndAccountNumber($customerId, $accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->where(Entity::ENTITY_ID, '=', $customerId)
                     ->where(Entity::TYPE, '=', Type::CUSTOMER)
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
@@ -98,7 +94,6 @@ class Repository extends Base\Repository
     public function findFirstBankAccountByAccountNumber($accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
                     ->first();
     }
@@ -113,7 +108,6 @@ class Repository extends Base\Repository
     public function fetchBankAccountsWithoutBeneCode()
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
                     ->whereNull(BankAccount\Entity::BENEFICIARY_CODE)
                     ->take(1000)
@@ -123,7 +117,6 @@ class Repository extends Base\Repository
     public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
                     ->oldest()
                     ->get();
@@ -132,7 +125,6 @@ class Repository extends Base\Repository
     public function getMerchantBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->oldest()
@@ -142,7 +134,6 @@ class Repository extends Base\Repository
     public function fetchByEntityIdAndType($entityId, $type, $merchantId)
     {
         return $this->newQuery()
-                    ->where(BankAccount\Entity::VIRTUAL, '=', false)
                     ->where(BankAccount\Entity::TYPE, '=', $type)
                     ->where(BankAccount\Entity::ENTITY_ID, '=', $entityId)
                     ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
@@ -153,7 +144,6 @@ class Repository extends Base\Repository
     public function getCountOfBankAccountsCreatedBetween($from, $to)
     {
         return $this->newQuery()
-                    ->where(Entity::VIRTUAL, '=', false)
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->count();

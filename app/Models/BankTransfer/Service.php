@@ -67,9 +67,9 @@ class Service extends Base\Service
         else
         {
             $bankTransfer->setExpected(false);
-        }
 
-        $this->repo->saveOrFail($bankTransfer);
+            $this->repo->saveOrFail($bankTransfer);
+        }
 
         $data = [
             'valid'          => true,
@@ -132,6 +132,8 @@ class Service extends Base\Service
             $bankTransfer->payment()->associate($payment);
 
             $bankTransfer->merchant()->associate($this->merchant);
+
+            $this->repo->saveOrFail($bankTransfer);
 
             $this->updateVirtualAccount($bankTransfer);
 

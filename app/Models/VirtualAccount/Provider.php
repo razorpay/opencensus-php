@@ -27,7 +27,9 @@ class Provider
             'RZRP',
             'RAZR',
             'RAZO',
-            'RZRN',
+            // This is to be used for our own nodal account,
+            // DO NOT REFUND PAYMENTS MADE HERE
+            // 'RZRN',
         ],
         Provider::VVS       => [
             'RAZO',

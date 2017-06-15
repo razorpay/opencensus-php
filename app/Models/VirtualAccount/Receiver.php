@@ -59,7 +59,7 @@ class Receiver
         return (defined(__CLASS__ . '::' . strtoupper($type)));
     }
 
-    public function buildBankAccount()
+    public function buildBankAccount(Entity $virtualAccount)
     {
         $bankAccount = new BankAccount;
 
@@ -69,7 +69,7 @@ class Receiver
 
         $bankAccount->merchant()->associate($this->merchant);
 
-        $bankAccount->setVirtual(true);
+        $bankAccount->associateVirtualAccount($virtualAccount);
 
         $this->repo->saveOrFail($bankAccount);
 

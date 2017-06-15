@@ -137,7 +137,7 @@ class Service extends Base\Service
         {
             $func = 'build' . studly_case($receiverType);
 
-            $receiver = $receiverHelper->$func();
+            $receiver = $receiverHelper->$func($virtualAccount);
 
             $association = camel_case($receiverType);
 

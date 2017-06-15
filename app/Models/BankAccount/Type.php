@@ -8,6 +8,7 @@ class Type
 {
     const MERCHANT  = 'merchant';
     const CUSTOMER  = 'customer';
+    const VIRTUAL   = 'virtual';
 
     public static function validateType($type)
     {
