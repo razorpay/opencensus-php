@@ -88,11 +88,6 @@ class Service extends Base\Service
 
         for ($i = 0; $i < 5; $i++)
         {
-            $input = [
-                'skip' => $i * $count,
-                'count' => $count
-            ];
-
             // Using generic
 
             $customerInput = [
