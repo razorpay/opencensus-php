@@ -39,6 +39,17 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountWithIdenticalDescriptor()
+    {
+        $this->createVirtualAccount(['descriptor' => 'samedesc']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        });
+    }
+
     public function testFetchVirtualAccount()
     {
         $response = $this->createVirtualAccount();

@@ -174,8 +174,6 @@ class Processor
             $this->createPaymentEntity($input);
         });
 
-        $this->verifyFeesLessThanAmount($this->payment);
-
         $this->processCurrencyConversions($this->payment);
 
         $this->repo->saveOrFail($this->payment);

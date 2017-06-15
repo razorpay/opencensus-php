@@ -20,9 +20,20 @@ class Provider
     // We may have more than one root per provider, but
     // this will be leveraged later.
     const ROOT = [
-        Provider::YESBANK   => 'RAZORP',
-        Provider::KOTAK     => 'RZRP',
-        Provider::VVS       => 'RAZOR',
+        Provider::YESBANK   => [
+            // Todo
+        ],
+        Provider::KOTAK     => [
+            'RZRP',
+            'RAZR',
+            'RAZO',
+            'RZRN',
+        ],
+        Provider::VVS       => [
+            'RAZO',
+            'RAZP',
+            'RZPY',
+        ],
     ];
 
     // The default details are fixed by each provider, most specifically

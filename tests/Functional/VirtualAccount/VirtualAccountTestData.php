@@ -7,9 +7,8 @@ use RZP\Error\PublicErrorCode;
 
 return [
     'testCreateVirtualAccount' => [
-        'name'            => 'New virtual account',
+        'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',
-        'descriptor'      => 'banana',
         'amount_expected' => 10000,
         'status'          => 'active',
         'receiver_type'   => ['bank_account'],
@@ -20,9 +19,8 @@ return [
     ],
 
     'testFetchVirtualAccount' => [
-        'name'            => 'New virtual account',
+        'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',
-        'descriptor'      => 'banana',
         'amount_expected' => 10000,
         'status'          => 'active',
         'receiver_type'   => ['bank_account'],
@@ -39,17 +37,32 @@ return [
             [
                 'name'            => 'Second VA',
                 'entity'          => 'virtual_account',
-                'descriptor'      => 'banana',
                 'amount_expected' => 10000,
                 'status'          => 'active',
             ],
             [
                 'name'            => 'First VA',
                 'entity'          => 'virtual_account',
-                'descriptor'      => 'banana',
                 'amount_expected' => 10000,
                 'status'          => 'active',
             ],
+        ],
+    ],
+
+    'testCreateVirtualAccountWithIdenticalDescriptor' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'An active virtual account with the same' .
+                                     ' descriptor already exists for your account.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
         ],
     ],
 

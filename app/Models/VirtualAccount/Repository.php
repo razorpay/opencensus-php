@@ -20,7 +20,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByIdAndMerchantIdWithRelations(
+    public function findByIdAndMerchantWithRelations(
         string $id,
         Merchant $merchant,
         array $relations = [],
@@ -35,5 +35,17 @@ class Repository extends Base\Repository
         }
 
         return $query->findOrFailPublic($id, $columns);
+    }
+
+    public function findActiveByDescriptorAndMerchant(
+        string $descriptor,
+        Merchant $merchant)
+    {
+        $query = $this->newQuery()
+                      ->merchantId($merchant->getId())
+                      ->where(Entity::STATUS, '=', Status::ACTIVE)
+                      ->where(Entity::DESCRIPTOR, '=', $descriptor);
+
+        return $query->get();
     }
 }

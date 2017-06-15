@@ -3,9 +3,11 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver
@@ -18,7 +20,12 @@ class Receiver
         // self::VPA,
     ];
 
-    const ACCOUNT_NUMBER_LENGTH = 20;
+    const ROOT_LENGTH               = 4;
+    const HANDLE_LENGTH             = 4;
+    const DESCRIPTOR_LENGTH         = 10;
+    const ACCOUNT_NUMBER_LENGTH     = 18;
+    // No 0s and Os
+    const ACCOUNT_NUMBER_CHAR_SPACE = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
 
     protected $merchant;
     protected $name;
@@ -37,6 +44,8 @@ class Receiver
         }
 
         $this->repo = $this->app['repo'];
+
+        $this->trace = $this->app['trace'];
 
         $this->merchant = $merchant;
 
@@ -75,8 +84,10 @@ class Receiver
 
         $details = Provider::DEFAULT_DETAILS[$provider];
 
+        $accountNumber = $this->generateAccountNumberForProvider($provider);
+
         $merchantDetails = [
-            BankAccount::ACCOUNT_NUMBER     => $this->generateAccountNumberForProvider($provider),
+            BankAccount::ACCOUNT_NUMBER     => $accountNumber,
             BankAccount::BENEFICIARY_NAME   => $this->name,
         ];
 
@@ -95,36 +106,94 @@ class Receiver
         return $provider;
     }
 
+    protected function generateAccountNumberForProvider(string $provider)
+    {
+        $root = Provider::ROOT[$provider];
+
+        foreach (Provider::ROOT[$provider] as $root)
+        {
+            $accountNumber = $this->generateNewAccountNumberWithRoot($root);
+
+            $existingAccount = $this->repo->bank_account
+                                    ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber);
+
+            if ($existingAccount === null)
+            {
+                return $accountNumber;
+            }
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+    }
+
     /**
-     * Generates unique account number for a given provider
+     * Generates unique account number for a given root
      *
-     * Each provider has a pre-decided 'master' or prefix that must be used.
-     * Max length of account number is 20 characters. We use the timestamp
-     * in seconds, followed by random digits to pad.
+     * Max length of account number is 18 characters. The three parts of
+     * the account number are the root, the handle, and the descriptor.
      *
-     * So if YesBank is giving us a master of length 6, and timestamps are
-     * currently 10 digits long, this logic allows us to generate ~10000
-     * unique numbers every second.
+     * Each provider has some pre-decided roots or prefixes that must be used.
+     * We use the merchant's handle if available, and VA descriptor if given,
+     * otherwise use random characters.
      *
-     * @param  string $provider Descripter for provider of Virtual a/c services
+     * @param  string $root Root given by for provider of Virtual a/c services
      * @return string Unique account number
      */
-    protected function generateAccountNumberForProvider($provider)
+    protected function generateNewAccountNumberWithRoot(string $root)
     {
-        $master = Provider::ROOT[$provider];
+        $handle = $this->getHandle();
 
-        $timestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
+        $descriptor = $this->getDescriptor();
 
-        $accountNumber = $master . $timestamp;
+        $accountNumber = strtoupper($root . $handle . $descriptor);
 
-        $digits = self::ACCOUNT_NUMBER_LENGTH - strlen($accountNumber);
+        $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_NUMBER_GENERATED,
+                [
+                    'root'          => $root,
+                    'handle'        => $handle,
+                    'descriptor'    => $descriptor,
+                    'accountNumber' => $accountNumber,
+                ]
+            );
 
-        // TODO:
-        // * Simplify this, make it easier to type
-        // * Use descriptor when provided
-
-        $accountNumber .= rand(pow(10, $digits - 1), pow(10, $digits) - 1);
+        assertTrue(strlen($accountNumber) == self::ACCOUNT_NUMBER_LENGTH);
 
         return $accountNumber;
+    }
+
+    protected function getHandle()
+    {
+        $merchantHandle = $this->merchant->getHandle();
+
+        $accountHandle = $this->padWithRandomDigits(self::HANDLE_LENGTH, $merchantHandle);
+
+        return $accountHandle;
+    }
+
+    protected function getDescriptor()
+    {
+        $accountDescriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH, $this->descriptor);
+
+        return $accountDescriptor;
+    }
+
+    protected function padWithRandomDigits(int $desiredLength, $str = '')
+    {
+        $requiredLength = $desiredLength - strlen($str);
+
+        $pad = '';
+
+        $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
+
+        while (strlen($pad) < $requiredLength)
+        {
+            $pad .= $charSpace[array_rand($charSpace)];
+        }
+
+        $str = $pad . $str;
+
+        return $str;
     }
 }

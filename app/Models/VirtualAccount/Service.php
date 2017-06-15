@@ -51,7 +51,7 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($id);
 
         $virtualAccount = $this->repo->virtual_account
-                               ->findByIdAndMerchantIdWithRelations(
+                               ->findByIdAndMerchantWithRelations(
                                 $id,
                                 $this->merchant,
                                 ['bankAccount']

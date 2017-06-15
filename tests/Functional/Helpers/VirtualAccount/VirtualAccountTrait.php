@@ -126,8 +126,7 @@ trait VirtualAccountTrait
     private function getDefaultVirtualAccountArray()
     {
         return [
-            'name'            => 'New virtual account',
-            'descriptor'      => 'banana',
+            'name'            => 'Test virtual account',
             'amount_expected' => 10000,
             'receiver_type'   => 'bank_account',
         ];

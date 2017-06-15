@@ -2,7 +2,9 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Customer\Entity as Customer;
 
@@ -17,6 +19,11 @@ class Core extends Base\Core
         $virtualAccount->merchant()->associate($merchant);
 
         $virtualAccount->build($input);
+
+        if ($virtualAccount->getDescriptor() !== null)
+        {
+            $this->validateDescriptor($virtualAccount, $merchant);
+        }
 
         if ($customer !== null)
         {
@@ -35,5 +42,19 @@ class Core extends Base\Core
         $this->repo->saveOrFail($virtualAccount);
 
         return $virtualAccount;
+    }
+
+    protected function validateDescriptor(Entity $virtualAccount, Merchant $merchant)
+    {
+        $existingVirtualAccounts = $this->repo->virtual_account
+                                        ->findActiveByDescriptorAndMerchant(
+                                            $virtualAccount->getDescriptor(),
+                                            $merchant);
+
+        if ($existingVirtualAccounts->count() > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR);
+        }
     }
 }

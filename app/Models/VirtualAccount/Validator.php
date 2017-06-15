@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME            => 'sometimes|filled|string|max:40',
-        Entity::DESCRIPTOR      => 'sometimes|filled|alpha_num|max:10',
+        Entity::DESCRIPTOR      => 'sometimes|filled|alpha_num|between:5,10',
         Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',
         Entity::RECEIVER_TYPE   => 'sometimes|filled|array'
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
             if (Receiver::isTypeValid($type) === false)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_RECEIVER_TYPE,
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPE,
                     'receiver_type',
                     [
                         'receiver_type' => $type,
