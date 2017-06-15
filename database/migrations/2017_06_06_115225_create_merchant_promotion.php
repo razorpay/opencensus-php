@@ -66,5 +66,7 @@ class CreateMerchantPromotion extends Migration
             $table->dropForeign(
                 Table::MERCHANT_PROMOTION . '_' . MerchantPromotion::PROMOTION_ID.'_foreign');
         });
+
+        Schema::drop(Table::MERCHANT_PROMOTION);
     }
 }

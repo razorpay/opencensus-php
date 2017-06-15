@@ -23,7 +23,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::EXPIRED => 'boolean'
+        self::EXPIRED        => 'boolean',
+        self::REMAINING_RUNS => 'boolean',
     ];
 
     protected $fillable = [
@@ -46,7 +47,7 @@ class Entity extends Base\PublicEntity
 
     public function getRemainingRuns()
     {
-        return (int) $this->attributes[self::REMAINING_RUNS];
+        return $this->attributes[self::REMAINING_RUNS];
     }
 
     public function setExpired()
@@ -56,8 +57,6 @@ class Entity extends Base\PublicEntity
 
     public function updateRemainingRuns()
     {
-        $remainingRuns = $this->getRemainingRuns() - 1;
-
-        $this->setAttribute(self::REMAINING_RUNS, $remainingRuns);
+        $this->decrement(self::REMAINING_RUNS);
     }
 }

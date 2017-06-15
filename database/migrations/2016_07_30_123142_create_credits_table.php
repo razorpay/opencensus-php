@@ -47,6 +47,7 @@ class CreateCreditsTable extends Migration
             $table->index(Credits::CREATED_AT);
             $table->index(Credits::CAMPAIGN);
             $table->index(Credits::TYPE);
+            $table->index(Credits::EXPIRING_AT);
 
             $table->foreign(Credits::MERCHANT_ID)
                 ->references(Merchant\Entity::ID)

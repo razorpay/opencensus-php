@@ -22,6 +22,8 @@ class Core extends Base\Core
 
         $coupon = (new Entity)->build($input);
 
+        $coupon->source()->associate($entity);
+
         $this->repo->saveOrFail($coupon);
 
         return $coupon;
@@ -42,9 +44,11 @@ class Core extends Base\Core
     {
         $promotion = $coupon->source;
 
-        $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
-                                $merchant->getId(),
-                                $promotion->getId());
+        $merchantPromotion = $this->repo->merchant_promotion
+                                        ->findByMerchantAndPromotionId(
+                                            $merchant->getId(),
+                                            $promotion->getId()
+                                        );
 
         if ($merchantPromotion !== null)
         {

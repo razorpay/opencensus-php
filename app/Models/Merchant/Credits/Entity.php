@@ -182,5 +182,4 @@ class Entity extends Base\PublicEntity
     }
 
 // --------------------- End Foreign Key Relations ---------------------------
-
 }

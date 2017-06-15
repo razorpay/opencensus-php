@@ -11,15 +11,13 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-
-        $this->core = new Core;
     }
 
     public function create(array $input)
     {
         $this->trace->info(TraceCode::PROMOTION_CREATE_REQUEST, $input);
 
-        $promotion = $this->core->create($input);
+        $promotion = $this->core()->create($input);
 
         return $promotion->toArrayAdmin();
     }
@@ -30,7 +28,7 @@ class Service extends Base\Service
 
         $promotion = $this->repo->promotion->findByPublicId($id);
 
-        $promotion = $this->core->update($promotion, $input);
+        $promotion = $this->core()->update($promotion, $input);
 
         return $promotion->toArrayAdmin();
     }

@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     const COUPON_EXPIRY = 'coupon_expiry';
 
     protected static $createRules = [
-        Entity::ENTITY_ID   => 'required|string|max:14',
+        Entity::ENTITY_ID   => 'required|string',
         Entity::ENTITY_TYPE => 'required|string|max:20',
         Entity::CODE        => 'required|string|max:10',
         Entity::START_DATE  => 'sometimes|epoch',

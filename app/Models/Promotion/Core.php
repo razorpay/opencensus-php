@@ -60,8 +60,8 @@ class Core extends Base\Core
 
     public function isUsed(Entity $promotion): bool
     {
-        $merchantPromotion = $this->repo->merchant_promotion->
-                                findByPromotionId($promotion->getId());
+        $merchantPromotion = $this->repo->merchant_promotion
+                                        ->findByPromotionId($promotion->getId());
 
         if ($merchantPromotion === null)
         {

@@ -10,11 +10,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function create(array $input)
     {
         $this->trace->info(TraceCode::COUPON_CREATE_REQUEST, $input);

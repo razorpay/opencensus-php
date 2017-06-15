@@ -99,9 +99,10 @@ class Core extends Base\Core
 
                 $promotion = $scheduleTask->entity;
 
-                $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
-                    $merchant->getId(),
-                    $promotion->getId());
+                $merchantPromotion = $this->repo->merchant_promotion
+                                          ->findByMerchantAndPromotionId(
+                                            $merchant->getId(),
+                                            $promotion->getId());
 
                 $this->addAndExpireCredits(
                     $merchant,
@@ -177,27 +178,25 @@ class Core extends Base\Core
     {
         $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion);
 
-        if ($creditsToExpire === 0)
+        if ($creditsToExpire !== 0)
         {
-            return;
+            $creditInput = [
+                Credits\Entity::CAMPAIGN     => $promotion->getName() . 'Expired',
+                Credits\Entity::PROMOTION_ID => $promotion->getId(),
+                Credits\Entity::VALUE        => $creditsToExpire * -1,
+                Credits\Entity::TYPE         => $promotion->getCreditType(),
+            ];
+
+            $this->creditCore->create($merchant, $creditInput);
+
+            $this->trace->info(
+                TraceCode::CREDITS_EXPIRED,
+                [
+                    'merchant_id'  => $merchant->getId(),
+                    'credit_input' => $creditInput,
+                ]
+            );
         }
-
-        $creditInput = [
-            Credits\Entity::CAMPAIGN     => $promotion->getName() . 'Expired',
-            Credits\Entity::PROMOTION_ID => $promotion->getId(),
-            Credits\Entity::VALUE        => $creditsToExpire * -1,
-            Credits\Entity::TYPE         => $promotion->getCreditType(),
-        ];
-
-        $this->creditCore->create($merchant, $creditInput);
-
-        $this->trace->info(
-            TraceCode::CREDITS_EXPIRED,
-            [
-                'merchant_id'  => $merchant->getId(),
-                'credit_input' => $creditInput,
-            ]
-        );
     }
 
     protected function calculateCreditToExpire(Merchant\Entity $merchant, Promotion\Entity $promotion)

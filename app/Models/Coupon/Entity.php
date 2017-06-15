@@ -26,8 +26,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::CODE,
         self::START_DATE,
         self::END_DATE,
@@ -58,8 +56,9 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT => 'int',
     ];
 
-    protected static $modifiers = [
+    protected static $unsetCreateInput = [
         self::ENTITY_ID,
+        self::ENTITY_TYPE,
     ];
 
     /**
@@ -70,13 +69,6 @@ class Entity extends Base\PublicEntity
     public function source()
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
-    }
-
-    protected function modifyEntityId(array & $input)
-    {
-        $entityClass = PublicEntity::getEntityClass($input[Entity::ENTITY_TYPE]);
-
-        $entityClass::verifyIdAndSilentlyStripSign($input[Entity::ENTITY_ID]);
     }
 
     public function getUsage()
@@ -102,11 +94,6 @@ class Entity extends Base\PublicEntity
     public function getEndDate()
     {
         return $this->getAttribute(self::END_DATE);
-    }
-
-    public function setUsedCount(int $count)
-    {
-        return $this->setAttribute(self::USED_COUNT, $count);
     }
 
     public function incrementUsedCount()
