@@ -141,7 +141,7 @@ class Core extends Base\Core
     protected function sendEmail(Entity $invitation, string $senderName)
     {
         // In dev and testing environments we want to send mail
-        if ($this->app->environment('dev', 'testing') === true)
+        if ($this->app->environment('testing') === true)
         {
             return;
         }
