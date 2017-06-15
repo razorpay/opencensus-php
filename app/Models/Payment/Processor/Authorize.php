@@ -191,6 +191,8 @@ trait Authorize
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
+        $this->createAnalyticsLog($this->payment);
+
         throw $e;
     }
 
@@ -883,9 +885,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
 
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
+            $this->updatePaymentAuthFailedAndThrowException($e);
         }
     }
 
@@ -896,9 +896,7 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
 
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
+            $this->updatePaymentAuthFailedAndThrowException($e);
         }
     }
 

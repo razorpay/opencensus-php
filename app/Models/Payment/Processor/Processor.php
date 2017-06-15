@@ -578,8 +578,6 @@ class Processor
 
         $this->repo->saveOrFail($payment);
 
-        $this->createAnalyticsLog($payment);
-
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();
