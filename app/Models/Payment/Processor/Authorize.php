@@ -81,8 +81,6 @@ trait Authorize
 
         $retry = false;
 
-        $terminalGatewayInput = $gatewayInput;
-
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -98,6 +96,8 @@ trait Authorize
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             $payment->associateTerminal($currentTerminal);
+
+            $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
@@ -235,19 +235,17 @@ trait Authorize
 
         $this->repo->save($payment);
 
+        // TODO: Return metadata in a better format
         $response = [
-            'type' => 'otp',
-            'request' => $request,
-            'version' => 1,
+            'type'       => 'otp',
+            'request'    => $request,
+            'version'    => 1,
             'payment_id' => $payment->getPublicId(),
-            'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
-            // TODO: Return metadata in a better format
-            'contact' => $payment->getContact(),
-            'amount'  => number_format(($payment->getAmount() / 100), 2),
-            'wallet'  => $payment->getWallet()
+            'gateway'    => $this->getEncryptedGatewayText($payment->getGateway()),
+            'contact'    => $payment->getContact(),
+            'amount'     => number_format(($payment->getAmount() / 100), 2),
+            'wallet'     => $payment->getWallet()
         ];
-
-        $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
 
         // This is a hack to return direct method for IVR payments
         if ($payment->isCard() === true)
@@ -262,16 +260,18 @@ trait Authorize
                             ->render();
 
             $response = [
-                'type' => 'otp',
-                'request' => [
-                    'method' => 'direct',
+                'type'       => 'otp',
+                'request'    => [
+                    'method'  => 'direct',
                     'content' => $content
                 ],
-                'version' => 1,
+                'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
-                'gateway' => $response['gateway']
+                'gateway'    => $response['gateway']
             ];
         }
+
+        $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
 
         return $response;
     }
