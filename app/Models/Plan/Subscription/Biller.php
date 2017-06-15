@@ -46,7 +46,11 @@ class Biller extends Base\Core
                     'subscription_id'   => $subscription->getId(),
                 ]);
 
-            //$this->updateNextRunAtForSubscription();
+            //
+            // We need to update the charge_at of the subscription so that the
+            // flow continues as it is even if the subscription is in halted state.
+            //
+            (new Charge)->updateNextRunAtForSubscription($subscription);
 
             return;
         }

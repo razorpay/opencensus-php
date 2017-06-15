@@ -427,8 +427,9 @@ class Core extends Base\Core
             Payment\Entity::RECURRING       => '1',
             Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
             Payment\Entity::TOKEN           => $tokenId,
-            Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            // Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Payment\Entity::ORDER_ID        => $order->getPublicId(),
+            // TODO: These fields should not be required to be sent.
             Payment\Entity::EMAIL           => $customer->getEmail(),
             Payment\Entity::CONTACT         => $customer->getContact(),
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',

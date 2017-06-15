@@ -255,8 +255,6 @@ class Charge extends Base\Core
             $subscription->setStatus(Status::HALTED);
             $invoice->setSubscriptionStatus(Invoice\Status::HALTED);
             $this->updateScheduleTask($subscription->task);
-            // TODO: At the time of next charge, if the subscription is still in halted
-            // state, we should update the charge_at to the next one, after creating the invoice.
             $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
         else
@@ -278,6 +276,18 @@ class Charge extends Base\Core
         });
 
         (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
+    }
+
+    public function updateNextRunAtForSubscription(Entity $subscription)
+    {
+        $this->updateScheduleTask($subscription->task);
+        $subscription->setChargeAt($subscription->task->getNextRunAt());
+
+        $this->repo->transaction(function() use ($subscription)
+        {
+            $this->repo->saveOrFail($subscription);
+            $this->repo->saveOrFail($subscription->task);
+        });
     }
 
     protected function validateInvoiceStatusBeforeCharging(

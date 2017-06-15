@@ -787,7 +787,8 @@ class SubscriptionChargeTest extends TestCase
         $this->clearMock();
 
         $task = $this->getLastEntity('schedule_task', true);
-        Carbon::setTestNow(Carbon::createFromTimestamp($task['next_run_at'] + 1));
+        $firstRunAt = $task['next_run_at'];
+        Carbon::setTestNow(Carbon::createFromTimestamp($firstRunAt + 1));
 
         $subscription = $this->getLastEntity('subscription', true);
 
@@ -797,6 +798,26 @@ class SubscriptionChargeTest extends TestCase
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals('halted', $invoice['subscription_status']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $task = $this->getLastEntity('schedule_task', true);
+        $secondRunAt = $task['next_run_at'];
+        // second run should be at least 50 days from first run (2 months ahead)
+        $this->assertGreaterThan($firstRunAt + 4320000, $secondRunAt);
+        $this->assertEquals($secondRunAt, $subscription['charge_at']);
+        Carbon::setTestNow(Carbon::createFromTimestamp($secondRunAt + 1));
+
+        $result = $this->chargeSubscriptionsViaCron();
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
+
+        $task = $this->getLastEntity('schedule_task', true);
+        $thirdRunAt = $task['next_run_at'];
+        // second run should be at least 50 days from first run (2 months ahead)
+        $this->assertGreaterThan($secondRunAt + 4320000, $thirdRunAt);
     }
 
     public function testSubscriptionExpire()
