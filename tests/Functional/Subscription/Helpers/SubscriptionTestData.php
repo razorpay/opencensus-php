@@ -253,7 +253,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => null,
                 'start_at' => null,
@@ -288,7 +288,7 @@ return [
                 'current_end'     => null,
                 'ended_at'        => null,
                 'quantity'        => 1,
-                'token_id'        => null,
+                // 'token_id'        => null,
                 'notes'           => [],
                 'charge_at'       => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at'        => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -372,7 +372,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => null,
                 'start_at' => null,
@@ -407,7 +407,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -442,7 +442,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -484,7 +484,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => null,
                 'start_at' => null,
@@ -527,7 +527,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -617,7 +617,7 @@ return [
                 'current_end'   => null,
                 'ended_at'      => null,
                 'quantity'      => 1,
-                'token_id'      => null,
+                // 'token_id'      => null,
                 'notes'         => [],
                 'charge_at'     => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -649,7 +649,7 @@ return [
                 'current_end'   => null,
                 'ended_at'      => null,
                 'quantity'      => 1,
-                'token_id'      => null,
+                // 'token_id'      => null,
                 'notes'         => [],
                 'charge_at'     => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -789,7 +789,7 @@ return [
                 // 'id'               => 'sub_7oKmlxFlg8HlDN',
                 'plan_id'          => 'plan_1000000000plan',
                 'customer_id'      => 'cust_100000customer',
-                'token_id'         => null,
+                // 'token_id'         => null,
                 'status'           => 'created',
                 'quantity'         => 1,
                 'total_count'      => 6,

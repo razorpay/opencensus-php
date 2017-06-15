@@ -46,6 +46,8 @@ class Biller extends Base\Core
                     'subscription_id'   => $subscription->getId(),
                 ]);
 
+            //$this->updateNextRunAtForSubscription();
+
             return;
         }
 

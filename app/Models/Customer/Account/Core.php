@@ -352,28 +352,7 @@ class Core extends Base\Core
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
-
-            //
-            // Even in case of global customer flow, we
-            // would be passing local customer only to
-            // this function. But, we need to finally return
-            // back the global customer for further processing.
-            //
-            // For global flow, we would either get app_token or
-            // local_customer which has global_customer associated.
-            //
-            if ($customer->hasGlobalCustomer() === true)
-            {
-                // TODO: assert app_token is present.
-                // TODO: get the customer using the app_token
-                //       and check that the customer there
-                //       matches the global customer here.
-                // TODO: the above should not be done for
-                //       privilege_auth since no app_token there. lol
-
-                $customer = $customer->globalCustomer;
-            }
+            $customer = $this->getCustomer($customerId, $merchant, $input);
         }
 
         $this->trace->info(
@@ -384,6 +363,72 @@ class Core extends Base\Core
             ]);
 
         return array($customer, $appToken);
+    }
+
+    protected function getCustomer(string $customerId, Merchant\Entity $merchant, array $input)
+    {
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
+
+        //
+        // Even in case of global customer flow, we
+        // would be passing local customer only to
+        // this function. But, we need to finally return
+        // back the global customer for further processing.
+        //
+        // For global flow, we would either get app_token or
+        // local_customer which has global_customer associated.
+        //
+        if ($customer->hasGlobalCustomer() === true)
+        {
+            $customer = $customer->globalCustomer;
+
+            $ba = $this->app['basicauth'];
+
+            if ($ba->isPrivilegeAuth() === false)
+            {
+                if (empty($input[Payment\Entity::APP_TOKEN]) === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                        null,
+                        [
+                            'customer_id' => $customer->getId()
+                        ]);
+                }
+
+                $appToken = (new AppToken\Core)->getAppByAppTokenId(
+                    $input[Payment\Entity::APP_TOKEN], $merchant);
+
+                if ($appToken->getMerchantId() !== Account::SHARED_ACCOUNT)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_APP_TOKEN_NOT_GLOBAL,
+                        null,
+                        [
+                            'customer_id' => $customer->getId(),
+                            'app_token_merchant_id' => $appToken->getMerchantId()
+                        ]);
+                }
+
+                $appTokenCustomer = $this->repo->customer->fetchByAppToken($appToken);
+
+                $appTokenCustomerId = $appTokenCustomer->getId();
+                $customerId = $customer->getId();
+
+                if ($appTokenCustomerId !== $customerId)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH,
+                        null,
+                        [
+                            'app_token_customer_id' => $appTokenCustomerId,
+                            'expected_customer_id' => $customerId()
+                        ]);
+                }
+            }
+        }
+
+        return $customer;
     }
 
     public function putAppTokenInSession($appToken)

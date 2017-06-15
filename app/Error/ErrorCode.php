@@ -103,6 +103,7 @@ class ErrorCode
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
+    const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -270,6 +271,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                         = 'BAD_REQUEST_GATEWAY_REFUND_ABSENT';
     const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
+    const BAD_REQUEST_APP_TOKEN_ABSENT                                              = 'BAD_REQUEST_APP_TOKEN_ABSENT';
     const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                            = 'BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                        = 'BAD_REQUEST_PAYMENT_NOT_AUTHORIZED';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                         = 'BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED';
@@ -445,6 +447,7 @@ class ErrorCode
     const BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                                = 'BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_DUPLICATE_NOT_GLOBAL                                 = 'BAD_REQUEST_CUSTOMER_DUPLICATE_NOT_GLOBAL';
+    const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                      = 'BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH';
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                          = 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE';

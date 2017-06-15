@@ -466,7 +466,7 @@ trait Authorize
         Subscription\Entity $subscription,
         Payment\Entity $payment)
     {
-        $publicAuth = $this->app['basicauth']->isPublicAuth();
+        $publicAuth = $this->ba->isPublicAuth();
 
         if (($publicAuth === true) and
             ($subscription->isChangeCardStatus() === false))
@@ -1147,6 +1147,29 @@ trait Authorize
         //
         if ($subscription->hasCustomer() === true)
         {
+            //
+            // In case the subscription already has a customer
+            // and that customer has a global customer, we should
+            // also ensure that app_token is present in case of
+            // second 2FA (change card). In the subsequent charges flow,
+            // app_token won't be present anyway, since it's internal.
+            //
+            if($subscription->customer->globalCustomer !== null)
+            {
+                if ((($this->ba->isPublicAuth() === true) and
+                     ($subscription->isChangeCardStatus() === true)) and
+                    (empty($input[Payment\Entity::APP_TOKEN]) === true))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                        null,
+                        [
+                            'subscription_id' => $subscription->getId(),
+                            'global' => true,
+                        ]);
+                }
+            }
+
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
         }
     }
@@ -1830,7 +1853,8 @@ trait Authorize
         //
         // This means that it's a change card flow
         //
-        if ($this->app['basicauth']->isPublicAuth() === true)
+        if (($this->ba->isPublicAuth() === true) and
+            ($subscription->isChangeCardStatus() === true))
         {
             $this->processChangeCardForSubscription($subscription, $payment);
 
