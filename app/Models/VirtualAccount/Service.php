@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -24,6 +25,10 @@ class Service extends Base\Service
     public function create(array $input)
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST, $input);
+
+        $this->verifyMerchantIsLiveForLiveRequest();
+
+        $this->verifyBankTransferEnabled();
 
         $customer = $this->getCustomerIfGiven($input);
 

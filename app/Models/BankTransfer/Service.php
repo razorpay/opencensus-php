@@ -37,8 +37,6 @@ class Service extends Base\Service
         $this->provider = $this->auth->getInternalApp();
 
         $this->ip = $this->app['request']->getRealClientIp();
-
-        $this->validateProviderIp($this->provider, $this->ip);
     }
 
     public function validate(array $input): array
@@ -47,6 +45,8 @@ class Service extends Base\Service
             TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
             $input
         );
+
+        $this->validateProviderIp($this->provider, $this->ip);
 
         $bankTransfer = $this->core->create($input);
 
@@ -86,6 +86,8 @@ class Service extends Base\Service
             TraceCode::BANK_TRANSFER_NOTIFY_REQUEST,
             $input
         );
+
+        $this->validateProviderIp($this->provider, $this->ip);
 
         $this->validator->validateInput('notify', $input);
 
@@ -244,6 +246,14 @@ class Service extends Base\Service
     {
         if (Provider::validateIp($app, $ip) === false)
         {
+            $this->trace->error(
+                TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
+                [
+                    'app' => $app,
+                    'ip'  => $ip,
+                ]
+            );
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
