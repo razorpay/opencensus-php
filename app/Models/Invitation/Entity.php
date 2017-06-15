@@ -20,10 +20,13 @@ class Entity extends Base\PublicEntity
 
     // Other constants
     const ACTION       = 'action';
+    const SENDER_NAME  = 'sender_name';
+
+    const TOKEN_LENGTH = 40;
 
     protected $entity  = 'invitation';
 
-    const TOKEN_LENGTH = 40;
+    protected $generateIdOnCreate = true;
 
     protected $public = [
         self::ID,
@@ -34,10 +37,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::ID,
+        self::ROLE,
         self::EMAIL,
         self::TOKEN,
-        self::ROLE,
     ];
 
     /**
@@ -69,5 +71,10 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getToken()
+    {
+        return $this->getAttribute(self::TOKEN);
     }
 }

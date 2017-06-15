@@ -25,6 +25,19 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch Invitation by Token
+     *
+     * @param  array  $input
+     * @return array
+     */
+    public function fetchByToken(array $input): array
+    {
+        $invitation = $this->core()->fetchByToken($input);
+
+        return $invitation->toArrayPublic();
+    }
+
+    /**
      * Get all pending invitations of a merchant
      * @return array
      */
@@ -37,16 +50,15 @@ class Service extends Base\Service
 
     /**
      * Resend Invitation Mail
-     * TODO: Will be using this when the invitation blade is moved to API
      *
      * @param  string $inviteId
      * @return array
      */
-    public function resend(string $inviteId): array
+    public function resend(string $inviteId, array $input): array
     {
         $invitation = $this->repo->invitation->findOrFailPublic($inviteId);
 
-        // TODO: Add mailing with org customizations
+        $this->core()->resend($invitation, $input);
 
         return $invitation->toArrayPublic();
     }

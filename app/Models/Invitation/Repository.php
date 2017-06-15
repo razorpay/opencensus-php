@@ -8,7 +8,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'invitation';
 
-    public function getByToken($token)
+    public function fetchByToken($token)
     {
     	return $this->newQuery()
                     ->where(Entity::TOKEN, '=', $token)

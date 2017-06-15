@@ -547,6 +547,7 @@ final class Route
 
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
+        'invitation_fetch_by_token'               => ['post',     'invitations',                                    'InvitationController@fetchByToken'                                 ],
         'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],
         'invitation_resend'                       => ['post',     'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
         'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],
@@ -981,6 +982,7 @@ final class Route
         'file_get_signed_url',
         'reports_generate',
         'invitation_create',
+        'invitation_fetch_by_token',
         'invitation_fetch',
         'invitation_resend',
         'invitation_edit',

@@ -2,13 +2,20 @@
 
 namespace RZP\Models\Invitation;
 
+use Mail;
+
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Error\ErrorCode;
+use RZP\Mail\Invitation\Invite as InvitationMail;
 
 class Core extends Base\Core
 {
     public function create(array $input): Entity
     {
+        $input[Entity::TOKEN] = str_random(40);
+
         $invitation = (new Entity);
 
         $invitation->merchant()->associate($this->merchant);
@@ -28,6 +35,20 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invitation);
 
+        $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
+
+        return $invitation;
+    }
+
+    public function fetchByToken(array $input): Entity
+    {
+        if (isset($input(Entity::TOKEN)) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVITATION_INVALID_TOKEN);
+        }
+
+        $invitation = $this->repo->invitation->fetchByToken($input[Entity::TOKEN]);
+
         return $invitation;
     }
 
@@ -43,6 +64,15 @@ class Core extends Base\Core
         $invitation->edit($input);
 
         $this->repo->saveOrFail($invitation);
+
+        return $invitation;
+    }
+
+    public function resend(Entity $invitation, array $input): Entity
+    {
+        $invitation->edit($input, 'resend');
+
+        $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
 
         return $invitation;
     }
@@ -75,7 +105,7 @@ class Core extends Base\Core
      * @param Entity $invitation
      * @param string $userId
      */
-    public function accept(Entity $invitation, string $userId)
+    protected function accept(Entity $invitation, string $userId)
     {
         $updateParams = [
             Entity::ACTION           => User\Action::ATTACH,
@@ -107,8 +137,23 @@ class Core extends Base\Core
      * @param string $userId
      * @param string $inviteId
      */
-    public function reject(string $userId, string $inviteId)
+    protected function reject(string $userId, string $inviteId)
     {
 
+    }
+
+    protected function sendEmail(Entity $invitation, string $senderName)
+    {
+        $data = [
+            'sender_name' => $senderName,
+            'email'       => $invitation->getEmail(),
+            'name'        => $this->merchant->getName(),
+            'token'       => $invitation->getToken(),
+            'user_id'     => $invitation->getUserId(),
+        ];
+
+        $invitationMail = new InvitationMail($data);
+
+        Mail::queue($invitationMail);
     }
 }
