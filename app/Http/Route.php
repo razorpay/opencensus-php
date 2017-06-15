@@ -924,6 +924,7 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
+        'invitation_fetch_by_token',
     ];
 
     public static $proxy = [
@@ -982,7 +983,6 @@ final class Route
         'file_get_signed_url',
         'reports_generate',
         'invitation_create',
-        'invitation_fetch_by_token',
         'invitation_fetch',
         'invitation_resend',
         'invitation_edit',
