@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use RZP\Models\Invoice;
 use RZP\Models\Batch;
+use RZP\Models\Invoice;
 
 class PaymentLink extends Base
 {

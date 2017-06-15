@@ -6,8 +6,8 @@ use Carbon\Carbon;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Models\Batch as BatchModel;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Batch as BatchModel;
 
 class Base extends Mailable
 {

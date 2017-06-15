@@ -5,11 +5,11 @@ namespace RZP\Jobs\Invoice;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Trace\Trace;
+use RZP\Models\Batch;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\Job as BaseJob;
 use RZP\Models\Invoice as InvoiceModel;
-use RZP\Models\Batch;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 
 /**
  * - Asynchronously issues all invoices/payment links of given batch.

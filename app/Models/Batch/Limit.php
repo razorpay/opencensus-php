@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Batch;
 
-use RZP\Exception\BadRequestException;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Limit
 {
