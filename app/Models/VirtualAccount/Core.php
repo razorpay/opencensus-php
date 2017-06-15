@@ -45,6 +45,12 @@ class Core extends Base\Core
             return;
         }
 
+        if ($merchant->getHandle() === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE);
+        }
+
         $existingVirtualAccounts = $this->repo->virtual_account
                                         ->findActiveByDescriptorAndMerchant(
                                             $virtualAccount->getDescriptor(),

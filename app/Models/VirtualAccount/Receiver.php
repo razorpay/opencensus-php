@@ -177,6 +177,8 @@ class Receiver
 
     protected function getDescriptor()
     {
+        $descriptor = $this->descriptor;
+
         if ($this->merchant->getHandle() === null)
         {
             $descriptor = '';

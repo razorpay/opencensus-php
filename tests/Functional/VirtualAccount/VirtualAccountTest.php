@@ -39,8 +39,26 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountWithDescriptor()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount(['descriptor' => 'somedesc']);
+        });
+
+        $this->fixtures->merchant->setHandle('hand');
+
+        $this->createVirtualAccount(['descriptor' => 'somedesc']);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertRegexp("/.{4}HAND.{2}SOMEDESC$/", $vba['account_number']);
+    }
+
     public function testCreateVirtualAccountWithIdenticalDescriptor()
     {
+        $this->fixtures->merchant->setHandle('hand');
+
         $this->createVirtualAccount(['descriptor' => 'samedesc']);
 
         $data = $this->testData[__FUNCTION__];

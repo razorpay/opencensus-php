@@ -49,6 +49,23 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountWithDescriptor' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Descriptor field cannot be used as ' .
+                                     'merchant handle is not set for your account.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE,
+        ],
+    ],
+
     'testCreateVirtualAccountWithIdenticalDescriptor' => [
         'response' => [
             'content' => [
