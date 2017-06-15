@@ -703,6 +703,11 @@ class Entity extends Base\PublicEntity
         $this->metadata[$key] = $value;
     }
 
+    public function setMetadata($input)
+    {
+        $this->metadata = $input['_'] ?? null;
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
