@@ -1,11 +1,11 @@
 import ajax from 'merchant/utils/ajax';
-import { makeCollectionReducer } from 'rzp/modules/collection';
+import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
 
 const BATCH_UPLOAD = 'BATCH_UPLOAD';
 
 export const fetchBatchUploads = params => {
   return {
-    type: BATCH_UPLOAD,
+    type: getActionName(BATCH_UPLOAD),
     payload: ajax('/batches'),
   };
 };

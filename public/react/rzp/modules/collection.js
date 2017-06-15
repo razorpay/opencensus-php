@@ -1,6 +1,5 @@
+import { merge } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
-
 import GenericEntity from 'merchant/models/GenericEntity';
 import Payment from 'merchant/models/Payment';
 import Refund from 'merchant/models/Refund';
@@ -13,29 +12,27 @@ import Transfer from 'merchant/models/Transfer';
 export const fetchAll = (params, Entity, namespace) => {
   let entity = new Entity();
   return {
-    type: `${namespace}_FETCH`,
+    type: getActionName(namespace),
     payload: entity.fetchAll(params),
   };
 };
 
-let defaultInitialState = {
+let initialState = {
   loading: true,
   items: [],
   error: null,
 };
 
-export function makeCollectionReducer(
-  entityName,
-  initialState = defaultInitialState
-) {
-  let singularEntityName = entityName.slice(0, entityName.length - 1);
+export function makeCollectionReducer(namespace) {
+  var actionName = getActionName(namespace);
+
   return function(state = initialState, action) {
     switch (action.type) {
-      case `${entityName}_FETCH_RESET`:
-      case `${entityName}_FETCH::PENDING`:
+      case `${actionName}_RESET`:
+      case `${actionName}::PENDING`:
         return initialState;
 
-      case `${entityName}_FETCH::SUCCESS`:
+      case `${actionName}::SUCCESS`:
         let { items } = action.payload.data;
         return merge(state, {
           loading: false,
@@ -43,30 +40,21 @@ export function makeCollectionReducer(
           error: null,
         });
 
-      case `${entityName}_FETCH::ERROR`:
+      case `${actionName}::ERROR`:
         return merge(state, {
           loading: false,
           error: action.payload.errors,
         });
-
-      case `${singularEntityName}_CREATE::SUCCESS`:
-        return set(state, 'items', unshift(state.items, action.payload));
-
-      case `${singularEntityName}_EDIT::SUCCESS`:
-        let itemIndex = state.items.findIndex(
-          item => item.id === action.payload.id
-        );
-        return set(state, `items.${itemIndex}`, action.payload);
-
-      case `${singularEntityName}_DELETE::SUCCESS`:
-        let itemsList = remove(state.items, item => item.id === action.id);
-        return set(state, 'items', itemsList);
 
       default:
         return state;
     }
   };
 }
+
+export const getActionName = namespace => {
+  return namespace + '_FETCH';
+};
 
 // export default makeCollectionReducer();
 
@@ -97,7 +85,7 @@ export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
 
 export const fetchSubscriptions = () => {
   return {
-    type: 'SUBSCRIPTIONS',
+    type: getActionName('SUBSCRIPTIONS'),
     payload: ajax('/subscriptions'),
   };
 };
