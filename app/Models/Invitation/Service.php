@@ -64,7 +64,6 @@ class Service extends Base\Service
      *
      * @param  string $inviteId
      * @param array   $input
-     *
      * @return array
      */
     public function edit(string $inviteId, array $input): array
