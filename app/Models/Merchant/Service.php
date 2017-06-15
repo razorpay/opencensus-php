@@ -39,7 +39,7 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE = 'coupon_response';
+    const COUPON_RESPONSE = 'apply_coupon';
 
     /**
      * Creates a merchant and saves in database
@@ -125,7 +125,7 @@ class Service extends Base\Service
             {
                 $result = (new Coupon\Service)->apply($couponInput);
             }
-            catch (Exception\BadRequestException $e)
+            catch (\Throwable $e)
             {
                 $result = ['message'=> $e->getMessage()];
             }

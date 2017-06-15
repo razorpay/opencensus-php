@@ -131,7 +131,7 @@ class CouponsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response['coupon_response']['message'], 'Coupon Code Not Found');
+        $this->assertEquals($response['apply_coupon']['message'], 'Coupon Code Not Found');
 
         $balanceRequest = [
             'url'    => '/merchants/1X4hRFHFx4UiXt/balance',

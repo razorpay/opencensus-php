@@ -12,7 +12,7 @@ use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {
-    const SUCESS_MESSAGE = 'Coupon Applied Successfully';
+    const SUCCESS_MESSAGE = 'Coupon Applied Successfully';
 
     public function create(array $input)
     {
@@ -29,14 +29,16 @@ class Core extends Base\Core
 
     public function apply(Merchant\Entity $merchant, Entity $coupon)
     {
-        $this->validateAndApplyMerchantPromotion($merchant, $coupon);
+        $this->validateMerchantPromotion($merchant, $coupon);
+
+        $this->applyMerchantPromotion($merchant, $coupon);
 
         return [
-            'message' => self::SUCESS_MESSAGE
+            'message' => self::SUCCESS_MESSAGE
         ];
     }
 
-    protected function validateAndApplyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
+    protected function validateMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
         $promotion = $coupon->source;
 
@@ -51,8 +53,11 @@ class Core extends Base\Core
         }
 
         $coupon->getValidator()->validateApplyCoupon($merchant);
+    }
 
-        $merchantPromotionCore = (new MerchantPromotion\Core);
+    protected function applyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
+    {
+        $promotion = $coupon->source;
 
         // This need to be in transaction, as credits are applied here,
         // And Schedule for next run is also created via Merchant Promotion
@@ -62,9 +67,10 @@ class Core extends Base\Core
             function() use (
                 $merchant,
                 $promotion,
-                $coupon,
-                $merchantPromotionCore)
+                $coupon)
             {
+                $merchantPromotionCore = (new MerchantPromotion\Core);
+
                 $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
 
                 // Initial apply of Credit is done instantly

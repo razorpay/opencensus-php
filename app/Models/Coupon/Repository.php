@@ -16,17 +16,9 @@ class Repository extends Base\Repository
     ];
 
     protected $applyCouponRules = [
-        Entity::CODE                => 'required|string|max:14',
+        Entity::CODE                => 'required|string',
         Entity::MERCHANT_ID         => 'required|alpha_num|max:14',
     ];
-
-    public function messages()
-    {
-        return [
-            Entity::CODE        => 'No Coupon Code Specified',
-            Entity::MERCHANT_ID => 'No Merchant Specified',
-        ];
-    }
 
     public function fetchByCode(array $input)
     {
@@ -34,7 +26,6 @@ class Repository extends Base\Repository
                           ->input($input)
                           ->caller($this)
                           ->validate();
-
 
         return $this->newQuery()
                     ->where(Entity::CODE, '=', $input['code'])
