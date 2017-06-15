@@ -155,12 +155,16 @@ class Biller extends Base\Core
         $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addons, $first);
 
         $invoiceInput = [
-            Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Invoice\Entity::LINE_ITEMS      => $lineItems,
             Invoice\Entity::CURRENCY        => $plan->item->getCurrency(),
             Invoice\Entity::SMS_NOTIFY      => '0',
             Invoice\Entity::EMAIL_NOTIFY    => '0',
         ];
+
+        if ($customer !== null)
+        {
+            $invoiceInput[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
+        }
 
         return $invoiceInput;
     }

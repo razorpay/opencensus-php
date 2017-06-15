@@ -161,24 +161,6 @@ class Checkout
             ]);
     }
 
-    protected function fetchTPVOrderInfo(array $input)
-    {
-        $orderData = null;
-
-        try
-        {
-            $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                $input[Payment\Entity::ORDER_ID]);
-        }
-        catch(\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
-        }
-
-        return $orderData;
-    }
-
     protected function fetchCustomerData(array $input, Entity $merchant)
     {
         $custData = null;
@@ -254,19 +236,19 @@ class Checkout
 
     protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data)
     {
+        // we don't return the customer data if request is jsonp
+        if (isset($input['callback']) === true)
+        {
+            return;
+        }
+
+        if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            $this->doCustomerProcessingForSubscription($input, $data, $merchant);
+        }
+
         try
         {
-            // we don't return the customer data if request is jsonp
-            if (isset($input['callback']) === true)
-            {
-                return;
-            }
-
-            if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
-            {
-                $this->doCustomerProcessingForSubscription($input, $data, $merchant);
-            }
-
             //
             // We get the customer using either the customer_id or the app_token.
             // If customer_id is present in the input, it means that it's a local customer.
@@ -352,7 +334,7 @@ class Checkout
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
-                'customer_id',
+                null,
                 $input);
         }
 

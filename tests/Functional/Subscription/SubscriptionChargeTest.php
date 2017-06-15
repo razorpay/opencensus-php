@@ -816,7 +816,7 @@ class SubscriptionChargeTest extends TestCase
 
         $task = $this->getLastEntity('schedule_task', true);
         $thirdRunAt = $task['next_run_at'];
-        // second run should be at least 50 days from first run (2 months ahead)
+        // third run should be at least 50 days from second run (2 months ahead)
         $this->assertGreaterThan($secondRunAt + 4320000, $thirdRunAt);
     }
 

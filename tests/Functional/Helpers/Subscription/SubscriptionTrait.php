@@ -95,7 +95,8 @@ trait SubscriptionTrait
         $planAttributes = [],
         $subscriptionAttributes = [],
         $addons = false,
-        $emptyResponseContent = false)
+        $emptyResponseContent = false,
+        $createCustomer = true)
     {
         $this->fixtures->create('customer');
 
@@ -129,6 +130,12 @@ trait SubscriptionTrait
                     ]
                 ]
             ];
+        }
+
+        if ($createCustomer === false)
+        {
+            $requestContent['request']['content']['customer_id'] = null;
+            $requestContent['response']['content']['customer_id'] = null;
         }
 
         if ($emptyResponseContent === true)

@@ -532,8 +532,9 @@ class Notify
     /**
      * Decides if we send a mail to customer for a payment event
      *
-     * @param  Mailable $mailable Mailable object being sent
-     * @return boolean
+     * @param PaymentMail\Base|Mailable $mailable Mailable object being sent
+     *
+     * @return bool
      */
     protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
     {

@@ -87,9 +87,9 @@ class Validator extends Base\Validator
         //
         // If customer_id is not sent in the input, we get the customer and associate
         // during the auth transaction. We create a global customer.
-        // 
         //
-        
+        //
+
         // if (empty($input[Entity::CUSTOMER_ID]) === true)
         // {
         //     throw new Exception\BadRequestValidationFailureException(

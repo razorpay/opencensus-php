@@ -282,6 +282,8 @@ class Validator extends Base\Validator
      * for the invoice.
      *
      * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
      */
     public function validateEditDraftAmount(array $input)
     {
@@ -564,7 +566,8 @@ class Validator extends Base\Validator
 
         $customer = $invoice->customer;
 
-        if (empty($customer))
+        if ((empty($customer) === true) and
+            ($invoice->isOfSubscription() === false))
         {
             throw new BadRequestValidationFailureException(
                 'customer is required.');

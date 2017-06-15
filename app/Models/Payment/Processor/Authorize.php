@@ -1132,7 +1132,6 @@ trait Authorize
         //  - Global flow: Subscription has customer_id already associated with it.
         //                 But, it should also have app_token set in the input. Customer
         //                 should be logged in.
-        //                 TODO: Handle the above global flow thing.
         // Subsequent charges:
         //  - Local flow: Subscription has customer_id associated with it.
         //  - Global flow: Subscription has customer_id already associated with it.
@@ -1268,7 +1267,7 @@ trait Authorize
     }
 
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
-                                                          $localCustomer,
+                                                          Customer\Entity $localCustomer = null,
                                                           Customer\AppToken\Entity $customerApp,
                                                           Payment\Entity $payment,
                                                           array & $input,
@@ -1280,6 +1279,11 @@ trait Authorize
 
         if ($localCustomer !== null)
         {
+            //
+            // One of the reasons to do this is so that the customer is
+            // also associated with the invoice later in the flow, after
+            // the invoice is marked as paid.
+            //
             $this->payment->customer()->associate($localCustomer);
         }
 

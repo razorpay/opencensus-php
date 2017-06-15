@@ -830,5 +830,18 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'makePreferencesCall' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
