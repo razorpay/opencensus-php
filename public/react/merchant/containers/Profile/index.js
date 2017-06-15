@@ -39,7 +39,6 @@ export default class Profile extends Component {
       }
     });
     this.props.fetchBankAccount();
-    this.props.fetchPendingInvitations();
     this.refreshUser(this.props.user);
   }
 
@@ -86,7 +85,7 @@ export default class Profile extends Component {
           message,
         });
         if (type === 'reject') {
-          this.props.fetchPendingInvitations();
+          this.props.fetchUser();
         } else {
           setTimeout(() => {
             location.reload();
@@ -109,8 +108,9 @@ export default class Profile extends Component {
   };
 
   render() {
-    const { user, profile } = this.props;
-    const { bankAccount, invitations } = profile;
+    let { user, profile } = this.props;
+    let { bankAccount } = profile;
+    let invitations = user.user.invitations;
 
     if (!user.isAuthenticated) {
       return <div class="page-spinner-container"><Spinner /></div>;

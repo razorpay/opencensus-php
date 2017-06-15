@@ -1,7 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
-const INVITATIONS_FETCH = 'INVITATIONS_FETCH';
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 
 export const fetchAjax = url => {
@@ -9,13 +8,6 @@ export const fetchAjax = url => {
     url,
     appendModeInURL: false,
   });
-};
-
-export const fetchPendingInvitations = () => {
-  return {
-    type: INVITATIONS_FETCH,
-    payload: fetchAjax('/settings/invitations'),
-  };
 };
 
 export const fetchBankAccount = () => {
@@ -66,9 +58,6 @@ export default function(state = initialState, action) {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
-
-    case `${INVITATIONS_FETCH}::SUCCESS`:
-      return set(state, 'invitations', action.payload.data);
 
     default:
       return state;
