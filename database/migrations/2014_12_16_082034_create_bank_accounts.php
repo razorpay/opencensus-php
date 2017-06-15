@@ -24,9 +24,11 @@ class CreateBankAccounts extends Migration
 
             $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
 
-            $table->char(BankAccount::ENTITY_ID, BankAccount::ID_LENGTH);
+            $table->char(BankAccount::ENTITY_ID, BankAccount::ID_LENGTH)
+                  ->nullable();
 
-            $table->char(BankAccount::TYPE, 8);
+            $table->char(BankAccount::TYPE, 8)
+                  ->nullable();
 
             $table->char(BankAccount::BENEFICIARY_CODE, 10)
                   ->nullable()

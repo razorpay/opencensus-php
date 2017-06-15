@@ -67,8 +67,6 @@ class Receiver
 
         $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
-        $bankAccount->associateMerchant($this->merchant);
-
         $bankAccount->merchant()->associate($this->merchant);
 
         $bankAccount->setVirtual(true);
