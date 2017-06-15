@@ -19,32 +19,6 @@ class BeneficiaryFile
 
     const SIGNED_URL_DURATION = '1440';
 
-    public static $headings = [
-        'Client_Code',
-        'Bene_Code',
-        'Bene Name',
-        'Bene Add 1',
-        'Bene Add 2',
-        'Bene Add 3',
-        'Bene Add 4',
-        'Bene Add 5',
-        'Bene_City',
-        'Bene_Pin',
-        'State',
-        'Country',
-        'Bene_Email',
-        'Bene_Mobile',
-        'Bene_Tel',
-        'Bene_Fax',
-        'IFSC',
-        'Bene_A/c No',
-    ];
-
-    // Supports only text format right now
-    public static $format = [
-       'Bene_A/c No' => 'text',
-   ];
-
     public function generate()
     {
         $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
@@ -102,7 +76,7 @@ class BeneficiaryFile
         return ['url' => $fileData['local_file_path']];
     }
 
-    protected function writeToFile(array $data)
+    protected function writeToFile(array $data): array
     {
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -128,7 +102,7 @@ class BeneficiaryFile
         return $data;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(): string
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
@@ -137,7 +111,7 @@ class BeneficiaryFile
         return static::$fileToWriteName . '_' . $mode . '_' . $time;
     }
 
-    protected function getMode()
+    protected function getMode(): string
     {
         $app = App::getFacadeRoot();
 
