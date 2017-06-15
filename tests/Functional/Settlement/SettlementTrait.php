@@ -4,33 +4,44 @@ namespace RZP\Tests\Functional\Settlement;
 
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Settlement\Holidays;
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
+use Carbon\Carbon;
 
 trait SettlementTrait
 {
     /**
      * Days used for testing creating a payment on settlement holiday
-     * @TODO Randomise these dates.
      **/
     protected function getDaysForSettlementHolidayTests()
     {
+        $date = Carbon::today('Asia/Kolkata')->subDays(30);
+
+        $holidayDate = Holidays::getNextSettlementHoliday($date)->addHours(7);
+
+        $paymentCreatedAt = $holidayDate->copy();
+
         return [
-            'payment_created_at'        => '5 july 2016',
-            'payment_settlment_holiday' => '9 july 2016 7:00:00',
-            'payment_settlement_on'     => '11 july 2016 7:00:00',
+            'payment_created_at'        => $paymentCreatedAt->subDays(4)->format('j M Y'),
+            'payment_settlment_holiday' => $holidayDate->format('j M Y h:i:s'),
+            'payment_settlement_on'     => Holidays::getNextWorkingDay($holidayDate->addDay())->format('j M Y h:i:s'),
         ];
     }
 
     /**
      * Days used for testing creating a payment on settlement non holiday
-     * @TODO Randomise these dates.
      **/
     protected function getDaysForSettlementNonHolidayTests()
     {
+        $prevWorkingDay = Holidays::getPreviousWorkingDay((Carbon::today('Asia/Kolkata'))->subDays(25));
+
+        $paymentCreatedOn = $prevWorkingDay->copy();
+
         return [
-           'payment_created_at'    => '12 july 2016',
-           'payment_settlement_on' => '15 july 2016 7:00:00',
+           'payment_settlement_on'    => $prevWorkingDay->addHours(7)->format('j M Y'),
+           'payment_created_at' => $paymentCreatedOn->subDays(8)->format('j M Y h:i:s'),
         ];
     }
 
