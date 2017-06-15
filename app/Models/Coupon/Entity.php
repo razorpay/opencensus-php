@@ -108,4 +108,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::USED_COUNT, $count);
     }
+
+    public function incrementUsedCount()
+    {
+        $this->increment(self::USED_COUNT);
+    }
 }

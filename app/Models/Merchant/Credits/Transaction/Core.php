@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Credits\Transaction;
 
 use RZP\Models\Base;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -15,33 +16,26 @@ class Core extends Base\Core
         $credits = $this->repo->credits->getCreditsSortedWithExpiry(
                         $timestamp, $txn->merchant->getId(), $creditType);
 
+
+        //The amount of credits to be decudced will be reflected in the credit log
+        //specifying how many credits are used from what log.
+
         $this->repo->transaction(function() use ($credits, $creditAmount, $txn)
         {
             foreach ($credits as $credit)
             {
+                //when all the credit logs are updated with used amount
                 if ($creditAmount === 0)
                 {
                     break;
                 }
 
-                $availableCredits = $credit->getValue() - $credit->getUsed();
+                //get number of credits used from particular credit entry
+                $creditsUsed = $this->getCreditsUsed($credit, $creditAmount);
 
                 $creditTxn = new Entity;
 
                 $creditTxn->transaction()->associate($txn);
-
-                if ($availableCredits < $creditAmount)
-                {
-                    $creditsUsed = $availableCredits;
-
-                    $creditAmount = $creditAmount - $creditsUsed;
-                }
-                else
-                {
-                    $creditsUsed = $creditAmount;
-
-                    $creditAmount = 0;
-                }
 
                 $credit->updateUsed($creditsUsed);
 
@@ -54,5 +48,27 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($creditTxn);
             }
         });
+    }
+
+    protected function getCreditsUsed(Credits\Entity $credit, int & $creditAmount): int
+    {
+        $availableCredits = $credit->getValue() - $credit->getUsed();
+
+        $creditsUsed = 0;
+
+        if ($availableCredits < $creditAmount)
+        {
+            $creditsUsed = $availableCredits;
+
+            $creditAmount = $creditAmount - $creditsUsed;
+        }
+        else
+        {
+            $creditsUsed = $creditAmount;
+
+            $creditAmount = 0;
+        }
+
+        return $creditsUsed;
     }
 }

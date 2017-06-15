@@ -29,6 +29,20 @@ class Validator extends Base\Validator
 
     public function validateCouponExpiry(array $input)
     {
+        if ((isset($input[Entity::START_DATE]) === true) and
+            ($input[Entity::START_DATE] < time()))
+        {
+            throw new  Exception\BadRequestValidationFailureException(
+                'Start date can not be less that present timestamp');
+        }
+
+        if ((isset($input[Entity::END_DATE]) === true) and
+            ($input[Entity::END_DATE] < time()))
+        {
+            throw new  Exception\BadRequestValidationFailureException(
+                'End date can not be less that present timestamp');
+        }
+
         if ((isset($input[Entity::START_DATE]) === false) or
             (isset($input[Entity::END_DATE]) === false))
         {

@@ -13,6 +13,15 @@ use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
+    protected $creditCore;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->creditCore = (new Credits\Core);
+    }
+
     public function create(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $input = [
@@ -142,7 +151,7 @@ class Core extends Base\Core
             $creditInput[Credits\Entity::EXPIRING_AT] = $scheduleTask->getNextRunAt();
          }
 
-        (new Credits\Core)->create($merchant, $creditInput);
+        $this->creditCore->create($merchant, $creditInput);
 
         $this->trace->info(
             TraceCode::CREDITS_ADDED,
@@ -169,7 +178,7 @@ class Core extends Base\Core
             Credits\Entity::TYPE         => $promotion->getCreditType(),
         ];
 
-        (new Credits\Core)->create($merchant, $creditInput);
+        $this->creditCore->create($merchant, $creditInput);
 
         $this->trace->info(
             TraceCode::CREDITS_EXPIRED,

@@ -71,7 +71,7 @@ class Core extends Base\Core
                 // Subsequent run and expiry will be handled by cron
                 $merchantPromotionCore->applyCredits($merchant, $promotion);
 
-                $coupon->setUsedCount($coupon->getUsedCount() + 1);
+                $coupon->incrementUsedCount();
 
                 $merchantPromotion->updateRemainingRuns();
 

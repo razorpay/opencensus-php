@@ -25,10 +25,6 @@ class Core extends Base\Core
 
         $balance = $this->repo->balance->getMerchantBalance($merchant);
 
-        //removing for now as multiple entires will be there
-       // $this->repo->credits->validateCampaignCreditsNotAssigned(
-        //    $creditsLog->getCampaign(), $merchant, $creditsLog->getType());
-
         $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
         $currentMerchantCredits = $creditsLog->getMerchantCredits();
