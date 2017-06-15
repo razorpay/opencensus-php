@@ -206,8 +206,6 @@ class Service extends Base\Service
     {
         $accountNumber = $bankTransfer->getPayeeAccount();
 
-        // $ifscCode = $bankTransfer->getPayeeIfsc();
-
         $bankAccount = $this->getBankAccountFromNumber($accountNumber);
 
         if (count($bankAccount) === 0)

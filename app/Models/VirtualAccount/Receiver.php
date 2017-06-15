@@ -108,14 +108,14 @@ class Receiver
 
     protected function generateAccountNumberForProvider(string $provider)
     {
-        $root = Provider::ROOT[$provider];
+        $bankCode = Provider::getBankCode($provider);
 
         foreach (Provider::ROOT[$provider] as $root)
         {
             $accountNumber = $this->generateNewAccountNumberWithRoot($root);
 
             $existingAccount = $this->repo->bank_account
-                                    ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber);
+                                    ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
             if ($existingAccount === null)
             {
