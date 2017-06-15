@@ -46,7 +46,7 @@ class Repository extends Base\Repository
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
 
-        self::EXPAND              => 'sometimes|array|min:1|max:5',
+        self::EXPAND              => 'sometimes|array|max:5',
         self::EXPAND . '.*'       => 'string|in:payments,',
     ];
 

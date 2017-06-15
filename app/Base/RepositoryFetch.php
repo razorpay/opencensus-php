@@ -347,7 +347,7 @@ trait RepositoryFetch
 
     /**
      * Validates query parameters passed during GET by id endpoints.
-     * E.g. GET /invoices/inv_123?expand[0]=payments
+     * E.g. GET /invoices/inv_123?expand[]=payments
      *
      * @param array $params
      */
@@ -363,7 +363,7 @@ trait RepositoryFetch
 
     /**
      * Validates query parameters passed during GET endpoints.
-     * E.g. GET /invoices?status=paid&expand[0]=payments
+     * E.g. GET /invoices?status=paid&expand[]=payments
      *
      * @param array $params
      */
@@ -385,7 +385,7 @@ trait RepositoryFetch
      *
      * @return array
      */
-    protected function getFindParamRulesForCurrentAuth()
+    protected function getFindParamRulesForCurrentAuth(): array
     {
         $fetchParamRules = $this->getFetchParamRulesForCurrentAuth();
 
@@ -402,7 +402,7 @@ trait RepositoryFetch
      *
      * @return array
      */
-    protected function getFetchParamRulesForCurrentAuth()
+    protected function getFetchParamRulesForCurrentAuth(): array
     {
         // Assign the default rules
         $rules = $this->fetchParamRules;
@@ -487,7 +487,7 @@ trait RepositoryFetch
     public function findByPublicIdAndMerchant(
         string $id,
         Merchant\Entity $merchant,
-        array $params =[])
+        array $params = []): PublicEntity
     {
         $entity = $this->getEntityClass();
 
