@@ -11,7 +11,7 @@ use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
-    const MERCHANT_ID = 'merchant_id';
+    const MERCHANT_ID   = 'merchant_id';
     const COUPON_EXPIRY = 'coupon_expiry';
 
     protected static $createRules = [
@@ -21,11 +21,6 @@ class Validator extends Base\Validator
         Entity::START_DATE  => 'sometimes|epoch',
         Entity::END_DATE    => 'sometimes|epoch',
         Entity::USAGE       => 'sometimes|integer',
-    ];
-
-    protected static $applyRules = [
-        Entity::CODE        => 'required|string|max:10',
-        self::MERCHANT_ID   => 'required|alpha_num|size:14',
     ];
 
     protected static $createValidators = [

@@ -16,26 +16,16 @@ class Repository extends Base\Repository
     ];
 
     protected $applyCouponRules = [
-        Entity::CODE                => 'required|custom',
-        Entity::MERCHANT_ID         => 'required|custom',
+        Entity::CODE                => 'required|string|max:14',
+        Entity::MERCHANT_ID         => 'required|alpha_num|max:14',
     ];
 
-    public function validateCode($code)
+    public function messages()
     {
-        if ($code === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'No Coupon Code Specified');
-        }
-    }
-
-    public function validateMerchantId($merchantId)
-    {
-        if ($merchantId === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'No Merchant Specified for which Coupon has to be applied');
-        }
+        return [
+            Entity::CODE        => 'No Coupon Code Specified',
+            Entity::MERCHANT_ID => 'No Merchant Specified',
+        ];
     }
 
     public function fetchByCode(array $input)

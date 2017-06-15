@@ -5,7 +5,6 @@ namespace RZP\Models\Coupon;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
@@ -14,8 +13,6 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-
-        $this->validator = new Validator;
     }
 
     public function create(array $input)
@@ -55,15 +52,13 @@ class Service extends Base\Service
     {
         $coupon = $this->repo->coupon->fetchByCode($input);
 
-        $merchantId = $input[Entity::MERCHANT_ID];
-
         if ($coupon === null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE, $input);
         }
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         $result = $this->core()->apply($merchant, $coupon);
 

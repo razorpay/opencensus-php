@@ -707,7 +707,7 @@ final class FactoryData
             'id'          => $faker->uniqueid
         ]);
 
-        $factory(\RZP\Models\Merchant\Promotions\Entity::class, [
+        $factory(\RZP\Models\Merchant\Promotion\Entity::class, [
             'id'          => $faker->uniqueid,
         ]);
 

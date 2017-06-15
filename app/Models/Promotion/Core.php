@@ -5,7 +5,7 @@ namespace RZP\Models\Promotion;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Schedule;
-use RZP\Models\Merchant\Promotions as MerchantPromotion;
+use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {

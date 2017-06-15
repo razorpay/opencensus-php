@@ -25,6 +25,8 @@ class Core extends Base\Core
 {
     use Notify;
 
+    const COUPON_RESPONSE = 'coupon_response';
+
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);

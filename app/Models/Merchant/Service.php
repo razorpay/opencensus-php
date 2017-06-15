@@ -39,6 +39,8 @@ class Service extends Base\Service
 {
     use Notify;
 
+    const COUPON_RESPONSE = 'coupon_response';
+
     /**
      * Creates a merchant and saves in database
      *
@@ -72,13 +74,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
-        $this->repo->saveOrFail($merchant);
-
-        $merchantData = $merchant->toArrayPublic();
-
-        $couponResponse = $this->applyCouponOnSignUp($input, $merchant);
-
-        $merchantData[Entity::COUPON] = $couponResponse;
+        $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
         return $merchantData;
     }
@@ -96,15 +92,22 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
-        $this->repo->saveOrFail($subMerchant);
-
-        $subMerchantData = $subMerchant->toArrayPublic();
-
-        $couponResponse = $this->applyCouponOnSignUp($input, $subMerchant);
-
-        $subMerchantData[Entity::COUPON] = $couponResponse;
+        $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
         return $subMerchantData;
+    }
+
+    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+    {
+        $this->repo->saveOrFail($merchant);
+
+        $merchantData = $merchant->toArrayPublic();
+
+        $couponResponse = $this->applyCouponOnSignUp($input, $merchant);
+
+        $merchantData[self::COUPON_RESPONSE] = $couponResponse;
+
+        return $merchantData;
     }
 
     protected function applyCouponOnSignUp(array $input, Entity $merchant)

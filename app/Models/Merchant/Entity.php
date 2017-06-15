@@ -52,7 +52,6 @@ class Entity extends Base\PublicEntity
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
-    const COUPON                    = 'coupon';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days

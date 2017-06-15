@@ -186,7 +186,7 @@ class Entity
         self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::CREDITS_TRANSACTION   => \RZP\Models\Merchant\Credits\Transaction::class,
-        self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotions::class,
+        self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,

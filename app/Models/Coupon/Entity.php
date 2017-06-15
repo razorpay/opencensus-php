@@ -9,6 +9,8 @@ use RZP\Constants\Entity as PublicEntity;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
     const CODE        = 'code';

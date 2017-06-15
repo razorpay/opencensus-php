@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Promotion\Entity as Promotion;
-use RZP\Models\Merchant\Promotions\Entity as MerchantPromotion;
+use RZP\Models\Merchant\Promotion\Entity as MerchantPromotion;
 
 class CreateMerchantPromotion extends Migration
 {

@@ -7,7 +7,7 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     const TRANSACTION_ID = "transaction_id";
-    const CREDITS_ID      = "credits_id";
+    const CREDITS_ID     = "credits_id";
     const CREDITS_USED   = "credits_used";
 
     protected $entity = "credits_transaction";

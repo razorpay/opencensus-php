@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Promotions;
+namespace RZP\Models\Merchant\Promotion;
 
 use RZP\Models\Base;
 

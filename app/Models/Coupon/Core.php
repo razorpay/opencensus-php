@@ -8,7 +8,7 @@ use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
-use RZP\Models\Merchant\Promotions as MerchantPromotion;
+use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {

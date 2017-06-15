@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Promotions;
+namespace RZP\Models\Merchant\Promotion;
 
 use Carbon\Carbon;
 
@@ -56,33 +56,38 @@ class Core extends Base\Core
                 $promotion = $scheduleTask->entity;
 
                 $merchantPromotion = $this->repo->merchant_promotion->findByMerchantAndPromotionId(
-                    $merchant->getId(), $promotion->getId());
+                    $merchant->getId(),
+                    $promotion->getId());
 
-                $this->repo->transaction(function() use ($merchant, $promotion, $merchantPromotion,
+                $this->repo->transaction(
+                    function() use (
+                        $merchant,
+                        $promotion,
+                        $merchantPromotion,
                         $scheduleTask)
-                {
-                    $this->expireCredits($merchant, $promotion);
-
-                    if ($merchantPromotion->getRemainingRuns() > 0)
                     {
+                        $this->expireCredits($merchant, $promotion);
 
-                        $this->applyCredits($merchant, $promotion, $scheduleTask);
+                        if ($merchantPromotion->getRemainingRuns() > 0)
+                        {
 
-                        $merchantPromotion->updateRemainingRuns();
+                            $this->applyCredits($merchant, $promotion, $scheduleTask);
 
-                        $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+                            $merchantPromotion->updateRemainingRuns();
 
-                        $this->repo->saveOrFail($scheduleTask);
-                    }
-                    else
-                    {
-                        $merchantPromotion->setExpired();
+                            $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
 
-                        $this->repo->deleteOrFail($scheduleTask);
-                    }
+                            $this->repo->saveOrFail($scheduleTask);
+                        }
+                        else
+                        {
+                            $merchantPromotion->setExpired();
 
-                    $this->repo->saveOrFail($merchantPromotion);
-                });
+                            $this->repo->deleteOrFail($scheduleTask);
+                        }
+
+                        $this->repo->saveOrFail($merchantPromotion);
+                    });
 
                 $successIds[] = $scheduleTask->getId();
             }
@@ -96,7 +101,8 @@ class Core extends Base\Core
 
         $response = [
             'success_ids'   => $successIds,
-            'failedIds'     => $failedIds,        ];
+            'failedIds'     => $failedIds,
+        ];
 
         $this->trace->info(
             TraceCode::SCHEDULE_TASKS_PROCESSED,
@@ -115,7 +121,9 @@ class Core extends Base\Core
 
         $input[Task\Entity::SCHEDULE_ID] = $promotion->schedule->getId();
 
-        return (new Task\Core)->create($merchant, $promotion, $input);
+        $task = (new Task\Core)->create($merchant, $promotion, $input);
+
+        return $task;
     }
 
     public function applyCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
