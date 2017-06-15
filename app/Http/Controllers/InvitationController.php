@@ -19,11 +19,9 @@ class InvitationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchByToken()
+    public function fetchByToken(string $token)
     {
-        $input = Request::all();
-
-        $data = $this->service()->fetchByToken($input);
+        $data = $this->service()->fetchByToken($token);
 
         return ApiResponse::json($data);
     }

@@ -41,14 +41,9 @@ class Core extends Base\Core
         return $invitation;
     }
 
-    public function fetchByToken(array $input): Entity
+    public function fetchByToken(string $token): Entity
     {
-        if (isset($input[Entity::TOKEN]) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVITATION_INVALID_TOKEN);
-        }
-
-        $invitation = $this->repo->invitation->fetchByToken($input[Entity::TOKEN]);
+        $invitation = $this->repo->invitation->fetchByToken($token);
 
         return $invitation;
     }

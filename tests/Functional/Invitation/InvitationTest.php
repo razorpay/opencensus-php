@@ -218,11 +218,7 @@ class InvitationTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $content = [
-            'token'     => $invite->token
-        ];
-
-        $testData['request']['content'] = $content;
+        $testData['request']['url'] = '/invitations/token/' . $invite->token;
 
         $this->ba->appAuth();
 
@@ -231,19 +227,11 @@ class InvitationTest extends TestCase
 
     public function testGetInvitationByInvalidToken()
     {
-        $invitation = $this->fixtures->create('invitation');
-
-        $invite = \DB::table('invitations')
-                     ->where('id', '=', $invitation['id'])
-                     ->first();
+        $this->fixtures->create('invitation');
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $content = [
-            'token'     => '2000000000000020000000000000200000000008'
-        ];
-
-        $testData['request']['content'] = $content;
+        $testData['request']['url'] = '/invitations/token/' . '2000000000000020000000000000200000000008';
 
         $this->ba->appAuth();
 

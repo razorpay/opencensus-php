@@ -30,9 +30,9 @@ class Service extends Base\Service
      * @param  array  $input
      * @return array
      */
-    public function fetchByToken(array $input): array
+    public function fetchByToken(string $token): array
     {
-        $invitation = $this->core()->fetchByToken($input);
+        $invitation = $this->core()->fetchByToken($token);
 
         return $invitation->toArrayPublic();
     }

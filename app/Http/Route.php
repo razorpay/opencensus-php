@@ -547,7 +547,7 @@ final class Route
 
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
-        'invitation_fetch_by_token'               => ['put',      'invitations',                                    'InvitationController@fetchByToken'                                 ],
+        'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
         'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],
         'invitation_resend'                       => ['post',     'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
         'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],

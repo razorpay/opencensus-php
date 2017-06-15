@@ -404,7 +404,6 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_ROLE_INVALID                                         = 'The given role is not supported';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
-    const BAD_REQUEST_INVITATION_INVALID_TOKEN                                  = 'The given invitation token is invalid';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                              = 'Self-Invitation not allowed';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';

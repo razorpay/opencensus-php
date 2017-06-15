@@ -273,8 +273,8 @@ return [
 
     'testGetInvitationByToken' => [
         'request' => [
-            'url'     => '/invitations',
-            'method'  => 'PUT',
+            'url'     => '/invitations/token',
+            'method'  => 'GET',
             'content' => [
 
             ]
@@ -290,8 +290,8 @@ return [
 
     'testGetInvitationByInvalidToken' => [
         'request' => [
-            'url'     => '/invitations',
-            'method'  => 'PUT',
+            'url'     => '/invitations/token',
+            'method'  => 'GET',
             'content' => [
 
             ]
