@@ -9,7 +9,7 @@ import CreateVirtualAccount from './CreateVirtualAccount';
 import { openModal } from 'rzp/modules/modals';
 import {
   fetchVirtualAccounts as fetchAll,
-} from 'merchant/modules/virtualaccounts/list';
+} from 'merchant/modules/virtualaccounts';
 import {
   virtualAccountId,
   beneficiaryName,

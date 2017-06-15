@@ -6,7 +6,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import { showNotification } from 'rzp/modules/notifications';
 import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
-import { saveVirtualAccount } from 'merchant/modules/virtualaccounts/list';
+import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 
 @connect(null, {
   luminateRow,

@@ -6,31 +6,39 @@ let defaultInitialState = {
   error: null,
 };
 
-const fetchPendingState = (state, action) => set(state, 'loading', true);
+export const entityFetchPendingState = (state, action) =>
+  set(state, 'loading', true);
 
-const fetchSuccessState = (state, action) =>
-  merge(state, {
+export const entityFetchSuccessState = (state, action) => {
+  return merge(state, {
     loading: false,
     entity: action.payload,
     error: null,
   });
+};
 
-const fetchErrorState = (state, action) =>
-  merge(state, {
+export const entityFetchErrorState = (state, action) => {
+  return merge(state, {
     loading: false,
     error: action.payload.errors,
     entity: initialState.entity,
   });
+};
 
-export default function makeEntityReducer(
+export const updateEntity = (state, action) => {
+  let entity = merge(state.entity, action.payload);
+  return set(state, 'entity', entity);
+};
+
+export const makeEntityReducer = (
   fetchActionName,
   actionHandlers = {},
   initialState = defaultInitialState
-) {
+) => {
   const defaultHandlers = {
-    [`${fetchActionName}::PENDING`]: fetchPendingState,
-    [`${fetchActionName}::SUCCESS`]: fetchSuccessState,
-    [`${fetchActionName}::ERROR`]: fetchErrorState,
+    [`${fetchActionName}::PENDING`]: entityFetchPendingState,
+    [`${fetchActionName}::SUCCESS`]: entityFetchSuccessState,
+    [`${fetchActionName}::ERROR`]: entityFetchErrorState,
   };
 
   const handlers = { ...defaultHandlers, ...actionHandlers };
@@ -42,4 +50,4 @@ export default function makeEntityReducer(
       return state;
     }
   };
-}
+};

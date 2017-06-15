@@ -28,7 +28,7 @@ import referralsReducer from 'merchant/modules/referrals';
 import {
   virtualAccountsReducer,
   virtualAccountReducer,
-} from 'merchant/modules/virtualaccounts/list';
+} from 'merchant/modules/virtualaccounts';
 
 import {
   paymentsReducer,

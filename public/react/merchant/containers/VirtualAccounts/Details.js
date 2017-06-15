@@ -2,7 +2,7 @@ import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import VirtualAccountDetails from 'merchant/components/VirtualAccounts/Details';
-import * as VirtualAccountActions from 'merchant/modules/virtualaccounts/list';
+import * as VirtualAccountActions from 'merchant/modules/virtualaccounts';
 import { showNotification } from 'rzp/modules/notifications';
 
 @withRouter
