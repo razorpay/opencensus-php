@@ -86,12 +86,21 @@ class Service extends Base\Service
             'items'  => [],
         ];
 
+        if ($entity === 'customer')
+        {
+            $routeName = 'customer_fetch_multiple';
+        }
+        else if ($entity === 'item')
+        {
+            $routeName = 'item_fetch_multiple';
+        }
+
         for ($i = 0; $i < 5; $i++)
         {
             // Using generic
 
             $customerInput = [
-                'route_name' => 'customer_fetch_multiple',
+                'route_name' => $routeName,
                 'mode' => $mode,
                 'query_params' => [
                     'skip' => $i * $count,
