@@ -4,13 +4,12 @@ import { Link } from 'react-router-dom';
 import {
   paymentId,
   paymentOrder,
-  currency,
   amount,
   email,
   contact,
   createdAt,
   status,
-} from 'rzp/ui/Table/column';
+} from 'rzp/ui/item/pair';
 
 import rowClass from 'merchant/utils/activeRow';
 
@@ -42,15 +41,7 @@ const mapOrders = payments =>
   }, {});
 
 export default props => {
-  let paymentColumns = [
-    paymentId,
-    currency,
-    amount,
-    email,
-    contact,
-    createdAt,
-    status,
-  ];
+  let paymentColumns = [paymentId, amount, email, contact, createdAt, status];
 
   let orders = mapOrders(props.items);
 

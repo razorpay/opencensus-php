@@ -11,7 +11,7 @@ import {
   recipient,
   amount,
   createdAt,
-} from 'rzp/ui/Table/column';
+} from 'rzp/ui/item/pair';
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {

@@ -6,7 +6,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchReversals as fetchAll } from 'rzp/modules/collection';
 
-import { reversalId, transferId, amount, createdAt } from 'rzp/ui/Table/column';
+import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
 
 @connect(state => state.reversals, { fetchAll })
 export default class ReversalsListContainer extends ListContainer {
