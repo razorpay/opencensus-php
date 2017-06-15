@@ -110,9 +110,9 @@ trait Authorize
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                $this->createAnalyticsLog($payment);
-
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
+
+                $this->createAnalyticsLog($payment);
 
                 return $request;
             }
@@ -165,12 +165,6 @@ trait Authorize
                 $terminalData['end'] = microtime(true);
 
                 $this->recordTerminalAudit($terminalData, $payment, $retryAttempts);
-
-                if (($retry === false) or
-                    ($retryAttempts >= $maxRetryAttempts))
-                {
-                    $this->createAnalyticsLog($payment);
-                }
             }
         }
 
@@ -217,6 +211,8 @@ trait Authorize
      */
     protected function processAuthResponse($request, Payment\Entity $payment): array
     {
+        $this->createAnalyticsLog($payment);
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -2167,9 +2163,11 @@ trait Authorize
         {
             (new Analytics\Service)->createLog($payment);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::WARNING,
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }

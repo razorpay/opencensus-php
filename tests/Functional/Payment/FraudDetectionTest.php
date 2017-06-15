@@ -54,6 +54,10 @@ class FraudDetectionTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
     }
 
     public function testFraudDetected()
