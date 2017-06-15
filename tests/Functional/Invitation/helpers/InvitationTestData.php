@@ -263,7 +263,6 @@ return [
                     'merchant_id' => '1000InviteMerc',
                 ],
                 [
-                    'id'          => '8hd48md930kel4',
                     'role'        => 'finance',
                     'email'       => 'pending2@razorpay.com',
                     'merchant_id' => '1000InviteMerc',

@@ -201,7 +201,6 @@ class InvitationTest extends TestCase
 
         $this->fixtures->create('invitation',
                                 [
-                                    'id'          => '8hd48md930kel4',
                                     'email'       => 'pending2@razorpay.com',
                                     'role'        => 'finance',
                                 ]);
