@@ -270,5 +270,45 @@ return [
                 ],
             ],
         ]
-    ]
+    ],
+
+    'testGetInvitationByToken' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'PUT',
+            'content' => [
+
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'role'        => 'manager',
+                'email'       => 'testTeamInvite@razorpay.com',
+                'merchant_id' => '1000InviteMerc',
+            ]
+        ]
+    ],
+
+    'testGetInvitationByInvalidToken' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'PUT',
+            'content' => [
+
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
 ];

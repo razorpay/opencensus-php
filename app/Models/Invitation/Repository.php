@@ -12,6 +12,6 @@ class Repository extends Base\Repository
     {
     	return $this->newQuery()
                     ->where(Entity::TOKEN, '=', $token)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 }

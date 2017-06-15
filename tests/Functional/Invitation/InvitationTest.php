@@ -188,7 +188,7 @@ class InvitationTest extends TestCase
         $this->startTest();
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', '8hd48md930kel3')
+                     ->where('id', '=', $invitation['id'])
                      ->whereNull('deleted_at')
                      ->first();
 
@@ -205,6 +205,48 @@ class InvitationTest extends TestCase
                                     'email'       => 'pending2@razorpay.com',
                                     'role'        => 'finance',
                                 ]);
+
+        $this->startTest();
+    }
+
+    public function testGetInvitationByToken()
+    {
+        $invitation = $this->fixtures->create('invitation');
+
+        $invite = \DB::table('invitations')
+                     ->where('id', '=', $invitation['id'])
+                     ->first();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'token'     => $invite->token
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetInvitationByInvalidToken()
+    {
+        $invitation = $this->fixtures->create('invitation');
+
+        $invite = \DB::table('invitations')
+                     ->where('id', '=', $invitation['id'])
+                     ->first();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'token'     => '2000000000000020000000000000200000000008'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }
