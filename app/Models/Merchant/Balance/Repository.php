@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         return $this->getBalanceLockForUpdate($merchant->getKey());
     }
 
-    public function getMerchantBalance($merchant)
+    public function getMerchantBalance($merchant): Entity
     {
         $balance = $this->findOrFailPublic($merchant->getId());
 
