@@ -7,7 +7,6 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 
