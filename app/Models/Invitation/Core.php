@@ -7,6 +7,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 
@@ -42,7 +43,7 @@ class Core extends Base\Core
 
     public function fetchByToken(array $input): Entity
     {
-        if (isset($input(Entity::TOKEN)) === false)
+        if (isset($input[Entity::TOKEN]) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVITATION_INVALID_TOKEN);
         }
@@ -144,6 +145,12 @@ class Core extends Base\Core
 
     protected function sendEmail(Entity $invitation, string $senderName)
     {
+        // In dev and testing environments we want to send mail
+        if ($this->app->environment('dev', 'testing') === true)
+        {
+            return;
+        }
+
         $data = [
             'sender_name' => $senderName,
             'email'       => $invitation->getEmail(),
