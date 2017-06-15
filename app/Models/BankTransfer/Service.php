@@ -132,9 +132,9 @@ class Service extends Base\Service
             $bankTransfer->merchant()->associate($this->merchant);
 
             $this->updateVirtualAccount($bankTransfer);
-        });
 
-        $this->app['events']->fire('api.virtual_account.credited', [$bankTransfer]);
+            $this->app['events']->fire('api.payment.captured', [$payment]);
+        });
     }
 
     protected function isUtrUnique(Entity $bankTransfer): bool

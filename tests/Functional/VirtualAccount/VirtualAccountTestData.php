@@ -53,38 +53,28 @@ return [
         ],
     ],
 
-    'testAccountCreditedWebhook' => [
+    'testWebhookOnVirtualAccountPay' => [
         'mode' => 'test',
         'event' => [
             'entity' => 'event',
-            'event' => 'virtual_account.credited',
-            'contains' => ['payment', 'bank_transfer'],
+            'event' => 'payment.captured',
+            'contains' => ['payment'],
             'payload' => [
-                'bank_transfer' => [
-                    'entity' => [
-                        'merchant_id' => "10000000000000",
-                        'payer_account' => "9876543210123456789",
-                        'payer_ifsc' => "HDFC0000001",
-                        'payee_account' => "RAZORP14966082177614",
-                        'payee_ifsc' => "YESB0CMSNOC",
-                        'amount' => 5000000,
-                        'mode' => "neft",
-                        'description' => "NEFT payment of 50,000 rupees",
-                    ],
-                ],
                 'payment' => [
                     'entity' => [
                         'entity' => 'payment',
-                        'amount' => 5000000,
+                        'amount' => 10000,
                         'currency' => 'INR',
                         'status' => 'captured',
+                        'order_id' => null,
+                        'invoice_id' => null,
                         'method' => 'bank_transfer',
                         'amount_refunded' => 0,
                         'refund_status' => null,
                         'captured' => true,
-                        'description' => 'random description',
-                        'email' => 'a@b.com',
-                        'contact' => '+919918899029',
+                        'description' => null,
+                        'email' => null,
+                        'contact' => null,
                         'error_code' => null,
                         'error_description' => null,
                     ],

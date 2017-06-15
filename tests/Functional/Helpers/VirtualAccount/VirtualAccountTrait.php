@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 trait VirtualAccountTrait
 {
-    private function createVirtualAccount($input = [])
+    private function createVirtualAccount(array $input = [])
     {
         $defaultValues = $this->getDefaultVirtualAccountArray();
 
@@ -23,7 +23,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function closeVirtualAccount($id)
+    private function closeVirtualAccount(string $id)
     {
         $request = [
             'method'  => 'PATCH',
@@ -40,7 +40,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function deleteVirtualAccount($id)
+    private function deleteVirtualAccount(string $id)
     {
         $request = [
             'method'  => 'DELETE',
@@ -54,7 +54,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function fetchVirtualAccount($id)
+    private function fetchVirtualAccount(string $id)
     {
         $request = [
             'method'  => 'GET',
@@ -68,7 +68,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function fetchVirtualAccounts($input = [])
+    private function fetchVirtualAccounts(array $input = [])
     {
         $request = [
             'method'  => 'GET',
@@ -81,6 +81,46 @@ trait VirtualAccountTrait
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    private function payVirtualAccount(string $virtualAccountId, array $paymentArray = null)
+    {
+        if ($paymentArray === null)
+        {
+            $paymentArray = $this->getDefaultBankTransferArray();
+        }
+
+        $response = $this->fetchVirtualAccount($virtualAccountId);
+
+        $paymentArray['payee_account'] = $response['bank_account']['account_number'];
+        $paymentArray['payee_ifsc']    = $response['bank_account']['ifsc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/ecollect/validate',
+            'content' => $paymentArray,
+        ];
+
+        $vvsSecret = \Config::get('applications.vvs.secret');
+
+        $this->ba->appAuth('rzp_test', $vvsSecret);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    private function getDefaultBankTransferArray()
+    {
+        return [
+            'payer_account'  => '7654321234567',
+            'payer_ifsc'     => 'HDFC0000001',
+            'mode'           => 'neft',
+            'transaction_id' => 'utr_'.rand(10000000,99999999),
+            'time'           => time(),
+            'amount'         => 10000,
+            'description'    => 'Test bank transfer',
+        ];
     }
 
     private function getDefaultVirtualAccountArray()

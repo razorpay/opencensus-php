@@ -2,14 +2,18 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
+use Closure;
+use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class VirtualAccountTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use EntityActionTrait;
     use VirtualAccountTrait;
+    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -80,18 +84,18 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(0, $response['count']);
     }
 
-    public function testAccountCreditedWebhook()
+    public function testWebhookOnVirtualAccountPay()
     {
-        $this->markTestSkipped();
+        $virtualAccount = $this->createVirtualAccount();
 
         $this->createWebhook(
             [
                 'events' => [
-                    'virtual_account.credited' => '1',
+                    'payment.captured' => '1',
                 ]
             ]);
 
-        $testData = [];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->mockInfernoFire(function ($data) use ($testData)
         {
@@ -99,23 +103,10 @@ class VirtualAccountTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $data);
 
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            $payload = $data['event']['payload'];
-
-            $bankTransfer = $payload['bank_transfer']['entity'];
-
-            $this->assertArrayHasKey('id', $bankTransfer);
-            $this->assertArrayHasKey('payment_id', $bankTransfer);
-            $this->assertArrayHasKey('transaction_id', $bankTransfer);
-
             return true;
         });
 
-        $this->ba->appAuth();
-
-        $this->testBankTransferPay();
+        $this->payVirtualAccount($virtualAccount['id']);
     }
 
     protected function mockInfernoFire(Closure $closure)

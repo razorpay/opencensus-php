@@ -124,6 +124,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentCaptured($payment)
+    {
+        $payload = $this->getPaymentPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
@@ -173,13 +180,6 @@ class ApiEventSubscriber extends Base\Core
     //
     //     $this->prepareAndDispatchWebhook($payload);
     // }
-
-    protected function onVirtualAccountCredited($bankTransfer)
-    {
-        $payload = $this->getBankTransferPayload($bankTransfer);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
 
     protected function onVpaEdited($vpa)
     {
@@ -234,21 +234,6 @@ class ApiEventSubscriber extends Base\Core
     {
         $partialPayload[Constants\Entity::SUBSCRIPTION] = [
             'entity' => $subscription->toArrayPublic()
-        ];
-
-        return $partialPayload;
-    }
-
-    protected function getBankTransferPayload($bankTransfer)
-    {
-        $payment = $bankTransfer->payment;
-
-        $partialPayload[Constants\Entity::BANK_TRANSFER] = [
-            'entity' => $bankTransfer->toArrayPublic()
-        ];
-
-        $partialPayload[Constants\Entity::PAYMENT] = [
-            'entity' => $payment->toArrayPublic()
         ];
 
         return $partialPayload;
