@@ -8,6 +8,7 @@ use App\Base;
 use Carbon\Carbon;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
+use App\Generic;
 
 class Service extends Base\Service
 {
@@ -92,7 +93,21 @@ class Service extends Base\Service
                 'count' => $count
             ];
 
-            list($error, $list) = $this->fetchEntityCollection($input, $mode, $entity);
+            // Using generic
+
+            $customerInput = [
+                'route_name' => 'customer_fetch_multiple',
+                'mode' => $mode,
+                'query_params' => [
+                    'skip' => $i * $count,
+                    'count' => $count
+                ]
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $list) = $genericService->call('GET', $customerInput);
+
             $collection['count'] = $collection['count'] + $list['count'];
             $collection['items'] = array_merge($collection['items'], $list['items']);
 

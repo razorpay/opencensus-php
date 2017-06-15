@@ -71,6 +71,14 @@ class RawApiRequest
 
             $this->path .= '?' . http_build_query($queryParams);
         }
+        // This block is supposed to handle internal generic calls
+        // not the ones coming from frontend/xhr.
+        else if (isset($input['query_params']) && !empty($input['query_params']))
+        {
+            $queryParams = $input['query_params'];
+
+            $this->path .= '?' . http_build_query($queryParams);
+        }
     }
 
     protected function setupCredentials($input)
