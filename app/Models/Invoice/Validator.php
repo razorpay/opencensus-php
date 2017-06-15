@@ -52,6 +52,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -82,6 +83,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -107,6 +109,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -129,6 +132,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::BILLING_START       => 'sometimes|epoch',
@@ -159,12 +163,6 @@ class Validator extends Base\Validator
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
-
-        //
-        // Amount should not be updated by via input if line items already exists
-        // for the invoice.
-        //
-
         self::EDIT_DRAFT . Entity::AMOUNT,
     ];
 
@@ -279,6 +277,12 @@ class Validator extends Base\Validator
         Type::checkType($value);
     }
 
+    /**
+     * Amount should not be updated by via input if line items already exists
+     * for the invoice.
+     *
+     * @param array $input
+     */
     public function validateEditDraftAmount(array $input)
     {
         if (isset($input[Entity::AMOUNT]) === false)
@@ -508,7 +512,8 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Invoice is only payable if it's not deleted and is in ISSUED state.
+     * Invoice is only payable if it's not deleted and is in either
+     * issued or partially_paid state.
      *
      * @return void
      * @throws BadRequestValidationFailureException
@@ -523,10 +528,11 @@ class Validator extends Base\Validator
                 $invoice->getTypeLabel() . ' is not payable as it is deleted.');
         }
 
-        if ($invoice->isIssued() === false)
+        $status = $invoice->getStatus();
+
+        if (in_array($status, [Status::ISSUED, Status::PARTIALLY_PAID], true) === false)
         {
-            $message = $invoice->getTypeLabel() . ' is not payable in ' .
-                       $invoice->getStatus() . ' status.';
+            $message = $invoice->getTypeLabel() . ' is not payable in ' . $status . ' status.';
 
             throw new BadRequestValidationFailureException($message);
         }

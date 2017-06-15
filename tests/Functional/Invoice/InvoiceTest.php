@@ -2,12 +2,18 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Base\UniqueIdEntity;
-
 use Carbon\Carbon;
 use Mockery;
+use Mail;
+
+use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
+use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
+use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+
+use RZP\Models\Base\UniqueIdEntity;
 
 class InvoiceTest extends TestCase
 {
@@ -61,11 +67,27 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceAndPay()
     {
+        Mail::fake();
+
         $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice');
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        Mail::assertSent(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
+
+        Mail::assertSent(InvoiceCapturedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
     }
 
     public function testCreateLinkWithSource()
@@ -256,6 +278,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateIssuedInvoice()
     {
+        Mail::fake();
+
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -266,6 +290,11 @@ class InvoiceTest extends TestCase
 
         $order = $this->getLastEntity('order', true);
         $this->assertNotNull($order);
+
+        Mail::assertSent(InvoiceIssuedMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@rzp.com');
+        });
     }
 
     public function testCreateIssuedInvoiceAndPay()
@@ -1091,7 +1120,6 @@ class InvoiceTest extends TestCase
                 'receipt'  => '00000000000002'
             ]);
 
-
         $esMock = $this->createEsMock(['search']);
 
         $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
@@ -1143,7 +1171,10 @@ class InvoiceTest extends TestCase
         $item2 = $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'Item 2']);
 
         $this->fixtures->create('line_item', ['entity_id' => $invoice1->getId()]);
-        $this->fixtures->create('line_item', ['id' => '10000lineitem2', 'entity_id' => $invoice2->getId(), 'item_id' => $item2->getId()]);
+        $this->fixtures->create('line_item', [
+            'id' => '10000lineitem2',
+            'entity_id' => $invoice2->getId(),
+            'item_id' => $item2->getId()]);
 
         $this->startTest();
     }
@@ -1198,7 +1229,6 @@ class InvoiceTest extends TestCase
                 'user_id' => '1000000000user',
                 'type'    => 'invoice',
             ]);
-
 
         $esMock = $this->createEsMock(['search']);
 
@@ -1348,7 +1378,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
 
-        $this->assertResponseOk();
+        $this->assertResponseOk($response);
     }
 
     public function testGetInvoiceView()
@@ -1360,7 +1390,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
 
-        $this->assertResponseOk();
+        $this->assertResponseOk($response);
     }
 
     public function testPayExpiredInvoice()
@@ -1399,6 +1429,92 @@ class InvoiceTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testPartialPayment()
+    {
+        $order = $this->fixtures->create(
+                                    'order',
+                                    [
+                                        'id'              => '100000000order',
+                                        'amount'          => 1000,
+                                        'partial_payment' => true,
+                                        'payment_capture' => true,
+                                    ]);
+
+        $invoice = $this->fixtures->create(
+                                        'invoice',
+                                        [
+                                            'partial_payment' => true,
+                                            'amount'          => 1000,
+                                        ]);
+
+        // Makes a partial payment
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 600;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertEquals('partially_paid', $invoice['status']);
+        $this->assertEquals(600, $invoice['amount_paid']);
+        $this->assertEquals(400, $invoice['amount_due']);
+    }
+
+    public function testMultiplePartialPayments()
+    {
+        $this->testPartialPayment();
+
+        $order = $this->getLastEntity('order');
+        $invoice = $this->getLastEntity('invoice');
+
+        // Make another 2 partial payments and check if invoice is paid
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+        $payment['amount']   = 300;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order['id'],
+            'invoice_id' => $invoice['id'],
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertEquals('partially_paid', $invoice['status']);
+        $this->assertEmpty($invoice['paid_at']);
+        $this->assertEquals(900, $invoice['amount_paid']);
+        $this->assertEquals(100, $invoice['amount_due']);
+
+        // Last partial payment of 100 should turn invoice into paid.
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+        $payment['amount']   = 100;
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertEquals('paid', $invoice['status']);
+        $this->assertNotEmpty($invoice['paid_at']);
+        $this->assertEquals(1000, $invoice['amount_paid']);
+        $this->assertEquals(0, $invoice['amount_due']);
     }
 
     public function testCancelInvoice()

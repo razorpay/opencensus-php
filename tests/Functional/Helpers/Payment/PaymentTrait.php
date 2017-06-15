@@ -1145,7 +1145,7 @@ trait PaymentTrait
         }
         else if ($this->isResponseInstanceType($response, 'json'))
         {
-            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response);
+            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response->baseResponse);
         }
         else
         {
@@ -1228,6 +1228,8 @@ trait PaymentTrait
      */
     protected function isResponseInstanceType($response, $type = 'json')
     {
+        $response = $response->baseResponse;
+
         $match = 'Response';
 
         if ($type !== 'http')

@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
@@ -18,7 +20,7 @@ trait Reversal
      * Fetches and refunds the transfer payment and
      * create a reversal for the transfer
      *
-     * @param  Transfer\Entity $transfer
+     * @param Transfer\Entity  $transfer
      * @param array            $input
      *
      * @return ReversalEntity
@@ -73,6 +75,8 @@ trait Reversal
         $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
+
+        $this->validateMerchantBalance($refund, 'reversal');
 
         $txn = (new Transaction\Core)->createFromRefund($refund);
 

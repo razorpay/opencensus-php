@@ -53,6 +53,8 @@ class Gateway extends Base\Gateway
 
     const NUM_SECONDS_IN_TWO_DAYS = 172800;
 
+    const TRANSACTION_NOT_FOUND = "TRANSACTION_NOT_FOUND";
+
     protected $gateway = 'wallet_jiomoney';
 
     protected $sortRequestContent = false;
@@ -882,6 +884,15 @@ class Gateway extends Base\Gateway
             }
 
             return false;
+        }
+        else if (isset($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]) === true)
+        {
+            $responseHeader = $content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER];
+
+            if ($responseHeader[ResponseFields::API_MSG] === self::TRANSACTION_NOT_FOUND)
+            {
+                return false;
+            }
         }
 
         throw new Exception\LogicException(

@@ -169,7 +169,7 @@ class Core extends Base\Core
         $authAmount = $this->getAuthTransactionAmount($subscription);
 
         return [
-            'auth_amount' => $authAmount,
+            'amount' => $authAmount,
         ];
     }
 
@@ -301,7 +301,7 @@ class Core extends Base\Core
     {
         $payments = $invoice->payments;
 
-        $authorizedPayments = $payments->where(Payment\Entity::STATUS, Payment\Status::AUTHORIZED, true);
+        $authorizedPayments = $payments->where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED);
 
         $authorizedPaymentsCount = $authorizedPayments->count();
 

@@ -91,6 +91,7 @@ class Repository extends Base\Repository
                     ->where($medium . '_status', '=', NotifyStatus::PENDING)
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
+                    ->with(Entity::ORDER)
                     ->get();
     }
 
@@ -116,6 +117,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::EXPIRE_BY, '<', $currentTime)
+                    ->with(Entity::ORDER)
                     ->get();
     }
 
@@ -124,6 +126,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->with(Entity::ORDER)
                     ->get();
     }
 
@@ -137,6 +140,7 @@ class Repository extends Base\Repository
                                 $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
                                       ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
                            })
+                         ->with(Entity::ORDER)
                          ->get();
 
         if ($invoices->count() !== 1)
@@ -233,5 +237,18 @@ class Repository extends Base\Repository
         $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
 
         $query->join($this->repo->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
+    }
+
+    /**
+     * @override
+     *
+     * To eager lazy load order relation along with invoices.
+     *
+     * @param array               $params
+     * @param \RZP\Base\BuilderEx $query
+     */
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        $query->with(Entity::ORDER);
     }
 }

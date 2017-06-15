@@ -7,6 +7,7 @@ use Mail;
 
 use RZP\Constants\MailTags;
 use RZP\Exception;
+use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
 
@@ -33,54 +34,18 @@ class Core extends Base\Core
 
     public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation)
     {
-        $org = $admin->org;
+        $org = $admin->org->toArrayPublic();
+        $org['host_name'] = $admin->org->getPrimaryHostName();
 
-        $orgName = $org->getDisplayName();
+        $admin = $admin->toArrayPublic();
 
-        // date format = 6th July 2015
-        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        $token = $invitation->getToken();
+        $invitation = $invitation->toArrayPublic();
+        $invitation['token'] = $token;
 
-        $subject = sprintf("%s | Invitation for %s", $orgName, $date);
+        $merchantInvitationMail = new MerchantInvitationMail($admin, $org, $invitation);
 
-        $email = $invitation->getEmail();
-
-        // TODO have a fallover when contact name is not given
-        $contactName = $invitation->getFormData()['contact_name'] ?? '';
-
-        $data = [
-            'invitation'     => $invitation->toArrayPublic(),
-            'adminName'      => $admin->getName(),
-            'org'            => $org->toArrayPublic(),
-            'hostname'       => $org->getPrimaryHostName(),
-        ];
-
-        $data['invitation']['token'] = $invitation->getToken();
-
-        Mail::queue(
-            'emails.admin.invite_merchant',
-            $data,
-            function ($message) use ($subject, $email, $contactName, $org)
-            {
-                $message->to($email, $contactName);
-
-                if ($org->getCustomCode() === 'rzp')
-                {
-                    $message->from('admin@razorpay.com');
-
-                    $message->cc('notifications@razorpay.com');
-                }
-                else
-                {
-                    $message->from($org->getFromEmail(), $org->getDisplayName());
-                }
-
-                $message->subject($subject);
-
-                $headers = $message->getHeaders();
-
-                $headers->addTextHeader(
-                    MailTags::HEADER, MailTags::ADMIN_INVITE_MERCHANT);
-            });
+        Mail::queue($merchantInvitationMail);
     }
 
     public function edit(Entity $adminLead, array $input)

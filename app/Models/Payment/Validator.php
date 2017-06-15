@@ -36,9 +36,9 @@ class Validator extends Base\Validator
         'wallet'                  => 'required_if:method,wallet|custom',
         'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             => 'sometimes',
-        'email'                   => 'sometimes|email',
-        'contact'                 => 'sometimes|contact_syntax',
-        'signature'               => 'sometimes|string',
+        'email'                   => 'sometimes|nullable|email',
+        'contact'                 => 'sometimes|nullable|contact_syntax',
+        'signature'               => 'sometimes|nullable|string',
         'notes'                   => 'sometimes|notes',
         'notes.merchant_order_id' => 'required_with:signature',
         'callback_url'            => 'sometimes|url',
@@ -52,7 +52,7 @@ class Validator extends Base\Validator
         'fee'                     => 'sometimes|filled|integer|max:50000000',
         'service_tax'             => 'sometimes|filled|integer|max:50000000',
         'on_hold'                 => 'sometimes_if:method,transfer|boolean',
-        'on_hold_until'           => 'sometimes_if:method,transfer|epoch',
+        'on_hold_until'           => 'sometimes_if:method,transfer|nullable|epoch',
         'ip'                      => 'sometimes|ip',
         'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',
@@ -132,7 +132,8 @@ class Validator extends Base\Validator
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
-            (ProviderCode::validate($vpaParts[1]) === false))
+            (ProviderCode::validate($vpaParts[1]) === false) or
+            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(

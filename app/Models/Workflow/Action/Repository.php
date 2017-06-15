@@ -32,10 +32,12 @@ class Repository extends Base\Repository
                     });
     }
 
-    public function findByOrgId(string $orgId)
+    public function findByOrgId(string $orgId, array $relations = [])
     {
         return $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
+                    ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -47,6 +49,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -59,7 +62,9 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
-    public function findActionsForChecker(array $roleIds)
+    public function findActionsForChecker(
+        array $roleIds,
+        array $relations = [])
     {
         /*
             SELECT wa.id, wa.title, wa.description
@@ -85,10 +90,14 @@ class Repository extends Base\Repository
                     })
                     ->where('workflow_actions.state', '=', State\Entity::OPEN)
                     ->whereIn('workflow_steps.role_id', $roleIds)
+                    ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
-    public function getClosedActionsByAdmin($adminId)
+    public function getClosedActionsByAdmin(
+        string $adminId,
+        array $relations = [])
     {
         /*
          * SELECT `workflow_actions`.*
@@ -115,10 +124,14 @@ class Repository extends Base\Repository
                     ->join($acsTable, $aId, '=', $acsActionId)
                     ->where($acsState, '=', State\Entity::CLOSED)
                     ->where($acsAdminId, '=', $adminId)
+                    ->with($relations)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
-    public function findOpenActionsByOrgId(string $orgId)
+    public function findOpenActionsByOrgId(
+        string $orgId,
+        array $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
@@ -127,6 +140,7 @@ class Repository extends Base\Repository
         return $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
                     ->whereIn(Entity::STATE, $openStates)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
@@ -140,7 +154,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getActionsCheckedByAdmin(string $adminId)
+    public function getActionsCheckedByAdmin(
+        string $adminId,
+        array $relations = [])
     {
         $checkerRepo = $this->repo->action_checker;
 
@@ -157,6 +173,7 @@ class Repository extends Base\Repository
                     ->select($attributes)
                     ->join($checkerTable, $aId, '=', $cActionId)
                     ->where($cAdminId, '=', $adminId)
+                    ->with($relations)
                     ->get();
     }
 

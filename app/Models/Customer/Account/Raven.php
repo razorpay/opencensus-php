@@ -53,7 +53,7 @@ class Raven
             'receiver' => $input['contact'],
             'source' => 'api',
             'params' => [
-                'merchant_name' => $merchant->getBillingLabelElseName()
+                'merchant_name' => $merchant->getBillingLabel()
             ]
         );
 

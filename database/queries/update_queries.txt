@@ -468,3 +468,17 @@ UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE id IN ("7t
 
 # move to type coulum from recurring column
 UPDATE terminals SET type = recurring;
+
+# Updates merchant_id in fund_transfer_attempts
+update fund_transfer_attempts f join
+(
+    select id, merchant_id
+    from settlements
+) as s
+on f.source_id = s.id
+set f.merchant_id = s.merchant_id;
+
+# Post deployment of branch order-partial-payments
+
+# Updates amount_paid value for old rows
+UPDATE orders SET amount_paid = amount where status = 'paid' and amount_paid = 0;

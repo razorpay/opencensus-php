@@ -2,9 +2,12 @@
 
 namespace RZP\Tests\Functional\Gateway\Kotak;
 
+use App;
 use Carbon\Carbon;
 use Config;
-use Mockery;
+use Mail;
+use RZP\Constants\Mode;
+use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -34,6 +37,8 @@ class ReconciliationTest extends TestCase
 
     public function testSettlementReconciliation()
     {
+        Mail::fake();
+
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
@@ -73,6 +78,8 @@ class ReconciliationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+
+        Mail::assertSent(KotakReconciliationMail::class);
     }
 
     public function testReconciliationFailure()
@@ -364,9 +371,9 @@ class ReconciliationTest extends TestCase
             $transaction = $this->fixtures->create(
                                 'transaction',
                                 [
-                                    'merchant_id' => $merchantId,
-                                    'type' => 'settlement',
-                                    'entity_id' => $settlement->getId()
+                                    'merchant_id'   => $merchantId,
+                                    'type'          => 'settlement',
+                                    'entity_id'     => $settlement->getId()
                                 ]);
 
             $this->fixtures->edit('settlement', $settlement->getId(), ['transaction_id' => $transaction->getId()]);
@@ -374,9 +381,10 @@ class ReconciliationTest extends TestCase
             $fta = $this->fixtures->create(
                 'fund_transfer_attempt',
                 [
-                    'source_id' => $settlement->getId(),
-                    'created_at' => $timestamp,
-                    'batch_fund_transfer_id' => $batchTransferEntity->getId(),
+                    'source_id'                 => $settlement->getId(),
+                    'created_at'                => $timestamp,
+                    'batch_fund_transfer_id'    => $batchTransferEntity->getId(),
+                    'merchant_id'               => $merchantId
                 ]
             );
 

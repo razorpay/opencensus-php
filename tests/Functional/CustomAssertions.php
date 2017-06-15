@@ -105,6 +105,11 @@ trait CustomAssertions
         $this->assertEquals($type, $contentType);
     }
 
+    public function assertResponseOk($response)
+    {
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
     protected function getGatewayErrorDescription(array $actual)
     {
         return Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']] ?? $actual['gateway_error_desc'];
