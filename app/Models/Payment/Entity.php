@@ -698,6 +698,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setMetadataKey($key, $value)
+    {
+        $this->metadata[$key] = $value;
+    }
+
+    public function setMetadata($input)
+    {
+        $this->metadata = $input['_'] ?? null;
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -1522,11 +1532,11 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->getRelation('localToken');
+            $token = $this->getAttribute('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->getRelation('globalToken');
+            $token = $this->getAttribute('globalToken');
         }
 
         return $token;
@@ -1782,12 +1792,12 @@ class Entity extends Base\PublicEntity
 
     public function localToken()
     {
-        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID)->withTrashed();
     }
 
     public function globalToken()
     {
-        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID)->withTrashed();
     }
 
     public function app()

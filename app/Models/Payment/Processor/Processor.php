@@ -448,7 +448,7 @@ class Processor
                 $this->timeoutPayment();
 
                 throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
             return [
@@ -456,18 +456,35 @@ class Processor
             ];
         }
 
-        $diff = time() - $payment->getCreatedAt();
+        $resource = $this->getCallbackMutexResource($payment);
 
-        if (($payment->hasBeenAuthorized() === true) and
-            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
-        {
-            return $this->processAuthorizeResponse($payment);
-        }
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
 
-        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                $diff = time() - $payment->getCreatedAt();
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                if (($payment->hasBeenAuthorized() === true) and
+                    ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+                {
+                    return $this->processAuthorizeResponse($payment);
+                }
+
+                $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -560,6 +577,8 @@ class Processor
         $payment->setVerifyBucket(0);
 
         $this->repo->saveOrFail($payment);
+
+        $this->createAnalyticsLog($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
 

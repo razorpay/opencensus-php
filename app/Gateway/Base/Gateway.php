@@ -794,7 +794,8 @@ class Gateway
     {
         $request = [
             'url' => $input['otpSubmitUrl'],
-            'method' => 'post'
+            'method' => 'post',
+            'content' => []
         ];
 
         return $request;

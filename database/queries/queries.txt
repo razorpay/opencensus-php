@@ -2138,3 +2138,12 @@ ALTER TABLE bank_accounts
 ALTER TABLE merchant_banks
     ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi,
     ADD INDEX `methods_bank_transfer_index` (`bank_transfer`);
+
+ALTER TABLE payment_analytics
+    ADD COLUMN risk_score DECIMAL(11,4) NULL AFTER checkout_id,
+    ADD COLUMN risk_engine TINYINT(1) NULL AFTER risk_score;
+
+# Query to add enabled column in IIN
+ALTER TABLE iins
+    ADD COLUMN enabled TINYINT(1) DEFAULT 1 AFTER trivia;
+

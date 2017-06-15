@@ -65,7 +65,7 @@ class Server extends Base\Mock\Server
     {
         $httpQuery = http_build_query($postData);
 
-        $content[ResponseFields::ENCRYPTED_STRING] = $this->getGatewayInstance()->encryptString($httpQuery);;
+        $content[ResponseFields::ENCRYPTED_STRING] = $this->getGatewayInstance()->encryptString($httpQuery);
 
         $this->content($content, 'hash');
 
