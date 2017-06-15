@@ -27,8 +27,8 @@ export default props => {
         <InfoCard
           loading={payments.loading}
           content={
-            payments && payments.count
-              ? formatFromNow(payments.payments[0].created_at)
+            payments && payments.items.length
+              ? formatFromNow(payments.items[0].created_at)
               : 'Never'
           }
           error={payments.error}

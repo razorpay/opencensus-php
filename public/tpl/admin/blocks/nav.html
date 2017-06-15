@@ -2,7 +2,7 @@
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Management</span>
   </li>
-  <li class="active">
+  <li class="active" dynamic-tooltip="view_homepage" ng-if="admin.permissions && admin.permissions.indexOf('view_homepage') !== -1">
     <a id="dashboardNav" ui-sref="app.dashboard">
       <i class="fa fa-area-chart text-info"></i>
       <span>Dashboard</span>
@@ -53,7 +53,8 @@
 
   <li class="line dk"></li>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs"
+      ng-if="admin.permissions && admin.permissions.indexOf('view_workflow_requests') !== -1">
     <span>Workflows</span>
   </li>
   <li dynamic-tooltip="view_all_workflow" ng-if="admin.permissions && admin.permissions.indexOf('view_all_workflow') !== -1">
@@ -62,7 +63,7 @@
       <span>Workflows</span>
     </a>
   </li>
-  <li>
+  <li dynamic-tooltip="view_workflow_requests" ng-if="admin.permissions && admin.permissions.indexOf('view_workflow_requests') !== -1">
     <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'checker' })" >
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Requests</span>
