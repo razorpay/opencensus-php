@@ -629,6 +629,15 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
+            $payment->reload();
+
+            if ($payment->isFullyRefunded() === true)
+            {
+                throw new Exception\InvalidArgumentException(
+                    'Can only refund a non-refunded payment but here ' .
+                    'the status is ' . $payment->getStatus());
+            }
+
             $this->repo->transaction(function()
             {
                 $this->recordTransactionForRefund();
