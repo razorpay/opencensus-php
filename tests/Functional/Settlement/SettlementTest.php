@@ -150,7 +150,7 @@ class SettlementTest extends TestCase
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
         $setDate = Carbon::parse($days['payment_settlment_holiday'],'Asia/Kolkata');
 
@@ -182,11 +182,11 @@ class SettlementTest extends TestCase
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
         $txn = $this->getEntities('transaction',[],true);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'], 'Asia/Kolkata');
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
@@ -214,9 +214,9 @@ class SettlementTest extends TestCase
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'], 'Asia/Kolkata');
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
