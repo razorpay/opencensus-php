@@ -1869,23 +1869,6 @@ ALTER TABLE daily_settlements
 ALTER TABLE terminals
     ADD COLUMN international TINYINT(1) DEFAULT 0 NOT NULL AFTER recurring;
 
-# Virtual Accounts changes
-ALTER TABLE merchant_banks
-    ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi;
-
-ALTER TABLE merchants
-    ADD COLUMN handle VARCHAR(4) AFTER brand_color;
-
-ALTER TABLE bank_accounts
-    ADD COLUMN `virtual` TINYINT(1) NOT NULL DEFAULT 0 AFTER beneficiary_mobile,
-    MODIFY COLUMN beneficiary_address1 VARCHAR(30),
-    MODIFY COLUMN beneficiary_city VARCHAR(30),
-    MODIFY COLUMN beneficiary_state VARCHAR(2),
-    MODIFY COLUMN beneficiary_country VARCHAR(2),
-    MODIFY COLUMN beneficiary_pin CHAR(6),
-    MODIFY COLUMN beneficiary_email VARCHAR(255),
-    MODIFY COLUMN beneficiary_mobile CHAR(32);
-
 INSERT INTO `org_field_map` (`id`, `org_id`, `entity_name`, `fields`, `created_at`, `updated_at`)
 VALUES
 	('7NamQFIGFyyNdc','100000razorpay','admin','name,email,allow_all_merchants,disabled,roles,groups',1488445356,1488445356),
@@ -2138,11 +2121,11 @@ ALTER TABLE `refunds`
 
 ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
+# Virtual Accounts changes
 ALTER TABLE merchants
     ADD COLUMN handle VARCHAR(4) AFTER brand_color;
 
 ALTER TABLE bank_accounts
-    ADD COLUMN `virtual` TINYINT(1) NOT NULL DEFAULT 0 AFTER beneficiary_mobile,
     MODIFY COLUMN beneficiary_address1 VARCHAR(30),
     MODIFY COLUMN beneficiary_city VARCHAR(30),
     MODIFY COLUMN beneficiary_state VARCHAR(2),
@@ -2151,3 +2134,7 @@ ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_email VARCHAR(255),
     MODIFY COLUMN beneficiary_mobile CHAR(32),
     ADD INDEX bank_accounts_account_number_index (account_number);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi,
+    ADD INDEX `methods_bank_transfer_index` (`bank_transfer`);
