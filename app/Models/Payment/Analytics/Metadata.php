@@ -104,6 +104,18 @@ class Metadata
         self::PRESTASHOP    => 8,
     );
 
+    // fraud detection keys
+    const RISK_SCORE  = 'risk_score';
+    const RISK_ENGINE = 'risk_engine';
+
+    // types of risk engines
+    const MAXMIND     = 'maxmind';
+
+    // enum for risk engine
+    const RISK_ENGINE_VALUES = [
+        self::MAXMIND  => 1,
+    ];
+
     public static function getStringForValue($value, array $map)
     {
         if ($value === null)
@@ -248,6 +260,28 @@ class Metadata
         if (self::isValidDevice($device))
         {
             return self::DEVICE_VALUES[$device];
+        }
+
+        return self::OTHERS_VALUE;
+    }
+
+    public static function isValidRiskEngine($engine)
+    {
+        return isset(self::RISK_ENGINE_VALUES[$engine]);
+    }
+
+    public static function getValueForRiskEngine($engine)
+    {
+        if ($engine === null)
+        {
+            return;
+        }
+
+        $engine = strtolower($engine);
+
+        if (self::isValidRiskEngine($engine))
+        {
+            return self::RISK_ENGINE_VALUES[$engine];
         }
 
         return self::OTHERS_VALUE;
