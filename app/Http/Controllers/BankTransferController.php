@@ -8,11 +8,11 @@ use RZP\Models\BankTransfer;
 
 class BankTransferController extends Controller
 {
+    protected $service = BankTransfer\Service::class;
+
     public function __construct()
     {
         parent::__construct();
-
-        $this->service = BankTransfer\Service::class;
     }
 
     public function processBankTransfer()

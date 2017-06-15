@@ -7,21 +7,44 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const ID                 = 'id';
     const PAYMENT_ID         = 'payment_id';
     const MERCHANT_ID        = 'merchant_id';
+
+    // Details of the sender bank account
     const PAYER_ACCOUNT      = 'payer_account';
     const PAYER_IFSC         = 'payer_ifsc';
+
+    // Details of the receiver bank account
     const PAYEE_ACCOUNT      = 'payee_account';
     const PAYEE_IFSC         = 'payee_ifsc';
+
     const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
     const AMOUNT             = 'amount';
+
+    // Modes: NEFT, RTGS, IMPS, IFT
     const MODE               = 'mode';
+
+    // Bank reference number
     const UTR                = 'utr';
+
+    // Time of transaction
     const TIME               = 'time';
+
+    // Remarks field
     const DESCRIPTION        = 'description';
+
+    // Indicates whether the bank transfer corresponds
+    // to an active virtual account on our side. If
+    // false, this transfer will need to be refunded
     const EXPECTED           = 'expected';
+
+    // All entities are created and process in the bank transfer process flow.
+    // In the notify flow, we simply mark the bank transfer as a confirmed one.
     const NOTIFIED           = 'notified';
 
+    // Original request contains this key as input, it is actually the UTR.
+    // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
     protected $fillable = [

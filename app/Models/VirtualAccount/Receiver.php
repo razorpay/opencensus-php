@@ -140,7 +140,7 @@ class Receiver
      */
     protected function generateNewAccountNumberWithRoot(string $root)
     {
-        $handle = $this->getHandle();
+        $handle = $this->getHandle($root);
 
         $descriptor = $this->getDescriptor();
 
@@ -161,9 +161,14 @@ class Receiver
         return $accountNumber;
     }
 
-    protected function getHandle()
+    protected function getHandle(string $root)
     {
         $merchantHandle = $this->merchant->getHandle();
+
+        if ($merchantHandle === null)
+        {
+            $merchantHandle = $this->getDefaultHandle($root);
+        }
 
         $accountHandle = $this->padWithRandomDigits(self::HANDLE_LENGTH, $merchantHandle);
 
@@ -172,9 +177,19 @@ class Receiver
 
     protected function getDescriptor()
     {
-        $accountDescriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH, $this->descriptor);
+        if ($this->merchant->getHandle() === null)
+        {
+            $descriptor = '';
+        }
+
+        $accountDescriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH, $descriptor);
 
         return $accountDescriptor;
+    }
+
+    protected function getDefaultHandle(string $root)
+    {
+        return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
     protected function padWithRandomDigits(int $desiredLength, $str = '')

@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers\Traits;
 
+use Request;
 use ApiResponse;
 
 /**
@@ -22,21 +23,27 @@ trait HasCrudMethods
 
     public function list()
     {
-        $entities = $this->service()->fetchMultiple($this->input);
+        $input = Request::all();
+
+        $entities = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($entities);
     }
 
     public function create()
     {
-        $entity = $this->service()->create($this->input);
+        $input = Request::all();
+
+        $entity = $this->service()->create($input);
 
         return ApiResponse::json($entity);
     }
 
     public function update(string $id)
     {
-        $entity = $this->service()->update($id, $this->input);
+        $input = Request::all();
+
+        $entity = $this->service()->update($id, $input);
 
         return ApiResponse::json($entity);
     }

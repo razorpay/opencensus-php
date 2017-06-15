@@ -24,18 +24,21 @@ class Provider
             // Todo
         ],
         Provider::KOTAK     => [
-            'RZRP',
-            'RAZR',
             'RAZO',
+            // 'RZRP',
+            // 'RAZR',
+            //
             // This is to be used for our own nodal account,
             // DO NOT REFUND PAYMENTS MADE HERE
             // 'RZRN',
         ],
         Provider::VVS       => [
             'RAZO',
-            'RAZP',
-            'RZPY',
         ],
+    ];
+
+    const DEFAULT_HANDLE_MAPPING = [
+        'RAZO' => 'RPAY',
     ];
 
     // The default details are fixed by each provider, most specifically

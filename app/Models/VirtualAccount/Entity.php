@@ -110,7 +110,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NAME]) === false)
         {
-            $input[self::NAME] = $this->merchant->getBillingLabel().' Virtual Account';
+            $input[self::NAME] = $this->merchant->getBillingLabel().' Account';
         }
     }
 

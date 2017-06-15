@@ -51,7 +51,7 @@ class Service extends Base\Service
         return $this->virtualAccount->toArrayPublic();
     }
 
-    public function getSingle(string $id)
+    public function fetch(string $id)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -65,7 +65,7 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
-    public function getMultiple(array $input)
+    public function fetchMultiple(array $input)
     {
         $virtualAccounts = $this->repo->virtual_account
                                 ->fetch($input, $this->merchant->getId());
@@ -73,7 +73,7 @@ class Service extends Base\Service
         return $virtualAccounts->toArrayPublic();
     }
 
-    public function edit(string $id, array $input)
+    public function update(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);
 
