@@ -474,9 +474,7 @@ class Entity extends Base\PublicEntity
 
         $last4 = $this->getLast4();
 
-        $blackListedIins = Card\BlackList::BLOCKED_IIN;
-
-        if (in_array($iin, $blackListedIins) === true)
+        if ($this->iinRelation->isEnabled() === false)
         {
             return true;
         }

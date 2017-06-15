@@ -846,7 +846,7 @@ trait Authorize
 
     protected function validateBlockedInternationalCard(Card\Entity $card)
     {
-        if ($card->isBlocked())
+        if ($card->isBlocked() === true)
         {
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
