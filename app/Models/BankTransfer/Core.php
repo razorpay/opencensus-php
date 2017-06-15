@@ -12,4 +12,14 @@ class Core extends Base\Core
 
         return $bankTransfer;
     }
+
+    public function notify(Entity $bankTransfer)
+    {
+        if ($bankTransfer->isNotified() === false)
+        {
+            $bankTransfer->setNotified(true);
+
+            $this->repo->saveOrFail($bankTransfer);
+        }
+    }
 }

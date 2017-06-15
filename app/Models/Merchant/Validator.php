@@ -71,7 +71,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::HANDLE                      => 'sometimes|filled|alpha_num|between:2,4',
+        Entity::HANDLE                      => 'sometimes|filled|alpha_num|size:4',
     ];
 
     protected static $actionRules = [

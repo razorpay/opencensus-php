@@ -889,14 +889,6 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        // Captured payments of transfer/bank_transfer cannot be refunded via direct API requests
-        if (($payment->isTransfer() === true) or
-            ($payment->isBankTransfer() === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
-        }
-
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
             // Determine if transfer reversals should be processed along with the refund
@@ -913,6 +905,14 @@ trait Refund
 
     protected function validatePaymentForRefund(Payment\Entity $payment)
     {
+        // Captured payments of transfer/bank_transfer cannot be refunded via direct API requests
+        if (($payment->isTransfer() === true) or
+            ($payment->isBankTransfer() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->isFullyRefunded() === true)
         {
             throw new Exception\BadRequestException(

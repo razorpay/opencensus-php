@@ -693,7 +693,6 @@ class Processor
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
-        s($input);
         $payment->build($input);
 
         if ($this->merchant->isFeeBearerCustomer())
