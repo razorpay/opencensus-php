@@ -79,8 +79,9 @@ class CreateVirtualAccountsTable extends Migration
                   ->on(Table::BANK_ACCOUNT)
                   ->on_delete('restrict');
 
-            $table->index(VirtualAccount::DELETED_AT);
             $table->index(VirtualAccount::VPA);
+            $table->index(VirtualAccount::CREATED_AT);
+            $table->index(VirtualAccount::DELETED_AT);
         });
     }
 

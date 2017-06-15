@@ -20,15 +20,9 @@ class Core extends Base\Core
 
         $virtualAccount->build($input);
 
-        if ($virtualAccount->getDescriptor() !== null)
-        {
-            $this->validateDescriptor($virtualAccount, $merchant);
-        }
+        $this->validateDescriptor($virtualAccount, $merchant);
 
-        if ($customer !== null)
-        {
-            $virtualAccount->customer()->associate($customer);
-        }
+        $virtualAccount->customer()->associate($customer);
 
         $this->repo->saveOrFail($virtualAccount);
 
@@ -46,6 +40,11 @@ class Core extends Base\Core
 
     protected function validateDescriptor(Entity $virtualAccount, Merchant $merchant)
     {
+        if ($virtualAccount->getDescriptor() === null)
+        {
+            return;
+        }
+
         $existingVirtualAccounts = $this->repo->virtual_account
                                         ->findActiveByDescriptorAndMerchant(
                                             $virtualAccount->getDescriptor(),

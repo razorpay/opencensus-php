@@ -168,23 +168,6 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    public function processBankTransferPayment(array $input): Payment\Entity
-    {
-        $this->repo->transaction(function() use ($input) {
-            $this->createPaymentEntity($input);
-        });
-
-        $this->processCurrencyConversions($this->payment);
-
-        $this->repo->saveOrFail($this->payment);
-
-        $this->updateAndNotifyPaymentAuthorized();
-
-        $this->autoCapturePaymentIfApplicable($this->payment);
-
-        return $this->payment;
-    }
-
     public function processAndReturnFees(array & $input)
     {
         if (isset($input['method']) === false)
@@ -691,6 +674,7 @@ class Processor
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
+        s($input);
         $payment->build($input);
 
         if ($this->merchant->isFeeBearerCustomer())

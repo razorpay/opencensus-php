@@ -127,17 +127,16 @@ class Service extends Base\Service
         {
             $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
 
-            $payment = $paymentProcessor->processBankTransferPayment($paymentInput);
+            $res = $paymentProcessor->process($paymentInput);
+
+            $payment = $this->repo->payment
+                                  ->findByPublicId($res['razorpay_payment_id']);
 
             $bankTransfer->payment()->associate($payment);
 
             $bankTransfer->merchant()->associate($this->merchant);
 
-            $payment->customer()->associate($this->virtualAccount->customer);
-
             $this->repo->saveOrFail($bankTransfer);
-
-            $this->repo->saveOrFail($payment);
 
             $this->updateVirtualAccount($bankTransfer);
         });
@@ -240,6 +239,7 @@ class Service extends Base\Service
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment::AMOUNT] = $bankTransfer->getAmount();
+        $paymentArray[Payment::CUSTOMER_ID] = $this->virtualAccount->getPublicCustomerId();
 
         return $paymentArray;
     }

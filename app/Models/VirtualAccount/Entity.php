@@ -44,10 +44,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::ENTITY,
-        self::DESCRIPTOR,
         self::STATUS,
         self::NOTES,
-        self::AMOUNT_EXPECTED,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
         self::BANK_ACCOUNT,
@@ -126,12 +124,25 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
     }
 
+    public function hasCustomer()
+    {
+        return ($this->isAttributeNotNull(self::CUSTOMER_ID));
+    }
+
     public function hasVpa()
     {
         return ($this->isAttributeNotNull(self::VPA));
     }
 
     // ----------------------- Getters -----------------------------------------
+
+    public function getPublicCustomerId()
+    {
+        if ($this->hasCustomer())
+        {
+            return Customer\Entity::getSignedId($this->getAttribute(self::CUSTOMER_ID));
+        }
+    }
 
     public function getAmountPaid()
     {
