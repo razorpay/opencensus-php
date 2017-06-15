@@ -196,7 +196,7 @@ class Repository extends Base\Repository
      *
      * @return Base\PublicCollection
      */
-    public function findByBatchIdAndIds(
+    public function findByBatchIdAndPublicIds(
         string $batchId,
         array $ids = []): Base\PublicCollection
     {
@@ -204,7 +204,9 @@ class Repository extends Base\Repository
 
         if (empty($ids) === false)
         {
-            $query->whereIn(Entity::IDS, $ids);
+            Entity::verifyIdAndSilentlyStripSignMultiple($ids);
+
+            $query->whereIn(Entity::ID, $ids);
         }
 
         return $query->get();

@@ -75,7 +75,7 @@ class BatchIssue extends BaseJob implements ShouldQueue
 
             $invoices = $this->repoManager
                              ->invoice
-                            ->findByBatchIdAndIds($this->batchId, $ids);
+                            ->findByBatchIdAndPublicIds($this->batchId, $ids);
 
             foreach ($invoices as $invoice)
             {
@@ -119,6 +119,9 @@ class BatchIssue extends BaseJob implements ShouldQueue
         bool $smsNotify,
         bool $emailNotify)
     {
+        // Setting email_status and sms_status as pending so
+        // Notifier picks them
+
         if ($emailNotify === true)
         {
             $invoice->setEmailStatus(InvoiceModel\NotifyStatus::PENDING);
@@ -131,7 +134,7 @@ class BatchIssue extends BaseJob implements ShouldQueue
 
         try
         {
-            $this->core->issueAndNotifySync($invoice, $invoice->merchant);
+            $this->core->issue($invoice, $invoice->merchant);
         }
         catch (\Throwable $e)
         {
