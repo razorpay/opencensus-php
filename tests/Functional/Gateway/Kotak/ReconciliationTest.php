@@ -65,9 +65,14 @@ class ReconciliationTest extends TestCase
 
         // Validate settlement entity
         $setl = $this->getLastEntity('settlement', true);
+
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
-        $this->assertNotNull($setl['utr']);
-        $this->assertNotNull($setl['settled_on']);
+
+        $notNullKeys = ['utr', 'settled_on', 'processed_at'];
+        foreach ($notNullKeys as $key)
+        {
+            $this->assertNotNull($setl[$key]);
+        }
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
 
@@ -115,6 +120,14 @@ class ReconciliationTest extends TestCase
         $settlement = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
         $this->assertEquals($batchFundTransfer['id'], $settlement['batch_fund_transfer_id']);
+
+        $notNullKeys = ['utr', 'processed_at'];
+        foreach ($notNullKeys as $key)
+        {
+            $this->assertNotNull($settlement[$key]);
+        }
+
+        $this->assertNull($settlement['settled_on']);
 
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);

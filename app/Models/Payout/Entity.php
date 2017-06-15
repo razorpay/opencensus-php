@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payout;
 
-use Carbon\Carbon;
-
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -39,10 +37,10 @@ class Entity extends Base\PublicEntity
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
+    const SETTLED_ON             = 'settled_on';
 
     // Public attribute
     const DESTINATION            = 'destination';
-    const SETTLED_ON             = 'settled_on';
 
     protected $entity = 'payout';
 
@@ -63,6 +61,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::NOTES,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $visible = [
@@ -84,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
+        self::PROCESSED_AT,
         self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -112,7 +113,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::DESTINATION,
         self::CUSTOMER_ID,
-        self::SETTLED_ON,
     ];
 
     protected $defaults = [
@@ -297,6 +297,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PROCESSED_AT, $date);
     }
 
+    public function setSettledOn($date)
+    {
+        $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
     public function setPublicDestinationAttribute(array & $attributes)
     {
         $type = $this->getAttribute(self::DESTINATION_TYPE);
@@ -313,18 +318,6 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
-    }
-
-    protected function setPublicSettledOnAttribute(array &$array)
-    {
-        $processedAt = $this->getAttribute(self::PROCESSED_AT);
-
-        $array[self::SETTLED_ON] = null;
-
-        if ($processedAt !== null)
-        {
-            $array[self::SETTLED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
-        }
     }
 
     public function getPricingFeatures()

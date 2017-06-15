@@ -69,6 +69,9 @@ class CreateSettlements extends Migration
             $table->integer(Settlement::PROCESSED_AT)
                   ->nullable();
 
+            $table->string(Settlement::SETTLED_ON)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);
             $table->integer(Settlement::UPDATED_AT);

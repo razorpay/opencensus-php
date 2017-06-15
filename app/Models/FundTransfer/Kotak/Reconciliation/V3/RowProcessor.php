@@ -91,9 +91,17 @@ class RowProcessor extends Base\RowProcessor
 
         $source->setUtr($utr);
         $source->setFailureReason($this->parsedData['failure_reason']);
-        $source->setStatus($this->parsedData['status']);
+        $source->setStatus($status);
         $source->setRemarks($this->parsedData['remarks']);
         $source->setProcessedAt($processedAtTimestamp);
+
+        if ($status === Attempt\Status::PROCESSED)
+        {
+            $settledOn = Carbon::createFromFormat(
+                            'd-M-y', $this->parsedData['instrument_date'])->format('d/m/Y');
+
+            $source->setSettledOn($settledOn);
+        }
 
         $source->saveOrFail();
 

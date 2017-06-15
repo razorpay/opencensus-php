@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Settlement;
 
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -27,8 +25,6 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
     const PROCESSED_AT           = 'processed_at';
-
-    // Public attribute
     const SETTLED_ON             = 'settled_on';
 
     protected static $sign = 'setl';
@@ -46,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::AMOUNT,
         self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $visible = [
@@ -63,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
+        self::PROCESSED_AT,
         self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -96,11 +94,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
-    ];
-
-    protected $publicSetters = [
-        self::ID,
-        self::SETTLED_ON,
     ];
 
     protected $hiddenInReport = [self::SETTLED_ON];
@@ -278,6 +271,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PROCESSED_AT, $date);
     }
 
+    public function setSettledOn($date)
+    {
+        $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
     // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
@@ -307,18 +305,6 @@ class Entity extends Base\PublicEntity
     protected function setRemarksAttribute($remarks)
     {
         $this->attributes[self::REMARKS] = substr($remarks, 0, 255);
-    }
-
-    protected function setPublicSettledOnAttribute(array &$array)
-    {
-        $processedAt = $this->getAttribute(self::PROCESSED_AT);
-
-        $array[self::SETTLED_ON] = null;
-
-        if ($processedAt !== null)
-        {
-            $array[self::SETTLED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
-        }
     }
 
     // ------------------------------- end mutators ----------------------------
