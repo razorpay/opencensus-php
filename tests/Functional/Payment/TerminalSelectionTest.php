@@ -288,49 +288,6 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
-    public function testTerminalChoiceonChance()
-    {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
-
-        $chances = [
-            // Chance from 96 to 100 should give First Data
-            //[ 'chanceValue' => 100,  'expected_terminal_id' => '1000FrstDataTl' ],
-            //[ 'chanceValue' => 98,  'expected_terminal_id' => '1000FrstDataTl' ],
-            //[ 'chanceValue' => 96,  'expected_terminal_id' => '1000FrstDataTl' ],
-            // Chance from 5100 to 9500 should give AxisMigs
-            ['chanceValue' => 9500, 'expected_terminal_id' => '1000AxisMigsTl'],
-            ['chanceValue' => 7000, 'expected_terminal_id' => '1000AxisMigsTl'],
-            ['chanceValue' => 5100, 'expected_terminal_id' => '1000AxisMigsTl'],
-            // Chance from 4600 to 5000 should give Cybersource axis
-            ['chanceValue' => 5000, 'expected_terminal_id' => '1000CybAxTrmnl'],
-            ['chanceValue' => 4700, 'expected_terminal_id' => '1000CybAxTrmnl'],
-            ['chanceValue' => 4600, 'expected_terminal_id' => '1000CybAxTrmnl'],
-            // Chance 4500 or below should give HDFC
-            ['chanceValue' => 4500, 'expected_terminal_id' => '1000HdfcShared'],
-            ['chanceValue' => 2000, 'expected_terminal_id' => '1000HdfcShared'],
-            ['chanceValue' => 0, 'expected_terminal_id' => '1000HdfcShared'],
-        ];
-
-        foreach ($chances as $chance)
-        {
-            $this->chanceTerminalTest($chance['chanceValue'], $chance['expected_terminal_id']);
-        }
-    }
-
-    private function chanceTerminalTest($chance, $expectedTerminalId)
-    {
-        Options::setTestChance($chance);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($expectedTerminalId, $payment['terminal_id']);
-    }
-
     public function testTerminalChoiceOnRiskyMerchant()
     {
         $this->markTestSkipped();

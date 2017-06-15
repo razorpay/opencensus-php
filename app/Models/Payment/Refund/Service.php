@@ -149,7 +149,7 @@ class Service extends Base\Service
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                             $type, $gatewayCode, $from, $to, $gateway);
 
-            return $this->generateRefundFile($refunds);
+            return $this->generateRefundFile($refunds, $email);
         }
     }
 
@@ -160,7 +160,7 @@ class Service extends Base\Service
         return Constants\Entity::$namespace[$entity] . '\\DailyFiles';
     }
 
-    protected function generateRefundFile($refunds)
+    protected function generateRefundFile($refunds, $email = null)
     {
         $count = $refunds->count();
 
@@ -184,6 +184,7 @@ class Service extends Base\Service
         }
 
         $input['data'] = $data;
+        $input['email'] = $email;
 
         $gateway = $terminal->getGateway();
 
@@ -643,11 +644,11 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function retryFailedRefunds()
+    public function retryFailedRefunds($input)
     {
         $this->trace->info(TraceCode::REFUND_RETRY_INITIATED);
 
-        $gateways = Payment\Gateway::REFUND_RETRY_GATEWAYS;
+        $gateways = (array) ($input['gateways'] ?? Payment\Gateway::REFUND_RETRY_GATEWAYS);
 
         $status = [];
 

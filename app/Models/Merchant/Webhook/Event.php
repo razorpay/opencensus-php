@@ -27,7 +27,7 @@ class Event
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 
-    protected static $events = array(
+    protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
@@ -41,9 +41,9 @@ class Event
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
-    );
+    ];
 
-    protected static $bitMap = array(
+    protected static $bitMap = [
         self::PAYMENT_AUTHORIZED        => 0x1,
         self::PAYMENT_FAILED            => 0x2,
         self::PAYMENT_CAPTURED          => 0x3,
@@ -56,14 +56,14 @@ class Event
         self::SUBSCRIPTION_OVERDUE      => 0x10,
         self::SUBSCRIPTION_HALTED       => 0x11,
         // self::SUBSCRIPTION_EXPIRED      => 0x12,
-    );
+    ];
 
     /**
      * Events which are present in the system and
      * can be enabled/disabled.
      * @var array
      */
-    protected static $names = array(
+    protected static $names = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
@@ -76,9 +76,9 @@ class Event
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
-    );
+    ];
 
-    protected static $bitPosition = array(
+    protected static $bitPosition = [
         self::PAYMENT_AUTHORIZED        => 1,
         self::PAYMENT_FAILED            => 2,
         self::PAYMENT_CAPTURED          => 3,
@@ -92,14 +92,14 @@ class Event
         self::SUBSCRIPTION_OVERDUE      => 11,
         self::SUBSCRIPTION_HALTED       => 12,
         // self::SUBSCRIPTION_EXPIRED      => 13,
-    );
+    ];
 
     /**
      * These are events which will displayed to merchants
      * for enabling/disabling.
      * @var array
      */
-    protected static $launchedEvents = array(
+    protected static $launchedEvents = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
@@ -112,7 +112,7 @@ class Event
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
-    );
+    ];
 
     /**
      * Defines the mapping to entity for respective event and also
@@ -190,18 +190,13 @@ class Event
         return ($hexEvent >> ($pos - 1)) & 1;
     }
 
-    public static function validateEventName($event)
+    public static function validateEventName(string $event): bool
     {
-        $event = strtoupper(str_replace('.', '_', $event));
-
-        return (defined(__CLASS__ . '::' . $event));
+        return (in_array($event, self::$names) === true);
     }
 
-    public static function getBitPosition($event)
+    public static function getBitPosition(string $event): int
     {
-        $event = str_replace('_', '.', $event);
-        $event = strtolower($event);
-
         return self::$bitPosition[$event];
     }
 }

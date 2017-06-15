@@ -20,9 +20,13 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      */
     protected function getReconciliationTypeForRow($row)
     {
+        // disabling refund recon for mobikwik
+        // because we have to find a way to handle partial refund
+        // and failed refunds.
+        // The information given in mobikwik recon file is not sufficient enough
         if ($row[self::COLUMN_REFUND_AMOUNT] !== 'None')
         {
-            return BaseReconciliate::REFUND;
+            return self::NA;
         }
 
         return BaseReconciliate::PAYMENT;

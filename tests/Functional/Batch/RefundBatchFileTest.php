@@ -2,16 +2,18 @@
 
 namespace RZP\Tests\Functional\Batch;
 
-use DB;
-use Mockery;
+use Mail;
 use Carbon\Carbon;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
+use Illuminate\Http\UploadedFile;
+
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Header;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use Illuminate\Http\UploadedFile;
+use RZP\Mail\Batch\RefundFile as BatchRefundFileMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\FileStore;
 
 class RefundBatchFileTest extends TestCase
 {
@@ -78,6 +80,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundFile()
     {
+        Mail::fake();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund', $entries);
@@ -87,6 +91,18 @@ class RefundBatchFileTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        // Assert that the processed file exist
+
+        $file = FileStore\Entity::where(FileStore\Entity::TYPE, FileStore\Type::BATCH_OUTPUT)
+                                ->first();
+
+        $this->assertNotNull($file);
+
+        $this->assertEquals('batch/download/' . $batch->getFileKeyWithExt(), $file->getLocation());
+        $this->assertEquals('batch/download/' . $batch->getFileKey(), $file->getName());
+
+        Mail::assertSent(BatchRefundFileMail::class);
     }
 
     public function testProcessRefundFileWithInvalidFile()
@@ -98,12 +114,6 @@ class RefundBatchFileTest extends TestCase
         $batch = $this->fixtures->create('batch:refund', $entries);
 
         $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
-
-        $filePath = $batch->getUploadFileUrl();
-        if (file_exists($filePath))
-        {
-            $success = unlink($filePath);
-        }
 
         $this->ba->appAuth();
 

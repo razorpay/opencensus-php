@@ -10,15 +10,15 @@ class Repository extends Base\Repository
 {
     protected $entity = 'batch';
 
-    protected $proxyFetchParamRules = array(
-        Entity::TYPE           => 'sometimes|in:refund',
-    );
+    protected $proxyFetchParamRules = [
+        Entity::TYPE        => 'sometimes|in:refund',
+    ];
 
-    protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
-        Entity::TYPE               => 'sometimes|in:refund',
-        Entity::STATUS             => 'sometimes|in:created,processing,processed',
-    );
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+        Entity::TYPE        => 'sometimes|in:refund',
+        Entity::STATUS      => 'sometimes|in:created,processing,processed',
+    ];
 
     public function findUnprocessedEntries($limit = 10)
     {

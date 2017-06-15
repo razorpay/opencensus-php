@@ -23,7 +23,7 @@ class Core extends Base\Core
         $admin = $this->app['basicauth']->getAdmin();
 
         // Get checker roles
-        $roleIds = $admin->roles()->getRelatedIds()->toArray();
+        $roleIds = $admin->roles()->allRelatedIds()->toArray();
 
         // We will need workflow ID and current level
         // of the action in context. So get the action first and then

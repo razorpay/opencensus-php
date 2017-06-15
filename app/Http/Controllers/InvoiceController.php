@@ -14,25 +14,18 @@ class InvoiceController extends Controller
 {
     protected $service;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Invoice\Service;
-    }
-
     public function createInvoice()
     {
         $input = Request::all();
 
-        $invoice = $this->service->create($input);
+        $invoice = $this->service('invoice')->create($input);
 
         return ApiResponse::json($invoice);
     }
 
     public function getInvoice(string $id)
     {
-        $invoice = $this->service->fetch($id);
+        $invoice = $this->service('invoice')->fetch($id);
 
         return ApiResponse::json($invoice);
     }
@@ -41,7 +34,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $invoices = $this->service->fetchMultiple($input);
+        $invoices = $this->service('invoice')->fetchMultiple($input);
 
         return ApiResponse::json($invoices);
     }
@@ -50,21 +43,21 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $invoice = $this->service->update($id, $input);
+        $invoice = $this->service('invoice')->update($id, $input);
 
         return ApiResponse::json($invoice);
     }
 
     public function issueInvoice(string $id)
     {
-        $invoice = $this->service->issue($id);
+        $invoice = $this->service('invoice')->issue($id);
 
         return ApiResponse::json($invoice);
     }
 
     public function deleteInvoice(string $id)
     {
-        $response = $this->service->delete($id);
+        $response = $this->service('invoice')->delete($id);
 
         return ApiResponse::json($response);
     }
@@ -75,7 +68,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $invoice = $this->service->addLineItems($id, $input);
+        $invoice = $this->service('invoice')->addLineItems($id, $input);
 
         return ApiResponse::json($invoice);
     }
@@ -84,14 +77,14 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $invoice = $this->service->updateLineItem($id, $lineItemId, $input);
+        $invoice = $this->service('invoice')->updateLineItem($id, $lineItemId, $input);
 
         return ApiResponse::json($invoice);
     }
 
     public function removeLineItem(string $id, string $lineItemId)
     {
-        $invoice = $this->service->removeLineItem($id, $lineItemId);
+        $invoice = $this->service('invoice')->removeLineItem($id, $lineItemId);
 
         return ApiResponse::json($invoice);
     }
@@ -100,7 +93,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        $invoice = $this->service->removeManyLineItems($id, $input);
+        $invoice = $this->service('invoice')->removeManyLineItems($id, $input);
 
         return ApiResponse::json($invoice);
     }
@@ -109,35 +102,35 @@ class InvoiceController extends Controller
 
     public function sendNotifications()
     {
-        $summary = $this->service->sendNotificationsInBulk();
+        $summary = $this->service('invoice')->sendNotificationsInBulk();
 
         return ApiResponse::json($summary);
     }
 
     public function sendNotification(string $id, string $medium)
     {
-        $data = $this->service->sendNotification($id, $medium);
+        $data = $this->service('invoice')->sendNotification($id, $medium);
 
         return ApiResponse::json($data);
     }
 
     public function cancelInvoice(string $id)
     {
-        $invoice = $this->service->cancelInvoice($id);
+        $invoice = $this->service('invoice')->cancelInvoice($id);
 
         return ApiResponse::json($invoice);
     }
 
     public function expireInvoices()
     {
-        $summary = $this->service->expireInvoices();
+        $summary = $this->service('invoice')->expireInvoices();
 
         return ApiResponse::json($summary);
     }
 
     public function getInvoiceStatus(string $id)
     {
-        $data = $this->service->fetchStatus($id);
+        $data = $this->service('invoice')->fetchStatus($id);
 
         return ApiResponse::json($data);
     }
@@ -154,7 +147,7 @@ class InvoiceController extends Controller
 
         try
         {
-            $data = $this->service->getInvoiceViewData($invoiceId);
+            $data = $this->service('invoice')->getInvoiceViewData($invoiceId);
         }
         catch (BaseException $e)
         {
@@ -172,7 +165,7 @@ class InvoiceController extends Controller
 
     public function getInvoicePdf(string $id)
     {
-        list($displayName, $path) = $this->service->getInvoicePdf($id);
+        list($displayName, $path) = $this->service('invoice')->getInvoicePdf($id);
 
         if ($path === null)
         {

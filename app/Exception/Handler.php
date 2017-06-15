@@ -9,7 +9,7 @@ use ApiResponse;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Psr\Log\LoggerInterface;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -31,9 +31,9 @@ class Handler extends ExceptionHandler
         ValidationException::class,
     ];
 
-    public function __construct(LoggerInterface $log)
+    public function __construct(Container $container)
     {
-        parent::__construct($log);
+        parent::__construct($container);
 
         $this->app = App::getFacadeRoot();
 

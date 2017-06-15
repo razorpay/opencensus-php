@@ -22,8 +22,7 @@ class Service extends Base\Service
     {
         $this->trace->info(
             TraceCode::ECOLLECT_VALIDATION_REQUEST,
-            $input
-        );
+            $input);
 
         $this->validator->validateInput('validate', $input);
 

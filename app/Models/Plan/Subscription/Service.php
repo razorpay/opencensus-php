@@ -280,7 +280,7 @@ class Service extends Base\Service
             return false;
         }
 
-        $authorizedPayments = $payments->where(Payment\Entity::STATUS, Payment\Status::AUTHORIZED, true);
+        $authorizedPayments = $payments->where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED);
 
         $authorizedPaymentsCount = $authorizedPayments->count();
 

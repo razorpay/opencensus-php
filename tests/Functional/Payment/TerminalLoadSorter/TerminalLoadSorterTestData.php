@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant;
 
 return [
     'testCreateGatewayRuleForCard' => [
@@ -530,4 +531,188 @@ return [
             ],
         ],
     ],
+
+    'testTerminalSelectionWithRule' => [
+        // rule satisfies chance value
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'gateway' => 'axis_migs',
+                    'network' => 'VISA',
+                    'load'    => 70,
+                ],
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000AxisMigsTl',
+        ],
+        // rule does not satisfy payment criteria
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'gateway' => 'axis_migs',
+                    'network' => 'MC',
+                    'load'    => 70,
+                ],
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000HdfcShared',
+        ],
+        // rule does not satisfy chance value
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'gateway' => 'axis_migs',
+                    'network' => 'VISA',
+                    'load'    => 70,
+                ],
+            ],
+            'test_chance' => 9000,
+            'expected_terminal' => '1000HdfcShared',
+        ],
+        // multiple rules present
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'gateway' => 'axis_migs',
+                    'network' => 'VISA',
+                    'load'    => 70,
+                ],
+                [
+                    'gateway' => 'hdfc',
+                    'network' => 'VISA',
+                    'load'    => 20,
+                ],
+            ],
+            'test_chance' => 4000,
+            'expected_terminal' => '1000AxisMigsTl',
+        ],
+        // rule specifying all possible details present
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'gateway'          => 'cybersource',
+                    'method_type'      => 'credit',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'gateway_acquirer' => 'hdfc',
+                    'load'             => 70
+                ]
+            ],
+            'test_chance' => 4000,
+            'expected_terminal' => '1000CybrsTrmnl'
+        ],
+        // rule present on shared account, but no rule present on merchant account
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'axis_migs',
+                    'network'     => 'VISA',
+                    'load'        => 70
+                ]
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000AxisMigsTl',
+        ],
+        // netbanking rule gives precedence to shared netbanking gateway over direct integration
+        [
+            'method' => 'netbanking',
+            'rules' => [
+                [
+                    'gateway' => 'paytm',
+                    'issuer'  => 'HDFC',
+                    'load'    => 70
+                ]
+            ],
+            'test_chance' => 4000,
+            'expected_terminal' => '1000PaytmTrmnl',
+        ],
+        // wallet payment with rule
+        [
+            'method' => 'wallet',
+            'rules' => [
+                [
+                    'gateway' => 'wallet_mobikwik',
+                    'load'    => 70,
+                ]
+            ],
+            'test_chance' => 4000,
+            'expected_terminal' => '1000MobiKwikTl',
+        ],
+    ],
+
+    'testWithMultipleRulesButNomatchingTerminal' => [
+        'method' => 'card',
+        'rules' => [
+            [
+                'gateway' => 'hdfc',
+                'network' => 'VISA',
+                'load'    => 30
+            ],
+            [
+                'gateway' => 'axis_migs',
+                'network' => 'VISA',
+                'load'    => 60
+            ],
+            [
+                'gateway' => 'cybersource',
+                'network' => 'VISA',
+                'load'    => 10
+            ]
+        ],
+        'test_chance' => 5000,
+        'expected_terminal' => '1000HdfcShared',
+    ],
+
+    'testInternationalAndDomesticPaymentsWithRules' => [
+        // domestic payment with rule applicable for both domestic / international
+        [
+            'method' => 'card',
+            'international' => false,
+            'rules' => [
+                [
+                    'gateway'       => 'hdfc',
+                    'network'       => 'VISA',
+                    'load'          => 7000
+                ]
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000HdfcShared',
+        ],
+        // international payment with rule applicable for both domestic / international
+        [
+            'method' => 'card',
+            'international' => true,
+            'rules' => [
+                [
+                    'gateway'       => 'hdfc',
+                    'network'       => 'VISA',
+                    'load'          => 7000
+                ]
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000HdfcShared',
+        ],
+        // international payment with rule applicable only for international
+        [
+            'method' => 'card',
+            'international' => true,
+            'rules' => [
+                [
+                    'gateway'       => 'hdfc',
+                    'network'       => 'VISA',
+                    'international' => true,
+                    'load'          => 7000
+                ]
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000HdfcShared',
+        ]
+    ]
 ];

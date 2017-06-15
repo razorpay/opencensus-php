@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Order;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class OrderTest extends TestCase
 {
@@ -436,6 +438,198 @@ class OrderTest extends TestCase
         $this->assertEquals($order['status'], 'paid');
 
         $this->fixtures->merchant->disableMobikwik();
+    }
+
+    public function testPartialPaymentOnOrderWithNoPartialPaymentFlag()
+    {
+        $order = $this->fixtures->create('order');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 500000;
+
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionCode(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+        $this->expectExceptionMessage(
+                'Payment amount provided does not match with the amount in order');
+
+        $payment = $this->doAuthAndGetPayment($payment);
+    }
+
+    public function testPartialPayment()
+    {
+        $order = $this->fixtures->create(
+                                    'order',
+                                    [
+                                        'payment_capture' => true,
+                                        'partial_payment' => true,
+                                    ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 500000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'captured',
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('attempted', $order['status']);
+
+        $this->assertEquals(500000, $order['amount_paid']);
+        $this->assertEquals(500000, $order['amount_due']);
+    }
+
+    /**
+     * Having run above test(made a partial payment), this test attempts to
+     * make another payment with amount greater than the current due of order.
+     */
+    public function testPartialPaymentTooMuchAmount()
+    {
+        $this->testPartialPayment();
+
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+        $payment['amount']   = 500001;
+
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionCode(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
+        $this->expectExceptionMessage(
+                'Payment amount is greater than the amount due for order');
+
+        $payment = $this->doAuthAndGetPayment($payment);
+    }
+
+    public function testMultiplePartialPayments()
+    {
+        $this->testPartialPayment();
+
+        $order = $this->getLastEntity('order');
+
+        // Order was for 1000000.
+        // Amount due: 500000, as 500000 was paid in above first payment.
+
+        // Will make another 2 payments to make amount due 0 and check the order
+        // status at both stage.
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+        $payment['amount']   = 250000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'captured',
+            'order_id' => $order['id'],
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('attempted', $order['status']);
+
+        $this->assertEquals(750000, $order['amount_paid']);
+        $this->assertEquals(250000, $order['amount_due']);
+
+        // 2nd payment >
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+        $payment['amount']   = 250000;
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals(1000000, $order['amount_paid']);
+        $this->assertEquals(0, $order['amount_due']);
+    }
+
+    public function testPartialPaymentAndRefund()
+    {
+        $this->testPartialPayment();
+
+        $payment = $this->getLastEntity('payment');
+
+        // Payment was done for 500000 (above ^). Due amount is 500000.
+
+        // Will refund the payment in 2 calls (partial refunds) and check
+        // order's attributes at both stage.
+        //
+        // Refund should not affect order's attributes in any way.
+
+        $this->refundPayment($payment['id'], 250000);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('attempted', $order['status']);
+
+        $this->assertEquals(500000, $order['amount_paid']);
+        $this->assertEquals(500000, $order['amount_due']);
+
+        // 2nd refund
+
+        $this->refundPayment($payment['id']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('attempted', $order['status']);
+
+        $this->assertEquals(500000, $order['amount_paid']);
+        $this->assertEquals(500000, $order['amount_due']);
+    }
+
+    public function testPartialPaymentAndNoAutoCapture()
+    {
+        $order = $this->fixtures->create(
+                                    'order',
+                                    [
+                                        'payment_capture' => false,
+                                        'partial_payment' => true,
+                                    ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 500000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'authorized',
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals(1, $order['attempts']);
+
+        $this->assertEquals(0, $order['amount_paid']);
+        $this->assertEquals(1000000, $order['amount_due']);
+
+        // Capture the payment
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals(500000, $order['amount_paid']);
+        $this->assertEquals(500000, $order['amount_due']);
     }
 
     public function testPaymentWithMaxPaymentCountOfferAppliedOnOrderWithNoCardSaving()

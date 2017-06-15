@@ -50,6 +50,16 @@ Now Log out and log back in once after last step.
 ##### Install docker-compose
 [Install Docker Compose](https://docs.docker.com/compose/install/)
 
+##### Login to Dockerhub
+Ensure that you have a dockerhub user that is added to the Razorpay Organization.
+ - Admin Contact: `nemo@razorpay.com`
+
+###### Mac Users
+Run Docker for Mac while signed-in as this user.
+
+###### Linux Users
+use the `docker login` command to sign-in with the aforementioned dockerhub user.
+
 ## Run docker-compose
 [Create a github PAT](https://help.github.com/articles/creating-an-access-token-for-command-line-use/), if you do not have one.
 
@@ -131,7 +141,7 @@ Available Databases:
 $ mysql -u api_user -p -P23306 -h 127.0.0.1 api_live
 ```
 
-Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the 
+Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the
 above configuration. Do note that the mysql port is going to be `23306`.
 
 
@@ -139,8 +149,3 @@ above configuration. Do note that the mysql port is going to be `23306`.
 
 Please file issues regarding Containerization on the local `api`
 issue-tracker and tag @razorpay/devops
-
-
-
-
-

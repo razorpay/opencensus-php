@@ -6,10 +6,12 @@ use App;
 use Mail;
 use Requests;
 
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 use RZP\Http\Response\Header;
+use RZP\Http\Response\StatusCode;
 
 use Http\Discovery\HttpClientDiscovery;
 use Http\Client\Common\PluginClient;
@@ -103,79 +105,20 @@ class Inferno
 
     public function sendEmail($webhook, $type)
     {
-        $mailData = array();
+        $options = [
+            'mode'         => $this->mode,
+            'type'         => $type,
+            'event'        => $this->event,
+            'errorMessage' => $this->errorMessage
+        ];
 
-        $toEmails = $webhook->merchant->getTransactionReportEmail();
+        $merchant = $webhook->merchant->toArrayPublic();
 
-        $mailData['to_emails'] = $toEmails;
+        $webhook = $webhook->toArrayPublic();
 
-        $subjectName = $webhook->merchant->getBillingLabelElseName();
+        $webhookMail = new WebhookMail($webhook, $merchant, $options);
 
-        $webhookId = $webhook->getPublicId();
-
-        $subject = 'Razorpay | ';
-
-        $mailData['url'] = $webhook->getUrl();
-        $mailData['error_message'] = $this->errorMessage;
-
-        if (empty($mailData['error_message']))
-        {
-            $mailData['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
-        }
-
-        $mailData['date'] = date('d-M-Y H:m:s T');
-
-        $eventData = json_decode($this->event, true);
-
-        $mailData['event'] = $eventData['event'];
-
-        $this->setEntityData($mailData, $eventData);
-
-        if ($type === 'failure')
-        {
-            $subject .= 'Webhook failed for ' . $subjectName;
-        }
-        else if ($type === 'deactivate')
-        {
-            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
-        }
-
-        $mailData['subject'] = $subject;
-        $mailData['mode'] = $this->mode;
-
-        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData, $webhookId)
-        {
-            $emails = $mailData['to_emails'];
-
-            $message->from('alerts@razorpay.com', 'Razorpay Webhook Support');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->subject($mailData['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::WEBHOOK);
-
-            $headers->addTextHeader(MailTags::HEADER, $webhookId);
-        });
-    }
-
-    protected function setEntityData(array & $mailData, array $eventData)
-    {
-        $event = $eventData['event'];
-
-        if (isset(Event::$eventsToEntityMap[$event]) === false)
-        {
-            return;
-        }
-
-        $entityType = Event::$eventsToEntityMap[$event];
-
-        $mailData['entity_id'] = $eventData['payload'][$entityType]['entity']['id'];
-        $mailData['field_description'] = (studly_case($entityType) . " " . "Id");
+        Mail::send($webhookMail);
     }
 
     public function getRequestHeaders($hmac)
@@ -256,7 +199,8 @@ class Inferno
      * @param array  $request Options in array format for making request
      * @param Entity $webhook Webhook Entity
      *
-     * @return boolean Success/Failure
+     * @return bool Error
+     * @throws \Throwable
      */
     public function sendRequest(array $request, Entity $webhook)
     {
@@ -323,14 +267,16 @@ class Inferno
             return $clientError;
         }
 
-        if ($response->getStatusCode() === 200)
+        $statusCode = $response->getStatusCode();
+
+        if ($this->isSuccesssfulStatusCode($statusCode) === true)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
                     'webhook_id'        => $webhook->getId(),
                     'merchant_id'       => $webhook->merchant->getId(),
-                    'response_code'     => $response->getStatusCode(),
+                    'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders()
                 ]);
 
@@ -346,16 +292,22 @@ class Inferno
         return $clientError;
     }
 
+    protected function isSuccesssfulStatusCode($statusCode)
+    {
+        return (($statusCode >= StatusCode::SUCCESS) and
+                ($statusCode < StatusCode::REDIRECTION));
+    }
+
     /**
      * This Will Trace the Webhook Data for Various Exception Response
      * Depending on exception thrown, sometime we have getResponse(),
-     * if available, then use it for logging and creating ErrorMessgage which is used to send mail
+     * if available, then use it for logging and creating ErrorMessage which is used to send mail
      *
      * @param Entity     $webhook   Webhook Entity
      * @param string     $msgPrefix Message Prefix which will be appended before $response Failure reason if any
      * @param array|null $response  Response if any
      */
-    protected function traceWebhookResponse(Entity $webhook,string $msgPrefix = '', $response = null)
+    protected function traceWebhookResponse(Entity $webhook, string $msgPrefix = '', $response = null)
     {
         $webhookData = [
             'webhook_id'        => $webhook->getId(),

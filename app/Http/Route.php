@@ -50,6 +50,7 @@ final class Route
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
+        'batch_process_by_id'                     => ['post',     'batches/{id}/process',                           'BatchController@processBatch'                                      ],
         'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
@@ -280,7 +281,7 @@ final class Route
         'order_fetch'                             => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
-        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
@@ -478,7 +479,7 @@ final class Route
         'device_verify'                           => ['post',     'upi/devices/verify',                             'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'upi/devices/{id}',                               'DeviceController@getDevice'                                        ],
         'upi_customer_bank_accounts_fetch'        => ['get',      'upi/bank_accounts/ifsc/{ifsc}',                  'CustomerController@fetchUpiBankAccounts'                           ],
-        'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                 'CustomerController@fetchBalance'                                   ],
+        'customer_balance_fetch'                  => ['post',     'upi/bank_accounts/{id}/balance',                 'CustomerController@fetchBalance'                                   ],
         'customer_bank_account_fetch'             => ['get',      'upi/bank_accounts/{id}',                         'CustomerController@fetchBankAccount'                               ],
         'reset_mpin'                              => ['put',      'upi/bank_accounts/{id}/mpin',                    'CustomerController@resetMpin'                                      ],
         'set_mpin'                                => ['post',     'upi/bank_accounts/{id}/mpin',                    'CustomerController@setMpin'                                        ],
@@ -533,16 +534,24 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
-        'tax_get'                                => ['get',      'taxes/{id}',                                      'TaxController@get'                                                 ],
-        'tax_list'                               => ['get',      'taxes',                                           'TaxController@list'                                                ],
-        'tax_create'                             => ['post',     'taxes',                                           'TaxController@create'                                              ],
-        'tax_update'                             => ['patch',    'taxes/{id}',                                      'TaxController@update'                                              ],
-        'tax_delete'                             => ['delete',   'taxes/{id}',                                      'TaxController@delete'                                              ],
-        'tax_group_get'                          => ['get',      'tax_groups/{id}',                                 'TaxGroupController@get'                                            ],
-        'tax_group_list'                         => ['get',      'tax_groups',                                      'TaxGroupController@list'                                           ],
-        'tax_group_create'                       => ['post',     'tax_groups',                                      'TaxGroupController@create'                                         ],
-        'tax_group_update'                       => ['patch',    'tax_groups/{id}',                                 'TaxGroupController@update'                                         ],
-        'tax_group_delete'                       => ['delete',   'tax_groups/{id}',                                 'TaxGroupController@delete'                                         ],
+        'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
+        'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
+        'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
+        'tax_update'                              => ['patch',    'taxes/{id}',                                     'TaxController@update'                                              ],
+        'tax_delete'                              => ['delete',   'taxes/{id}',                                     'TaxController@delete'                                              ],
+        'tax_group_get'                           => ['get',      'tax_groups/{id}',                                'TaxGroupController@get'                                            ],
+        'tax_group_list'                          => ['get',      'tax_groups',                                     'TaxGroupController@list'                                           ],
+        'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
+        'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
+        'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
+
+        // Merchant invitation routes
+        'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
+        'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],
+        'invitation_resend'                       => ['post',     'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
+        'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],
+        'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
+        'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
     ];
 
     public static $public = [
@@ -756,7 +765,6 @@ final class Route
         'merchant_fetch_webhooks',
         'merchant_post_beneficiary_file',
         'merchant_notify_holiday',
-        'merchant_fetch_users',
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
@@ -846,6 +854,7 @@ final class Route
         'invoice_send_notifications',
         'invoice_expire_bulk',
         'batch_process_file',
+        'batch_process_by_id',
         'gateway_add_priorities',
         'gateway_fetch_priorities',
         'gateway_update_priorities',
@@ -913,6 +922,7 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'merchant_fetch_users',
     ];
 
     public static $proxy = [
@@ -970,6 +980,12 @@ final class Route
         'reports_fetch_multiple',
         'file_get_signed_url',
         'reports_generate',
+        'invitation_create',
+        'invitation_fetch',
+        'invitation_resend',
+        'invitation_edit',
+        'invitation_delete',
+        'invitation_action',
     ];
 
     // These will run on internal auth with the assurance
@@ -1148,6 +1164,13 @@ final class Route
         'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
         'gateway_update_rule'              => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
+        'terminal_toggle'                  => '*',
+        'terminal_delete'                  => Permission::DELETE_TERMINAL,
+        'terminal_reassign_merchant'       => Permission::ASSIGN_MERCHANT_TERMINAL,
+        'terminal_add_merchant'            => '*',
+        'terminal_remove_merchant'         => '*',
+        'emi_plan_delete'                  => Permission::DELETE_EMI_PLAN,
+        'iin_edit'                         => Permission::EDIT_IIN_RULE,
     ];
 
     public static $direct = [
@@ -1165,8 +1188,6 @@ final class Route
         'checkout_public',
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
-        'upi_npci_request',
-        'upi_zero_call',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
@@ -1177,6 +1198,8 @@ final class Route
         'checkout_onyx',
         'checkout_hosted',
         'mock_event_tracker',
+        'upi_npci_request',
+        'upi_zero_call',
     ];
 
     public static $internalApps = [
@@ -1569,7 +1592,7 @@ final class Route
 
     public function defineAllExtraRoutes()
     {
-        $this->router->any('{all}', function ($uri)
+        $this->router->any('{all}', function ($uri = null)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');

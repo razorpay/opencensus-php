@@ -483,13 +483,45 @@ class Core extends Base\Core
         return $this->repo->merchant->getSharedAccount();
     }
 
+    public function sendBalanceEnqRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput = [
+            'device'       => $device->toArray(),
+            'customer'     => $customer->toArrayPublic(),
+            'bank_account' => $bankAccount->toArray(),
+            'gateway'        => $input
+        ];
+
+        $params = [
+            'method' =>  'ReqBalEnq',
+            'params' =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
+    }
+
+    public function sendOtpRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
+
+        $params = [
+            'method'    =>  'ReqOtp',
+            'params'    =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
+    }
+
     public function sendSetMpinRequestToGateway(
         Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
     {
-        $gatewayInput['device'] = $device->toArray();
-        $gatewayInput['customer'] = $customer->toArrayPublic();
-        $gatewayInput['bank_account'] = $bankAccount->toArray();
-        $gatewayInput['input'] = $input;
+        $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
             'method'    =>  'ReqRegMob',
@@ -504,10 +536,7 @@ class Core extends Base\Core
     public function sendResetMpinRequestToGateway(
         Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
     {
-        $gatewayInput['device'] = $device->toArray();
-        $gatewayInput['customer'] = $customer->toArrayPublic();
-        $gatewayInput['bank_account'] = $bankAccount->toArray();
-        $gatewayInput['input'] = $input;
+        $gatewayInput = $this->getGatewayInputParams($device, $customer, $bankAccount, $input);
 
         $params = [
             'method'    =>  'ReqSetCre',
@@ -517,5 +546,16 @@ class Core extends Base\Core
         $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
 
         return $response;
+    }
+
+    protected function getGatewayInputParams(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        return $gatewayInput;
     }
 }

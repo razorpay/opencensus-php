@@ -7,6 +7,7 @@ use Mail;
 use RZP\Constants\MailTags;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -90,7 +91,7 @@ class Activate extends Base\Core
 
         $org = $merchant->org;
 
-        $subjectName = $merchant->getBillingLabelElseName();
+        $subjectName = $merchant->getBillingLabel();
 
         if ($org === null)
         {
@@ -128,33 +129,9 @@ class Activate extends Base\Core
             $data['merchant']['email'] = $merchant->parent->getEmail();
         }
 
-        // Send the activation email
-        $this->app['mailer']->queue(
-            [
-                'html' => 'emails.merchant.activation',
-                'text' => 'emails.merchant.activation_text'
-            ],
-            $data,
-            function ($message) use ($data, $config, $org)
-            {
-                $message->to($data['merchant']['email']);
+        $activationMail = new ActivationMail($data, $org->toArray());
 
-                if ($org->getId() === Org\Entity::RAZORPAY_ORG_ID)
-                {
-                    $message->from($config['from_email'], $config['from_name']);
-                    $message->cc('notifications@razorpay.com');
-                }
-                else
-                {
-                    $message->from($org->getFromEmail(), $org->getDisplayName());
-                }
-
-                $message->subject($data['subject']);
-
-                $headers = $message->getHeaders();
-                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
-            }
-        );
+        Mail::queue($activationMail);
     }
 
     /**
@@ -218,6 +195,7 @@ class Activate extends Base\Core
             if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
             {
                 $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN] / 100;
+
                 $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX] / 100;
 
                 if ($amountRangeMin === 0)
@@ -315,7 +293,7 @@ class Activate extends Base\Core
      * Current checks for International, Emi and Amex
      *
      * @param array $rules Array of rules
-     * @param entity $merchant Merchant entity
+     * @param Entity $merchant Merchant entity being activated
      * @return array Array of rules
      **/
     protected function filterActiveRulesForMerchant($rules, $merchant)

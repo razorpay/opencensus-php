@@ -29,6 +29,12 @@ class CreatePaymentAnalytics extends Migration
             $table->string(Analytics::CHECKOUT_ID, Analytics::ID_LENGTH)
                   ->nullable();
 
+            $table->decimal(Analytics::RISK_SCORE, 11, 4)
+                  ->nullable();
+
+            $table->tinyInteger(Analytics::RISK_ENGINE)
+                  ->nullable();
+
             $table->smallInteger(Analytics::ATTEMPTS)
                   ->unsigned()
                   ->nullable();

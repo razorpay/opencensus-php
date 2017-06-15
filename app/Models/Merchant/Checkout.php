@@ -57,7 +57,7 @@ class Checkout
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
-        $this->checkAndAddOrderForTpv($merchant, $input, $data);
+        $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
@@ -72,23 +72,42 @@ class Checkout
         return $data;
     }
 
-    protected function checkAndAddDetailsForInvoice(
-        array $input, Merchant\Entity $merchant, array & $data)
+    protected function checkAndAddDetailsForOrder(
+        array $input,
+        Merchant\Entity $merchant,
+        array & $data)
     {
-        if (empty($input['invoice_id']) === true)
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
             return;
         }
 
-        $invoiceId = $input['invoice_id'];
+        $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $invoiceCore = new Invoice\Core;
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+    }
 
-        $invoiceData = $invoiceCore->getFormattedInvoiceData($invoiceId, $merchant);
+    protected function checkAndAddDetailsForInvoice(
+        array $input,
+        Merchant\Entity $merchant,
+        array & $data)
+    {
+        if (empty($input[Payment\Entity::INVOICE_ID]) === true)
+        {
+            return;
+        }
+
+        $invoiceId = $input[Payment\Entity::INVOICE_ID];
+
+        // Gets formatted invoice data which includes invoice and customer details.
+
+        $invoiceData = (new Invoice\Core)->getFormattedInvoiceData($invoiceId, $merchant);
 
         $data['invoice'] = $invoiceData['invoice'];
 
-        // If invoice's customer data is set, merge it to existing data
+        // - Use invoice's customer data if no customer data exists already
+        // - Override existing customer data with invoice's customer details if exists.
+
         if (isset($invoiceData['customer']))
         {
             if (isset($data['customer']))
@@ -100,6 +119,10 @@ class Checkout
                 $data['customer'] = $invoiceData['customer'];
             }
         }
+
+        // Add invoice's order details
+
+        $data['order'] = $invoiceData['order'];
     }
 
     protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
@@ -226,22 +249,6 @@ class Checkout
         if (empty($appToken) === false)
         {
             $input[Payment\Entity::APP_TOKEN] = $appToken;
-        }
-    }
-
-    protected function checkAndAddOrderForTpv(Entity $merchant, array $input, array & $data)
-    {
-        // If merchant is TPV enabled pass details for
-        // current order as part of preferences
-        if (($merchant->isTPVRequired()) and
-            (isset($input[Payment\Entity::ORDER_ID])))
-        {
-            $orderData = $this->fetchTPVOrderInfo($input);
-
-            if ($orderData !== null)
-            {
-                $data['order'] = $orderData;
-            }
         }
     }
 

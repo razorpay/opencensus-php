@@ -73,7 +73,7 @@ class Core
      */
     protected function init()
     {
-        
+
     }
 
     /**

@@ -60,7 +60,7 @@ class TaxGroupTest extends TestCase
 
         $this->startTest();
 
-        $item = $this->getLastEntity('item', true);;
+        $item = $this->getLastEntity('item', true);
 
         $this->assertNull($item['tax_group_id']);
     }

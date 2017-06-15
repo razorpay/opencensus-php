@@ -2,9 +2,11 @@
 
 namespace RZP\Gateway\Netbanking\Federal;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles extends Base\DailyFiles
 {
@@ -49,39 +51,24 @@ class DailyFiles extends Base\DailyFiles
 
     protected function sendMail($amount, $claimsFile, $refundsFile, $count = [], $email = null)
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d/m/Y');
+        $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
         $bankName = $this->getBankName();
-
-        $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
 
         $emails = $this->getEmailsToSendTo($email);
 
         $data = [
-            'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
+            'bankName'    => $bankName,
             'amount'      => $amount,
             'count'       => $count,
+            'date'        => $date,
+            'claimsFile'  => $claimsFile,
+            'refundsFile' => $refundsFile,
             'emails'      => $emails,
-            'date'        => $today,
-            'refundsFile' => $refundsFile
         ];
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName, $emails)
-        {
-            $message->from('refunds@razorpay.com', $bankName . ' Netbanking Refunds');
+        $dailyFileMail = new DailyFileMail($data);
 
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            if (empty($data['refundsFile']) === false)
-            {
-                $message->attach($data['refundsFile']['url'], ['as' => $data['refundsFile']['name']]);
-            }
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($dailyFileMail);
     }
 }

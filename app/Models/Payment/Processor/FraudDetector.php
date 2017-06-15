@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\Trace;
 use RZP\Exception;
+use RZP\Models\Payment\Analytics\Metadata;
 
 trait FraudDetector
 {
@@ -16,15 +17,19 @@ trait FraudDetector
         $riskFields = $this->getRiskDetectionField($payment);
 
         if ((isset($riskFields) === true) and
-            (isset($riskFields['riskScore']) === true) and
-            ((float) $riskFields['riskScore'] > 5))
+            (isset($riskFields['riskScore']) === true))
         {
-            $e = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
+            $this->setRiskMetadata($payment, $riskFields);
 
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+            if ((float) $riskFields['riskScore'] > 5)
+            {
+                $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
 
-            throw $e;
+                $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+                throw $e;
+            }
         }
     }
 
@@ -42,5 +47,25 @@ trait FraudDetector
         }
 
         return $response;
+    }
+
+    /**
+     * Sets risk related metadata in payment metadata
+     *
+     * @param $payment    Payment\Entity
+     * @param $riskFields array
+     * @return void
+     */
+    protected function setRiskMetadata(Payment\Entity $payment, array $riskFields)
+    {
+        $data = [
+            Metadata::RISK_SCORE  => $riskFields['riskScore'],
+            Metadata::RISK_ENGINE => Metadata::MAXMIND,
+        ];
+
+        foreach ($data as $key => $value)
+        {
+            $payment->setMetadataKey($key, $value);
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -16,9 +17,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Table;
 use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
@@ -218,7 +217,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
-        self::BASE_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -700,6 +698,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setMetadataKey($key, $value)
+    {
+        $this->metadata[$key] = $value;
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -1165,6 +1168,25 @@ class Entity extends Base\PublicEntity
         return $this->getAmount() - $this->getAmountTransferred();
     }
 
+    /**
+     * Gets adjusted amount with respect to customer fee bearer merchants.
+     * This amount is compared against the requested capture amount by merchant
+     * and a few other places.
+     *
+     * @return int
+     */
+    public function getAdjustedAmountWrtCustFeeBearer(): int
+    {
+        $amount = $this->getAmount();
+
+        if ($this->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount -= $this->getFee();
+        }
+
+        return $amount;
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -1233,7 +1255,11 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return Netbanking::getName($bankId);
+
+        if ($bankId !== null)
+        {
+            return Netbanking::getName($bankId);
+        }
     }
 
     public function getWallet()
@@ -1496,11 +1522,11 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->getRelation('localToken');
+            $token = $this->getAttribute('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->getRelation('globalToken');
+            $token = $this->getAttribute('globalToken');
         }
 
         return $token;
@@ -1756,12 +1782,12 @@ class Entity extends Base\PublicEntity
 
     public function localToken()
     {
-        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID)->withTrashed();
     }
 
     public function globalToken()
     {
-        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID)->withTrashed();
     }
 
     public function app()

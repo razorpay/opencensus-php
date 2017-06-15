@@ -110,9 +110,9 @@ trait Authorize
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                $this->createAnalyticsLog($payment);
-
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
+
+                $this->createAnalyticsLog($payment);
 
                 return $request;
             }
@@ -165,12 +165,6 @@ trait Authorize
                 $terminalData['end'] = microtime(true);
 
                 $this->recordTerminalAudit($terminalData, $payment, $retryAttempts);
-
-                if (($retry === false) or
-                    ($retryAttempts >= $maxRetryAttempts))
-                {
-                    $this->createAnalyticsLog($payment);
-                }
             }
         }
 
@@ -217,6 +211,8 @@ trait Authorize
      */
     protected function processAuthResponse($request, Payment\Entity $payment): array
     {
+        $this->createAnalyticsLog($payment);
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -263,6 +259,13 @@ trait Authorize
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
         }
+    }
+
+    protected function updateLateAuthFlag(Payment\Entity $payment)
+    {
+        $payment->setLateAuthorized(false);
+
+        $this->repo->saveOrFail($payment);
     }
 
     protected function getVerifyCaller(): string
@@ -1666,7 +1669,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
@@ -1752,6 +1755,8 @@ trait Authorize
      */
     protected function postPaymentAuthorizeProcessing(Payment\Entity $payment): array
     {
+        $this->updateLateAuthFlag($payment);
+
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
@@ -2114,10 +2119,21 @@ trait Authorize
         // A hacky way to do this would be to override the cron auth
         // with merchant auth. This might cause other issues though.
         //
-        if (($payment->getApiOrderId() !== null) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
+        if ($this->app['basicauth']->isPrivilegeAuth() === false)
         {
-            $this->fillReturnDataWithOrder($payment, $returnData);
+            if ($payment->hasSubscription() === true)
+            {
+                $this->fillReturnDataWithSubscription($payment, $returnData);
+            }
+            else if ($payment->hasOrder() === true)
+            {
+                if ($payment->order->getPaymentCapture() === true)
+                {
+                    assertTrue($payment->isCaptured() === true);
+                }
+
+                $this->fillReturnDataWithOrder($payment, $returnData);
+            }
         }
 
         if (($this->app['basicauth']->isPrivateAuth() === false) and
@@ -2127,6 +2143,13 @@ trait Authorize
         }
 
         return $returnData;
+    }
+
+    protected function fillReturnDataWithSubscription(Payment\Entity $payment, array & $data)
+    {
+        $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
+
+        $data['razorpay_signature'] = $this->getSignature($data);
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
@@ -2159,11 +2182,15 @@ trait Authorize
                 return;
             }
 
-            $trigger = $hasInvoiceAndNotSubscription ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::FAILED_TO_AUTHORIZED;
+            $trigger = $hasInvoiceAndNotSubscription ?
+                        Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
+                        Payment\Event::FAILED_TO_AUTHORIZED;
         }
         else
         {
-            $trigger = $hasInvoiceAndNotSubscription ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::AUTHORIZED;
+            $trigger = $hasInvoiceAndNotSubscription ?
+                            Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
+                            Payment\Event::AUTHORIZED;
         }
 
         $notifier->trigger($trigger);
@@ -2179,7 +2206,7 @@ trait Authorize
         {
             $notifier = new Notify($this->payment);
 
-            $trigger = Notify::CARD_SAVED;
+            $trigger = Payment\Event::CARD_SAVED;
 
             $notifier->trigger($trigger);
         }
@@ -2274,9 +2301,11 @@ trait Authorize
         {
             (new Analytics\Service)->createLog($payment);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::WARNING,
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
