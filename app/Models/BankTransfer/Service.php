@@ -89,7 +89,7 @@ class Service extends Base\Service
 
         $this->validateProviderIp($this->provider, $this->ip);
 
-        $this->validator->validateInput('notify', $input);
+        $this->validator->validateInput('create', $input);
 
         $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
 
@@ -133,11 +133,13 @@ class Service extends Base\Service
 
             $bankTransfer->merchant()->associate($this->merchant);
 
+            $payment->customer()->associate($this->virtualAccount->customer);
+
             $this->repo->saveOrFail($bankTransfer);
 
-            $this->updateVirtualAccount($bankTransfer);
+            $this->repo->saveOrFail($payment);
 
-            $this->app['events']->fire('api.payment.captured', [$payment]);
+            $this->updateVirtualAccount($bankTransfer);
         });
     }
 
@@ -242,15 +244,15 @@ class Service extends Base\Service
         return $paymentArray;
     }
 
-    protected function validateProviderIp(string $app, string $ip)
+    protected function validateProviderIp(string $provider, string $ip)
     {
-        if (Provider::validateIp($app, $ip) === false)
+        if (Provider::validateIp($provider, $ip) === false)
         {
             $this->trace->error(
-                TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
+                TraceCode::BANK_TRANSFER_IP_VALIDATION_FAILED,
                 [
-                    'app' => $app,
-                    'ip'  => $ip,
+                    'provider' => $provider,
+                    'ip'       => $ip,
                 ]
             );
 

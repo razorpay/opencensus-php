@@ -5,11 +5,13 @@ namespace RZP\Models\VirtualAccount;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use NotesTrait;
 
     const ID                   = 'id';
     const MERCHANT_ID          = 'merchant_id';
@@ -23,6 +25,7 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const VPA                  = 'vpa';
     const CUSTOMER_ID          = 'customer_id';
+    const NOTES                = 'notes';
 
     const RECEIVER_TYPE        = 'receiver_type';
     const BANK_ACCOUNT         = 'bank_account';
@@ -32,6 +35,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::NAME,
         self::STATUS,
+        self::NOTES,
         self::DESCRIPTOR,
         self::AMOUNT_EXPECTED,
     ];
@@ -42,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::DESCRIPTOR,
         self::STATUS,
+        self::NOTES,
         self::AMOUNT_EXPECTED,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
@@ -69,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RECEIVED      => 0,
         self::AMOUNT_PAID          => 0,
         self::AMOUNT_REVERSED      => 0,
+        self::NOTES                => [],
     ];
 
     protected static $modifiers = [

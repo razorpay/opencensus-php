@@ -13,7 +13,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTOR      => 'sometimes|filled|alpha_num|between:5,10',
         Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',
-        Entity::RECEIVER_TYPE   => 'sometimes|filled|array'
+        Entity::RECEIVER_TYPE   => 'sometimes|filled|array',
+        ENTITY::NOTES           => 'sometimes|notes',
     ];
 
     protected static $editRules = [

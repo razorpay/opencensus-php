@@ -95,6 +95,34 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(0, $response['count']);
     }
 
+    public function testVirtualAccountPay()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(5000, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(10000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+    }
+
+    public function testVirtualAccountForCustomer()
+    {
+        $virtualAccount = $this->createVirtualAccount(['customer_id' => 'cust_100000customer']);
+
+        $this->assertEquals('cust_100000customer', $virtualAccount['customer_id']);
+
+        $this->payVirtualAccount($virtualAccount['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+    }
+
     public function testWebhookOnVirtualAccountPay()
     {
         $virtualAccount = $this->createVirtualAccount();
@@ -111,6 +139,8 @@ class VirtualAccountTest extends TestCase
         $this->mockInfernoFire(function ($data) use ($testData)
         {
             $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('payment.captured', $data['event']['event']);
 
             $this->assertArraySelectiveEquals($testData, $data);
 

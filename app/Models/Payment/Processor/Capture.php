@@ -481,7 +481,7 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
-        $this->eventPaymentCaptured();
+        $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
 
@@ -498,8 +498,10 @@ trait Capture
      *
      * @return null
      */
-    protected function eventPaymentCaptured()
+    protected function triggerPaymentCapturedEvents()
     {
+        $this->eventPaymentCaptured();
+
         $this->eventOrderPaid();
 
         $this->eventInvoicePaid();
@@ -539,6 +541,13 @@ trait Capture
         }
 
         $this->app['events']->fire('api.invoice.paid', array($payment));
+    }
+
+    protected function eventPaymentCaptured()
+    {
+        $payment = $this->payment;
+
+        $this->app['events']->fire('api.payment.captured', array($payment));
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)

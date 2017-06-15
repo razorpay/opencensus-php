@@ -178,11 +178,7 @@ class Processor
 
         $this->repo->saveOrFail($this->payment);
 
-        $this->updatePaymentAuthorized();
-
-        $this->eventPaymentAuthorized();
-
-        $this->notifyAuthorized(false);
+        $this->updateAndNotifyPaymentAuthorized();
 
         $this->autoCapturePaymentIfApplicable($this->payment);
 

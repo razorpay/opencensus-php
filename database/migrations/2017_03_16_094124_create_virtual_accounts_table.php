@@ -32,6 +32,8 @@ class CreateVirtualAccountsTable extends Migration
             $table->string(VirtualAccount::DESCRIPTOR)
                   ->nullable();
 
+            $table->text(VirtualAccount::NOTES);
+
             $table->integer(VirtualAccount::AMOUNT_EXPECTED)
                   ->nullable();
 

@@ -2614,11 +2614,6 @@ trait Authorize
 
             $payment->setAuthorizeTimestamp();
 
-            if ($payment->terminal !== null)
-            {
-                $payment->terminal->incrementUsedCount();
-            }
-
             $this->updateAcquirerData($payment, $data);
 
             // If payment was earlier failed, then that means it's

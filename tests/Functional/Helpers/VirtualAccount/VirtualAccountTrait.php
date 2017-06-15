@@ -83,12 +83,11 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function payVirtualAccount(string $virtualAccountId, array $paymentArray = null)
+    private function payVirtualAccount(string $virtualAccountId, array $paymentArray = [])
     {
-        if ($paymentArray === null)
-        {
-            $paymentArray = $this->getDefaultBankTransferArray();
-        }
+        $defaultPaymentArray = $this->getDefaultBankTransferArray();
+
+        $paymentArray = array_merge($defaultPaymentArray, $paymentArray);
 
         $response = $this->fetchVirtualAccount($virtualAccountId);
 
@@ -129,6 +128,9 @@ trait VirtualAccountTrait
             'name'            => 'Test virtual account',
             'amount_expected' => 10000,
             'receiver_type'   => 'bank_account',
+            'notes'           => [
+                'a' => 'b',
+            ],
         ];
     }
 }

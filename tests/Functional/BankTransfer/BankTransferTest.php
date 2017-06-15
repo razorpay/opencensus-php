@@ -29,8 +29,6 @@ class BankTransferTest extends TestCase
 
         $this->bankAccount = $this->createVirtualAccount();
 
-        $this->customer = $this->getEntityById('customer', 'cust_100000customer');
-
         $vvsSecret = \Config::get('applications.vvs.secret');
 
         $this->ba->appAuth('rzp_test', $vvsSecret);

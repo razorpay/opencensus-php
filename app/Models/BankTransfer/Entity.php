@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
         self::NOTIFIED => 'bool',
     ];
 
-    protected static $modifiers = [
+    protected static $generators = [
         self::UTR,
     ];
 
@@ -81,15 +81,13 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\VirtualAccount\Entity');
     }
 
-    // ----------------------- Modifers ----------------------------------------
+    // ----------------------- Generators --------------------------------------
 
     // Kotak is sending us transaction_id instead of UTR
     // We unset this and set UTR early in the flow
-    public function modifyUtr(& $input)
+    public function generateUtr($input)
     {
-        $input[self::UTR] = $input[self::REQ_UTR];
-
-        unset($input[self::REQ_UTR]);
+        $this->setAttribute(self::UTR, $input[self::REQ_UTR]);
     }
 
     // ----------------------- Getters -----------------------------------------

@@ -13,18 +13,6 @@ class Validator extends Base\Validator
         Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
         Entity::PAYEE_IFSC     => 'required|string|size:11',
         Entity::MODE           => 'required|custom',
-        Entity::UTR            => 'required|string|max:30',
-        Entity::TIME           => 'required|epoch',
-        Entity::AMOUNT         => 'required|integer|min:0',
-        Entity::DESCRIPTION    => 'sometimes|string|max:100',
-    ];
-
-    protected static $notifyRules = [
-        Entity::PAYER_ACCOUNT  => 'required|string|max:20',
-        Entity::PAYER_IFSC     => 'required|string|size:11',
-        Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
-        Entity::PAYEE_IFSC     => 'required|string|size:11',
-        Entity::MODE           => 'required|custom',
         Entity::REQ_UTR        => 'required|string|max:30',
         Entity::TIME           => 'required|epoch',
         Entity::AMOUNT         => 'required|integer|min:0',
