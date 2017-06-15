@@ -20,10 +20,13 @@ use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
-    const PDF_PREFIX = 'pdfs/';
-
     use NotesTrait;
     use SoftDeletes;
+
+    /**
+     * Prefix for pdf file name
+     */
+    const PDF_PREFIX = 'pdfs/';
 
     // ------------------ Entity Keys --------------------------------
 
@@ -241,7 +244,6 @@ class Entity extends Base\PublicEntity
         self::PAID_AT,
         self::CANCELLED_AT,
         self::CUSTOMER_DETAILS,
-        self::LINE_ITEMS,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
@@ -315,7 +317,6 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::ENTITY,
         self::CUSTOMER_DETAILS,
-        self::LINE_ITEMS,
         self::PAYMENT_ID,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -856,20 +857,6 @@ class Entity extends Base\PublicEntity
         }
 
         return $customerDetails;
-    }
-
-    /**
-     * TODO: Remove this post expand pr is merged. Also remove from $appends.
-     *
-     * @return Base\PublicCollection
-     */
-    protected function getLineItemsAttribute(): array
-    {
-        $lineItems = $this->lineItems()->with(LineItem\Entity::TAXES)
-                                       ->getResults()
-                                       ->toArrayPublicEmbedded();
-
-        return $lineItems;
     }
 
     protected function getPaymentIdAttribute()

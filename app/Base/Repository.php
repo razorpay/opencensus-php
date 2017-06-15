@@ -18,6 +18,8 @@ use RZP\Jobs\DispatchRouter;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    use RepositoryFetch;
+
     /**
      * Delay in making es job available for queue consumer.
      * Value is in seconds.
@@ -30,7 +32,14 @@ class Repository extends \Razorpay\Spine\Repository
      */
     const ES_JOB_DELAY = 3;
 
-    use RepositoryFetch;
+    /**
+     * @move
+     *
+     * Query parameter: Holds list of relations to be
+     * eager loaded when doing getting entity(s).
+     *
+     */
+    const EXPAND       = 'expand';
 
     protected $app;
 
@@ -41,6 +50,15 @@ class Repository extends \Razorpay\Spine\Repository
     protected $trace;
 
     protected $manager;
+
+    /**
+     * @move
+     *
+     * List of relations to be eager loaded when entity(s) is fetched.
+     *
+     * @var array
+     */
+    protected $expands = [];
 
     /**
      * Corresponding esRepo instance of entity.
@@ -61,6 +79,68 @@ class Repository extends \Razorpay\Spine\Repository
         $this->auth = $this->app['basicauth'];
 
         $this->repo = $this->app['repo'];
+    }
+
+    /**
+     * @move
+     *
+     * @return BuilderEx
+     */
+    public function newQuery()
+    {
+        $query = parent::newQuery();
+
+        if (empty($this->expands) === false)
+        {
+            $query->with(camel_case_array($this->expands));
+        }
+
+        return $query;
+    }
+
+    /**
+     * @move
+     *
+     */
+    public function reload(& $entity)
+    {
+        $reloadedEntity = $this->findOrFail($entity->getKey());
+
+        $attributes = $reloadedEntity->getAttributes();
+        $relations  = $reloadedEntity->getRelations();
+
+        $entity->setRawAttributes($attributes, true)
+               ->setRelations($relations);
+
+        return $entity;
+    }
+
+    /**
+     * @move
+     */
+    public function getExpands(): array
+    {
+        return $this->expands;
+    }
+
+    /**
+     * @move
+     */
+    public function setExpands(array $expands): Repository
+    {
+        $this->expands = $expands;
+
+        return $this;
+    }
+
+    /**
+     * @move
+     */
+    public function addToExpands(array $expands): Repository
+    {
+        $this->expands = array_merge($this->expands, $expands);
+
+        return $this;
     }
 
     public static function getTableNameForEntity(string $entity)

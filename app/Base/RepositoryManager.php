@@ -101,13 +101,7 @@ class RepositoryManager extends \Illuminate\Support\Manager
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
-        $reloadedEntity = $repo->findOrFail($entity->getKey());
-
-        $attributes = $reloadedEntity->getAttributes();
-
-        $entity->setRawAttributes($attributes, true);
-
-        return $entity;
+        return $repo->reload($entity);
     }
 
     public function determineLiveOrTestModeForEntity($id, $entity)

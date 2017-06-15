@@ -42,13 +42,14 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
                                             $this->userId,
-                                            $this->userRole);
+                                            $this->userRole,
+                                            $input);
 
         return $invoice->toArrayPublic();
     }
