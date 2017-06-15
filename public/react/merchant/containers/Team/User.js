@@ -12,7 +12,7 @@ import {
 } from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
+@connect(state => state.session, {
   fetchTeamDetails,
   updateUser,
   removeUser,
@@ -22,7 +22,7 @@ const ROLES = without(roles, 'owner');
 export default class EditUser extends Component {
   componentWillMount() {
     this.props.initialize({
-      role: this.props.user.pivot.role,
+      role: this.props.user.userRole,
     });
   }
 
@@ -30,7 +30,9 @@ export default class EditUser extends Component {
     return this.props
       .updateUser(this.props.user.id, fieldProps)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({
+          merchant_id: this.props.user.current,
+        });
         this.props.showNotification({
           type: 'success',
           message: "Team member's role has been changed successfully",
@@ -48,7 +50,9 @@ export default class EditUser extends Component {
     return this.props
       .removeUser(this.props.user.id)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({
+          merchant_id: this.props.user.current,
+        });
         this.props.showNotification({
           type: 'success',
           message: 'Team member has been removed successfully',

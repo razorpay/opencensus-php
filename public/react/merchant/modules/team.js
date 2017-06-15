@@ -9,12 +9,44 @@ const INVITATION_REMOVE = 'INVITATION_REMOVE';
 const USER_UPDATE = 'USER_UPDATE';
 const USER_REMOVE = 'USER_REMOVE';
 
+const getMerchantInvitationsData = () => {
+  var params = {
+    route_name: 'invitation_fetch',
+  };
+
+  return ajax({
+    url: '/user/generic',
+    data: params,
+    appendModeInURL: false,
+  });
+};
+
+const getMerchantUsersData = merchant_id => {
+  var params = {
+    route_name: 'merchant_fetch_users',
+    url_params: JSON.stringify({
+      '{id}': merchant_id,
+    }),
+  };
+
+  return ajax({
+    url: '/user/generic',
+    data: params,
+    appendModeInURL: false,
+  });
+};
+
 export const fetchTeamDetails = params => {
   return {
     type: TEAM_FETCH,
-    payload: ajax({
-      url: '/settings/merchants/owned',
-      appendModeInURL: false,
+    payload: Promise.all([
+      getMerchantInvitationsData(),
+      getMerchantUsersData(params.merchant_id),
+    ]).then(values => {
+      if (!values[0].success || !values[1].success) {
+        throw "Couldn't load team details";
+      }
+      return values;
     }),
   };
 };
@@ -112,10 +144,8 @@ export const removeUser = userId => {
 
 let initialState = {
   loading: true,
-  team: {
-    invitations: [],
-    users: [],
-  },
+  invitations: [],
+  users: [],
   error: null,
 };
 
@@ -127,7 +157,8 @@ export default function(state = initialState, action) {
     case `${TEAM_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
-        team: action.payload.data,
+        invitations: action.payload[0].data,
+        users: action.payload[1].data,
       });
 
     case `${TEAM_FETCH}::ERROR`:
