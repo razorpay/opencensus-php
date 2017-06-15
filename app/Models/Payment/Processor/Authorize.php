@@ -1535,7 +1535,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
