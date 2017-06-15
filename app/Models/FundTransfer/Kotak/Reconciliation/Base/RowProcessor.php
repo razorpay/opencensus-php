@@ -9,6 +9,7 @@ use Mail;
 use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
+use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
@@ -162,7 +163,7 @@ class RowProcessor extends BaseCore
 
     protected function sendReconciliationFailureEmail()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->isMailEnabled() === false)
         {
             return;
         }
@@ -184,21 +185,23 @@ class RowProcessor extends BaseCore
 
         $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
 
-        Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
+        $settlementFailureMail = new SettlementFailureMail($data);
+
+        Mail::queue($settlementFailureMail);
+    }
+
+    protected function isMailEnabled(): bool
+    {
+        if ($this->app->environment('dev', 'testing') === true)
         {
-            $emails = $data['merchant_email'];
+            return true;
+        }
 
-            $message->from('care@razorpay.com', 'Razorpay Settlement Support');
+        if ($this->mode === Mode::TEST)
+        {
+            return false;
+        }
 
-            $message->cc('support@razorpay.com');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::SETTLEMENT_FAILURE_EMAIL);
-        });
+        return true;
     }
 }

@@ -8,6 +8,7 @@ use Config;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
+use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -83,6 +84,7 @@ class ReconciliationTest extends TestCase
 
     public function testReconciliationFailure()
     {
+        Mail::fake();
         // Mocking time to 22:30 for settlements to get processed
         Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, 'Asia/Kolkata'));
 
@@ -135,6 +137,8 @@ class ReconciliationTest extends TestCase
 
         // Resetting time
         Carbon::setTestNow();
+
+        Mail::assertSent(SettlementFailureMail::class);
 
         return $settlement;
     }
