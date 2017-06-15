@@ -12,7 +12,7 @@ return [
         'content' => [],
     ],
 
-    'validateBankTransfer' => [
+    'processBankTransfer' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
         'content' => [],
@@ -24,7 +24,7 @@ return [
         'content' => [],
     ],
 
-    'validateOrNotifyBankTransfer' => [
+    'processOrNotifyBankTransfer' => [
         'url'     => null,
         'method'  => 'post',
         'content' => [
@@ -40,7 +40,7 @@ return [
         ],
     ],
 
-    'testBankTransferValidateFailure' => [
+    'testBankTransferProcessFailure' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',

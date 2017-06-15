@@ -15,11 +15,11 @@ class BankTransferController extends Controller
         $this->service = BankTransfer\Service::class;
     }
 
-    public function validateBankTransfer()
+    public function processBankTransfer()
     {
         $input = Request::all();
 
-        $response = $this->service()->validate($input);
+        $response = $this->service()->process($input);
 
         return ApiResponse::json($response);
     }

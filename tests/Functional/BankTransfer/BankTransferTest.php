@@ -34,13 +34,13 @@ class BankTransferTest extends TestCase
         $this->ba->appAuth('rzp_test', $vvsSecret);
     }
 
-    public function testBankTransferValidate()
+    public function testBankTransferProcess()
     {
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
-        // Validate API always returns true
-        $response = $this->validateBankTransfer($accountNumber, $ifsc);
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
@@ -58,13 +58,13 @@ class BankTransferTest extends TestCase
         $this->assertEquals('pay_'.$bankTransfer['payment_id'], $payment['id']);
     }
 
-    public function testBankTransferValidateDuplicateUtr()
+    public function testBankTransferProcessDuplicateUtr()
     {
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
-        // Validate API always returns true
-        $response = $this->validateBankTransfer($accountNumber, $ifsc);
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
@@ -83,8 +83,8 @@ class BankTransferTest extends TestCase
 
         $utr = $response['transaction_id'];
 
-        // Validate API always returns true
-        $response = $this->validateBankTransfer($accountNumber, $ifsc, $utr);
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc, $utr);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
@@ -96,25 +96,25 @@ class BankTransferTest extends TestCase
         $this->assertNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferValidateInvalidAccount()
+    public function testBankTransferProcessInvalidAccount()
     {
         $accountNumber = 'RAZORPINVALIDACCOUNT';
         $ifsc = $this->bankAccount['ifsc'];
 
-        // Validate API always returns true
-        $response = $this->validateBankTransfer($accountNumber, $ifsc);
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
     }
 
-    public function testBankTransferValidateFailure()
+    public function testBankTransferProcessFailure()
     {
         $this->startTest();
     }
 
     public function testBankTransferNotify()
     {
-        $this->testBankTransferValidate();
+        $this->testBankTransferProcess();
 
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -143,7 +143,7 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferNotifyAgain()
     {
-        $this->testBankTransferValidate();
+        $this->testBankTransferProcess();
 
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -199,17 +199,17 @@ class BankTransferTest extends TestCase
         return $response['bank_account'];
     }
 
-    protected function validateBankTransfer($accountNumber, $ifsc, $utr = null)
+    protected function processBankTransfer($accountNumber, $ifsc, $utr = null)
     {
-        return $this->validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
+        return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
     protected function notifyBankTransfer($accountNumber, $ifsc, $utr = null)
     {
-        return $this->validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
+        return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
-    protected function validateOrNotifyBankTransfer($accountNumber, $ifsc, $utr)
+    protected function processOrNotifyBankTransfer($accountNumber, $ifsc, $utr)
     {
         $request = $this->testData[__FUNCTION__];
 

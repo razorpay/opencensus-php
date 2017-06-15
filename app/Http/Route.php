@@ -166,7 +166,7 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
-        'bank_transfer_validate'                  => ['post',     'ecollect/validate',                              'BankTransferController@validateBankTransfer'                       ],
+        'bank_transfer_process'                   => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@edit'                                     ],
@@ -836,7 +836,7 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
-        'bank_transfer_validate',
+        'bank_transfer_process',
         'bank_transfer_notify',
         'iin_fetch_by_iin',
         'card_update_saved',
@@ -1265,17 +1265,17 @@ final class Route
         ],
 
         'kotak' => [
-            'bank_transfer_validate',
+            'bank_transfer_process',
             'bank_transfer_notify',
         ],
 
         'yesbank' => [
-            'bank_transfer_validate',
+            'bank_transfer_process',
             'bank_transfer_notify',
         ],
 
         'vvs' => [
-            'bank_transfer_validate',
+            'bank_transfer_process',
             'bank_transfer_notify',
         ],
 

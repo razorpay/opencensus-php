@@ -39,10 +39,10 @@ class Service extends Base\Service
         $this->ip = $this->app['request']->getRealClientIp();
     }
 
-    public function validate(array $input): array
+    public function process(array $input): array
     {
         $this->trace->info(
-            TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
+            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
             $input
         );
 
@@ -57,10 +57,10 @@ class Service extends Base\Service
 
             $this->setMerchant();
 
-            $this->validateExpectedBankTransfer($bankTransfer);
+            $this->processExpectedBankTransfer($bankTransfer);
 
             $this->trace->info(
-                TraceCode::BANK_TRANSFER_VALIDATION_SUCCESSFUL,
+                TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
                 $bankTransfer->toArrayPublic()
             );
         }
@@ -119,7 +119,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function validateExpectedBankTransfer(Entity $bankTransfer)
+    protected function processExpectedBankTransfer(Entity $bankTransfer)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
@@ -156,7 +156,7 @@ class Service extends Base\Service
         }
 
         $this->trace->error(
-            TraceCode::BANK_TRANSFER_VALIDATION_DUPLICATE_UTR,
+            TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR,
             [
                 'message'           => 'Duplicate UTR received',
                 'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
@@ -174,7 +174,7 @@ class Service extends Base\Service
         if ($this->virtualAccount === null)
         {
             $this->trace->info(
-                TraceCode::BANK_TRANSFER_VALIDATION_FAILED,
+                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 [
                     'message'      => 'Invalid account number',
                     'bankTransfer' => $bankTransfer->toArrayPublic(),
