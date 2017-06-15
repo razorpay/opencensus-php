@@ -606,7 +606,11 @@ class FeeCalculator
     {
         list($percent, $fixed) = $rule->getRates();
 
+        list($min, $max) = $rule->getMinMaxRates();
+
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
+
+        $fee = $this->compareBoundsAndGetFee($fee,$min, $max);
 
         $fee = (int) ceil($fee);
 
@@ -719,5 +723,30 @@ class FeeCalculator
         $denominator = 10000 + $taxPercentage;
 
         return ceil($numerator / $denominator);
+    }
+
+    /**
+      * Checks for the min_rate and max_rate against fee.
+      * If fee is less than min_rate, then min_rate will be charged.
+      * If max_rate is available and fee is above max_rate,
+      *  then max_rate will be charged.
+      * @param int $fee
+      * @param int $min
+      * @param int $max
+      * @return int
+      */
+    protected function compareBoundsAndGetFee($fee, $min, $max) : int
+    {
+        if ($fee < $min)
+        {
+            $fee = $min;
+        }
+
+        if ((is_null($max) === false) and ($fee > (int) $max))
+        {
+            $fee = $max;
+        }
+
+        return $fee;
     }
 }

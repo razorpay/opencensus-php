@@ -25,16 +25,20 @@ class Entity extends Base\PublicEntity
     const AMOUNT_RANGE_MIN      = 'amount_range_min';
     const AMOUNT_RANGE_MAX      = 'amount_range_max';
 
-
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
+
+    // Min And Max Rate
+    const MIN_RATE              = 'min_rate';
+    const MAX_RATE              = 'max_rate';
+
     const EXPIRED_AT            = 'expired_at';
 
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::PLAN_ID,
         self::PLAN_NAME,
@@ -49,7 +53,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_MIN,
         self::AMOUNT_RANGE_MAX,
         self::PERCENT_RATE,
-        self::FIXED_RATE);
+        self::FIXED_RATE,
+        self::MIN_RATE,
+        self::MAX_RATE
+    ];
+
+    protected $casts = [
+        self::MAX_RATE,
+    ];
 
     protected $entity = 'pricing';
 
@@ -73,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ISSUER        => null,
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
+        self::MIN_RATE              => 0,
         self::AMOUNT_RANGE_ACTIVE   => '0');
 
     const ZERO_PRICING = '10ZeroPricingP';
@@ -175,6 +187,11 @@ class Entity extends Base\PublicEntity
         return [$this->getPercentRate(), $this->getFixedRate()];
     }
 
+    public function getMinMaxRates()
+    {
+        return [$this->getMinRate(), $this->getMaxRate()];
+    }
+
     public function getPlanId()
     {
         return $this->getAttribute(self::PLAN_ID);
@@ -231,6 +248,16 @@ class Entity extends Base\PublicEntity
     public function getPercentRate()
     {
         return $this->getAttribute(self::PERCENT_RATE);
+    }
+
+    public function getMinRate()
+    {
+        return $this->getAttribute(self::MIN_RATE);
+    }
+
+    public function getMaxRate()
+    {
+        return $this->getAttribute(self::MAX_RATE);
     }
 
     protected function getInternationalAttribute()
