@@ -10,36 +10,33 @@ return [
             'url'    => '/invitations',
             'method' => 'POST',
             'content' => [
-                'id'    => '8hd48md930kel3',
-                'email' => 'testTeamInvite@razorpay.com',
-                'role'  => 'manager',
-                'token' => str_random(40),
+                'email'       => 'testTeamInvite@razorpay.com',
+                'role'        => 'manager',
+                'sender_name' => 'sender_name'
             ]
         ],
         'response' => [
             'content' => [
                 'merchant_id' => '1000InviteMerc',
                 'email'       => 'testTeamInvite@razorpay.com',
-                'role'        => 'manager',
-                'id'          => '8hd48md930kel3',
+                'role'        => 'manager'
             ]
         ]
     ],
 
     'testPostSendInvitationToExistingUser' => [
         'request' => [
-            'url'    => '/invitations',
-            'method' => 'POST',
+            'url'     => '/invitations',
+            'method'  => 'POST',
             'content' => [
-                'id'    => '8hd48md930kel3',
-                'email' => 'existingInvite@razorpay.com',
-                'role'  => 'manager',
-                'token' => str_random(40),
+                'email'       => 'existingInvite@razorpay.com',
+                'role'        => 'manager',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
             ]
         ],
         'response' => [
             'content' => [
-                'id'          => '8hd48md930kel3',
                 'role'        => 'manager',
                 'user_id'     => '1000InviteUser',
                 'email'       => 'existingInvite@razorpay.com',
@@ -50,64 +47,66 @@ return [
 
     'testPostSendInvitationToInvitedUser' => [
         'request' => [
-            'url'    => '/invitations',
-            'method' => 'POST',
+            'url'     => '/invitations',
+            'method'  => 'POST',
             'content' => [
-                'id'    => '8hd48md930kel3',
-                'email' => 'testTeamInvite@razorpay.com',
-                'role'  => 'manager',
-                'token' => str_random(40),
+                'email'       => 'testTeamInvite@razorpay.com',
+                'role'        => 'manager',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
             ]
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invitation is already sent to this email',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ALREADY_INVITED,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_INVITED,
         ],
     ],
 
     'testPostSendInvitationWithInvalidRole' => [
         'request' => [
-            'url'    => '/invitations',
-            'method' => 'POST',
+            'url'     => '/invitations',
+            'method'  => 'POST',
             'content' => [
-                'id'    => '8hd48md930kel3',
-                'email' => 'testTeamInvite@razorpay.com',
-                'role'  => 'boss',
-                'token' => str_random(40),
+                'email'       => 'testTeamInvite@razorpay.com',
+                'role'        => 'boss',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
             ]
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The given role is not supported',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
         ],
     ],
 
     'testPostResendInvitation' => [
         'request' => [
-            'url'    => '/invitations/8hd48md930kel3/resend',
-            'method' => 'POST',
+            'url'     => '/invitations/8hd48md930kel3/resend',
+            'method'  => 'POST',
+            'content' => [
+                'sender_name' => 'sender_name'
+            ]
         ],
         'response' => [
             'content' => [
-                'id'          => '8hd48md930kel3',
                 'email'       => 'testTeamInvite@razorpay.com',
                 'role'        => 'manager',
                 'merchant_id' => '1000InviteMerc',
@@ -125,7 +124,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => '8hd48md930kel3',
                 'role'        => 'manager',
                 'user_id'     => '1000InviteUser',
                 'merchant_id' => '1000InviteMerc',
@@ -137,14 +135,13 @@ return [
     'testRejectInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3/reject',
-            'method' => 'POST',
+            'method'  => 'POST',
             'content' => [
                 'user_id' => '1000InviteUser',
             ],
         ],
         'response' => [
             'content' => [
-                'id'          => '8hd48md930kel3',
                 'user_id'     => '1000InviteUser',
                 'merchant_id' => '1000InviteMerc',
                 'role'        => 'manager',
@@ -156,7 +153,7 @@ return [
     'testInvalidResponseToInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3/something',
-            'method' => 'POST',
+            'method'  => 'POST',
             'content' => [
                 'user_id' => '1000InviteUser',
             ],
@@ -164,14 +161,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The selected action is invalid.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -186,9 +183,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => '8hd48md930kel3',
-                'role'  => 'finance',
-                'email' => 'update@razorpay.com',
+                'role'        => 'finance',
+                'email'       => 'update@razorpay.com',
                 'merchant_id' => '1000InviteMerc',
             ]
         ]
@@ -197,7 +193,7 @@ return [
     'testUpdateInvitationWithInvalidRole' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3',
-            'method' => 'PATCH',
+            'method'  => 'PATCH',
             'content' => [
                 'role'  => 'saheb',
             ]
@@ -205,14 +201,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_USER_ROLE_INVALID,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
         ],
     ],
@@ -220,7 +216,7 @@ return [
     'testUpdateDeletedInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3',
-            'method' => 'PATCH',
+            'method'  => 'PATCH',
             'content' => [
                 'role'  => 'finance',
             ]
@@ -228,14 +224,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The id provided does not exist',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
@@ -247,7 +243,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'          => '8hd48md930kel3',
                 'role'        => 'manager',
                 'email'       => 'delete@razorpay.com',
                 'merchant_id' => '1000InviteMerc',
@@ -263,7 +258,6 @@ return [
         'response' => [
             'content' => [
                 [
-                    'id'          => '8hd48md930kel3',
                     'role'        => 'manager',
                     'email'       => 'pending1@razorpay.com',
                     'merchant_id' => '1000InviteMerc',

@@ -53,7 +53,11 @@ class InvitationTest extends TestCase
 
     public function testPostResendInvitation()
     {
-        $this->fixtures->create('invitation');
+        $invitation = $this->fixtures->create('invitation');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/resend';
 
         $this->startTest();
     }
@@ -66,12 +70,16 @@ class InvitationTest extends TestCase
                                     'email' => 'testTeamInvite@razorpay.com'
                                 ]);
 
-        $this->fixtures->create('invitation');
+        $invitation = $this->fixtures->create('invitation');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
         $this->startTest();
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', '8hd48md930kel3')
+                     ->where('id', '=', $invitation['id'])
                      ->whereNull('deleted_at')
                      ->first();
 
@@ -94,16 +102,20 @@ class InvitationTest extends TestCase
                                     'email' => 'reject@razorpay.com'
                                 ]);
 
-        $this->fixtures->create('invitation',
+        $invitation = $this->fixtures->create('invitation',
                                 [
                                     'user_id'     => '1000InviteUser',
                                     'email'       => 'reject@razorpay.com'
                                 ]);
 
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/reject';
+
         $this->startTest();
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', '8hd48md930kel3')
+                     ->where('id', '=', $invitation['id'])
                      ->whereNotNull('deleted_at')
                      ->first();
 
@@ -119,39 +131,59 @@ class InvitationTest extends TestCase
 
     public function testInvalidResponseToInvitation()
     {
-        $this->fixtures->create('invitation', [ 'email' => 'asd']);
+        $invitation = $this->fixtures->create('invitation', [ 'email' => 'asd']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/hello';
 
         $this->startTest();
     }
 
     public function testUpdateInvitation()
     {
-        $this->fixtures->create('invitation', ['email' => 'update@razorpay.com']);
+        $invitation = $this->fixtures->create('invitation', ['email' => 'update@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'];
 
         $this->startTest();
     }
 
     public function testUpdateInvitationWithInvalidRole()
     {
-        $this->fixtures->create('invitation');
+        $invitation = $this->fixtures->create('invitation');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'];
 
         $this->startTest();
     }
 
     public function testUpdateDeletedInvitation()
     {
-        $this->fixtures->create('invitation',
+        $invitation = $this->fixtures->create('invitation',
                                 [
                                     'email'       => 'update@razorpay.com',
                                     'deleted_at'  => '144339434',
                                 ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'];
 
         $this->startTest();
     }
 
     public function testDeleteMerchantInvitation()
     {
-        $this->fixtures->create('invitation', ['email' => 'delete@razorpay.com']);
+        $invitation = $this->fixtures->create('invitation', ['email' => 'delete@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'];
 
         $this->startTest();
 
