@@ -15,12 +15,10 @@ class EsDao
 
     protected $config;
 
-    protected $mode;
-
     // Logically separated instance for heimdall
     protected $esHeimdall;
 
-    public function __construct($mode = null)
+    public function __construct()
     {
         $this->app = App::getFacadeRoot();
 
@@ -28,12 +26,6 @@ class EsDao
 
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
-
-        // Since, we are using only one index, declaring the index name
-        // in this class itself. If we have different indices based on some
-        // logic, it makes sense to move it to an appropriate class then.
-        // Live and Test have different index names in the ES cluster.
-        $this->setIndexName($mode);
 
         $this->es = $this->app['es'];
 
@@ -51,37 +43,9 @@ class EsDao
         $this->es->setHeimdallESClient([$heimdallHost]);
     }
 
-    /**
-     * @deprecated
-     *
-     * Sets index name.
-     * We only have two indexes, one for each mode. And all the notes of different
-     * entities are indexed in one of them as a type.
-     *
-     * @param string|null $mode
-     */
-    public function setIndexName(string $mode = null)
+    public function setIndexNameForMode(string $mode)
     {
-        if ($mode === null)
-        {
-            if (isset($this->app['rzp.mode']) === true)
-            {
-                $mode = $this->app['rzp.mode'];
-            }
-            else
-            {
-                $mode = Mode::TEST;
-            }
-        }
-
         $config = $this->config->get('database.es_index');
-
-        $this->app['trace']->debug(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'mode'   => $mode,
-                'config' => $config,
-            ]);
 
         $this->indexName = $config[$mode];
     }

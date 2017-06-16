@@ -16,7 +16,7 @@ class EsRepository extends \Razorpay\Spine\Repository
     /**
      * Maximum number of attempts for a given ES sync queue job.
      */
-    const MAX_JOB_ATTEMPTS = 10;
+    const MAX_JOB_ATTEMPTS = 3;
 
     /**
      * Wait for 120 s before re-queuing the failed job.
@@ -186,11 +186,10 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             $this->trace->info(TraceCode::ES_SAVE_REQUEST, $data);
 
-            // Creating a new EsDao object because,
-            // in the queue flow, the mode needs to be passed
-            // to the constructor.
-            $esDao = new Base\EsDao($mode);
-            // Calls the entity es repository
+            $esDao = new Base\EsDao();
+
+            $esDao->setIndexNameForMode($mode);
+
             $this->storeEntity($esType, $entityArray, $esDao);
 
             $job->delete();
