@@ -42,7 +42,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::post('/track_lead', 'UserController@trackLead');
-
+        Route::get('/invitations/token/{token}', 'InvitationsController@fetchByToken');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()

@@ -137,6 +137,19 @@ app
 
       if ($location.search().invitation) {
         $scope.signup.data.invitation = $location.search().invitation;
+
+        // Get invitation details
+        $http({
+          url: '/user/invitations/token/' + $scope.signup.data.invitation,
+          method: 'GET',
+        })
+          .success(function(data) {
+            if (data.success) {
+              $scope.signup.data.email = data.data.email;
+              $scope.lock_email = data.data.email ? true : false;
+            }
+          })
+          .error(function() {});
       } else if ($location.search().merchant_invitation) {
         // heimdall specific
         $scope.signup.data.merchant_invitation = $location.search().merchant_invitation;
