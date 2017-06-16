@@ -134,6 +134,7 @@ class Entity extends Base\PublicEntity
         'create',
         'update',
         'delete',
+        'issue',
         'cancelInvoice',
         'expireInvoice',
         'sendNotification',

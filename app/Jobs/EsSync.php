@@ -78,7 +78,7 @@ class EsSync extends Job implements ShouldQueue
             //
 
             if (($e instanceof LogicException) or
-                ($this->attempts() > Base\EsRepository::MAX_JOB_ATTEMPTS))
+                ($this->attempts() >= Base\EsRepository::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }

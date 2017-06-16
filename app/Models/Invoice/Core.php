@@ -159,6 +159,8 @@ class Core extends Base\Core
                 'invoice_status' => $invoice->getStatus(),
             ]);
 
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
         $this->repo->transaction(
             function() use ($invoice, $merchant)
             {

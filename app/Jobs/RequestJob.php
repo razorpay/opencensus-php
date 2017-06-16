@@ -104,7 +104,7 @@ class RequestJob extends Job implements ShouldQueue
     {
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+        if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->delete();
         }
