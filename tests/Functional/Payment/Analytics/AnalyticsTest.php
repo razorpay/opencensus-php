@@ -359,7 +359,7 @@ class AnalyticsTest extends TestCase
         $this->assertEquals('https://hello.com', $paymentAnalytic[AnalyticsEntity::REFERER]);
     }
 
-    public function testRiskScoreAnalytics()
+    public function testRiskScoreAnalyticsPaymentSuccess()
     {
         $this->mockMaxmind();
 
@@ -372,7 +372,7 @@ class AnalyticsTest extends TestCase
             'country' => 'US',
             'network' => 'MasterCard',
         ]);
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $requestServer['HTTP_REFERER'] = 'https://hello.com';
 
@@ -380,6 +380,31 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals((float) 2.4, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
+        $this->assertEquals('maxmind', $paymentAnalytic[AnalyticsEntity::RISK_ENGINE]);
+    }
+
+    public function testRiskScoreAnalyticsPaymentFailed()
+    {
+        $this->mockMaxmind();
+
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012010000000007';
+
+        $requestServer['HTTP_REFERER'] = 'https://hello.com';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment, $requestServer)
+        {
+            $this->doAuthPayment($payment, $requestServer);
+        });
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals((float) 60.3, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
         $this->assertEquals('maxmind', $paymentAnalytic[AnalyticsEntity::RISK_ENGINE]);
     }
 }
