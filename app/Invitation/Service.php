@@ -10,6 +10,7 @@ use App\User;
 use App\Merchant;
 use App\Invitation;
 use App\Mailers\MiscMailer;
+use App\Providers\GenericUser;
 
 class Service extends Base\Service
 {
@@ -148,20 +149,13 @@ class Service extends Base\Service
      */
     public function acceptInvitationForUser($inviteId, $user)
     {
-        $invitation = $this->getInvitationById($inviteId);
-
-        if (! $invitation)
-        {
-            return [static::INVALID_INVITE];
-        }
-
-        $user = User\Entity::find($user->id);
-
-        list($error, $response) = (new User\Service)->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
+        list($error, $response) = $this->acceptInvitationOnApi($inviteId, $user->id);
 
         if (empty($error) === true)
         {
-            $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+            $user = User\Entity::find($user->id);
+
+            $user->joinMerchantByIdWithRole($response['merchant_id'], $response['role']);
 
             list($error, $genericUser) = (new User\Service)->getUserFromApi($user->id);
 
@@ -169,8 +163,6 @@ class Service extends Base\Service
             {
                 Session::put('dashboard_user_payload', $genericUser);
             }
-
-            $invitation->delete();
         }
     }
 
@@ -280,5 +272,49 @@ class Service extends Base\Service
     public function getInvitationById(string $inviteId)
     {
         return Entity::find($inviteId);
+    }
+
+    public function getInvitationByTokenFromApi(string $token)
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api
+                             ->invitation
+                             ->fetchByToken($token)
+                             ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
+    }
+
+    protected function acceptInvitationOnApi(string $id, $userId)
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $params = ['user_id' => $userId];
+
+            $response = $this->api
+                             ->invitation
+                             ->accept($id, $params)
+                             ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 }
