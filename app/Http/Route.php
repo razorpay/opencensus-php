@@ -1171,6 +1171,8 @@ final class Route
         'terminal_remove_merchant'         => '*',
         'emi_plan_delete'                  => Permission::DELETE_EMI_PLAN,
         'iin_edit'                         => Permission::EDIT_IIN_RULE,
+        'offer_create'                     => Permission::CREATE_MERCHANT_OFFER,
+        'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
     ];
 
     public static $direct = [
