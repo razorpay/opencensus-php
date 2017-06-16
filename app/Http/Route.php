@@ -329,6 +329,7 @@ final class Route
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
+        'invoice_issue_by_batch'                  => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_get_pdf'                         => ['get',      'invoices/{id}/pdf',                              'InvoiceController@getInvoicePdf'                                   ],
@@ -973,6 +974,7 @@ final class Route
         'batch_fetch_by_id',
         'batch_retry',
         'batch_download_file',
+        'invoice_issue_by_batch',
         'invoice_add_line_items',
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
@@ -1181,6 +1183,8 @@ final class Route
         'terminal_remove_merchant'         => '*',
         'emi_plan_delete'                  => Permission::DELETE_EMI_PLAN,
         'iin_edit'                         => Permission::EDIT_IIN_RULE,
+        'offer_create'                     => Permission::CREATE_MERCHANT_OFFER,
+        'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
     ];
 
     public static $direct = [
@@ -1344,11 +1348,12 @@ final class Route
         'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
-        // 'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
-        // 'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
-        // 'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
-        // 'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
-        // 'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
+        'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
+        'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
     ];
 
     /*

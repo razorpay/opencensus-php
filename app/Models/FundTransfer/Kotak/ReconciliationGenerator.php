@@ -56,7 +56,6 @@ class ReconciliationGenerator
         // get batch id of all above attempts
         $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
                                           ->toArray();
-
         // non-reconciled batches
         $nonReconciledBatches = $this->repo->batch_fund_transfer->findManyByPublicIds($batchIds);
 
@@ -90,15 +89,15 @@ class ReconciliationGenerator
     {
         $setlFile = $this->getFile($input);
 
+        if ($setlFile === null)
+            return [];
+
         $generateFailedReconciliations = false;
 
         if(isset($input['failed_recons']) === true)
         {
             $generateFailedReconciliations = ($input['failed_recons'] === '1');
         }
-
-        if ($setlFile === null)
-            return [];
 
         $data = $this->parseTextFile($setlFile);
 
@@ -134,17 +133,13 @@ class ReconciliationGenerator
         return NodalAccount::getHeadings();
     }
 
-    protected function addNewFields($data, $generateFailedReconciliations = false)
+    protected function addNewFields(array $data, bool $generateFailedReconciliations = false)
     {
-        $date = Carbon::today('Asia/Kolkata')->format('d/m/Y H:i:s');
+        $date = Carbon::now('Asia/Kolkata');
 
         foreach ($data as &$row)
         {
             $newFields = $this->generateReconciliationFields($date, $generateFailedReconciliations);
-
-            $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date']);
-
-            $row[Headings::PAYMENT_DATE] = $date->format('d-M-y');
 
             $row = array_merge($row, $newFields);
         }
@@ -152,7 +147,7 @@ class ReconciliationGenerator
         return $data;
     }
 
-    protected function generateReconciliationFields($date, $generateFailedReconciliations)
+    protected function generateReconciliationFields(Carbon $datetime, bool $generateFailedReconciliations)
     {
         $utr = random_integer(10);
 
@@ -160,7 +155,9 @@ class ReconciliationGenerator
             Headings::STATUS_OF_TRANSACTION     => 'P',
             Headings::UTR_NUMBER                => 'KKBKH1' . $utr,
             Headings::REMARKS                   => '',
-            Headings::DATE_TIME                 => $date,
+            Headings::DATE_TIME                 => $datetime->format('d/m/Y H:i:s'),
+            Headings::PAYMENT_DATE              => $datetime->format('d-M-y'),
+            Headings::INSTRUMENT_DATE           => $datetime->format('d-M-y'),
             Headings::CMS_REF_NO                => 'kotak',
             Headings::DUMMY                     => ''
         ];

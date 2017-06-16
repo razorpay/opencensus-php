@@ -26,9 +26,7 @@ trait FraudDetector
                 $e = new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
 
-                $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-                throw $e;
+                $this->updatePaymentAuthFailedAndThrowException($e);
             }
         }
     }
