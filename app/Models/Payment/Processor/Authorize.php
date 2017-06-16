@@ -87,6 +87,8 @@ trait Authorize
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
+        $this->createAnalyticsLog($payment);
+
         //
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
@@ -246,8 +248,6 @@ trait Authorize
      */
     protected function processAuth(Payment\Entity $payment): array
     {
-        $this->createAnalyticsLog($payment);
-
         $this->updateAndNotifyPaymentAuthorized();
 
         $this->updateTwoFactorAuthForOneStepPayment();
@@ -2349,7 +2349,7 @@ trait Authorize
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $data);
 
-            return $this->processAuth($payment);
+            return $this->getPaymentGatewayRequestData($request, $payment);
         }
         catch (Exception\BaseException $e)
         {
