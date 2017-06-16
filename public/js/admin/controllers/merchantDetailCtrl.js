@@ -1026,6 +1026,8 @@ app
         delete bankAccount.id;
         delete bankAccount.merchant_id;
         delete bankAccount.mpin_set;
+        delete bankAccount.ifsc;
+        delete bankAccount.name;
 
         var merchantDetailsData = {
           bank_branch_ifsc: bankAccount.ifsc_code,
