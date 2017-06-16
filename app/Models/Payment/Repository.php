@@ -232,7 +232,6 @@ class Repository extends Base\Repository
         $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
-        $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
@@ -243,7 +242,6 @@ class Repository extends Base\Repository
                     ->whereRaw($rawCondition)
                     ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->where($paymentCreatedAt, '<', $minCreatedAt)
-                    ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();
     }
 

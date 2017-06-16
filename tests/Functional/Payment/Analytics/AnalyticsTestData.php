@@ -100,6 +100,6 @@ return [
         'library' => 'others',
         'platform' => 'others',
         'integration' => 'others',
-    ]
+    ],
 ];
 // @codingStandardsIgnoreEnd

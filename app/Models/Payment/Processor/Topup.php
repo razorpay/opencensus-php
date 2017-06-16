@@ -41,7 +41,7 @@ trait Topup
 
         if ($request !== null)
         {
-            return $this->getPaymentGatewayRequestData($request, $payment);
+            return $this->getFirstPaymentCreatedResponse($request, $payment);
         }
 
         assertTrue(false, 'Should not reach here.');

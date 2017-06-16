@@ -358,4 +358,28 @@ class AnalyticsTest extends TestCase
 
         $this->assertEquals('https://hello.com', $paymentAnalytic[AnalyticsEntity::REFERER]);
     }
+
+    public function testRiskScoreAnalytics()
+    {
+        $this->mockMaxmind();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->iin->create([
+            'iin'     => '555555',
+            'country' => 'US',
+            'network' => 'MasterCard',
+        ]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $requestServer['HTTP_REFERER'] = 'https://hello.com';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals((float) 2.4, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
+        $this->assertEquals('maxmind', $paymentAnalytic[AnalyticsEntity::RISK_ENGINE]);
+    }
 }

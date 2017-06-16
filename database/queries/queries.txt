@@ -2135,6 +2135,14 @@ ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_mobile CHAR(32),
     ADD INDEX bank_accounts_account_number_index (account_number);
 
+ALTER TABLE payment_analytics
+    ADD COLUMN risk_score DECIMAL(11,4) NULL AFTER checkout_id,
+    ADD COLUMN risk_engine TINYINT(1) NULL AFTER risk_score;
+
+# Query to add enabled column in IIN
+ALTER TABLE iins
+    ADD COLUMN enabled TINYINT(1) DEFAULT 1 AFTER trivia;
+
 # Pre deployment of branch 'payment_links_bulk_import'
 
 ALTER TABLE invoices
