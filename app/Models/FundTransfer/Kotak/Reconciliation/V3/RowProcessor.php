@@ -98,7 +98,7 @@ class RowProcessor extends Base\RowProcessor
         if ($status === Attempt\Status::PROCESSED)
         {
             $settledOn = Carbon::createFromFormat(
-                            'd-M-y', $this->parsedData['instrument_date'])->format('d/m/Y');
+                            'd-M-y', $this->parsedData['instrument_date'])->timestamp;
 
             $source->setSettledOn($settledOn);
         }

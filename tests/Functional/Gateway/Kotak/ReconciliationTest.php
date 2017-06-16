@@ -65,7 +65,6 @@ class ReconciliationTest extends TestCase
 
         // Validate settlement entity
         $setl = $this->getLastEntity('settlement', true);
-
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
 
         $notNullKeys = ['utr', 'settled_on', 'processed_at'];

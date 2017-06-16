@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -88,6 +90,7 @@ class Entity extends Base\PublicEntity
 
     protected $dates = [
         self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $amounts = [
@@ -298,6 +301,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $fee;
+    }
+
+    protected function getSettledOnAttribute()
+    {
+        $timestamp = $this->attributes[self::SETTLED_ON];
+
+        if ($timestamp !== null)
+        {
+            return Carbon::createFromTimestamp($timestamp)->format('d/m/Y');
+        }
+
+        return null;
     }
 
     // ------------------------------- mutators --------------------------------

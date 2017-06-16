@@ -135,6 +135,7 @@ class Entity extends Base\PublicEntity
 
     protected $dates = [
         self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     public function merchant()
@@ -300,6 +301,18 @@ class Entity extends Base\PublicEntity
     public function setSettledOn($date)
     {
         $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
+    protected function getSettledOnAttribute()
+    {
+        $timestamp = $this->attributes[self::SETTLED_ON];
+
+        if ($timestamp !== null)
+        {
+            return Carbon::createFromTimestamp($timestamp)->format('d/m/Y');
+        }
+
+        return null;
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
