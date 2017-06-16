@@ -1091,6 +1091,17 @@ angular
           upi_idfc: 'IDFC UPI',
           upi_icici: 'ICICI UPI',
         },
+        walletMap: {
+          payzapp: 'Payzapp',
+          mobikwik: 'Mobikwik',
+          payumoney: 'Payumone',
+          olamoney: 'Olamoney',
+          airtelmoney: 'Airtelmoney',
+          freecharge: 'Freecharge',
+          jiomoney: 'Jiomoney',
+          openwallet: 'Openwallet',
+          mpesa: 'Mpesa',
+        },
       };
 
       return {

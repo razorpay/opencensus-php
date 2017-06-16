@@ -353,6 +353,9 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList,
       },
+      offer: {
+        merchant_id: ['Merchant Id'],
+      },
       order: {
         account_number: ['Account Number'],
         authorized: booleanList,
