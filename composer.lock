@@ -4657,20 +4657,24 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "7c9e3eb0de8a4c83899abc62d6ae93a9d285a932"
+                "reference": "0c082ee2fad3edd1996035bfaba62897eecadee0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/7c9e3eb0de8a4c83899abc62d6ae93a9d285a932",
-                "reference": "7c9e3eb0de8a4c83899abc62d6ae93a9d285a932",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/0c082ee2fad3edd1996035bfaba62897eecadee0",
+                "reference": "0c082ee2fad3edd1996035bfaba62897eecadee0",
                 "shasum": ""
             },
             "require": {
-                "laravel/framework": ">=5.4",
-                "php": ">=5.6"
+                "illuminate/database": ">=5.4",
+                "illuminate/validation": ">=5.4",
+                "php": ">=5.4"
             },
             "require-dev": {
-                "raveren/kint": "1.*"
+                "kint-php/kint": "1.*"
+            },
+            "suggest": {
+                "laravel/framework": ">=5.4"
             },
             "type": "library",
             "autoload": {
@@ -4696,7 +4700,7 @@
                 "source": "https://github.com/razorpay/spine/tree/laravel5.4",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-04-30 18:15:23"
+            "time": "2017-06-12T12:33:31+00:00"
         },
         {
             "name": "razorpay/upi-clients",
