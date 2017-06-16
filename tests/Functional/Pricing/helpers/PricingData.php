@@ -19,6 +19,8 @@ return [
                 'amount_range_active' => '0',
                 'amount_range_min' => null,
                 'amount_range_max' => null,
+                'min_rate'         => null,
+                'max_rate'         => null,
             ],
             'url' => '/pricing',
             'method' => 'POST'
@@ -40,6 +42,9 @@ return [
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
+                        //Defaults to 0
+                        'min_rate'         => 0,
+                        'max_rate'         => null,
                     ),
                 ),
             ],
@@ -218,6 +223,41 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
+    'testAddPricingPlanRuleWithMaxRate' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+                'min_rate'  => null,
+                'max_rate'  => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => false,
+                'amount_range_active' => false,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+                'min_rate'  => 0,
+                'max_rate'  => null,
+            ],
         ],
     ],
 

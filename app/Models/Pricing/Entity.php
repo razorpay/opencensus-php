@@ -58,10 +58,6 @@ class Entity extends Base\PublicEntity
         self::MAX_RATE
     ];
 
-    protected $casts = [
-        self::MAX_RATE,
-    ];
-
     protected $entity = 'pricing';
 
     // We are explicitly generating Id so that same Id gets stored in live and test db
@@ -85,6 +81,7 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
         self::MIN_RATE              => 0,
+        self::MAX_RATE              => null,
         self::AMOUNT_RANGE_ACTIVE   => '0');
 
     const ZERO_PRICING = '10ZeroPricingP';
@@ -292,6 +289,20 @@ class Entity extends Base\PublicEntity
     protected function getFixedRateAttribute()
     {
         return (int) $this->attributes[self::FIXED_RATE];
+    }
+
+    protected function getMinRateAttribute()
+    {
+        $min = $this->attributes[self::MIN_RATE];
+
+        return ($min === null) ? $min : (int) $min;
+    }
+
+    protected function getMaxRateAttribute()
+    {
+        $max = $this->attributes[self::MAX_RATE];
+
+        return ($max === null) ? $max : (int) $max;
     }
 
     public function getFeature()
