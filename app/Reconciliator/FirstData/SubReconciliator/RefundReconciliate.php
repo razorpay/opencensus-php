@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\FirstData;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -15,6 +16,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      ***************************************/
     const COLUMN_GATEWAY_PAYMENT_ID = 'ft_no';
     const COLUMN_REFUND_AMOUNT      = 'transaction_amt';
+    const COLUMN_ARN                = 'arn_no';
 
     /**
      * Gets refund Id from gateway entity
@@ -90,5 +92,35 @@ class RefundReconciliate extends Base\RefundReconciliate
                                        $gatewayTxnId, Action::REFUND);
 
         return $payment;
+    }
+
+    /**
+     * Fetches ARN for given rows
+     *
+     * @param $row array
+     * @return $arn string
+     */
+    protected function getArn(array $row)
+    {
+        if (empty($row[self::COLUMN_ARN]) === true)
+        {
+            return null;
+        }
+
+        $arn = $row[self::COLUMN_ARN];
+
+        return $arn;
+    }
+
+    /**
+     * Sets ARN in gateway entity
+     *
+     * @param $arn           string
+     * @param $gatewayRefund PublicEntity
+     * @return void
+     */
+    protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
+    {
+        $gatewayRefund->setArn($arn);
     }
 }
