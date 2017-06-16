@@ -2015,6 +2015,15 @@ ALTER TABLE reports
 # Makes international attribute of gateway rules nullable
 ALTER TABLE gateway_rules MODIFY COLUMN international TINYINT(1);
 
+# Add column processed_at to settlements, and payouts tables
+alter table payouts
+    add column processed_at int(11) default null after `remarks`,
+    add column settled_on int(11) default null after `processed_at`;
+
+alter table settlements
+    add column processed_at int(11) default null after `remarks`,
+    add column settled_on int(11) default null after `processed_at`;
+
 ALTER TABLE payments
     ADD COLUMN approval_code VARCHAR(10) NULL AFTER terminal_id,
     ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,

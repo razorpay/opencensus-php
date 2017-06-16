@@ -374,6 +374,17 @@ on daily_settlements.id =  stats.`batch_fund_transfer_id`
 set daily_settlements.processed_count = stats.processed_count,
 daily_settlements.processed_amount = stats.processed_amount;
 
+update settlements
+set processed_at = updated_at
+where utr is not null
+and processed_at is null;
+
+
+update payouts
+set processed_at = updated_at
+where utr is not null
+and processed_at is null;
+
 #Adds Auth code to a payment
 UPDATE cybersource set authorizationCode='T38678' where id=28984;
 
