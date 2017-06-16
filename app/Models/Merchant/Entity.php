@@ -10,6 +10,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Invitation;
 use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
     const BRAND_COLOR               = 'brand_color';
+    const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
@@ -91,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::RISK_RATING,
         self::BRAND_COLOR,
+        self::HANDLE,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::CONVERT_CURRENCY,
@@ -106,6 +109,7 @@ class Entity extends Base\PublicEntity
     const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
+        self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
         self::AUTO_CAPTURE_LATE_AUTH,
@@ -138,6 +142,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::BRAND_COLOR,
+        self::HANDLE,
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -160,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
+        self::HANDLE                 => null,
         self::RISK_RATING            => 3,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
@@ -437,6 +443,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
     }
 
+    protected function setHandleAttribute($handle)
+    {
+        $this->attributes[self::HANDLE] = $handle ? strtoupper($handle) : null;
+    }
+
     protected function setLogoUrlAttribute($logoUrl)
     {
         $this->attributes[self::LOGO_URL] = $logoUrl ? $logoUrl : null;
@@ -615,6 +626,11 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getHandle()
+    {
+        return $this->getAttribute(self::HANDLE);
     }
 
     public function getBrandColorElseDefault()
@@ -977,6 +993,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(Invitation\Entity::class)
+                    ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
     public function isEmailOptional()

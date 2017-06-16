@@ -12,14 +12,14 @@ class Validator extends Base\Validator
         Entity::ITEM_ID             => 'sometimes|string|max:19',
         Entity::REF                 => 'sometimes',
         Entity::NAME                => 'required_without:item_id|string|max:512',
-        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'required_without:item_id|integer|min:100',
         Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|integer|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR',
-        Entity::UNIT                => 'sometimes|string|max:512',
+        Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
     protected static $createManyRules = [
@@ -28,17 +28,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::QUANTITY            => 'sometimes|integer|min:1',
-        Entity::ITEM_ID             => 'sometimes|string|max:19',
-        Entity::NAME                => 'sometimes|string|max:512',
-        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'sometimes|integer|min:100',
-        Entity::UNIT_AMOUNT         => 'sometimes|integer|min:100',
-        Entity::CURRENCY            => 'sometimes|size:3|in:INR',
-        Entity::UNIT                => 'sometimes|string|max:512',
-        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        Entity::QUANTITY            => 'sometimes|nullable|integer|min:1',
+        Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',
+        Entity::NAME                => 'sometimes|nullable|string|max:512',
+        Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
+        Entity::AMOUNT              => 'sometimes|nullable|integer|min:100',
+        Entity::UNIT_AMOUNT         => 'sometimes|nullable|integer|min:100',
+        Entity::CURRENCY            => 'sometimes|nullable|size:3|in:INR',
+        Entity::UNIT                => 'sometimes|nullable|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'sometimes|nullable|boolean',
+        Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
     protected static $removeManyRules = [

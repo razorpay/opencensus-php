@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
 use Mail;
-use Mockery;
 
+use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
+use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
+use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Entity as SettlementEntity;
@@ -97,8 +99,7 @@ class SettlementTest extends TestCase
             $request = ['url' => $url];
 
             $response = $this->sendRequest($request);
-
-            $this->assertResponseStatus(200);
+            $response->assertStatus(200);
         }
     }
 
@@ -149,7 +150,7 @@ class SettlementTest extends TestCase
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
         $setDate = Carbon::parse($days['payment_settlment_holiday'],'Asia/Kolkata');
 
@@ -181,11 +182,11 @@ class SettlementTest extends TestCase
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
         $txn = $this->getEntities('transaction',[],true);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'], 'Asia/Kolkata');
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
@@ -213,9 +214,9 @@ class SettlementTest extends TestCase
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'], 'Asia/Kolkata');
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
@@ -380,6 +381,8 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2()
     {
+        Mail::fake();
+
         $this->ba->adminAuth();
 
         $payments = $this->createPaymentEntities();
@@ -459,6 +462,68 @@ class SettlementTest extends TestCase
 
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);
+
+        Mail::assertSent(KotakSettlementMail::class);
+    }
+
+    public function testSettlementForMultipleMerchants()
+    {
+        $this->ba->appAuth();
+
+        $merchants = $this->fixtures->times(2)->create('merchant');
+
+        $firstMerchant = $merchants[0]->getId();
+        $secondMerchant = $merchants[1]->getId();
+
+        $amount = 10000;
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+
+            $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+            $this->fixtures->create('terminal', ['merchant_id' => $merchantId]);
+
+            $this->fixtures->create(
+                'bank_account',
+                ['entity_id' => $merchantId, 'beneficiary_name' => random_alpha_string(10)]);
+
+            $createdAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 5;
+            $capturedAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 10;
+
+            $payments = $this->fixtures->times(2)->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => $amount,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10
+                ]
+            );
+
+            $amount = $amount * 2;
+        }
+
+        $request = [
+            'url' => '/settlements/initiate/kotak',
+            'method' => 'POST'
+        ];
+
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertTestResponse($setlResponse);
+
+        // Verifiy settlement amounts
+        $firstSettlements = $this->getEntities('settlement', ['merchant_id' => $firstMerchant], true);
+        $this->assertEquals(1, $firstSettlements['count']);
+        $this->assertEquals(19600, $firstSettlements['items'][0]['amount']);
+
+        $secondSettlements = $this->getEntities('settlement', ['merchant_id' => $secondMerchant], true);
+        $this->assertEquals(1, $secondSettlements['count']);
+        $this->assertEquals(39200, $secondSettlements['items'][0]['amount']);
     }
 
     public function testSettlementIgnoredTxns()
@@ -552,6 +617,8 @@ class SettlementTest extends TestCase
 
     public function testIciciNodalTransfer()
     {
+        Mail::fake();
+
         $this->ba->appAuth();
 
         $request = [
@@ -565,6 +632,8 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content['file']);
+
+        Mail::assertSent(IciciSettlementMail::class);
     }
 
     public function testSettlementWithAccountTransfer()
@@ -576,12 +645,12 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->create(
             'transfer:to_account',
             [
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 5000,
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         // Generate settlements
@@ -606,13 +675,13 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->create(
             'transfer:to_account',
             [
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 5000,
-                'currency'   => 'INR',
-                'on_hold'    => '1',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'on_hold'     => '1',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         // Generate settlements
@@ -695,13 +764,13 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->times(2)->create(
             'transfer:to_account',
             [
-                'account'    => $account,
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 1000,
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'account'     => $account,
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         $reversal = $this->fixtures->create(

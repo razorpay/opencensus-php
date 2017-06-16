@@ -11,6 +11,7 @@ use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundTransfer\Kotak;
@@ -164,7 +165,9 @@ class Processor extends Base\Core
     {
         $version = $this->getSettlementVersion($row);
 
-        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' . ucwords($version) . '\\RowProcessor';
+        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' .
+                                    ucwords($version) .
+                                    '\\RowProcessor';
 
         $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
@@ -190,7 +193,6 @@ class Processor extends Base\Core
         $amount = $reconciledEntity->getAmount();
 
         if (isset($this->batchFundTransferStats[$batchId]) === false)
-
         {
             $this->batchFundTransferStats[$batchId] =
                 ['processed_count' => 1, 'processed_amount' => $amount];
@@ -271,7 +273,8 @@ class Processor extends Base\Core
 
     protected function sendReconciliationSummaryMail($response)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false))
         {
             return;
         }
@@ -287,24 +290,12 @@ class Processor extends Base\Core
             $msg .= 'Failed settlement ids: ' . $response['failure ids'];
         }
 
-        $data['subject'] = "Re: Kotak Settlement files for $this->date";
         $data['date'] = $this->date;
         $data['body'] = $msg;
 
-        Mail::queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $kotakReconciliationMail = new SettlementMail\KotakReconciliation($data);
 
-            $message->from('settlement@razorpay.com', 'Kotak Settlement');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-        });
+        Mail::queue($kotakReconciliationMail);
     }
 
     public static function getHeadings()

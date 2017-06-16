@@ -3,10 +3,11 @@
 namespace RZP\Tests\Functional\Payment\TerminalLoadSorter;
 
 use Carbon\Carbon;
+use RZP\Models\Merchant;
+use RZP\Models\Payment\Method;
+use RZP\Models\Terminal\Options;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal\Options;
 
 class TerminalLoadSorterTest extends TestCase
 {
@@ -192,355 +193,128 @@ class TerminalLoadSorterTest extends TestCase
         $content = $this->startTest();
     }
 
-    public function testTerminalSelectionWithRuleApplied()
+    public function testTerminalSelectionWithRule()
     {
         $this->setUpTerminals();
 
-        $rule = $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'axis_migs',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 70
-        ]);
-
-        Options::setTestChance(5000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
-    }
-
-    /**
-     * Tests the case where a load rule is present but it does not satisfy the
-     * payment criteria
-     */
-    public function testTerminalSelectionWithRulePresentButNotApplied()
-    {
-        $this->setUpTerminals();
-
-        $rule = $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'axis_migs',
-            'method'  => 'card',
-            'network' => 'MC',
-            'load'    => 70
-        ]);
-
-        Options::setTestChance(8000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
-    }
-
-    /**
-     * Tests the case where an applicable rule is present but the laod value does
-     * not fall into the bucket as set by the chance value
-     */
-    public function testTerminalSelectionWithApplicableRulePresentButNotSelectedByChancePercent()
-    {
-        $this->setUpTerminals();
-
-        $rule = $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'axis_migs',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 70
-        ]);
-
-        Options::setTestChance(9000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
-    }
-
-    public function testTerminalSelectionWithMultipleRulesPresentButNoTerminalMatchingSelectedRule()
-    {
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->addFeatures('new_load_sorting');
-        $this->mockTokenex();
-
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'hdfc',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 30
-        ]);
-
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'axis_migs',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 60
-        ]);
-
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'cybersource',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 10
-        ]);
-
-        Options::setTestChance(5000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
-    }
-
-    /**
-     * Tests the case where there are no merchant specific rules present, but a
-     * shared rule is present. In this case we operate on the shared rule
-     */
-    public function testTerminalSelectionWithSharedRulePresentAndNoMerchantSpecificRules()
-    {
-        $this->setUpTerminals();
-
-        $rule = $this->fixtures->create('gateway_rule:card', [
-            'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-            'gateway'     => 'axis_migs',
-            'method'      => 'card',
-            'network'     => 'VISA',
-            'load'        => 70
-        ]);
-
-        Options::setTestChance(5000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
-    }
-
-    public function testTerminalSelectionWithMultipleApplicableRules()
-    {
-        $this->setUpTerminals();
-
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'axis_migs',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 70
-        ]);
-
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'hdfc',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 20
-        ]);
-
-        Options::setTestChance(4000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
-    }
-
-    public function testTerminalSelectionWithCardPaymentAllRuleDetailsPresent()
-    {
-        $this->setUpTerminals();
-
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway'          => 'cybersource',
-            'method_type'      => 'credit',
-            'network'          => 'VISA',
-            'issuer'           => 'HDFC',
-            'gateway_acquirer' => 'hdfc',
-            'load'             => 70
-        ]);
-
-        Options::setTestChance(4000);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000CybrsTrmnl', $payment['terminal_id']);
-    }
-
-    /**
-     * Tests terminal selection for netbanking when a shared netbanking gateway
-     * like billdesk is given precedence over a direct netbanking gateway as
-     * per rule defined in the load sorter
-     */
-    public function testTerminalSelectionWithNetbankingPaymentWithRulePresentForNonDirectGateway()
-    {
-        $this->setUpTerminals();
-
-        $this->fixtures->create('gateway_rule:netbanking', [
-            'gateway' => 'paytm',
-            'issuer'  => 'HDFC',
-            'load'    => 70
-        ]);
-
-        Options::setTestChance(4000);
-
-        $this->payment = $this->getDefaultNetbankingPaymentArray('HDFC');
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000PaytmTrmnl', $payment['terminal_id']);
-    }
-
-    public function testTerminalSelectionWithWalletPaymentWithRulePresentForWalletGateway()
-    {
         $this->fixtures->merchant->enableMobikwik();
-        $this->setUpTerminals();
 
-        $this->fixtures->create('gateway_rule:wallet', [
-            'gateway' => 'wallet_mobikwik',
-            'load'    => 70
-        ]);
+        $testData = $this->testData[__FUNCTION__];
 
-        Options::setTestChance(4000);
+        foreach ($testData as $data)
+        {
+            $rules = $this->createRules($data['method'], $data['rules']);
 
-        $this->payment = $this->getDefaultWalletPaymentArray();
+            Options::setTestChance($data['test_chance']);
 
-        $content = $this->doAuthAndCapturePayment($this->payment);
+            $paymentData = $this->getPaymentArray($data['method']);
 
-        $payment = $this->getLastEntity('payment', true);
+            $content = $this->doAuthAndCapturePayment($paymentData);
 
-        $this->assertEquals('1000MobiKwikTl', $payment['terminal_id']);
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertEquals($data['expected_terminal'], $payment['terminal_id']);
+
+            $this->fixtures->gateway_rule->delete($rules);
+        }
 
         $this->fixtures->merchant->disableMobikwik();
     }
 
     /**
-     * Tests the case where rule has international null, and domestic payment is made
-     * with terminals which support both international and domestic payments
+     * Tests the case where multiple rules are present but no terminals match
+     * any of the rules
      */
-    public function testDomesticPaymentndInternationalSupportedTerminal()
+    public function testWithMultipleRulesButNomatchingTerminal()
     {
-        $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->addFeatures('new_load_sorting');
         $this->mockTokenex();
 
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'hdfc',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 7000
-        ]);
+        $data = $this->testData[__FUNCTION__];
 
-        Options::setTestChance(5000);
+        $rules = $this->createRules($data['method'], $data['rules']);
 
-        $this->payment = $this->getDefaultPaymentArray();
+        Options::setTestChance($data['test_chance']);
 
-        $content = $this->doAuthAndCapturePayment($this->payment);
+        $paymentData = $this->getPaymentArray($data['method']);
+
+        $content = $this->doAuthAndCapturePayment($paymentData);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+        $this->assertEquals($data['expected_terminal'], $payment['terminal_id']);
     }
 
-    /**
-     * Tests the case where rule has international null, and international payment is made
-     * and terminals support international
-     */
-    public function testInternationalPaymentWithRuleAndInternationalSupportedTerminal()
+    public function testInternationalAndDomesticPaymentsWithRules()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->merchant->enableInternational();
-        $this->fixtures->merchant->addFeatures('new_load_sorting');
         $this->mockTokenex();
 
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway' => 'hdfc',
-            'method'  => 'card',
-            'network' => 'VISA',
-            'load'    => 7000
-        ]);
+        $testData = $this->testData[__FUNCTION__];
 
-        Options::setTestChance(5000);
+        foreach ($testData as $data)
+        {
+            $rules = $this->createRules($data['method'], $data['rules']);
 
-        $this->payment = $this->getDefaultPaymentArray();
+            Options::setTestChance($data['test_chance']);
 
-        $this->payment['card']['number'] = '4012010000000007';
+            $paymentData = $this->getPaymentArray($data['method']);
 
-        $content = $this->doAuthAndCapturePayment($this->payment);
+            if ($data['international'] === true)
+            {
+                $paymentData['card']['number'] = '4012010000000007';
+            }
 
-        $payment = $this->getLastEntity('payment', true);
+            $content = $this->doAuthAndCapturePayment($paymentData);
 
-        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertEquals($data['expected_terminal'], $payment['terminal_id']);
+
+            $this->fixtures->gateway_rule->delete($rules);
+        }
 
         $this->fixtures->merchant->disableInternational();
     }
 
-    /**
-     * Tests the case where rule has international is set to true, and international
-     * payment is made and terminals support international
-     */
-    public function testInternationalPaymentWithAndInternationalSupportedTerminal()
+    protected function createRules(string $method, array $ruleParams): array
     {
-        $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->enableInternational();
-        $this->fixtures->merchant->addFeatures('new_load_sorting');
-        $this->mockTokenex();
+        $ruleIds = [];
 
-        $this->fixtures->create('gateway_rule:card', [
-            'gateway'       => 'hdfc',
-            'method'        => 'card',
-            'network'       => 'VISA',
-            'international' => true,
-            'load'          => 7000
-        ]);
+        foreach ($ruleParams as $params)
+        {
+            $rule = $this->fixtures->create("gateway_rule:$method", $params);
 
-        Options::setTestChance(5000);
+            $ruleIds[] = $rule->getId();
+        }
 
-        $this->payment = $this->getDefaultPaymentArray();
+        return $ruleIds;
+    }
 
-        $this->payment['card']['number'] = '4012010000000007';
+    protected function getPaymentArray(string $method): array
+    {
+        switch ($method)
+        {
+            case Method::CARD:
+                return $this->getDefaultPaymentArray();
 
-        $content = $this->doAuthAndCapturePayment($this->payment);
+            case Method::NETBANKING:
+                return $this->getDefaultNetbankingPaymentArray('HDFC');
 
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
-
-        $this->fixtures->merchant->disableInternational();
+            case Method::WALLET:
+                return $this->getDefaultWalletPaymentArray();
+        }
     }
 
     protected function setUpTerminals()
     {
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->addFeatures('new_load_sorting');
         $this->mockTokenex();
     }
 }

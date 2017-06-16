@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Rbl;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -173,17 +174,19 @@ class NetbankingRblGatewayTest extends TestCase
 
     public function testExcelRefundFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundsForFileGeneration($payments);
-
-        $this->checkMailQueue();
 
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         $this->assertTrue(file_exists($data['netbanking_rbl']['file']));
 
         unlink($data['netbanking_rbl']['file']);
+
+        $this->checkMailQueue();
     }
 
     protected function createPaymentsToClaim()
@@ -238,31 +241,12 @@ class NetbankingRblGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        Mail::assertSent(RefundFileMail::class, function ($mail)
+        {
+            $this->assertEquals('3', $mail->viewData['count']);
 
-                        $today = Carbon::today('Asia/Kolkata')->format('d_m_Y');
-
-                        $emails = ['settlements@razorpay.com'];
-
-                        $testData = [
-                            'subject'     => 'RBL Netbanking refunds file for ' . $date,
-                            'count'       => 3,
-                            'date'        => $date,
-                        ];
-
-                        $this->assertArraySelectiveEquals($testData, $data);
-
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function mockFailedVerifyResponse()

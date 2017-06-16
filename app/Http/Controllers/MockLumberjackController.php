@@ -13,11 +13,6 @@ class MockLumberjackController extends Controller
 
     const X_SIGNATURE = 'x-signature';
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function mockEventTrack(Request $request)
     {
         $identifier = $request->header(self::X_IDENTIFIER);

@@ -42,7 +42,7 @@ class ClaimsFile extends Base\RefundFile
 
         $data = [
             'total_amount'    => $totalAmount,
-            'signed_url'      => $signedFileUrl,
+            'url'             => $signedFileUrl,
             'local_file_path' => $file['local_file_path'],
             'name'            => basename($file['local_file_path'])
         ];

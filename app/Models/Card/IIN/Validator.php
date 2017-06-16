@@ -13,23 +13,25 @@ class Validator extends Base\Validator
         Entity::IIN           => 'required|numeric|digits:6',
         Entity::NETWORK       => 'required',
         Entity::TYPE          => 'required',
-        Entity::COUNTRY       => 'sometimes|size:2',
+        Entity::COUNTRY       => 'sometimes|nullable|size:2',
         Entity::CATEGORY      => 'sometimes',
         Entity::ISSUER        => 'sometimes',
         Entity::TRIVIA        => 'sometimes',
         Entity::ISSUER_NAME   => 'sometimes',
         Entity::EMI           => 'sometimes|integer|in:0,1',
+        Entity::ENABLED       => 'sometimes|integer|in:0,1'
     );
 
     protected static $editRules = array(
         Entity::NETWORK       => 'sometimes',
         Entity::TYPE          => 'sometimes',
-        Entity::COUNTRY       => 'sometimes|size:2',
+        Entity::COUNTRY       => 'sometimes|nullable|size:2',
         Entity::CATEGORY      => 'sometimes',
         Entity::ISSUER        => 'sometimes',
         Entity::TRIVIA        => 'sometimes',
         Entity::ISSUER_NAME   => 'sometimes',
         Entity::EMI           => 'sometimes|integer|in:0,1',
+        Entity::ENABLED       => 'sometimes|integer|in:0,1'
     );
 
     protected static $createValidators = array(

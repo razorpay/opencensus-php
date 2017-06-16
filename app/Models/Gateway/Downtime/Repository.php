@@ -102,7 +102,57 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
+    /**
+     * Fetches downtimes for DonwtimeSorter
+     *
+     * Params are provided as [key => val]
+     * where 'val' can either be an array or string
+     *
+     * Raw Sql :
+     * "select * from `gateway_downtimes` where
+     *  `gateway` in (?, ?, ?) and
+     *  `partial` = ? and
+     *  `begin` <= ? and
+     *  (`end` is null or `end` >= ?) and
+     *  `method` in (?, ?) and
+     *  `network` in (?, ?) and
+     *  `card_type` in (?, ?) and
+     *  `issuer` in (?, ?)"
+     *
+     * @param $params array
+     * @return collection
+     */
+    public function fetchApplicableDowntimesForPayment(array $params) : Base\PublicCollection
+    {
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            // using this so we can add `end` & `begin` params
+            // to query using addQueryParamEnd / addQueryParamBegin
+            $func = 'addQueryParam' . studly_case($key);
+
+            if (method_exists($this, $func))
+            {
+                $this->$func($query, $params);
+            }
+            // case when the comparison has to be on an array of values
+            else if (is_array($value) === true)
+            {
+                $query->whereIn($key, $value);
+            }
+            // simple '=' comparator
+            else
+            {
+                $query->where($key, '=', $value);
+            }
+        }
+
+        return $query->get();
+    }
+
+    protected function buildQuery(
+        array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
     {
         foreach ($keyOperatorMap as $key => $operator)
         {
@@ -120,8 +170,11 @@ class Repository extends Base\Repository
         //
         // If an end time does exist, downtime should have ended after
         // the start of the query begin time for there to be an overlap
-        $query->whereNull(Entity::END)
-              ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
+        $query->where(function ($query) use ($params)
+        {
+            $query->whereNull(Entity::END)
+                  ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
+        });
     }
 
     protected function addQueryParamEnd($query, $params)

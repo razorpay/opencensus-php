@@ -2,39 +2,41 @@
 
 namespace RZP\Tests\Functional\Batch;
 
-use DB;
-use Mockery;
-use Carbon\Carbon;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Batch\Status;
-use RZP\Models\Batch\Header;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use Illuminate\Http\UploadedFile;
-use RZP\Models\FileStore;
+use Mail;
+use Illuminate\Support\Facades\Queue;
 
-class RefundBatchFileTest extends TestCase
+use RZP\Models\Batch\Header;
+use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Batch\Refund as BatchRefundFileMail;
+use RZP\Models\FileStore;
+use RZP\Jobs\Batch as BatchJob;
+
+class RefundTest extends TestCase
 {
-    use PaymentTrait;
-    use FileHandlerTrait;
+    use BatchTestTrait;
 
     protected $payment = null;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/RefundBatchFileTestData.php';
+        $this->testDataFilePath = __DIR__ . '/RefundTestData.php';
 
         parent::setUp();
     }
 
     public function testUploadRefundFile()
     {
-        $this->putBatchFileInTestRequestData();
+        Queue::fake();
+
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        Queue::assertNotPushed(BatchJob::class);
     }
 
     public function testUploadRefundFileException()
@@ -44,7 +46,7 @@ class RefundBatchFileTest extends TestCase
         // Put improper format data
         $entries[0]['Amount'] = '';
 
-        $this->putBatchFileInTestRequestData($entries);
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->ba->proxyAuth();
 
@@ -68,17 +70,19 @@ class RefundBatchFileTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund', $entries);
 
-        $this->ba->proxyAuth();
-
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/batches/' .$batch->getPublicId();
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
     public function testProcessRefundFile()
     {
+        Mail::fake();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund', $entries);
@@ -98,6 +102,8 @@ class RefundBatchFileTest extends TestCase
 
         $this->assertEquals('batch/download/' . $batch->getFileKeyWithExt(), $file->getLocation());
         $this->assertEquals('batch/download/' . $batch->getFileKey(), $file->getName());
+
+        Mail::assertSent(BatchRefundFileMail::class);
     }
 
     public function testProcessRefundFileWithInvalidFile()
@@ -234,73 +240,6 @@ class RefundBatchFileTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
-    }
-
-    protected function createTempFile($url)
-    {
-        $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-        $uploadedFile = new UploadedFile(
-                               $url,
-                               'file',
-                               $mimeType,
-                               filesize($url),
-                               null,
-                               true);
-       return $uploadedFile;
-    }
-
-    public function startTest($paymentId = null, $amount = null)
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
-
-        $testData = $this->testData[$name];
-
-        return $this->runRequestResponseFlow($testData);
-    }
-
-    protected function putBatchFileInTestRequestData($entries = null)
-    {
-        if ($entries === null)
-        {
-            $entries = $this->getDefaultRefundFileEntries();
-        }
-
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
-
-        $request = & $this->testData[$name]['request'];
-
-        $url = $this->writeToExcelFile($entries, 'upload_refund_test', 'files/batch');
-
-        $uploadedFile = $this->createTempFile($url);
-
-        $request['files']['file'] = $uploadedFile;
-    }
-
-    protected function createAndUploadBatchRefundFile()
-    {
-        $entries = $this->getDefaultRefundFileEntries();
-
-        $paymentId = $entries[0][0];
-        $url = $this->writeToExcelFile($entries, $paymentId .'xlsx', 'files/batch');
-
-        $uploadedFile = $this->createTempFile($url);
-
-        $request = array(
-            'url'       => '/batches',
-            'method'    => 'post',
-            'content' => [
-                'type' => 'refund',
-            ]);
-
-        $request['files']['file'] = $uploadedFile;
-
-        $this->ba->proxyAuth();
-
-        return array($this->makeRequestAndGetContent($request), $entries);
-
     }
 
     protected function getDefaultRefundFileEntries()

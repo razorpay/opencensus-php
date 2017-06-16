@@ -3,15 +3,17 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Carbon\Carbon;
+use Mail;
+
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
+use RZP\Models\Payment\Gateway;
 use RZP\Constants\MailTags;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Rbl_Netbanking_Refunds';
-
-    const EMAIL_BODY = 'Please forward the RBL Netbanking refunds file to the operations team';
 
     protected static $headers = [
         RefundFields::SERIAL_NO,
@@ -47,13 +49,10 @@ class RefundFile extends Base\RefundFile
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         $fileData = [
-            'subject'    => 'RBL Netbanking refunds file for ' . $today,
             'file_path'  => $file['local_file_path'],
             'signed_url' => $signedFileUrl,
             'count'      => count($data) - 1,
-            'date'       => $today,
             'file_name'  => basename($file['local_file_path']),
-            'body'       => self::EMAIL_BODY
         ];
 
         $this->sendRefundEmail($fileData);
@@ -101,21 +100,8 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_RBL);
 
-            $message->from('refunds@razorpay.com', 'Rbl Netbanking refunds');
-
-            $message->subject($fileData['subject']);
-
-            $message->to($emails);
-
-            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::RBL_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 }
