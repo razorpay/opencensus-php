@@ -88,11 +88,14 @@ class CreateBankTransfer extends Migration
      */
     public function down()
     {
-        $table->dropForeign(Table::BANK_TRANSFER . '_' . VirtualAccount::PAYMENT_ID . '_foreign');
+        Schema::table(Table::BANK_TRANSFER, function($table)
+        {
+            $table->dropForeign(Table::BANK_TRANSFER . '_' . BankTransfer::PAYMENT_ID . '_foreign');
 
-        $table->dropForeign(Table::BANK_TRANSFER . '_' . VirtualAccount::VIRTUAL_ACCOUNT_ID . '_foreign');
+            $table->dropForeign(Table::BANK_TRANSFER . '_' . BankTransfer::VIRTUAL_ACCOUNT_ID . '_foreign');
 
-        $table->dropForeign(Table::BANK_TRANSFER . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
+            $table->dropForeign(Table::BANK_TRANSFER . '_' . BankTransfer::MERCHANT_ID . '_foreign');
+        });
 
         Schema::drop(Table::BANK_TRANSFER);
     }

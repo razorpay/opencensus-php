@@ -94,11 +94,14 @@ class CreateVirtualAccountsTable extends Migration
      */
     public function down()
     {
-        $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::CUSTOMER_ID . '_foreign');
+        Schema::table(Table::VIRTUAL_ACCOUNT, function($table)
+        {
+            $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::CUSTOMER_ID . '_foreign');
 
-        $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BANK_ACCOUNT_ID . '_foreign');
+            $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BANK_ACCOUNT_ID . '_foreign');
 
-        $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
+            $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
+        });
 
         Schema::drop(Table::VIRTUAL_ACCOUNT);
     }
