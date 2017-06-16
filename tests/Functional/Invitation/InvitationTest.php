@@ -76,6 +76,8 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
+        $this->ba->appAuth();
+
         $this->startTest();
 
         $invite = \DB::table('invitations')
@@ -112,6 +114,8 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/reject';
 
+        $this->ba->appAuth();
+
         $this->startTest();
 
         $invite = \DB::table('invitations')
@@ -136,6 +140,8 @@ class InvitationTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/hello';
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }

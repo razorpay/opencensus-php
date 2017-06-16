@@ -100,7 +100,7 @@ return [
     'testPostResendInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3/resend',
-            'method'  => 'POST',
+            'method'  => 'PUT',
             'content' => [
                 'sender_name' => 'sender_name'
             ]
