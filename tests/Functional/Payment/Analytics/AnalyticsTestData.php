@@ -106,7 +106,7 @@ return [
         'integration' => 'others',
     ],
 
-    'testRiskScoreAnalyticsFailedPayment' => [
+    'testRiskScoreAnalyticsPaymentFailed' => [
         'response' => [
             'content' => [
                 'error' => [
