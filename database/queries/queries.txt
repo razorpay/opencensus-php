@@ -2142,3 +2142,14 @@ ALTER TABLE payment_analytics
 # Query to add enabled column in IIN
 ALTER TABLE iins
     ADD COLUMN enabled TINYINT(1) DEFAULT 1 AFTER trivia;
+
+# Pre deployment of branch 'payment_links_bulk_import'
+
+ALTER TABLE invoices
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER subscription_id,
+    ADD CONSTRAINT invoices_batch_id_foreign FOREIGN KEY (batch_id) REFERENCES batches (id);
+
+ALTER TABLE batches
+    ADD INDEX batches_created_at_index (created_at),
+    ADD INDEX batches_type_index (type),
+    ADD INDEX batches_status_index (status);

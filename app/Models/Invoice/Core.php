@@ -10,12 +10,15 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
+use RZP\Models\Batch;
+use RZP\Models\Plan\Subscription;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\InvoiceAction;
-use RZP\Models\FileStore;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
@@ -46,10 +49,23 @@ class Core extends Base\Core
         $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
+    /**
+     * Creates invoice
+     *
+     * @param array               $input
+     * @param Merchant\Entity     $merchant
+     * @param Subscription\Entity $subscription - If created via subscription, this
+     *                                            is passed for associations.
+     * @param Batch\Entity        $batch        - If created via batch flow, this
+     *                                            is passed for association.
+     *
+     * @return Entity
+     */
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        $subscription = null): Entity
+        Subscription\Entity $subscription = null,
+        Batch\Entity $batch = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
@@ -60,18 +76,16 @@ class Core extends Base\Core
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
+                        ->setBatch($batch)
                         ->generate($input);
 
-        $this->trace->info(
-            TraceCode::INVOICE_CREATED,
-            $invoice->toArrayPublic()
-        );
+        $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceAction(
+            $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::ISSUED,
+                        InvoiceJob::ISSUED,
                         $invoice->getId());
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -125,9 +139,9 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceAction(
+            $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::UPDATED,
+                        InvoiceJob::UPDATED,
                         $invoice->getId());
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -153,9 +167,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceAction(
+        $job = new InvoiceJob(
                     $this->mode,
-                    InvoiceAction::ISSUED,
+                    InvoiceJob::ISSUED,
                     $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -419,9 +433,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceAction(
+        $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::EXPIRED,
+                        InvoiceJob::EXPIRED,
                         $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -623,6 +637,27 @@ class Core extends Base\Core
         $this->setPdfGenerator($invoice);
 
         return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    /**
+     * Issues all invoices of given $batch, if list of invoice ids are sent
+     * that is used (ensuring those ids are of given batch).
+     *
+     * The method returns success and the actual issue happens asynchronously
+     * in a queue job.
+     *
+     * @param Batch\Entity $batch
+     * @param array        $input
+     *
+     * @return array
+     */
+    public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
+    {
+        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        return ['success' => true];
     }
 
     /**

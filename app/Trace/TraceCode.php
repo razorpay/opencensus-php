@@ -201,6 +201,9 @@ class TraceCode
     const INVOICE_NEW_CUSTOMER                          = 'INVOICE_NEW_CUSTOMER';
     const INVOICE_ACTION_JOB_RECEIVED                   = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                    = 'INVOICE_ACTION_JOB_HANDLED';
+    const INVOICE_BATCH_ISSUE_JOB_RECEIVED              = 'INVOICE_BATCH_ISSUE_JOB_RECEIVED';
+    const INVOICE_BATCH_ISSUE_JOB_HANDLED               = 'INVOICE_BATCH_ISSUE_JOB_HANDLED';
+    const INVOICE_BATCH_ISSUE_JOB_ERROR                 = 'INVOICE_BATCH_ISSUE_JOB_ERROR';
 
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
     const SUBSCRIPTION_PAYMENT_FAILED                   = 'SUBSCRIPTION_PAYMENT_FAILED';
@@ -563,14 +566,18 @@ class TraceCode
 
     const BATCH_CREATED                                 = 'BATCH_CREATED';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
-    const BATCH_PROCESS_FILE                            = 'BATCH_PROCESS_FILE';
+    const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';
     const BATCH_FILE_DELETE                             = 'BATCH_FILE_DELETE';
+    const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
+    const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
+    const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
 
@@ -820,7 +827,6 @@ class TraceCode
 
         self::BATCH_CREATED                             => 'Batch created',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
-        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
         self::BATCH_RETRY                               => 'Manual retry for the batch file',
