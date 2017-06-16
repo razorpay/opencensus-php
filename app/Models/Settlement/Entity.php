@@ -309,7 +309,7 @@ class Entity extends Base\PublicEntity
 
         if ($timestamp !== null)
         {
-            return Carbon::createFromTimestamp($timestamp)->format('d/m/Y');
+            return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
         }
 
         return null;

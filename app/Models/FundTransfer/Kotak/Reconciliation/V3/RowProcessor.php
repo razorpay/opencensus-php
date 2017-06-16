@@ -68,7 +68,7 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->setBankStatusCode($bankStatusCode);
 
         $processedAtDate = $this->parsedData['date_time'];
-        $processedAtTimestamp = Carbon::createFromFormat('d/m/Y H:i:s', $processedAtDate)->timestamp;
+        $processedAtTimestamp = Carbon::createFromFormat('d/m/Y H:i:s', $processedAtDate, 'Asia/Kolkata')->timestamp;
 
         $this->reconEntity->setDateTime($processedAtDate);
 
@@ -98,7 +98,7 @@ class RowProcessor extends Base\RowProcessor
         if ($status === Attempt\Status::PROCESSED)
         {
             $settledOn = Carbon::createFromFormat(
-                            'd-M-y', $this->parsedData['instrument_date'])->timestamp;
+                            'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
 
             $source->setSettledOn($settledOn);
         }
