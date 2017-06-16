@@ -12,12 +12,19 @@ import {
 } from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
-  fetchTeamDetails,
-  updateUser,
-  removeUser,
-  ...NotificationsActions,
-})
+@connect(
+  state => {
+    return {
+      merchantId: state.session.user.current,
+    };
+  },
+  {
+    fetchTeamDetails,
+    updateUser,
+    removeUser,
+    ...NotificationsActions,
+  }
+)
 @reduxForm()
 export default class EditUser extends Component {
   componentWillMount() {
@@ -31,7 +38,7 @@ export default class EditUser extends Component {
       .updateUser(this.props.user.id, fieldProps)
       .then(() => {
         this.props.fetchTeamDetails({
-          merchant_id: this.props.user.current,
+          merchant_id: this.props.merchantId,
         });
         this.props.showNotification({
           type: 'success',
@@ -51,7 +58,7 @@ export default class EditUser extends Component {
       .removeUser(this.props.user.id)
       .then(() => {
         this.props.fetchTeamDetails({
-          merchant_id: this.props.user.current,
+          merchant_id: this.props.merchantId,
         });
         this.props.showNotification({
           type: 'success',
