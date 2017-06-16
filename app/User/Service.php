@@ -443,13 +443,13 @@ class Service extends Base\Service
      */
     protected function attachUserToInvite(User\Entity $user, array $invitation)
     {
-        list($error, $response) = (new Invitation\Service)->acceptInvitationOnApi($invitation['id'], $user->id)
+        list($error, $response) = (new Invitation\Service)->acceptInvitationOnApi($invitation['id'], $user->id);
 
         if (empty($error) === true)
         {
             $user->joinMerchantByIdWithRole($invitation['merchant_id'], $invitation['role']);
 
-            Session::put('current_merchant_id',$invitation['merchant_id']);
+            Session::put('current_merchant_id', $invitation['merchant_id']);
 
             $user->confirm();
 
