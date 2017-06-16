@@ -11,42 +11,42 @@ use Razorpay\OAuth\Application;
 class OAuthApplicationController extends Controller
 {
     /**
-     * @var \RZP\Models\Merchant\Entity
+     * @var \RZP\Http\BasicAuth\BasicAuth
      */
-    protected $merchant;
+    protected $auth;
 
     /**
-     * @var Application\Service
+     * External Service Class
+     *
+     * @var \Razorpay\OAuth\Application\Service
      */
-    protected $appService;
+    protected $service = Application\Service::class;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->merchant = $this->app['basicauth']->getMerchant();
-
-        $this->appService = new Application\Service;
+        $this->auth = $this->app['basicauth'];
     }
 
     public function createApplication()
     {
         $input = Request::all();
 
-        $merchantId = $this->merchant->getId();
+        $merchantId = $this->auth->getMerchantId();
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
-        $app = $this->appService->createApplication($input);
+        $app = $this->service()->createApplication($input);
 
         return ApiResponse::json($app);
     }
 
     public function get(string $id)
     {
-        $merchantId = $this->merchant->getId();
+        $merchantId = $this->auth->getMerchantId();
 
-        $app = $this->appService->fetch($id, $merchantId);
+        $app = $this->service()->fetch($id, $merchantId);
 
         return ApiResponse::json($app);
     }
@@ -55,20 +55,20 @@ class OAuthApplicationController extends Controller
     {
         $input = Request::all();
 
-        $merchantId = $this->merchant->getId();
+        $merchantId = $this->auth->getMerchantId();
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
-        $apps = $this->appService->fetchMultiple($input);
+        $apps = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($apps);
     }
 
     public function delete(string $id)
     {
-        $merchantId = $this->merchant->getId();
+        $merchantId = $this->auth->getMerchantId();
 
-        $this->appService->delete($id, $merchantId);
+        $this->service()->delete($id, $merchantId);
 
         return ApiResponse::json([]);
     }
@@ -77,11 +77,11 @@ class OAuthApplicationController extends Controller
     {
         $input = Request::all();
 
-        $merchantId = $this->merchant->getId();
+        $merchantId = $this->auth->getMerchantId();
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
-        $app = $this->appService->update($id, $input);
+        $app = $this->service()->update($id, $input);
 
         return ApiResponse::json($app);
     }

@@ -95,7 +95,7 @@ abstract class Controller extends BaseController
      *
      * @return \RZP\Models\Base\Service
      */
-    protected function service($service = null): BaseService
+    protected function service($service = null)
     {
         if ($service !== null)
         {
