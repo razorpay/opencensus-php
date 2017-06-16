@@ -83,6 +83,27 @@ class Creator extends Base\Core
      */
     protected $env;
 
+    /**
+     * Flag to signify if file has to be zipped
+     *
+     * @var boolean Zip flag
+     */
+    protected $zipFlag = false;
+
+    /**
+     * Format in which file has to be zipped
+     *
+     * @var string Zip Format
+     */
+    protected $zipFormat = null;
+
+    /**
+     * Command to be used for zipping
+     *
+     * @var string Zip Command
+     */
+    protected $zipCommand = null;
+
     const DEFAULT_STORE    = 's3';
     const DEFAULT_METADATA = [];
 
@@ -191,6 +212,31 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /** Set Zipping Format for file
+     *
+     * @param Zip format
+     *
+     * @return Creator object
+     */
+    public function zip($format = 'zip')
+    {
+        $this->zipFlag = true;
+
+        $this->zipFormat = $format;
+
+        switch ($this->zipFormat)
+        {
+            case 'zip':
+                $this->zipCommand = "zip --junk-paths --move";
+                break;
+
+            default:
+                throw new Exception\LogicException('Not A Valid Zippping Format');
+        }
+
+        return $this;
+    }
+
     /**
      * Set the Store  of File Store
      *
@@ -217,6 +263,20 @@ class Creator extends Base\Core
     public function type(string $type)
     {
         $this->file->setType($type);
+
+        return $this;
+    }
+
+    /**
+     * Set the Password of File Store
+     *
+     * @param string $password Password
+     *
+     * @return Creator object
+     */
+    public function password(string $password)
+    {
+        $this->file->setPassword($password);
 
         return $this;
     }
@@ -350,6 +410,17 @@ class Creator extends Base\Core
         return $this;
     }
 
+    protected function isZipSupported()
+    {
+        if (($this->zipFlag === true) and
+            (($this->localFile !== null) or
+            ($this->localFilePath !== null)))
+        {
+            throw new Exception\LogicException(
+                'Zip is not supported for Local Files');
+        }
+    }
+
     /**
      * Returns Array of File Store Values
      *
@@ -424,6 +495,8 @@ class Creator extends Base\Core
         Format::validateContentTypeForExtension($this->content, $this->file->getExtension());
 
         Type::validateType($this->file->getType());
+
+        $this->isZipSupported();
     }
 
     /**
@@ -498,6 +571,27 @@ class Creator extends Base\Core
             default:
                 throw new Exception\LogicException('Not A Valid Extension');
         }
+
+        if ($this->zipFlag === true)
+        {
+            $this->zipFile();
+        }
+    }
+
+    protected function zipFile()
+    {
+        $zipCommand = $this->zipCommand;
+
+        if (empty($this->file->getPassword()) === false)
+        {
+            $zipCommand .= " --password " . $password;
+        }
+
+        exec($zipCommand . " " . escapeshellarg($this->getZipFullFilePath()) . " " . escapeshellarg($this->getFullFilePath()));
+
+        $this->extension('zip');
+
+        $this->mime('application/zip');
     }
 
     protected function writeTextFile()
@@ -586,6 +680,11 @@ class Creator extends Base\Core
     public function getFullFilePath()
     {
         return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
+    }
+
+    public function getZipFullFilePath()
+    {
+        return $this->getStorageDir() . $this->file->getName() . '.zip' ;
     }
 
     protected function getStorageDir()
