@@ -6,7 +6,9 @@ export default ({ rows, columns }) => {
       <table class="table table-hover">
         <thead>
           <tr>
-            {columns.map((column, index) => <th key={index}>{column[0]}</th>)}
+            {columns.map((column, index) => (
+              <th class={column.columnClass} key={index}>{column.title}</th>
+            ))}
           </tr>
         </thead>
         {rows &&
@@ -14,7 +16,9 @@ export default ({ rows, columns }) => {
             {rows.map(item => (
               <EntityItemRow key={item.id}>
                 {columns.map((column, index) => (
-                  <td key={index}>{column[1](item)}</td>
+                  <td class={column.columnClass} key={index}>
+                    {column.value(item)}
+                  </td>
                 ))}
               </EntityItemRow>
             ))}
