@@ -8,12 +8,7 @@ import BatchListFilter from 'merchant/components/Refunds/BatchListFilter';
 import {
   fetchBatchUploads as fetchAll,
 } from 'merchant/modules/refunds/batchuploads';
-import {
-  batchId,
-  batchCount,
-  status,
-  batchDownload,
-} from 'rzp/ui/Table/column';
+import { batchId, batchCount, status, batchDownload } from 'rzp/ui/item/pair';
 
 @connect(
   state => {
