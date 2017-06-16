@@ -7,11 +7,12 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Models\BankAccount;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
-class BeneficiaryFile
+class BeneficiaryFile extends Base\Core
 {
     protected static $fileToWriteName = 'Kotak_Beneficiary_File';
 
@@ -69,14 +70,14 @@ class BeneficiaryFile
 
         $merchantsCount = count($list);
 
-        $fileData = $this->writeToFile($data);
+        $fileData = $this->generateFile($data);
 
         $this->sendKotakBeneficiaryFileMail($fileData, $merchantsCount);
 
         return ['url' => $fileData['local_file_path']];
     }
 
-    protected function writeToFile(array $data): array
+    protected function generateFile(array $data): array
     {
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -106,18 +107,11 @@ class BeneficiaryFile
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $mode = $this->getMode();
+        $mode = $this->mode;
 
-        return static::$fileToWriteName . '_' . $mode . '_' . $time;
-    }
+        $fileName = static::$fileToWriteName . '_' . $mode . '_' . $time;
 
-    protected function getMode(): string
-    {
-        $app = App::getFacadeRoot();
-
-        $mode = $app['basicauth']->getMode();
-
-        return $mode;
+        return $fileName;
     }
 
     protected function sendKotakBeneficiaryFileMail(array $fileData, int $merchantsCount)
