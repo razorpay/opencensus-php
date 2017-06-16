@@ -58,11 +58,11 @@ class EsDao
      * We only have two indexes, one for each mode. And all the notes of different
      * entities are indexed in one of them as a type.
      *
-     * @param string $mode
+     * @param string|null $mode
      */
-    public function setIndexName($mode)
+    public function setIndexName(string $mode = null)
     {
-        if (empty($mode) === true)
+        if ($mode === null)
         {
             if (isset($this->app['rzp.mode']) === true)
             {
@@ -74,7 +74,16 @@ class EsDao
             }
         }
 
-        $this->indexName = $this->config->get('database.es_index')[$mode];
+        $config = $this->config->get('database.es_index');
+
+        $this->app['trace']->debug(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'mode'   => $mode,
+                'config' => $config,
+            ]);
+
+        $this->indexName = $config[$mode];
     }
 
     public function setIndexNameByValue(string $indexName)
