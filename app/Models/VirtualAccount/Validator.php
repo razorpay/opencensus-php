@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',
         Entity::RECEIVER_TYPE   => 'sometimes|filled|array',
-        ENTITY::NOTES           => 'sometimes|notes',
+        Entity::NOTES           => 'sometimes|notes',
     ];
 
     protected static $editRules = [
@@ -29,17 +29,11 @@ class Validator extends Base\Validator
     {
         $receiverTypes = $input[Entity::RECEIVER_TYPE];
 
-        foreach ($receiverTypes as $type)
+        if (Receiver::areTypesValid($receiverTypes) === false)
         {
-            if (Receiver::isTypeValid($type) === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPE,
-                    'receiver_type',
-                    [
-                        'receiver_type' => $type,
-                    ]);
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPE,
+                'receiver_type');
         }
     }
 }

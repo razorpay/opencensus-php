@@ -62,7 +62,6 @@ class Repository extends Base\Repository
 
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
-
         $query = $this->newQuery()
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
                       ->where(Entity::TYPE, '=', Type::VIRTUAL);

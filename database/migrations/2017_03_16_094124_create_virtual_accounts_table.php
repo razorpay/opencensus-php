@@ -80,6 +80,8 @@ class CreateVirtualAccountsTable extends Migration
                   ->on_delete('restrict');
 
             $table->index(VirtualAccount::VPA);
+            $table->index(VirtualAccount::DESCRIPTOR);
+            $table->index(VirtualAccount::STATUS);
             $table->index(VirtualAccount::CREATED_AT);
             $table->index(VirtualAccount::DELETED_AT);
         });
@@ -95,6 +97,8 @@ class CreateVirtualAccountsTable extends Migration
         $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::CUSTOMER_ID . '_foreign');
 
         $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BANK_ACCOUNT_ID . '_foreign');
+
+        $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
 
         Schema::drop(Table::VIRTUAL_ACCOUNT);
     }

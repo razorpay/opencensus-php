@@ -34,21 +34,23 @@ class Service extends Base\Service
 
         $this->setDefaultReceiverTypeIfNeeded($input);
 
-        $this->repo->transaction(function() use ($input, $customer)
+        $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
         {
-            $this->virtualAccount = $this->core->create($input, $this->merchant, $customer);
+            $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
-            $this->buildReceivers($this->virtualAccount, $input[Entity::RECEIVER_TYPE]);
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPE]);
 
-            $this->repo->saveOrFail($this->virtualAccount);
+            $this->repo->saveOrFail($virtualAccount);
+
+            return $virtualAccount;
         });
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
-            $this->virtualAccount->toArrayPublic()
+            $virtualAccount->toArrayPublic()
         );
 
-        return $this->virtualAccount->toArrayPublic();
+        return $virtualAccount->toArrayPublic();
     }
 
     public function fetch(string $id)
@@ -75,10 +77,8 @@ class Service extends Base\Service
 
     public function update(string $id, array $input)
     {
-        Entity::verifyIdAndStripSign($id);
-
         $virtualAccount = $this->repo->virtual_account
-                               ->findByIdAndMerchant($id, $this->merchant);
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
 
@@ -87,10 +87,8 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        Entity::verifyIdAndStripSign($id);
-
         $virtualAccount = $this->repo->virtual_account
-                               ->findByIdAndMerchant($id, $this->merchant);
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->repo->deleteOrFail($virtualAccount);
 
@@ -141,7 +139,7 @@ class Service extends Base\Service
 
             $association = camel_case($receiverType);
 
-            $this->virtualAccount->$association()->associate($receiver);
+            $virtualAccount->$association()->associate($receiver);
         }
     }
 

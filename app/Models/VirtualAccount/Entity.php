@@ -89,7 +89,7 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo('RZP\Models\BankAccount\Entity', 'bank_account_id', 'id');
+        return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
     public function customer()
@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
 
     public function getPublicCustomerId()
     {
-        if ($this->hasCustomer())
+        if ($this->hasCustomer() === true)
         {
             return Customer\Entity::getSignedId($this->getAttribute(self::CUSTOMER_ID));
         }
@@ -214,9 +214,7 @@ class Entity extends Base\PublicEntity
 
     public function incrementAmountPaid(int $amount)
     {
-        $amountPaid = $this->getAmountPaid() + $amount;
-
-        $this->setAmountPaid($amountPaid);
+        $this->increment(self::AMOUNT_PAID, $amount);
 
         if (($this->hasAmountExpected() === true) and
             ($this->getAmountPaid() >= $this->getAmountExpected()))
@@ -227,8 +225,6 @@ class Entity extends Base\PublicEntity
 
     public function incrementAmountReceived(int $amount)
     {
-        $amountReceived = $this->getAmountReceived() + $amount;
-
-        $this->setAmountReceived($amountReceived);
+        $this->increment(self::AMOUNT_RECEIVED, $amount);
     }
 }

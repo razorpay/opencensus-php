@@ -10,7 +10,7 @@ use RZP\Models\Customer\Entity as Customer;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant $merchant, Customer $customer = null)
+    public function create(array $input, Merchant $merchant, Customer $customer = null): Entity
     {
         $virtualAccount = (new Entity);
 

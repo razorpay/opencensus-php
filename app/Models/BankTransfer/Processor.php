@@ -13,6 +13,9 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 class Processor extends Base\Core
 {
     protected $virtualAccount;
+    protected $core;
+    protected $provider;
+    protected $merchant;
 
     const DEFAULT_BANK_TRANSFER_ARRAY = [
         Payment::CURRENCY => Currency::INR,
@@ -27,6 +30,9 @@ class Processor extends Base\Core
 
         $this->core = new Core;
 
+        // These flows are initiated by the provider bank hitting
+        // our APIs. Provider banks are currently authenticated by
+        // registering them as apps, and using AppAuth.
         $this->provider = $this->app['basicauth']->getInternalApp();
     }
 
@@ -68,7 +74,8 @@ class Processor extends Base\Core
 
             $res = $paymentProcessor->process($paymentInput);
 
-            $payment = $this->repo->payment
+            $payment = $this->repo
+                            ->payment
                             ->findByPublicId($res['razorpay_payment_id']);
 
             $bankTransfer->payment()->associate($payment);
@@ -85,7 +92,8 @@ class Processor extends Base\Core
     {
         $utr = $bankTransfer->getUtr();
 
-        $duplicateBankTransfer = $this->repo->bank_transfer
+        $duplicateBankTransfer = $this->repo
+                                      ->bank_transfer
                                       ->findByUtr($utr);
 
         if ($duplicateBankTransfer === null)
@@ -157,7 +165,8 @@ class Processor extends Base\Core
 
         $bankAccountId = $bankAccount->getId();
 
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->getActiveVirtualAccountFromBankAccountId($bankAccountId);
 
         return $virtualAccount;
@@ -167,7 +176,8 @@ class Processor extends Base\Core
     {
         $bankCode = Provider::getBankCode($this->provider);
 
-        $bankAccount = $this->repo->bank_account
+        $bankAccount = $this->repo
+                            ->bank_account
                             ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
         return $bankAccount;
@@ -177,7 +187,7 @@ class Processor extends Base\Core
     {
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
-        $paymentArray[Payment::AMOUNT] = $bankTransfer->getAmount();
+        $paymentArray[Payment::AMOUNT]      = $bankTransfer->getAmount();
         $paymentArray[Payment::CUSTOMER_ID] = $this->virtualAccount->getPublicCustomerId();
 
         return $paymentArray;

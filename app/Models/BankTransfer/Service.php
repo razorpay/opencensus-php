@@ -6,16 +6,14 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Method;
-use RZP\Models\Currency\Currency;
 use RZP\Models\VirtualAccount\Provider;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Service extends Base\Service
 {
     protected $validator;
-
     protected $processor;
+    protected $provider;
+    protected $ip;
 
     public function __construct()
     {

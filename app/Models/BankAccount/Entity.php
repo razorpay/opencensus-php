@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Models\VirtualAccount;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -350,7 +351,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::MERCHANT;
     }
 
-    public function associateVirtualAccount($virtualAccount)
+    public function associateVirtualAccount(VirtualAccount\Entity $virtualAccount)
     {
         $this->attributes[self::ENTITY_ID] = $virtualAccount->getId();
 

@@ -23,8 +23,8 @@ class Validator extends Base\Validator
     {
         if (Mode::isValid($mode) === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid bank transfer Mode: ' . $mode);
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid bank transfer mode: ' . $mode);
         }
     }
 }

@@ -2349,7 +2349,7 @@ trait Authorize
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $data);
 
-            return $this->processAuthResponse($request, $payment);
+            return $this->processAuth($payment);
         }
         catch (Exception\BaseException $e)
         {

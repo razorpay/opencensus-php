@@ -54,9 +54,11 @@ class Receiver
         $this->descriptor = $descriptor;
     }
 
-    public static function isTypeValid(string $type): bool
+    public static function areTypesValid(array $receiverTypes): bool
     {
-        return (defined(__CLASS__ . '::' . strtoupper($type)));
+        $invalidTypes = array_diff($receiverTypes, self::TYPES);
+
+        return (empty($invalidTypes) === true);
     }
 
     public function buildBankAccount(Entity $virtualAccount)
@@ -156,7 +158,10 @@ class Receiver
                 ]
             );
 
-        assertTrue(strlen($accountNumber) == self::ACCOUNT_NUMBER_LENGTH);
+        if (strlen($accountNumber) !== self::ACCOUNT_NUMBER_LENGTH)
+        {
+            throw new Exception\LogicException('Error in account number generation.');
+        }
 
         return $accountNumber;
     }

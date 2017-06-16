@@ -2147,3 +2147,5 @@ ALTER TABLE payment_analytics
 ALTER TABLE iins
     ADD COLUMN enabled TINYINT(1) DEFAULT 1 AFTER trivia;
 
+ALTER TABLE bank_accounts
+    MODIFY COLUMN type VARCHAR(40);

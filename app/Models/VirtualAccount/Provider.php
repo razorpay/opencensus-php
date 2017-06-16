@@ -2,7 +2,6 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -20,10 +19,10 @@ class Provider
     // We may have more than one root per provider, but
     // this will be leveraged later.
     const ROOT = [
-        Provider::YESBANK   => [
+        self::YESBANK   => [
             // Todo
         ],
-        Provider::KOTAK     => [
+        self::KOTAK     => [
             'RAZO',
             // 'RZRP',
             // 'RAZR',
@@ -32,7 +31,7 @@ class Provider
             // DO NOT REFUND PAYMENTS MADE HERE
             // 'RZRN',
         ],
-        Provider::VVS       => [
+        self::VVS       => [
             'RAZO',
         ],
     ];
@@ -47,25 +46,25 @@ class Provider
     // for the virtual accounts use case
     //
     const DEFAULT_DETAILS = [
-        Provider::YESBANK => [
+        self::YESBANK => [
             BankAccount::IFSC_CODE => 'YESB0CMSNOC',
         ],
-        Provider::KOTAK => [
+        self::KOTAK => [
             BankAccount::IFSC_CODE => 'KKBK0000958',
         ],
-        Provider::VVS => [
+        self::VVS => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
     ];
 
     const IP = [
-        Provider::YESBANK => [
+        self::YESBANK => [
             // Todo
         ],
-        Provider::KOTAK => [
+        self::KOTAK => [
             '14.141.97.12',
         ],
-        Provider::VVS => [
+        self::VVS => [
             '*',
         ],
     ];

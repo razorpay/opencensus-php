@@ -64,6 +64,16 @@ class CreateBankTransfer extends Migration
                   ->on(Table::VIRTUAL_ACCOUNT)
                   ->on_delete('restrict');
 
+            $table->foreign(BankTransfer::PAYMENT_ID)
+                  ->references('id')
+                  ->on(Table::PAYMENT)
+                  ->on_delete('restrict');
+
+            $table->foreign(BankTransfer::MERCHANT_ID)
+                  ->references('id')
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
             $table->index(BankTransfer::UTR);
             $table->index(BankTransfer::PAYER_ACCOUNT);
             $table->index(BankTransfer::PAYEE_ACCOUNT);
@@ -78,6 +88,12 @@ class CreateBankTransfer extends Migration
      */
     public function down()
     {
+        $table->dropForeign(Table::BANK_TRANSFER . '_' . VirtualAccount::PAYMENT_ID . '_foreign');
+
+        $table->dropForeign(Table::BANK_TRANSFER . '_' . VirtualAccount::VIRTUAL_ACCOUNT_ID . '_foreign');
+
+        $table->dropForeign(Table::BANK_TRANSFER . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
+
         Schema::drop(Table::BANK_TRANSFER);
     }
 }
