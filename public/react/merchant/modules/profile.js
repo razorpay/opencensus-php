@@ -18,10 +18,10 @@ export const fetchBankAccount = () => {
 };
 
 // To accept invitation
-export const acceptInvitation = (type, inviteId) => {
+export const acceptInvitation = inviteId => {
   return () => {
     return ajax({
-      url: `/settings/invitations/${inviteId}/${type}`,
+      url: `/settings/invitations/${inviteId}/accept`,
       method: 'post',
       appendModeInURL: false,
     });
@@ -29,7 +29,7 @@ export const acceptInvitation = (type, inviteId) => {
 };
 
 // To reject invitation
-export const rejectInvitation = (type, inviteId, userId) => {
+export const rejectInvitation = (inviteId, userId) => {
   return () => {
     return ajax({
       url: '/user/generic',
@@ -39,7 +39,7 @@ export const rejectInvitation = (type, inviteId, userId) => {
         route_name: 'invitation_action',
         url_params: JSON.stringify({
           '{id}': inviteId,
-          '{action}': type,
+          '{action}': 'reject',
         }),
         body: {
           user_id: userId,

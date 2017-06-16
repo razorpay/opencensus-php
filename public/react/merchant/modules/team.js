@@ -9,7 +9,7 @@ const INVITATION_REMOVE = 'INVITATION_REMOVE';
 const USER_UPDATE = 'USER_UPDATE';
 const USER_REMOVE = 'USER_REMOVE';
 
-const getMerchantInvitationsData = () => {
+const fetchInvitations = () => {
   var params = {
     route_name: 'invitation_fetch',
   };
@@ -21,7 +21,7 @@ const getMerchantInvitationsData = () => {
   });
 };
 
-const getMerchantUsersData = merchant_id => {
+const fetchUsers = merchant_id => {
   var params = {
     route_name: 'merchant_fetch_users',
     url_params: JSON.stringify({
@@ -40,8 +40,8 @@ export const fetchTeamDetails = params => {
   return {
     type: TEAM_FETCH,
     payload: Promise.all([
-      getMerchantInvitationsData(),
-      getMerchantUsersData(params.merchant_id),
+      fetchInvitations(),
+      fetchUsers(params.merchant_id),
     ]).then(values => {
       if (!values[0].success || !values[1].success) {
         throw "Couldn't load team details";

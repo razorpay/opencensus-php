@@ -72,11 +72,11 @@ export default class Profile extends Component {
     });
   }
 
-  acceptInvitation = (type, invite) => {
+  acceptInvitation = invite => {
     let message = 'You have accepted the invite.';
 
     return this.props
-      .acceptInvitation(type, invite.id)
+      .acceptInvitation(invite.id)
       .then(() => {
         this.props.showNotification({
           type: 'success',
@@ -94,11 +94,11 @@ export default class Profile extends Component {
       });
   };
 
-  rejectInvitation = (type, invite) => {
+  rejectInvitation = invite => {
     let message = 'You have rejected the invite.';
 
     return this.props
-      .rejectInvitation(type, invite.id, this.props.user.user.id)
+      .rejectInvitation(invite.id, this.props.user.user.id)
       .then(() => {
         this.props.showNotification({
           type: 'success',

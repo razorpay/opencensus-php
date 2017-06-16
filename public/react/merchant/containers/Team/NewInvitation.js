@@ -71,7 +71,7 @@ export default class NewInvitation extends Component {
                   required(),
                   email('Invalid Email'),
                   value => {
-                    if (value === this.props.user.email) {
+                    if (value === this.props.user.user.email) {
                       return "You can't invite yourself";
                     }
                   },
