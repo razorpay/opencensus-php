@@ -147,6 +147,8 @@ app
             if (data.success) {
               $scope.signup.data.email = data.data.email;
               $scope.lock_email = data.data.email ? true : false;
+            } else {
+              $state.transitionTo('access.signin');
             }
           })
           .error(function() {});
