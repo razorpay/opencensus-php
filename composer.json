@@ -36,7 +36,7 @@
         "schuppo/password-strength": "~1.5",
         "razorpay/slack-laravel": "1.3.9",
         "laravel/tinker": "1.0.1",
-        "razorpay/oauth": "dev-l5.4-upgrade"
+        "razorpay/oauth": "dev-master"
     },
     "repositories": [
         {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6be82061c0c2fe5372acc5cedd8b2c0f",
+    "content-hash": "7705f0dcb33f355798e2193a79865a5a",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -4679,16 +4679,16 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "dev-l5.4-upgrade",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "b2717a59bbee2b3d231307d4586e9fafb32aa325"
+                "reference": "d1f3cf17594422edb41c9143bb52e039dd5e12b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/b2717a59bbee2b3d231307d4586e9fafb32aa325",
-                "reference": "b2717a59bbee2b3d231307d4586e9fafb32aa325",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/d1f3cf17594422edb41c9143bb52e039dd5e12b9",
+                "reference": "d1f3cf17594422edb41c9143bb52e039dd5e12b9",
                 "shasum": ""
             },
             "require": {
@@ -4722,10 +4722,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/l5.4-upgrade",
+                "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2017-06-16T08:16:13+00:00"
+            "time": "2017-06-16T09:33:10+00:00"
         },
         {
             "name": "razorpay/razorpay",
