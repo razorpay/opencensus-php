@@ -17,13 +17,34 @@ export const fetchBankAccount = () => {
   };
 };
 
-// To accept-reject invitation
-export const updateInvitation = (type, inviteId) => {
+// To accept invitation
+export const acceptInvitation = (type, inviteId) => {
   return () => {
     return ajax({
       url: `/settings/invitations/${inviteId}/${type}`,
-      method: type === 'reject' ? 'delete' : 'post',
+      method: 'post',
       appendModeInURL: false,
+    });
+  };
+};
+
+// To reject invitation
+export const rejectInvitation = (type, inviteId, userId) => {
+  return () => {
+    return ajax({
+      url: '/user/generic',
+      method: 'post',
+      appendModeInURL: false,
+      data: {
+        route_name: 'invitation_action',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+          '{action}': type,
+        }),
+        body: {
+          user_id: userId,
+        },
+      },
     });
   };
 };

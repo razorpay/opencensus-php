@@ -72,25 +72,39 @@ export default class Profile extends Component {
     });
   }
 
-  updateInvitation = (type, invite) => {
-    let message = type === 'accept'
-      ? 'You have accepted the invite.'
-      : 'You have rejected the invite.';
+  acceptInvitation = (type, invite) => {
+    let message = 'You have accepted the invite.';
 
     return this.props
-      .updateInvitation(type, invite.id)
+      .acceptInvitation(type, invite.id)
       .then(() => {
         this.props.showNotification({
           type: 'success',
           message,
         });
-        if (type === 'reject') {
-          this.props.fetchUser();
-        } else {
-          setTimeout(() => {
-            location.reload();
-          }, 400);
-        }
+        setTimeout(() => {
+          location.reload();
+        }, 400);
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  rejectInvitation = (type, invite) => {
+    let message = 'You have rejected the invite.';
+
+    return this.props
+      .rejectInvitation(type, invite.id, this.props.user.user.id)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message,
+        });
+        this.props.fetchUser();
       })
       .catch(err => {
         this.props.showNotification({
@@ -144,8 +158,8 @@ export default class Profile extends Component {
           {invitations.length
             ? <Invitations
                 invitations={invitations}
-                onAcceptClick={this.updateInvitation}
-                onRejectClick={this.updateInvitation}
+                onAcceptClick={this.acceptInvitation}
+                onRejectClick={this.rejectInvitation}
               />
             : null}
 
