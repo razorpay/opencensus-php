@@ -295,7 +295,7 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    protected function acceptInvitationOnApi(string $id, $userId)
+    public function acceptInvitationOnApi(string $id, $userId)
     {
         $error = $response = [];
 

@@ -71,7 +71,7 @@ export const resendInvitation = (inviteId, data) => {
     type: INVITATION_RESEND,
     payload: ajax({
       url: '/user/generic',
-      method: 'post',
+      method: 'put',
       appendModeInURL: false,
       data: {
         route_name: 'invitation_resend',
