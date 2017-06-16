@@ -12,7 +12,7 @@ import {
 } from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(state => state.session, {
+@connect(null, {
   fetchTeamDetails,
   updateUser,
   removeUser,
@@ -22,7 +22,7 @@ const ROLES = without(roles, 'owner');
 export default class EditUser extends Component {
   componentWillMount() {
     this.props.initialize({
-      role: this.props.user.userRole,
+      role: this.props.user.role,
     });
   }
 

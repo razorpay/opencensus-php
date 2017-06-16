@@ -299,7 +299,6 @@ return [
             'routeName' => 'invitations_delete'
         ],
         'invitation_fetch'                  => 'invitations',
-        'invitation_action'                 => 'invitations/{id}/{action}',
     ],
 
     // auth
@@ -371,6 +370,9 @@ return [
 
         // Get Merchant Users
         'merchant_fetch_users'              => 'merchants/{id}/users',
+
+        // Accept/Reject Invitation
+        'invitation_action'                 => 'invitations/{id}/{action}',
     ],
 
     // auth
