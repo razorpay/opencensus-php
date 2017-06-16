@@ -610,7 +610,7 @@ class FeeCalculator
 
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
-        $fee = $this->compareBoundsAndGetFee($fee,$min, $max);
+        $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
 
         $fee = (int) ceil($fee);
 
@@ -735,14 +735,14 @@ class FeeCalculator
       * @param int $max
       * @return int
       */
-    protected function compareBoundsAndGetFee($fee, $min, $max) : int
+    protected function compareBoundsAndGetFee($fee, $min, $max)
     {
         if ($fee < $min)
         {
             $fee = $min;
         }
 
-        if ((is_null($max) === false) and ($fee > (int) $max))
+        if ((is_null($max) === false) and ($fee > $max))
         {
             $fee = $max;
         }
