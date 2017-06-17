@@ -18,7 +18,7 @@ class EsDao
     // Logically separated instance for heimdall
     protected $esHeimdall;
 
-    public function __construct()
+    public function __construct(string $mode = null)
     {
         $this->app = App::getFacadeRoot();
 
@@ -26,6 +26,8 @@ class EsDao
 
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
+
+        $this->setIndexNameForMode($mode);
 
         $this->es = $this->app['es'];
 
@@ -43,8 +45,21 @@ class EsDao
         $this->es->setHeimdallESClient([$heimdallHost]);
     }
 
-    public function setIndexNameForMode(string $mode)
+    /**
+     * Sets default value for $indexName name based on $mode passed.
+     * - If $mode is null, 'rzp.mode' of app is used,
+     * - If both of above is null, 'test' mode is used.
+     *
+     * @param string|null $mode
+     */
+    public function setIndexNameForMode(string $mode = null)
     {
+        if ($mode === null)
+        {
+            $mode = (isset($this->app['rzp.mode']) === true) ?
+                        $this->app['rzp.mode'] : Mode::TEST;
+        }
+
         $config = $this->config->get('database.es_index');
 
         $this->indexName = $config[$mode];
