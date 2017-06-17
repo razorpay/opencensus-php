@@ -186,9 +186,10 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             $this->trace->info(TraceCode::ES_SAVE_REQUEST, $data);
 
-            $esDao = new Base\EsDao();
+            // Because EsDao is being instantiated in queue, app's rzp.mode
+            // won't be set and so explicitly passing $mode as argument.
 
-            $esDao->setIndexNameForMode($mode);
+            $esDao = new Base\EsDao($mode);
 
             $this->storeEntity($esType, $entityArray, $esDao);
 
