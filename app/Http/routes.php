@@ -42,9 +42,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::post('/track_lead', 'UserController@trackLead');
-        Route::options('/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
-        Route::get('/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
-        Route::get('/{token}/detail', 'UserController@getDetailsFromToken');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -57,6 +54,9 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
+        Route::options('/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
+        Route::get('/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
+        Route::get('/token/{token}/details', 'UserController@getDetailsFromToken');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()

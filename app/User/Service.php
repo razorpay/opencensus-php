@@ -886,24 +886,18 @@ class Service extends Base\Service
         $data = null;
         $error = null;
 
-        if ($user !== null)
-        {
-            $token = str_random(30);
-            $cacheKey = $this->makeOauthTokenCacheKey($token);
+        $token = str_random(30);
+        $cacheKey = $this->makeOauthTokenCacheKey($token);
 
-            $data = [
-                'id'            => $user->id,
-                'merchant_id'   => $user->currentMerchant()->id,
-            ];
+        $data = [
+            'id'            => $user->id,
+            'merchant_id'   => $user->currentMerchant()->id,
+            'role'          => $user->currentMerchant()->role,
+        ];
 
-            $this->cache->put($cacheKey, $data, 10);
+        $this->cache->put($cacheKey, $data, 10);
 
-            $data['token'] = $token;
-        }
-        else
-        {
-            $error[] = 'User is not signed in.';
-        }
+        $data['token'] = $token;
 
         return [$error, $data];
     }
@@ -923,9 +917,16 @@ class Service extends Base\Service
         {
             $data = $this->cache->get($cacheKey);
 
-            $user = (new Entity)->findOrFail($data['id']);
-            $data['user'] = $user;
-            $data['user']['merchant_id'] = $data['merchant_id'];
+            if ($data['role'] !== 'owner')
+            {
+                $error[] = 'You do not have the required permissions to allow access.';
+            }
+            else
+            {
+                $user = (new Entity)->findOrFail($data['id']);
+                $data['user'] = $user;
+                $data['user']['merchant_id'] = $data['merchant_id'];
+            }
         }
         else
         {

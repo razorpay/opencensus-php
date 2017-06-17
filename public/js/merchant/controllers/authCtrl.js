@@ -584,7 +584,12 @@ app
                   userDetails.merchants &&
                   userDetails.merchants[userDetails.id].role;
                 if ($state.params.next !== undefined) {
-                  window.location = $state.params.next;
+                  var next = $state.params.next;
+                  var domain = next.split('?');
+                  domain = domain[0];
+                  if (domain === 'https://auth.razorpay.com/authorize') {
+                    window.location.href = next;
+                  }
                 }
                 $scope.goToDashboard(role);
               } else {
