@@ -2074,7 +2074,7 @@ trait Authorize
             {
                 if ($payment->order->getPaymentCapture() === true)
                 {
-                    assertTrue($payment->isCaptured() === true);
+                    assertTrue($payment->hasBeenCaptured() === true);
                 }
 
                 $this->fillReturnDataWithOrder($payment, $returnData);
