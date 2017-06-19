@@ -2753,6 +2753,19 @@ return [
         ],
     ],
 
+    'testIssueInvoiceByBatchId' => [
+        'request' => [
+            'url'     => '/invoices/batch/batch_00000000000001/issue',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 

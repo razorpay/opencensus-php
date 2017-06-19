@@ -2,7 +2,6 @@
 
 namespace RZP\Jobs;
 
-use App;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -12,6 +11,12 @@ use RZP\Models\Invoice;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
+/**
+ * @deprecated
+ *
+ * Moved to Jobs/Invoice name space as it's more organized.
+ * Will remove this file in 2nd deployment.
+ */
 class InvoiceAction extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
@@ -31,12 +36,10 @@ class InvoiceAction extends Job implements ShouldQueue
     const EXPIRED               = 'expired';
     const AUTHORIZED            = 'authorized';
 
-    protected $mode;
     protected $event;
     protected $id;
 
     protected $invoice;
-    protected $trace;
     protected $core;
     protected $handler;
 
@@ -49,27 +52,31 @@ class InvoiceAction extends Job implements ShouldQueue
 
     public function handle()
     {
+        parent::handle();
+
+        $this->core = new Invoice\Core;
+
         try
         {
-            $this->init();
-
-            $timeStarted = microtime(true);
-
             $this->trace->debug(
                 TraceCode::INVOICE_ACTION_JOB_RECEIVED,
                 $this->getTracePayload());
 
-            $handlerResult = $this->{$this->handler}();
+            $timeStarted = microtime(true);
 
-            $this->delete();
+            $this->setAndValidateHandler();
+
+            $this->invoice = $this->repoManager->invoice->findOrFail($this->id);
+
+            $handlerResult = $this->{$this->handler}();
 
             $timeTaken = microtime(true) - $timeStarted;
 
             $tracePayload = $this->getTracePayload(
-                [
-                    'time_taken'     => $timeTaken,
-                    'handler_result' => $handlerResult,
-                ]);
+                                    [
+                                        'time_taken'     => $timeTaken,
+                                        'handler_result' => $handlerResult,
+                                    ]);
 
             if ($handlerResult === false)
             {
@@ -81,6 +88,8 @@ class InvoiceAction extends Job implements ShouldQueue
                 $this->trace->debug(
                     TraceCode::INVOICE_ACTION_JOB_HANDLED, $tracePayload);
             }
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {
@@ -89,58 +98,24 @@ class InvoiceAction extends Job implements ShouldQueue
     }
 
     /**
-     * - Initializes instance variables: core, trace etc.
-     * - Sets application mode, database connection based on the mode.
-     * - Validates event
+     * Sets and validates the handler method based on the event.
      *
      * @return null
      * @throws LogicException
      */
-    private function init()
+    private function setAndValidateHandler()
     {
-        $app = App::getFacadeRoot();
-
-        $repo = $app['repo'];
-
-        $this->trace = $app['trace'];
-
-        //
-        // Set application mode as well as database connection with given mode.
-        //
-
-        $app['rzp.mode'] = $this->mode;
-
-        \Database\DefaultConnection::set($this->mode);
-
-        //
-        // Get invoice object
-        //
-
-        //
-        // This will not return back deleted invoice.
-        // But, a deleted invoice will never reach this flow
-        // since only a draft invoice can be deleted.
-        // We don't perform any queue actions on a draft invoice.
-        //
-        $this->invoice = $repo->invoice->findOrFail($this->id);
-
-        //
-        // Sets handler after validates it too.
-        //
-
         $this->handler = 'handle' . studly_case($this->event);
 
         if (method_exists($this, $this->handler) === false)
         {
-            throw new LogicException(
-                "InvoiceAction: Handler - $this->handler not found.",
-                ErrorCode::SERVER_ERROR_MISSING_HANDLER,
-                [
-                    'invoice_id' => $this->invoice->getId(),
-                ]);
-        }
+            $error = "InvoiceAction: Handler - $this->handler not found.";
 
-        $this->core = new Invoice\Core;
+            throw new LogicException(
+                $error,
+                ErrorCode::SERVER_ERROR_MISSING_HANDLER,
+                $this->getTracePayload());
+        }
     }
 
     // ------------------------- Handlers for various events ---------
@@ -194,7 +169,7 @@ class InvoiceAction extends Job implements ShouldQueue
 
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+        if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->delete();
         }

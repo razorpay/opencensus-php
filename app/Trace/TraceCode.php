@@ -201,6 +201,9 @@ class TraceCode
     const INVOICE_NEW_CUSTOMER                          = 'INVOICE_NEW_CUSTOMER';
     const INVOICE_ACTION_JOB_RECEIVED                   = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                    = 'INVOICE_ACTION_JOB_HANDLED';
+    const INVOICE_BATCH_ISSUE_JOB_RECEIVED              = 'INVOICE_BATCH_ISSUE_JOB_RECEIVED';
+    const INVOICE_BATCH_ISSUE_JOB_HANDLED               = 'INVOICE_BATCH_ISSUE_JOB_HANDLED';
+    const INVOICE_BATCH_ISSUE_JOB_ERROR                 = 'INVOICE_BATCH_ISSUE_JOB_ERROR';
 
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
     const SUBSCRIPTION_PAYMENT_FAILED                   = 'SUBSCRIPTION_PAYMENT_FAILED';
@@ -461,9 +464,17 @@ class TraceCode
     const SCHEDULE_MIGRATION_FAILED                 = 'SCHEDULE_MIGRATION_FAILED';
     const SCHEDULE_MIGRATION_COMPLETE               = 'SCHEDULE_MIGRATION_COMPLETE';
 
-    const ECOLLECT_VALIDATION_REQUEST               = 'ECOLLECT_VALIDATION_REQUEST';
-    const ECOLLECT_VALIDATION_DUPLICATE_UTR         = 'ECOLLECT_VALIDATION_DUPLICATE_UTR';
-    const ECOLLECT_PAY_REQUEST                      = 'ECOLLECT_PAY_REQUEST';
+    const VIRTUAL_ACCOUNT_CREATE_REQUEST            = 'VIRTUAL_ACCOUNT_CREATE_REQUEST';
+    const VIRTUAL_ACCOUNT_CREATED                   = 'VIRTUAL_ACCOUNT_CREATED';
+    const VIRTUAL_ACCOUNT_NUMBER_GENERATED          = 'VIRTUAL_ACCOUNT_NUMBER_GENERATED';
+
+    const BANK_TRANSFER_PROCESS_REQUEST             = 'BANK_TRANSFER_PROCESS_REQUEST';
+    const BANK_TRANSFER_PROCESSING_SUCCESSFUL       = 'BANK_TRANSFER_PROCESSING_SUCCESSFUL';
+    const BANK_TRANSFER_PROCESSING_FAILED           = 'BANK_TRANSFER_PROCESSING_FAILED';
+    const BANK_TRANSFER_PROCESS_DUPLICATE_UTR       = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
+    const BANK_TRANSFER_NOTIFY_REQUEST              = 'BANK_TRANSFER_NOTIFY_REQUEST';
+    const BANK_TRANSFER_UNEXPECTED_NOTIFY           = 'BANK_TRANSFER_UNEXPECTED_NOTIFY';
+    const BANK_TRANSFER_IP_VALIDATION_FAILED        = 'BANK_TRANSFER_IP_VALIDATION_FAILED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -531,6 +542,8 @@ class TraceCode
     const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
+    const ES_SYNC_PUSH_PAYLOAD                      = 'ES_SYNC_PUSH_PAYLOAD';
+    const ES_SYNC_PUSH_FAILED                       = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
@@ -563,14 +576,18 @@ class TraceCode
 
     const BATCH_CREATED                                 = 'BATCH_CREATED';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
-    const BATCH_PROCESS_FILE                            = 'BATCH_PROCESS_FILE';
+    const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';
     const BATCH_FILE_DELETE                             = 'BATCH_FILE_DELETE';
+    const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
+    const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
+    const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
 
@@ -820,7 +837,6 @@ class TraceCode
 
         self::BATCH_CREATED                             => 'Batch created',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
-        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
         self::BATCH_RETRY                               => 'Manual retry for the batch file',

@@ -17,6 +17,7 @@ use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Services\Elfin\Service as Elfin;
 
@@ -55,6 +56,13 @@ class Generator extends Base\Core
      */
     protected $subscription;
 
+    /**
+     * The batch entity using which invoice was created.
+     *
+     * @var Batch\Entity
+     */
+    protected $batch;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -77,11 +85,23 @@ class Generator extends Base\Core
     /**
      * @param null|Subscription\Entity $subscription
      *
-     * @return $this
+     * @return Generator
      */
-    public function setSubscription($subscription)
+    public function setSubscription(Subscription\Entity $subscription = null)
     {
         $this->subscription = $subscription;
+
+        return $this;
+    }
+
+    /**
+     * @param null|Batch\Entity $batch
+     *
+     * @return Generator
+     */
+    public function setBatch(Batch\Entity $batch = null)
+    {
+        $this->batch = $batch;
 
         return $this;
     }
@@ -116,7 +136,12 @@ class Generator extends Base\Core
     }
 
     /**
-     * @param array                     $input
+     * Pre-processes invoice creation.
+     * - Creates and associate customers
+     * - Associates subscription or batch relations if applicable
+     * - Creates and associates line items
+     *
+     * @param array $input
      *
      * @throws BadRequestValidationFailureException
      */
@@ -132,6 +157,11 @@ class Generator extends Base\Core
             {
                 $this->invoice->setSubscriptionStatus(Status::HALTED);
             }
+        }
+
+        if ($this->batch !== null)
+        {
+            $this->invoice->batch()->associate($this->batch);
         }
 
         $this->createLineItems($input);

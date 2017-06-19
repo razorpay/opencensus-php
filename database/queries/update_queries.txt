@@ -471,3 +471,23 @@ set f.merchant_id = s.merchant_id;
 
 # Updates amount_paid value for old rows
 UPDATE orders SET amount_paid = amount where status = 'paid' and amount_paid = 0;
+
+# Update settled_on, processed_at in settlement table
+update settlements s
+join
+(
+SELECT source_id, UNIX_TIMESTAMP(STR_TO_DATE(date_time, '%d/%m/%Y %H:%i:%s')) AS processed_at_timestamp, (UNIX_TIMESTAMP(DATE(STR_TO_DATE(date_time, '%d/%m/%Y %H:%i:%s')))) AS settled_at_timestamp
+FROM fund_transfer_attempts
+WHERE fund_transfer_attempts.status = 'processed'
+AND fund_transfer_attempts.`date_time` is not null
+) f
+ON s.id = f.source_id
+SET s.processed_at = f.processed_at_timestamp,
+s.settled_on = f.settled_at_timestamp;
+
+# Update settled_on, processed_at in payout table
+update payouts
+set processed_at = updated_at, settled_on = updated_at
+where utr is not null
+and processed_at is null;
+

@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
-use RZP\Jobs\InvoiceAction;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\DispatchRouter;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice;
@@ -245,9 +245,9 @@ class Notify
 
             if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
             {
-                $job = new InvoiceAction(
+                $job = new InvoiceJob(
                             $this->mode,
-                            InvoiceAction::AUTHORIZED,
+                            InvoiceJob::AUTHORIZED,
                             $this->invoice->getId());
 
                 (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);

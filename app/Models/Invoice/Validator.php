@@ -29,6 +29,7 @@ class Validator extends Base\Validator
     const CREATE_ISSUED = 'createIssued';
     const EDIT_DRAFT    = 'editDraft';
     const EDIT_ISSUED   = 'editIssued';
+    const ISSUE_BATCH   = 'issueBatch';
 
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
@@ -60,7 +61,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'sometimes|epoch',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
-        Entity::EXPIRE_BY           => 'sometimes|epoch',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
     ];
 
     //
@@ -91,7 +92,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'sometimes|epoch',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
-        Entity::EXPIRE_BY           => 'sometimes|epoch',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
     ];
 
     protected static $createIssuedRules = [
@@ -117,7 +118,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'sometimes|epoch',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
-        Entity::EXPIRE_BY           => 'sometimes|epoch',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
     ];
 
     protected static $editDraftRules  = [
@@ -137,7 +138,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::BILLING_START       => 'sometimes|epoch',
         Entity::BILLING_END         => 'sometimes|epoch',
-        Entity::EXPIRE_BY           => 'sometimes|epoch',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'sometimes|boolean',
     ];
 
@@ -146,6 +147,13 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+    ];
+
+    protected static $issueBatchRules = [
+        Entity::IDS                 => 'sometimes|array|min:1|max:100',
+        Entity::IDS . '.*'          => 'required|public_id|size:18',
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
     ];
 
     //

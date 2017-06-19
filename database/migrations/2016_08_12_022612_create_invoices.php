@@ -45,6 +45,9 @@ class CreateInvoices extends Migration
             $table->char(Entity::SUBSCRIPTION_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::BATCH_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Entity::DATE)
                   ->nullable();
 

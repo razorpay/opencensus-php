@@ -50,6 +50,9 @@ class CreateIins extends Migration {
             $table->string(IIN\Entity::TRIVIA)
                   ->nullable();
 
+            $table->tinyInteger(IIN\Entity::ENABLED)
+                  ->default(1);
+
             $table->index(IIN\Entity::OTP_READ);
             $table->index(IIN\Entity::EMI);
             $table->index(IIN\Entity::CREATED_AT);

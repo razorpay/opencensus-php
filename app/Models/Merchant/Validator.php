@@ -70,7 +70,8 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
-        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean'
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
+        Entity::HANDLE                      => 'sometimes|nullable|size:4|custom|unique:merchants,handle,null',
     ];
 
     protected static $actionRules = [
@@ -103,6 +104,18 @@ class Validator extends Base\Validator
     protected static $featureValidators = [
         'visible_features',
     ];
+
+    protected function validateHandle($attribute, $handle)
+    {
+        if ($handle !== null)
+        {
+            if ($handle !== strtoupper($handle))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY);
+            }
+        }
+    }
 
     public function validateLogo($imageDetails)
     {

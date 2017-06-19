@@ -22,7 +22,7 @@ trait OtpResend
 
         $this->prePaymentOtpResendProcessing($payment, $input, $gatewayInput);
 
-        if ($this->canRunOtpPaymentFlow($payment, $input))
+        if ($this->canRunOtpPaymentFlow($payment) === true)
         {
             $data = $this->runOtpResendFlow($gatewayInput, $payment);
 
@@ -63,6 +63,9 @@ trait OtpResend
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
     {
         $this->verifyPaymentMethodEnabled($payment);
+
+        // Set metadata in payment
+        $payment->setMetadata($input);
 
         //
         // Call gateway input

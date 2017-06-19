@@ -11,6 +11,8 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID                    = 'payment_id';
     const MERCHANT_ID                   = 'merchant_id';
     const CHECKOUT_ID                   = 'checkout_id';
+    const RISK_SCORE                    = 'risk_score';
+    const RISK_ENGINE                   = 'risk_engine';
     const ATTEMPTS                      = 'attempts';
     const LIBRARY                       = 'library';
     const LIBRARY_VERSION               = 'library_version';
@@ -83,6 +85,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MERCHANT_ID,
         self::CHECKOUT_ID,
+        self::RISK_SCORE,
+        self::RISK_ENGINE,
         self::ATTEMPTS,
         self::LIBRARY,
         self::LIBRARY_VERSION,
@@ -103,7 +107,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::ATTEMPTS  => 'int',
+        self::ATTEMPTS   => 'int',
+        self::RISK_SCORE => 'float',
     ];
 
     // ----------------------- Relations ---------------------------------------
@@ -289,11 +294,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MERCHANT_ID, $merchant_id);
     }
 
+    public function setRiskScore($score)
+    {
+        $this->setAttribute(self::RISK_SCORE, $score);
+    }
+
+    public function setRiskEngine($riskEngine)
+    {
+        $this->setAttribute(self::RISK_ENGINE, $riskEngine);
+    }
 
     // ----------------------- Setters End--------------------------------------
 
-    // ----------------------- Mutator -----------------------------------------
-    //
+    // ----------------------- Accessors ---------------------------------------
 
     protected function getLibraryAttribute()
     {
@@ -336,6 +349,17 @@ class Entity extends Base\PublicEntity
 
         return Metadata::getStringForValue($value, Metadata::INTEGRATION_VALUES);
     }
+
+    protected function getRiskEngineAttribute()
+    {
+        $value = $this->attributes[self::RISK_ENGINE];
+
+        return Metadata::getStringForValue($value, Metadata::RISK_ENGINE_VALUES);
+    }
+
+    // ----------------------- Accessors End -----------------------------------
+
+    // ----------------------- Mutators ----------------------------------------
 
     protected function setPlatformAttribute($platform)
     {
@@ -382,5 +406,10 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::REFERER] = $referer;
     }
 
-    // ----------------------- Mutator Ends ------------------------------------
+    protected function setRiskEngineAttribute($engine)
+    {
+        $this->attributes[self::RISK_ENGINE] = Metadata::getValueForRiskEngine($engine);
+    }
+
+    // ----------------------- Mutators End ------------------------------------
 }

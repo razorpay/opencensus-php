@@ -74,6 +74,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::UPI)
                   ->default(0);
 
+            $table->tinyInteger(Methods::BANK_TRANSFER)
+                  ->default(0);
+
             $table->tinyInteger(Methods::AEPS)
                   ->default(0);
 

@@ -9,7 +9,6 @@ use DB;
 use RZP\Constants\Table;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Admin;
 use RZP\Models\Admin\Permission\Repository as PermRepo;
 use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 
