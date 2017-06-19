@@ -106,7 +106,7 @@ export const saveGST = data => {
 let initialState = {
   invitations: [],
   rzp_gst: {
-    p_gstin: '19AAAAAA12345YYYY',
+    p_gstin: '08AAGCR4375J1ZY',
   },
   merchant_gst: {},
 };
