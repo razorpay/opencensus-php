@@ -101,7 +101,7 @@ class Entity extends Base\PublicEntity
 
     public function virtualAccount()
     {
-        return $this->hasOne('RZP\Models\VirtualAccount\Entity');
+        return $this->belongsTo('RZP\Models\VirtualAccount\Entity');
     }
 
     // ----------------------- Generators --------------------------------------

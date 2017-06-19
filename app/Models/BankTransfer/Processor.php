@@ -82,6 +82,8 @@ class Processor extends Base\Core
 
             $bankTransfer->merchant()->associate($this->merchant);
 
+            $bankTransfer->virtualAccount()->associate($this->virtualAccount);
+
             $this->repo->saveOrFail($bankTransfer);
 
             $this->updateVirtualAccount($bankTransfer);
