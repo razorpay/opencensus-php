@@ -60,8 +60,10 @@ class Entity
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
+    const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';

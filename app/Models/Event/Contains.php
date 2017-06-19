@@ -10,6 +10,7 @@ class Contains
     protected static $data = [
         Type::PAYMENT_AUTHORIZED        => [Constants::PAYMENT],
         Type::PAYMENT_FAILED            => [Constants::PAYMENT],
+        Type::PAYMENT_CAPTURED          => [Constants::PAYMENT],
         Type::ORDER_PAID                => [Constants::PAYMENT, Constants::ORDER],
         Type::INVOICE_PAID              => [Constants::PAYMENT, Constants::ORDER, Constants::INVOICE],
         Type::VPA_EDITED                => [Constants::VPA, Constants::CUSTOMER, Constants::BANK_ACCOUNT],

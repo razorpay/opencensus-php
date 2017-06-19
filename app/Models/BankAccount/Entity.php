@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Models\VirtualAccount;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -32,7 +33,6 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                = 'deleted_at';
     const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
     const MPIN                      = 'mpin';
-    const VIRTUAL                   = 'virtual';
 
     const NAME                      = 'name';
     const IFSC                      = 'ifsc';
@@ -127,11 +127,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
-        self::VIRTUAL                => 'bool',
-    ];
-
-    protected $defaults = [
-        self::VIRTUAL                => false,
     ];
 
     protected $generateIdOnCreate = true;
@@ -281,16 +276,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
     }
 
-    public function setVirtual($virtual)
-    {
-        return $this->setAttribute(self::VIRTUAL, $virtual);
-    }
-
-    public function isVirtual()
-    {
-        return $this->getAttribute(self::VIRTUAL);
-    }
-
     protected function getIfscCodeAttribute()
     {
         $ifscCode = $this->attributes[self::IFSC_CODE];
@@ -364,6 +349,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_ID] = $merchant->getId();
 
         $this->attributes[self::TYPE] = Type::MERCHANT;
+    }
+
+    public function associateVirtualAccount(VirtualAccount\Entity $virtualAccount)
+    {
+        $this->attributes[self::TYPE] = Type::VIRTUAL_ACCOUNT;
+
+        $this->source()->associate($virtualAccount);
     }
 
     public function getRedactedAccountNumber()

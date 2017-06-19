@@ -1050,6 +1050,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
     }
 
+    public function isBankTransfer()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);

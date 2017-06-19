@@ -46,6 +46,7 @@ final class Route
         'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',                'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                          => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
+        'payment_bank_transfer_fetch'             => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
@@ -166,8 +167,13 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
-        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
-        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
+        'bank_transfer_process'                   => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
+        'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
+        'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
+        'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
+        'virtual_account_delete'                  => ['delete',   'virtual_accounts/{id}',                          'VirtualAccountController@delete'                                   ],
+        'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
+        'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -725,6 +731,12 @@ final class Route
         'tax_group_create',
         'tax_group_update',
         'tax_group_delete',
+        'virtual_account_create',
+        'virtual_account_edit',
+        'virtual_account_delete',
+        'virtual_account_fetch',
+        'virtual_account_fetch_multiple',
+        'payment_bank_transfer_fetch',
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
@@ -827,8 +839,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
-        'ecollect_validate',
-        'ecollect_pay',
+        'bank_transfer_process',
+        'bank_transfer_notify',
         'iin_fetch_by_iin',
         'card_update_saved',
         'iin_fetch_multiple',
@@ -1259,13 +1271,18 @@ final class Route
         ],
 
         'kotak' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_process',
+            'bank_transfer_notify',
         ],
 
         'yesbank' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_process',
+            'bank_transfer_notify',
+        ],
+
+        'vvs' => [
+            'bank_transfer_process',
+            'bank_transfer_notify',
         ],
 
         'mailgun' => [
@@ -1334,6 +1351,11 @@ final class Route
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
         'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
+        'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
     ];
 
     /*
