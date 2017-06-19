@@ -2169,3 +2169,6 @@ ALTER TABLE batches
     ADD INDEX batches_created_at_index (created_at),
     ADD INDEX batches_type_index (type),
     ADD INDEX batches_status_index (status);
+
+ALTER TABLE invitations
+    MODIFY COLUMN id INT auto_increment;
