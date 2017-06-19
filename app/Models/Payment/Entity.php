@@ -1135,7 +1135,7 @@ class Entity extends Base\PublicEntity
 
     public function getTransferId()
     {
-        return $this->getAttribute(SELF::TRANSFER_ID);
+        return $this->getAttribute(self::TRANSFER_ID);
     }
 
     public function getAmount()
@@ -1170,7 +1170,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountTransferred()
     {
-        return $this->getAttribute(SELF::AMOUNT_TRANSFERRED);
+        return $this->getAttribute(self::AMOUNT_TRANSFERRED);
     }
 
     public function getAmountUntransferred()
@@ -1421,6 +1421,11 @@ class Entity extends Base\PublicEntity
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
+    }
+
+    public function getGatewayCaptured()
+    {
+        return $this->getAttribute(self::GATEWAY_CAPTURED);
     }
 
     /**
@@ -1891,7 +1896,9 @@ class Entity extends Base\PublicEntity
     /**
      * Updates Payment amount_paidout field
      *
-     * @param  int    $amount
+     * @param  int $amount
+     *
+     * @throws Exception\LogicException
      */
     public function payoutAmount(int $amount)
     {
