@@ -376,7 +376,6 @@ export default class BusinessDetailsForm extends Component {
                       name="gstin"
                       component="input"
                       class="form-control"
-                      placeholder="GST Identification Number"
                     />
                   </div>
                 </div>
@@ -390,7 +389,6 @@ export default class BusinessDetailsForm extends Component {
                       name="p_gstin"
                       component="input"
                       class="form-control"
-                      placeholder="Provisional GST Identification Number"
                     />
                   </div>
                 </div>
