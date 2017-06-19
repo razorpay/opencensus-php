@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Invitation;
 
 use DB;
+use Mail;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class InvitationTest extends TestCase
@@ -18,18 +20,35 @@ class InvitationTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('merchant', ['id' => self::DEFAULT_MERCHANT_ID]);
+        $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_MERCHANT_ID ]);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
     }
 
     public function testPostSendInvitationToNewUser()
     {
+        Mail::fake();
+
         $this->startTest();
+
+        Mail::assertSent(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+            $this->assertArrayHasKey('merchant_name', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.invitation.new', $mail->view);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToExistingUser()
     {
+        Mail::fake();
+
         $this->fixtures->create('user',
                                 [
                                     'id'    => '1000InviteUser',
@@ -37,6 +56,19 @@ class InvitationTest extends TestCase
                                 ]);
 
         $this->startTest();
+
+        Mail::assertSent(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+            $this->assertArrayHasKey('merchant_name', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.invitation.existing', $mail->view);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToInvitedUser()

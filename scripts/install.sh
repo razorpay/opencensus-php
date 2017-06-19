@@ -22,5 +22,3 @@ cd /home/ubuntu/api/ && php artisan migrate --force && php artisan migrate --dat
 # Take the app up
 echo  "Take the app up"
 cd /home/ubuntu/api/ && php artisan up
-
-sudo service supervisor restart
