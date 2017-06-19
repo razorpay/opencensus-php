@@ -2130,11 +2130,11 @@ ALTER TABLE `refunds`
 
 ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
+# Virtual Accounts changes
 ALTER TABLE merchants
     ADD COLUMN handle VARCHAR(4) AFTER brand_color;
 
 ALTER TABLE bank_accounts
-    ADD COLUMN `virtual` TINYINT(1) NOT NULL DEFAULT 0 AFTER beneficiary_mobile,
     MODIFY COLUMN beneficiary_address1 VARCHAR(30),
     MODIFY COLUMN beneficiary_city VARCHAR(30),
     MODIFY COLUMN beneficiary_state VARCHAR(2),
@@ -2143,6 +2143,13 @@ ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_email VARCHAR(255),
     MODIFY COLUMN beneficiary_mobile CHAR(32),
     ADD INDEX bank_accounts_account_number_index (account_number);
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN type VARCHAR(40);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi,
+    ADD INDEX `methods_bank_transfer_index` (`bank_transfer`);
 
 ALTER TABLE payment_analytics
     ADD COLUMN risk_score DECIMAL(11,4) NULL AFTER checkout_id,

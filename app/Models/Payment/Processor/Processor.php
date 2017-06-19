@@ -1063,6 +1063,12 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        // Bank transfers are customer-initiated, and so are auto-captured.
+        if ($payment->isBankTransfer() === true)
+        {
+            return true;
+        }
+
         //
         // We do an auto capture only if payment is associated with an order.
         //

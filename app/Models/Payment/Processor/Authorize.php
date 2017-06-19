@@ -64,12 +64,42 @@ trait Authorize
 
         $this->validateOfferIfApplicable($payment);
 
-        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+        $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
-        return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+        if ($ret !== null)
+        {
+            return $ret;
+        }
+
+        return $this->processAuth($payment);
     }
 
-    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput): array
+    protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
+    {
+        if ($this->shouldHitGateway($payment) === false)
+        {
+            $this->repo->saveOrFail($payment);
+
+            return;
+        }
+
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+        $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+        $this->createAnalyticsLog($payment);
+
+        //
+        // If $request is not null, then payment is two-step process
+        // where client needs to provide additional info via his browser.
+        //
+        if ($request !== null)
+        {
+            return $this->getPaymentGatewayRequestData($request, $payment);
+        }
+    }
+
+    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
     {
         $totalTerminals = count($this->selectedTerminals);
 
@@ -77,7 +107,7 @@ trait Authorize
 
         $retryAttempts = 0;
 
-        $request = null;
+        $request = [];
 
         $retry = false;
 
@@ -89,7 +119,6 @@ trait Authorize
         // In the above scenario, we will have 2 records in terminal analytics, but only one record
         // for the entire payment in payment analytics. The terminal chosen here in payment analytics
         // will be the last terminal tried.
-        //
 
         while ($retryAttempts < $maxRetryAttempts)
         {
@@ -166,7 +195,17 @@ trait Authorize
             }
         }
 
-        return $this->processAuthResponse($request, $payment);
+        return $request;
+    }
+
+    protected function shouldHitGateway(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function logAndCheckForAuthRetry($e, $payment): bool
@@ -209,19 +248,8 @@ trait Authorize
      *
      * @return array|mixed
      */
-    protected function processAuthResponse($request, Payment\Entity $payment): array
+    protected function processAuth(Payment\Entity $payment): array
     {
-        $this->createAnalyticsLog($payment);
-
-        //
-        // If $request is not null, then payment is two-step process
-        // where client needs to provide additional info via his browser.
-        //
-        if ($request !== null)
-        {
-            return $this->getPaymentGatewayRequestData($request, $payment);
-        }
-
         $this->updateAndNotifyPaymentAuthorized();
 
         $this->updateTwoFactorAuthForOneStepPayment();
@@ -286,7 +314,8 @@ trait Authorize
         // Except in the cases of recurring, because, here we know that
         // we have manually skipped/by-passed the 2FA.
 
-        if ($payment->terminal->isNon3DSRecurring() === true)
+        if (($payment->terminal !== null) and
+            ($payment->terminal->isNon3DSRecurring() === true))
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
@@ -1413,6 +1442,10 @@ trait Authorize
                 $this->verifyUpiEnabled();
                 break;
 
+            case Payment\Method::BANK_TRANSFER:
+                $this->verifyBankTransferEnabled();
+                break;
+
             case Payment\Method::AEPS:
                 $this->verifyAepsEnabled();
                 break;
@@ -2314,7 +2347,7 @@ trait Authorize
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $data);
 
-            return $this->processAuthResponse($request, $payment);
+            return $this->getPaymentGatewayRequestData($request, $payment);
         }
         catch (Exception\BaseException $e)
         {
@@ -2481,6 +2514,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyBankTransferEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isBankTransferEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 
@@ -2661,7 +2706,7 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            if ($payment->terminal->isUsed() === false)
+            if ($payment->terminal !== null)
             {
                 $payment->terminal->setUsed();
 
@@ -2714,6 +2759,12 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
+        // No gateway for bank transfer, everything is internal
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
         $terminalMode = $payment->terminal->getMode();
 
         if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
