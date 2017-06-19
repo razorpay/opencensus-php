@@ -321,6 +321,9 @@ return [
         'payment_capture'                   => 'payments/{id}/capture',
         // View Payment Refunds
         'payment_fetch_refunds'             => 'payments/{id}/refunds',
+        // Offer create / update
+        'offer_create'                      => 'offers',
+        'offer_update'                      => 'offers/{id}',
     ],
 
     // auth

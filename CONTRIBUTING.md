@@ -5,9 +5,8 @@
 3. Ensure that tests pass
 4. If you have made a UI change, please add screenshots of all affected screens on the PR
 5. If you have made any Javascript changes, ensure that:
-  - The linter is good with your changes. We use `jshint`.
-  - The config is already present in a `.jshintrc` file.
-  - Semicolons are expected.
+  - You have prettier setup and working.
+  - See the README for this
 6. If you have touched any class/function, please make sure that it reads like *Modern PHP*.
 This means:
   - Use square bracket arrays. If a code you are touching has `array()`, convert it to `[]`.
