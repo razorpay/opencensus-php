@@ -610,9 +610,11 @@ class FeeCalculator
 
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
-        $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
-
         $fee = (int) ceil($fee);
+
+        // Fee is checked with bounds after being rounded up.
+        // This ensures fee will always be within the bound.
+        $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
 
         $rzpFee = $this->createFeeBreakup(
                                 $rule->getFeature(),
