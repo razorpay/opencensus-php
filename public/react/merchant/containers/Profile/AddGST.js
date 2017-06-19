@@ -9,6 +9,25 @@ import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
+function validate(values) {
+  const errors = {};
+  const errorMsg = 'Must be 15 characters';
+
+  let { gst_type, p_gstin = '', gstin = '' } = values;
+
+  if (gst_type === 'p_gstin') {
+    if (p_gstin.length !== 15) {
+      errors.p_gstin = errorMsg;
+    }
+  } else if (gst_type === 'gstin') {
+    if (gstin.length !== 15) {
+      errors.gstin = errorMsg;
+    }
+  }
+
+  return errors;
+}
+
 const selector = formValueSelector('newGST');
 @connect(
   state => {
@@ -24,6 +43,7 @@ const selector = formValueSelector('newGST');
 )
 @reduxForm({
   form: 'newGST',
+  validate,
 })
 export default class AddGST extends Component {
   state = {};
@@ -39,12 +59,9 @@ export default class AddGST extends Component {
     });
   }
 
-  save = ({ gst_type, ...fieldProps }) => {
-    if (gst_type === 'gstin') {
-      fieldProps = {
-        gstin: fieldProps.gstin,
-      };
-    }
+  save = ({ gst_type, ...otherProps }) => {
+    let fieldProps = {};
+    fieldProps[gst_type] = otherProps[gst_type];
 
     return this.props
       .saveGST(fieldProps)
