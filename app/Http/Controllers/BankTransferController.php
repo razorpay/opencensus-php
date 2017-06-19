@@ -32,4 +32,13 @@ class BankTransferController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchBankTransferForPayment(string $paymentId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchBankTransferForPayment($paymentId);
+
+        return ApiResponse::json($response);
+    }
 }

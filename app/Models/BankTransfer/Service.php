@@ -84,6 +84,19 @@ class Service extends Base\Service
         ];
     }
 
+    public function fetchBankTransferForPayment(string $paymentId)
+    {
+        $payment = $this->repo
+                        ->payment
+                        ->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $bankTransfer = $this->repo
+                             ->bank_transfer
+                             ->findByPayment($payment);
+
+        return $bankTransfer->toArrayPublic();
+    }
+
     protected function validateProviderIp(string $provider, string $ip)
     {
         if (Provider::validateIp($provider, $ip) === false)

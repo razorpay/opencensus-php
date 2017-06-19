@@ -58,6 +58,44 @@ class BankTransferTest extends TestCase
         $this->assertEquals('pay_'.$bankTransfer['payment_id'], $payment['id']);
     }
 
+    public function testBankTransferProcessAndFetchDetails()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(5000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(5000000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/'.$payment['id'].'/bank_transfer',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['id']);
+        $this->assertNotNull($response['utr']);
+
+        $this->assertEquals('neft', $response['mode']);
+        $this->assertEquals($virtualAccount['id'], $response['virtual_account_id']);
+        $this->assertEquals($payment['id'], $response['payment_id']);
+        $this->assertEquals('HDFC', $response['payer_bank']);
+
+        $this->assertStringStartsWith('XXXX-XXXX-XXXX-', $response['payer_account']);
+    }
+
     public function testBankTransferProcessDuplicateUtr()
     {
         $accountNumber = $this->bankAccount['account_number'];

@@ -4,6 +4,8 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\VirtualAccount;
 
 class Entity extends Base\PublicEntity
 {
@@ -47,6 +49,8 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
+    const PAYER_BANK         = 'payer_bank';
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_ACCOUNT,
@@ -65,6 +69,9 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::MODE,
         self::VIRTUAL_ACCOUNT_ID,
+        self::PAYMENT_ID,
+        self::PAYER_ACCOUNT,
+        self::PAYER_BANK,
     ];
 
     protected $casts = [
@@ -81,6 +88,16 @@ class Entity extends Base\PublicEntity
         self::EXPECTED => false,
         self::NOTIFIED => false,
     ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::PAYMENT_ID,
+        self::PAYER_ACCOUNT,
+        self::PAYER_BANK,
+    ];
+
+    protected static $sign = 'bt';
 
     protected $entity = Constants\Entity::BANK_TRANSFER;
 
@@ -114,6 +131,37 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters -----------------------------------------
+
+    public function setPublicPayerAccountAttribute(array & $array)
+    {
+        $ac = $array[self::PAYER_ACCOUNT];
+
+        // Get account number in redacted form\
+        $repeat = ceil((strlen($ac) - 4) / 4);
+
+        $array[self::PAYER_ACCOUNT] = str_repeat('XXXX-', $repeat) . substr($ac, -4);
+    }
+
+    public function setPublicPayerBankAttribute(array & $array)
+    {
+        $ifsc = $array[self::PAYER_IFSC];
+
+        $array[self::PAYER_BANK] = substr($ifsc, 0, 4);
+    }
+
+    public function setPublicVirtualAccountIdAttribute(array & $array)
+    {
+        $virtualAccountId = $array[self::VIRTUAL_ACCOUNT_ID];
+
+        $array[self::VIRTUAL_ACCOUNT_ID] = VirtualAccount\Entity::getSignedId($virtualAccountId);
+    }
+
+    public function setPublicPaymentIdAttribute(array & $array)
+    {
+        $paymentId = $array[self::PAYMENT_ID];
+
+        $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
+    }
 
     public function getAmount()
     {
