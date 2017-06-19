@@ -223,7 +223,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function editConfig(Entity $merchant, array $input): Entity
+    public function editConfig($merchant, $input): Entity
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -232,14 +232,9 @@ class Core extends Base\Core
                 'input'       => $input,
             ]);
 
-        $this->repo->transaction(function () use ($merchant, $input)
-        {
-            $this->editGstIfApplicable($merchant->merchantDetail, $input);
+        $merchant->edit($input, 'editConfig');
 
-            $merchant->edit($input, 'editConfig');
-
-            $this->saveAndNotify($merchant);
-        });
+        $this->saveAndNotify($merchant);
 
         return $merchant;
     }
@@ -317,28 +312,6 @@ class Core extends Base\Core
 
             return $data;
         }
-    }
-
-    /**
-     * If GST details are passed in the input, edit on merchantDetail entity
-     *
-     * @param Detail\Entity $merchantDetail
-     * @param array         $input
-     */
-    protected function editGstIfApplicable(Detail\Entity $merchantDetail, array & $input)
-    {
-        $gstFields = [Detail\Entity::GSTIN, Detail\Entity::P_GSTIN];
-
-        $editable = array_intersect_key($input, array_flip($gstFields));
-
-        if (empty($editable) === false)
-        {
-            $merchantDetail->edit($editable);
-
-            $this->repo->saveOrFail($merchantDetail);
-        }
-
-        $input = array_except($input, $gstFields);
     }
 
     public function action($merchant, $input)
