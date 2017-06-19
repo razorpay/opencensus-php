@@ -197,7 +197,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
 
-        return $merchant->toArray();
+        return $merchant->toArrayConfig();
     }
 
     public function fetchBalance($merchantId = null)
