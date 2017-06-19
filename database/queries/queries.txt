@@ -2175,3 +2175,8 @@ ALTER TABLE invitations
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN time BIGINT;
+
+# GST fields
+ALTER TABLE merchant_details
+    ADD COLUMN gstin VARCHAR(255) AFTER business_doe,
+    ADD COLUMN p_gstin VARCHAR(255) AFTER gstin;
