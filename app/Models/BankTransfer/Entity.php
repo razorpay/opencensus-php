@@ -86,6 +86,10 @@ class Entity extends Base\PublicEntity
         self::UTR,
     ];
 
+    protected static $modifiers = [
+        self::AMOUNT,
+    ];
+
     protected $defaults = [
         self::EXPECTED => false,
         self::NOTIFIED => false,
@@ -132,7 +136,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $input[self::REQ_UTR]);
     }
 
-    // ----------------------- Getters -----------------------------------------
+    // ----------------------- Public Setters ----------------------------------
 
     public function setPublicPayerAccountAttribute(array & $array)
     {
@@ -170,6 +174,15 @@ class Entity extends Base\PublicEntity
             $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
         }
     }
+
+    // -------------------------- Modifiers ------------------------------------
+
+    public function modifyAmount(array & $input)
+    {
+        $input[self::AMOUNT] = (int) ($input[self::AMOUNT] * 100);
+    }
+
+    // -------------------------- Getters --------------------------------------
 
     public function getAmount()
     {
