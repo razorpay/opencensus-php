@@ -38,7 +38,11 @@ return [
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
-            Permission::VIEW_MERCHANT_BALANCE => 'View merchant balance in merchant details',
+            Permission::VIEW_MERCHANT_BALANCE => [
+                'description' => 'View merchant balance in merchant details',
+                'assignable' => true,
+                'workflow' => false
+            ],
             Permission::VIEW_MERCHANT_FEATURES => [
                 'description' => '',
                 'assignable' => true,
@@ -484,18 +488,42 @@ return [
                 'assignable' => true,
                 'workflow' => false
             ],
-            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
-            Permission::VIEW_MERCHANT_REPORT   => 'View Merchant Reports',
+            Permission::DELETE_MERCHANT_FEATURES => [
+                'description' => 'Delete a merchant feature',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_MERCHANT_REPORT   => [
+                'description' => 'View Merchant Reports',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         PermissionCategory::PRICING => [
-            Permission::VIEW_PRICING_LIST => 'View Pricing Plans',
-            Permission::CREATE_PRICING_PLAN => 'Create Pricing Plan',
-            Permission::DELETE_PRICING_PLAN_RULES => 'Delete Pricing Plan Rule',
+            Permission::VIEW_PRICING_LIST => [
+                'description' => 'view pricinglist',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_PRICING_PLAN => [
+                'description' => 'create pricing plan',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_PRICING_PLAN_RULES => [
+                'description' => 'delete pricing plan rules',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         PermissionCategory::ENTITY => [
-            Permission::VIEW_ALL_ENTITY => 'View all entities data'
+            Permission::VIEW_ALL_ENTITY => [
+                'description' => 'view all entity',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // UAM
