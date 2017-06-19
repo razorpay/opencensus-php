@@ -117,7 +117,7 @@ trait VirtualAccountTrait
             'mode'           => 'neft',
             'transaction_id' => 'utr_'.rand(10000000,99999999),
             'time'           => time(),
-            'amount'         => 10000,
+            'amount'         => 100,
             'description'    => 'Test bank transfer',
         ];
     }
