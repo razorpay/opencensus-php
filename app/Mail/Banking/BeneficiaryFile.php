@@ -70,7 +70,7 @@ class BeneficiaryFile extends Mailable
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $this->data['merchantsCount'] .'.';
+                        'Beneficiaries Count is '. $this->data['merchants_count'] .'.';
 
         $this->with($data);
 
@@ -79,7 +79,7 @@ class BeneficiaryFile extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->data['filePath']);
+        $this->attach($this->data['signed_url'], ['as' => $this->data['file_name']]);
 
         return $this;
     }
