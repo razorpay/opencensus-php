@@ -945,16 +945,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayConfig()
     {
-        $config = array_only($this->toArrayPublic(), self::CONFIG_LIST);
-
-        $merchantDetail = $this->merchantDetail;
-
-        $gstData = [
-            Detail\Entity::GSTIN   => $merchantDetail[Detail\Entity::GSTIN],
-            Detail\Entity::P_GSTIN => $merchantDetail[Detail\Entity::P_GSTIN],
-        ];
-
-        return array_merge($config, $gstData);
+        return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
     /**

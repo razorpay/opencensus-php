@@ -234,6 +234,11 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_PROOF_URL,
     ];
 
+    const GST_FIELDS = [
+        self::GSTIN,
+        self::P_GSTIN
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
@@ -247,6 +252,16 @@ class Entity extends Base\PublicEntity
     public function isSubmitted()
     {
         return ($this->getAttribute(self::SUBMITTED) === true);
+    }
+
+    public function getGstin()
+    {
+        return $this->getAttribute(self::GSTIN);
+    }
+
+    public function getPGstin()
+    {
+        return $this->getAttribute(self::P_GSTIN);
     }
 
     public function getBusinessRegisteredAddress()
@@ -272,5 +287,10 @@ class Entity extends Base\PublicEntity
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function toArrayGST()
+    {
+        return array_only($this->toArrayPublic(), self::GST_FIELDS);
     }
 }

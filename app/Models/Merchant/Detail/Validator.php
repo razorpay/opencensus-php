@@ -164,6 +164,28 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateIsGSTEditable(array $input)
+    {
+        $error = false;
+
+        if (($this->entity->getGstin() !== null) and
+            (isset($input[Entity::GSTIN]) === true))
+        {
+            $error = true;
+        }
+
+        if (($this->entity->getPGstin() !== null) and
+            (isset($input[Entity::P_GSTIN]) === true))
+        {
+            $error = true;
+        }
+
+        if ($error === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('Cannot update GSTIN value once set');
+        }
+    }
+
     public function validateIsNotLocked()
     {
         if ($this->entity->isLocked() === true)
