@@ -44,6 +44,9 @@ class Type
     const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
     const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
+    const BENEFICIARY_FILE                  = 'beneficiary_file';
+    const EMI_FILE                          = 'emi_file';
+
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
     const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
@@ -77,6 +80,8 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::REPORT,
+            self::BENEFICIARY_FILE,
+            self::EMI_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -108,6 +113,8 @@ class Type
      * Types allowed when no entity is associated
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
+        self::BENEFICIARY_FILE,
+        self::EMI_FILE,
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
@@ -138,6 +145,8 @@ class Type
             self::ICICI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
             self::REPORT,
+            self::BENEFICIARY_FILE,
+            self::EMI_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
         ],
