@@ -19,11 +19,15 @@ class Entity extends Base\PublicEntity
     const DELETED_AT   = 'deleted_at';
 
     // Other constants
-    const ACTION       = 'action';
+    const ACTION        = 'action';
+    const SENDER_NAME   = 'sender_name';
+    const MERCHANT_NAME = 'merchant_name';
+
+    const TOKEN_LENGTH = 40;
 
     protected $entity  = 'invitation';
 
-    const TOKEN_LENGTH = 40;
+    public $incrementing = true;
 
     protected $public = [
         self::ID,
@@ -34,10 +38,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::ID,
+        self::ROLE,
         self::EMAIL,
         self::TOKEN,
-        self::ROLE,
     ];
 
     /**
@@ -69,5 +72,24 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getToken()
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
+
+    public function toArrayUser()
+    {
+        $attributes = [
+            self::ID            => $this->getAttribute(self::ID),
+            self::EMAIL         => $this->getAttribute(self::EMAIL),
+            self::ROLE          => $this->getAttribute(self::ROLE),
+            self::USER_ID       => $this->getAttribute(self::USER_ID),
+            self::MERCHANT_ID   => $this->getAttribute(self::MERCHANT_ID),
+            self::MERCHANT_NAME => $this->merchant->getName(),
+        ];
+
+        return $attributes;
     }
 }

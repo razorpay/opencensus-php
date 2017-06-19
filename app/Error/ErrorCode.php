@@ -510,11 +510,12 @@ class ErrorCode
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                        = 'BAD_REQUEST_USER_NOT_AUTHENTICATED';
     const BAD_REQUEST_USER_NOT_FOUND                                                = 'BAD_REQUEST_USER_NOT_FOUND';
-    const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
-    const BAD_REQUEST_USER_ALREADY_INVITED                                          = 'BAD_REQUEST_USER_ALREADY_INVITED';
-    const BAD_REQUEST_USER_ALREADY_A_MEMBER                                         = 'BAD_REQUEST_USER_ALREADY_A_MEMBER';
     const BAD_REQUEST_USER_ROLE_INVALID                                             = 'BAD_REQUEST_USER_ROLE_INVALID';
 
+    const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
+    const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
+
+    const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                                  = 'BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                                  = 'BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE';

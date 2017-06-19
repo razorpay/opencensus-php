@@ -554,8 +554,9 @@ final class Route
 
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
+        'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
         'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],
-        'invitation_resend'                       => ['post',     'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
+        'invitation_resend'                       => ['put',      'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
         'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
@@ -936,6 +937,8 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
+        'invitation_fetch_by_token',
+        'invitation_action',
     ];
 
     public static $proxy = [
@@ -999,7 +1002,6 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
-        'invitation_action',
     ];
 
     // These will run on internal auth with the assurance
