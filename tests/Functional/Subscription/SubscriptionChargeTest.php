@@ -850,7 +850,7 @@ class SubscriptionChargeTest extends TestCase
                 'events' => [
                     'subscription.activated' => '1',
                     'subscription.overdue'   => '1',
-                    'subscription.halted'   => '1',
+                    'subscription.halted'    => '1',
                 ]
             ]);
 

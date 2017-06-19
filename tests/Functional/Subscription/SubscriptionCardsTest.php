@@ -7,6 +7,7 @@ use Mockery;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Item;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\TestCase;
@@ -139,7 +140,23 @@ class SubscriptionCardsTest extends TestCase
 
     public function testPaymentCustomerIdInInput()
     {
+        $subscription = $this->createSubscription(true);
 
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['customer_id'] = 'cust_abfghijklmn111';
+
+        try
+        {
+            $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT, $ex->getCode());
+
+            return;
+        }
+
+        $this->assertTrue(false);
     }
 
     public function testPaymentFirst2FaLocalSavedCard()
@@ -162,7 +179,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertNull($payment['global_token_id']);
         $this->assertEquals('cust_100000customer', $payment['customer_id']);
         $this->assertNull($payment['global_customer_id']);
-        $this->assertEquals('token_100000custcard', $subscription['token_id']);
+        $this->assertEquals('100000custcard', $subscription['token_id']);
     }
 
     public function testPaymentFirst2FaLocalNewCard()
@@ -185,7 +202,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($token['id'], $payment['token_id']);
         $this->assertEquals('cust_100000customer', $payment['customer_id']);
         $this->assertNull($payment['global_customer_id']);
-        $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
     }
 
     public function testPaymentSecond2FaLocalSavedCard()
@@ -224,7 +241,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($subscription['id'], $subscription2['id']);
 
         $this->assertEquals($token2, $payment2['token_id']);
-        $this->assertEquals($token2, $subscription2['token_id']);
+        $this->assertEquals($token2, 'token_' . $subscription2['token_id']);
 
         $this->assertEquals($subscription['customer_id'], $subscription2['customer_id']);
         $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
@@ -274,7 +291,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($subscription['id'], $subscription2['id']);
 
         $this->assertEquals($token2['id'], $payment2['token_id']);
-        $this->assertEquals($token2['id'], $subscription2['token_id']);
+        $this->assertEquals($token2['id'], 'token_' . $subscription2['token_id']);
 
         $this->assertEquals($subscription['customer_id'], $subscription2['customer_id']);
         $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
@@ -354,7 +371,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertArrayNotHasKey('token_id', $payment);
         $this->assertEquals($customer['id'], $payment['customer_id']);
         $this->assertEquals($globalCust['id'], 'cust_' . $payment['global_customer_id']);
-        $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
 
         $this->assertEquals($globalCust['id'], 'cust_' . $customer['global_customer_id']);
         $this->assertEquals($globalCust['email'], $customer['email']);
@@ -482,6 +499,16 @@ class SubscriptionCardsTest extends TestCase
     }
 
     public function testPaymentChargeGlobalSavedCard()
+    {
+
+    }
+
+    public function testPaymentFirst2FaGlobalNoAppToken()
+    {
+
+    }
+
+    public function testPaymentSecond2FaGlobalNoAppToken()
     {
 
     }

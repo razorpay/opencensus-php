@@ -309,20 +309,11 @@ return [
                 'plan_id'       => 'plan_1000000000plan',
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
             ],
         ],
         'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'customer_id should be sent in the request to create a subscription.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'content' => []
         ],
     ],
 
