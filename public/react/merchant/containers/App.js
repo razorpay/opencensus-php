@@ -17,6 +17,8 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
 import User from 'merchant/models/User';
+import MerchantTour from 'merchant/containers/MerchantTour';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
 @connect(state => state.session, {
@@ -224,6 +226,10 @@ export default class App extends Component {
         <Sidebar user={user} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
+
+        <ShowWhen myRole="owner">
+          <MerchantTour />
+        </ShowWhen>
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

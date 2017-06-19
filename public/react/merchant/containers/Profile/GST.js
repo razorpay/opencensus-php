@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import DetailRow from 'merchant/components/DetailRow';
 import { fetchGST, saveGST } from 'merchant/modules/profile';
 import { openModal } from 'rzp/modules/modals';
 import AddGST from './AddGST';
@@ -21,44 +20,43 @@ export default class GSTDetails extends Component {
   render() {
     let { merchant_gst, rzp_gst } = this.props;
     return (
-      <div>
-        <DetailRow
-          label={() => {
-            return (
-              <span>
-                GST Details {' '}
-                {!merchant_gst.gstin && merchant_gst.p_gstin
-                  ? <span class="text-danger">(Provisional)</span>
-                  : null}
-              </span>
-            );
-          }}
-          value={() => {
-            if (merchant_gst.gstin) {
-              return merchant_gst.gstin;
-            }
+      <div class="panel panel-default">
+        <div class="panel-heading">GST Details</div>
+        <div class="list-group details-row-container">
+          <div class="list-group-item">
+            <span>
+              GST Details {' '}
+              {!merchant_gst.gstin && merchant_gst.p_gstin
+                ? <span class="text-danger">(Provisional)</span>
+                : null}
+            </span>
 
-            if (merchant_gst.p_gstin) {
-              return (
-                <span>
-                  {merchant_gst.p_gstin}
-                  <a
-                    onClick={this.openAddGSTModal}
-                    style={{ marginLeft: '5px' }}
-                  >
-                    Update GST
-                  </a>
-                </span>
-              );
+            {
+              do {
+                if (merchant_gst.gstin) {
+                  <span>{merchant_gst.gstin}</span>;
+                } else if (merchant_gst.p_gstin) {
+                  <span>
+                    {merchant_gst.p_gstin}
+                    <a
+                      onClick={this.openAddGSTModal}
+                      style={{ marginLeft: '5px' }}
+                    >
+                      Update GST
+                    </a>
+                  </span>;
+                } else {
+                  <a onClick={this.openAddGSTModal}>Add your GST details</a>;
+                }
+              }
             }
-            return <a onClick={this.openAddGSTModal}>Add your GST details</a>;
-          }}
-        />
+          </div>
 
-        <DetailRow
-          label="Razorpay's GST Number (Provisional)"
-          value={() => <span>{rzp_gst.p_gstin}</span>}
-        />
+          <div class="list-group-item">
+            <span>Razorpay's GST Number (Provisional)</span>
+            <span>{rzp_gst.p_gstin}</span>
+          </div>
+        </div>
       </div>
     );
   }
