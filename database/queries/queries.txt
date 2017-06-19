@@ -2172,3 +2172,6 @@ ALTER TABLE batches
 
 ALTER TABLE invitations
     MODIFY COLUMN id INT auto_increment;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN time BIGINT;
