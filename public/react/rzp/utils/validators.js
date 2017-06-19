@@ -15,7 +15,7 @@ export const isPhone = phone => {
 };
 
 export const length = (length, message = '') => {
-  message = message || `Must be ${length} chars`;
+  message = message || `Must be ${length} characters`;
   return (value = '') => {
     return value.trim().length !== length ? message : '';
   };

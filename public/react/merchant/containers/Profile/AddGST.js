@@ -5,13 +5,11 @@ import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { required, length } from 'rzp/utils/validators';
 import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 const selector = formValueSelector('newGST');
-
 @connect(
   state => {
     return {
@@ -28,10 +26,7 @@ const selector = formValueSelector('newGST');
   form: 'newGST',
 })
 export default class AddGST extends Component {
-  state = {
-    label: 'Provisional GST Number',
-    fieldName: 'p_gstin',
-  };
+  state = {};
 
   componentWillMount() {
     let initialValues = {
@@ -42,20 +37,6 @@ export default class AddGST extends Component {
       ...initialValues,
       ...this.props.merchant_gst,
     });
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.selectedGSTType === 'gstin') {
-      this.setState({
-        label: 'GST Number',
-        fieldName: 'gstin',
-      });
-    } else {
-      this.setState({
-        label: 'Provisional GST Number',
-        fieldName: 'p_gstin',
-      });
-    }
   }
 
   save = ({ gst_type, ...fieldProps }) => {
@@ -83,11 +64,13 @@ export default class AddGST extends Component {
 
   render() {
     const { handleSubmit, merchant_gst, selectedGSTType } = this.props;
+    let isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
+    let isPGST = selectedGSTType === 'p_gstin';
 
     return (
       <div>
         <ModalHeader
-          title={merchant_gst ? 'Edit GST Details' : 'Add your GST Details'}
+          title={isNew ? 'Add your GST Details' : 'Edit GST Details'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -128,22 +111,34 @@ export default class AddGST extends Component {
               </li>
             </ul>
 
-            <div class="form-group">
-              <label class="label-required">{this.state.label}</label>
-              <div>
-                <Field
-                  name={this.state.fieldName}
-                  component={InputField}
-                  class="form-control"
-                  autoFocus={true}
-                  placeholder="19AAAAAA1234YYY"
-                  validate={[required(), length(15)]}
-                />
-              </div>
-            </div>
+            {isPGST
+              ? <div class="form-group">
+                  <label class="label-required">Provisional GST Number</label>
+                  <div>
+                    <Field
+                      name="p_gstin"
+                      component={InputField}
+                      class="form-control"
+                      autoFocus={true}
+                      placeholder="19AAAAAA1234YYY"
+                    />
+                  </div>
+                </div>
+              : <div class="form-group">
+                  <label class="label-required">GST Number</label>
+                  <div>
+                    <Field
+                      name="gstin"
+                      component={InputField}
+                      class="form-control"
+                      autoFocus={true}
+                      placeholder="19AAAAAA1234YYY"
+                    />
+                  </div>
+                </div>}
 
             <div class="help-block">
-              {selectedGSTType === 'p_gstin'
+              {isPGST
                 ? 'After submitting the Provisional GST, you can submit the action GST later.'
                 : 'Actual GST once submitted cannot be updated via dashboard'}
 
