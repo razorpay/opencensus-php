@@ -55,7 +55,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('pay_'.$bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
     }
 
     public function testBankTransferProcessAndFetchDetails()
@@ -117,7 +117,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('pay_'.$bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         $utr = $response['transaction_id'];
 

@@ -64,7 +64,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                      ->where(Entity::TYPE, '=', Type::VIRTUAL);
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT);
 
         if ($bankCode !== null)
         {

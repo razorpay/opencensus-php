@@ -6,7 +6,7 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
 {
-    const YESBANK = 'yesbank';
+    const YESBANK  = 'yesbank';
     const KOTAK    = 'kotak';
 
     // Mock provider bank

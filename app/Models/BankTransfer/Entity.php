@@ -151,16 +151,22 @@ class Entity extends Base\PublicEntity
 
     public function setPublicVirtualAccountIdAttribute(array & $array)
     {
-        $virtualAccountId = $array[self::VIRTUAL_ACCOUNT_ID];
+        if (isset($array[self::VIRTUAL_ACCOUNT_ID]) === true)
+        {
+            $virtualAccountId = $array[self::VIRTUAL_ACCOUNT_ID];
 
-        $array[self::VIRTUAL_ACCOUNT_ID] = VirtualAccount\Entity::getSignedId($virtualAccountId);
+            $array[self::VIRTUAL_ACCOUNT_ID] = VirtualAccount\Entity::getSignedId($virtualAccountId);
+        }
     }
 
     public function setPublicPaymentIdAttribute(array & $array)
     {
-        $paymentId = $array[self::PAYMENT_ID];
+        if (isset($array[self::PAYMENT_ID]) === true)
+        {
+            $paymentId = $array[self::PAYMENT_ID];
 
-        $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
+            $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
+        }
     }
 
     public function getAmount()

@@ -353,9 +353,9 @@ class Entity extends Base\PublicEntity
 
     public function associateVirtualAccount(VirtualAccount\Entity $virtualAccount)
     {
-        $this->attributes[self::ENTITY_ID] = $virtualAccount->getId();
+        $this->attributes[self::TYPE] = Type::VIRTUAL_ACCOUNT;
 
-        $this->attributes[self::TYPE] = Type::VIRTUAL;
+        $this->source()->associate($virtualAccount);
     }
 
     public function getRedactedAccountNumber()

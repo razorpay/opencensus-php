@@ -1,6 +1,6 @@
 <?php
 
-use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\VirtualAccount;
 
 return array(
     'dashboard' => array(
@@ -65,13 +65,13 @@ return array(
         'secretv2'  => env('MAXMIND_V2_SECRET')
     ),
 
-    Provider::KOTAK => array(
+    VirtualAccount\Provider::KOTAK => array(
         'secret'    => env('KOTAK_SECRET'),
     ),
-    Provider::YESBANK => array(
+    VirtualAccount\Provider::YESBANK => array(
         'secret'    => env('YESBANK_SECRET'),
     ),
-    Provider::VVS => array(
+    VirtualAccount\Provider::VVS => array(
         'secret'    => env('VVS_SECRET'),
     ),
 
