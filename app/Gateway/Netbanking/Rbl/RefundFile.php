@@ -31,7 +31,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $data = $this->getRefundData($input);
+        list($totalAmount, $data) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -48,16 +48,13 @@ class RefundFile extends Base\RefundFile
 
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
-        $fileData = [
-            'file_path'  => $file['local_file_path'],
-            'signed_url' => $signedFileUrl,
-            'count'      => count($data) - 1,
-            'file_name'  => basename($file['local_file_path']),
+        return [
+            'local_file_path' => $file['local_file_path'],
+            'signed_url'      => $signedFileUrl,
+            'count'           => count($data) - 1,
+            'file_name'       => basename($file['local_file_path']),
+            'total_amount'    => $totalAmount,
         ];
-
-        $this->sendRefundEmail($fileData);
-
-        return $file['local_file_path'];
     }
 
     protected function getRefundData($input)
@@ -67,6 +64,8 @@ class RefundFile extends Base\RefundFile
         $data[] = self::$headers;
 
         $index = 1;
+
+        $totalAmount = 0;
 
         foreach ($input['data'] as $row)
         {
@@ -93,15 +92,10 @@ class RefundFile extends Base\RefundFile
                 RefundFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
                 RefundFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
             ];
+
+            $totalAmount += $row['refund']['amount'] / 100;
         }
 
-        return $data;
-    }
-
-    protected function sendRefundEmail($fileData = [])
-    {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_RBL);
-
-        Mail::queue($refundFileMail);
+        return [$totalAmount, $data];
     }
 }

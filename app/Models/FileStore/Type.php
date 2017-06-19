@@ -24,6 +24,8 @@ class Type
 
     const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
 
+    const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';

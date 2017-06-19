@@ -432,6 +432,7 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::FDRL,
+        IFSC::RATN,
     ];
 
     /**
