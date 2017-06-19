@@ -69,11 +69,11 @@ class Entity extends Base\PublicEntity
      *
      * @var array
      */
-    protected static $modifiers = array('inputRemoveBlanks', 'inputProvideDefaults');
+    protected static $modifiers = ['inputRemoveBlanks', 'inputProvideDefaults'];
 
-    protected static $generators = array('plan_id');
+    protected static $generators = ['plan_id'];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::FEATURE               => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE   => null,
         self::PAYMENT_NETWORK       => null,
@@ -82,7 +82,8 @@ class Entity extends Base\PublicEntity
         self::FIXED_RATE            => 0,
         self::MIN_RATE              => 0,
         self::MAX_RATE              => null,
-        self::AMOUNT_RANGE_ACTIVE   => '0');
+        self::AMOUNT_RANGE_ACTIVE   => '0'
+    ];
 
     const ZERO_PRICING = '10ZeroPricingP';
 
