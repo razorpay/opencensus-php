@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 
 class Core extends Base\Core
@@ -35,6 +36,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invitation);
 
+        $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
+
         $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
 
         return $invitation;
@@ -59,6 +62,8 @@ class Core extends Base\Core
         $invitation->edit($input);
 
         $this->repo->saveOrFail($invitation);
+
+        $this->trace->info(TraceCode::INVITATION_EDIT, $invitation->toArrayPublic());
 
         return $invitation;
     }
@@ -124,17 +129,29 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($invitation);
         }
+
+        $this->trace->info(
+            TraceCode::INVITATION_ACCEPT,
+            [
+                'invitation' => $invitation->toArrayPublic(),
+                'user_id'    => $userId
+            ]);
     }
 
     /**
      * In case of reject we just need to delete the invitation which is done in calling function
      *
+     * @param Entity $invitation
      * @param string $userId
-     * @param string $inviteId
      */
-    protected function reject(string $userId, string $inviteId)
+    protected function reject(Entity $invitation, string $userId)
     {
-
+        $this->trace->info(
+            TraceCode::INVITATION_REJECT,
+            [
+                'invitation' => $invitation->toArrayPublic(),
+                'user_id'    => $userId
+            ]);
     }
 
     protected function sendEmail(Entity $invitation, string $senderName)
@@ -152,6 +169,16 @@ class Core extends Base\Core
             'token'       => $invitation->getToken(),
             'user_id'     => $invitation->getUserId(),
         ];
+
+        $this->trace->info(
+            TraceCode::INVITATION_EMAIL,
+            [
+                'invitation_id' => $invitation->getId(),
+                'sender_name'   => $senderName,
+                'email'         => $invitation->getEmail(),
+                'name'          => $this->merchant->getName(),
+                'user_id'       => $invitation->getUserId(),
+            ]);
 
         $invitationMail = new InvitationMail($data);
 
