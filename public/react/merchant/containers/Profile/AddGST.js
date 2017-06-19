@@ -9,6 +9,8 @@ import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
+// Conditional field-level validation has some bug https://github.com/erikras/redux-form/issues/3012.
+// So using the form-level validation
 function validate(values) {
   const errors = {};
   const errorMsg = 'Must be 15 characters';
