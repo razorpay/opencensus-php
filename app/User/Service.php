@@ -64,22 +64,17 @@ class Service extends Base\Service
      */
     protected function getInvitationAndUserFromToken($token)
     {
-        list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($token);
+        list($error, $invitation) = (new Invitation\Service)->getInvitationByTokenFromApi($token);
 
-        if ($error)
+        if (empty($error) === false)
         {
             // This error is a string
             throw new RecoverableException($error[0]);
         }
 
-        $user = User\Entity::where('email', $invitation->email)->first();
+        $user = User\Entity::where('email', $invitation['email'])->first();
 
-        if ($user)
-        {
-            return [$invitation, $user];
-        }
-
-        return [$invitation, null];
+        return [$invitation, $user];
     }
 
     /**
@@ -106,7 +101,7 @@ class Service extends Base\Service
             list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
             // Since input would be lacking an email in case registration is via
             // the invitation
-            $input['email'] = $invitation->email;
+            $input['email'] = $invitation['email'];
         }
 
         $heimdallInvitationToken = Input::get('merchant_invitation');
@@ -180,8 +175,6 @@ class Service extends Base\Service
         if ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
-
-            $this->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
 
             $data['login'] = true;
         }
@@ -448,15 +441,22 @@ class Service extends Base\Service
     /**
      * Attach a user to a merchant using an invitation
      */
-    protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
+    protected function attachUserToInvite(User\Entity $user, array $invitation)
     {
-        Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+        list($error, $response) = (new Invitation\Service)->acceptInvitationOnApi($invitation['id'], $user->id);
 
-        $user->confirm();
+        if (empty($error) === true)
+        {
+            $user->joinMerchantByIdWithRole($invitation['merchant_id'], $invitation['role']);
 
-        $this->confirmUserOnApi($user->id);
+            Session::put('current_merchant_id', $invitation['merchant_id']);
 
-        $this->subscribeToMailingList($user);
+            $user->confirm();
+
+            $this->confirmUserOnApi($user->id);
+
+            $this->subscribeToMailingList($user);
+        }
     }
 
     public function subscribeToMailingList(User\Entity $user)

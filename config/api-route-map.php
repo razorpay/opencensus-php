@@ -280,6 +280,25 @@ return [
             'url'       => 'reversals/{id}',
             'routeName' => 'marketplace_read'
         ],
+
+        // Invitations
+        'invitation_create'                 => [
+            'url'       => 'invitations',
+            'routeName' => 'invitations_send'
+        ],
+        'invitation_resend'                 => [
+            'url'       => 'invitations/{id}/resend',
+            'routeName' => 'invitation_resend'
+        ],
+        'invitation_edit'                   => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_edit'
+        ],
+        'invitation_delete'                 => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_delete'
+        ],
+        'invitation_fetch'                  => 'invitations',
     ],
 
     // auth
@@ -351,6 +370,12 @@ return [
 
         // Get Org details by hostname (for heimdall specifics)
         'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
+
+        // Get Merchant Users
+        'merchant_fetch_users'              => 'merchants/{id}/users',
+
+        // Accept/Reject Invitation
+        'invitation_action'                 => 'invitations/{id}/{action}',
     ],
 
     // auth

@@ -1,7 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
-const INVITATIONS_FETCH = 'INVITATIONS_FETCH';
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 
 export const fetchAjax = url => {
@@ -11,13 +10,6 @@ export const fetchAjax = url => {
   });
 };
 
-export const fetchPendingInvitations = () => {
-  return {
-    type: INVITATIONS_FETCH,
-    payload: fetchAjax('/settings/invitations'),
-  };
-};
-
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
@@ -25,13 +17,34 @@ export const fetchBankAccount = () => {
   };
 };
 
-// To accept-reject invitation
-export const updateInvitation = (type, inviteId) => {
+// To accept invitation
+export const acceptInvitation = inviteId => {
   return () => {
     return ajax({
-      url: `/settings/invitations/${inviteId}/${type}`,
-      method: type === 'reject' ? 'delete' : 'post',
+      url: `/settings/invitations/${inviteId}/accept`,
+      method: 'post',
       appendModeInURL: false,
+    });
+  };
+};
+
+// To reject invitation
+export const rejectInvitation = (inviteId, userId) => {
+  return () => {
+    return ajax({
+      url: '/user/generic',
+      method: 'post',
+      appendModeInURL: false,
+      data: {
+        route_name: 'invitation_action',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+          '{action}': 'reject',
+        }),
+        body: {
+          user_id: userId,
+        },
+      },
     });
   };
 };
@@ -66,9 +79,6 @@ export default function(state = initialState, action) {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
-
-    case `${INVITATIONS_FETCH}::SUCCESS`:
-      return set(state, 'invitations', action.payload.data);
 
     default:
       return state;
