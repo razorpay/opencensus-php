@@ -41,18 +41,25 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithDescriptor()
     {
+        $this->createVirtualAccount();
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is unsetso default root is used with default handle
+        $this->assertRegexp("/RAZORPAY[A-Z0-9]{10}$/", $vba['account_number']);
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => 'somedesc']);
+            $this->createVirtualAccount(['descriptor' => 'desc1234']);
         });
 
         $this->fixtures->merchant->setHandle('hand');
 
-        $this->createVirtualAccount(['descriptor' => 'somedesc']);
+        $this->createVirtualAccount(['descriptor' => 'desc1234']);
 
         $vba = $this->getLastEntity('bank_account', true);
-        $this->assertRegexp("/.{4}HAND.{2}SOMEDESC$/", $vba['account_number']);
+        // Handle is set so standard root is used with given handle
+        $this->assertRegexp("/RZRPHAND.{2}DESC1234$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()

@@ -49,6 +49,8 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
+    // The IFSC we receive in the process bank_transfer API is often a mocked one.
+    // This is the key we show the merchant, as the bank can be derived from the IFSC.
     const PAYER_BANK         = 'payer_bank';
 
     protected $fillable = [

@@ -16,23 +16,28 @@ class Provider
     // Each provider gives us a range of bank accounts
     // by alloting an account number prefix/master/root
     //
-    // We may have more than one root per provider, but
-    // this will be leveraged later.
+    // We use the default root along with out own handle,
+    // in cases where handle is unset.
+    //
+    // Standard root is used when handle is set.
     const ROOT = [
         self::YESBANK   => [
             // Todo
+            'default'  => '',
+            'standard' => ''
         ],
         self::KOTAK     => [
-            'RAZO',
-            // 'RZRP',
+            'default'  => 'RAZO',
+            'standard' => 'RZRP',
+
             // 'RAZR',
-            //
             // This is to be used for our own nodal account,
             // DO NOT REFUND PAYMENTS MADE HERE
             // 'RZRN',
         ],
         self::VVS       => [
-            'RAZO',
+            'default'  => 'RAZO',
+            'standard' => 'RZRP',
         ],
     ];
 

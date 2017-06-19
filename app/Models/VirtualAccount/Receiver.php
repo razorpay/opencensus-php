@@ -25,7 +25,8 @@ class Receiver
     const DESCRIPTOR_LENGTH         = 10;
     const ACCOUNT_NUMBER_LENGTH     = 18;
     // No 0s and Os
-    const ACCOUNT_NUMBER_CHAR_SPACE = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+    const ACCOUNT_NUMBER_CHAR_SPACE       = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+    const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
     protected $merchant;
     protected $name;
@@ -110,10 +111,14 @@ class Receiver
     {
         $bankCode = Provider::getBankCode($provider);
 
-        foreach (Provider::ROOT[$provider] as $root)
-        {
-            $accountNumber = $this->generateNewAccountNumberWithRoot($root);
+        $root = $this->getRoot($provider);
 
+        $accountNumber = $this->generateNewAccountNumberWithRoot($root);
+
+        $attempts = 0;
+
+        while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
+        {
             $existingAccount = $this->repo->bank_account
                                     ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
@@ -121,8 +126,11 @@ class Receiver
             {
                 return $accountNumber;
             }
+
+            $attempts++;
         }
 
+        // This should never happen
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
     }
@@ -166,6 +174,29 @@ class Receiver
         return $accountNumber;
     }
 
+    // If handle is not set, we use the default root (RAZO),
+    // and later add the default handle.
+    //
+    // If handle is set, we use the standard root (RZRP)
+    //
+    protected function getRoot(string $provider)
+    {
+        $root = Provider::ROOT[$provider]['standard'];
+
+        if ($this->merchant->getHandle() === null)
+        {
+            $root = Provider::ROOT[$provider]['default'];
+        }
+
+        return $root;
+    }
+
+    // If handle is not set, we use the default root (RAZO),
+    // and now add the default handle (RPAY).
+    //
+    // If handle is set, we use the standard root (RZRP),
+    // and add the chosen handle, after padding.
+    //
     protected function getHandle(string $root)
     {
         $merchantHandle = $this->merchant->getHandle();
@@ -180,6 +211,10 @@ class Receiver
         return $accountHandle;
     }
 
+    // If handle is not set, descriptor is completely random.
+    //
+    // If handle is set, we use the given desriptor, with paddding.
+    //
     protected function getDescriptor()
     {
         $descriptor = $this->descriptor;
