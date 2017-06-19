@@ -243,7 +243,11 @@ class InvitationTest extends TestCase
                                     'role'        => 'finance',
                                 ]);
 
-        $this->startTest();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals(count($response), 2);
     }
 
     public function testGetInvitationByToken()
