@@ -30,6 +30,7 @@ class MailTags
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
+    const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';
     const REFUND_SUCCESSFUL                = 'refund_successful';

@@ -34,11 +34,6 @@ class NewTerminalLoadSorter extends Terminal\Sorter
 
         $merchant = $input['merchant'];
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::NEW_LOAD_SORTING) === false)
-        {
-            return $this->fallbackLoadSorter($terminals, $input, $options);
-        }
-
         try
         {
             // @note: Temporarily setting verbose to true here for logging of terminal

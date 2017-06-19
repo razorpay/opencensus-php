@@ -280,6 +280,19 @@ class Service extends Base\Service
         return [$displayName, $path];
     }
 
+    public function issueInvoicesOfBatch(string $batchId, array $input): array
+    {
+        (new Validator)->validateInput(Validator::ISSUE_BATCH, $input);
+
+        $batch = $this->repo
+                      ->batch
+                      ->findByPublicIdAndMerchant($batchId, $this->merchant);
+
+        $response = $this->core->issueInvoicesOfBatch($batch, $input);
+
+        return $response;
+    }
+
     /**
      * Sets userId and userRole members of this class by reading values from
      * request headers sent from dashboard.

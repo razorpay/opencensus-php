@@ -126,6 +126,8 @@ return [
             Permission::VIEW_MERCHANT_STATS => '',
             Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
             Permission::VIEW_MERCHANT_REPORT   => 'View Merchant Reports',
+            Permission::CREATE_MERCHANT_OFFER => 'Create offer for a merchant',
+            Permission::EDIT_MERCHANT_OFFER => 'Edit offer for a merchant',
         ],
 
         PermissionCategory::PRICING => [
