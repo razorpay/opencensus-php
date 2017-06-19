@@ -66,6 +66,7 @@ class Event
     protected static $names = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
+        self::PAYMENT_CAPTURED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
         self::VPA_EDITED,
@@ -102,6 +103,7 @@ class Event
     protected static $launchedEvents = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
+        self::PAYMENT_CAPTURED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
         self::VPA_EDITED,

@@ -12,16 +12,18 @@ class Method
     const EMI           = 'emi';
     const UPI           = 'upi';
     const TRANSFER      = 'transfer';
+    const BANK_TRANSFER = 'bank_transfer';
     const AEPS          = 'aeps';
 
     protected static $methods = [
-        self::CARD       => 'Card',
-        self::NETBANKING => 'Net Banking',
-        self::WALLET     => 'Wallet',
-        self::UPI        => 'UPI',
-        self::AEPS       => 'AEPS',
-        self::EMI        => 'EMI',
-        self::TRANSFER   => 'Marketplace Transfer',
+        self::CARD          => 'Card',
+        self::NETBANKING    => 'Net Banking',
+        self::WALLET        => 'Wallet',
+        self::UPI           => 'UPI',
+        self::AEPS          => 'AEPS',
+        self::EMI           => 'EMI',
+        self::TRANSFER      => 'Marketplace Transfer',
+        self::BANK_TRANSFER => 'Bank Transfer',
     ];
 
     protected static $asynchronous = [

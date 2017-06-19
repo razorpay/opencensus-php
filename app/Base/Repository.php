@@ -552,9 +552,18 @@ class Repository extends \Razorpay\Spine\Repository
             return $this->syncToEsDeprecated($entity, $dirty);
         }
 
+        $mode = $this->app['rzp.mode'];
+
+        $tracePayload = [
+            'action'    => $action,
+            'entity'    => $entity->getEntity(),
+            'entity_id' => $entity->getId(),
+            'mode'      => $mode,
+        ];
+
         try
         {
-            $mode = $this->app['rzp.mode'];
+            $this->trace->debug(TraceCode::ES_SYNC_PUSH_PAYLOAD, $tracePayload);
 
             $job = (new EsSync(
                         $mode,
@@ -570,12 +579,8 @@ class Repository extends \Razorpay\Spine\Repository
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::ES_SYNC_FAILED,
-                [
-                    'entity_id' => $entity->getId(),
-                    'action'    => $action,
-                ]
-            );
+                TraceCode::ES_SYNC_PUSH_FAILED,
+                $tracePayload);
         }
     }
 

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -36,6 +38,8 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
+    const PROCESSED_AT           = 'processed_at';
+    const SETTLED_ON             = 'settled_on';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -59,6 +63,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::NOTES,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $visible = [
@@ -80,6 +86,8 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -97,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::UTR,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -124,6 +133,11 @@ class Entity extends Base\PublicEntity
         self::AMOUNT      => 'int',
         self::FEES        => 'int',
         self::SERVICE_TAX => 'int',
+    ];
+
+    protected $dates = [
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     public function merchant()
@@ -201,6 +215,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
+    }
+
     public function isStatusCreated()
     {
         return ($this->getStatus() === Status::CREATED);
@@ -269,6 +293,28 @@ class Entity extends Base\PublicEntity
     public function setRemarks(string $remarks)
     {
         $this->setAttribute(self::REMARKS, $remarks);
+    }
+
+    public function setProcessedAt($date)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setSettledOn($date)
+    {
+        $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
+    protected function getSettledOnAttribute()
+    {
+        $timestamp = $this->attributes[self::SETTLED_ON];
+
+        if ($timestamp !== null)
+        {
+            return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
+        }
+
+        return null;
     }
 
     public function setPublicDestinationAttribute(array & $attributes)

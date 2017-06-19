@@ -703,6 +703,11 @@ class Entity extends Base\PublicEntity
         $this->metadata[$key] = $value;
     }
 
+    public function setMetadata($input)
+    {
+        $this->metadata = $input['_'] ?? null;
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -1043,6 +1048,11 @@ class Entity extends Base\PublicEntity
     public function isTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
+    }
+
+    public function isBankTransfer()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
     public function isGateway($gateway)

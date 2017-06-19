@@ -38,6 +38,7 @@ class Constants
         self::SUPPORT   => 'Team Razorpay',
         self::SCORECARD => 'Razorpay Scorecard',
         self::REFUNDS   => 'Refunds File',
+        self::INVOICES  => 'Razorpay Invoices',
         self::REPORTS   => 'Team Razorpay',
         self::CARE      => 'Team Razorpay',
         self::ALERTS    => 'Razorpay Webhook Support'

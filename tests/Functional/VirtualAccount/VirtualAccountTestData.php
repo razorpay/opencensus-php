@@ -1,0 +1,115 @@
+<?php
+
+namespace RZP\Tests\Functional\BankTransfer;
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
+return [
+    'testCreateVirtualAccount' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        // 'amount_expected' => 10000,
+        'status'          => 'active',
+        'receiver_type'   => ['bank_account'],
+        'bank_account'    => [
+            'entity' => 'bank_account',
+            'ifsc'   => 'RAZR0000001',
+        ],
+    ],
+
+    'testFetchVirtualAccount' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        // 'amount_expected' => 10000,
+        'status'          => 'active',
+        'receiver_type'   => ['bank_account'],
+        'bank_account'    => [
+            'entity' => 'bank_account',
+            'ifsc'   => 'RAZR0000001',
+        ],
+    ],
+
+    'testFetchVirtualAccounts' => [
+        'entity' => 'collection',
+        'count'  => 2,
+        'items'  => [
+            [
+                'name'            => 'Second VA',
+                'entity'          => 'virtual_account',
+                // 'amount_expected' => 10000,
+                'status'          => 'active',
+            ],
+            [
+                'name'            => 'First VA',
+                'entity'          => 'virtual_account',
+                // 'amount_expected' => 10000,
+                'status'          => 'active',
+            ],
+        ],
+    ],
+
+    'testCreateVirtualAccountWithDescriptor' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Descriptor field cannot be used as ' .
+                                     'merchant handle is not set for your account.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE,
+        ],
+    ],
+
+    'testCreateVirtualAccountWithIdenticalDescriptor' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'An active virtual account with the same' .
+                                     ' descriptor already exists for your account.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
+        ],
+    ],
+
+    'testWebhookOnVirtualAccountPay' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'payment.captured',
+            'contains' => ['payment'],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 10000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'order_id' => null,
+                        'invoice_id' => null,
+                        'method' => 'bank_transfer',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => true,
+                        'description' => null,
+                        'email' => null,
+                        'contact' => null,
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+];

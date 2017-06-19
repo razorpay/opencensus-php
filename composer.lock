@@ -1130,16 +1130,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.4.2",
+            "version": "8.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "01c72a52c38a0a55e4aebb972d65124f618d570a"
+                "reference": "ab23498bb5b787ae108f5fba3e50134ce3635503"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/01c72a52c38a0a55e4aebb972d65124f618d570a",
-                "reference": "01c72a52c38a0a55e4aebb972d65124f618d570a",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/ab23498bb5b787ae108f5fba3e50134ce3635503",
+                "reference": "ab23498bb5b787ae108f5fba3e50134ce3635503",
                 "shasum": ""
             },
             "require": {
@@ -1194,7 +1194,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-04-25T12:16:41+00:00"
+            "time": "2017-06-06T14:19:18+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -4448,16 +4448,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "e7a0b208f141307c25bc7afa4278bbbd5c36cc5f"
+                "reference": "2324d1e58be217eddba008486dbcc076c9ec093a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/e7a0b208f141307c25bc7afa4278bbbd5c36cc5f",
-                "reference": "e7a0b208f141307c25bc7afa4278bbbd5c36cc5f",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/2324d1e58be217eddba008486dbcc076c9ec093a",
+                "reference": "2324d1e58be217eddba008486dbcc076c9ec093a",
                 "shasum": ""
             },
             "require": {
@@ -4491,7 +4491,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-05-30T11:09:05+00:00"
+            "time": "2017-06-19T11:31:32+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -4657,20 +4657,24 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "7c9e3eb0de8a4c83899abc62d6ae93a9d285a932"
+                "reference": "0c082ee2fad3edd1996035bfaba62897eecadee0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/7c9e3eb0de8a4c83899abc62d6ae93a9d285a932",
-                "reference": "7c9e3eb0de8a4c83899abc62d6ae93a9d285a932",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/0c082ee2fad3edd1996035bfaba62897eecadee0",
+                "reference": "0c082ee2fad3edd1996035bfaba62897eecadee0",
                 "shasum": ""
             },
             "require": {
-                "laravel/framework": ">=5.4",
-                "php": ">=5.6"
+                "illuminate/database": ">=5.4",
+                "illuminate/validation": ">=5.4",
+                "php": ">=5.4"
             },
             "require-dev": {
-                "raveren/kint": "1.*"
+                "kint-php/kint": "1.*"
+            },
+            "suggest": {
+                "laravel/framework": ">=5.4"
             },
             "type": "library",
             "autoload": {
@@ -4696,7 +4700,7 @@
                 "source": "https://github.com/razorpay/spine/tree/laravel5.4",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-04-30 18:15:23"
+            "time": "2017-06-12T12:33:31+00:00"
         },
         {
             "name": "razorpay/upi-clients",

@@ -267,6 +267,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'billing_label' => 'Test Account',
                     'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
@@ -276,6 +277,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   => Account::TEST_ACCOUNT,
                     'contact_name'  => 'Test Account',
                     'contact_email' => 'test@razorpay.com',
+                    'contact_mobile'=> '9876543210',
                     'created_at'    =>  1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'    =>  $currentTime,
                     )
@@ -448,6 +450,7 @@ class DatabaseSeeder extends Seeder
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
+                    'bank_transfer' => '1',
                     'created_at'    =>  $currentTime,
                     'updated_at'    =>  $currentTime
                 )

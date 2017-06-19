@@ -717,7 +717,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Invitation\Entity::class, [
-            'id'                       => $faker->uniqueid,
+            'id'                       => $faker->randomNumber(6),
             'email'                    => $faker->email,
             'merchant_id'              => $faker->uniqueid,
             'role'                     => 'manager',
