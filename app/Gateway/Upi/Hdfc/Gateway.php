@@ -331,7 +331,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPaymentRemark(array $input)
     {
-        $description = $input['merchant']->getBillingLabelElseName();
+        $description = $input['merchant']->getFilteredDba();
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
@@ -343,7 +343,7 @@ class Gateway extends Base\Gateway
      */
     protected function getRefundRemark(array $input): string
     {
-        $description = $input['merchant']->getBillingLabelElseName();
+        $description = $input['merchant']->getFilteredDba();
 
         $description = $description ?: 'Razorpay';
 
