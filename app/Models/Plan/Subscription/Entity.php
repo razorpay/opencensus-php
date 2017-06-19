@@ -129,7 +129,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::TOKEN_ID,
+        // self::TOKEN_ID,
         self::PLAN_ID,
     ];
 
@@ -495,12 +495,12 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
-    public function setPublicTokenIdAttribute(array & $array)
-    {
-        $tokenId = $this->getAttribute(self::TOKEN_ID);
-
-        $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
-    }
+    // public function setPublicTokenIdAttribute(array & $array)
+    // {
+    //     $tokenId = $this->getAttribute(self::TOKEN_ID);
+    //
+    //     $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
+    // }
 
     // --------------------- END PUBLIC SETTERS ---------------------
 
@@ -524,7 +524,7 @@ class Entity extends Base\PublicEntity
 
     public function associateEntities(
         Plan\Entity $plan,
-        $customer)
+        Customer\Entity $customer = null)
     {
         //
         // Cannot get it via customer since customer can be null too.
@@ -533,7 +533,15 @@ class Entity extends Base\PublicEntity
 
         $this->merchant()->associate($merchant);
         $this->plan()->associate($plan);
-        $this->customer()->associate($customer);
+
+        //
+        // Don't want to override the relation to null by mistake;
+        // hence the check.
+        //
+        if ($customer !== null)
+        {
+            $this->customer()->associate($customer);
+        }
     }
 
     public function getAnchorForSchedule()

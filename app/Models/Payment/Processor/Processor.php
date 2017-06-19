@@ -573,6 +573,10 @@ class Processor
 
             $notifier = $notifier->trigger(Payment\Event::FAILED);
         }
+
+        // TODO: remove subscription's customer relation!
+        // But, in case of timeouts, the customer will still be associated
+        // and another payment can be attempted. What to do :(
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)

@@ -9,7 +9,8 @@ use RZP\Exception;
 
 trait SubscriptionTrait
 {
-    public function getSubscriptionAuthTransactionRequest($subscription, $authAmount = null)
+    public function getSubscriptionAuthTransactionRequest(
+        $subscription, $authAmount = null, $token = null)
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
@@ -18,13 +19,16 @@ trait SubscriptionTrait
 
         $paymentRequest['subscription_id'] = $subscription['id'];
 
-        if ($authAmount === null)
-        {
-            $paymentRequest['amount'] = 500;
-        }
-        else
+        $paymentRequest['amount'] = 500;
+
+        if ($authAmount !== null)
         {
             $paymentRequest['amount'] = $authAmount;
+        }
+
+        if ($token !== null)
+        {
+            $paymentRequest['token'] = $token;
         }
 
         return $paymentRequest;
@@ -113,6 +117,18 @@ trait SubscriptionTrait
 
         $requestContent = $this->testData[$testFuncName];
 
+        //
+        // This needs to be before the merge block because we might
+        // send customer_id in subscriptionAttributes, but don't want
+        // it to be sent or created via this function. Basically, pre-created
+        // customer. Don't use the standard customer_id (1000000customer)
+        //
+        if ($createCustomer === false)
+        {
+            $requestContent['request']['content']['customer_id'] = null;
+            unset($requestContent['response']['content']['customer_id']);
+        }
+
         if (empty($subscriptionAttributes) === false)
         {
             $requestContent['request']['content'] = array_merge(
@@ -130,12 +146,6 @@ trait SubscriptionTrait
                     ]
                 ]
             ];
-        }
-
-        if ($createCustomer === false)
-        {
-            $requestContent['request']['content']['customer_id'] = null;
-            $requestContent['response']['content']['customer_id'] = null;
         }
 
         if ($emptyResponseContent === true)

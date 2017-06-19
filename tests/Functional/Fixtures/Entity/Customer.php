@@ -34,7 +34,8 @@ class Customer extends Base
         array(
             'customer_id'   => '10000gcustomer',
             'id'            => '1000000custapp',
-            'device_token'  => '1000custdevice'
+            'device_token'  => '1000custdevice',
+            'merchant_id'   => '100000Razorpay',
         ),
     );
 

@@ -37,7 +37,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input, Plan\Entity $plan, $customer): Entity
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
         return (new Creator)->create($input, $plan, $customer);
     }

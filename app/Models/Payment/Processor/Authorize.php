@@ -993,20 +993,23 @@ trait Authorize
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
+        //
+        // Either the customer ID or the app token ID is required to get the customer.
+        // Hence, fill the app token in the input if customer ID is not present.
+        //
+        // This should be done before `addCustomerIdToSubscriptionInput` because we
+        // check if app_token is present in some conditions.
+        //
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $this->checkAndFillSavedAppToken($input);
+        }
+
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
             $this->associateSubscriptionToPayment($payment, $input);
 
             $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
-        }
-
-        //
-        // Either the customer ID or the app token ID is required to get the customer.
-        // Hence, fill the app token in the input if customer ID is not present.
-        //
-        if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
-        {
-            $this->checkAndFillSavedAppToken($input);
         }
 
         // First fetch the relevant customer (global or local)
@@ -1091,13 +1094,15 @@ trait Authorize
 
         $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $subscription->merchant);
 
-        // TODO: Write test cases to ensure that the associations happen correctly
         $localCustomer->globalCustomer()->associate($customer);
 
         $this->repo->saveOrFail($localCustomer);
 
-        // TODO: Ensure this gets saved later in the flow somewhere.
         $subscription->customer()->associate($localCustomer);
+
+        // If this gets saved and then the payment fails, what happens?
+        // We remove the relation if the payment fails, in `updatePaymentFailed`
+        $this->repo->saveOrFail($subscription);
     }
 
     protected function addCustomerIdToSubscriptionInput(Subscription\Entity $subscription, array & $input)
@@ -1268,11 +1273,28 @@ trait Authorize
 
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
                                                           Customer\Entity $localCustomer = null,
-                                                          Customer\AppToken\Entity $customerApp,
+                                                          Customer\AppToken\Entity $customerApp = null,
                                                           Payment\Entity $payment,
                                                           array & $input,
                                                           array & $gatewayInput)
     {
+        //
+        // Only in the case of privilege auth, it's okay to not
+        // have an app_token. In all other cases, we should have
+        // an app_token when we are processing 2FA.
+        //
+        if (($this->ba->isPrivilegeAuth() === false) and
+            ($customerApp === null))
+        {
+            throw new Exception\LogicException(
+                'Not privilege auth and no app_token. Should not have reached here at all.',
+                ErrorCode::SERVER_ERROR_APP_TOKEN_NOT_PRESENT,
+                [
+                    'customer_id' => $customer->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
+
         $this->payment->app()->associate($customerApp);
 
         $this->payment->globalCustomer()->associate($customer);
@@ -1385,8 +1407,10 @@ trait Authorize
                                                            array $input,
                                                            array & $gatewayInput)
     {
-        // Flow if card details are entered with save set to true/false
-        $saveMethod = $payment->getSave();
+        // If save is set to true or recurring is set to true,
+        // we save the card details while processing the payment
+        $saveMethod = (($payment->getSave() === true) or
+                       ($payment->isRecurring() === true));
 
         if ($saveMethod === false)
         {
@@ -1599,7 +1623,7 @@ trait Authorize
 
         if ($appToken !== null)
         {
-            $input['app_token'] = $appToken;
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
     }
 

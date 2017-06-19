@@ -35,6 +35,8 @@ class SubscriptionCardsTest extends TestCase
         $this->mockTokenex();
     }
 
+    // ----------------------- Preferences Start ----------------------------
+
     public function testPreferencesWithCustomerIdInInput()
     {
         $exceptionDetails = [
@@ -82,12 +84,12 @@ class SubscriptionCardsTest extends TestCase
             'status_code' => 400
         ];
 
-        $response = $this->makePreferencesCall([], $exceptionDetails, false);
+        $response = $this->makePreferencesCall([], $exceptionDetails, [], false);
     }
 
     public function testPreferencesWithGlobalCustomerHasTokens()
     {
-        $response = $this->makePreferencesCall(['app_token' => 'capp_1000000custapp'], [], false);
+        $response = $this->makePreferencesCall(['app_token' => 'capp_1000000custapp'], [], [], false);
 
         $this->assertGreaterThanOrEqual(1, $response['customer']['tokens']['count']);
         $this->assertArrayNotHasKey('customer_id', $response['customer']);
@@ -97,21 +99,399 @@ class SubscriptionCardsTest extends TestCase
 
     public function testPreferencesChangeCardGlobalCustomer()
     {
-        $globalCustomer = $this->fixtures->create('customer');
-        $localCustomer = $this->fixtures->create('customer', ['global_customer_id' => $globalCustomer['id']]);
+        $localCustomer = $this->fixtures->create('customer', ['global_customer_id' => '10000gcustomer']);
 
         $response = $this->makePreferencesCall(
             [
                 'app_token' => 'capp_1000000custapp',
-                'customer_id' => $localCustomer['id']
             ],
             [],
+            [
+                'customer_id' => $localCustomer->getPublicId()
+            ],
             false);
+
+        $this->assertEquals(1, $response['customer']['tokens']['count']);
+        $this->assertEquals('token_10000custgcard', $response['customer']['tokens']['items'][0]['id']);
+        $this->assertEquals(2000, $response['subscription']['amount']);
     }
 
-    protected function makePreferencesCall($requestParams = [], $exceptionDetails = [], $createCustomer = true)
+    public function testPreferencesChangeCardGlobalCustomerNoAppToken()
     {
-        $subscription = $this->createSubscription(false, [], [], false, false, $createCustomer);
+        $localCustomer = $this->fixtures->create('customer', ['global_customer_id' => '10000gcustomer']);
+
+        $response = $this->makePreferencesCall(
+            [],
+            [],
+            [
+                'customer_id' => $localCustomer->getPublicId()
+            ],
+            false);
+
+        $this->assertArrayNotHasKey('customer', $response);
+        $this->assertEquals(2000, $response['subscription']['amount']);
+        $this->assertTrue($response['options']['remember_customer']);
+    }
+
+    // ----------------------- Preferences End ----------------------------
+
+    // ----------------------- Payment Flow Start ----------------------------
+
+    public function testPaymentCustomerIdInInput()
+    {
+
+    }
+
+    public function testPaymentFirst2FaLocalSavedCard()
+    {
+        $subscription = $this->createSubscription(
+            true, [], ['customer_id' => 'cust_100000customer'], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100000custcard');
+
+        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals('token_100000custcard', $payment['token_id']);
+        $this->assertNull($payment['global_token_id']);
+        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+        $this->assertNull($payment['global_customer_id']);
+        $this->assertEquals('token_100000custcard', $subscription['token_id']);
+    }
+
+    public function testPaymentFirst2FaLocalNewCard()
+    {
+        $subscription = $this->createSubscription(
+            true, [], ['customer_id' => 'cust_100000customer'], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertNull($payment['global_token_id']);
+        $this->assertEquals($token['id'], $payment['token_id']);
+        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+        $this->assertNull($payment['global_customer_id']);
+        $this->assertEquals($token['id'], $subscription['token_id']);
+    }
+
+    public function testPaymentSecond2FaLocalSavedCard()
+    {
+        $subscription = $this->createSubscription(
+            false, [], ['customer_id' => 'cust_100000customer'], false, false, false);
+
+        // The item amount is 2k. It's modified while creating plan via fixtures.
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        // ------------
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100000custcard');
+        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+
+        $response2 = $this->doAuthPayment($paymentRequest);
+
+        $payment2 = $this->getEntityById('payment', $response2['razorpay_payment_id'], true);
+
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $token2 = 'token_100000custcard';
+
+        // ---------------
+
+        $this->assertNotEquals($token['id'], $payment2['token_id']);
+        $this->assertNotEquals($payment['id'], $payment2['id']);
+        $this->assertEquals($subscription['id'], $subscription2['id']);
+
+        $this->assertEquals($token2, $payment2['token_id']);
+        $this->assertEquals($token2, $subscription2['token_id']);
+
+        $this->assertEquals($subscription['customer_id'], $subscription2['customer_id']);
+        $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
+
+        $this->assertNull($payment2['global_token_id']);
+        $this->assertEquals(500, $payment2['amount']);
+        $this->assertEquals('refunded', $payment2['status']);
+        $this->assertEquals($subscription['id'], $payment2['subscription_id']);
+
+        $this->assertEquals(1, $subscription2['paid_count']);
+        $this->assertEquals('active', $subscription2['status']);
+    }
+
+    public function testPaymentSecond2FaLocalNewCard()
+    {
+        $subscription = $this->createSubscription(
+            false, [], ['customer_id' => 'cust_100000customer'], false, false, false);
+
+        // The item amount is 2k. It's modified while creating plan via fixtures.
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        // ------------
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['card']['number'] = '4000000000000002';
+
+        $response2 = $this->doAuthPayment($paymentRequest);
+
+        $payment2 = $this->getEntityById('payment', $response2['razorpay_payment_id'], true);
+
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $token2 = $this->getLastEntity('token', true);
+
+        // ---------------
+
+        $this->assertNotEquals($token['id'], $token2['id']);
+        $this->assertNotEquals($payment['id'], $payment2['id']);
+        $this->assertEquals($subscription['id'], $subscription2['id']);
+
+        $this->assertEquals($token2['id'], $payment2['token_id']);
+        $this->assertEquals($token2['id'], $subscription2['token_id']);
+
+        $this->assertEquals($subscription['customer_id'], $subscription2['customer_id']);
+        $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
+
+        $this->assertNull($payment2['global_token_id']);
+        $this->assertEquals(500, $payment2['amount']);
+        $this->assertEquals('refunded', $payment2['status']);
+        $this->assertEquals($subscription['id'], $payment2['subscription_id']);
+
+        $this->assertEquals(1, $subscription2['paid_count']);
+        $this->assertEquals('active', $subscription2['status']);
+    }
+
+    public function testPaymentChargeLocalSavedCard()
+    {
+
+    }
+
+    public function testPaymentFirst2FaGlobalSavedCard()
+    {
+        $subscription = $this->createSubscription(true, [], [], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_10000custgcard');
+        unset($paymentRequest['card']);
+        $paymentRequest['card'] = ['cvv' => 111];
+
+        $this->mockSession();
+
+        // $this->fixtures->base->editEntity('card', '100000000gcard', ["type" => 'credit']);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $globalToken = $this->getEntityById('token', 'token_10000custgcard', true);
+
+        $customer = $this->getLastEntity('customer', true);
+        $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals($globalToken['id'], 'token_' . $payment['global_token_id']);
+        $this->assertArrayNotHasKey('token_id', $payment);
+        $this->assertEquals($customer['id'], $payment['customer_id']);
+        $this->assertEquals($globalCust['id'], 'cust_' . $payment['global_customer_id']);
+
+        $this->assertEquals($globalToken['id'], 'token_' . $subscription['token_id']);
+        $this->assertEquals($customer['id'], $subscription['customer_id']);
+
+        $this->assertEquals($globalCust['id'], 'cust_' . $customer['global_customer_id']);
+        $this->assertEquals($globalCust['email'], $customer['email']);
+        $this->assertEquals($globalCust['contact'], $customer['contact']);
+    }
+
+    public function testPaymentFirst2FaGlobalNewCard()
+    {
+        $subscription = $this->createSubscription(true, [], [], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $this->mockSession();
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $customer = $this->getLastEntity('customer', true);
+        $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals($token['id'], 'token_' . $payment['global_token_id']);
+        $this->assertArrayNotHasKey('token_id', $payment);
+        $this->assertEquals($customer['id'], $payment['customer_id']);
+        $this->assertEquals($globalCust['id'], 'cust_' . $payment['global_customer_id']);
+        $this->assertEquals($token['id'], $subscription['token_id']);
+
+        $this->assertEquals($globalCust['id'], 'cust_' . $customer['global_customer_id']);
+        $this->assertEquals($globalCust['email'], $customer['email']);
+        $this->assertEquals($globalCust['contact'], $customer['contact']);
+    }
+
+    public function testPaymentSecond2FaGlobalSavedCard()
+    {
+        $subscription = $this->createSubscription(false, [], [], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $this->mockSession();
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        // ------------
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_10000custgcard');
+        unset($paymentRequest['card']);
+        $paymentRequest['card'] = ['cvv' => 111];
+
+        $this->mockSession();
+
+        $response2 = $this->doAuthPayment($paymentRequest);
+
+        $payment2 = $this->getEntityById('payment', $response2['razorpay_payment_id'], true);
+
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $token2 = $this->getEntityById('token', 'token_10000custgcard', true);
+
+        $customer = $this->getLastEntity('customer', true);
+        $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
+
+        // ---------------
+
+        $this->assertNotEquals($token['id'], $token2['id']);
+        $this->assertEquals($token['customer_id'], $token2['customer_id']);
+        $this->assertEquals('100000000gcard', $token2['card_id']);
+
+        $this->assertArrayNotHasKey('token_id', $payment2);
+        $this->assertEquals($token2['id'], 'token_' . $payment2['global_token_id']);
+        $this->assertEquals($globalCust['id'], 'cust_' . $payment2['global_customer_id']);
+        $this->assertEquals($customer['id'], $payment2['customer_id']);
+        $this->assertEquals($subscription['id'], $payment2['subscription_id']);
+        $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
+        $this->assertEquals($payment['global_customer_id'], $payment2['global_customer_id']);
+        $this->assertNull($payment2['invoice_id']);
+        $this->assertEquals(500, $payment2['amount']);
+        $this->assertEquals('refunded', $payment2['status']);
+
+        $this->assertEquals($token2['id'], 'token_' . $subscription2['token_id']);
+        $this->assertEquals($customer['id'], $subscription2['customer_id']);
+        $this->assertEquals($customer['id'], $subscription['customer_id']);
+        $this->assertEquals(1, $subscription2['paid_count']);
+        $this->assertEquals('active', $subscription2['status']);
+    }
+
+    public function testPaymentSecond2FaGlobalNewCard()
+    {
+        $subscription = $this->createSubscription(false, [], [], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $this->mockSession();
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $customer = $this->getLastEntity('customer', true);
+
+        // ------------
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['card']['number'] = '4000000000000002';
+
+        $this->mockSession();
+
+        $response2 = $this->doAuthPayment($paymentRequest);
+
+        $payment2 = $this->getEntityById('payment', $response2['razorpay_payment_id'], true);
+
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $token2 = $this->getLastEntity('token', true);
+
+        $customer2 = $this->getEntityById('customer', '10000gcustomer', true);
+
+        // ---------------
+
+        $this->assertNotEquals($token['id'], $token2['id']);
+        $this->assertEquals($token['customer_id'], $token2['customer_id']);
+        $this->assertEquals('10000gcustomer', $token2['customer_id']);
+
+        $this->assertArrayNotHasKey('token_id', $payment2);
+        $this->assertEquals($token2['id'], 'token_' . $payment2['global_token_id']);
+        $this->assertEquals($customer2['id'], 'cust_' . $payment2['global_customer_id']);
+        $this->assertEquals($customer['id'], $payment2['customer_id']);
+        $this->assertEquals($subscription['id'], $payment2['subscription_id']);
+        $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
+        $this->assertEquals($payment['global_customer_id'], $payment2['global_customer_id']);
+        $this->assertNull($payment2['invoice_id']);
+        $this->assertEquals(500, $payment2['amount']);
+        $this->assertEquals('refunded', $payment2['status']);
+        $this->assertNotEquals($payment['global_token_id'], $payment2['global_token_id']);
+
+        $this->assertEquals($token2['id'], 'token_' . $subscription2['token_id']);
+        $this->assertEquals($customer['id'], $subscription2['customer_id']);
+        $this->assertEquals(1, $subscription2['paid_count']);
+        $this->assertEquals('active', $subscription2['status']);
+
+        $this->assertEquals($customer2['id'], 'cust_' . $customer['global_customer_id']);
+    }
+
+    public function testPaymentChargeGlobalSavedCard()
+    {
+
+    }
+
+    // ----------------------- Payment Flow End ----------------------------
+
+    protected function makePreferencesCall(
+        $requestParams = [], $exceptionDetails = [], $subscriptionRequestParams = [], $createCustomer = true)
+    {
+        $subscription = $this->createSubscription(false, [], $subscriptionRequestParams, false, false, $createCustomer);
 
         $this->ba->publicAuth();
 
@@ -137,5 +517,12 @@ class SubscriptionCardsTest extends TestCase
         $response = $this->startTest($requestContent);
 
         return $response;
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 }

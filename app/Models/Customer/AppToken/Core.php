@@ -78,6 +78,8 @@ class Core extends Base\Core
 
     protected function getAppByAppTokenIdAndMerchant($appTokenId, Merchant\Entity $merchant)
     {
+        AppToken\Entity::verifyIdAndSilentlyStripSign($appTokenId);
+
         $appToken = null;
 
         try

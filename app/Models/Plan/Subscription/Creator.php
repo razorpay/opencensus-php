@@ -24,7 +24,7 @@ class Creator extends Base\Core
      * @return Entity
      * @throws \Exception
      */
-    public function create(array $input, Plan\Entity $plan, $customer): Entity
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
         $subscription = (new Entity)->build($input);
 

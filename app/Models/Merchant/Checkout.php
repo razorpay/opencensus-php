@@ -199,6 +199,7 @@ class Checkout
             //
             if ($customer->isLocal() === true)
             {
+                // TODO: Figure out a way to tell the checkout whether it's local/global flow.
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
         }
