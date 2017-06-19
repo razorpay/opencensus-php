@@ -281,11 +281,23 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
-        // Invitations
+        // GST
+        'merchant_gst_fetch'    =>  [
+            'url'         => 'merchant/gst',
+            'routeName'   => 'merchant_gst_fetch'
+        ],
+
+        'merchant_gst_edit'     => [
+            'url'       => 'merchant/gst',
+            'routeName' => 'merchant_gst_edit'
+        ],
+        
+         // Invitations
         'invitation_create'                 => [
             'url'       => 'invitations',
             'routeName' => 'invitations_send'
-        ],
+         ],
+        
         'invitation_resend'                 => [
             'url'       => 'invitations/{id}/resend',
             'routeName' => 'invitation_resend'

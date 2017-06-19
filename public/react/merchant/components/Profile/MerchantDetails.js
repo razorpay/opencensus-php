@@ -2,6 +2,8 @@ import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import CheckIcon from 'rzp/ui/CheckIcon';
+import GSTDetails from 'merchant/containers/Profile/GST';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ user }) => {
   return (
@@ -34,6 +36,9 @@ export default ({ user }) => {
         value={`${user.activation_progress}%`}
       />
 
+      <ShowWhen myRole="owner">
+        <GSTDetails />
+      </ShowWhen>
     </div>
   );
 };
