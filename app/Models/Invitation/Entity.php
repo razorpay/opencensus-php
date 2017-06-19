@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity  = 'invitation';
 
-    protected $generateIdOnCreate = true;
+    public $incrementing = true;
 
     protected $public = [
         self::ID,
