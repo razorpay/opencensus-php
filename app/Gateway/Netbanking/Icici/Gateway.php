@@ -27,14 +27,6 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT  => 'amount'
     ];
 
-    const VERIFY_STATUS_TO_CALLBACK = [
-        Status::SUCCESS    => Confirmation::YES,
-        Status::FAILED     => Confirmation::NO,
-        Status::REVERSED   => Confirmation::NO,
-        Status::IN_PROCESS => Confirmation::NO,
-        Status::ERROR      => Confirmation::NO
-    ];
-
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -335,7 +327,14 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $status = self::VERIFY_STATUS_TO_CALLBACK[$content[ResponseFields::STATUS]];
+        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
+        {
+            $status = Confirmation::YES;
+        }
+        else
+        {
+            $status = Confirmation::NO;
+        }
 
         $attributes = [];
 
