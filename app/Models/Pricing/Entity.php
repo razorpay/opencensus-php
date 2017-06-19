@@ -85,6 +85,19 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_ACTIVE   => '0'
     ];
 
+    /**
+     * Adds casts for fields
+     *
+     * @var array
+     */
+    protected $casts = [
+        self::INTERNATIONAL       => 'bool',
+        self::AMOUNT_RANGE_ACTIVE => 'bool',
+        self::PERCENT_RATE        => 'int',
+        self::FIXED_RATE          => 'int',
+        self::MIN_RATE            => 'int',
+    ];
+
     const ZERO_PRICING = '10ZeroPricingP';
 
     protected function modifyInputProvideDefaults(& $input)
@@ -222,10 +235,10 @@ class Entity extends Base\PublicEntity
 
     public function getAmountRange()
     {
-        $min = $this->getAmountRangeMin();
-        $max = $this->getAmountRangeMax();
+        $amountRangeMin = $this->getAmountRangeMin();
+        $amountRangeMax = $this->getAmountRangeMax();
 
-        return [$min, $max];
+        return [$amountRangeMin, $amountRangeMax];
     }
 
     public function getAmountRangeMin()
@@ -258,16 +271,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_RATE);
     }
 
-    protected function getInternationalAttribute()
-    {
-        return (bool) $this->attributes[self::INTERNATIONAL];
-    }
-
-    protected function getAmountRangeActiveAttribute()
-    {
-        return (bool) $this->attributes[self::AMOUNT_RANGE_ACTIVE];
-    }
-
     protected function getAmountRangeMinAttribute()
     {
         $min = $this->attributes[self::AMOUNT_RANGE_MIN];
@@ -280,23 +283,6 @@ class Entity extends Base\PublicEntity
         $max = $this->attributes[self::AMOUNT_RANGE_MAX];
 
         return ($max === null) ? $max : (int) $max;
-    }
-
-    protected function getPercentRateAttribute()
-    {
-        return (int) $this->attributes[self::PERCENT_RATE];
-    }
-
-    protected function getFixedRateAttribute()
-    {
-        return (int) $this->attributes[self::FIXED_RATE];
-    }
-
-    protected function getMinRateAttribute()
-    {
-        $min = $this->attributes[self::MIN_RATE];
-
-        return ($min === null) ? $min : (int) $min;
     }
 
     protected function getMaxRateAttribute()
