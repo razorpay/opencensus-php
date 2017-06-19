@@ -33,6 +33,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
+        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::P_GSTIN                         => 'sometimes|string',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
@@ -95,6 +97,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
+        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::P_GSTIN                         => 'sometimes|string',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
@@ -162,7 +166,7 @@ class Validator extends Base\Validator
 
     public function validateIsNotLocked()
     {
-        if ($this->entity->isLocked())
+        if ($this->entity->isLocked() === true)
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
