@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -41,19 +42,12 @@ class Dashboard extends Job implements ShouldQueue
         if (isset($this->data['type']) === false)
         {
             $this->trace->error(
-                            TraceCode::DASHBOARD_INTEGRATION_ERROR,
-                            [
-                                'data' => $this->data,
-                            ]);
-
-            $this->delete();
-
-            throw new Exception\IntegrationException(
-                'Dashboard job does not have a type key',
+                TraceCode::DASHBOARD_INTEGRATION_ERROR,
                 [
                     'data' => $this->data,
                 ]);
 
+            $this->delete();
         }
 
         try
