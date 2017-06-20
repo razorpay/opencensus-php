@@ -668,7 +668,7 @@ class Service extends Base\Service
         }
 
         // Switch $this->merchant to the linked-account entity
-        $this->merchant = Merchant\Entity::findorfail($account->id);
+        $this->merchant = Merchant\Entity::findOrFail($account->id);
 
         $this->linked_account = true;
     }
