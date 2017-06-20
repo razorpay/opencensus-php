@@ -3,9 +3,29 @@
 namespace RZP\Reconciliator\NetbankingRbl;
 
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
 class Reconciliate extends Base\Reconciliate
 {
+    const PAYMENT_COLUMN_HEADER = [
+        ClaimFields::SERIAL_NO,
+        ClaimFields::TRANSACTION_DATE,
+        ClaimFields::USER_ID,
+        ClaimFields::DEBIT_ACCOUNT,
+        ClaimFields::CREDIT_ACCOUNT,
+        ClaimFields::TRANSACTION_AMOUNT,
+        ClaimFields::PGI_REFERENCE,
+        ClaimFields::BANK_REFERENCE,
+        ClaimFields::MERCHANT_NAME,
+        ClaimFields::PGI_STATUS,
+        ClaimFields::ERROR_DESCRIPTION,
+        ClaimFields::TRANSACTION_STATUS,
+    ];
+
+    const TYPE_TO_COLUMN_HEADER_MAP = [
+        self::PAYMENT => self::PAYMENT_COLUMN_HEADER
+    ];
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -20,5 +40,15 @@ class Reconciliate extends Base\Reconciliate
     protected function getTypeName($fileName)
     {
         return self::PAYMENT;
+    }
+
+    public function getColumnHeadersForType($type)
+    {
+        return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
+    }
+
+    public function getDelimiter()
+    {
+        return ',';
     }
 }
