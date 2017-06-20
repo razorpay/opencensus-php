@@ -59,7 +59,9 @@ class Service extends Base\Service
 
         $this->validateProvider($this->provider);
 
-        $this->validator->validateInput('create', $input);
+        // Bank Transfer core does not save to DB in this step.
+        // This is effectively just a modify-and-validate.
+        $this->core->create($input);
 
         $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
 
