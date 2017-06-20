@@ -330,6 +330,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
+        $this->persistAccountDetails($rowDetails);
+
         $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
@@ -368,6 +370,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $customerDetails = $this->getNbCustomerDetails($row);
 
+        $accountDetails = $this->getNbAccountDetails($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID           => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX  => $serviceTax,
@@ -390,6 +394,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         if (empty(array_filter($customerDetails)) === false)
         {
             $rowDetails[BaseReconciliate::CUSTOMER_DETAILS] = array_filter($customerDetails);
+        }
+
+        // We set account details only for netbanking
+        if (empty(array_filter($accountDetails)) === false)
+        {
+            $rowDetails[BaseReconciliate::ACCOUNT_DETAILS] = array_filter($accountDetails);
         }
 
         return $rowDetails;
@@ -441,6 +451,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @return null
      */
     protected function getNbCustomerDetails($row)
+    {
+        return [];
+    }
+
+    /**
+     * If this is being implemented in the child class, ensure that
+     * the setters for accountNumber and creditAccountNumber are present
+     * for the gateway entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getNbAccountDetails($row)
     {
         return [];
     }
@@ -556,6 +579,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->repo->saveOrFail($this->paymentIin);
     }
 
+    protected function persistAccountDetails(array $rowDetails, PublicEntity $gatewayPayment)
+    {
+        if (empty($rowDetails[BaseReconciliate::ACCOUNT_DETAILS]) === true)
+        {
+            return;
+        }
+
+        $accountDetails = $rowDetails[BaseReconciliate::ACCOUNT_DETAILS];
+
+        $this->persistDebitAccount($accountDetails, $gatewayPayment);
+
+        $this->persistCreditAccount($accountDetails, $gatewayPayment);
+    }
+
     /**
      * Saving Gateway Data into DB
      *
@@ -666,6 +703,32 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 
         $gatewayPayment->setCustomerName($customerName);
+    }
+
+    /**
+     * Saving debit account into the DB
+     *
+     * @param array        $debitAccount
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistDebitAccount(array $accountDetails, PublicEntity $gatewayPayment)
+    {
+        $accountNumber = $accountDetails[BaseReconciliate::ACCOUNT_NUMBER];
+
+        $gatewayPayment->setAccountNumber($accountNumber);
+    }
+
+    /**
+     * Saving debit account into the DB
+     *
+     * @param array        $creditAccount
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistCreditAccount(array $accountDetails, PublicEntity $gatewayPayment)
+    {
+        $accountNumber = $accountDetails[BaseReconciliate::CREDIT_ACCOUNT_NUMBER];
+
+        $gatewayPayment->setCreditAccountNumber($accountNumber);
     }
 
     /**

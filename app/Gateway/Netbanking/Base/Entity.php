@@ -6,24 +6,25 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
-    const ID                = 'id';
-    const PAYMENT_ID        = 'payment_id';
-    const BANK              = 'bank';
-    const RECEIVED          = 'received';
-    const AMOUNT            = 'amount';
-    const CLIENT_CODE       = 'client_code';
-    const MERCHANT_CODE     = 'merchant_code';
-    const CUSTOMER_ID       = 'customer_id';
-    const CUSTOMER_NAME     = 'customer_name';
-    const BANK_PAYMENT_ID   = 'bank_payment_id';
-    const STATUS            = 'status';
-    const ERROR_MESSAGE     = 'error_message';
-    const DATE              = 'date';
-    const REFUND_ID         = 'refund_id';
-    const REFERENCE1        = 'reference1';
-    const ACCOUNT_NUMBER    = 'account_number';
-    const INT_PAYMENT_ID    = 'int_payment_id';
-    const CAPS_PAYMENT_ID   = 'caps_payment_id';
+    const ID                    = 'id';
+    const PAYMENT_ID            = 'payment_id';
+    const BANK                  = 'bank';
+    const RECEIVED              = 'received';
+    const AMOUNT                = 'amount';
+    const CLIENT_CODE           = 'client_code';
+    const MERCHANT_CODE         = 'merchant_code';
+    const CUSTOMER_ID           = 'customer_id';
+    const CUSTOMER_NAME         = 'customer_name';
+    const BANK_PAYMENT_ID       = 'bank_payment_id';
+    const STATUS                = 'status';
+    const ERROR_MESSAGE         = 'error_message';
+    const DATE                  = 'date';
+    const REFUND_ID             = 'refund_id';
+    const REFERENCE1            = 'reference1';
+    const ACCOUNT_NUMBER        = 'account_number';
+    const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
+    const INT_PAYMENT_ID        = 'int_payment_id';
+    const CAPS_PAYMENT_ID       = 'caps_payment_id';
 
     protected $entity = 'netbanking';
 
@@ -86,6 +87,11 @@ class Entity extends Base\Entity
     public function setAccountNumber($accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function setCreditAccountNumber($creditAccountNumber)
+    {
+        $this->setAttribute(self::CREDIT_ACCOUNT_NUMBER, $creditAccountNumber);
     }
 
     public function isTpv()

@@ -36,9 +36,11 @@ class Claims extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
+        $txt = $this->generateText($data, ',');
+
         $creator = $this->createFile(
-            FileStore\Format::XLSX,
-            $data,
+            FileStore\Format::TXT,
+            $txt,
             $fileName,
             FileStore\Type::RBL_NETBANKING_REFUND
         );
@@ -62,8 +64,6 @@ class Claims extends Base\RefundFile
     {
         $data = [];
 
-        $data[] = self::$headers;
-
         $index = 1;
 
         $totalAmount = 0;
@@ -79,14 +79,14 @@ class Claims extends Base\RefundFile
                 ClaimFields::SERIAL_NO          => $index++,
                 ClaimFields::TRANSACTION_DATE   => $date,
                 ClaimFields::USER_ID            => $row['gateway']['customer_id'],
-                ClaimFields::DEBIT_ACCOUNT      => null,
-                ClaimFields::CREDIT_ACCOUNT     => null,
+                ClaimFields::DEBIT_ACCOUNT      => $row['gateway']['account_number'],
+                ClaimFields::CREDIT_ACCOUNT     => $row['gateway']['credit_account_number'],
                 ClaimFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
                 ClaimFields::PGI_REFERENCE      => $row['payment']['id'],
                 ClaimFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 ClaimFields::PGI_STATUS         => $row['gateway']['status'],
-                ClaimFields::ERROR_DESCRIPTION  => null,
+                ClaimFields::ERROR_DESCRIPTION  => $row['gateway']['error_message'],
                 ClaimFields::TRANSACTION_STATUS => $row['payment']['status'],
             ];
 

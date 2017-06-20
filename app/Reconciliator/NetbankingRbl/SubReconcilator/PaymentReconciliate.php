@@ -46,4 +46,57 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      Action::AUTHORIZE,
                                                                      $status);
     }
+
+    protected function getNbCustomerDetails($row)
+    {
+        return [
+            Base\Reconciliate::CUSTOMER_ID   => $this->getNbCustomerId($row),
+        ];
+    }
+
+    protected function getNbAccountDetails($row)
+    {
+        return [
+            Base\Reconciliate::ACCOUNT_NUMBER => $this->getDebitAccountNumber($row),
+            Base\Reconciliate::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($row),
+        ];
+    }
+
+    protected function getDebitAccountNumber($row)
+    {
+        if (empty($row[ClaimFields::DEBIT_ACCOUNT]) === false)
+        {
+            return $row[ClaimFields::DEBIT_ACCOUNT];
+        }
+
+        return null;
+    }
+
+    protected function getCreditAccountNumber($row)
+    {
+        if (empty($row[ClaimFields::CREDIT_ACCOUNT]) === false)
+        {
+            return $row[ClaimFields::CREDIT_ACCOUNT];
+        }
+
+        return null;
+    }
+
+    protected function getNbCustomerId($row)
+    {
+        if (empty($row[ClaimFields::USER_ID]) === false)
+        {
+            return $row[ClaimFields::USER_ID];
+        }
+
+        return null;
+    }
+
+    protected function getAccountDetails($row)
+    {
+       if (empty($row[ClaimFields::USER_ID]) === false)
+        {
+            return $row[ClaimFields::USER_ID];
+        }
+    }
 }
