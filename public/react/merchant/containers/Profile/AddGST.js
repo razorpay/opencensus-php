@@ -15,14 +15,14 @@ function validate(values) {
   const errors = {};
   const errorMsg = 'Must be 15 characters';
 
-  let { gst_type, p_gstin = '', gstin = '' } = values;
+  let { gst_type, p_gstin, gstin } = values;
 
   if (gst_type === 'p_gstin') {
-    if (p_gstin.length !== 15) {
+    if (!p_gstin || p_gstin.length !== 15) {
       errors.p_gstin = errorMsg;
     }
   } else if (gst_type === 'gstin') {
-    if (gstin.length !== 15) {
+    if (!gstin || gstin.length !== 15) {
       errors.gstin = errorMsg;
     }
   }
