@@ -9,11 +9,10 @@ use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
-    /***************************************
+    /******************
      * Row Header Names
-     *
-     * ft_no maps to gateway_transaction_id
-     ***************************************/
+     ******************/
+    // ft_no maps to gateway_transaction_id
     const COLUMN_GATEWAY_PAYMENT_ID = 'ft_no';
     const COLUMN_REFUND_AMOUNT      = 'transaction_amt';
     const COLUMN_ARN                = 'arn_no';
@@ -22,8 +21,8 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Gets refund Id from gateway entity
      * using helper function.
      *
-     * @param $row array
-     * @return $refundId string
+     * @param array   $row
+     * @return string $refundId
      */
     protected function getRefundId($row)
     {
@@ -36,8 +35,8 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Gets payment id from gateway entity
      * using helper function.
      *
-     * @param $row        array
-     * @return $paymentId string
+     * @param array   $row
+     * @return string $paymentId
      */
     protected function getPaymentId($row)
     {
@@ -50,8 +49,14 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Fetches refund amount from the file.
      * It is negative for refunds, so we will be taking abs value
      *
-     * @param $row           array
-     * @return $refundAmount integer
+     * We are converting to int after casting to string as PHP randomly
+     * returns wrong int values due to differing floating point precisions
+     * So something like intval(31946.0) may give 31945 or 31946
+     * Convering to string using number_format and then converting
+     * is a hack to avoid this issue
+     *
+     * @param array    $row
+     * @return integer $refundAmount
      */
     protected function getRefundAmount(array $row)
     {
@@ -74,12 +79,12 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Hence this column is rendered useless.
      * So we are using gateway transaction id to retrieve payment.
      *
-     * @param  $row array
-     * @return $payment FirstData\Entity
+     * @param array             $row
+     * @return FirstData\Entity $payment
      */
     protected function getGatewayPayment($row)
     {
-        $gatewayTxnIdVal = $row[COLUMN_GATEWAY_PAYMENT_ID];
+        $gatewayTxnIdVal = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
 
         // The val of column 'FT NO' has a lot of leading zeros,
         // which need to be removed in order to get actual gateway txn id.
@@ -97,8 +102,8 @@ class RefundReconciliate extends Base\RefundReconciliate
     /**
      * Fetches ARN for given rows
      *
-     * @param $row array
-     * @return $arn string
+     * @param array   $row
+     * @return string $arn
      */
     protected function getArn(array $row)
     {
@@ -115,12 +120,37 @@ class RefundReconciliate extends Base\RefundReconciliate
     /**
      * Sets ARN in gateway entity
      *
-     * @param $arn           string
-     * @param $gatewayRefund PublicEntity
+     * @param string       $arn
+     * @param PublicEntity $gatewayRefund
      * @return void
      */
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
         $gatewayRefund->setArn($arn);
+    }
+
+    /**
+     * Checks if refund amount is equal to amount from row
+     * raises alert in case of mismatch
+     *
+     * @param array $row
+     * @return void
+     */
+    protected function validateRefundAmountEqualsReconAmount(array $row)
+    {
+        if ($this->refund->getAmount() !== $this->getRefundAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Refund amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

@@ -2,17 +2,18 @@
 
 namespace RZP\Reconciliator\FirstData;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    /******************************************************
+    /*******************
      * Row Header Names
-     *
-     * ft_no maps to gateway_transaction_id
-     * comm_amount (commission amount) maps to gateway fee
-     ******************************************************/
+     ******************/
+
+    // ft_no maps to gateway_transaction_id
+    // comm_amount (commission amount) maps to gateway fee
     const COLUMN_GATEWAY_PAYMENT_ID = 'ft_no';
     const COLUMN_GATEWAY_FEE        = 'comm_amount';
     const COLUMN_PAYMENT_AMOUNT     = 'transaction_amt';
@@ -24,12 +25,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Hence this column is rendered useless.
      * So we are using gateway transaction id to retrieve payment id.
      *
-     * @param $row        array
-     * @return $paymentId string
+     * @param array   $row
+     * @return string $paymentId
      */
     protected function getPaymentId($row)
     {
-        $gatewayTxnIdVal = $row[COLUMN_GATEWAY_PAYMENT_ID];
+        $gatewayTxnIdVal = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
 
         // The val of column 'FT NO' has a lot of leading zeros,
         // which need to be removed in order to get actual gateway txn id.
@@ -54,8 +55,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Convering to string using number_format and then converting
      * is a hack to avoid this issue
      *
-     * @param $row            array
-     * @return $paymentAmount integer
+     * @param array $row
+     * @return integer $paymentAmount
      */
     protected function getGatewayPaymentAmount($row)
     {
@@ -72,8 +73,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Usually we add service tax to this value,
      * but ST for first data is 0, hence, no addition.
      *
-     * @param $row         array
-     * @return $gatewayFee integer
+     * @param array    $row
+     * @return integer $gatewayFee
      */
     protected function getGatewayFee($row)
     {
@@ -84,14 +85,43 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * There is no service tax for first data,
+     * e don't get service tax for First Data in the MIS files,
      * it is considered as zero
      *
-     * @param  $row array
+     * @param  array row
      * @return 0
      */
     protected function getGatewayServiceTax($row)
     {
         return 0;
+    }
+
+    /**
+     * Checks if payment amount is equal to amount from row
+     * raises alert in case of mismatch
+     *
+     * @param array $row
+     * @return void
+     */
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Payment amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getCardDetails($row)
+    {
     }
 }

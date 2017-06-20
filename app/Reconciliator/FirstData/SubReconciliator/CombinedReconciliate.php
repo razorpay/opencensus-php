@@ -27,13 +27,13 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      * For payment, value is 'PURCHASE'
      * For refund, value is 'REFUND (CREDIT)'
      *
-     * @param $row array
+     * @param array $row
      * @return string
      */
     protected function getReconciliationTypeForRow($row)
     {
         $txnType = $row[self::COLUMN_TXN_TYPE];
 
-        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType] ?? null;
+        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType] ?? self::NA;
     }
 }
