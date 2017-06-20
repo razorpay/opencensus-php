@@ -255,6 +255,11 @@ class UniqueIdEntity extends Entity
 
     protected static function getNanotimeInteger()
     {
+        if (function_exists('nanotime'))
+        {
+            return nanotime();
+        }
+
         $cmd = '';
 
         if (PHP_OS === 'Darwin')
