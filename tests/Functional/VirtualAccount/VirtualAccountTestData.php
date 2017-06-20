@@ -11,7 +11,9 @@ return [
         'entity'          => 'virtual_account',
         // 'amount_expected' => 10000,
         'status'          => 'active',
-        'receiver_type'   => ['bank_account'],
+        'receiver_types'  => [
+            'bank_account'
+        ],
         'bank_account'    => [
             'entity' => 'bank_account',
             'ifsc'   => 'RAZR0000001',
@@ -23,7 +25,7 @@ return [
         'entity'          => 'virtual_account',
         // 'amount_expected' => 10000,
         'status'          => 'active',
-        'receiver_type'   => ['bank_account'],
+        'receiver_types'  => ['bank_account'],
         'bank_account'    => [
             'entity' => 'bank_account',
             'ifsc'   => 'RAZR0000001',

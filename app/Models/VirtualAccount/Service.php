@@ -13,7 +13,9 @@ class Service extends Base\Service
 {
     protected $core;
 
-    const DEFAULT_RECEIVER_TYPE = Receiver::BANK_ACCOUNT;
+    const DEFAULT_RECEIVER_TYPES = [
+        Receiver::BANK_ACCOUNT,
+    ];
 
     public function __construct()
     {
@@ -32,13 +34,13 @@ class Service extends Base\Service
 
         $customer = $this->getCustomerIfGiven($input);
 
-        $this->setDefaultReceiverTypeIfNeeded($input);
+        $this->setDefaultReceiverTypesIfNeeded($input);
 
         $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
         {
             $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPE]);
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
 
             $this->repo->saveOrFail($virtualAccount);
 
@@ -128,16 +130,16 @@ class Service extends Base\Service
         return $customer;
     }
 
-    protected function setDefaultReceiverTypeIfNeeded(array & $input)
+    protected function setDefaultReceiverTypesIfNeeded(array & $input)
     {
-        if (empty($input[Entity::RECEIVER_TYPE]) === true)
+        if (empty($input[Entity::RECEIVER_TYPES]) === true)
         {
-            $input[Entity::RECEIVER_TYPE] = self::DEFAULT_RECEIVER_TYPE;
+            $input[Entity::RECEIVER_TYPES] = self::DEFAULT_RECEIVER_TYPES;
         }
 
-        if (is_array($input[Entity::RECEIVER_TYPE]) === false)
+        if (is_array($input[Entity::RECEIVER_TYPES]) === false)
         {
-            $input[Entity::RECEIVER_TYPE] = [$input[Entity::RECEIVER_TYPE]];
+            $input[Entity::RECEIVER_TYPES] = [$input[Entity::RECEIVER_TYPES]];
         }
     }
 

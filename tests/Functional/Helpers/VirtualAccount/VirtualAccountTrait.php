@@ -141,7 +141,9 @@ trait VirtualAccountTrait
         return [
             'name'            => 'Test virtual account',
             'amount_expected' => 10000,
-            'receiver_type'   => 'bank_account',
+            'receiver_types'  => [
+                'bank_account'
+            ],
             'notes'           => [
                 'a' => 'b',
             ],

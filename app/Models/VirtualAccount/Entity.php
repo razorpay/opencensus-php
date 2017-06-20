@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID          = 'customer_id';
     const NOTES                = 'notes';
 
-    const RECEIVER_TYPE        = 'receiver_type';
+    const RECEIVER_TYPES       = 'receiver_types';
     const BANK_ACCOUNT         = 'bank_account';
 
     const DELETED_AT           = 'deleted_at';
@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
         self::BANK_ACCOUNT,
-        self::RECEIVER_TYPE,
+        self::RECEIVER_TYPES,
         self::CREATED_AT,
     ];
 
@@ -57,7 +57,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::RECEIVER_TYPE,
+        self::RECEIVER_TYPES,
     ];
 
     protected $casts = [
@@ -195,7 +195,7 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
-    protected function setPublicReceiverTypeAttribute(array & $array)
+    protected function setPublicReceiverTypesAttribute(array & $array)
     {
         $receiverTypes = [];
 
@@ -209,7 +209,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $array[self::RECEIVER_TYPE] = $receiverTypes;
+        $array[self::RECEIVER_TYPES] = $receiverTypes;
     }
 
     public function incrementAmountPaid(int $amount)
