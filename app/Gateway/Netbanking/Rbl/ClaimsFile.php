@@ -11,7 +11,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Constants\MailTags;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
-class Claims extends Base\RefundFile
+class ClaimsFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Rbl_Netbanking_Claims';
 
