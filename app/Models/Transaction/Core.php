@@ -215,7 +215,7 @@ class Core extends Base\Core
 
     protected function fillEmptyTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
     {
-        $amount = $payment->getBaseAmount();;
+        $amount = $payment->getBaseAmount();
 
         $values = [
             Transaction\Entity::DEBIT               => 0,

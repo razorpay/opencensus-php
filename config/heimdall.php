@@ -24,6 +24,10 @@ return [
     'default_role_desc' => 'superadmin with all possible permissions',
 
     'permissions' => [
+        PermissionCategory::GENERAL => [
+            Permission::VIEW_HOMEPAGE       => 'View Dashboard Home',
+        ],
+
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS    => [
                 'description' => 'View all merchants in merchant lists',
@@ -498,6 +502,16 @@ return [
                 'assignable' => false,
                 'workflow' => false
             ],
+            Permission::CREATE_MERCHANT_OFFER  => [
+                'description' => 'Create offer for a merchant',
+                'assignable' => false,
+                'workflow' => false
+            ],
+            Permission::EDIT_MERCHANT_OFFER => [
+                'description' => 'Edit offer for a merchant',
+                'assignable' => false,
+                'workflow' => false
+            ]
         ],
 
         PermissionCategory::PRICING => [
@@ -583,6 +597,11 @@ return [
                 'description' => 'create workflow',
                 'assignable' => true,
                 'workflow' => true
+            ],
+            Permission::VIEW_WORKFLOW_REQUESTS => [
+                'description' => 'View Workflow requests',
+                'assignable' => true,
+                'workflow' => false
             ],
         ],
 

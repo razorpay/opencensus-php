@@ -2015,6 +2015,15 @@ ALTER TABLE reports
 # Makes international attribute of gateway rules nullable
 ALTER TABLE gateway_rules MODIFY COLUMN international TINYINT(1);
 
+# Add column processed_at to settlements, and payouts tables
+alter table payouts
+    add column processed_at int(11) default null after `remarks`,
+    add column settled_on int(11) default null after `processed_at`;
+
+alter table settlements
+    add column processed_at int(11) default null after `remarks`,
+    add column settled_on int(11) default null after `processed_at`;
+
 ALTER TABLE payments
     ADD COLUMN approval_code VARCHAR(10) NULL AFTER terminal_id,
     ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,
@@ -2121,11 +2130,11 @@ ALTER TABLE `refunds`
 
 ALTER TABLE axis ADD COLUMN arn VARCHAR(40) AFTER refund_id;
 
+# Virtual Accounts changes
 ALTER TABLE merchants
     ADD COLUMN handle VARCHAR(4) AFTER brand_color;
 
 ALTER TABLE bank_accounts
-    ADD COLUMN `virtual` TINYINT(1) NOT NULL DEFAULT 0 AFTER beneficiary_mobile,
     MODIFY COLUMN beneficiary_address1 VARCHAR(30),
     MODIFY COLUMN beneficiary_city VARCHAR(30),
     MODIFY COLUMN beneficiary_state VARCHAR(2),
@@ -2134,3 +2143,39 @@ ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_email VARCHAR(255),
     MODIFY COLUMN beneficiary_mobile CHAR(32),
     ADD INDEX bank_accounts_account_number_index (account_number);
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN type VARCHAR(40);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi,
+    ADD INDEX `methods_bank_transfer_index` (`bank_transfer`);
+
+ALTER TABLE payment_analytics
+    ADD COLUMN risk_score DECIMAL(11,4) NULL AFTER checkout_id,
+    ADD COLUMN risk_engine TINYINT(1) NULL AFTER risk_score;
+
+# Query to add enabled column in IIN
+ALTER TABLE iins
+    ADD COLUMN enabled TINYINT(1) DEFAULT 1 AFTER trivia;
+
+# Pre deployment of branch 'payment_links_bulk_import'
+
+ALTER TABLE invoices
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER subscription_id,
+    ADD CONSTRAINT invoices_batch_id_foreign FOREIGN KEY (batch_id) REFERENCES batches (id);
+
+ALTER TABLE batches
+    ADD INDEX batches_created_at_index (created_at),
+    ADD INDEX batches_type_index (type),
+    ADD INDEX batches_status_index (status);
+
+ALTER TABLE invitations
+    MODIFY COLUMN id INT auto_increment;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN time BIGINT;
+
+# Add column locked in iins
+ALTER TABLE iins
+    ADD COLUMN locked TINYINT(1) DEFAULT 0 AFTER enabled;

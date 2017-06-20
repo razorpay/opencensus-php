@@ -392,4 +392,9 @@ class Merchant extends Base
     {
         return $this->edit($id,['logo_url' => $url_path]);
     }
+
+    public function setHandle($handle, $id = '10000000000000')
+    {
+        return $this->edit($id, ['handle' => $handle]);
+    }
 }

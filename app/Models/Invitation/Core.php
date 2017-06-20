@@ -2,13 +2,21 @@
 
 namespace RZP\Models\Invitation;
 
+use Mail;
+
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Mail\Invitation\Invite as InvitationMail;
 
 class Core extends Base\Core
 {
     public function create(array $input): Entity
     {
+        $input[Entity::TOKEN] = str_random(40);
+
         $invitation = (new Entity);
 
         $invitation->merchant()->associate($this->merchant);
@@ -28,6 +36,17 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invitation);
 
+        $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
+
+        $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
+
+        return $invitation;
+    }
+
+    public function fetchByToken(string $token): Entity
+    {
+        $invitation = $this->repo->invitation->fetchByToken($token);
+
         return $invitation;
     }
 
@@ -43,6 +62,17 @@ class Core extends Base\Core
         $invitation->edit($input);
 
         $this->repo->saveOrFail($invitation);
+
+        $this->trace->info(TraceCode::INVITATION_EDIT, $invitation->toArrayPublic());
+
+        return $invitation;
+    }
+
+    public function resend(Entity $invitation, array $input): Entity
+    {
+        $invitation->edit($input, 'resend');
+
+        $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
 
         return $invitation;
     }
@@ -75,7 +105,7 @@ class Core extends Base\Core
      * @param Entity $invitation
      * @param string $userId
      */
-    public function accept(Entity $invitation, string $userId)
+    protected function accept(Entity $invitation, string $userId)
     {
         $updateParams = [
             Entity::ACTION           => User\Action::ATTACH,
@@ -99,16 +129,53 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($invitation);
         }
+
+        $this->trace->info(
+            TraceCode::INVITATION_ACCEPT,
+            [
+                'invitation' => $invitation->toArrayPublic(),
+                'user_id'    => $userId
+            ]);
     }
 
     /**
      * In case of reject we just need to delete the invitation which is done in calling function
      *
+     * @param Entity $invitation
      * @param string $userId
-     * @param string $inviteId
      */
-    public function reject(string $userId, string $inviteId)
+    protected function reject(Entity $invitation, string $userId)
     {
+        $this->trace->info(
+            TraceCode::INVITATION_REJECT,
+            [
+                'invitation' => $invitation->toArrayPublic(),
+                'user_id'    => $userId
+            ]);
+    }
 
+    protected function sendEmail(Entity $invitation, string $senderName)
+    {
+        $data = [
+            'sender_name' => $senderName,
+            'email'       => $invitation->getEmail(),
+            'name'        => $this->merchant->getName(),
+            'token'       => $invitation->getToken(),
+            'user_id'     => $invitation->getUserId(),
+        ];
+
+        $this->trace->info(
+            TraceCode::INVITATION_EMAIL,
+            [
+                'invitation_id' => $invitation->getId(),
+                'sender_name'   => $senderName,
+                'email'         => $invitation->getEmail(),
+                'name'          => $this->merchant->getName(),
+                'user_id'       => $invitation->getUserId(),
+            ]);
+
+        $invitationMail = new InvitationMail($data);
+
+        Mail::queue($invitationMail);
     }
 }

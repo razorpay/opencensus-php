@@ -5,12 +5,8 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 
-
 class Entity extends Base\PublicEntity
 {
-    const ID                        = 'id';
-    const MERCHANT_ID               = 'merchant_id';
-
     /**
      * @deprecated
      *
@@ -31,9 +27,19 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
 
+    /**
+     * Constants used in migration file.
+     */
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
+
+    /**
+     * Additional constants
+     */
     const FILE                      = 'file';
+    const URL                       = 'url';
+    const INPUT_FILE_PREFIX         = 'batch/upload/';
+    const OUTPUT_FILE_PREFIX        = 'batch/download/';
 
     protected static $sign = 'batch';
 
@@ -41,6 +47,13 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    /**
+     * Generators
+     * - Id generation is required before save as it gets
+     *   used in associations.
+     *
+     * @var array
+     */
     protected static $generators = [
         self::ID,
     ];
@@ -85,6 +98,8 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS         => 'int',
     ];
 
+    // Relations
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -122,15 +137,11 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
-    // ----------------------- Getters ---------------------------------------------
+    // ----------------------- Getters -------------------------------
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getProcessedAmount()
-    {
-        return $this->getAttribute(self::PROCESSED_AMOUNT);
     }
 
     public function getStatus()
@@ -138,39 +149,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getTotalCount()
-    {
-        return $this->getAttribute(self::TOTAL_COUNT);
-    }
-
-    public function getSuccessCount()
-    {
-        return $this->getAttribute(self::SUCCESS_COUNT);
-    }
-
-    public function getFailureCount()
-    {
-        return $this->getAttribute(self::FAILURE_COUNT);
-    }
-
-    public function getAttempts()
-    {
-        return $this->getAttribute(self::ATTEMPTS);
-    }
-
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getProcessedAt()
+    public function isProcessed(): bool
     {
-        return $this->getAttribute(self::PROCESSED_AT);
-    }
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
+        return ($this->getStatus() === Status::PROCESSED);
     }
 
     /**
@@ -188,11 +174,11 @@ class Entity extends Base\PublicEntity
 
         if ($status === Status::CREATED)
         {
-            return 'batch/upload/';
+            return self::INPUT_FILE_PREFIX;
         }
         else
         {
-            return 'batch/download/';
+            return self::OUTPUT_FILE_PREFIX;
         }
     }
 
@@ -232,7 +218,9 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
     }
 
-    // ----------------------- Setters ---------------------------------------------
+    // ----------------------- End  Getters --------------------------
+
+    // ----------------------- Setters -------------------------------
 
     public function setUploadFileUrl(string $url)
     {
@@ -294,8 +282,5 @@ class Entity extends Base\PublicEntity
         $this->increment(self::ATTEMPTS);
     }
 
-    public function isProcessed()
-    {
-        return ($this->getStatus() === Status::PROCESSED);
-    }
+    // ----------------------- End Setters ---------------------------
 }

@@ -185,8 +185,9 @@ trait FileHandlerTrait
     /**
      * Flattens an array recursively
      * Concatenating keys using periods
-     * @param  array $array  input array
-     * @param  string $prefix prefix used to concat keys
+     *
+     * @param array $row
+     *
      * @return array flat version of input array
      */
     protected function flatten(array $row)

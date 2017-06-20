@@ -26,24 +26,15 @@ class FraudDetectionTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $addIin = [
-            'request' => [
-                'url' => '/iins',
-                'method' => 'post',
-                'content' => [
-                    'iin' => 521729,
-                    'network' => 'MasterCard',
-                    'type' => 'debit',
-                    'country' => null,
-                ],
-            ],
-            'response' => [
-                'content' => [],
-                'status_code' => 200
-            ]
-        ];
-
-        $this->runRequestResponseFlow($addIin);
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 521729,
+                'network' => 'MasterCard',
+                'type' => 'debit',
+                'country' => null,
+                'enabled' => 0
+            ]);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5217294025032720';
@@ -54,6 +45,10 @@ class FraudDetectionTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
     }
 
     public function testFraudDetected()

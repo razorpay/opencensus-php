@@ -36,4 +36,13 @@ return [
         'date_time'         => null,
         'cms_ref_no'        => null
     ],
+
+    'testSettlementForMultipleMerchants' => [
+        'kotak' => [
+            'count' => 2,
+            'transaction_count' => 4,
+            'settlement_text_file' => [],
+            'settlement_excel_file' => [],
+        ]
+    ],
 ];

@@ -15,6 +15,12 @@ class PublicEntity extends UniqueIdEntity
 
     const MERCHANT_ID = 'merchant_id';
 
+    /**
+     * General constant used as key for hold of collection of ids
+     * in various cases.
+     */
+    const IDS = 'ids';
+
     protected static $sign = '';
 
     protected static $delimiter = '_';
