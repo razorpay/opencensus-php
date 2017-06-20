@@ -16,10 +16,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByPromotionId(string $promotionId)
+    public function findUsedCountByPromotionId(string $promotionId)
     {
-        return $this->newQuery()
-                    ->where(Entity::PROMOTION_ID, '=', $promotionId)
-                    ->first();
+        $count = $this->newQuery()
+                      ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                      ->count();
+
+        return $count;
     }
 }

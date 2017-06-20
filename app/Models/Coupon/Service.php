@@ -19,13 +19,6 @@ class Service extends Base\Service
         return $coupon->toArrayAdmin();
     }
 
-    public function fetchMultiple(array $input)
-    {
-        $coupons = $this->repo->coupon->fetch($input);
-
-        return $coupons->toArrayAdmin();
-    }
-
     public function delete(string $id)
     {
         $this->trace->info(TraceCode::COUPON_DELETE_REQUEST, ['coupon_id' => $id]);

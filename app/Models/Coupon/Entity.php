@@ -11,6 +11,8 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
+    const ID          = 'id';
+    const MERCHANT_ID = 'merchant_id';
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
     const CODE        = 'code';
@@ -25,7 +27,6 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::CODE,
         self::START_DATE,
         self::END_DATE,
@@ -56,16 +57,16 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT => 'int',
     ];
 
-    protected static $unsetCreateInput = [
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
-    ];
-
     /**
      * Creates a polymorphic relation with entities
      * implementing a morphMany association on the
      * 'entity' key
      */
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
     public function source()
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);

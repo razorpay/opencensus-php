@@ -548,12 +548,9 @@ final class Route
         //promotion routes
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
-        'promotion_fetch_by_id'                   => ['get',      'promotions/{id}',                                'PromotionController@get'                                           ],
-        'promotion_fetch_multiple'                => ['get',      'promotions',                                     'PromotionController@list'                                          ],
         //coupon routes
         'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
         'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_fetch_multiple'                   => ['get',      'coupons',                                         'CouponController@list'                                            ],
         'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
@@ -935,11 +932,8 @@ final class Route
         'schedule_process_tasks',
         'promotion_create',
         'promotion_update',
-        'promotion_fetch_by_id',
-        'promotion_fetch_multiple',
         'coupon_create',
         'coupon_apply',
-        'coupon_fetch_multiple',
         'coupon_delete',
         'merchant_fetch_users',
     ];

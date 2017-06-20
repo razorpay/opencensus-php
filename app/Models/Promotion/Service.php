@@ -32,18 +32,4 @@ class Service extends Base\Service
 
         return $promotion->toArrayAdmin();
     }
-
-    public function fetch(string $id)
-    {
-        $promotion = $this->repo->promotion->findByPublicId($id);
-
-        return $promotion->toArrayAdmin();
-    }
-
-    public function fetchMultiple(array $input)
-    {
-        $promotions = $this->repo->promotion->fetch($input);
-
-        return $promotions->toArrayAdmin();
-    }
 }

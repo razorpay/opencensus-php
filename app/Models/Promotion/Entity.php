@@ -8,12 +8,15 @@ use RZP\Models\Transaction\CreditType;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME                = 'name';
-    const AMOUNT              = 'amount';
-    const CREDIT_TYPE         = 'credit_type';
-    const SCHEDULE_ID         = 'schedule_id';
-    const ITERATIONS          = 'iterations';
-    const CREDITS_EXPIRABLE   = 'credits_expirable';
+    const NAME                    = 'name';
+    const AMOUNT                  = 'amount';
+    const CREDIT_TYPE             = 'credit_type';
+    const SCHEDULE_ID             = 'schedule_id';
+    const ITERATIONS              = 'iterations';
+    const CREDITS_EXPIRABLE       = 'credits_expirable';
+
+    const CREDITS_EXPIRY_PERIOD   = 'credits_expiry_period';
+    const CREDITS_EXPIRY_INTERVAL = 'credits_expiry_interval';
 
     protected $entity      = 'promotion';
 
@@ -27,7 +30,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::AMOUNT,
         self::CREDIT_TYPE,
-        self::SCHEDULE_ID,
         self::ITERATIONS,
         self::CREDITS_EXPIRABLE,
     ];
@@ -52,7 +54,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT            => 'int',
         self::ITERATIONS        => 'int',
-        self::CREDITS_EXPIRABLE => 'boolean',
+        self::CREDITS_EXPIRABLE => 'bool',
     ];
 
     protected static $modifiers = [
@@ -63,10 +65,8 @@ class Entity extends Base\PublicEntity
     {
         if (empty($input[self::CREDITS_EXPIRABLE]) === true)
         {
-            $input[self::CREDITS_EXPIRABLE] = false;
+            $input[self::CREDITS_EXPIRABLE] = 0;
         }
-
-        $input[self::CREDITS_EXPIRABLE] = (bool) $input[self::CREDITS_EXPIRABLE];
     }
 
     public function schedule()

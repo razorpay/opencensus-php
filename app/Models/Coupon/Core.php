@@ -16,13 +16,17 @@ class Core extends Base\Core
 
     public function create(array $input)
     {
+        $coupon = (new Entity)->build($input);
+
         $entityType = $input[Entity::ENTITY_TYPE];
 
         $entity = $this->repo->$entityType->findByPublicId($input[Entity::ENTITY_ID]);
 
-        $coupon = (new Entity)->build($input);
+        $merchant = $this->repo->merchant->findByPublicId($input[Entity::MERCHANT_ID]);
 
         $coupon->source()->associate($entity);
+
+        $coupon->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($coupon);
 

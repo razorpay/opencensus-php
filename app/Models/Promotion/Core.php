@@ -9,9 +9,6 @@ use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {
-    const CREDITS_EXPIRY_INTERVAL = 'credits_expiry_interval';
-    const CREDITS_EXPIRY_PERIOD = 'credits_expiry_period';
-
     public function create(array $input)
     {
         $promotion = (new Entity)->build($input);
@@ -60,10 +57,10 @@ class Core extends Base\Core
 
     public function isUsed(Entity $promotion): bool
     {
-        $merchantPromotion = $this->repo->merchant_promotion
-                                        ->findByPromotionId($promotion->getId());
+        $usedCount = $this->repo->merchant_promotion
+                                        ->findUsedCountByPromotionId($promotion->getId());
 
-        if ($merchantPromotion === null)
+        if ($usedCount === 0)
         {
             return false;
         }
@@ -73,13 +70,13 @@ class Core extends Base\Core
 
     protected function createSchedule(array $input)
     {
-        $scheduleName =  $input[self::CREDITS_EXPIRY_INTERVAL] . '/' .
-                            $input[self::CREDITS_EXPIRY_PERIOD];
+        $scheduleName =  $input[Entity::CREDITS_EXPIRY_INTERVAL] . '/' .
+                            $input[Entity::CREDITS_EXPIRY_PERIOD];
 
         $scheduleInput = [
             Schedule\Entity::NAME       => $scheduleName,
-            Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],
-            Schedule\Entity::PERIOD     => $input[self::CREDITS_EXPIRY_PERIOD],
+            Schedule\Entity::INTERVAL   => $input[Entity::CREDITS_EXPIRY_INTERVAL],
+            Schedule\Entity::PERIOD     => $input[Entity::CREDITS_EXPIRY_PERIOD],
         ];
 
         $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
@@ -90,7 +87,7 @@ class Core extends Base\Core
     protected function editSchedule(Schedule\Entity $schedule, array $input)
     {
         $scheduleInput = [
-            Schedule\Entity::INTERVAL   => $input[self::CREDITS_EXPIRY_INTERVAL],
+            Schedule\Entity::INTERVAL   => $input[Entity::CREDITS_EXPIRY_INTERVAL],
         ];
 
         $schedule = (new Schedule\Core)->editSchedule($schedule, $scheduleInput);
