@@ -4,10 +4,17 @@ import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import AccountDetails from 'merchant/components/VirtualAccounts/AccountDetails';
 
 export default props => {
-  let { virtualaccount, isLoading, statusMsg, onClose, onDelete } = props;
+  let {
+    virtualaccount,
+    va_payments,
+    isLoading,
+    statusMsg,
+    onClose,
+    onDelete,
+  } = props;
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -25,39 +32,9 @@ export default props => {
             <div class="SliderPanel__Body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
-                <div class="row">
-                  <div class="col-sm-9">
-                    <table class="table table-bordered va-account-details">
-                      <tbody>
-                        <tr>
-                          <td class="text-muted">Account Number</td>
-                          <td>
-                            <b>{virtualaccount.bank_account.account_number}</b>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Beneficiary Name</td>
-                          <td><b>{virtualaccount.name}</b></td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">IFSC Code</td>
-                          <td><b>{virtualaccount.bank_account.ifsc}</b></td>
-                        </tr>
-                        <tr>
-                          <td colSpan="2" class="text-center">
-                            <CustomClipboard
-                              value={`Account Number: ${virtualaccount.bank_account.account_number}\nBeneficiary Name: ${virtualaccount.name}\nIFSC: ${virtualaccount.bank_account.ifsc}`}
-                            >
-                              <div class="copy">Copy to Clipboard</div>
-                            </CustomClipboard>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                <AccountDetails virtualaccount={virtualaccount} />
 
-                <div>
+                <div style={{ margin: '24px 0' }}>
                   <EntityDetailRow
                     label="Created At"
                     value={() => (
@@ -106,6 +83,27 @@ export default props => {
                 </div>
 
                 <hr />
+
+                <div>
+                  <p class="text-muted">
+                    Payments to this account -
+                    {' '}
+                    <u>{va_payments.length} payments</u>
+                  </p>
+
+                  <table class="table table-hover">
+                    <tbody>
+                      {va_payments.map(payment => {
+                        return (
+                          <tr key={payment.id}>
+                            <td>{payment.id}</td>
+                            <td>{payment.amount}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>}

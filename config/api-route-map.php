@@ -332,6 +332,10 @@ return [
         'virtual_account_delete'            => [
             'url'       => 'virtual_accounts/{id}',
             'routeName' => 'virtual_account_delete'
+        ],
+        'virtual_account_fetch_payments'    => [
+            'url'       => 'virtual_accounts/{id}/payments',
+            'routeName' => 'virtual_account_fetch_payments'
         ]
 
     ],

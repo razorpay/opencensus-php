@@ -1,11 +1,13 @@
+import { set } from 'rzp/utils/immutable';
 import VirtualAccount from 'merchant/models/VirtualAccount';
 import { makeCollectionReducer, fetchAll } from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
-export const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';
-export const VIRTUAL_ACCOUNT_EDIT = 'VIRTUAL_ACCOUNT_EDIT';
-export const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
-export const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
+const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';
+const VIRTUAL_ACCOUNT_EDIT = 'VIRTUAL_ACCOUNT_EDIT';
+const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
+const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
+const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 
 export const fetchVirtualAccounts = params =>
   fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
@@ -15,6 +17,14 @@ export const fetchItem = id => {
   return {
     type: VIRTUAL_ACCOUNT_FETCH,
     payload: virtualAccount.fetch(id),
+  };
+};
+
+export const fetchVAPayments = id => {
+  let virtualAccount = new VirtualAccount({ id });
+  return {
+    type: VIRTUAL_ACCOUNT_PAYMENTS_FETCH,
+    payload: virtualAccount.fetchPayments(),
   };
 };
 
@@ -40,6 +50,20 @@ export const deleteVirtualAccount = params => {
 export const virtualAccountsReducer = makeCollectionReducer('VIRTUAL_ACCOUNTS');
 
 // Virtual Accounts Details Reducer
-export const virtualAccountReducer = makeEntityReducer(VIRTUAL_ACCOUNT_FETCH, {
-  [`${VIRTUAL_ACCOUNT_EDIT}::SUCCESS`]: updateEntity,
-});
+let detailsInitialState = {
+  loading: true,
+  entity: {},
+  error: null,
+  va_payments: [],
+};
+export const virtualAccountReducer = makeEntityReducer(
+  VIRTUAL_ACCOUNT_FETCH,
+  {
+    [`${VIRTUAL_ACCOUNT_EDIT}::SUCCESS`]: updateEntity,
+
+    [`${VIRTUAL_ACCOUNT_PAYMENTS_FETCH}::SUCCESS`]: (state, action) => {
+      return set(state, 'va_payments', action.payload.data.items);
+    },
+  },
+  detailsInitialState
+);

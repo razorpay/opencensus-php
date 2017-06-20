@@ -17,7 +17,7 @@ export const entityFetchSuccessState = (state, action) => {
   });
 };
 
-export const entityFetchErrorState = (state, action) => {
+export const entityFetchErrorState = (state, action, initialState) => {
   return merge(state, {
     loading: false,
     error: action.payload.errors,
@@ -45,7 +45,7 @@ export const makeEntityReducer = (
 
   return (state = initialState, action) => {
     if (handlers.hasOwnProperty(action.type)) {
-      return handlers[action.type](state, action);
+      return handlers[action.type](state, action, initialState);
     } else {
       return state;
     }

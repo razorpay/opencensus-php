@@ -16,7 +16,9 @@ export default class VirtualAccountDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchItem(this.props.id);
+    let { id } = this.props;
+    this.props.fetchItem(id);
+    this.props.fetchVAPayments(id);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -80,7 +82,7 @@ export default class VirtualAccountDetailsContainer extends Component {
   };
 
   render() {
-    let { loading, error, entity } = this.props;
+    let { loading, error, entity, va_payments } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -93,6 +95,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     return (
       <VirtualAccountDetails
         virtualaccount={entity}
+        va_payments={va_payments}
         isLoading={loading}
         statusMsg={statusMsg}
         onClose={this.closeAccount}
