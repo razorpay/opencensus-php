@@ -541,6 +541,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
+        // if iin is locked for editing, skip persisting recon data for iin
+        if ($this->paymentIin->isLocked() === true)
+        {
+            // add trace ?
+            return;
+        }
+
         $this->persistCardType($cardDetails[BaseReconciliate::CARD_TYPE]);
 
         if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)

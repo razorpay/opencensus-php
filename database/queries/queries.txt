@@ -2175,3 +2175,7 @@ ALTER TABLE invitations
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN time BIGINT;
+
+# Add column locked in iins
+ALTER TABLE iins
+    ADD COLUMN locked TINYINT(1) DEFAULT 0 AFTER enabled;
