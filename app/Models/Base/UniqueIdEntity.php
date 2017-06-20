@@ -257,7 +257,7 @@ class UniqueIdEntity extends Entity
     {
         if (function_exists('nanotime'))
         {
-            return nanotime();
+            return sprintf("%d", nanotime(true) * pow(10, 9));
         }
 
         $cmd = '';
