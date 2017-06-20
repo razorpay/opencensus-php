@@ -130,7 +130,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Virtual Accounts"
-                    icon="icon icon-store"
+                    icon="icon icon-account-balance"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
                     featureEnabled="Virtual_Accounts"
@@ -221,7 +221,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Virtual Accounts"
-                    icon="icon icon-store text-primary"
+                    icon="icon icon-account-balance text-success"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
                     featureEnabled="Virtual_Accounts"
