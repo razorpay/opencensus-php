@@ -37,7 +37,7 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validateProviderIp($this->provider, $this->ip);
+        $this->validateProvider();
 
         $bankTransfer = $this->processor->process($input);
 
@@ -57,9 +57,11 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validateProviderIp($this->provider, $this->ip);
+        $this->validateProvider();
 
-        $this->validator->validateInput('create', $input);
+        // Bank Transfer core does not save to DB in this step.
+        // This is effectively just a modify-and-validate.
+        $this->core->create($input);
 
         $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
 
@@ -97,15 +99,17 @@ class Service extends Base\Service
         return $bankTransfer->toArrayPublic();
     }
 
-    protected function validateProviderIp(string $provider, string $ip)
+    protected function validateProvider()
     {
-        if (Provider::validateIp($provider, $ip) === false)
+        if ((Provider::validateMode($this->provider, $this->mode) === false) or
+            (Provider::validateIp($this->provider, $this->ip) === false))
         {
             $this->trace->error(
-                TraceCode::BANK_TRANSFER_IP_VALIDATION_FAILED,
+                TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
                 [
-                    'provider' => $provider,
-                    'ip'       => $ip,
+                    'provider' => $this->provider,
+                    'ip'       => $this->ip,
+                    'mode'     => $this->mode,
                 ]
             );
 
