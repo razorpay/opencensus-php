@@ -4,9 +4,13 @@ export default ({ label, value, ...otherProps }) => {
   }
 
   return (
-    <div class="list-group-item" {...otherProps}>
-      {typeof label === 'function' ? label() : <span>{label}</span>}
-      {typeof value === 'function' ? value() : <span>{value + ''}</span>}
+    <div class="row detail-row" {...otherProps}>
+      <label class="col-sm-4">
+        {typeof label === 'function' ? label() : label}
+      </label>
+      <div class="col-sm-8">
+        {typeof value === 'function' ? value() : value + ''}
+      </div>
     </div>
   );
 };

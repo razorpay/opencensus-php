@@ -462,11 +462,29 @@ tr:hover .row-action.btn-group {
 }
 
 .txn-details {
-  .panel {
+  > .panel {
     border: none;
 
     > .panel-heading {
-      border-bottom: none;
+      background-color: #fff;
+      line-height: 70px;
+      vertical-align: middle;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 18px;
+
+      .btn-toolbar {
+        padding-top: 26px;
+      }
+
+      > .icon {
+        padding: 4px;
+        border: 2px solid;
+      }
+
+      .icon + strong {
+        margin-left: 5px;
+      }
 
       > .close {
         display: none;
@@ -517,5 +535,21 @@ tr:hover .row-action.btn-group {
   .icon-done {
     margin-top: 2px;
     margin-left: 5px;
+  }
+}
+
+.detail-row {
+  margin-bottom: 12px;
+
+  > label {
+    font-weight: normal;
+    color: #999;
+
+    &::after {
+      content: ':';
+      position: absolute;
+      right: 0;
+      color: #ccc;
+    }
   }
 }

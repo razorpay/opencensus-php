@@ -292,6 +292,13 @@ export default class Content extends Component {
 
   componentWillReceiveProps(props) {
     this.setBaseLocation(props.location);
+    this.showSliderView();
+  }
+
+  showSliderView() {
+    if (this.detailView && this.baseLocation) {
+      this.props.openSlider();
+    }
   }
 
   render() {
@@ -299,14 +306,9 @@ export default class Content extends Component {
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
     if (DetailView) {
-      if (BaseView) {
-        DetailView = (
-          <Slider closeUrl={this.baseLocation}> <DetailView /> </Slider>
-        );
-        this.props.openSlider();
-      } else {
-        DetailView = <DetailView />;
-      }
+      DetailView = BaseView
+        ? <Slider closeUrl={this.baseLocation}> <DetailView /> </Slider>
+        : <DetailView />;
     }
 
     return (

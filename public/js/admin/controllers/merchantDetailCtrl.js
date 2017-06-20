@@ -2054,6 +2054,7 @@ app
       // by the API as false
       var forcedMethods = [
         'aeps',
+        'bank_transfer',
         'mobikwik',
         'payzapp',
         'payumoney',
