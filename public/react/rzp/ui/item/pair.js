@@ -66,3 +66,18 @@ export const batchDownload = mode => {
     ),
   };
 };
+
+// Virtual Accounts
+export const virtualAccountId = {
+  title: 'Virtual Account ID',
+  value: items.virtualAccountId,
+};
+export const beneficiaryName = {
+  title: 'Beneficiary Name',
+  value: item => item.name,
+};
+export const amountPaid = {
+  title: 'Amount Paid',
+  columnClass: textRightClass,
+  value: items.getAmount('amount_paid'),
+};

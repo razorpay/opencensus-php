@@ -27,7 +27,7 @@ export default class VirtualAccountDetailsContainer extends Component {
 
   closeAccount = virtualaccount => {
     this.context.confirm({
-      message: 'Are you sure to close the account?',
+      message: 'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
       affirmativeLabel: 'Close',
       affirmativePendingLabel: 'Closing...',
       action: () =>
@@ -50,7 +50,13 @@ export default class VirtualAccountDetailsContainer extends Component {
 
   deleteAccount = virtualaccount => {
     this.context.confirm({
-      message: 'Are you sure to delete the account?',
+      message: () => (
+        <span>
+          The account will be closed and all the data for this account will be deleted.
+          {' '}
+          <b>You can’t undo this action.</b>
+        </span>
+      ),
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting...',
       action: () =>

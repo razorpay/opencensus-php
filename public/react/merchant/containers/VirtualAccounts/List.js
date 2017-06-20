@@ -16,7 +16,7 @@ import {
   amountPaid,
   status,
   createdAt,
-} from 'rzp/ui/Table/column';
+} from 'rzp/ui/item/pair';
 
 @connect(state => state.virtualaccounts, { fetchAll, openModal })
 export default class VirtualAccountsListContainer extends ListContainer {
