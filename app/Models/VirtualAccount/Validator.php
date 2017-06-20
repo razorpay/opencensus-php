@@ -33,7 +33,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
-                'receiver_type');
+                'receiver_type',
+                $input);
         }
     }
 }

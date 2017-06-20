@@ -37,7 +37,7 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validateProvider($this->provider);
+        $this->validateProvider();
 
         $bankTransfer = $this->processor->process($input);
 
@@ -57,7 +57,7 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validateProvider($this->provider);
+        $this->validateProvider();
 
         // Bank Transfer core does not save to DB in this step.
         // This is effectively just a modify-and-validate.
@@ -99,15 +99,15 @@ class Service extends Base\Service
         return $bankTransfer->toArrayPublic();
     }
 
-    protected function validateProvider(string $provider)
+    protected function validateProvider()
     {
-        if ((Provider::validateMode($provider, $this->mode) === false) or
-            (Provider::validateIp($provider, $this->ip) === false))
+        if ((Provider::validateMode($this->provider, $this->mode) === false) or
+            (Provider::validateIp($this->provider, $this->ip) === false))
         {
             $this->trace->error(
                 TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
                 [
-                    'provider' => $provider,
+                    'provider' => $this->provider,
                     'ip'       => $this->ip,
                     'mode'     => $this->mode,
                 ]

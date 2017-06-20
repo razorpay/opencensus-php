@@ -101,15 +101,14 @@ class Service extends Base\Service
         return $virtualAccount->toArrayDeleted();
     }
 
-    public function fetchPayments(string $id)
+    public function fetchPayments(string $virtualAccountId)
     {
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
-
         $payments = $this->repo
                          ->payment
-                         ->fetchBankTransferPaymentsByVirtualAccount($virtualAccount);
+                         ->fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+                            $virtualAccountId,
+                            $this->merchant
+                            );
 
         return $payments->toArrayPublic();
     }

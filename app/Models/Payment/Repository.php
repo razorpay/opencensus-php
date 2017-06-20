@@ -17,6 +17,7 @@ use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\BankTransfer;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 use RZP\Models\Invoice;
@@ -809,10 +810,14 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchBankTransferPaymentsByVirtualAccount($virtualAccount)
+    public function fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+        string $virtualAccountId,
+        Merchant\Entity $merchant
+        )
     {
         $paymentId = $this->dbColumn(Payment\Entity::ID);
         $paymentMethod = $this->dbColumn(Payment\Entity::METHOD);
+        $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
 
         $paymentColumns = $this->dbColumn('*');
 
@@ -826,10 +831,13 @@ class Repository extends Base\Repository
                                              ->bank_transfer
                                              ->dbColumn(BankTransfer\Entity::VIRTUAL_ACCOUNT_ID);
 
+        VirtualAccount\Entity::verifyIdAndSilentlyStripSign($virtualAccountId);
+
         return $this->newQuery()
                     ->select($paymentColumns)
                     ->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId)
-                    ->where($bankTransferVirtualAccountId, '=', $virtualAccount->getId())
+                    ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
+                    ->where($paymentMerchantId, '=', $merchant->getId())
                     ->where($paymentMethod, '=', Method::BANK_TRANSFER)
                     ->get();
     }

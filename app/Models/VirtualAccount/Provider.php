@@ -10,15 +10,17 @@ class Provider
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
 
-    // Mocked provider bank, used in tests
-    //
+    // Dashboard acts as a mock provider bank,
+    // and is used to run tests.
     // Also used when merchant makes a test
-    // payment to a virtual account
+    // payment to a virtual account.
     const DASHBOARD = 'dashboard';
 
     const TEST_PROVIDERS = [
         self::DASHBOARD,
     ];
+
+    const KOTAK_IP = '14.141.97.12';
 
     // Each provider gives us a range of bank accounts
     // by alloting an account number prefix/master/root
@@ -72,9 +74,10 @@ class Provider
     const IP = [
         self::YESBANK => [
             // Todo
+            '*',
         ],
         self::KOTAK => [
-            '14.141.97.12',
+            self::KOTAK_IP,
         ],
         self::DASHBOARD => [
             '*',
@@ -88,6 +91,7 @@ class Provider
         return substr($ifsc, 0, 4);
     }
 
+    // Checks if request is originating from known IP for the given provider
     public static function validateIp(string $provider, string $ip)
     {
         $providerIps = self::IP[$provider];
@@ -105,6 +109,7 @@ class Provider
         return false;
     }
 
+    // Blocks test providers for making live requests
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
