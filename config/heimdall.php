@@ -45,17 +45,17 @@ return [
             ],
             Permission::VIEW_MERCHANT_FEATURES => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_BANKS => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_NETWORKS => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS => [
@@ -65,27 +65,27 @@ return [
             ],
             Permission::VIEW_MERCHANT_LOGIN => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_ACTIVITY => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_PRICING_RULES => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_HDFC_EXCEL => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_BENEFICIARY_FILE => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_SCREENSHOT => [
@@ -95,32 +95,32 @@ return [
             ],
             Permission::VIEW_ALL_MERCHANT_AGGREGATIONS => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_AGGREGATIONS => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_TAGS => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::SET_PRICING_RULES => [
                 'description' => '',
                 'assignable' => true,
-                'workflow' => false
+                'workflow' => true
             ],
             Permission::DELETE_EMI_PLAN => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::CREATE_EMI_PLAN => [
                 'description' => '',
-                'assignable' => true,
+                'assignable' => false,
                 'workflow' => false
             ],
             Permission::CREATE_MERCHANT_LOCK => [
@@ -638,12 +638,12 @@ return [
                 'workflow' => false
             ],
             Permission::DELETE_GROUP      => [
-                'description' => 'create workflow',
+                'description' => 'delete_group',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::GROUP_GET_ALLOWED_GROUPS => [
-                'description' => 'create workflow',
+                'description' => 'group get allowed groups',
                 'assignable' => true,
                 'workflow' => false
             ],
@@ -652,17 +652,17 @@ return [
         // Admin
         PermissionCategory::ADMIN => [
             Permission::VIEW_ALL_ADMIN    => [
-                'description' => 'create workflow',
+                'description' => 'view_all_admin',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::VIEW_ADMIN        => [
-                'description' => 'create workflow',
+                'description' => 'view_admin',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::CREATE_ADMIN      => [
-                'description' => 'create workflow',
+                'description' => 'create_admin',
                 'assignable' => true,
                 'workflow' => false
             ],
@@ -681,27 +681,27 @@ return [
         // Permissions
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => [
-                'description' => 'create workflow',
+                'description' => 'view_all_permission',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::GET_PERMISSION      => [
-                'description' => 'create workflow',
+                'description' => 'get_permission',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::DELETE_PERMISSION   => [
-                'description' => 'create workflow',
+                'description' => 'delete_permission',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::CREATE_PERMISSION   => [
-                'description' => 'create workflow',
+                'description' => 'create_permission',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::EDIT_PERMISSION     => [
-                'description' => 'create workflow',
+                'description' => 'edit_permission',
                 'assignable' => true,
                 'workflow' => false
             ],
@@ -709,7 +709,7 @@ return [
 
         PermissionCategory::AUDIT_LOG => [
             Permission::VIEW_AUDITLOG     => [
-                'description' => 'create workflow',
+                'description' => 'view_auditlog',
                 'assignable' => true,
                 'workflow' => false
             ],
@@ -718,17 +718,17 @@ return [
         // Invitations
         PermissionCategory::INVITATION => [
             Permission::CREATE_MERCHANT_INVITE      => [
-                'description' => 'create workflow',
+                'description' => 'create_merchant_invite',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::EDIT_MERCHANT_INVITE        => [
-                'description' => 'create workflow',
+                'description' => 'edit_merchant_invite',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::VIEW_MERCHANT_INVITE        => [
-                'description' => 'create workflow',
+                'description' => 'view_merchant_invite',
                 'assignable' => true,
                 'workflow' => false
             ],
@@ -736,34 +736,27 @@ return [
 
         PermissionCategory::GATEWAY_RULE => [
             Permission::CREATE_GATEWAY_RULE => [
-                'description' => 'create workflow',
+                'description' => 'create_gateway_rule',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::EDIT_GATEWAY_RULE   => [
-                'description' => 'create workflow',
+                'description' => 'edit_gateway_rule',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::DELETE_GATEWAY_RULE => [
-                'description' => 'create workflow',
+                'description' => 'delete_gateway_rule',
                 'assignable' => true,
                 'workflow' => false
             ],
             Permission::VIEW_GATEWAY_RULE   => [
-                'description' => 'create workflow',
+                'description' => 'view_gateway_rule',
                 'assignable' => true,
                 'workflow' => false
             ],
         ],
     ],
-
-    // trimmed down assignable permissions which an HDFC manager would have
-    // This array must be a **strict** subset of the one above
-
-    'enable_workflow_permissions' => [
-    ],
-
     'workflows' => [
         'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
     ],
