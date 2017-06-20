@@ -178,6 +178,8 @@ final class Route
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'merchant_gst_fetch'                      => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
+        'merchant_gst_edit'                       => ['patch',    'merchant/gst',                                   'MerchantController@editGSTDetails'                                 ],
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
@@ -530,6 +532,7 @@ final class Route
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
@@ -987,6 +990,8 @@ final class Route
         'subscription_manual_retry',
         'merchant_get_features',
         'merchant_update_features',
+        'merchant_gst_fetch',
+        'merchant_gst_edit',
         'merchant_activation_details',
         'merchant_activation_upload_file',
         'merchant_activation_save',

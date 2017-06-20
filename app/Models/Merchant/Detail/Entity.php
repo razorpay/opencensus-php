@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const BUSINESS_OPERATION_CITY           =      'business_operation_city';
     const BUSINESS_OPERATION_PIN            =      'business_operation_pin';
     const BUSINESS_DOE                      =      'business_doe';
+    const GSTIN                             =      'gstin';
+    const P_GSTIN                           =      'p_gstin';
     const COMPANY_CIN                       =      'company_cin';
     const COMPANY_PAN                       =      'company_pan';
     const COMPANY_PAN_NAME                  =      'company_pan_name';
@@ -99,6 +101,8 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_CITY,
         self::BUSINESS_OPERATION_PIN,
         self::BUSINESS_DOE,
+        self::GSTIN,
+        self::P_GSTIN,
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
@@ -164,6 +168,8 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
         self::BUSINESS_DOE,
+        self::GSTIN,
+        self::P_GSTIN,
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
@@ -228,6 +234,11 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_PROOF_URL,
     ];
 
+    const GST_FIELDS = [
+        self::GSTIN,
+        self::P_GSTIN
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
@@ -241,6 +252,16 @@ class Entity extends Base\PublicEntity
     public function isSubmitted()
     {
         return ($this->getAttribute(self::SUBMITTED) === true);
+    }
+
+    public function getGstin()
+    {
+        return $this->getAttribute(self::GSTIN);
+    }
+
+    public function getPGstin()
+    {
+        return $this->getAttribute(self::P_GSTIN);
     }
 
     public function getBusinessRegisteredAddress()
@@ -266,5 +287,10 @@ class Entity extends Base\PublicEntity
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function toArrayGST()
+    {
+        return array_only($this->toArrayPublic(), self::GST_FIELDS);
     }
 }
