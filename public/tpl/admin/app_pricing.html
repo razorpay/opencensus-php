@@ -69,6 +69,8 @@
           <th>Amount Range</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
+          <th>Minimum Rate</th>
+          <th>Maximum Rate</th>
           <th>Created At</th>
           <th>Actions</th>
         </thead>
@@ -85,6 +87,8 @@
             <td><span ng-show="rule.amount_range_active">{{rule.amount_range_min}}-{{rule.amount_range_max}}</span></td>
             <td>{{rule.percent_rate/100}} %</td>
             <td>{{rule.fixed_rate/100 | rupee:"INR "}}</td>
+            <td>{{rule.min_rate/100 | rupee:"INR "}}</td>
+            <td>{{rule.max_rate?(rule.max_rate/100 | rupee:"INR ") : "None" }}</td>
             <td>{{rule.created_at*1000 | date:'medium'}}</td>
             <td>
               <a
@@ -108,9 +112,14 @@
               <span ng-show="new_rule.amount_range_active == '1'">
                 {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
               </span>
+              <span ng-show="new_rule.amount_range_active == '0'">
+                {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
+              </span>
             </td>
             <td>{{new_rule.percent_rate/100}} %</td>
             <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
+            <td>{{new_rule.min_rate?(new_rule.min_rate/100 | rupee:"INR ") : "None"}}</td>
+            <td>{{new_rule.max_rate?(new_rule.max_rate/100 | rupee:"INR ") : "None"}}</td>
             <td>Preview Rule</td>
           </tr>
           <tr>
@@ -179,6 +188,12 @@
               <input class="form-control" type="text" name="fixed_rate" ng-model="new_rule.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
             </td>
             <td>
+              <input class="form-control" type="text" name="min_rate" ng-model="new_rule.min_rate" tooltip="Min rate to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
+            </td>
+            <td>
+              <input class="form-control" type="text" name="max_rate" ng-model="new_rule.max_rate" tooltip="Max rate allowed to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
+            </td>
+            <td>
               <a href ng-click="saveRule()"><button class="btn btn-primary btn-rounded">Save</button></a>
               <a href ng-click=""><button class="btn btn-primary btn-rounded">Cancel</button></a>
             </td>
@@ -209,6 +224,8 @@
           <th>Amount Range</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
+          <th>Minimum Rate</th>
+          <th>Maximum Rate</th>
         </thead>
         <tbody>
           <tr ng-show="new_plan.percent_rate || new_plan.fixed_rate" tooltip="Preview">
@@ -219,11 +236,18 @@
             <td>{{new_plan.payment_issuer || 'Any'}}</td>
             <td>{{new_plan.international === "1" ? 'True' : 'False'}}</td>
             <td>{{new_plan.amount_range_active === "1" ? 'True' : 'False'}}</td>
+            <td>
               <span ng-show="new_plan.amount_range_active == '1'">
                 {{new_plan.amount_range}}
               </span>
+              <span ng-show="new_plan.amount_range_active == '0'">
+                None
+              </span>
+            </td>
             <td>{{new_plan.percent_rate/100}} %</td>
             <td>{{new_plan.fixed_rate/100 | rupee:"INR "}}</td>
+            <td>{{new_plan.min_rate?(new_plan.min_rate/100 | rupee:"INR ") : "None"}}</td>
+            <td>{{new_plan.max_rate?(new_plan.max_rate/100 | rupee:"INR ") : "None"}}</td>
           </tr>
           <tr>
             <td>
@@ -285,6 +309,12 @@
             </td>
             <td>
               <input class="form-control" type="text" name="fixed_rate" ng-model="new_plan.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
+            </td>
+            <td>
+              <input class="form-control" type="text" name="min_rate" ng-model="new_plan.min_rate" tooltip="Min rate to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
+            </td>
+            <td>
+              <input class="form-control" type="text" name="max_rate" ng-model="new_plan.max_rate" tooltip="Max rate allowed to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
             </td>
           </tr>
         </tbody>
