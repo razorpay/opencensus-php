@@ -442,8 +442,6 @@ class FirstDataGatewayTest extends TestCase
     {
         $payment = $this->payment;
 
-        $payment['card']['number'] = '5081597022059105';
-
         $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
