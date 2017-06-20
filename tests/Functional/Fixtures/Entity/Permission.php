@@ -23,12 +23,13 @@ class Permission extends Base
 
         foreach ($permissionCategories as $permissionCategory => $permissions)
         {
-            foreach ($permissions as $permission => $desc)
+            foreach ($permissions as $permission => $permissionValue)
             {
                 $row = [
                     PermissionEntity::NAME        => $permission,
                     PermissionEntity::CATEGORY    => $permissionCategory,
-                    PermissionEntity::DESCRIPTION => $desc,
+                    PermissionEntity::DESCRIPTION => isset($permissionValue['description']) ?
+                        $permissionValue['description'] : '',
                     PermissionEntity::CREATED_AT  => time(),
                     PermissionEntity::UPDATED_AT  => time()
                 ];
