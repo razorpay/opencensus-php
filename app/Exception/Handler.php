@@ -86,6 +86,13 @@ class Handler extends ExceptionHandler
             case $e instanceof EarlyWorkflowResponse:
                 $workflowActionData = json_decode($e->getMessage(), true);
 
+                // Although we're doing a re-assignment
+                // the returned array will be exactly similar
+                // to the $e->getMessage()
+                $workflowActionData = $this->app['workflow']
+                                           ->saveActionIfTransactionFailed(
+                                                $workflowActionData);
+
                 $response = ApiResponse::json($workflowActionData);
 
                 break;

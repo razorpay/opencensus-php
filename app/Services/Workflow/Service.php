@@ -168,7 +168,8 @@ class Service
 
         $diff = $this->getDiff();
 
-        if (empty($diff) === false)
+        // we will consider empty array as valid diff for now
+        if ((is_array($diff) === true) or (empty($diff) === false))
         {
             $differEntity[Differ\Entity::DIFF] = $diff;
         }
@@ -335,5 +336,28 @@ class Service
             null,
             ['Content-Type' => 'application/json']
         );
+    }
+
+    public function saveActionIfTransactionFailed(array $data)
+    {
+        $core = new Action\Core;
+
+        $workflowAction = $core->getByIdAndOrgId($data['id'], $data['org_id']);
+
+        $count = $workflowAction->count();
+
+        // Transaction failed and no entry was created
+        if ($count === 0)
+        {
+            // Let's re-try creating workflow action and relevant entities
+
+            $action = $core->create($data, $retry = true);
+        }
+        else
+        {
+            $action = $workflowAction->first();
+        }
+
+        return $action->toArrayPublic();
     }
 }
