@@ -337,6 +337,13 @@ class Entity
         return $class;
     }
 
+    public static function getEntityService(string $entity)
+    {
+        $class = self::getEntityNamespace($entity) . '\\' . 'Service';
+
+        return $class;
+    }
+
     public static function getEntityEsRepository(string $entity)
     {
         return self::getEntityRepository($entity, 'EsRepository');
