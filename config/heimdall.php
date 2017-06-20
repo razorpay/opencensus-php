@@ -31,18 +31,18 @@ return [
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS    => [
                 'description' => 'View all merchants in merchant lists',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::VIEW_MERCHANT         => [
                 'description' => 'View a particular merchant details',
-                'assignable' => true,
+                'assignable'  => true,
             ]
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
             Permission::VIEW_MERCHANT_BALANCE => [
                 'description' => 'View merchant balance in merchant details',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::VIEW_MERCHANT_FEATURES => '',
             Permission::VIEW_MERCHANT_BANKS => '',
@@ -63,21 +63,21 @@ return [
             Permission::VIEW_MERCHANT_TAGS => '',
             Permission::SET_PRICING_RULES => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::DELETE_EMI_PLAN => '',
             Permission::CREATE_EMI_PLAN => '',
             Permission::CREATE_MERCHANT_LOCK => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::CREATE_MERCHANT_UNLOCK => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_TAGS => '',
             Permission::EDIT_MERCHANT_FEATURES => [
@@ -88,23 +88,23 @@ return [
             Permission::EDIT_IIN_RULE => '',
             Permission::EDIT_ACTIVATE_MERCHANT => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_ENABLE_LIVE => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_DISABLE_LIVE => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_ARCHIVE => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_UNARCHIVE => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_SUSPEND => [
                 'assignable' => true,
@@ -128,7 +128,7 @@ return [
             Permission::DELETE_MERCHANT_CREDITS => '',
             Permission::EDIT_MERCHANT_SCREENSHOT => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::VIEW_PAYMENT_VERIFY => '',
             Permission::EDIT_VERIFY_PAYMENTS => '',
@@ -139,7 +139,7 @@ return [
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::CREATE_BENEFICIARY_FILE => '',
             Permission::CREATE_NETBANKING_REFUND => '',
@@ -153,19 +153,19 @@ return [
             ],
             Permission::EDIT_MERCHANT_LOCK_ACTIVATION => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_HOLD_FUNDS => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_RELEASE_FUNDS => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::EDIT_MERCHANT_ENABLE_RECEIPT => '',
             Permission::EDIT_MERCHANT_DISABLE_RECEIPT => '',
@@ -175,7 +175,7 @@ return [
             Permission::ADD_MERCHANT_ADJUSTMENT => '',
             Permission::EDIT_MERCHANT_EMAIL => [
                 'assignable' => true,
-                'workflow' => true
+                'workflow'   => true
             ],
             Permission::MERCHANT_AUTOFILL_FORM => '',
             Permission::EDIT_MERCHANT_MARK_REFERRED => '',
@@ -203,8 +203,8 @@ return [
             Permission::VIEW_MERCHANT_STATS => '',
             Permission::DELETE_MERCHANT_FEATURES => [
                 'description' => 'Delete a merchant feature',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::VIEW_MERCHANT_REPORT   => [
                 'description' => 'View Merchant Reports',
@@ -223,13 +223,13 @@ return [
             ],
             Permission::CREATE_PRICING_PLAN => [
                 'description' => 'create pricing plan',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::DELETE_PRICING_PLAN_RULES => [
                 'description' => 'delete pricing plan rules',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
         ],
 
@@ -264,30 +264,30 @@ return [
         PermissionCategory::WORKFLOW => [
             Permission::VIEW_WORKFLOW      => [
                 'description' => 'View Workflows',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::EDIT_WORKFLOW      => [
                 'description' => 'edit workflow',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::DELETE_WORKFLOW    => [
                 'description' => 'delete workflow',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::VIEW_ALL_WORKFLOW  => [
                 'description' => 'view all workflow',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::CREATE_WORKFLOW    => [
                 'description' => 'create workflow',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::VIEW_WORKFLOW_REQUESTS => [
                 'description' => 'View Workflow requests',
-                'assignable' => true,
+                'assignable'  => true,
             ],
         ],
 
@@ -295,26 +295,26 @@ return [
         PermissionCategory::ROLE => [
             Permission::VIEW_ALL_ROLE => [
                 'description' => 'view_all_role',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::VIEW_ROLE     => [
                 'description' => 'view_role',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::CREATE_ROLE   => [
                 'description' => 'create_role',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::EDIT_ROLE     => [
                 'description' => 'edit_role',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::DELETE_ROLE   => [
                 'description' => 'delete_role',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
         ],
 
@@ -322,30 +322,30 @@ return [
         PermissionCategory::GROUP => [
             Permission::VIEW_ALL_GROUP    => [
                 'description' => 'view_all_group',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::VIEW_GROUP        => [
                 'description' => 'view_group',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::CREATE_GROUP      => [
                 'description' => 'create_group',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::EDIT_GROUP        => [
                 'description' => 'create_group',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::DELETE_GROUP      => [
                 'description' => 'delete_group',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::GROUP_GET_ALLOWED_GROUPS => [
                 'description' => 'group get allowed groups',
-                'assignable' => true,
+                'assignable'  => true,
             ],
         ],
 
@@ -353,26 +353,26 @@ return [
         PermissionCategory::ADMIN => [
             Permission::VIEW_ALL_ADMIN    => [
                 'description' => 'view_all_admin',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::VIEW_ADMIN        => [
                 'description' => 'view_admin',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::CREATE_ADMIN      => [
                 'description' => 'create_admin',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::EDIT_ADMIN        => [
                 'description' => 'create workflow',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::DELETE_ADMIN      => [
                 'description' => 'create workflow',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
         ],
 
@@ -380,30 +380,30 @@ return [
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => [
                 'description' => 'view_all_permission',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::GET_PERMISSION      => [
                 'description' => 'get_permission',
-                'assignable' => true,
+                'assignable'  => true,
             ],
             Permission::DELETE_PERMISSION   => [
                 'description' => 'delete_permission',
-                'workflow' => true
+                'workflow'    => true
             ],
             Permission::CREATE_PERMISSION   => [
                 'description' => 'create_permission',
-                'workflow' => true
+                'workflow'    => true
             ],
             Permission::EDIT_PERMISSION     => [
                 'description' => 'edit_permission',
-                'workflow' => true
+                'workflow'    => true
             ],
         ],
 
         PermissionCategory::AUDIT_LOG => [
             Permission::VIEW_AUDITLOG     => [
                 'description' => 'view_auditlog',
-                'assignable' => true,
+                'assignable'  => true,
             ],
         ],
 
@@ -411,40 +411,40 @@ return [
         PermissionCategory::INVITATION => [
             Permission::CREATE_MERCHANT_INVITE      => [
                 'description' => 'create_merchant_invite',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::EDIT_MERCHANT_INVITE        => [
                 'description' => 'edit_merchant_invite',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::VIEW_MERCHANT_INVITE        => [
                 'description' => 'view_merchant_invite',
-                'assignable' => true,
+                'assignable'  => true,
             ],
         ],
 
         PermissionCategory::GATEWAY_RULE => [
             Permission::CREATE_GATEWAY_RULE => [
                 'description' => 'create_gateway_rule',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::EDIT_GATEWAY_RULE   => [
                 'description' => 'edit_gateway_rule',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::DELETE_GATEWAY_RULE => [
                 'description' => 'delete_gateway_rule',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
             Permission::VIEW_GATEWAY_RULE   => [
                 'description' => 'view_gateway_rule',
-                'assignable' => true,
-                'workflow' => true
+                'assignable'  => true,
+                'workflow'    => true
             ],
         ],
     ],
