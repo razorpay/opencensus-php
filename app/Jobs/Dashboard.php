@@ -58,7 +58,6 @@ class Dashboard extends Job implements ShouldQueue
 
         try
         {
-
             $className  = '\RZP\Dashboard\\' . ucfirst($this->data['type']);
 
             //will be payment or refund
