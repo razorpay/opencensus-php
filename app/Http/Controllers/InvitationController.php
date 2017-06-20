@@ -1,0 +1,71 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use Request;
+use ApiResponse;
+use RZP\Models\Invitation;
+
+class InvitationController extends Controller
+{
+    protected $service = Invitation\Service::class;
+
+    public function create()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchByToken(string $token)
+    {
+        $data = $this->service()->fetchByToken($token);
+
+        return ApiResponse::json($data);
+    }
+
+    public function list()
+    {
+        $data = $this->service()->list();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postResend(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->resend($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function edit(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->edit($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function delete(string $id)
+    {
+        $data = $this->service()->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAction(string $id, string $action)
+    {
+        $input = Request::all();
+
+        $input['action'] = $action;
+
+        $data = $this->service()->action($id, $input);
+
+        return ApiResponse::json($data);
+    }
+}

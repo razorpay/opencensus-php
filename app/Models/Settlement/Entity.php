@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -24,6 +26,8 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
+    const PROCESSED_AT           = 'processed_at';
+    const SETTLED_ON             = 'settled_on';
 
     protected static $sign = 'setl';
 
@@ -39,6 +43,8 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CHANNEL,
         self::AMOUNT,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $visible = [
@@ -56,8 +62,10 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -68,6 +76,7 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
+        self::SETTLED_ON,
         self::CREATED_AT
     ];
 
@@ -79,11 +88,18 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS => 'int',
     ];
 
+    protected $dates = [
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
+    ];
+
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
     ];
+
+    protected $hiddenInReport = [self::SETTLED_ON];
 
     // --------------------------------- relations -------------------------------
 
@@ -181,6 +197,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
+    }
+
     // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
@@ -248,6 +269,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ATTEMPTS, $count);
     }
 
+    public function setProcessedAt($date)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setSettledOn($date)
+    {
+        $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
     // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
@@ -270,6 +301,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $fee;
+    }
+
+    protected function getSettledOnAttribute()
+    {
+        $timestamp = $this->attributes[self::SETTLED_ON];
+
+        if ($timestamp !== null)
+        {
+            return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
+        }
+
+        return null;
     }
 
     // ------------------------------- mutators --------------------------------

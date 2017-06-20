@@ -261,6 +261,27 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testReversalWithInsufficientLinkedAccountBalance()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $transferAmount = $transfer['amount'];
+
+        $linkedAccountBalance = $this->getEntityById('balance', '10000000000001', true);
+        $this->assertEquals($transferAmount, $linkedAccountBalance['balance']);
+
+        // Reset the linked account's balance to 0
+        $balance = $this->fixtures->balance->edit('10000000000001', ['balance' => 0]);
+
+        $linkedAccountBalance = $this->getEntityById('balance', '10000000000001', true);
+        $this->assertEquals(0, $linkedAccountBalance['balance']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer)
+        {
+            $this->createReversal($transfer['id']);
+        });
+    }
+
     public function testLiveTransferFundsOnHold()
     {
         $this->fixtures->merchant->holdFunds();

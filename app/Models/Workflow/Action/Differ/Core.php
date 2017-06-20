@@ -308,7 +308,7 @@ class Core extends Base\Core
 
         $relatedEntityName = $model->getEntityName();
 
-        $oldIds = $entity->$relation()->getRelatedIds()->toArray();
+        $oldIds = $entity->$relation()->allRelatedIds()->toArray();
 
         $model::getSignedIdMultiple($oldIds);
 

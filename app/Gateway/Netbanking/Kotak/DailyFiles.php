@@ -71,10 +71,11 @@ class DailyFiles extends Base\DailyFiles
         if ($count == 0)
         {
             return [
-                'total_amount'   => 0,
-                'count'          => 0,
-                'signed_url'     => '',
+                'total_amount'    => 0,
+                'count'           => 0,
+                'url'             => '',
                 'local_file_path' => '',
+                'name'            => '',
              ];
         }
 
@@ -123,9 +124,10 @@ class DailyFiles extends Base\DailyFiles
         if ($claims->count() === 0)
         {
             return [
-                'total_amount'   => 0,
-                'count'          => 0,
-                'signed_url'     => '',
+                'total_amount'    => 0,
+                'count'           => 0,
+                'url'             => '',
+                'name'            => '',
                 'local_file_path' => '',
              ];
         }

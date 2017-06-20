@@ -682,6 +682,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
     // == / Activation Form Handlers ==
 
     public function getDummyAccount()
@@ -696,5 +697,21 @@ class MerchantController extends Controller
         $data = (new Merchant\Service)->getUsers($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function getGSTDetails()
+    {
+        $response = (new Merchant\Service)->getGSTDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function editGSTDetails()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->editGSTDetails($input);
+
+        return ApiResponse::json($response);
     }
 }

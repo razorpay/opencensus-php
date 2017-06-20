@@ -15,12 +15,10 @@ class EsDao
 
     protected $config;
 
-    protected $mode;
-
     // Logically separated instance for heimdall
     protected $esHeimdall;
 
-    public function __construct($mode = null)
+    public function __construct(string $mode = null)
     {
         $this->app = App::getFacadeRoot();
 
@@ -29,11 +27,7 @@ class EsDao
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
 
-        // Since, we are using only one index, declaring the index name
-        // in this class itself. If we have different indices based on some
-        // logic, it makes sense to move it to an appropriate class then.
-        // Live and Test have different index names in the ES cluster.
-        $this->setIndexName($mode);
+        $this->setIndexNameForMode($mode);
 
         $this->es = $this->app['es'];
 
@@ -52,29 +46,23 @@ class EsDao
     }
 
     /**
-     * @deprecated
+     * Sets default value for $indexName name based on $mode passed.
+     * - If $mode is null, 'rzp.mode' of app is used,
+     * - If both of above is null, 'test' mode is used.
      *
-     * Sets index name.
-     * We only have two indexes, one for each mode. And all the notes of different
-     * entities are indexed in one of them as a type.
-     *
-     * @param string $mode
+     * @param string|null $mode
      */
-    public function setIndexName($mode)
+    public function setIndexNameForMode(string $mode = null)
     {
-        if (empty($mode) === true)
+        if ($mode === null)
         {
-            if (isset($this->app['rzp.mode']) === true)
-            {
-                $mode = $this->app['rzp.mode'];
-            }
-            else
-            {
-                $mode = Mode::TEST;
-            }
+            $mode = (isset($this->app['rzp.mode']) === true) ?
+                        $this->app['rzp.mode'] : Mode::TEST;
         }
 
-        $this->indexName = $this->config->get('database.es_index')[$mode];
+        $config = $this->config->get('database.es_index');
+
+        $this->indexName = $config[$mode];
     }
 
     public function setIndexNameByValue(string $indexName)

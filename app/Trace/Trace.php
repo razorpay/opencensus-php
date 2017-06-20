@@ -2,14 +2,15 @@
 
 namespace RZP\Trace;
 
-use RZP\Exception\CardNumberTraceException;
+use Mail;
 
+use RZP\Exception\CardNumberTraceException;
+use RZP\Mail\System\Trace as TraceMail;
 use RZP\Exception;
 use Monolog\Logger;
 use Monolog\Processor;
 use Monolog\Handler;
 use Monolog\Formatter;
-use RZP\Constants\MailTags;
 
 class Trace extends Logger
 {
@@ -170,26 +171,11 @@ class Trace extends Logger
 
         try
         {
-            $json = json_encode($traceData, JSON_PRETTY_PRINT);
+            $msg = json_encode($traceData, JSON_PRETTY_PRINT);
 
-            $msg = "Code: $code <br><br> Context: <br> <pre>$json</pre>";
+            $traceMail = new TraceMail($msg, $mode);
 
-            $this->app['mailer']->queue(
-                'emails.message',
-                ['body' => $msg],
-                function ($message) use ($mode)
-                {
-                    $subject = 'Razorpay API - ' . $mode . ' - Critical error occurred';
-                    $message->subject($subject);
-
-                    $message->from('errors@razorpay.com');
-                    $message->replyTo('developers@razorpay.com');
-                    $message->to('developers@razorpay.com');
-
-                    $headers = $message->getHeaders();
-                    $headers->addTextHeader(MailTags::HEADER, MailTags::CRITICAL_ERROR);
-                }
-            );
+            Mail::queue($traceMail);
         }
         catch (\Throwable $exception)
         {

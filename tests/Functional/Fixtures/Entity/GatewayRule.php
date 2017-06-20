@@ -52,4 +52,14 @@ class GatewayRule extends Base
 
         return $rule;
     }
+
+    public function delete(array $ruleIds)
+    {
+        foreach ($ruleIds as $id)
+        {
+            $rule = \RZP\Models\Gateway\Rule\Entity::findOrFail($id);
+
+            $rule->forceDelete();
+        }
+    }
 }

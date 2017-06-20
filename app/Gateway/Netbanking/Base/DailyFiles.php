@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Base;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\MailTags;
@@ -12,7 +13,6 @@ use RZP\Constants\MailTags;
 class DailyFiles
 {
     protected $app;
-    protected $mail;
     protected $repo;
     protected $mode;
     protected $gateway;
@@ -26,8 +26,6 @@ class DailyFiles
 
     public function __construct($bankCode)
     {
-        $this->mail = Mail::getFacadeRoot();
-
         $this->app = App::getFacadeRoot();
 
         $this->repo = $this->app['repo'];
@@ -142,45 +140,21 @@ class DailyFiles
 
     protected function sendMail($amount, $claimsFileData, $refundsFileData, $email = null)
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
         $bankName = $this->getBankName();
-
-        $data = [
-            'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
-            'amount'      => $amount,
-            'claimsFileData'  => $claimsFileData,
-            'refundsFileData' => $refundsFileData
-        ];
-
-        $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
 
         $emails = $this->getEmailsToSendTo($email);
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName, $emails)
-        {
-            $message->from('settlement@razorpay.com', $bankName . ' Netbanking Refunds');
+        $data = [
+            'amount'      => $amount,
+            'claimsFile'  => $claimsFileData,
+            'refundsFile' => $refundsFileData,
+            'bankName'    => $bankName,
+            'emails'      => $emails,
+        ];
 
-            $message->subject($data['subject']);
+        $dailyFileMail = new DailyFileMail($data);
 
-            $message->to($emails);
-
-            if (empty($data['claimsFileData']) === false)
-            {
-                $message->attach($data['claimsFileData']['signed_url'], ['as' => $data['claimsFileData']['name']]);
-            }
-
-            if (empty($data['refundsFileData']) === false)
-            {
-                $message->attach($data['refundsFileData']['signed_url'], ['as' => $data['refundsFileData']['name']]);
-            }
-
-            $headers = $message->getHeaders();
-
-            $tag = strtolower($bankName) . '_' . MailTags::DAILY_FILE;
-
-            $headers->addTextHeader(MailTags::HEADER, $tag);
-        });
+        Mail::queue($dailyFileMail);
     }
 
     protected function getBankName()

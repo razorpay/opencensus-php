@@ -40,6 +40,7 @@ class Netbanking
         IFSC::AIRP,
         IFSC::FDRL,
         IFSC::RATN,
+        IFSC::INDB,
     ];
 
     protected static $selfTPV = [
@@ -55,7 +56,7 @@ class Netbanking
         IFSC::CITI,
         IFSC::CIUB,
         IFSC::CSBK,
-        IFSC::FDRL,
+        // IFSC::FDRL,
         IFSC::HDFC,
         IFSC::ICIC,
         IFSC::IDIB,
@@ -91,7 +92,7 @@ class Netbanking
         IFSC::DLXB,
         IFSC::DBSS,
         IFSC::IDFB,
-        IFSC::FDRL,
+        // IFSC::FDRL,
         IFSC::IBKL,
         IFSC::ICIC,
         IFSC::IDIB,
@@ -168,7 +169,7 @@ class Netbanking
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
-        IFSC::FDRL,
+        // IFSC::FDRL,
         IFSC::HDFC,
         IFSC::ICIC,
         IFSC::IBKL,
@@ -202,7 +203,7 @@ class Netbanking
         IFSC::CORP,
         IFSC::CSBK,
         IFSC::DLXB,
-        IFSC::FDRL,
+        // IFSC::FDRL,
         IFSC::IDIB,
         IFSC::IOBA,
         IFSC::INDB,

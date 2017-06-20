@@ -8,6 +8,7 @@ use Mail;
 
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Mail\Merchant\DailyReport as DailyReportMail;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
@@ -26,8 +27,6 @@ class DailyReport extends Base\Core
     protected $date;
 
     protected $data;
-
-    const DAILY_REPORT_EMAIL_TEMPLATE   = 'emails.merchant.daily_report';
 
     /**
      * Generates a new daily report
@@ -79,6 +78,10 @@ class DailyReport extends Base\Core
         {
             $merchantIds = array_keys($captureMerchants + $authMerchants
                                     + $refundMerchants + $setlMerchants);
+
+            // if it's integer like string keys, then array_keys will convert
+            // those to integers. Let's re-map to string
+            $merchantIds = array_map('strval', $merchantIds);
         }
 
         // Summary of merchants mailed
@@ -95,10 +98,10 @@ class DailyReport extends Base\Core
                 $zeroArray = array_fill_keys(['sum', 'count'], 0);
 
                 $data = [
-                    'authorized' => $authMerchants[$merchantId]    ?? $zeroArray,
-                    'captured'   => $captureMerchants[$merchantId] ?? $zeroArray,
-                    'refunds'    => $refundMerchants[$merchantId]  ?? $zeroArray,
-                    'settlements'=> $setlMerchants[$merchantId]    ?? $zeroArray,
+                    'authorized'  => $authMerchants[$merchantId] ?? $zeroArray,
+                    'captured'    => $captureMerchants[$merchantId] ?? $zeroArray,
+                    'refunds'     => $refundMerchants[$merchantId] ?? $zeroArray,
+                    'settlements' => $setlMerchants[$merchantId] ?? $zeroArray,
                 ];
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -158,8 +161,6 @@ class DailyReport extends Base\Core
      */
     protected function sendDailyReport($merchant, $data)
     {
-        $view = ['html' => self::DAILY_REPORT_EMAIL_TEMPLATE];
-
         // Log merchant whose data has been computed
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
@@ -174,39 +175,11 @@ class DailyReport extends Base\Core
                     )
         );
 
-        Mail::queue($view, $data, function($message) use ($data, $merchant)
-        {
-            $to = $data['email'];
+        $merchant = $merchant->toArrayPublic();
 
-            // to might be an array
-            if (is_array($to))
-            {
-                foreach ($to as $email)
-                {
-                    $message->to($email);
-                }
-            }
-            else
-            {
-                // This should not be getting called
-                // But just for fallback
-                $message->to($to);
-            }
+        $dailyReportMail = new DailyReportMail($data, $merchant);
 
-            $message->from('reports@razorpay.com');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->cc('notifications@razorpay.com');
-
-            $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, $merchant->getPublicId());
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
-        });
+        Mail::queue($dailyReportMail);
     }
 
     protected function getMerchantData($merchant)

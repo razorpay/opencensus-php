@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -217,26 +219,30 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testDailyFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundForFileGeneration($payments);
 
-        $this->checkMailQueue();
-
-        $data = $this->generateRefundsExcelForNb('UTIB');
+        $data = $this->generateRefundsExcelForNB('UTIB');
 
         $this->checkRefundTextData($data);
+
+        $this->checkMailQueue();
     }
 
     public function testEmptyDailyFileGeneration()
     {
-        $payments = $this->createPaymentsToClaim();
+        Mail::fake();
 
-        $this->checkEmptyRefundsMailQueue();
+        $payments = $this->createPaymentsToClaim();
 
         $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkEmptyRefundTextData($data);
+
+        $this->checkEmptyRefundsMailQueue();
     }
 
     public function testFailedAuthPayment()
@@ -269,6 +275,33 @@ class NetbankingAxisGatewayTest extends TestCase
             });
     }
 
+    public function testMulipleTableVerifyResponse()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockMultipleVerifyTables('F');
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+    }
+
+    public function testMulipleSuccessTableVerifyResponse()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockMultipleVerifyTables('S');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
     /**
      * In some cases when authorize was a failure,
      * verify returns a null response
@@ -297,6 +330,8 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetBankPaymentId();
 
         $this->runRequestResponseFlow(
             $data,
@@ -361,69 +396,57 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        // Amounts are in rupees
-                        $testData = array(
-                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                            'amount' => [
-                                'claims'  => 1500,
-                                'refunds' => 500,
-                                'total'   => 1000,
-                            ],
-                            'count'   => [
-                                'claims'  => 3,
-                                'refunds' => 2,
-                                'total'   => 5
-                            ]
-                        );
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 500,
+                    'total'   => 1000,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 2,
+                    'total'   => 5
+                ]
+        ];
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+        // Mail catch with amount and refund everywhere
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkEmptyRefundsMailQueue()
     {
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        // Amounts are in rupees
-                        $testData = array(
-                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                            'amount' => [
-                                'claims'  => 1500,
-                                'refunds' => 0,
-                                'total'   => 1500,
-                            ],
-                            'count'   => [
-                                'claims'  => 3,
-                                'refunds' => 0,
-                                'total'   => 3
-                            ]
-                        );
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 0,
+                    'total'   => 1500,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 0,
+                    'total'   => 3
+                ]
+        ];
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkRefundTextData($data)
@@ -475,7 +498,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content['PAID'] = 'N';
+                if ($action !== 'multiple_tables')
+                {
+                    $content['PAID'] = 'N';
+                }
             });
     }
 
@@ -484,7 +510,37 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content['PaymentStatus'] = 'F';
+                if ($action !== 'multiple_tables')
+                {
+                    $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+                    $content['BID'] = $gatewayEntity['bank_payment_id'];
+                    $content['PaymentStatus'] = 'F';
+                }
+            });
+    }
+
+    protected function mockMultipleVerifyTables($status)
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($status)
+            {
+                if ($action === 'multiple_tables')
+                {
+                    $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+                    $content->Table1->BID = $gatewayEntity['bank_payment_id'];
+
+                    $response = (array) $content;
+                    $array = json_decode(json_encode($response), true);
+
+                    $table2 = array_flip($array['Table1']);
+
+                    $content->addChild('Table2');
+                    array_walk_recursive($table2, array ($content->Table2, 'addChild'));
+
+                    $content->Table1->PaymentStatus = $status;
+                }
             });
     }
 
@@ -502,9 +558,12 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $gatewayEntity = $this->getLastEntity('netbanking', true);
+                if ($action !== 'multiple_tables')
+                {
+                    $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-                $content['BID'] = $gatewayEntity['bank_payment_id'];
+                    $content['BID'] = $gatewayEntity['bank_payment_id'];
+                }
             });
     }
 }

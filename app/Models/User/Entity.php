@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Invitation;
 use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
@@ -26,6 +27,7 @@ class Entity extends Base\PublicEntity
     const PIVOT                 = 'pivot';
     const OWNER                 = 'owner';
     const CONFIRMED             = 'confirmed';
+    const INVITATIONS           = 'invitations';
 
     protected $entity = 'user';
 
@@ -57,6 +59,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot(self::ROLE)
                     ->orderBy(self::NAME);
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(Invitation\Entity::class)
+                    ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
     public function setConfirmTokenNull()

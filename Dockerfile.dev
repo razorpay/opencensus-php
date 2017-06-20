@@ -1,4 +1,4 @@
-FROM razorpay/docker:base-php7
+FROM razorpay/containers:base-php7
 
 VOLUME ['/app']
 
@@ -7,6 +7,12 @@ RUN chown -R apache.www-data /app && \
     sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
+
+RUN apk --update add python py-pip openssl ca-certificates && \
+    apk --update add --virtual build-dependencies python-dev libffi-dev openssl-dev build-base  && \
+    pip install razorpay.alohomora==0.2 && \
+    apk del build-dependencies          && \
+    rm -rf /var/cache/apk/*
 
 WORKDIR /app
 

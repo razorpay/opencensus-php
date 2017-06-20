@@ -4,27 +4,27 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
-
-use RZP\Http;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Http;
 use RZP\Models\BankAccount;
-use RZP\Models\Terminal;
-use RZP\Models\Payment;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Card;
+use RZP\Models\Customer;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Models\Transaction;
+use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Customer;
-use RZP\Models\Transfer\Core as TransferCore;
-use RZP\Models\Card;
-use RZP\Models\Transaction;
-use RZP\Models\Feature\Constants as Feature;
 
 class Processor
 {
@@ -448,7 +448,7 @@ class Processor
                 $this->timeoutPayment();
 
                 throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
             return [
@@ -456,18 +456,35 @@ class Processor
             ];
         }
 
-        $diff = time() - $payment->getCreatedAt();
+        $resource = $this->getCallbackMutexResource($payment);
 
-        if (($payment->hasBeenAuthorized() === true) and
-            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
-        {
-            return $this->processAuthorizeResponse($payment);
-        }
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
 
-        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                $diff = time() - $payment->getCreatedAt();
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                if (($payment->hasBeenAuthorized() === true) and
+                    ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+                {
+                    return $this->processAuthorizeResponse($payment);
+                }
+
+                $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -564,6 +581,13 @@ class Processor
         $this->tracePaymentFailed($error, $traceCode);
 
         $this->eventPaymentFailed();
+
+        if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
+        {
+            $notifier = new Notify($this->payment);
+
+            $notifier = $notifier->trigger(Payment\Event::FAILED);
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -1039,6 +1063,12 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        // Bank transfers are customer-initiated, and so are auto-captured.
+        if ($payment->isBankTransfer() === true)
+        {
+            return true;
+        }
+
         //
         // We do an auto capture only if payment is associated with an order.
         //

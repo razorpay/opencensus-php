@@ -698,6 +698,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setMetadataKey($key, $value)
+    {
+        $this->metadata[$key] = $value;
+    }
+
+    public function setMetadata($input)
+    {
+        $this->metadata = $input['_'] ?? null;
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -1040,6 +1050,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
     }
 
+    public function isBankTransfer()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -1120,7 +1135,7 @@ class Entity extends Base\PublicEntity
 
     public function getTransferId()
     {
-        return $this->getAttribute(SELF::TRANSFER_ID);
+        return $this->getAttribute(self::TRANSFER_ID);
     }
 
     public function getAmount()
@@ -1155,7 +1170,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountTransferred()
     {
-        return $this->getAttribute(SELF::AMOUNT_TRANSFERRED);
+        return $this->getAttribute(self::AMOUNT_TRANSFERRED);
     }
 
     public function getAmountUntransferred()
@@ -1250,7 +1265,11 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return Netbanking::getName($bankId);
+
+        if ($bankId !== null)
+        {
+            return Netbanking::getName($bankId);
+        }
     }
 
     public function getWallet()
@@ -1404,6 +1423,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONVERT_CURRENCY);
     }
 
+    public function getGatewayCaptured()
+    {
+        return $this->getAttribute(self::GATEWAY_CAPTURED);
+    }
+
     /**
      * Get the rate at which currency conversion was applied to
      * the payment amount
@@ -1513,11 +1537,11 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->getRelation('localToken');
+            $token = $this->getAttribute('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->getRelation('globalToken');
+            $token = $this->getAttribute('globalToken');
         }
 
         return $token;
@@ -1773,12 +1797,12 @@ class Entity extends Base\PublicEntity
 
     public function localToken()
     {
-        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID)->withTrashed();
     }
 
     public function globalToken()
     {
-        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID);
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::GLOBAL_TOKEN_ID)->withTrashed();
     }
 
     public function app()
@@ -1872,7 +1896,9 @@ class Entity extends Base\PublicEntity
     /**
      * Updates Payment amount_paidout field
      *
-     * @param  int    $amount
+     * @param  int $amount
+     *
+     * @throws Exception\LogicException
      */
     public function payoutAmount(int $amount)
     {

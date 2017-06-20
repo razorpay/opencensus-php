@@ -23,6 +23,8 @@ class Parser extends Base\Core
         Entity::PLATFORM_VERSION,
         Entity::INTEGRATION,
         Entity::INTEGRATION_VERSION,
+        Entity::RISK_SCORE,
+        Entity::RISK_ENGINE,
     ];
 
     /**
@@ -61,7 +63,9 @@ class Parser extends Base\Core
         Entity::PLATFORM_VERSION      => 'platform_version',
         Entity::INTEGRATION           => 'integration',
         Entity::INTEGRATION_VERSION   => 'integration_version',
-        Entity::REFERER               => 'referer'
+        Entity::REFERER               => 'referer',
+        Entity::RISK_SCORE            => 'risk_score',
+        Entity::RISK_ENGINE           => 'risk_engine',
     ];
 
     protected function init()
@@ -99,15 +103,20 @@ class Parser extends Base\Core
 
         $referer = $pa[Entity::REFERER] ?? null;
 
+        $platform = $pa[Entity::PLATFORM] ?? null;
+
         if (($library !== null) and
             ($library === Metadata::CHECKOUTJS) and
-            ($referer === null))
+            ($referer === null) and
+            ($platform !== Metadata::BROWSER))
         {
-            $this->trace->error(
+            $this->trace->warning(
                 TraceCode::PAYMENT_ANALYTICS_INCORRECT_DATA,
                 [
+                    Entity::PAYMENT_ID => $pa[Entity::PAYMENT_ID],
                     Entity::LIBRARY => $library,
                     Entity::REFERER => $referer,
+                    Entity::PLATFORM => $platform
                 ]);
         }
     }

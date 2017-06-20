@@ -76,7 +76,7 @@ trait GatewayTrait
 
         $server->setMockRequest($request);
 
-        $action = studly_case($this->action);
+        $action = camel_case($this->action);
 
         $response = $server->$action($input);
 

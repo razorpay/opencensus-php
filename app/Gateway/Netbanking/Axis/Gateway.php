@@ -372,16 +372,54 @@ class Gateway extends Base\Gateway
 
     protected function parseResponseXml(string $response)
     {
-        if (empty($response) === false)
+        if (empty($response) === true)
         {
-            $responseArray = (array) simplexml_load_string($response);
-
-            // Lets assume we verify only one payment at a time
-            // So the response will contain just 1 table at a time
-            return (array) $responseArray['Table1'];
+            return $response;
         }
 
-        return $response;
+        $response = simplexml_load_string($response);
+
+        //
+        // Converting all elements of $response xml into an array
+        //
+        $responseArray = json_decode(json_encode($response), true);
+
+        $tableToBeReturned = $responseArray['Table1'];
+
+        //
+        // We are returning the first table entry that contains
+        // a successful status.
+        //
+        $numSuccess = 0;
+
+        foreach ($responseArray as $key => $table)
+        {
+            if ($table[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS)
+            {
+                $tableToBeReturned = $table;
+
+                $numSuccess++;
+            }
+        }
+
+        //
+        // If the number of successful
+        // transactions is greater than 1, then this is an error
+        // and therefore we throw an exception
+        //
+        if ($numSuccess > 1)
+        {
+            throw new Exception\LogicException(
+                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,
+                null,
+                [
+                    'response_array' => $responseArray,
+                    'payment_id'     => $this->input['payment']['id'],
+                    'num_success'    => $numSuccess
+                ]);
+        }
+
+        return $tableToBeReturned;
     }
 
     protected function getAuthSuccessStatus()

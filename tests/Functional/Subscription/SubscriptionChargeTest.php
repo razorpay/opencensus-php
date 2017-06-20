@@ -35,6 +35,13 @@ class SubscriptionChargeTest extends TestCase
         $this->mockTokenex();
     }
 
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        Carbon::setTestNow();
+    }
+
     public function testSubscriptionFirstCharge()
     {
         $details = $this->doAuthTxnForNewSubscription();
@@ -367,6 +374,10 @@ class SubscriptionChargeTest extends TestCase
         // Invoice got created
         $this->assertEquals(1, $result['invoices_created']);
         $invoice = $this->getLastEntity('invoice', true);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
 
         $this->clearMock();
         $this->failOnCapture();

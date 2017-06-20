@@ -15,6 +15,7 @@ use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Events\AuditLogEntry;
 use RZP\Exception;
+use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Role;
@@ -130,36 +131,13 @@ class Service extends Base\Service
 
     protected function sendAdminForgotPasswordEmail(Entity $admin, $input)
     {
-        $org = $admin->org;
+        $org = $admin->org->toArray();
 
-        $from       = 'support@razorpay.com';
-        $replyTo    = 'support@razorpay.com';
-        $fromHeader = 'Team Razorpay';
-        $to         = $admin->getEmail();
-        $subject    = 'Reset your password for' . $org->getDisplayName() . ' dashboard';
+        $admin = $admin->toArray();
 
-        $view = 'emails.auth.admin_password_reset';
+        $forgotPasswordMail = new AdminMail\ForgotPassword($admin, $org, $input);
 
-        $template = [
-            'firstName' => $admin->getFirstName(),
-            'resetUrl'  => $input['reset_password_url'] . '/' . $input[self::TOKEN],
-            'orgName'   => $org->getDisplayName(),
-        ];
-
-        Mail::queue(
-            $view,
-            $template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo)
-            {
-                $message->to($to);
-                $message->from($from, $fromHeader);
-                $message->subject($subject);
-                $message->replyTo($replyTo);
-
-                $headers = $message->getHeaders();
-                $headers->addTextHeader(MailTags::HEADER, MailTags::FORGOT_PASSWORD);
-            }
-        );
+        Mail::queue($forgotPasswordMail);
     }
 
     protected function generateToken()
@@ -306,43 +284,13 @@ class Service extends Base\Service
 
     public function sendAdminCreateEmail($admin, $input)
     {
-        $org = $admin->org;
+        $org = $admin->org->toArray();
 
-        if ($org->getAuthType() !== 'password')
-        {
-            return;
-        }
+        $admin = $admin->toArray();
 
-        $view = [
-            'html' => 'emails.admin.user',
-            'text' => 'emails.admin.user_text'
-        ];
+        $createAdminMail = new AdminMail\Create($admin, $org, $input);
 
-        $data = [
-            'user' => [
-                'email' => $admin->getEmail(),
-                // todo: Hack for now. Remove it
-                'password' => $input['password'],
-                'org' => $org->getDisplayName(),
-                'url' => $this->app['config']->get('applications.dashboard.url'),
-            ]
-        ];
-
-        Mail::queue(
-            $view,
-            $data,
-            function ($message) use ($admin, $org)
-            {
-                $subject    = 'Your admin account details for ' . $org->getDisplayName() . ' dashboard';
-
-                $message->to($admin->getEmail());
-                $message->from('support@razorpay.com', 'Team Razorpay');
-                $message->subject($subject);
-                $message->replyTo('support@razorpay.com');
-
-                $headers = $message->getHeaders();
-                $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
-            });
+        Mail::queue($createAdminMail);
     }
 
     public function getAdmin(string $orgId, string $adminId)

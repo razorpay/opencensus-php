@@ -2,7 +2,6 @@
 
 namespace RZP\Jobs;
 
-use App;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Illuminate\Queue\SerializesModels;
@@ -30,17 +29,21 @@ class EsRepository extends Job implements ShouldQueue
      */
     public function handle()
     {
-        $app = App::getFacadeRoot();
-
-        $trace = $app['trace'];
+        parent::handle();
 
         if (isset($this->data['es_repo_path']) === false)
         {
-            $trace->error(TraceCode::ES_SAVE_FAILED, ['data' => $this->data]);
+            $this->trace->error(
+                            TraceCode::ES_SAVE_FAILED,
+                            [
+                                'data' => $this->data,
+                            ]);
 
             throw new Exception\IntegrationException(
-                'EsRepository job does not have a es_repo_path key',
-                ['data' => $this->data]);
+                        'EsRepository job does not have a es_repo_path key',
+                        [
+                            'data' => $this->data,
+                        ]);
         }
 
         $className  = $this->data['es_repo_path'];

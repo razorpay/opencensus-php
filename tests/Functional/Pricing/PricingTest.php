@@ -25,6 +25,11 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePricingPlanWithMinAndMaxFee()
+    {
+        $this->startTest();
+    }
+
     public function testAddPricingPlanRule()
     {
         $content = $this->createPricingPlan();
@@ -69,6 +74,15 @@ class PricingTest extends TestCase
     }
 
     public function testAddDuplicatePricingPlanRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithMaxFee()
     {
         $content = $this->createPricingPlan();
 
@@ -308,6 +322,11 @@ class PricingTest extends TestCase
     }
 
     public function testDeletePricingPlanRule()
+    {
+        $content = $this->startTest();
+    }
+
+    public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
         $content = $this->startTest();
     }
