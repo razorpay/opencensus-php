@@ -498,3 +498,7 @@ mysqldump -h host --no-create-info --complete-insert -u user -p dbd invitations 
 
 # Import invitation on API
 source dash_invitations.sql;
+
+# mapping payment id to caps_payment_id
+UPDATE first_data
+    SET caps_payment_id = UPPER(payment_id);

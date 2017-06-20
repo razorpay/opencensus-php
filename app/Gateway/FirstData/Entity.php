@@ -34,6 +34,7 @@ class Entity extends Base\Entity
         self::STATUS,
         self::TRANSACTION_RESULT,
         self::GATEWAY_TRANSACTION_ID,
+        self::CAPS_PAYMENT_ID,
         self::ENDPOINT_TRANSACTION_ID,
         self::GATEWAY_TERMINAL_ID,
         self::AUTH_CODE,
