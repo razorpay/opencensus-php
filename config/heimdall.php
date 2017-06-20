@@ -530,277 +530,238 @@ return [
 
         // ORG
         PermissionCategory::ORG => [
-            Permission::VIEW_ALL_ORG  => 'View all organizations',
-            Permission::VIEW_ORG      => 'View organization detail',
-            Permission::CREATE_ORG    => 'Create organization',
-            Permission::EDIT_ORG      => 'Edit organization',
-            Permission::DELETE_ORG    => 'Delete organization',
+            Permission::VIEW_ALL_ORG  => [
+                'description' => 'view all org',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_ORG      => [
+                'description' => 'view all org detail',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_ORG    => [
+                'description' => 'create org',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_ORG      => [
+                'description' => 'Edit org',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_ORG    => [
+                'description' => 'delete org',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // Workflow
         PermissionCategory::WORKFLOW => [
-            Permission::VIEW_WORKFLOW      => 'View Workflows',
-            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
-            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
-            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
-            Permission::CREATE_WORKFLOW    => 'Create a workflow',
+            Permission::VIEW_WORKFLOW      => [
+                'description' => 'View Workflows',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_WORKFLOW      => [
+                'description' => 'edit workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_WORKFLOW    => [
+                'description' => 'delete workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_ALL_WORKFLOW  => [
+                'description' => 'view all workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_WORKFLOW    => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // Roles
         PermissionCategory::ROLE => [
-            Permission::VIEW_ALL_ROLE => 'View all roles',
-            Permission::VIEW_ROLE     => 'View role detail',
-            Permission::CREATE_ROLE   => 'Create role',
-            Permission::EDIT_ROLE     => 'Edit role',
-            Permission::DELETE_ROLE   => 'Delete role',
+            Permission::VIEW_ALL_ROLE => [
+                'description' => 'view_all_role',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_ROLE     => [
+                'description' => 'view_role',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_ROLE   => [
+                'description' => 'create_role',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_ROLE     => [
+                'description' => 'edit_role',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_ROLE   => [
+                'description' => 'delete_role',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // Groups
         PermissionCategory::GROUP => [
-            Permission::VIEW_ALL_GROUP    => 'View all groups',
-            Permission::VIEW_GROUP        => 'View group detail',
-            Permission::CREATE_GROUP      => 'Create group',
-            Permission::EDIT_GROUP        => 'Edit group',
-            Permission::DELETE_GROUP      => 'Delete group',
-            Permission::GROUP_GET_ALLOWED_GROUPS => 'Get allowed groups',
+            Permission::VIEW_ALL_GROUP    => [
+                'description' => 'view_all_group',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_GROUP        => [
+                'description' => 'view_group',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_GROUP      => [
+                'description' => 'create_group',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_GROUP        => [
+                'description' => 'create_group',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_GROUP      => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::GROUP_GET_ALLOWED_GROUPS => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // Admin
         PermissionCategory::ADMIN => [
-            Permission::VIEW_ALL_ADMIN    => 'View all admins',
-            Permission::VIEW_ADMIN        => 'View admin detail',
-            Permission::CREATE_ADMIN      => 'Create admin',
-            Permission::EDIT_ADMIN        => 'Edit admin',
-            Permission::DELETE_ADMIN      => 'Delete admin',
+            Permission::VIEW_ALL_ADMIN    => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_ADMIN        => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_ADMIN      => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_ADMIN        => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_ADMIN      => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // Permissions
         PermissionCategory::PERMISSION => [
-            Permission::VIEW_ALL_PERMISSION => 'View all permissions',
-            Permission::GET_PERMISSION      => 'get_permission',
-            Permission::DELETE_PERMISSION   => 'Delete permission',
-            Permission::CREATE_PERMISSION   => 'Create permission',
-            Permission::EDIT_PERMISSION     => 'Edit permission',
+            Permission::VIEW_ALL_PERMISSION => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::GET_PERMISSION      => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_PERMISSION   => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::CREATE_PERMISSION   => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_PERMISSION     => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         PermissionCategory::AUDIT_LOG => [
-            Permission::VIEW_AUDITLOG     => 'View auditlog for activities',
+            Permission::VIEW_AUDITLOG     => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         // Invitations
         PermissionCategory::INVITATION => [
-            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
-            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
-            Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+            Permission::CREATE_MERCHANT_INVITE      => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_MERCHANT_INVITE        => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_MERCHANT_INVITE        => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
 
         PermissionCategory::GATEWAY_RULE => [
-            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
-            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
-            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
-            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
+            Permission::CREATE_GATEWAY_RULE => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::EDIT_GATEWAY_RULE   => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::DELETE_GATEWAY_RULE => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
+            Permission::VIEW_GATEWAY_RULE   => [
+                'description' => 'create workflow',
+                'assignable' => true,
+                'workflow' => false
+            ],
         ],
     ],
 
     // trimmed down assignable permissions which an HDFC manager would have
     // This array must be a **strict** subset of the one above
 
-    'assignable_permissions' => [
-        PermissionCategory::MERCHANT => [
-            Permission::VIEW_ALL_MERCHANTS    => 'View all merchants in merchant lists',
-            Permission::VIEW_MERCHANT         => 'View a particular merchant details',
-        ],
-
-        PermissionCategory::MERCHANT_DETAIL => [
-            Permission::VIEW_MERCHANT_BALANCE => 'View merchant balance in merchant details',
-            Permission::VIEW_MERCHANT_BANK_ACCOUNTS => [
-                'description' => '',
-                'assignable' => true,
-                'workflow' => false
-            ],
-
-            Permission::VIEW_MERCHANT_SCREENSHOT => '',
-            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
-
-            Permission::SET_PRICING_RULES => '',
-
-            Permission::CREATE_MERCHANT_LOCK              => '',
-            Permission::CREATE_MERCHANT_UNLOCK            => '',
-            Permission::EDIT_MERCHANT                     => '',
-            Permission::EDIT_ACTIVATE_MERCHANT            => '',
-            Permission::EDIT_MERCHANT_ENABLE_LIVE         => '',
-            Permission::EDIT_MERCHANT_DISABLE_LIVE        => '',
-            Permission::EDIT_MERCHANT_ARCHIVE             => '',
-            Permission::EDIT_MERCHANT_UNARCHIVE           => '',
-            Permission::EDIT_MERCHANT_SUSPEND             => '',
-            Permission::EDIT_MERCHANT_UNSUSPEND           => '',
-
-            Permission::VIEW_MERCHANT_COMPANY_INFO => '',
-            Permission::EDIT_MERCHANT_SCREENSHOT => '',
-
-            Permission::VIEW_ACTIVATION_FORM              => '',
-            Permission::EDIT_MERCHANT_CONFIRM             => '',
-            Permission::EDIT_MERCHANT_LOCK_ACTIVATION     => '',
-            Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION   => '',
-            Permission::EDIT_MERCHANT_HOLD_FUNDS          => '',
-            Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS     => '',
-            Permission::EDIT_MERCHANT_RELEASE_FUNDS       => '',
-
-            Permission::VIEW_MERCHANT_BALANCE_TEST        => '',
-            Permission::VIEW_MERCHANT_BALANCE_LIVE        => '',
-
-            Permission::EDIT_MERCHANT_EMAIL => '',
-
-            Permission::CREATE_MERCHANT_INVITE => '',
-            Permission::EDIT_MERCHANT_INVITE   => '',
-            Permission::VIEW_MERCHANT_INVITE => '',
-        ],
-
-        PermissionCategory::PRICING => [
-            Permission::CREATE_PRICING_PLAN => 'Create Pricing Plan',
-            Permission::DELETE_PRICING_PLAN_RULES => 'Delete Pricing Plan Rule',
-        ],
-
-        // UAM
-
-        // Roles
-        PermissionCategory::ROLE => [
-            Permission::VIEW_ALL_ROLE => 'View all roles',
-            Permission::VIEW_ROLE     => 'View role detail',
-            Permission::CREATE_ROLE   => 'Create role',
-            Permission::EDIT_ROLE     => 'Edit role',
-            Permission::DELETE_ROLE   => 'Delete role',
-        ],
-
-        // Groups
-        PermissionCategory::GROUP => [
-            Permission::VIEW_ALL_GROUP    => 'View all groups',
-            Permission::VIEW_GROUP        => 'View group detail',
-            Permission::CREATE_GROUP      => 'Create group',
-            Permission::EDIT_GROUP        => 'Edit group',
-            Permission::DELETE_GROUP      => 'Delete group',
-            Permission::GROUP_GET_ALLOWED_GROUPS => 'Get allowed groups',
-        ],
-
-        // Admin
-        PermissionCategory::ADMIN => [
-            Permission::VIEW_ALL_ADMIN    => 'View all admins',
-            Permission::VIEW_ADMIN        => 'View admin detail',
-            Permission::CREATE_ADMIN      => 'Create admin',
-            Permission::EDIT_ADMIN        => 'Edit admin',
-            Permission::DELETE_ADMIN      => 'Delete admin',
-        ],
-
-        // Permissions
-        PermissionCategory::PERMISSION => [
-            Permission::VIEW_ALL_PERMISSION => 'View all permissions',
-            Permission::GET_PERMISSION      => 'Get Permission',
-        ],
-
-        PermissionCategory::AUDIT_LOG => [
-            Permission::VIEW_AUDITLOG   => 'View auditlog for activities',
-        ],
-
-        // Invitations
-        PermissionCategory::INVITATION => [
-            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
-            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
-            Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
-        ],
-
-        PermissionCategory::WORKFLOW => [
-            Permission::VIEW_WORKFLOW      => 'View Workflows',
-            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
-            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
-            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
-            Permission::CREATE_WORKFLOW    => 'Create a workflow',
-        ],
-
-        PermissionCategory::GATEWAY_RULE => [
-            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
-            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
-            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
-            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
-        ],
-    ],
-
     'enable_workflow_permissions' => [
-        PermissionCategory::MERCHANT_DETAIL => [
-            Permission::DELETE_MERCHANT_FEATURES        => 'Delete a merchant feature',
-
-            Permission::SET_PRICING_RULES               => '',
-
-            Permission::CREATE_MERCHANT_LOCK            => '',
-            Permission::CREATE_MERCHANT_UNLOCK          => '',
-            Permission::EDIT_MERCHANT                   => '',
-            Permission::EDIT_ACTIVATE_MERCHANT          => '',
-            Permission::EDIT_MERCHANT_ENABLE_LIVE       => '',
-            Permission::EDIT_MERCHANT_DISABLE_LIVE      => '',
-            Permission::EDIT_MERCHANT_ARCHIVE           => '',
-            Permission::EDIT_MERCHANT_UNARCHIVE         => '',
-            Permission::EDIT_MERCHANT_SCREENSHOT        => '',
-
-            Permission::EDIT_MERCHANT_CONFIRM           => '',
-            Permission::EDIT_MERCHANT_LOCK_ACTIVATION   => '',
-            Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION => '',
-            Permission::EDIT_MERCHANT_HOLD_FUNDS        => '',
-            Permission::EDIT_MERCHANT_RELEASE_FUNDS     => '',
-
-            Permission::EDIT_MERCHANT_EMAIL             => '',
-
-            Permission::CREATE_MERCHANT_INVITE          => '',
-            Permission::EDIT_MERCHANT_INVITE            => '',
-
-            // Workflow can be created on add merchant credits
-            Permission::ADD_MERCHANT_CREDITS            => '',
-        ],
-
-        PermissionCategory::PRICING => [
-            Permission::CREATE_PRICING_PLAN => 'Create Pricing Plan',
-            Permission::DELETE_PRICING_PLAN_RULES => 'Delete Pricing Plan Rule',
-        ],
-
-        // UAM
-
-        // Roles
-        PermissionCategory::ROLE => [
-            Permission::CREATE_ROLE   => 'Create role',
-            Permission::EDIT_ROLE     => 'Edit role',
-            Permission::DELETE_ROLE   => 'Delete role',
-        ],
-
-        // Groups
-        PermissionCategory::GROUP => [
-            Permission::CREATE_GROUP      => 'Create group',
-            Permission::EDIT_GROUP        => 'Edit group',
-            Permission::DELETE_GROUP      => 'Delete group',
-        ],
-
-        // Admin
-        PermissionCategory::ADMIN => [
-            Permission::CREATE_ADMIN      => 'Create admin',
-            Permission::EDIT_ADMIN        => 'Edit admin',
-            Permission::DELETE_ADMIN      => 'Delete admin',
-        ],
-
-        // Invitations
-        PermissionCategory::INVITATION => [
-            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
-            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
-        ],
-
-        PermissionCategory::WORKFLOW => [
-            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
-            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
-            Permission::CREATE_WORKFLOW    => 'Create a workflow',
-        ],
-
-        PermissionCategory::GATEWAY_RULE => [
-            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
-            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
-            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
-            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
-        ],
     ],
 
     'workflows' => [
