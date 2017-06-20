@@ -743,8 +743,7 @@ class FeeCalculator
         {
             $fee = $min;
         }
-
-        if ((is_null($max) === false) and ($fee > $max))
+        else if ((is_null($max) === false) and ($fee > $max))
         {
             $fee = $max;
         }

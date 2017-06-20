@@ -6,33 +6,33 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    = 'id';
-    const PLAN_ID               = 'plan_id';
-    const PLAN_NAME             = 'plan_name';
-    const FEATURE               = 'feature';
-    const GATEWAY               = 'gateway';
-    const PAYMENT_METHOD        = 'payment_method';
-    const PAYMENT_METHOD_TYPE   = 'payment_method_type';
-    const PAYMENT_NETWORK       = 'payment_network';
-    const INTERNATIONAL         = 'international';
+    const ID                   = 'id';
+    const PLAN_ID              = 'plan_id';
+    const PLAN_NAME            = 'plan_name';
+    const FEATURE              = 'feature';
+    const GATEWAY              = 'gateway';
+    const PAYMENT_METHOD       = 'payment_method';
+    const PAYMENT_METHOD_TYPE  = 'payment_method_type';
+    const PAYMENT_NETWORK      = 'payment_network';
+    const INTERNATIONAL        = 'international';
 
     // Humanized name of the payment network
-    const PAYMENT_NETWORK_NAME  = 'payment_network_name';
-    const PAYMENT_ISSUER        = 'payment_issuer';
+    const PAYMENT_NETWORK_NAME = 'payment_network_name';
+    const PAYMENT_ISSUER       = 'payment_issuer';
 
     // Amount Range Rule
-    const AMOUNT_RANGE_ACTIVE   = 'amount_range_active';
-    const AMOUNT_RANGE_MIN      = 'amount_range_min';
-    const AMOUNT_RANGE_MAX      = 'amount_range_max';
+    const AMOUNT_RANGE_ACTIVE  = 'amount_range_active';
+    const AMOUNT_RANGE_MIN     = 'amount_range_min';
+    const AMOUNT_RANGE_MAX     = 'amount_range_max';
 
-    const PERCENT_RATE          = 'percent_rate';
-    const FIXED_RATE            = 'fixed_rate';
+    const PERCENT_RATE         = 'percent_rate';
+    const FIXED_RATE           = 'fixed_rate';
 
     // Min And Max Rate
     const MIN_FEE              = 'min_fee';
     const MAX_FEE              = 'max_fee';
 
-    const EXPIRED_AT            = 'expired_at';
+    const EXPIRED_AT           = 'expired_at';
 
     protected $revisionEnabled = true;
 
@@ -74,15 +74,15 @@ class Entity extends Base\PublicEntity
     protected static $generators = ['plan_id'];
 
     protected $defaults = [
-        self::FEATURE               => Feature::PAYMENT,
-        self::PAYMENT_METHOD_TYPE   => null,
-        self::PAYMENT_NETWORK       => null,
-        self::PAYMENT_ISSUER        => null,
-        self::PERCENT_RATE          => 0,
-        self::FIXED_RATE            => 0,
-        self::MIN_FEE              => 0,
-        self::MAX_FEE              => null,
-        self::AMOUNT_RANGE_ACTIVE   => '0'
+        self::FEATURE             => Feature::PAYMENT,
+        self::PAYMENT_METHOD_TYPE => null,
+        self::PAYMENT_NETWORK     => null,
+        self::PAYMENT_ISSUER      => null,
+        self::PERCENT_RATE        => 0,
+        self::FIXED_RATE          => 0,
+        self::MIN_FEE             => 0,
+        self::MAX_FEE             => null,
+        self::AMOUNT_RANGE_ACTIVE => '0'
     ];
 
     /**
@@ -95,7 +95,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_ACTIVE => 'bool',
         self::PERCENT_RATE        => 'int',
         self::FIXED_RATE          => 'int',
-        self::MIN_FEE            => 'int',
+        self::MIN_FEE             => 'int',
     ];
 
     const ZERO_PRICING = '10ZeroPricingP';
@@ -235,10 +235,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountRange()
     {
-        $amountRangeMin = $this->getAmountRangeMin();
-        $amountRangeMax = $this->getAmountRangeMax();
-
-        return [$amountRangeMin, $amountRangeMax];
+        return [$this->getAmountRangeMin(), $this->getAmountRangeMax()];
     }
 
     public function getAmountRangeMin()
