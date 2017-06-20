@@ -95,10 +95,11 @@ class EsClient
 
     public function bulkUpdate($params)
     {
-        // If ES mock is set to true.
+        // If ES mock is set to true, return dummy response.
+
         if ($this->esMock === true)
         {
-            return [];
+            return ['errors' => false];
         }
 
         return $this->client->bulk($params);

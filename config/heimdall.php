@@ -24,6 +24,10 @@ return [
     'default_role_desc' => 'superadmin with all possible permissions',
 
     'permissions' => [
+        PermissionCategory::GENERAL => [
+            Permission::VIEW_HOMEPAGE       => 'View Dashboard Home',
+        ],
+
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS    => 'View all merchants in merchant lists',
             Permission::VIEW_MERCHANT         => 'View a particular merchant details',
@@ -122,6 +126,8 @@ return [
             Permission::VIEW_MERCHANT_STATS => '',
             Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
             Permission::VIEW_MERCHANT_REPORT   => 'View Merchant Reports',
+            Permission::CREATE_MERCHANT_OFFER => 'Create offer for a merchant',
+            Permission::EDIT_MERCHANT_OFFER => 'Edit offer for a merchant',
         ],
 
         PermissionCategory::PRICING => [
@@ -152,6 +158,7 @@ return [
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
             Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
+            Permission::VIEW_WORKFLOW_REQUESTS => 'View workflow requests',
         ],
 
         // Roles
@@ -214,6 +221,10 @@ return [
     // This array must be a **strict** subset of the one above
 
     'assignable_permissions' => [
+        PermissionCategory::GENERAL => [
+            Permission::VIEW_HOMEPAGE       => 'View Dashboard Home',
+        ],
+
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS    => 'View all merchants in merchant lists',
             Permission::VIEW_MERCHANT         => 'View a particular merchant details',
@@ -318,6 +329,7 @@ return [
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
             Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
+            Permission::VIEW_WORKFLOW_REQUESTS => 'View workflow requests',
         ],
 
         PermissionCategory::GATEWAY_RULE => [

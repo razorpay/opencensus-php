@@ -16,6 +16,8 @@ use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\BankTransfer;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 use RZP\Models\Invoice;
@@ -232,7 +234,6 @@ class Repository extends Base\Repository
         $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
-        $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
@@ -243,7 +244,6 @@ class Repository extends Base\Repository
                     ->whereRaw($rawCondition)
                     ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->where($paymentCreatedAt, '<', $minCreatedAt)
-                    ->where($paymentCreatedAt, '>=', $maxCreatedAt)
                     ->get();
     }
 
@@ -808,6 +808,38 @@ class Repository extends Base\Repository
                     ->having('payment_count', '>=', 1)
                     ->pluck('payment_count', 'offer_id')
                     ->toArray();
+    }
+
+    public function fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+        string $virtualAccountId,
+        Merchant\Entity $merchant
+        )
+    {
+        $paymentId = $this->dbColumn(Payment\Entity::ID);
+        $paymentMethod = $this->dbColumn(Payment\Entity::METHOD);
+        $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $paymentColumns = $this->dbColumn('*');
+
+        $bankTransferTable = $this->repo->bank_transfer->getTableName();
+
+        $bankTransferPaymentId = $this->repo
+                                      ->bank_transfer
+                                      ->dbColumn(BankTransfer\Entity::PAYMENT_ID);
+
+        $bankTransferVirtualAccountId = $this->repo
+                                             ->bank_transfer
+                                             ->dbColumn(BankTransfer\Entity::VIRTUAL_ACCOUNT_ID);
+
+        VirtualAccount\Entity::verifyIdAndSilentlyStripSign($virtualAccountId);
+
+        return $this->newQuery()
+                    ->select($paymentColumns)
+                    ->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId)
+                    ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
+                    ->where($paymentMerchantId, '=', $merchant->getId())
+                    ->where($paymentMethod, '=', Method::BANK_TRANSFER)
+                    ->get();
     }
 
     /**

@@ -46,6 +46,7 @@ final class Route
         'payment_redirect_callback'               => ['post',     'payments/{id}/redirect_callback',                'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                          => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                          => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
+        'payment_bank_transfer_fetch'             => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
@@ -166,12 +167,20 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
-        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
-        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
+        'bank_transfer_process'                   => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
+        'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
+        'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
+        'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
+        'virtual_account_delete'                  => ['delete',   'virtual_accounts/{id}',                          'VirtualAccountController@delete'                                   ],
+        'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
+        'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
+        'virtual_account_fetch_payments'          => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'merchant_gst_fetch'                      => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
+        'merchant_gst_edit'                       => ['patch',    'merchant/gst',                                   'MerchantController@editGSTDetails'                                 ],
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
@@ -324,6 +333,7 @@ final class Route
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
+        'invoice_issue_by_batch'                  => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_get_pdf'                         => ['get',      'invoices/{id}/pdf',                              'InvoiceController@getInvoicePdf'                                   ],
@@ -523,6 +533,7 @@ final class Route
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
@@ -547,8 +558,9 @@ final class Route
 
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
+        'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
         'invitation_fetch'                        => ['get',      'invitations',                                    'InvitationController@list'                                         ],
-        'invitation_resend'                       => ['post',     'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
+        'invitation_resend'                       => ['put',      'invitations/{id}/resend',                        'InvitationController@postResend'                                   ],
         'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
@@ -724,6 +736,13 @@ final class Route
         'tax_group_create',
         'tax_group_update',
         'tax_group_delete',
+        'virtual_account_create',
+        'virtual_account_edit',
+        'virtual_account_delete',
+        'virtual_account_fetch',
+        'virtual_account_fetch_multiple',
+        'payment_bank_transfer_fetch',
+        'virtual_account_fetch_payments',
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
@@ -826,8 +845,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
-        'ecollect_validate',
-        'ecollect_pay',
+        'bank_transfer_process',
+        'bank_transfer_notify',
         'iin_fetch_by_iin',
         'card_update_saved',
         'iin_fetch_multiple',
@@ -923,6 +942,8 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
+        'invitation_fetch_by_token',
+        'invitation_action',
     ];
 
     public static $proxy = [
@@ -963,6 +984,7 @@ final class Route
         'batch_fetch_by_id',
         'batch_retry',
         'batch_download_file',
+        'invoice_issue_by_batch',
         'invoice_add_line_items',
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
@@ -970,6 +992,8 @@ final class Route
         'subscription_manual_retry',
         'merchant_get_features',
         'merchant_update_features',
+        'merchant_gst_fetch',
+        'merchant_gst_edit',
         'merchant_activation_details',
         'merchant_activation_upload_file',
         'merchant_activation_save',
@@ -985,7 +1009,6 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
-        'invitation_action',
     ];
 
     // These will run on internal auth with the assurance
@@ -1171,6 +1194,8 @@ final class Route
         'terminal_remove_merchant'         => '*',
         'emi_plan_delete'                  => Permission::DELETE_EMI_PLAN,
         'iin_edit'                         => Permission::EDIT_IIN_RULE,
+        'offer_create'                     => Permission::CREATE_MERCHANT_OFFER,
+        'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
     ];
 
     public static $direct = [
@@ -1255,13 +1280,13 @@ final class Route
         ],
 
         'kotak' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_process',
+            'bank_transfer_notify',
         ],
 
         'yesbank' => [
-            'ecollect_validate',
-            'ecollect_pay',
+            'bank_transfer_process',
+            'bank_transfer_notify',
         ],
 
         'mailgun' => [
@@ -1329,6 +1354,13 @@ final class Route
         'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
+        'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
+        'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch_payments'    => [Feature::VIRTUAL_ACCOUNTS],
     ];
 
     /*

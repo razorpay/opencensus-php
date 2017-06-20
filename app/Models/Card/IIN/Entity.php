@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     const EMI           = 'emi';
     const OTP_READ      = 'otp_read';
     const TRIVIA        = 'trivia';
+    const ENABLED       = 'enabled';
+    const LOCKED        = 'locked';
 
     const INTERNATIONAL = 'international';
 
@@ -46,7 +48,9 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::ISSUER_NAME,
         self::TRIVIA,
-        self::EMI
+        self::EMI,
+        self::ENABLED,
+        self::LOCKED,
     ];
 
     protected $public = [
@@ -61,12 +65,21 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::OTP_READ,
         self::TRIVIA,
+        self::ENABLED,
+        self::LOCKED,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $defaults = [
-        self::EMI => false,
+        self::EMI     => false,
+        self::ENABLED => true,
+        self::LOCKED  => false
+    ];
+
+    protected $casts = [
+        self::ENABLED => 'bool',
+        self::LOCKED  => 'bool'
     ];
 
     public function isEmiAvailable()
@@ -123,6 +136,16 @@ class Entity extends Base\PublicEntity
     public function getTrivia()
     {
         return $this->getAttribute(self::TRIVIA);
+    }
+
+    public function isEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
+    }
+
+    public function isLocked()
+    {
+        return $this->getAttribute(self::LOCKED);
     }
 
     public function setTrivia($trivia)

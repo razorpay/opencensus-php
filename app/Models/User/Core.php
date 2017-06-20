@@ -115,7 +115,7 @@ class Core extends Base\Core
                           ->callOnEveryItem('toArrayUser');
 
         $invitations = $user->invitations
-                            ->callOnEveryItem('toArrayPublic');
+                            ->callOnEveryItem('toArrayUser');
 
         $userArray[Entity::MERCHANTS] = $merchants;
 

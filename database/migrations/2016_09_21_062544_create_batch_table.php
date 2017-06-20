@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Batch\Entity as Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Invoice;
 
 
 class CreateBatchTable extends Migration
@@ -64,6 +65,10 @@ class CreateBatchTable extends Migration
             $table->integer(Batch::CREATED_AT);
             $table->integer(Batch::UPDATED_AT);
 
+            $table->index(Batch::CREATED_AT);
+            $table->index(Batch::TYPE);
+            $table->index(Batch::STATUS);
+
             $table->foreign(Batch::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
@@ -80,7 +85,14 @@ class CreateBatchTable extends Migration
                   ->references(Batch::ID)
                   ->on(Table::BATCH)
                   ->on_delete('restrict');
+        });
 
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->foreign(Invoice\Entity::BATCH_ID)
+                  ->references(Batch::ID)
+                  ->on(Table::BATCH)
+                  ->on_delete('restrict');
         });
     }
 
@@ -93,14 +105,19 @@ class CreateBatchTable extends Migration
     {
         Schema::table(Table::REFUND, function($table)
         {
-            $table->dropForeign(Table::REFUND .'_' .Refund\Entity::BATCH_ID .'_foreign');
+            $table->dropForeign(Table::REFUND . '_' . Refund\Entity::BATCH_ID . '_foreign');
 
             $table->dropColumn(Refund\Entity::BATCH_ID);
         });
 
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->dropForeign(Table::INVOICE . '_' . Invoice\Entity::BATCH_ID . '_foreign');
+        });
+
         Schema::table(Table::BATCH, function($table)
         {
-            $table->dropForeign(Table::BATCH .'_' .Batch::MERCHANT_ID .'_foreign');
+            $table->dropForeign(Table::BATCH . '_' . Batch::MERCHANT_ID . '_foreign');
         });
 
         Schema::drop(Table::BATCH);

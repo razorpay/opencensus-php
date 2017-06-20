@@ -35,7 +35,6 @@ class Entity extends Base\PublicEntity
     // Input keys
 
     const LINE_ITEMS       = 'line_items';
-    const IDS              = 'ids';
 
     // This is used to send the whole ref object
     // as part of the line item itself.

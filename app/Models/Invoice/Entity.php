@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const INVOICE_NUMBER           = 'invoice_number';
     const MERCHANT_ID              = 'merchant_id';
     const SUBSCRIPTION_ID          = 'subscription_id';
+    const BATCH_ID                 = 'batch_id';
     const CUSTOMER_ID              = 'customer_id';
     const CUSTOMER_NAME            = 'customer_name';
     const CUSTOMER_EMAIL           = 'customer_email';
@@ -133,6 +134,7 @@ class Entity extends Base\PublicEntity
         'create',
         'update',
         'delete',
+        'issue',
         'cancelInvoice',
         'expireInvoice',
         'sendNotification',
@@ -1020,6 +1022,16 @@ class Entity extends Base\PublicEntity
     public function subscription()
     {
         return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');
+    }
+
+    /**
+     * The batch which created this invoice entity.
+     *
+     * @return null|\Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function batch()
+    {
+        return $this->belongsTo('RZP\Models\Batch\Entity');
     }
 
     public function merchant()

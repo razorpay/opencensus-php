@@ -2,8 +2,6 @@
 
 namespace RZP\Jobs;
 
-use App;
-
 use RZP\Jobs\Job;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -29,8 +27,6 @@ class ReportsJob extends Job implements ShouldQueue
 
     protected $merchantId;
 
-    protected $mode;
-
     /**
      * Create a new job instance.
      *
@@ -42,13 +38,11 @@ class ReportsJob extends Job implements ShouldQueue
         string $merchantId,
         string $mode)
     {
-        $this->input = $input;
+        parent::__construct($mode);
 
-        $this->entity = $entity;
-
+        $this->input      = $input;
+        $this->entity     = $entity;
         $this->merchantId = $merchantId;
-
-        $this->mode = $mode;
     }
 
     /**
@@ -58,10 +52,10 @@ class ReportsJob extends Job implements ShouldQueue
      */
     public function handle()
     {
+        parent::handle();
+
         try
         {
-            $this->init();
-
             $reportType = new BasicEntityReport($this->entity);
 
             $reportType->setMerchant($this->merchantId);
@@ -77,25 +71,6 @@ class ReportsJob extends Job implements ShouldQueue
     }
 
     /**
-     *  Initializes instance variables: core, trace etc.
-     *
-     * @return null
-     */
-    protected function init()
-    {
-        $app = App::getFacadeRoot();
-
-        $this->trace = $app['trace'];
-
-        //
-        // Set application mode as well as database connection with given mode.
-        //
-        $app['rzp.mode'] = $this->mode;
-
-        \Database\DefaultConnection::set($this->mode);
-    }
-
-    /**
      * When an exception occurs, the job gets deleted if it has
      * exceeded the maximum attempts. Otherwise it is released back
      * into the queue after the set release wait time
@@ -106,7 +81,7 @@ class ReportsJob extends Job implements ShouldQueue
     {
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+        if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->delete();
         }
@@ -118,9 +93,11 @@ class ReportsJob extends Job implements ShouldQueue
         }
 
         $this->trace->traceException(
-            $e,
-            Trace::ERROR,
-            TraceCode::REPORT_REQUEST_FAILED,
-            ['job_action' => $jobAction]);
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::REPORT_REQUEST_FAILED,
+                        [
+                            'job_action' => $jobAction,
+                        ]);
     }
 }

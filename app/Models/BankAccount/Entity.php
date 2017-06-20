@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Models\VirtualAccount;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -33,6 +34,9 @@ class Entity extends Base\PublicEntity
     const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
     const MPIN                      = 'mpin';
 
+    const NAME                      = 'name';
+    const IFSC                      = 'ifsc';
+
     // Mobile Banking Enabled
     const MPIN_SET              = 'mpin_set';
 
@@ -46,7 +50,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'bank_account';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
@@ -63,17 +67,19 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_CITY,
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_PIN,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
+        self::IFSC,
+        self::IFSC_CODE,
+        self::NAME,
+        self::BENEFICIARY_NAME,
+        self::ACCOUNT_NUMBER,
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
         self::BENEFICIARY_CODE,
-        self::IFSC_CODE,
-        self::BENEFICIARY_NAME,
-        self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
@@ -88,48 +94,46 @@ class Entity extends Base\PublicEntity
         self::MPIN,
         self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT
-    );
-
-    protected $public = array(
-        self::ID,
-        self::ENTITY,
-        self::BENEFICIARY_CODE,
-        self::IFSC_CODE,
-        self::BENEFICIARY_NAME,
-        self::ACCOUNT_NUMBER,
-        self::BENEFICIARY_ADDRESS1,
-        self::BENEFICIARY_ADDRESS2,
-        self::BENEFICIARY_ADDRESS3,
-        self::BENEFICIARY_ADDRESS4,
-        self::BENEFICIARY_EMAIL,
-        self::BENEFICIARY_MOBILE,
-        self::BENEFICIARY_CITY,
-        self::BENEFICIARY_STATE,
-        self::BENEFICIARY_COUNTRY,
-        self::BENEFICIARY_PIN,
-        self::MPIN_SET,
-    );
-
-    protected $appends = [
-        self::MPIN_SET
     ];
 
-    protected $guarded = array(self::ID);
+    // @TODO
+    // Dashboard expects ifsc_code and beneficiary_name in the response
+    // We'll send both these and the new fields (ifsc and name) for now
+    // The old fields can be removed after dashboard has been updated
+    //
+    // Tests to be updated: testAddCustomerBankAccount
+    protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::IFSC,
+        self::IFSC_CODE,
+        self::NAME,
+        self::BENEFICIARY_NAME,
+        self::ACCOUNT_NUMBER,
+    ];
 
-    protected static $generators = array(
+    protected $appends = [
+        self::NAME,
+        self::IFSC,
+        self::MPIN_SET,
+    ];
+
+    protected $guarded = [self::ID];
+
+    protected static $generators = [
         self::ID,
         self::BENEFICIARY_COUNTRY,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
-    );
+    ];
 
     protected $generateIdOnCreate = true;
 
-    public function build(array $input = array())
+    public function build(array $input = [], string $operation = 'addBankAccount')
     {
-        (new Validator)->validateInput('addBankAccount', $input);
+        $this->getValidator()->validateInput($operation, $input);
 
         $this->generate($input);
 
@@ -193,6 +197,11 @@ class Entity extends Base\PublicEntity
         $mpin = $this->attributes[self::MPIN];
 
         return Crypt::decrypt($mpin);
+    }
+
+    protected function getNameAttribute()
+    {
+        return $this->attributes[self::BENEFICIARY_NAME];
     }
 
     public function settlements()
@@ -267,11 +276,16 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
     }
 
-    protected function getIfscCodeAttribute($code)
+    protected function getIfscCodeAttribute()
     {
-        $code = $this->attributes[self::IFSC_CODE] = $code;
+        $ifscCode = $this->attributes[self::IFSC_CODE];
 
-        return strtoupper($code);
+        return strtoupper($ifscCode);
+    }
+
+    protected function getIfscAttribute()
+    {
+        return $this->attributes[self::IFSC_CODE];
     }
 
     public function equals($baCopy)
@@ -335,6 +349,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_ID] = $merchant->getId();
 
         $this->attributes[self::TYPE] = Type::MERCHANT;
+    }
+
+    public function associateVirtualAccount(VirtualAccount\Entity $virtualAccount)
+    {
+        $this->attributes[self::TYPE] = Type::VIRTUAL_ACCOUNT;
+
+        $this->source()->associate($virtualAccount);
     }
 
     public function getRedactedAccountNumber()

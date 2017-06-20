@@ -17,4 +17,5 @@ class Category
     const WORKFLOW        = 'workflow';
     const PRICING         = 'pricing';
     const GATEWAY_RULE    = 'gateway_rule';
+    const GENERAL         = 'general';
 }

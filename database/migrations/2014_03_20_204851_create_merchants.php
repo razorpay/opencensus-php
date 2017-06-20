@@ -148,7 +148,7 @@ class CreateMerchants extends Migration
         Schema::table(Table::MERCHANT, function($table)
         {
             $table->dropForeign(
-                Table::MERCHANT . '_' . MERCHANT::PARENT_ID . '_foreign');
+                Table::MERCHANT . '_' . Merchant::PARENT_ID . '_foreign');
         });
 
         Schema::drop(Table::MERCHANT);

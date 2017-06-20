@@ -189,4 +189,13 @@ class InvoiceController extends Controller
 
         return Response::file($path);
     }
+
+    public function issueInvoicesOfBatch(string $batchId)
+    {
+        $input = Request::all();
+
+        $response = $this->service('invoice')->issueInvoicesOfBatch($batchId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

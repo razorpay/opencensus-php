@@ -13,6 +13,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -610,7 +611,7 @@ trait Refund
 
         if ($this->payment->isCaptured() === true)
         {
-            $this->validateMerchantBalance($refund);
+            $this->validateMerchantBalance($refund, 'refund');
         }
 
         $refund->batch()->associate($batch);
@@ -628,6 +629,15 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
+            $payment->reload();
+
+            if ($payment->isFullyRefunded() === true)
+            {
+                throw new Exception\InvalidArgumentException(
+                    'Can only refund a non-refunded payment but here ' .
+                    'the status is ' . $payment->getStatus());
+            }
+
             $this->repo->transaction(function()
             {
                 $this->recordTransactionForRefund();
@@ -773,7 +783,16 @@ trait Refund
         $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
     }
 
-    protected function validateMerchantBalance($refund)
+    /**
+     * Validate merchant balance before a refund operation is processed
+     *
+     * @param RefundEntity $refund
+     * @param string       $type
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    protected function validateMerchantBalance(RefundEntity $refund, string $type = 'refund')
     {
         $merchant = $refund->merchant;
 
@@ -782,17 +801,35 @@ trait Refund
         if ($balance->getBalance() < $refund->getBaseAmount())
         {
             $traceMessage = [
-                'message' => 'Not enough balance',
+                'type'             => $type,
+                'message'          => 'Not enough balance',
                 'merchant_balance' => $balance->getBalance(),
-                'refund_amount' => $refund->getBaseAmount()
+                'refund_amount'    => $refund->getBaseAmount()
             ];
 
-            $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
+            if ($type === 'refund')
+            {
+                $this->app['segment']->trackPayment(
+                    $refund->payment,
+                    TraceCode::PAYMENT_REFUND_FAILURE,
+                    $traceMessage);
 
-            $this->app['segment']->trackPayment($refund->payment, TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
+                $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+            }
+            else if ($type === 'reversal')
+            {
+                $error = ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Invalid type for refund validate balance - ' . $type,
+                    null,
+                    $traceMessage
+                );
+            }
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
+            throw new Exception\BadRequestException($error, null, $traceMessage);
         }
     }
 
@@ -852,8 +889,9 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        // Captured payments of method=transfer cannot be refunded via direct API requests
-        if ($payment->isTransfer() === true)
+        // Captured payments of transfer/bank_transfer cannot be refunded via direct API requests
+        if (($payment->isTransfer() === true) or
+            ($payment->isBankTransfer() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);

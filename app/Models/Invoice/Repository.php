@@ -9,8 +9,10 @@ use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Batch;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Base\BuilderEx;
 
 class Repository extends Base\Repository
 {
@@ -23,6 +25,7 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
+        Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
         Entity::USER_ID           => 'sometimes|alpha_num',
         Entity::STATUS            => 'sometimes|string',
         Entity::TYPE              => 'sometimes|string|max:16',
@@ -184,7 +187,32 @@ class Repository extends Base\Repository
                        ->count();
     }
 
-    protected function addQueryParamPaymentId($query, $params)
+    /**
+     * Gets list of invoices of given batch ids. If a non-empty array of ids
+     * are passed only those out of total invoices of batch are returned.
+     *
+     * @param string $batchId
+     * @param array  $ids
+     *
+     * @return Base\PublicCollection
+     */
+    public function findByBatchIdAndPublicIds(
+        string $batchId,
+        array $ids = []): Base\PublicCollection
+    {
+        $query = $this->newQuery()->where(Entity::BATCH_ID, $batchId);
+
+        if (empty($ids) === false)
+        {
+            Entity::verifyIdAndSilentlyStripSignMultiple($ids);
+
+            $query->whereIn(Entity::ID, $ids);
+        }
+
+        return $query->get();
+    }
+
+    protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);
 
@@ -197,9 +225,7 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable() . '.*');
     }
 
-    protected function addQueryParamCustomerId(
-        \RZP\Base\BuilderEx $query,
-        array $params)
+    protected function addQueryParamCustomerId(BuilderEx $query, array $params)
     {
         $customerId = $params[Entity::CUSTOMER_ID];
 
@@ -210,13 +236,24 @@ class Repository extends Base\Repository
         $query->where($customerIdAttr, $customerId);
     }
 
-    protected function addQueryParamOrderId($query, $params)
+    protected function addQueryParamOrderId(BuilderEx $query, array $params)
     {
-        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+        $orderId = (new Order\Entity)
+                        ->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $orderIdAttribute = $this->repo->invoice->dbColumn(Entity::ORDER_ID);
 
         $query->where($orderIdAttribute, '=', $orderId);
+    }
+
+    protected function addQueryParamBatchId(BuilderEx $query, array $params)
+    {
+        $batchId = (new Batch\Entity)
+                        ->verifyIdAndSilentlyStripSign($params[Entity::BATCH_ID]);
+
+        $batchIdAttribute = $this->repo->batch->dbColumn(Entity::BATCH_ID);
+
+        $query->where($batchIdAttribute, '=', $batchId);
     }
 
     protected function joinQueryPayment($query)

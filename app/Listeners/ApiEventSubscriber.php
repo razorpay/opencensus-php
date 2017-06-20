@@ -124,6 +124,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentCaptured($payment)
+    {
+        $payload = $this->getPaymentPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);

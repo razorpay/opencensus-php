@@ -1294,6 +1294,7 @@ trait PaymentTrait
                     $binRiskMapping = [
                         '510510' => '22.0',
                         '401201' => '60.3',
+                        '555555' => '2.4'
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)

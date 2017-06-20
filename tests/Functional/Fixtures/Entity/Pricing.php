@@ -150,6 +150,18 @@ class Pricing extends Base
                         'percent_rate'        => 0,
                         'fixed_rate'          => 0,
                     ),
+                    array(
+                        'id'                  => '1zE31zbybGCYf2',
+                        'plan_id'             => '1hDYlICobzOCYt',
+                        'plan_name'           => 'testDefaultPlan',
+                        'feature'             => 'payment',
+                        'payment_method'      => 'bank_transfer',
+                        'payment_method_type' => null,
+                        'payment_network'     => null,
+                        'payment_issuer'      => null,
+                        'percent_rate'        => 0,
+                        'fixed_rate'          => 0,
+                    ),
                 );
 
         $this->addPricingRulesToDb($rows);
