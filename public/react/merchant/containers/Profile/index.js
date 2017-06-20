@@ -5,8 +5,10 @@ import Spinner from 'rzp/ui/Spinner';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import * as ProfileActions from 'merchant/modules/profile';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
+import GST from 'merchant/containers/Profile/GST';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 import LoggedInUserDetails
   from 'merchant/components/Profile/LoggedInUserDetails';
@@ -142,6 +144,10 @@ export default class Profile extends Component {
 
             {user && user.current ? <MerchantDetails user={user} /> : null}
           </div>
+
+          <ShowWhen myRole="owner">
+            <GST />
+          </ShowWhen>
 
           {bankAccount
             ? <BankAccountDetails bankAccount={bankAccount} />

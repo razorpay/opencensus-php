@@ -270,6 +270,7 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
+                    id="profile-nav"
                     label="Profile"
                     icon="fa fa-user-o text-info"
                     to="/profile"

@@ -42,6 +42,8 @@ class Service extends Base\Service
             'business_doe'                => 2,
             'transaction_volume'          => 2,
             'transaction_value'           => 2,
+            'gstin'                       => 2,
+            'p_gstin'                     => 2,
             'promoter_pan'                => 2,
             'promoter_pan_name'           => 2,
 

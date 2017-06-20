@@ -2,6 +2,8 @@ import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
+const GST_FETCH = 'GST_FETCH';
+const GST_SAVE = 'GST_SAVE';
 
 export const fetchAjax = url => {
   return ajax({
@@ -71,8 +73,42 @@ export const updatePassword = data => {
   };
 };
 
+export const fetchGST = () => {
+  return {
+    type: GST_FETCH,
+    payload: ajax({
+      url: '/user/generic',
+      data: {
+        route_name: 'merchant_gst_fetch',
+      },
+      appendModeInURL: false,
+    }),
+  };
+};
+
+export const saveGST = data => {
+  let body = {
+    route_name: 'merchant_gst_edit',
+    body: data,
+  };
+
+  return {
+    type: GST_SAVE,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'PATCH',
+      appendModeInURL: false,
+      data: body,
+    }),
+  };
+};
+
 let initialState = {
   invitations: [],
+  rzp_gst: {
+    p_gstin: '08AAGCR4375J1ZY',
+  },
+  merchant_gst: {},
 };
 
 export default function(state = initialState, action) {
@@ -80,6 +116,10 @@ export default function(state = initialState, action) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
 
+
+    case `${GST_FETCH}::SUCCESS`:
+    case `${GST_SAVE}::SUCCESS`:
+      return set(state, 'merchant_gst', action.payload.data);
     default:
       return state;
   }
