@@ -33,7 +33,6 @@ export default ({ user }) => {
         label="Activation Form Progress"
         value={`${user.activation_progress}%`}
       />
-
     </div>
   );
 };
