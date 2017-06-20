@@ -531,7 +531,18 @@ class Service extends Base\Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        $activationDetails = (new MerchantDetails\Service)->getActivationFiles($id);
+        $merchantDetail = new MerchantDetails\Service;
+
+        //
+        // If parent_id is set, it is a marketplace linked account
+        // and we set the context for it
+        //
+        if (isset($details['parent_id']) === true)
+        {
+            $merchantDetail->forAccount($id);
+        }
+
+        $activationDetails = $merchantDetail->getActivationFiles($id);
 
         $data = [
             'activation' => $activationDetails,
