@@ -3,7 +3,7 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
-import DetailRow from 'merchant/components/DetailRow';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 
 export default props => {
@@ -58,7 +58,7 @@ export default props => {
                 </div>
 
                 <div>
-                  <DetailRow
+                  <EntityDetailRow
                     label="Created At"
                     value={() => (
                       <Time
@@ -68,12 +68,12 @@ export default props => {
                     )}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Amount Paid"
                     value={() => <Amount value={virtualaccount.amount_paid} />}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Status"
                     value={() => (
                       <VirtualAccountStatusLabel
@@ -82,7 +82,7 @@ export default props => {
                     )}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Bank Account ID"
                     value={virtualaccount.bank_account.id}
                   />
