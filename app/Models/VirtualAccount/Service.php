@@ -57,7 +57,8 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->findByIdAndMerchantWithRelations(
                                 $id,
                                 $this->merchant,
@@ -69,7 +70,8 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $virtualAccounts = $this->repo->virtual_account
+        $virtualAccounts = $this->repo
+                                ->virtual_account
                                 ->fetch($input, $this->merchant->getId());
 
         return $virtualAccounts->toArrayPublic();
@@ -77,7 +79,8 @@ class Service extends Base\Service
 
     public function update(string $id, array $input)
     {
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
@@ -87,12 +90,26 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->repo->deleteOrFail($virtualAccount);
 
         return $virtualAccount->toArrayDeleted();
+    }
+
+    public function fetchPayments(string $id)
+    {
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payments = $this->repo
+                         ->payment
+                         ->fetchBankTransferPaymentsByVirtualAccount($virtualAccount);
+
+        return $payments->toArrayPublic();
     }
 
     protected function getCustomerIfGiven(array $input)
@@ -103,7 +120,8 @@ class Service extends Base\Service
         {
             $customerId = $input[Entity::CUSTOMER_ID];
 
-            $customer = $this->repo->customer
+            $customer = $this->repo
+                             ->customer
                              ->findByPublicIdAndMerchant($customerId, $this->merchant);
         }
 

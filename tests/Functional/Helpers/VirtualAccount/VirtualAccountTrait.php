@@ -83,6 +83,20 @@ trait VirtualAccountTrait
         return $response;
     }
 
+    private function fetchVirtualAccountPayments(string $id)
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/virtual_accounts/' . $id . '/payments',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function payVirtualAccount(string $virtualAccountId, array $paymentArray = [])
     {
         $defaultPaymentArray = $this->getDefaultBankTransferArray();

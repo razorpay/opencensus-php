@@ -174,6 +174,7 @@ final class Route
         'virtual_account_delete'                  => ['delete',   'virtual_accounts/{id}',                          'VirtualAccountController@delete'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
+        'virtual_account_fetch_payments'          => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -741,6 +742,7 @@ final class Route
         'virtual_account_fetch',
         'virtual_account_fetch_multiple',
         'payment_bank_transfer_fetch',
+        'virtual_account_fetch_payments',
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
@@ -1363,6 +1365,7 @@ final class Route
         'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_fetch_payments'    => [Feature::VIRTUAL_ACCOUNTS],
     ];
 
     /*

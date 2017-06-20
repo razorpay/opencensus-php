@@ -49,6 +49,30 @@ return [
         ],
     ],
 
+    'testFetchPaymentsForVirtualAccount' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 5000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'method'            => 'bank_transfer',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => null,
+                'email'             => null,
+                'contact'           => null,
+                'error_code'        => null,
+                'error_description' => null,
+            ]
+        ],
+    ],
+
     'testCreateVirtualAccountWithDescriptor' => [
         'response' => [
             'content' => [
@@ -92,20 +116,20 @@ return [
             'payload' => [
                 'payment' => [
                     'entity' => [
-                        'entity' => 'payment',
-                        'amount' => 10000,
-                        'currency' => 'INR',
-                        'status' => 'captured',
-                        'order_id' => null,
-                        'invoice_id' => null,
-                        'method' => 'bank_transfer',
-                        'amount_refunded' => 0,
-                        'refund_status' => null,
-                        'captured' => true,
-                        'description' => null,
-                        'email' => null,
-                        'contact' => null,
-                        'error_code' => null,
+                        'entity'            => 'payment',
+                        'amount'            => 10000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'method'            => 'bank_transfer',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => null,
+                        'email'             => null,
+                        'contact'           => null,
+                        'error_code'        => null,
                         'error_description' => null,
                     ],
                 ],

@@ -37,7 +37,7 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validateProviderIp($this->provider, $this->ip);
+        $this->validateProvider($this->provider);
 
         $bankTransfer = $this->processor->process($input);
 
@@ -57,7 +57,7 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validateProviderIp($this->provider, $this->ip);
+        $this->validateProvider($this->provider);
 
         $this->validator->validateInput('create', $input);
 
@@ -97,15 +97,17 @@ class Service extends Base\Service
         return $bankTransfer->toArrayPublic();
     }
 
-    protected function validateProviderIp(string $provider, string $ip)
+    protected function validateProvider(string $provider)
     {
-        if (Provider::validateIp($provider, $ip) === false)
+        if ((Provider::validateMode($provider, $this->mode) === false) or
+            (Provider::validateIp($provider, $this->ip) === false))
         {
             $this->trace->error(
-                TraceCode::BANK_TRANSFER_IP_VALIDATION_FAILED,
+                TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
                 [
                     'provider' => $provider,
-                    'ip'       => $ip,
+                    'ip'       => $this->ip,
+                    'mode'     => $this->mode,
                 ]
             );
 

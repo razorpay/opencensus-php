@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Constants\Mode;
 
 class Provider
 {
@@ -12,6 +13,10 @@ class Provider
     // Mock provider bank
     // Named so because it only works in tests
     const VVS      = 'vvs';
+
+    const TEST_PROVIDERS = [
+        self::VVS,
+    ];
 
     // Each provider gives us a range of bank accounts
     // by alloting an account number prefix/master/root
@@ -96,5 +101,12 @@ class Provider
         }
 
         return false;
+    }
+
+    public static function validateMode(string $provider, string $mode)
+    {
+        $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
+
+        return (($mode === Mode::TEST) or $isLiveProvider);
     }
 }

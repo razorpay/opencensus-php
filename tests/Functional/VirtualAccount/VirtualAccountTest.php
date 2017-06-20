@@ -138,6 +138,19 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
     }
 
+    public function testFetchPaymentsForVirtualAccount()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testVirtualAccountForCustomer()
     {
         $virtualAccount = $this->createVirtualAccount(['customer_id' => 'cust_100000customer']);
