@@ -53,7 +53,7 @@ class PermissionSeeder extends Seeder
 
             foreach ($permissions as $category => $details)
             {
-                foreach ($details as $permission => $description)
+                foreach ($details as $permission => $permissionValue)
                 {
                     if (isset(self::$permissionIds[$index]) === true)
                     {
@@ -71,12 +71,12 @@ class PermissionSeeder extends Seeder
                     DB::table(Table::PERMISSION)->insert([
                         'id'          => $id,
                         'name'        => $permission,
-                        'description' => $description,
+                        'description' => isset($permissionValue['description']) ? $permissionValue['description'] : '',
                         'category'    => $category,
                         'created_at'  => time(),
                         'updated_at'  => time(),
+                        'assignable'  => isset($permissionValue['assignable']) ? $permissionValue['assignable'] : false
                     ]);
-
 
                     DB::table(Table::PERMISSION_MAP)->insert([
                         'permission_id'     => $id,
@@ -88,25 +88,16 @@ class PermissionSeeder extends Seeder
                         'permission_id' => $id,
                         'entity_id'     => '100000razorpay',
                         'entity_type'   => 'org',
+                        'enable_workflow' => isset($permissionValue['workflow']) ? $permissionValue['workflow'] : false
                     ];
-
-                    if (isset($enableWorkflowPermissions[$category]) and
-                        isset($enableWorkflowPermissions[$category][$permission]))
-                    {
-                        $data['enable_workflow'] = 1;
-                    }
 
                     // Razorpay Org will have all permissions
                     DB::table(Table::PERMISSION_MAP)->insert($data);
 
                     // For trimmed down ones (like HDFC)
-                    if (isset($assignablePermissions[$category]) and
-                        isset($assignablePermissions[$category][$permission]))
+                    if (isset($permissionValue['assignable']) and
+                        $permissionValue['assignable'])
                     {
-                        DB::table(Table::PERMISSION)
-                            ->where('id', $id)
-                            ->update(['assignable' => 1]);
-
                         DB::table(Table::PERMISSION_MAP)->insert([
                             [
                                 'permission_id'     => $id,
