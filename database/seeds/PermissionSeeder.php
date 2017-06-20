@@ -56,14 +56,18 @@ class PermissionSeeder extends Seeder
 
                     $index++;
 
+                    $desc = isset($permissionValue['description']) ? $permissionValue['description'] : '';
+                    $assignable = isset($permissionValue['assignable']) ? $permissionValue['assignable'] : false;
+                    $workflow = isset($permissionValue['workflow']) ? $permissionValue['workflow'] : false;
+
                     DB::table(Table::PERMISSION)->insert([
                         'id'          => $id,
                         'name'        => $permission,
-                        'description' => isset($permissionValue['description']) ? $permissionValue['description'] : '',
+                        'description' => $desc,
                         'category'    => $category,
                         'created_at'  => time(),
                         'updated_at'  => time(),
-                        'assignable'  => isset($permissionValue['assignable']) ? $permissionValue['assignable'] : false
+                        'assignable'  => $assignable
                     ]);
 
                     DB::table(Table::PERMISSION_MAP)->insert([
@@ -76,7 +80,7 @@ class PermissionSeeder extends Seeder
                         'permission_id' => $id,
                         'entity_id'     => '100000razorpay',
                         'entity_type'   => 'org',
-                        'enable_workflow' => isset($permissionValue['workflow']) ? $permissionValue['workflow'] : false
+                        'enable_workflow' => $workflow
                     ];
 
                     // Razorpay Org will have all permissions

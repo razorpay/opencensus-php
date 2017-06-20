@@ -24,8 +24,7 @@ class Permission extends Base
         {
             foreach ($permissions as $permission => $permissionValue)
             {
-                $desc = $permissionValue['description'];
-                $desc = (empty($desc) === false) ? $desc : '';
+                $desc = isset($permissionValue['description']) ? $permissionValue['description'] : '';
 
                 $row = [
                     PermissionEntity::NAME        => $permission,
