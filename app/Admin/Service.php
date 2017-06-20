@@ -539,7 +539,7 @@ class Service extends Base\Service
         //
         if (isset($details['parent_id']) === true)
         {
-            $merchantDetail->forAccount($id);
+            $merchantDetail->linked_account = true;
         }
 
         $activationDetails = $merchantDetail->getActivationFiles($id);
