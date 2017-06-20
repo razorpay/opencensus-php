@@ -3,6 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -93,6 +94,16 @@ class Processor extends Base\Core
     protected function isUtrUnique(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
+
+        // Dummy UTR sent by dashboard in test mode,
+        // to simulate payments to a virtual account.
+        // We do not validate this
+        if (($this->mode === Mode::TEST) and
+            ($this->provider === Provider::DASHBOARD) and
+            ($utr === Provider::DASHBOARD_DUMMY_UTR))
+        {
+            return true;
+        }
 
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer

@@ -20,7 +20,12 @@ class Provider
         self::DASHBOARD,
     ];
 
+    // Kotak's whitelisted IP
     const KOTAK_IP = '14.141.97.12';
+
+    // Dummy UTR sent by dashboard in test mode,
+    // to simulate payments to a virtual account.
+    const DASHBOARD_DUMMY_UTR = 'rzp_dummy_utr';
 
     // Each provider gives us a range of bank accounts
     // by alloting an account number prefix/master/root
