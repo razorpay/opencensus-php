@@ -728,8 +728,8 @@ class FeeCalculator
     }
 
     /**
-      * Checks for the min_rate and max_rate against fee.
-      * If fee is less than min_rate, then min_rate will be charged.
+      * Checks for the min_fee and max_rate against fee.
+      * If fee is less than min_fee, then min_fee will be charged.
       * If max_rate is available and fee is above max_rate,
       *  then max_rate will be charged.
       * @param int $fee

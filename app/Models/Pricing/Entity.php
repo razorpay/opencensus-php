@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
     const FIXED_RATE            = 'fixed_rate';
 
     // Min And Max Rate
-    const MIN_RATE              = 'min_rate';
+    const MIN_FEE              = 'min_fee';
     const MAX_RATE              = 'max_rate';
 
     const EXPIRED_AT            = 'expired_at';
@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_MAX,
         self::PERCENT_RATE,
         self::FIXED_RATE,
-        self::MIN_RATE,
+        self::MIN_FEE,
         self::MAX_RATE
     ];
 
@@ -80,7 +80,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ISSUER        => null,
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
-        self::MIN_RATE              => 0,
+        self::MIN_FEE              => 0,
         self::MAX_RATE              => null,
         self::AMOUNT_RANGE_ACTIVE   => '0'
     ];
@@ -95,7 +95,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_ACTIVE => 'bool',
         self::PERCENT_RATE        => 'int',
         self::FIXED_RATE          => 'int',
-        self::MIN_RATE            => 'int',
+        self::MIN_FEE            => 'int',
     ];
 
     const ZERO_PRICING = '10ZeroPricingP';
@@ -263,7 +263,7 @@ class Entity extends Base\PublicEntity
 
     public function getMinRate()
     {
-        return $this->getAttribute(self::MIN_RATE);
+        return $this->getAttribute(self::MIN_FEE);
     }
 
     public function getMaxRate()

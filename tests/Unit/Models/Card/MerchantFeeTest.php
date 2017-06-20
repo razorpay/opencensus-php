@@ -63,7 +63,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -82,7 +82,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -96,7 +96,7 @@ class MerchantFeeTest extends TestCase
                 'payment_network'     => null,
                 'payment_issuer'      => null,
                 'international'       => false,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
                 'amount_range_active' => true,
                 'amount_range_min'    => 0,
@@ -115,7 +115,7 @@ class MerchantFeeTest extends TestCase
                 'payment_network'     => null,
                 'payment_issuer'      => null,
                 'international'       => false,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
                 'amount_range_active' => true,
                 'amount_range_min'    => 200000,
@@ -139,7 +139,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -158,7 +158,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -177,7 +177,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -196,7 +196,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 0,
                 'fixed_rate'          => 50,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -215,7 +215,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -234,7 +234,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -253,7 +253,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -272,7 +272,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -291,7 +291,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -310,7 +310,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -329,7 +329,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -348,7 +348,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -367,7 +367,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -425,7 +425,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => true,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => null,
             ]);
 
@@ -463,7 +463,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => 1000,
             ]);
 
@@ -482,7 +482,7 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_rate'            => 0,
+                'min_fee'            => 0,
                 'max_rate'            => 2000,
             ]);
 
