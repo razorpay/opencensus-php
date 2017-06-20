@@ -15,6 +15,7 @@ class Entity extends Base\Entity
     const STATUS                  = 'status';
     const TRANSACTION_RESULT      = 'transaction_result';
     const GATEWAY_TRANSACTION_ID  = 'gateway_transaction_id';
+    const CAPS_PAYMENT_ID         = 'caps_payment_id';
     const ENDPOINT_TRANSACTION_ID = 'endpoint_transaction_id';
     const GATEWAY_TERMINAL_ID     = 'gateway_terminal_id';
     const AUTH_CODE               = 'auth_code';
@@ -82,5 +83,10 @@ class Entity extends Base\Entity
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setCapsPaymentId($capsPaymentId)
+    {
+        return $this->setAttribute(self::CAPS_PAYMENT_ID, $capsPaymentId);
     }
 }

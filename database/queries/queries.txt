@@ -2179,8 +2179,14 @@ ALTER TABLE bank_transfers
 # Add column locked in iins
 ALTER TABLE iins
     ADD COLUMN locked TINYINT(1) DEFAULT 0 AFTER enabled;
-    
+
 # GST fields
 ALTER TABLE merchant_details
     ADD COLUMN gstin VARCHAR(255) AFTER business_doe,
     ADD COLUMN p_gstin VARCHAR(255) AFTER gstin;
+
+ALTER TABLE first_data
+    ADD COLUMN caps_payment_id VARCHAR(14) AFTER gateway_transaction_id;
+
+UPDATE first_data
+    SET caps_payment_id = UPPER(payment_id);

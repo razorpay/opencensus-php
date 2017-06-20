@@ -437,4 +437,21 @@ class FirstDataGatewayTest extends TestCase
             });
         }
     }
+
+    public function testSetCapsPaymentId()
+    {
+        $payment = $this->payment;
+
+        $payment['card']['number'] = '5081597022059105';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $paymentId = explode('_', $payment['id'])[1];
+
+        $this->assertEquals(strtoupper($paymentId), $firstData['caps_payment_id']);
+    }
 }
