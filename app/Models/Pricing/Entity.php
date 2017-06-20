@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     // Min And Max Rate
     const MIN_FEE              = 'min_fee';
-    const MAX_RATE              = 'max_rate';
+    const MAX_FEE              = 'max_fee';
 
     const EXPIRED_AT            = 'expired_at';
 
@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::FIXED_RATE,
         self::MIN_FEE,
-        self::MAX_RATE
+        self::MAX_FEE
     ];
 
     protected $entity = 'pricing';
@@ -81,7 +81,7 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
         self::MIN_FEE              => 0,
-        self::MAX_RATE              => null,
+        self::MAX_FEE              => null,
         self::AMOUNT_RANGE_ACTIVE   => '0'
     ];
 
@@ -268,7 +268,7 @@ class Entity extends Base\PublicEntity
 
     public function getMaxRate()
     {
-        return $this->getAttribute(self::MAX_RATE);
+        return $this->getAttribute(self::MAX_FEE);
     }
 
     protected function getAmountRangeMinAttribute()
@@ -287,7 +287,7 @@ class Entity extends Base\PublicEntity
 
     protected function getMaxRateAttribute()
     {
-        $max = $this->attributes[self::MAX_RATE];
+        $max = $this->attributes[self::MAX_FEE];
 
         return ($max === null) ? $max : (int) $max;
     }

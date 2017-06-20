@@ -68,7 +68,7 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Pricing::MAX_RATE)
+            $table->integer(Pricing::MAX_FEE)
                   ->unsigned()
                   ->nullable();
 

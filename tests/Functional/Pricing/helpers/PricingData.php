@@ -20,7 +20,7 @@ return [
                 'amount_range_min' => null,
                 'amount_range_max' => null,
                 'min_fee'         => null,
-                'max_rate'         => null,
+                'max_fee'         => null,
             ],
             'url' => '/pricing',
             'method' => 'POST'
@@ -44,7 +44,7 @@ return [
                         'amount_range_max' => null,
                         //Defaults to 0
                         'min_fee'         => 0,
-                        'max_rate'         => null,
+                        'max_fee'         => null,
                     ),
                 ),
             ],
@@ -239,7 +239,7 @@ return [
                 'amount_range_min' => null,
                 'amount_range_max' => null,
                 'min_fee'  => null,
-                'max_rate'  => null,
+                'max_fee'  => null,
             ],
             'method' => 'POST'
         ],
@@ -256,7 +256,7 @@ return [
                 'amount_range_min' => null,
                 'amount_range_max' => null,
                 'min_fee'  => 0,
-                'max_rate'  => null,
+                'max_fee'  => null,
             ],
         ],
     ],

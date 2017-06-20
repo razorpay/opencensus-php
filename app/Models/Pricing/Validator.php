@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE            => 'sometimes|integer|max:100000',
-        Entity::MAX_RATE            => 'sometimes|nullable|integer|max:100000');
+        Entity::MAX_FEE            => 'sometimes|nullable|integer|max:100000');
 
     protected static $addPlanRuleValidators = [
         'addPlanRuleRate',
@@ -209,8 +209,8 @@ class Validator extends Base\Validator
 
     protected function validateAddPlanRuleMinAndMaxRate($input)
     {
-        if (isset($input[Entity::MAX_RATE]) and
-            ($input[Entity::MIN_FEE] > $input[Entity::MAX_RATE]))
+        if (isset($input[Entity::MAX_FEE]) and
+            ($input[Entity::MIN_FEE] > $input[Entity::MAX_FEE]))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Min rate chargeable for a rule needs to be greater than Max rate');

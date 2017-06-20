@@ -42,7 +42,7 @@ return [
                 ]
             ],
             // For amounts greater that 66667 fee will remain constant
-            // since max_rate is 2000 and the percent_rate is 300 i.e.
+            // since max_fee is 2000 and the percent_rate is 300 i.e.
             // max_amount = 2000 * 100/3 = 66667
             [
                 'amount' => 66667,
