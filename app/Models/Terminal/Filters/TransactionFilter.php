@@ -193,7 +193,6 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-
     public function recurringFilter($terminal, $input)
     {
         $payment = $input['payment'];
@@ -217,15 +216,26 @@ class TransactionFilter extends Terminal\Filter
 
             $ba = app('basicauth');
 
+            // TODO: MAKE THIS SIMPLER AND FIGURE OUT IF THIS CAN/SHOULD BE DONE!
+
             // Check if this is the second recurring payment
-            if (($payment->getTokenId() !== null) and
-                ($payment->localToken->isRecurring() === true) and
+            if (((($payment->getTokenId() !== null) and
+                  ($payment->localToken->isRecurring() === true)) or
+                 (($payment->getGlobalTokenId() !== null) and
+                  ($payment->globalToken->isRecurring() === true))) and
                 (($ba->isPrivateAuth() === true) or
                  ($ba->isPrivilegeAuth() === true)))
             {
-                // For second recurring payment, ensure that we select a terminal
-                // of the same gateway as for the first recurring payment.
-                $previousGateway = $payment->localToken->terminal->getGateway();
+                if ($payment->getTokenId() !== null)
+                {
+                    // For second recurring payment, ensure that we select a terminal
+                    // of the same gateway as for the first recurring payment.
+                    $previousGateway = $payment->localToken->terminal->getGateway();
+                }
+                else
+                {
+                    $previousGateway = $payment->globalToken->terminal->getGateway();
+                }
 
                 $currentGateway = $terminal->getGateway();
 

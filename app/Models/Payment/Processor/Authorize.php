@@ -862,6 +862,11 @@ trait Authorize
         {
             $gatewayInput['token'] = $payment->localToken;
         }
+        // TODO: CHECK IF THIS IS OKAY HERE!!!
+        else if ($payment->getGlobalTokenId() !== null)
+        {
+            $gatewayInput['token'] = $payment->globalToken;
+        }
 
         $customProperties = [
             'otpSubmitUrl' => $this->getOtpSubmitUrl(),
@@ -1109,10 +1114,16 @@ trait Authorize
                 //
                 if ($subscription->hasCustomer() === false)
                 {
-                    $this->associateLocalCustomerToSubscription($subscription, $customer);
+                    $localCustomer = $this->associateLocalCustomerToSubscription($subscription, $customer);
                 }
-
-                $localCustomer = $subscription->customer;
+                else
+                {
+                    //
+                    // `else` is from the second charge onwards
+                    // or change card flow.
+                    //
+                    $localCustomer = $subscription->customer;
+                }
             }
 
             $this->preProcessPaymentForGlobalCustomer(
@@ -1170,11 +1181,13 @@ trait Authorize
 
         $this->repo->saveOrFail($localCustomer);
 
-        $subscription->customer()->associate($localCustomer);
+        return $localCustomer;
 
-        // If this gets saved and then the payment fails, what happens?
-        // We remove the relation if the payment fails, in `updatePaymentFailed`
-        $this->repo->saveOrFail($subscription);
+        // $subscription->customer()->associate($localCustomer);
+        //
+        // // If this gets saved and then the payment fails, what happens?
+        // // We remove the relation if the payment fails, in `updatePaymentFailed`
+        // $this->repo->saveOrFail($subscription);
     }
 
     protected function addCustomerIdToSubscriptionInput(Subscription\Entity $subscription, array & $input)
@@ -1217,7 +1230,7 @@ trait Authorize
         //                 later in the flow, while fetching the customer entity,
         //                 we use the local customer_id to fetch the global customer_id
         //                 that would be associated with the local customer entity.
-        //                 From thereon, the flow follow global.
+        //                 From thereon, the flow follows global.
         //
         // In case local flow, merchant should always ensure that the correct customer of the
         // subscription is logged in their checkout before sending us the payment request.
@@ -1800,7 +1813,9 @@ trait Authorize
 
             $token->incrementUsedCount();
 
-            if (($token->isLocal()) and
+            // TODO: THIS NEEDS TO BE FIXED! WE CANNOT
+            // ASSOCIATE TERMINAL TO GLOBAL TOKEN!
+            if (($token->isLocal() or !$token->isLocal()) and
                 ($payment->isCard()) and
                 ($payment->isRecurring() === true) and
                 ($token->isRecurring() === false))
@@ -2041,6 +2056,7 @@ trait Authorize
         }
 
         $this->updateSubscriptionToken($subscription, $payment);
+        $this->updateSubscriptionCustomer($subscription, $payment);
 
         $subscription->setStatus(Subscription\Status::AUTHENTICATED);
 
@@ -2120,9 +2136,39 @@ trait Authorize
 
         //
         // This would mean that this was a 5rs auth transaction.
-        // There was no addon (upfront_amount) or this is not being used as first charge.
+        // There was no addon (upfront_amount) or this is not
+        // being used as first charge.
         //
         $this->refundAuthorizedPayment($payment);
+    }
+
+    protected function updateSubscriptionCustomer(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        $paymentCustomer = $payment->customer;
+
+        $valid = $this->validateSubscriptionState($payment, $paymentCustomer, $subscription);
+
+        if ($valid === false)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CUSTOMER_ASSOCIATE,
+            [
+                'payment_id'        => $payment->getId(),
+                'subscription_id'   => $subscription->getId(),
+                'customer_id'       => $paymentCustomer->getId(),
+            ]);
+
+        //
+        // The reason for doing this here and not before authorization
+        // is that a payment may fail during an authorization. If we
+        // associate the customer to the subscription before itself,
+        // we can end up having wrong data and causes issues like
+        // re-setting the customer later for the subscription.
+        //
+        $subscription->customer()->associate($paymentCustomer);
     }
 
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -2137,54 +2183,42 @@ trait Authorize
                 'payment_token_id'  => $paymentToken->getId(),
             ]);
 
-        //
-        // We are commenting this piece of code because token can be associated even if is
-        // in active state and not only in created state. Basically, a change card/token flow.
-        //
-
-        // $valid = $this->validateSubscriptionState($payment, $paymentToken, $subscription);
-
-        // if ($valid === false)
-        // {
-        //     return;
-        // }
-
         $subscription->token()->associate($paymentToken);
     }
 
     protected function validateSubscriptionState(
         Payment\Entity $payment,
-        Token\Entity $paymentToken,
+        Customer\Entity $paymentCustomer,
         Subscription\Entity $subscription)
     {
         $valid = true;
 
-        $subscriptionToken = $subscription->token;
+        $subscriptionCustomer = $subscription->customer;
 
         //
-        // From the second charge onwards, the token would have already been
-        // associated with the subscription.
+        // From the second charge onwards, the customer would have
+        // already been associated with the subscription.
         // Hence, we don't need to associate it again.
         //
-        if ($subscriptionToken !== null)
+        if ($subscriptionCustomer !== null)
         {
-            $this->trace->info(
-                TraceCode::SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED,
+            $this->trace->critical(
+                TraceCode::SUBSCRIPTION_CUSTOMER_ALREADY_ASSOCIATED,
                 [
-                    'payment_id'            => $payment->getId(),
-                    'subscription_id'       => $subscription->getId(),
-                    'payment_token_id'      => $paymentToken->getId(),
-                    'subscription_token_id' => $subscriptionToken->getId(),
+                    'payment_id'                => $payment->getId(),
+                    'subscription_id'           => $subscription->getId(),
+                    'payment_customer_id'       => $paymentCustomer->getId(),
+                    'subscription_customer_id'  => $subscriptionCustomer->getId(),
                 ]);
 
             $valid = false;
         }
 
         //
-        // If a token is not associated with the subscription already,
+        // If a customer is not associated with the subscription already,
         // it means that the subscription is in created state, because,
         // no transaction yet happened on this subscription, due to which,
-        // there's no token associated with it yet.
+        // there's no customer associated with it yet.
         //
         if ($subscription->isCreated() === false)
         {
@@ -2429,9 +2463,10 @@ trait Authorize
     /**
      * Do we support the OTP flow for a given payment
      * and input combination
+     *
      * @param  Payment\Entity $payment
-     * @param  array $input
-     * @return boolean
+     *
+     * @return bool
      */
     protected function canRunOtpPaymentFlow(Payment\Entity $payment): bool
     {
@@ -2606,7 +2641,7 @@ trait Authorize
         $savedCard['number'] = $cardNumber;
         $savedCard['cvv'] = $cvv;
 
-        //create a card entity for merchant
+        // Create a card entity for merchant
         $cardCore = new Card\Core;
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);

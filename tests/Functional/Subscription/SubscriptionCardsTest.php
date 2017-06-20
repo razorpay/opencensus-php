@@ -500,7 +500,56 @@ class SubscriptionCardsTest extends TestCase
 
     public function testPaymentChargeGlobalSavedCard()
     {
+        $subscription = $this->createSubscription(false, [], [], false, false, false);
 
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $this->mockSession();
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertEquals($token['id'], 'token_' . $payment['global_token_id']);
+        $this->assertEquals(true, $token['recurring']);
+
+        // --------------------------------------------------------------------
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        Carbon::setTestNow($chargeAt);
+
+        $this->flushSession();
+
+        $result = $this->makeSubscriptionChargeCronRequest();
+
+        $this->assertEquals(1, $result['total']);
+
+        $payment2 = $this->getLastEntity('payment', true);
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $this->assertNotEquals($payment['id'], $payment2['id']);
+        $this->assertEquals($payment['global_token_id'], $payment2['global_token_id']);
+        $this->assertArrayNotHasKey('token_id', $payment2);
+        $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
+        $this->assertEquals($payment['global_customer_id'], $payment2['global_customer_id']);
+        $this->assertEquals($token['id'], 'token_' . $payment['global_token_id']);
+        $this->assertNull($payment2['app_token']);
+        $this->assertEquals($subscription2['id'], $payment['subscription_id']);
+        $this->assertNotEquals($payment['card_id'], $payment2['card_id']);
+
+        $this->assertEquals($subscription['token_id'], $subscription2['token_id']);
+        $this->assertEquals($subscription['customer_id'], $subscription2['customer_id']);
+        $this->assertEquals($customer['id'], $subscription['customer_id']);
+        $this->assertEquals(2, $subscription2['paid_count']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentFirst2FaGlobalNoAppToken()
@@ -509,6 +558,11 @@ class SubscriptionCardsTest extends TestCase
     }
 
     public function testPaymentSecond2FaGlobalNoAppToken()
+    {
+
+    }
+
+    public function testPaymentFail2FaGlobalSavedCard()
     {
 
     }
@@ -551,5 +605,10 @@ class SubscriptionCardsTest extends TestCase
         $data = [ 'test_app_token' => $appToken ];
 
         $this->session($data);
+    }
+
+    protected function resetSession()
+    {
+        $this->flushSession();
     }
 }
