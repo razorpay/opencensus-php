@@ -198,9 +198,9 @@ class Entity extends Base\PublicEntity
         return [$this->getPercentRate(), $this->getFixedRate()];
     }
 
-    public function getMinMaxRates()
+    public function getMinMaxFees()
     {
-        return [$this->getMinRate(), $this->getMaxRate()];
+        return [$this->getMinFee(), $this->getMaxFee()];
     }
 
     public function getPlanId()
@@ -261,12 +261,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PERCENT_RATE);
     }
 
-    public function getMinRate()
+    public function getMinFee()
     {
         return $this->getAttribute(self::MIN_FEE);
     }
 
-    public function getMaxRate()
+    public function getMaxFee()
     {
         return $this->getAttribute(self::MAX_FEE);
     }
@@ -285,7 +285,7 @@ class Entity extends Base\PublicEntity
         return ($max === null) ? $max : (int) $max;
     }
 
-    protected function getMaxRateAttribute()
+    protected function getMaxFeeAttribute()
     {
         $max = $this->attributes[self::MAX_FEE];
 

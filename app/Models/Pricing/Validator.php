@@ -40,7 +40,7 @@ class Validator extends Base\Validator
         'addPlanRuleAmountRange',
         'addPlanRuleFeature',
         'addPlanRulePricingMethod',
-        'addPlanRuleMinAndMaxRate'];
+        'addPlanRuleMinAndMaxFee'];
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
@@ -207,7 +207,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAddPlanRuleMinAndMaxRate($input)
+    protected function validateAddPlanRuleMinAndMaxFee($input)
     {
         if (isset($input[Entity::MAX_FEE]) and
             ($input[Entity::MIN_FEE] > $input[Entity::MAX_FEE]))

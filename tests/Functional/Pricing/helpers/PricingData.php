@@ -226,7 +226,7 @@ return [
         ],
     ],
 
-    'testAddPricingPlanRuleWithMaxRate' => [
+    'testAddPricingPlanRuleWithMaxFee' => [
         'request' => [
             'content' => [
                 'payment_method' => 'card',

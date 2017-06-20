@@ -3,7 +3,7 @@
 use RZP\Models\Card;
 
 return [
-    'testFeeWithMaxRateForCard' => [
+    'testFeeWithMaxFeeForCard' => [
         [
             'amount' => '1000',
             'card_type' => Card\Type::CREDIT,
@@ -29,7 +29,7 @@ return [
             ]
         ]
     ],
-    'testFeeWithMaxRateForWallet' => [
+    'testFeeWithMaxFeeForWallet' => [
             [
                 'amount' => 60000,
                 'fee' => 2070,

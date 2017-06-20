@@ -77,7 +77,7 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testAddPricingPlanRuleWithMaxRate()
+    public function testAddPricingPlanRuleWithMaxFee()
     {
         $content = $this->createPricingPlan();
 

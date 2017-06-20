@@ -446,12 +446,12 @@ class MerchantFeeTest extends TestCase
         return $mock;
     }
 
-    protected function getMockMaxRatePricingRepo()
+    protected function getMockMaxFeePricingRepo()
     {
             $maxRateRuleForCard = new Pricing\Entity([
                 'id'                  => '1nvp2XPMmaRLMR',
                 'plan_id'             => '1hDYlICobzOCYt',
-                'plan_name'           => 'testMaxRate',
+                'plan_name'           => 'testMaxFee',
                 'feature'             => 'payment',
                 'payment_method'      => 'card',
                 'payment_method_type' => null,
@@ -470,7 +470,7 @@ class MerchantFeeTest extends TestCase
             $maxRateRuleForWallet = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3MR',
                 'plan_id'             => '1hDYlICobzOCYt',
-                'plan_name'           => 'testMaxRate',
+                'plan_name'           => 'testMaxFee',
                 'feature'             => 'payment',
                 'payment_method'      => 'wallet',
                 'payment_method_type' => null,
@@ -663,13 +663,13 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
     }
 
-    public function testFeeWithMaxRateForCard()
+    public function testFeeWithMaxFeeForCard()
     {
-        $this->fee->setPricingRepo($this->getMockMaxRatePricingRepo());
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
 
         foreach ($this->testData[__FUNCTION__] as $data)
         {
-            $this->runFeeTestWithMaxRateForCard($data['amount'],
+            $this->runFeeTestWithMaxFeeForCard($data['amount'],
                                                 $data['card_type'],
                                                 $data['fee'],
                                                 $data['service_tax'],
@@ -677,27 +677,27 @@ class MerchantFeeTest extends TestCase
         }
     }
 
-    public function testFeeWithMaxRateForWallet()
+    public function testFeeWithMaxFeeForWallet()
     {
-        $this->fee->setPricingRepo($this->getMockMaxRatePricingRepo());
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
 
         foreach ($this->testData[__FUNCTION__] as $data)
         {
-            $this->runFeeTestWithMaxRateForWallet($data['amount'],
+            $this->runFeeTestWithMaxFeeForWallet($data['amount'],
                                                   $data['fee'],
                                                   $data['service_tax'],
                                                   $data['fee_components']);
         }
     }
 
-    protected function runFeeTestWithMaxRateForCard($amount, $cardType, $fee, $serviceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $fee, $serviceTax, $feeComponents)
     {
         list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
 
         $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $fee, $serviceTax, $feeComponents);
     }
 
-    protected function runFeeTestWithMaxRateForWallet($amount, $fee, $serviceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForWallet($amount, $fee, $serviceTax, $feeComponents)
     {
         list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
 

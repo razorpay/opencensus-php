@@ -606,7 +606,7 @@ class FeeCalculator
     {
         list($percent, $fixed) = $rule->getRates();
 
-        list($min, $max) = $rule->getMinMaxRates();
+        list($min, $max) = $rule->getMinMaxFees();
 
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
