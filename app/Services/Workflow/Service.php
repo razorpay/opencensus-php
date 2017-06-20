@@ -351,13 +351,13 @@ class Service
         {
             // Let's re-try creating workflow action and relevant entities
 
-            $action = $core->retryCreate($data);
+            $action = $core->create($data, $retry = true);
         }
         else
         {
-            $action = $workflowAction->first()->toArrayPublic();
+            $action = $workflowAction->first();
         }
 
-        return $action;
+        return $action->toArrayPublic();
     }
 }

@@ -174,13 +174,6 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function retryCreate(array $input)
-    {
-        $action = $this->create($input, $retry = true);
-
-        return $action->toArrayPublic();
-    }
-
     protected function createInitialStateForAction(Entity $action)
     {
         $input = [
