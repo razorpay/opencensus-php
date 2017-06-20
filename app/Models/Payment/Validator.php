@@ -203,6 +203,12 @@ class Validator extends Base\Validator
                 'amount');
         }
 
+        // No limit on amount for payments made via bank_transfer
+        if ($input['method'] === Payment\Method::BANK_TRANSFER)
+        {
+            return;
+        }
+
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
         if ($amount > $maxAmountAllowed)
