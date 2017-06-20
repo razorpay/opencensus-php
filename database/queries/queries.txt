@@ -2189,4 +2189,4 @@ ALTER TABLE first_data
     ADD COLUMN caps_payment_id VARCHAR(14) AFTER gateway_transaction_id;
 
 UPDATE first_data
-    SET caps_payment_id = UCASE(payment_id) order by id;
+    SET caps_payment_id = UPPER(payment_id);
