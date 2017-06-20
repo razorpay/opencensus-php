@@ -30,6 +30,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       message: 'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
       affirmativeLabel: 'Close',
       affirmativePendingLabel: 'Closing...',
+      abortLabel: "No, don't",
       action: () =>
         this.props
           .saveVirtualAccount({ ...virtualaccount, status: 'closed' })

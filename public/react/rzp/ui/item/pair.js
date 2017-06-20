@@ -70,7 +70,7 @@ export const batchDownload = mode => {
 // Virtual Accounts
 export const virtualAccountId = {
   title: 'Virtual Account ID',
-  value: items.virtualAccountId,
+  value: id.virtualAccount,
 };
 export const beneficiaryName = {
   title: 'Beneficiary Name',

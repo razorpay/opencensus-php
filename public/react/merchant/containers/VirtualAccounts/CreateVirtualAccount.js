@@ -8,24 +8,37 @@ import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 import { fetchConfig } from 'merchant/modules/config';
+import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 
 const VirtualAccountDetails = ({ virtualAccount }) => {
   return (
     <div>
-      <div class="help-block">
+      <p class="text-muted">
         Share the following information with the customer to accept payments
+      </p>
+
+      <div class="form-group">
+        <div class="text-muted">Account Number</div>
+        <div><b>{virtualAccount.bank_account.account_number}</b></div>
       </div>
 
-      <dl>
-        <dt>Account Number</dt>
-        <dd>{virtualAccount.bank_details}</dd>
+      <div class="form-group">
+        <div class="text-muted">Beneficiary Name</div>
+        <div><b>{virtualAccount.name}</b></div>
+      </div>
 
-        <dt>Beneficiary Name</dt>
-        <dd>{virtualAccount.name}</dd>
+      <div class="form-group">
+        <div class="text-muted">IFSC Code</div>
+        <div><b>{virtualAccount.bank_account.ifsc}</b></div>
+      </div>
 
-        <dt>IFSC Code</dt>
-        <dd>{virtualAccount.bank_details}</dd>
-      </dl>
+      <CustomClipboard
+        value={`Account Number: ${virtualAccount.bank_account.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${virtualAccount.bank_account.ifsc}`}
+      >
+        <button type="button" class="btn btn-primary btn-block">
+          Copy details to Clipboard
+        </button>
+      </CustomClipboard>
     </div>
   );
 };
@@ -92,7 +105,7 @@ export default class CreateVirtualAccount extends Component {
 
         <div class="modal-body">
           {virtualAccount
-            ? <VirtualAccountDetails virtualAccount={VirtualAccountDetails} />
+            ? <VirtualAccountDetails virtualAccount={virtualAccount} />
             : <form onSubmit={handleSubmit(this.save)}>
                 <div class="form-group">
                   <label>Beneficiary Name (Optional)</label>
@@ -115,9 +128,10 @@ export default class CreateVirtualAccount extends Component {
                     component="input"
                     class="form-control"
                     placeholder="Accepts alphanumberic, upto 10 chars"
+                    normalize={value => value.toUpperCase()}
                     onChange={event => {
                       let value = event.target.value;
-                      if (/^[a-z0-9]{5,10}$/i.test(value)) {
+                      if (/^[a-z0-9]{0,10}$/i.test(value)) {
                         this.props.change('descriptor', value);
                       } else {
                         event.preventDefault();
@@ -129,13 +143,13 @@ export default class CreateVirtualAccount extends Component {
                   </small>
                 </div>
 
-                <div class="Modal__actions">
-                  <div class="">
-                    <label>Account Number</label>
+                <div class="Modal__actions clearfix">
+                  <div class="pull-left">
+                    <div>Account Number</div>
                     <b>
                       RZRP
-                      {handle.padStart(4, 'X')}
-                      {descriptor.padStart(10, 'X')}
+                      {handle.padStart(4, '×')}
+                      {descriptor.padStart(10, '×')}
                     </b>
                   </div>
                   <AsyncButton
