@@ -81,7 +81,7 @@ class Tour extends Component {
           target={this.state.target}
           attachment="middle left"
           targetAttachment="middle right"
-          offset="0 -10px"
+          offset="0 -15px"
         >
           <div />{/* required by react-tether */}
           <div class="TourStep__Container">
