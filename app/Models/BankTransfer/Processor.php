@@ -41,7 +41,7 @@ class Processor extends Base\Core
     {
         $bankTransfer = $this->core->create($input);
 
-        if (($this->isUtrUnique($bankTransfer) === true) and
+        if (($this->utrCheck($bankTransfer) === true) and
             ($this->isTransferExpected($bankTransfer) === true))
         {
             $bankTransfer->setExpected(true);
@@ -91,17 +91,23 @@ class Processor extends Base\Core
         });
     }
 
-    protected function isUtrUnique(Entity $bankTransfer): bool
+    protected function utrCheck(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
-        // Dummy UTR sent by dashboard in test mode,
+        // Dashboard provider is used in test mode
         // to simulate payments to a virtual account.
-        // We do not validate this
+        //
+        // UTR is not sent by dashboard in test mode, but is exposed to the merchant.
+        // So we add a mock UTR here itself, and skip the uniqueness check.
         if (($this->mode === Mode::TEST) and
             ($this->provider === Provider::DASHBOARD) and
-            ($utr === Provider::DASHBOARD_DUMMY_UTR))
+            ($this->env !== 'testing'))
         {
+            $mockedUtr = $this->getMockedUtr();
+
+            $bankTransfer->setUtr($mockedUtr);
+
             return true;
         }
 
@@ -124,6 +130,11 @@ class Processor extends Base\Core
         );
 
         return false;
+    }
+
+    protected function getMockedUtr(): string
+    {
+        return substr(number_format(time() * rand(), 0, '', ''), 0, 22);
     }
 
     protected function isTransferExpected(Entity $bankTransfer): bool

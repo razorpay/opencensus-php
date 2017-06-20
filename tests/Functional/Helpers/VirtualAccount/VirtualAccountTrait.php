@@ -127,7 +127,7 @@ trait VirtualAccountTrait
             'payer_account'  => '7654321234567',
             'payer_ifsc'     => 'HDFC0000001',
             'mode'           => 'neft',
-            'transaction_id' => 'utr_'.rand(10000000,99999999),
+            'transaction_id' => substr(number_format(time() * rand(), 0, '', ''), 0, 22),
             'time'           => time(),
             'amount'         => 100,
             'description'    => 'Test bank transfer',
