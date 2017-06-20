@@ -10,19 +10,11 @@ class PermissionSeeder extends Seeder
 {
     protected static $permissions = [];
 
-    protected static $assignablePermissions = [];
-
     protected static $permissionIds;
-
-    protected static $enableWorkflowPermissions;
 
     public function __construct()
     {
         self::$permissions = Config::get('heimdall.permissions');
-
-        self::$assignablePermissions = Config::get('heimdall.assignable_permissions');
-
-        self::$enableWorkflowPermissions = Config::get('heimdall.enable_workflow_permissions');
     }
 
     /**
@@ -43,11 +35,7 @@ class PermissionSeeder extends Seeder
     {
         $permissions = self::$permissions;
 
-        $assignablePermissions = self::$assignablePermissions;
-
-        $enableWorkflowPermissions = self::$enableWorkflowPermissions;
-
-        DB::transaction(function() use ($permissions, $assignablePermissions, $enableWorkflowPermissions)
+        DB::transaction(function() use ($permissions)
         {
             $index = 0;
 
