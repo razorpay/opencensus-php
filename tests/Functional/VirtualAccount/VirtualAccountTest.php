@@ -124,7 +124,8 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount();
 
-        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
         $this->assertEquals('active', $virtualAccount['status']);

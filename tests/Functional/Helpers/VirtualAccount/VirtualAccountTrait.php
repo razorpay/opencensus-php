@@ -114,9 +114,7 @@ trait VirtualAccountTrait
             'content' => $paymentArray,
         ];
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

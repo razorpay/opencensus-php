@@ -1289,11 +1289,6 @@ final class Route
             'bank_transfer_notify',
         ],
 
-        'vvs' => [
-            'bank_transfer_process',
-            'bank_transfer_notify',
-        ],
-
         'mailgun' => [
             'reconciliate'
         ],

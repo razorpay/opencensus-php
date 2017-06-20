@@ -7,15 +7,17 @@ use RZP\Constants\Mode;
 
 class Provider
 {
-    const YESBANK  = 'yesbank';
-    const KOTAK    = 'kotak';
+    const YESBANK   = 'yesbank';
+    const KOTAK     = 'kotak';
 
-    // Mock provider bank
-    // Named so because it only works in tests
-    const VVS      = 'vvs';
+    // Mocked provider bank, used in tests
+    //
+    // Also used when merchant makes a test
+    // payment to a virtual account
+    const DASHBOARD = 'dashboard';
 
     const TEST_PROVIDERS = [
-        self::VVS,
+        self::DASHBOARD,
     ];
 
     // Each provider gives us a range of bank accounts
@@ -40,7 +42,7 @@ class Provider
             // DO NOT REFUND PAYMENTS MADE HERE
             // 'RZRN',
         ],
-        self::VVS       => [
+        self::DASHBOARD       => [
             'default'  => 'RAZO',
             'standard' => 'RZRP',
         ],
@@ -62,7 +64,7 @@ class Provider
         self::KOTAK => [
             BankAccount::IFSC_CODE => 'KKBK0000958',
         ],
-        self::VVS => [
+        self::DASHBOARD => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
     ];
@@ -74,7 +76,7 @@ class Provider
         self::KOTAK => [
             '14.141.97.12',
         ],
-        self::VVS => [
+        self::DASHBOARD => [
             '*',
         ],
     ];
