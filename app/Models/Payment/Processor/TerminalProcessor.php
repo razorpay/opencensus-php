@@ -66,6 +66,12 @@ class TerminalProcessor extends Base\Core
      */
     public function getTerminalsForPayment(Payment\Entity $payment)
     {
+        // Bank transfers have no terminal
+        if ($payment->isBankTransfer() === true)
+        {
+            return [];
+        }
+
         $failedTerminalIds = $this->getFailedTerminalIds($payment);
 
         // add trace to tell that we are excluding terminals

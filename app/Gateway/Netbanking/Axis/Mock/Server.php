@@ -128,6 +128,8 @@ class Server extends Base\Mock\Server
 
         array_walk_recursive($response, array ($xml->Table1, 'addChild'));
 
+        $this->content($xml, 'multiple_tables');
+
         return $xml->asXML();
     }
 }

@@ -134,7 +134,7 @@ class Service extends Base\Service
 
     protected function deleteTokenForCustomer($tokenId, $customer)
     {
-        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);;
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
         if ($token === null)
         {

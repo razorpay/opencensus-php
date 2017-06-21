@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
 
+use Carbon\Carbon;
+
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
@@ -66,6 +68,7 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->setBankStatusCode($bankStatusCode);
 
         $this->reconEntity->setDateTime($this->parsedData['date_time']);
+
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
 
         $dirtyAttributes = $this->reconEntity->getDirty();
@@ -82,10 +85,20 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->saveOrFail();
 
         $source = $this->reconEntity->source;
-        $source->setUtr($this->parsedData['utr']);
+
+        $source->setUtr($utr);
         $source->setFailureReason($this->parsedData['failure_reason']);
-        $source->setStatus($this->parsedData['status']);
+        $source->setStatus($status);
         $source->setRemarks($this->parsedData['remarks']);
+
+        if (($status === Attempt\Status::PROCESSED) and
+            (empty($this->parsedData['instrument_date']) === false))
+        {
+            $settledOn = Carbon::createFromFormat(
+                            'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
+
+            $source->setSettledOn($settledOn);
+        }
 
         $source->saveOrFail();
 

@@ -60,7 +60,7 @@ final class FactoryData
             'entity_id'                 => '10000000000000',
             'type'                      => 'merchant',
             'ifsc_code'                 => 'RZPB0000000',
-            'account_number'            => 10010101011,
+            'account_number'            => '10010101011',
             'beneficiary_name'          => 'random_name',
             'beneficiary_address1'      => 'address1',
             'beneficiary_address2'      => 'address2',
@@ -70,13 +70,13 @@ final class FactoryData
             'beneficiary_state'         => 'DE',
             'beneficiary_country'       => 'IN',
             'beneficiary_email'         => 'random@email.com',
-            'beneficiary_mobile'        => 9988776655,
-            'beneficiary_pin'           => 100000,
+            'beneficiary_mobile'        => '9988776655',
+            'beneficiary_pin'           => '100000',
         ]);
 
         $factory(\RZP\Models\Card\Entity::class, [
             'id'                => $faker->uniqueid,
-            'merchant_id'       => 10000000000000,
+            'merchant_id'       => '10000000000000',
             'name'              => $faker->word,
             'network'           => 'Visa',
             'expiry_month'      => 01,
@@ -102,7 +102,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Payment\Entity::class, [
             'id' => $faker->uniqueid,
-            'merchant_id' => 10000000000000,
+            'merchant_id' => '10000000000000',
             'method' => 'card',
             'card_id' => null,
             'bank' => null,
@@ -414,9 +414,10 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Batch\Entity::class, [
-            'id'            => $faker->uniqueid,
-            'merchant_id'   => '10000000000000',
-            'status'        => 'created'
+            'id'          => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'upload_file_url' => 'batch/upload/text.xlsx',
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
@@ -696,6 +697,31 @@ final class FactoryData
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
             'deleted_at'  => null,
+        ]);
+
+        $factory(\RZP\Models\FileStore\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'type'        => 'batch_input',
+            'entity_type' => 'batch',
+            'extension'   => 'xlsx',
+            'mime'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'size'        => 10000,
+            'name'        => 'xyz.xlsx',
+            'store'       => 's3',
+            'location'    => 'xyz',
+            'bucket'      => 'rzp-test-bucket',
+            'region'      => 'us-east-1',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Invitation\Entity::class, [
+            'id'                       => $faker->randomNumber(6),
+            'email'                    => $faker->email,
+            'merchant_id'              => $faker->uniqueid,
+            'role'                     => 'manager',
+            'token'                    => $faker->name(30),
         ]);
     }
 }

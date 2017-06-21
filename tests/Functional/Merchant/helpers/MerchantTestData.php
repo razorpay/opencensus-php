@@ -383,6 +383,7 @@ return [
         'request' => [
             'content' => [
                 'brand_color' => '00bcd4',
+                'handle'      => 'LOLO',
             ],
             'url' => '/account/config',
             'method' => 'put',
@@ -393,8 +394,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '10000000000000',
-                'brand_color' => '#00BCD4'
+                'id'          => '10000000000000',
+                'brand_color' => '#00BCD4',
+                'handle'      => 'LOLO',
             ]
         ]
     ],
@@ -1525,7 +1527,7 @@ return [
                 'features' => [
                     [
                         'feature' => "noflashcheckout",
-                        'value' => FALSE,
+                        'value' => false,
                         'display_name' => "No Flash Checkout"
                     ],
                 ]
@@ -1554,7 +1556,7 @@ return [
                 'features' => [
                     [
                         'feature' => "noflashcheckout",
-                        'value' => TRUE,
+                        'value' => true,
                         'display_name' => "No Flash Checkout"
                     ]
                 ]

@@ -822,6 +822,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAction($this->action);
 
+        $gatewayPayment->setCapsPaymentId(strtoupper($input['payment'][Payment\Entity::ID]));
+
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
@@ -1014,7 +1016,10 @@ class Gateway extends Base\Gateway
 
         $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
 
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID     => $input['payment']['id'],
+            ApiRequestFields::V1_REFERENCE_ID => $input['refund']['id'],
+        ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 

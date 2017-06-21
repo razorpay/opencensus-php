@@ -1145,7 +1145,7 @@ trait PaymentTrait
         }
         else if ($this->isResponseInstanceType($response, 'json'))
         {
-            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response);
+            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response->baseResponse);
         }
         else
         {
@@ -1228,6 +1228,8 @@ trait PaymentTrait
      */
     protected function isResponseInstanceType($response, $type = 'json')
     {
+        $response = $response->baseResponse;
+
         $match = 'Response';
 
         if ($type !== 'http')
@@ -1292,6 +1294,7 @@ trait PaymentTrait
                     $binRiskMapping = [
                         '510510' => '22.0',
                         '401201' => '60.3',
+                        '555555' => '2.4'
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)

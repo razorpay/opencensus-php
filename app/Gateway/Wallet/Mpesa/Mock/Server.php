@@ -55,7 +55,7 @@ class Server extends Base\Mock\Server
 
     public function pgSendOTP(array $input)
     {
-        $randInt = mt_rand(11111111111111, 99999999999999);
+        $randInt = strval(random_int(11111111111111, 99999999999999));
 
         $request = $input[SoapAction::OTP_GENERATE_API][RequestFields::COMMON_SERVICE_DATA];
 
@@ -89,7 +89,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($request, SoapMethod::OTP_SUBMIT);
 
-        $transId = mt_rand(11111111111, 99999999999);
+        $transId = strval(random_int(11111111111, 99999999999));
 
         $response = [
             ResponseFields::S2S_TRANS_ID        => $transId,
@@ -110,9 +110,9 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($request, SoapMethod::QUERY_PAYMENT_TRANSACTION);
 
-        $mobileNumber = mt_rand(7000000000, 9999999999);
+        $mobileNumber = strval(random_int(7000000000, 9999999999));
 
-        $transId = mt_rand(11111111111, 99999999999);
+        $transId = strval(random_int(11111111111, 99999999999));
 
         $response = [
             ResponseFields::S2S_TRANS_ID    => $transId,
@@ -133,7 +133,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($request, SoapMethod::REFUND_PAYMENT);
 
-        $mobileNumber = mt_rand(7000000000, 9999999999);
+        $mobileNumber = strval(random_int(7000000000, 9999999999));
 
         $response = [
             ResponseFields::S2S_TRANS_ID        => $request[RequestFields::COM_TRANSACTION_ID],
@@ -150,7 +150,7 @@ class Server extends Base\Mock\Server
 
     protected function getAuthResponse(array $request)
     {
-        $transId = mt_rand(11111111111, 99999999999);
+        $transId = strval(random_int(11111111111, 99999999999));
 
         $response = [
             ResponseFields::COM_TRANSACTION_ID    => $transId,

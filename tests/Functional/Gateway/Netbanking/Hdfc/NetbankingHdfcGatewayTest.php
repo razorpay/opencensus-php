@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -86,6 +89,8 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        Mail::fake();
+
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
 
         $refund = $this->refundPayment($payment['id']);
@@ -111,6 +116,17 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $this->assertEquals($data['netbanking_hdfc']['count'], 3);
         $this->assertTrue(file_exists($data['netbanking_hdfc']['file']));
+
+        Mail::assertSent(RefundFileMail::class, function ($mail)
+        {
+            $testData = [
+                'body' => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
     }
 
     protected function doNetbankingHdfcAuthAndCapturePayment()

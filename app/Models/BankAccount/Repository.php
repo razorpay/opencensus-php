@@ -60,6 +60,20 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT);
+
+        if ($bankCode !== null)
+        {
+            $query->where(Entity::IFSC_CODE, 'like', $bankCode.'%');
+        }
+
+        return $query->first();
+    }
+
     public function getRazarpayBankAccountsFromAccountNumber($accountNumber)
     {
         $ifsc = 'RAZR';
@@ -80,7 +94,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function getAllOrderedByCreatedAt()

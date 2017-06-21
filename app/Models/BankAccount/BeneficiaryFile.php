@@ -2,49 +2,23 @@
 
 namespace RZP\Models\BankAccount;
 
+use App;
+use Mail;
+use Carbon\Carbon;
+
 use RZP\Exception;
-use RZP\Constants\MailTags;
+use RZP\Models\Base;
+use RZP\Models\FileStore;
 use RZP\Models\BankAccount;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
-class BeneficiaryFile
+class BeneficiaryFile extends Base\Core
 {
-    use FileHandlerTrait;
-
     protected static $fileToWriteName = 'Kotak_Beneficiary_File';
 
     const DEFAULT_PRICING_RATE = 30000000;
 
-    public static $headings = array(
-        'Client_Code',
-        'Bene_Code',
-        'Bene Name',
-        'Bene Add 1',
-        'Bene Add 2',
-        'Bene Add 3',
-        'Bene Add 4',
-        'Bene Add 5',
-        'Bene_City',
-        'Bene_Pin',
-        'State',
-        'Country',
-        'Bene_Email',
-        'Bene_Mobile',
-        'Bene_Tel',
-        'Bene_Fax',
-        'IFSC',
-        'Bene_A/c No',
-    );
-
-    // Supports only text format right now
-    public static $format = array(
-       'Bene_A/c No' => 'text',
-    );
-
-    public function __construct()
-    {
-        $this->mail = \Mail::getFacadeRoot();
-    }
+    const SIGNED_URL_DURATION = '1440';
 
     public function generate()
     {
@@ -70,7 +44,7 @@ class BeneficiaryFile
 
         foreach ($list as $ba)
         {
-            $array = array(
+            $array = [
                 'Client_Code'           => 'RAZORNODAL',
                 'Bene_Code'             => $ba->getBeneficiaryCode(),
                 'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
@@ -89,47 +63,63 @@ class BeneficiaryFile
                 'Bene_Fax'              => '',
                 'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
                 'Bene_A/c No'           => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
-            );
+            ];
 
             array_push($data, $array);
         }
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
-        $fullpath = $this->getExcelFullFilePath();
         $merchantsCount = count($list);
 
-        $this->sendKotakBeneficiaryFileMail($fullpath, $merchantsCount);
+        $fileData = $this->generateFile($data);
 
-        return ['url' => $fullpath];
+        $this->sendKotakBeneficiaryFileMail($fileData, $merchantsCount);
+
+        return ['url' => $fileData['local_file_path']];
     }
 
-    protected function sendKotakBeneficiaryFileMail($fullpath, $merchantsCount)
+    protected function generateFile(array $data): array
     {
-        $data['body'] = 'Please find attached updated beneficiary file for ' .
-                        'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $merchantsCount .'.';
+        $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $data['file'] = $fullpath;
+        $creator = new FileStore\Creator;
 
-        $this->mail->queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
+        $creator->extension(FileStore\Format::XLSX)
+                ->content($data)
+                ->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::BENEFICIARY_FILE)
+                ->save();
 
-            $cc = ['uphendra.bn@kotak.com', 'Abhijit.B.Joshi@kotak.com', 'anupam.namdeo@kotak.com'];
+        $file = $creator->get();
 
-            $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
-            $message->subject('Razorpay updated beneficiary file for Kotak');
+        $data = [
+            'signed_url'      => $signedFileUrl,
+            'local_file_path' => $file['local_file_path'],
+            'file_name'       => basename($file['local_file_path']),
+        ];
 
-            $message->to($emails);
+        return $data;
+    }
 
-            $message->cc($cc);
+    protected function getFileToWriteNameWithoutExt(): string
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-            $message->attach($data['file']);
+        $mode = $this->mode;
 
-            $headers = $message->getHeaders();
+        $fileName = static::$fileToWriteName . '_' . $mode . '_' . $time;
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-        });
+        return $fileName;
+    }
+
+    protected function sendKotakBeneficiaryFileMail(array $fileData, int $merchantsCount)
+    {
+        $data = $fileData + ['merchants_count' => $merchantsCount];
+
+        $beneficiaryFileMail = new BeneficiaryFileMail($data);
+
+        Mail::queue($beneficiaryFileMail);
     }
 }

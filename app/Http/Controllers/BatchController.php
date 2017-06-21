@@ -9,20 +9,11 @@ use View;
 
 class BatchController extends Controller
 {
-    protected $batchService;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->batchService = new Batch\Service;
-    }
-
     public function createBatch()
     {
         $input = Request::all();
 
-        $result = $this->batchService->createBatch($input);
+        $result = $this->service('batch')->createBatch($input);
 
         return ApiResponse::json($result);
     }
@@ -31,35 +22,42 @@ class BatchController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->batchService->fetchMultiple($input);
+        $result = $this->service('batch')->fetchMultiple($input);
 
         return ApiResponse::json($result);
     }
 
     public function getBatchById($id)
     {
-        $result = $this->batchService->getBatchById($id);
+        $result = $this->service('batch')->getBatchById($id);
 
         return ApiResponse::json($result);
     }
 
     public function processBatches()
     {
-        $result = $this->batchService->processBatches();
+        $result = $this->service('batch')->processBatches();
+
+        return ApiResponse::json($result);
+    }
+
+    public function processBatch(string $id)
+    {
+        $result = $this->service('batch')->processBatch($id);
 
         return ApiResponse::json($result);
     }
 
     public function retryBatch($id)
     {
-        $result = $this->batchService->retryBatch($id);
+        $result = $this->service('batch')->retryBatch($id);
 
         return ApiResponse::json($result);
     }
 
     public function downloadBatch($id)
     {
-        $result = $this->batchService->downloadBatch($id);
+        $result = $this->service('batch')->downloadBatch($id);
 
         return ApiResponse::json($result);
     }

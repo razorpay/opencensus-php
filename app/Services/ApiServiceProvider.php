@@ -20,6 +20,7 @@ use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Batch;
 use RZP;
 use Swift_Mailer;
 
@@ -69,7 +70,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('exception.handler', function($app)
         {
-            return new \RZP\Exception\Handler($app['trace']);
+            return new \RZP\Exception\Handler($app);
         });
 
         $this->app->singleton('card.tokenex', function($app)
@@ -263,6 +264,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // file store
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
+            'batch'           => Batch\Entity::class,
 
             // transaction
             'adjustment'      => Adjustment\Entity::class,

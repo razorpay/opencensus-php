@@ -144,7 +144,7 @@ trait PaymentCreationTrait
         }
         else
         {
-            // Has to be either redirect or a html form post.o
+            // Has to be either redirect or a html form post.
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
                     ($this->isResponseInstanceType($response, 'http')) and
@@ -155,7 +155,7 @@ trait PaymentCreationTrait
             {
                 // Now check for redirect
                 $redirect = (($this->isResponseInstanceType($response, 'redirect')) and
-                        ($response->getStatusCode() === 302));
+                             ($response->getStatusCode() === 302));
 
                 if ($redirect === true)
                 {

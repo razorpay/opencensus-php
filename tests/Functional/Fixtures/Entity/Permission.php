@@ -9,7 +9,6 @@ use DB;
 use RZP\Constants\Table;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Admin;
 use RZP\Models\Admin\Permission\Repository as PermRepo;
 use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 
@@ -23,8 +22,10 @@ class Permission extends Base
 
         foreach ($permissionCategories as $permissionCategory => $permissions)
         {
-            foreach ($permissions as $permission => $desc)
+            foreach ($permissions as $permission => $permissionValue)
             {
+                $desc = isset($permissionValue['description']) ? $permissionValue['description'] : '';
+
                 $row = [
                     PermissionEntity::NAME        => $permission,
                     PermissionEntity::CATEGORY    => $permissionCategory,

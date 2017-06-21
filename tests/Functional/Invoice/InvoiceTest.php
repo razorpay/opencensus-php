@@ -2,12 +2,18 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Base\UniqueIdEntity;
-
 use Carbon\Carbon;
 use Mockery;
+use Mail;
+
+use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
+use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
+use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+
+use RZP\Models\Base\UniqueIdEntity;
 
 class InvoiceTest extends TestCase
 {
@@ -61,11 +67,27 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceAndPay()
     {
+        Mail::fake();
+
         $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice');
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        Mail::assertSent(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
+
+        Mail::assertSent(InvoiceCapturedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
     }
 
     public function testCreateLinkWithSource()
@@ -203,6 +225,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateDraftInvoiceWithSomeData()
     {
+        $this->ba->privateAuth();
+
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -256,6 +280,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateIssuedInvoice()
     {
+        Mail::fake();
+
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -266,6 +292,11 @@ class InvoiceTest extends TestCase
 
         $order = $this->getLastEntity('order', true);
         $this->assertNotNull($order);
+
+        Mail::assertSent(InvoiceIssuedMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@rzp.com');
+        });
     }
 
     public function testCreateIssuedInvoiceAndPay()
@@ -1091,7 +1122,6 @@ class InvoiceTest extends TestCase
                 'receipt'  => '00000000000002'
             ]);
 
-
         $esMock = $this->createEsMock(['search']);
 
         $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
@@ -1143,7 +1173,10 @@ class InvoiceTest extends TestCase
         $item2 = $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'Item 2']);
 
         $this->fixtures->create('line_item', ['entity_id' => $invoice1->getId()]);
-        $this->fixtures->create('line_item', ['id' => '10000lineitem2', 'entity_id' => $invoice2->getId(), 'item_id' => $item2->getId()]);
+        $this->fixtures->create('line_item', [
+            'id' => '10000lineitem2',
+            'entity_id' => $invoice2->getId(),
+            'item_id' => $item2->getId()]);
 
         $this->startTest();
     }
@@ -1198,7 +1231,6 @@ class InvoiceTest extends TestCase
                 'user_id' => '1000000000user',
                 'type'    => 'invoice',
             ]);
-
 
         $esMock = $this->createEsMock(['search']);
 
@@ -1348,7 +1380,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
 
-        $this->assertResponseOk();
+        $this->assertResponseOk($response);
     }
 
     public function testGetInvoiceView()
@@ -1360,7 +1392,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
 
-        $this->assertResponseOk();
+        $this->assertResponseOk($response);
     }
 
     public function testPayExpiredInvoice()
@@ -1628,6 +1660,42 @@ class InvoiceTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testIssueInvoiceByBatchId()
+    {
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+
+        $response = $this->getEntities('invoice');
+
+        $ids = array_column($response['items'], 'id');
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 2,
+            ]);
+
+        // Associate 2 invoices with above batch
+
+        $this->fixtures->invoice->edit($ids[0], ['batch_id' => '00000000000001']);
+        $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001']);
+
+        $this->startTest();
+
+        $response = $this->getEntities('invoice');
+
+        $invoices = $response['items'];
+
+        // Assert that invoices of the batch have gotten issued
+
+        $this->assertEquals('issued', $invoices[0]['status']);
+        $this->assertEquals('draft', $invoices[1]['status']);
+        $this->assertEquals('issued', $invoices[2]['status']);
     }
 
     // -------------------- Protected methods --------------------

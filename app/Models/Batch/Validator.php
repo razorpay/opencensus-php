@@ -3,102 +3,161 @@
 namespace RZP\Models\Batch;
 
 use RZP\Base;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
+use RZP\Exception\BaseException;
+use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::FILE => 'required|file|mimes:xlsx|max:1024',
-        Entity::TYPE => 'required|string|max:100|custom'
-    );
+        Entity::TYPE => 'required|string|max:14|custom'
+    ];
 
-    protected function validateType($attribute, $type)
+    protected function validateType(string $attribute, string $type)
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE);
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE,
+                        Entity::TYPE,
+                        [
+                            Entity::TYPE => $type,
+                        ]);
         }
     }
 
-    public function validateEntries($entries, $type)
+    /**
+     * Throws error if batch is already processed.
+     */
+    public function validateNotProcessedAlready()
     {
-        $totalEntries = count($entries);
-
-        if ($totalEntries === 0)
+        if ($this->entity->getStatus() === Status::PROCESSED)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY,
-                null,
-                [
-                    'type' => $type,
-                    'total_entries' => $totalEntries,
-                ]);
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
+                        Entity::STATUS,
+                        $this->entity->toArrayPublic());
         }
-
-        if ($totalEntries > 1000)
-        {
-           throw new Exception\BadRequestException(
-               ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
-               null,
-               [
-                   'type' => $type,
-                   'total_entries' => $totalEntries,
-               ]);
-        }
-
-        $validator = 'validate' .ucfirst($type) .'Entries';
-
-        $this->$validator($entries);
     }
 
-    protected function validateRefundEntries($entries)
+    /**
+     * Validates entries(array) of batch input file before
+     * creating the batch entity.
+     *
+     * @param array           $entries
+     * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
+     */
+    public function validateEntries(array $entries, Merchant\Entity $merchant)
     {
-        $existingPaymentIds = array();
+        $type = $this->entity->getType();
 
-        $this->validateRefundHeaders($entries);
+        Limit::validate($type, count($entries));
+
+        Header::validate($type, array_keys(current($entries)));
+
+        // Calls validate method of corresponding type.
+
+        $validator = 'validate' . studly_case($type) .'Entries';
+
+        $this->$validator($entries, $merchant);
+    }
+
+    protected function validateRefundEntries(
+        array & $entries,
+        Merchant\Entity $merchant)
+    {
+        $existingPaymentIds = [];
 
         foreach ($entries as $entry)
         {
-            $amount = $entry[Header::AMOUNT];
+            $amount    = $entry[Header::AMOUNT];
             $paymentId = $entry[Header::PAYMENT_ID];
 
             if (empty($paymentId) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
             }
 
             if (empty($amount) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
             if ((is_numeric($amount) === false) or ($amount <= 0))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
-            // Batch File should not contain multiple entries for the same payment id
+            // Batch File should not contain multiple entries for the same
+            // payment id
+
             if (in_array($paymentId, $existingPaymentIds))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
+                throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
             }
 
-            array_push($existingPaymentIds, $paymentId);
+            $existingPaymentIds[] = $paymentId;
         }
     }
 
-    protected function validateRefundHeaders($entries)
+    /**
+     * Validates payment link entries.
+     * - Creates dummy invoice object and validates them as it happens
+     *   otherwise in creation by API flow. This approach let us re-use code.
+     *
+     * @param array           $entries
+     * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
+     */
+    protected function validatePaymentLinkEntries(
+        array & $entries,
+        Merchant\Entity $merchant)
     {
-        $firstEntry = $entries[0];
+        // Associative array with index as input file's row index and values
+        // as the error message.
 
-        $headers = array_keys($firstEntry);
+        $errors = [];
 
-        $diffArray = array_diff($headers, Header::REFUND_INPUT_HEADERS);
-
-        if (count($diffArray) !== 0 )
+        foreach ($entries as $idx => $entry)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS);
+            try
+            {
+                $input = Helpers\PaymentLink::getEntityInput($entry);
+
+                // Need to create dummy entity and associate merchant
+                // for the validation around max allowed payment to happen.
+
+                $invoice = new Invoice\Entity;
+
+                $invoice->merchant()->associate($merchant);
+
+                $invoice->getValidator()
+                        ->validateInput(Invoice\Validator::CREATE_DRAFT, $input);
+
+                unset($invoice);
+            }
+            catch (BaseException $e)
+            {
+                $errors[$idx] = $e->getError()->getDescription();
+            }
+        }
+
+        if (count($errors) > 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
+                Entity::FILE,
+                $errors);
         }
     }
 }

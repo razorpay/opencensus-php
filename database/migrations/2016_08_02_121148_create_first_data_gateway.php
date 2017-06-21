@@ -52,6 +52,9 @@ class CreateFirstDataGateway extends Migration
             $table->string(FirstData::GATEWAY_TRANSACTION_ID, 20)
                   ->nullable();
 
+            $table->string(FirstData::CAPS_PAYMENT_ID, FirstData::ID_LENGTH)
+                  ->nullable();
+
             $table->string(FirstData::ENDPOINT_TRANSACTION_ID, 20)
                   ->nullable();
 

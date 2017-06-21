@@ -2,6 +2,10 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mail;
+
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Mail\Payment\Failed as PaymentFailedMail;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -24,10 +28,10 @@ class AuthorizeTest extends TestCase
 
     public function testSession()
     {
-        $this->withSession(['foo' => 'bar'])
-             ->visit('/');
+        $response = $this->withSession(['foo' => 'bar'])
+                         ->get('/');
 
-        $this->seeInSession('foo', 'bar');
+        $response->assertSessionHas('foo', 'bar');
     }
 
     public function testInvalidEmailInPayment()
@@ -37,8 +41,13 @@ class AuthorizeTest extends TestCase
 
     public function testJsonpPayment()
     {
+        Mail::fake();
+
         $content = $this->startTest();
+
         $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        Mail::assertSent(AuthorizedMail::class);
     }
 
     public function testEmailMissing()
@@ -292,6 +301,59 @@ class AuthorizeTest extends TestCase
 
         $this->ba->privateAuth();
         $this->startTest();
+    }
+
+    public function testFailPaymentWithPaymentFailureMailEnabled()
+    {
+        Mail::fake();
+
+        $this->failPaymentOnBankPage = true;
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures('payment_failure_email');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $data = $this->testData['testFailPayment'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        Mail::assertSent(PaymentFailedMail::class, function ($mail)
+        {
+            $this->assertArrayHasKey('error_description', $mail->viewData['payment']);
+
+            $this->assertNotEmpty($mail->viewData['payment']['error_description']);
+
+            return true;
+        });
+    }
+
+    public function testFailPaymentWithPaymentFailureMailDisabled()
+    {
+        Mail::fake();
+
+        $this->failPaymentOnBankPage = true;
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $data = $this->testData['testFailPayment'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        Mail::assertNotSent(PaymentFailedMail::class);
     }
 
     public function testFailTimeoutOldPayments()

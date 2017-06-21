@@ -3,7 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use App;
-use RZP\Constants\Mode;
+use RZP\Constants\Mode as ConstantMode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -46,6 +46,9 @@ class Selector
 
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
+
+        // Sorting based on gateway downtimes
+        Sorters\GatewayDowntimeSorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
@@ -128,7 +131,7 @@ class Selector
 
         if (empty($sortedTerminals) === true)
         {
-            if ($this->mode === Mode::TEST)
+            if ($this->mode === ConstantMode::TEST)
             {
                 // The current list of terminals which were retrieved earlier does
                 // not contain the sharp terminal and hence, making a call to DB.

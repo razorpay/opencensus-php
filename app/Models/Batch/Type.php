@@ -4,11 +4,32 @@ namespace RZP\Models\Batch;
 
 class Type
 {
-    // Batch Types
-    const REFUND = 'refund';
+    const REFUND       = 'refund';
+    const PAYMENT_LINK = 'payment_link';
 
-    public static function exists($type)
+    /**
+     * Following batch types get processed via CRON job, CRON currently runs
+     * less frequently (now every 6 hrs).
+     */
+    const CRON_GROUP = [
+        self::REFUND,
+    ];
+
+    /**
+     * Following batch types get processed via QUEUE, Queues are instant and
+     * batch gets processed immediately.
+     */
+    const QUEUE_GROUP = [
+        self::PAYMENT_LINK,
+    ];
+
+    public static function exists(string $type)
     {
         return defined(get_class() . '::' . strtoupper($type));
+    }
+
+    public static function isQueueGroup(string $type): bool
+    {
+        return in_array($type, self::QUEUE_GROUP, true);
     }
 }

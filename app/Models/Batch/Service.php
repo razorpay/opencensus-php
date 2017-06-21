@@ -2,75 +2,75 @@
 
 namespace RZP\Models\Batch;
 
-use Config;
-use Mail;
-use RZP\Error;
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Batch;
-use RZP\Models\Merchant;
-use RZP\Models\Payment;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Service extends Base\Service
 {
-    use FileHandlerTrait;
-
-    protected static $fileToReadName = 'Batch_File';
-
-    protected $merchant;
-
-    public function createBatch($input)
+    public function createBatch(array $input): array
     {
-        $batch = (new Batch\Core)->create($input);
+        $batch = (new Core)->create($input);
 
         return $batch->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    public function fetchMultiple(array $input): array
     {
         $batches = $this->repo->batch->fetch($input, $this->merchant->getId());
 
-        // $this->trace->info(TraceCode::BATCH_LIST, $batches->toArrayPublic());
-
         return $batches->toArrayPublic();
     }
 
-    public function getBatchById($id)
+    public function getBatchById(string $id): array
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
-
-        // $this->trace->info(TraceCode::BATCH_GET, $batch->toArrayPublic());
 
         return $batch->toArrayPublic();
     }
 
-    public function retryBatch($id)
+    public function retryBatch(string $id): array
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $batch = (new Batch\Core)->retryBatch($batch);
+        $batch = (new Core)->retryBatch($batch);
 
         return $batch->toArrayPublic();
     }
 
-    public function downloadBatch($id)
+    public function downloadBatch(string $id): array
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $awsPublicUrl = (new Batch\Core)->downloadBatch($batch);
+        $signedUrl = (new Core)->downloadBatch($batch);
 
-        $responseObj = [
-            'url' => $awsPublicUrl,
-        ];
-
-        return $responseObj;
+        return [Entity::URL => $signedUrl];
     }
 
+    /**
+     * Processes pending batches.
+     * Called via cron.
+     *
+     * @return array
+     */
     public function processBatches()
     {
-        $batches = (new Batch\Core)->processBatches();
+        $batches = (new Core)->processBatches();
 
         return $batches->toArrayPublic();
+    }
+
+    /**
+     * Processes particular batch id if not processed already.
+     *
+     * @param string $id
+     *
+     * @return array
+     */
+    public function processBatch(string $id): array
+    {
+        $batch = $this->repo->batch->findByPublicId($id);
+
+        $batch = (new Core)->processBatchViaApi($batch);
+
+        return $batch->toArrayPublic();
     }
 }
