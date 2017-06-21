@@ -37,7 +37,7 @@ export default class CreateTestPayment extends Component {
       payer_account: '765432123456789',
       payer_ifsc: 'RAZR0000001',
       transaction_id: +new Date(),
-      time: Math.floor(+new Date() / 1000),
+      time: +new Date(),
     };
     return this.props
       .createTestPayment(fieldProps)
