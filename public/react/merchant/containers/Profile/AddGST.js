@@ -98,7 +98,7 @@ export default class AddGST extends Component {
 
           <form onSubmit={handleSubmit(this.save)}>
             <div class="help-block">
-              Entered GST number will appear on invoices that we send to you
+              Entered GSTIN will appear on invoices that we send to you
             </div>
 
             <ul class="block-radio-group list-group">
@@ -111,7 +111,7 @@ export default class AddGST extends Component {
                   value="p_gstin"
                 />
                 <label for="p_gstin">
-                  Provisional GST Number
+                  Provisional GSTIN
                   <i class="pull-right fa fa-check" />
                 </label>
               </li>
@@ -124,7 +124,7 @@ export default class AddGST extends Component {
                   value="gstin"
                 />
                 <label for="gstin">
-                  GST Number
+                  GSTIN
                   <i class="pull-right fa fa-check" />
                 </label>
               </li>
@@ -132,7 +132,7 @@ export default class AddGST extends Component {
 
             {isPGST
               ? <div class="form-group">
-                  <label class="label-required">Provisional GST Number</label>
+                  <label class="label-required">Provisional GSTIN</label>
                   <div>
                     <Field
                       name="p_gstin"
@@ -144,7 +144,7 @@ export default class AddGST extends Component {
                   </div>
                 </div>
               : <div class="form-group">
-                  <label class="label-required">GST Number</label>
+                  <label class="label-required">GSTIN</label>
                   <div>
                     <Field
                       name="gstin"
@@ -158,8 +158,8 @@ export default class AddGST extends Component {
 
             <div class="help-block">
               {isPGST
-                ? 'After submitting the Provisional GST, you can submit the action GST later.'
-                : 'Actual GST once submitted cannot be updated via dashboard'}
+                ? 'After submitting the provisional GSTIN, you can submit the final GSTIN later.'
+                : 'final GSTIN once submitted cannot be updated via dashboard'}
 
             </div>
 
