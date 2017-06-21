@@ -69,7 +69,7 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, customers } = this.props;
+    let { loading, items } = this.props;
     let status = this.state.status;
 
     return (
@@ -98,7 +98,7 @@ export default class CustomersListContainer extends ListContainer {
         <Alert type={status.type} message={status.message} />
 
         <CustomersList
-          customers={customers}
+          customers={items}
           isLoading={loading}
           onEdit={this.showCustomerModal}
           onDelete={this.deleteCustomer}
@@ -107,7 +107,7 @@ export default class CustomersListContainer extends ListContainer {
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={customers.length}
+          length={items.length}
           onClick={this.paginate}
         />
       </div>
