@@ -1,4 +1,5 @@
 import { set, merge } from 'rzp/utils/immutable';
+import createReducer from 'rzp/modules/createReducer';
 
 let defaultInitialState = {
   loading: true,
@@ -43,11 +44,8 @@ export const makeEntityReducer = (
 
   const handlers = { ...defaultHandlers, ...actionHandlers };
 
-  return (state = initialState, action) => {
-    if (handlers.hasOwnProperty(action.type)) {
-      return handlers[action.type](state, action, initialState);
-    } else {
-      return state;
-    }
-  };
+  return createReducer({
+    handlers,
+    initialState,
+  });
 };

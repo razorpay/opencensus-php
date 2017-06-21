@@ -1,5 +1,7 @@
-import { merge } from 'rzp/utils/immutable';
+import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import createReducer from 'rzp/modules/createReducer';
 import ajax from 'merchant/utils/ajax';
+
 import GenericEntity from 'merchant/models/GenericEntity';
 import Payment from 'merchant/models/Payment';
 import Refund from 'merchant/models/Refund';
@@ -17,46 +19,87 @@ export const fetchAll = (params, Entity, namespace) => {
   };
 };
 
-let initialState = {
+let defaultInitialState = {
   loading: true,
   items: [],
   error: null,
 };
 
-export function makeCollectionReducer(namespace) {
-  var actionName = getActionName(namespace);
+export const listFetchPendingState = (state, action, initialState) => {
+  return initialState;
+};
 
-  return function(state = initialState, action) {
-    switch (action.type) {
-      case `${actionName}_RESET`:
-      case `${actionName}::PENDING`:
-        return initialState;
+export const listFetchSuccessState = (state, action) => {
+  return merge(state, {
+    loading: false,
+    items: action.payload.data.items,
+    error: null,
+  });
+};
 
-      case `${actionName}::SUCCESS`:
-        let { items } = action.payload.data;
-        return merge(state, {
-          loading: false,
-          items,
-          error: null,
-        });
+export const listFetchErrorState = (state, action, initialState) => {
+  return merge(state, {
+    loading: false,
+    items: initialState.items,
+    error: action.payload.errors,
+  });
+};
 
-      case `${actionName}::ERROR`:
-        return merge(state, {
-          loading: false,
-          error: action.payload.errors,
-        });
+export const appendEntityToList = (state, action) => {
+  return set(state, 'items', unshift(state.items, action.payload));
+};
 
-      default:
-        return state;
-    }
-  };
-}
+export const updateEntityInList = (state, action) => {
+  let itemIndex = state.items.findIndex(item => item.id === action.payload.id);
+  return set(state, `items.${itemIndex}`, action.payload);
+};
+
+export const removeEntityFromList = (state, action) => {
+  let itemsList = remove(state.items, item => item.id === action.id);
+  return set(state, 'items', itemsList);
+};
 
 export const getActionName = namespace => {
   return namespace + '_FETCH';
 };
 
-// export default makeCollectionReducer();
+export const makeCollectionReducer = (
+  namespace,
+  actionHandlers = {},
+  initialState = defaultInitialState
+) => {
+  let fetchActionName = getActionName(namespace);
+  const defaultHandlers = {
+    [`${fetchActionName}::PENDING`]: listFetchPendingState,
+    [`${fetchActionName}::SUCCESS`]: listFetchSuccessState,
+    [`${fetchActionName}::ERROR`]: listFetchErrorState,
+  };
+
+  const handlers = { ...defaultHandlers, ...actionHandlers };
+  return createReducer({
+    handlers,
+    initialState,
+  });
+};
+
+export const makeActionCollectionReducer = (
+  namespace,
+  actionHandlers = {},
+  initialState = defaultInitialState
+) => {
+  let singularNamespace = namespace.slice(0, namespace.length - 1);
+
+  const defaultHandlers = {
+    [`${singularNamespace}_CREATE::SUCCESS`]: appendEntityToList,
+    [`${singularNamespace}_EDIT::SUCCESS`]: updateEntityInList,
+    [`${singularNamespace}_DELETE::SUCCESS`]: removeEntityFromList,
+  };
+
+  const handlers = { ...defaultHandlers, ...actionHandlers };
+  return makeCollectionReducer(namespace, handlers, initialState);
+};
+
+// TODO: Below things should be moved to individual files
 
 export const fetchPayments = params => fetchAll(params, Payment, 'PAYMENTS');
 export const paymentsReducer = makeCollectionReducer('PAYMENTS');
