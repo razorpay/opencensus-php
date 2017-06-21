@@ -11,6 +11,8 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
+    const MAC_OS = 'Darwin';
+
     /**
      * This should be set to true if you expect a unique id to be
      * generated when the entity is being saved. Note that if a unique id
@@ -255,11 +257,15 @@ class UniqueIdEntity extends Entity
 
     protected static function getNanotimeInteger()
     {
-        return nanotime();
+        // If we have the php-nanotime extension installed
+        if (function_exists('nanotime'))
+        {
+            return nanotime();
+        }
 
         $cmd = '';
 
-        if (PHP_OS === 'Darwin')
+        if (PHP_OS === self::MAC_OS)
         {
             $cmd = '/usr/local/opt/coreutils/libexec/gnubin/';
         }
