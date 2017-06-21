@@ -12,10 +12,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     /******************
      * Row Header Names
      ******************/
-    // ft_no maps to gateway_transaction_id
-    const COLUMN_GATEWAY_PAYMENT_ID = 'ft_no';
-    const COLUMN_REFUND_AMOUNT      = 'transaction_amt';
-    const COLUMN_ARN                = 'arn_no';
+
+    // session_id_aspd maps to caps_payment_id
+    const COLUMN_CAPS_PAYMENT_ID = 'session_id_aspd';
+    const COLUMN_REFUND_AMOUNT   = 'transaction_amt';
+    const COLUMN_ARN             = 'arn_no';
 
     /**
      * Gets refund Id from gateway entity
@@ -49,18 +50,18 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Fetches refund amount from the file.
      * It is negative for refunds, so we will be taking abs value
      *
-     * We are converting to int after casting to string as PHP randomly
-     * returns wrong int values due to differing floating point precisions
-     * So something like intval(31946.0) may give 31945 or 31946
-     * Convering to string using number_format and then converting
-     * is a hack to avoid this issue
-     *
      * @param array    $row
      * @return integer $refundAmount
      */
     protected function getRefundAmount(array $row)
     {
         $refundAmount = parent::getRefundAmount($row);
+
+        // We are converting to int after casting to string as PHP randomly
+        // returns wrong int values due to differing floating point precisions
+        // So something like intval(31946.0) may give 31945 or 31946
+        // Convering to string using number_format and then converting
+        // is a hack to avoid this issue
 
         $refundAmount = intval(number_format($refundAmount, 2, '.', ''));
 
@@ -74,27 +75,27 @@ class RefundReconciliate extends Base\RefundReconciliate
      * This will be used by getRefundId & getPaymentId
      *
      * The payment id in the file is under column 'SESSION ID ASPD'.
-     * However, the id is capitalized,
+     * However, the id is sometimes capitalized, somethings not,
      * whereas the ids in our database are case sensitive.
-     * Hence this column is rendered useless.
-     * So we are using gateway transaction id to retrieve payment.
+     * So we compare ('SESSION ID ASPD') to 'caps_payment_id' of FirstData
      *
      * @param array             $row
      * @return FirstData\Entity $payment
      */
     protected function getGatewayPayment($row)
     {
-        $gatewayTxnIdVal = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+        $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 
-        // The val of column 'FT NO' has a lot of leading zeros,
-        // which need to be removed in order to get actual gateway txn id.
-        $gatewayTxnId = ltrim($gatewayTxnIdVal, '0');
+        // doing this because sometimes the ids are all caps, sometimes not
+        // the caps_payment_id in database is however all caps! :D
+        // just to be on the safer side.
+        $capsPaymentId = strtoupper($capsPaymentId);
 
-        // The broad assumption here is that these ids are unique
-        // for every transaction.
+        // The broad assumption here is that these ids will not collide
+        // The mathematical probility is very low (not zero though)!
         $payment = $this->app['repo']->first_data
-                                     ->findByGatewayTransactionIdAndAction(
-                                       $gatewayTxnId, Action::REFUND);
+                                     ->findByCapsPaymentIdAndAction(
+                                       $capsPaymentId, Action::REFUND);
 
         return $payment;
     }

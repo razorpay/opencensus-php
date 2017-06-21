@@ -21,16 +21,16 @@ class Repository extends Base\Repository
 
     /**
      * Used in Payment & Refund Reconciliate for fetching
-     * payment by given gateway transaction id & its respective action
+     * payment by given gateway caps_payment_id & its respective action
      *
-     * @param string $gatewayTxnId
+     * @param string $capsPaymentId
      * @return FirstData\Entity
      */
-    public function findByGatewayTransactionIdAndAction(
-        string $gatewayTxnId, string $action)
+    public function findByCapsPaymentIdAndAction(
+        string $capsPaymentId, string $action)
     {
         return $this->newQuery()
-                    ->where(Entity::GATEWAY_TRANSACTION_ID, '=', $gatewayTxnId)
+                    ->where(Entity::CAPS_PAYMENT_ID, '=', $capsPaymentId)
                     ->where(Entity::ACTION, '=', $action)
                     ->firstOrFail();
     }
@@ -38,8 +38,8 @@ class Repository extends Base\Repository
     public function findSuccessfulRefundByRefundId(string $refundId)
     {
         $refundEntities =  $this->newQuery()
-                                ->where('refund_id', '=', $refundId)
-                                ->where('action', '=', Base\Action::REFUND)
+                                ->where(Entity::REFUND_ID, '=', $refundId)
+                                ->where(Entity::ACTION, '=', Base\Action::REFUND)
                                 ->get();
         //
         // There should never be more than one successful gateway refund entity
