@@ -5,6 +5,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountDetails from 'merchant/components/VirtualAccounts/AccountDetails';
+import Table from 'rzp/ui/Table/Index';
+import { paymentId, amount, status } from 'rzp/ui/item/pair';
 
 export default props => {
   let {
@@ -87,33 +89,26 @@ export default props => {
                 <hr />
 
                 <div>
-                  <p class="text-muted">
+                  {mode === 'test' && virtualaccount.status === 'active'
+                    ? <button
+                        class="btn btn-link pull-right"
+                        onClick={onMakeTestPaymentClick}
+                      >
+                        Make a Test Payment
+                      </button>
+                    : null}
+
+                  <p class="text-muted" style={{ lineHeight: '35px' }}>
                     Payments to this account -
                     {' '}
                     <u>{va_payments.length} payments</u>
-
-                    {mode === 'test' && virtualaccount.status === 'active'
-                      ? <button
-                          class="btn btn-link pull-right"
-                          onClick={onMakeTestPaymentClick}
-                        >
-                          Make a Test Payment
-                        </button>
-                      : null}
                   </p>
 
-                  <table class="table table-hover">
-                    <tbody>
-                      {va_payments.map(payment => {
-                        return (
-                          <tr key={payment.id}>
-                            <td>{payment.id}</td>
-                            <td>{payment.amount}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <Table
+                    rows={va_payments}
+                    columns={[paymentId, amount]}
+                    showHeaders={false}
+                  />
                 </div>
               </div>
             </div>

@@ -8,12 +8,13 @@ import { required } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { closeModal } from 'rzp/modules/modals';
 import { createTestPayment } from 'merchant/modules/virtualaccounts';
-import { fetchItem } from 'merchant/modules/virtualaccounts';
+import { fetchItem, fetchVAPayments } from 'merchant/modules/virtualaccounts';
 
 @connect(null, {
   closeModal,
   showNotification,
   fetchItem,
+  fetchVAPayments,
   createTestPayment,
 })
 @reduxForm({
@@ -26,7 +27,8 @@ export default class CreateTestPayment extends Component {
   state = {};
 
   createTestPayment = props => {
-    let bankAccount = this.props.virtualAccount.bank_account;
+    let { virtualAccount } = this.props;
+    let bankAccount = virtualAccount.bank_account;
 
     let fieldProps = {
       ...props,
@@ -45,7 +47,8 @@ export default class CreateTestPayment extends Component {
           type: 'success',
           message: 'Test Payment successfull',
         });
-        this.props.fetchItem(this.props.virtualAccount.id);
+        this.props.fetchItem(virtualAccount.id);
+        this.props.fetchVAPayments(virtualAccount.id);
       })
       .catch(({ errors }) => {
         this.props.showNotification({
