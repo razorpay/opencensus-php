@@ -216,7 +216,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'      => TraceCode::COLUMN_CARD_CATEGORY,
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
                     'message'         => 'Unable to get the card issuer.',
                     'row'             => $row,
                     'gateway'         => get_class()
