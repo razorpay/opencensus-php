@@ -8,6 +8,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email } from 'rzp/utils/validators';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 function validate(values) {
   let errors = {};
@@ -134,6 +135,21 @@ export default class CreatePaymentLink extends Component {
                     />
                   </div>
                 </div>
+
+                <ShowWhen featureEnabled="Partial_Payment">
+                  <div class="form-group">
+                    <div class="checkbox col-md-8 col-md-offset-3">
+                      <label>
+                        <Field
+                          name="partial_payment"
+                          component="input"
+                          type="checkbox"
+                        />
+                        Allow partial payments for the payment
+                      </label>
+                    </div>
+                  </div>
+                </ShowWhen>
 
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">

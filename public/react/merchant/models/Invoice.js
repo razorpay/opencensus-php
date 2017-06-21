@@ -6,6 +6,7 @@ const createFields = [
   'id',
   'amount',
   'currency',
+  'partial_payment',
   'date',
   'draft',
   'customer_id',
@@ -85,7 +86,11 @@ export default class Invoice extends GenericEntity {
   }
 
   serializeProperty(prop) {
-    if (prop === 'sms_notify' || prop === 'email_notify') {
+    if (
+      prop === 'sms_notify' ||
+      prop === 'email_notify' ||
+      prop === 'partial_payment'
+    ) {
       return this[prop] ? 1 : 0;
     }
 
