@@ -227,7 +227,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $this->config['live_merchant_id'];
+        return $this->terminal->getGatewayTerminalId();
     }
 
     /**
@@ -240,7 +240,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::LIVE)
         {
-            $key = $this->config['live_merchant_key'];
+            $key = $this->terminal['gateway_terminal_password'];
         }
 
         return hex2bin($key);
