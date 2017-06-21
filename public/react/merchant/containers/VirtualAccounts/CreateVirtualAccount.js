@@ -144,14 +144,16 @@ export default class CreateVirtualAccount extends Component {
                 </div>
 
                 <div class="Modal__actions clearfix">
-                  <div class="pull-left">
-                    <div>Account Number</div>
-                    <b>
-                      RZRP
-                      {handle.padStart(4, '×')}
-                      {descriptor.padStart(10, '×')}
-                    </b>
-                  </div>
+                  {handle
+                    ? <div class="pull-left">
+                        <div>Account Number</div>
+                        <b>
+                          RZRP
+                          {handle.padStart(4, '×')}
+                          {descriptor.padStart(10, '×')}
+                        </b>
+                      </div>
+                    : null}
                   <AsyncButton
                     class="btn btn-primary pull-right"
                     text="Create"
