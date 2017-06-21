@@ -17,8 +17,6 @@ class ReconcilationTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/ReconcilationTestData.php';
-
         parent::setUp();
 
         $this->ba->appAuth();
