@@ -291,13 +291,13 @@ return [
             'url'       => 'merchant/gst',
             'routeName' => 'merchant_gst_edit'
         ],
-        
+
          // Invitations
         'invitation_create'                 => [
             'url'       => 'invitations',
             'routeName' => 'invitations_send'
          ],
-        
+
         'invitation_resend'                 => [
             'url'       => 'invitations/{id}/resend',
             'routeName' => 'invitation_resend'
@@ -315,29 +315,28 @@ return [
         // Virtual Accounts
         'virtual_account_fetch_multiple'    => [
             'url'       => 'virtual_accounts',
-            'routeName' => 'virtual_account_fetch_multiple'
+            'routeName' => 'virtual_accounts_read'
         ],
         'virtual_account_fetch'             => [
             'url'       => 'virtual_accounts/{id}',
-            'routeName' => 'virtual_account_fetch'
+            'routeName' => 'virtual_accounts_read'
         ],
         'virtual_account_create'            => [
             'url'       => 'virtual_accounts',
-            'routeName' => 'virtual_account_create'
+            'routeName' => 'virtual_accounts_write'
         ],
         'virtual_account_update'            => [
             'url'       => 'virtual_accounts/{id}',
-            'routeName' => 'virtual_account_update'
+            'routeName' => 'virtual_accounts_write'
         ],
         'virtual_account_delete'            => [
             'url'       => 'virtual_accounts/{id}',
-            'routeName' => 'virtual_account_delete'
+            'routeName' => 'virtual_accounts_write'
         ],
         'virtual_account_fetch_payments'    => [
             'url'       => 'virtual_accounts/{id}/payments',
-            'routeName' => 'virtual_account_fetch_payments'
-        ]
-
+            'routeName' => 'virtual_accounts_read'
+        ],
     ],
 
     // auth
@@ -415,6 +414,9 @@ return [
 
         // Accept/Reject Invitation
         'invitation_action'                 => 'invitations/{id}/{action}',
+
+        // Make test payment for Virtual Account
+        'bank_transfer_process'             => 'ecollect/validate',
     ],
 
     // auth

@@ -33,4 +33,15 @@ export default class VirtualAccount extends GenericEntity {
       return response;
     });
   }
+
+  createTestPayment(body) {
+    let data = {
+      body,
+      route_name: 'bank_transfer_process',
+    };
+    return this.makeGenericAjaxCall({
+      method: 'post',
+      data,
+    });
+  }
 }

@@ -46,6 +46,13 @@ export const deleteVirtualAccount = params => {
   };
 };
 
+export const createTestPayment = params => {
+  const virtualAccount = new VirtualAccount();
+  return () => {
+    return virtualAccount.createTestPayment(params);
+  };
+};
+
 // List Reducer
 export const virtualAccountsReducer = makeActionCollectionReducer(
   'VIRTUAL_ACCOUNTS'

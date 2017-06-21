@@ -4,12 +4,23 @@ import { withRouter } from 'react-router-dom';
 import VirtualAccountDetails from 'merchant/components/VirtualAccounts/Details';
 import * as VirtualAccountActions from 'merchant/modules/virtualaccounts';
 import { showNotification } from 'rzp/modules/notifications';
+import { openModal } from 'rzp/modules/modals';
+import CreateTestPayment from './CreateTestPayment';
 
 @withRouter
-@connect(state => state.virtualaccount, {
-  showNotification,
-  ...VirtualAccountActions,
-})
+@connect(
+  state => {
+    return {
+      ...state.virtualaccount,
+      mode: state.session.mode,
+    };
+  },
+  {
+    openModal,
+    showNotification,
+    ...VirtualAccountActions,
+  }
+)
 export default class VirtualAccountDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -81,8 +92,15 @@ export default class VirtualAccountDetailsContainer extends Component {
     });
   };
 
+  openTestPaymentModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <CreateTestPayment virtualAccount={this.props.entity} />,
+    });
+  };
+
   render() {
-    let { loading, error, entity, va_payments } = this.props;
+    let { loading, error, entity, va_payments, mode } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -96,10 +114,12 @@ export default class VirtualAccountDetailsContainer extends Component {
       <VirtualAccountDetails
         virtualaccount={entity}
         va_payments={va_payments}
+        mode={mode}
         isLoading={loading}
         statusMsg={statusMsg}
         onClose={this.closeAccount}
         onDelete={this.deleteAccount}
+        onMakeTestPaymentClick={this.openTestPaymentModal}
       />
     );
   }

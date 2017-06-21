@@ -10,10 +10,12 @@ export default props => {
   let {
     virtualaccount,
     va_payments,
+    mode,
     isLoading,
     statusMsg,
     onClose,
     onDelete,
+    onMakeTestPaymentClick,
   } = props;
 
   return (
@@ -89,6 +91,15 @@ export default props => {
                     Payments to this account -
                     {' '}
                     <u>{va_payments.length} payments</u>
+
+                    {mode === 'test' && virtualaccount.status === 'active'
+                      ? <button
+                          class="btn btn-link pull-right"
+                          onClick={onMakeTestPaymentClick}
+                        >
+                          Make a Test Payment
+                        </button>
+                      : null}
                   </p>
 
                   <table class="table table-hover">

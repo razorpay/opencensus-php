@@ -74,5 +74,8 @@ return [
     'item_edit'                 => $writers,
     'item_delete'               => $writers,
 
-    'marketplace_read'          => $readers
+    'marketplace_read'          => $readers,
+
+    'virtual_accounts_read'     => ['owner', 'manager', 'admin'],
+    'virtual_accounts_write'    => ['owner', 'manager', 'admin'],
 ];
