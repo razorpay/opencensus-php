@@ -1354,7 +1354,6 @@ final class Route
         'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
-        'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
         'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],

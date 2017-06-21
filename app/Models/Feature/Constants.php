@@ -32,7 +32,6 @@ class Constants
     const ZOHO                  = 'zoho';
     const EXPOSE_DOWNTIMES      = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL = 'payment_failure_email';
-    const INVOICE_BATCH         = 'invoice_batch';
     const VIRTUAL_ACCOUNTS      = 'virtual_accounts';
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -63,7 +62,6 @@ class Constants
         self::ZOHO                  => true,
         self::EXPOSE_DOWNTIMES      => true,
         self::PAYMENT_FAILURE_EMAIL => true,
-        self::INVOICE_BATCH         => true,
         self::VIRTUAL_ACCOUNTS      => true,
     ];
 
