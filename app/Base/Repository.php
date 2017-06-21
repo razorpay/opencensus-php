@@ -424,7 +424,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->modifyQueryForIndexing($query);
 
-        $entity = $query->find($id);
+        $entity = $query->findOrFail($id);
 
         return $this->serializeForIndexing($entity);
     }
