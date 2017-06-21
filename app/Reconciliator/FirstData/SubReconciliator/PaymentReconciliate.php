@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\FirstData;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 
@@ -17,8 +18,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CAPS_PAYMENT_ID = 'session_id_aspd';
     const COLUMN_GATEWAY_FEE     = 'comm_amount';
     const COLUMN_PAYMENT_AMOUNT  = 'transaction_amt';
+    const COLUMN_CARD_CATEGORY   = 'card_category';
+    const COLUMN_CARD_TYPE       = 'card_type';
 
-    const INTERNATIONAL_CARD_REGEX = 'international';
+    const INTERNATIONAL          = 'international';
+    const ONUS                   = 'onus';
 
     /**
      * The payment id in the file is under column 'SESSION ID ASPD'.
@@ -122,7 +126,114 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return true;
     }
 
+    /**
+     * Sets card details like locale, trivia & issuer.
+     * Card type (debit/credit) in unavailable from given data.
+     *
+     * @param  array $row
+     * @return array
+     */
     protected function getCardDetails($row)
     {
+        return [
+            BaseReconciliate::CARD_LOCALE => $this->getCardLocale($row),
+            BaseReconciliate::CARD_TRIVIA => $this->getCardTrivia($row),
+            BaseReconciliate::ISSUER      => $this->getIssuer($row),
+        ];
+    }
+
+    /**
+     * Determines whether the card is international or domestic
+     *
+     * @param  array $row
+     * @return string
+     */
+    protected function getCardLocale($row)
+    {
+        if (empty($row[self::COLUMN_CARD_CATEGORY]) === true)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card locale (domestic/international).',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            // there is an anamoly if no card category is present in row
+            return null;
+        }
+
+        $categoryString = $row[self::COLUMN_CARD_CATEGORY];
+
+        // using stripos 'cuz unsure of case in value we get from row
+        if (stripos($categoryString, self::INTERNATIONAL))
+        {
+            return BaseReconciliate::INTERNATIONAL;
+        }
+
+        return BaseReconciliate::DOMESTIC;
+    }
+
+    /**
+     * Sets value of column 'card_type' as card trivia
+     *
+     * @param  array  $row
+     * @return string $cardType
+     */
+    protected function getCardTrivia()
+    {
+        if (empty($row[self::COLUMN_CARD_TYPE]) === true)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to get the card trivia. This is unexpected.',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            // there is an anamoly if no card category is present in row
+            return null;
+        }
+
+        $cardType = $row[self::COLUMN_CARD_TYPE];
+
+        return $cardType;
+    }
+
+    /**
+     * We basically check the value of column card_category
+     * If the string has 'onus', then the issuer is ICIC
+     * In other cases, it's indeterminate
+     *
+     * @param  array  $row
+     * @return string $issuer
+     */
+    protected function getIssuer($row)
+    {
+        if (empty($row[self::COLUMN_CARD_CATEGORY]) === true)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::COLUMN_CARD_CATEGORY,
+                    'message'         => 'Unable to get the card issuer.',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            // there is an anamoly if no card category is present in row
+            return null;
+        }
+
+        $issuerString = $row[self::COLUMN_CARD_CATEGORY];
+
+        // using stripos 'cuz unsure of case in value we get from row
+        if (stripos($issuerString, self::ONUS))
+        {
+            return IFSC::ICIC;
+        }
+
+        return null;
     }
 }
