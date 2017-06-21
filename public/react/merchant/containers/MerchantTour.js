@@ -33,6 +33,8 @@ export default class MerchantTour extends Component {
   };
 
   render() {
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+
     return (
       <div>
         <Tour
@@ -40,7 +42,7 @@ export default class MerchantTour extends Component {
           tourStep={this.state.activeTourStep}
           showOverlay={false}
         >
-          <TourStep to="#profile-nav">
+          <TourStep to={isNewUIEnabled ? '#myaccount-nav' : '#profile-nav'}>
             <p>
               Find Razorpay's
               {' '}
@@ -50,7 +52,11 @@ export default class MerchantTour extends Component {
               {' '}
               <b>GST</b>
               {' '}
-              details in Profile tab.
+              details in
+              {' '}
+              {isNewUIEnabled ? 'My Account > Profile' : 'Profile'}
+              {' '}
+              tab.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link pull-right" onClick={this.closeTour}>
