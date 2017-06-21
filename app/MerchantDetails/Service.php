@@ -680,6 +680,6 @@ class Service extends Base\Service
 
     public function getUrlKeys()
     {
-        return self::$WEBSITE_URLS;
+        return self::WEBSITE_URLS;
     }
 }
