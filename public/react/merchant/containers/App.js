@@ -228,7 +228,7 @@ export default class App extends Component {
         <Footer />
 
         <ShowWhen myRole="owner">
-          <MerchantTour />
+          <MerchantTour user={user} />
         </ShowWhen>
 
         {/* Creates Portal for the comp */}
