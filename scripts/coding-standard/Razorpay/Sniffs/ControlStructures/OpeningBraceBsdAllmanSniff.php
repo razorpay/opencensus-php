@@ -1,6 +1,11 @@
 <?php
 
-class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PHP_CodeSniffer_Sniff
+namespace Razorpay\Sniffs\ControlStructures;
+
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
+
+class OpeningBraceBsdAllmanSniff implements Sniff
 {
     /**
      * Should this sniff check if-statement braces?
@@ -32,7 +37,7 @@ class Razorpay_Sniffs_ControlStructures_OpeningBraceBsdAllmanSniff implements PH
      *
      * @return void
      */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 
