@@ -593,6 +593,7 @@ app
                     window.location.hostname === 'auth.razorpay.{com|dev}'
                   ) {
                     window.location.href = next;
+                    return false;
                   }
                 }
                 $scope.goToDashboard(role);
