@@ -1474,6 +1474,8 @@ class Entity extends Base\PublicEntity
                 return [$method, $this->getVpa()];
             case Method::AEPS:
                 return [$method, ''];
+            case Method::BANK_TRANSFER:
+                return [$method, ''];
         }
     }
 

@@ -259,7 +259,7 @@ class BankTransferTest extends TestCase
 
         if (isset($utr) === false)
         {
-            $utr = substr(number_format(time() * rand(), 0, '', ''), 0, 22);
+            $utr = strtoupper(random_alphanum_string(22));
         }
 
         $request['content']['transaction_id'] = $utr;

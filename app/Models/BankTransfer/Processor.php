@@ -41,6 +41,8 @@ class Processor extends Base\Core
     {
         $bankTransfer = $this->core->create($input);
 
+        $this->setUtrInTestMode($bankTransfer);
+
         if (($this->utrCheck($bankTransfer) === true) and
             ($this->isTransferExpected($bankTransfer) === true))
         {
@@ -91,10 +93,8 @@ class Processor extends Base\Core
         });
     }
 
-    protected function utrCheck(Entity $bankTransfer): bool
+    protected function setUtrInTestMode(Entity $bankTransfer)
     {
-        $utr = $bankTransfer->getUtr();
-
         // Dashboard provider is used in test mode
         // to simulate payments to a virtual account.
         //
@@ -107,9 +107,12 @@ class Processor extends Base\Core
             $mockedUtr = $this->getMockedUtr();
 
             $bankTransfer->setUtr($mockedUtr);
-
-            return true;
         }
+    }
+
+    protected function utrCheck(Entity $bankTransfer): bool
+    {
+        $utr = $bankTransfer->getUtr();
 
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
@@ -134,7 +137,7 @@ class Processor extends Base\Core
 
     protected function getMockedUtr(): string
     {
-        return substr(number_format(time() * rand(), 0, '', ''), 0, 22);
+        return strtoupper(random_alphanum_string(22));
     }
 
     protected function isTransferExpected(Entity $bankTransfer): bool
@@ -212,7 +215,15 @@ class Processor extends Base\Core
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment::AMOUNT]      = $bankTransfer->getAmount();
-        $paymentArray[Payment::CUSTOMER_ID] = $this->virtualAccount->getPublicCustomerId();
+
+        if ($this->virtualAccount->hasCustomer() === true)
+        {
+            $customer = $this->virtualAccount->customer;
+
+            $paymentArray[Payment::CUSTOMER_ID] = $customer->getPublicId();
+            $paymentArray[Payment::CONTACT]     = $customer->getContact();
+            $paymentArray[Payment::EMAIL]       = $customer->getEmail();
+        }
 
         return $paymentArray;
     }
