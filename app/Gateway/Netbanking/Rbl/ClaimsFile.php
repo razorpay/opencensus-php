@@ -3,14 +3,10 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Carbon\Carbon;
-use Mail;
 
 use RZP\Gateway\Base;
-use RZP\Models\FileStore;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment;
-use RZP\Constants\MailTags;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Models\FileStore;
 
 class ClaimsFile extends Base\RefundFile
 {
@@ -82,7 +78,7 @@ class ClaimsFile extends Base\RefundFile
                 ClaimFields::USER_ID            => $row['gateway']['customer_id'],
                 ClaimFields::DEBIT_ACCOUNT      => $row['gateway']['account_number'],
                 ClaimFields::CREDIT_ACCOUNT     => $row['gateway']['credit_account_number'],
-                ClaimFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
+                ClaimFields::TRANSACTION_AMOUNT => number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
                 ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,

@@ -176,7 +176,7 @@ class NetbankingRblGatewayTest extends TestCase
     {
         Mail::fake();
 
-        $payments = $this->createPaymentsToClaim();
+        $payments = $this->createPayments();
 
         $this->setPaymentsReconciledAtToday();
 
@@ -208,7 +208,7 @@ class NetbankingRblGatewayTest extends TestCase
         }
     }
 
-    protected function createPaymentsToClaim()
+    protected function createPayments()
     {
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -217,18 +217,6 @@ class NetbankingRblGatewayTest extends TestCase
         $this->doAuthAndCapturePayment($this->payment);
 
         $payments = $this->getEntities('payment', [], true);
-
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
-                                                      ->addMinutes(30)
-                                                      ->timestamp;
-
-        // Ensuring that the created at timestamps are for yesterday
-        foreach ($payments['items'] as $payment)
-        {
-            $this->fixtures->edit('payment', $payment['id'], ['created_at'    => $createdAt,
-                                                              'authorized_at' => $createdAt + 10,
-                                                              'captured_at'   => $createdAt + 20]);
-        }
 
         return $payments;
     }

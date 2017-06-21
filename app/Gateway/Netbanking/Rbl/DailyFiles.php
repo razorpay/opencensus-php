@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Rbl;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Constants\MailTags;
+use RZP\Models\Payment;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
@@ -31,12 +31,12 @@ class DailyFiles extends Base\DailyFiles
 
         $refundsFile = [
             'url'  => $refundsData['signed_url'],
-            'name' => $refundsData['file_name'],
+            'name' => basename($refundsData['local_file_path']),
         ];
 
         $claimsFile = [
             'url'  => $claimsData['signed_url'],
-            'name' => $claimsData['file_name'],
+            'name' => basename($claimsData['local_file_path']),
         ];
 
         // Send the mail only when there is at least 1 claim or refund
@@ -80,7 +80,7 @@ class DailyFiles extends Base\DailyFiles
         Mail::queue($dailyFileMail);
     }
 
-    protected function getClaimsDataForTpv($from, $to)
+    protected function getClaimsData($from, $to)
     {
         $status = [
             Payment\Status::AUTHORIZED,
@@ -92,7 +92,7 @@ class DailyFiles extends Base\DailyFiles
         // so forwarding time stamps by 1 day
         list($from, $to) = $this->updateTimeStamps($from, $to);
 
-        $claims= $this->repo->payment->fetchReconciledPaymentsForTpv($from,
+        $claims= $this->repo->payment->fetchReconciledPaymentsForGateway($from,
                                                                          $to,
                                                                          $this->gateway,
                                                                          $status);
@@ -105,6 +105,8 @@ class DailyFiles extends Base\DailyFiles
                 'url'             => '',
                 'name'            => '',
                 'local_file_path' => '',
+                'signed_url'      => '',
+                'file_name'       => '',
              ];
         }
 

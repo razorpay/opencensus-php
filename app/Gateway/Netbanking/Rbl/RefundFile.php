@@ -3,13 +3,9 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Carbon\Carbon;
-use Mail;
 
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Models\Payment\Gateway;
-use RZP\Constants\MailTags;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
@@ -89,13 +85,18 @@ class RefundFile extends Base\RefundFile
                 RefundFields::MERCHANT_ID        => $row['terminal']['gateway_merchant_id'],
                 RefundFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
                 RefundFields::PGI_REFERENCE      => $row['payment']['id'],
-                RefundFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
-                RefundFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
+                RefundFields::TRANSACTION_AMOUNT => $this->getFormatedAmount($row['payment']['amount']),
+                RefundFields::REFUND_AMOUNT      => $this->getFormatedAmount($row['refund']['amount']),
             ];
 
             $totalAmount += $row['refund']['amount'] / 100;
         }
 
         return [$totalAmount, $data];
+    }
+
+    protected function getFormatedAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }

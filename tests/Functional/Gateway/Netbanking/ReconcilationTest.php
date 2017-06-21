@@ -2,14 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking;
 
-use Mail;
-use Mockery;
-use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class ReconcilationTest extends TestCase
 {
