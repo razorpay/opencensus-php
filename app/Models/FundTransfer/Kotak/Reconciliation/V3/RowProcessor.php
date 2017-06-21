@@ -67,16 +67,7 @@ class RowProcessor extends Base\RowProcessor
         $bankStatusCode = $this->parsedData['bank_status_code'];
         $this->reconEntity->setBankStatusCode($bankStatusCode);
 
-        $processedAtDate = $this->parsedData['date_time'];
-
-        $processedAtTimestamp = null;
-
-        if ($processedAtDate !== null)
-        {
-           $processedAtTimestamp = Carbon::createFromFormat('d/m/Y H:i:s', $processedAtDate, 'Asia/Kolkata')->timestamp;
-        }
-
-        $this->reconEntity->setDateTime($processedAtDate);
+        $this->reconEntity->setDateTime($this->parsedData['date_time']);
 
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
 
@@ -99,9 +90,9 @@ class RowProcessor extends Base\RowProcessor
         $source->setFailureReason($this->parsedData['failure_reason']);
         $source->setStatus($status);
         $source->setRemarks($this->parsedData['remarks']);
-        $source->setProcessedAt($processedAtTimestamp);
 
-        if ($status === Attempt\Status::PROCESSED)
+        if (($status === Attempt\Status::PROCESSED) and
+            (empty($this->parsedData['instrument_date']) === false))
         {
             $settledOn = Carbon::createFromFormat(
                             'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
