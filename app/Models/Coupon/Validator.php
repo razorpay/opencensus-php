@@ -79,7 +79,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_COUPON_EXPIRED);
         }
 
-        if (($this->entity->getMerchantId() !== null) and
+        if (($this->entity->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
             ($this->entity->getMerchantId() !== $merchant->getId()))
         {
             throw new Exception\BadRequestException(

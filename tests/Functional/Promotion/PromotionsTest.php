@@ -66,6 +66,7 @@ class PromotionsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -94,24 +95,6 @@ class PromotionsTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
-    }
-
-    public function testGetMultiplePromotions()
-    {
-        $offer = $this->fixtures->create('promotion:onetime');
-
-        $this->startTest();
-    }
-
-    public function testFetchPromotionById()
-    {
-        $promotion = $this->fixtures->create('promotion:onetime');
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/promotions/' . $promotion->getPublicId();
-
-        $this->testData[__FUNCTION__]['response']['content']['id'] = $promotion->getPublicId();
-
-        $this->startTest();
     }
 
     public function testPromotionWithUnsupportedCreditType()

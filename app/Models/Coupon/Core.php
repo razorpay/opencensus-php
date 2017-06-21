@@ -8,6 +8,7 @@ use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
@@ -22,7 +23,14 @@ class Core extends Base\Core
 
         $entity = $this->repo->$entityType->findByPublicId($input[Entity::ENTITY_ID]);
 
-        $merchant = $this->repo->merchant->findByPublicId($input[Entity::MERCHANT_ID]);
+        if (empty($input[Entity::MERCHANT_ID]) === true)
+        {
+            $merchant = $this->repo->merchant->getSharedAccount();
+        }
+        else
+        {
+            $merchant = $this->repo->merchant->findByPublicId($input[Entity::MERCHANT_ID]);
+        }
 
         $coupon->source()->associate($entity);
 

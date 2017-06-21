@@ -278,24 +278,6 @@ class CouponsTest extends TestCase
         return $response;
     }
 
-    public function testGetCouponsByPromotionId()
-    {
-        $promotion = $this->fixtures->create('promotion:onetime');
-
-        $couponAttributes = [
-            'entity_id'   => $promotion->getId(),
-            'entity_type' => 'promotion',
-        ];
-
-        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
-
-        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getId();
-
-        $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
-
-        $this->startTest();
-    }
-
     public function testDeleteCoupon()
     {
         $promotion = $this->fixtures->create('promotion:onetime');
@@ -303,6 +285,7 @@ class CouponsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -319,6 +302,7 @@ class CouponsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -337,6 +321,7 @@ class CouponsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -356,6 +341,7 @@ class CouponsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -380,6 +366,7 @@ class CouponsTest extends TestCase
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
             'end_date'    => time() - 1*24*60*60,
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -407,6 +394,7 @@ class CouponsTest extends TestCase
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
             'start_date'  => time() + 1*24*60*60,
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);

@@ -52,7 +52,7 @@ class Core extends Base\Core
 
     protected function getCreditsUsed(Credits\Entity $credit, int & $creditAmount): int
     {
-        $availableCredits = $credit->getValue() - $credit->getUsed();
+        $availableCredits = $credit->getUnusedCredits();
 
         $creditsUsed = 0;
 

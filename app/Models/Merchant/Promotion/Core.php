@@ -151,7 +151,6 @@ class Core extends Base\Core
     {
         $creditInput = [
             Credits\Entity::CAMPAIGN     => $promotion->getName(),
-            Credits\Entity::PROMOTION_ID => $promotion->getId(),
             Credits\Entity::VALUE        => $promotion->getAmount(),
             Credits\Entity::TYPE         => $promotion->getCreditType(),
         ];
@@ -163,7 +162,9 @@ class Core extends Base\Core
             $creditInput[Credits\Entity::EXPIRING_AT] = $scheduleTask->getNextRunAt();
          }
 
-        $this->creditCore->create($merchant, $creditInput);
+        $credit = $this->creditCore->create($merchant, $creditInput);
+
+        $credit->promotion()->associate($promotion);
 
         $this->trace->info(
             TraceCode::CREDITS_ADDED,
@@ -172,6 +173,8 @@ class Core extends Base\Core
                 'credit_input' => $creditInput,
             ]
         );
+
+        $this->repo->saveOrFail($credit);
     }
 
     public function expireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
@@ -182,12 +185,13 @@ class Core extends Base\Core
         {
             $creditInput = [
                 Credits\Entity::CAMPAIGN     => $promotion->getName() . 'Expired',
-                Credits\Entity::PROMOTION_ID => $promotion->getId(),
                 Credits\Entity::VALUE        => $creditsToExpire * -1,
                 Credits\Entity::TYPE         => $promotion->getCreditType(),
             ];
 
-            $this->creditCore->create($merchant, $creditInput);
+            $credit = $this->creditCore->create($merchant, $creditInput);
+
+            $credit->promotion()->associate($promotion);
 
             $this->trace->info(
                 TraceCode::CREDITS_EXPIRED,
@@ -196,6 +200,8 @@ class Core extends Base\Core
                     'credit_input' => $creditInput,
                 ]
             );
+
+            $this->repo->saveOrFail($credit);
         }
     }
 
@@ -209,6 +215,6 @@ class Core extends Base\Core
             return 0;
         }
 
-        return ($credit->getValue() - $credit->getUsed());
+        return $credit->getUnusedCredits();
     }
 }

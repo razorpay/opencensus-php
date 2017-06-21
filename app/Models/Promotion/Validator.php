@@ -13,12 +13,12 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME                    => 'required|string|max:50',
-        Entity::AMOUNT                  => 'required|integer|min:1',
+        Entity::AMOUNT                  => 'required|integer|min:100',
         Entity::CREDIT_TYPE             => 'required|in:amount',
         Entity::ITERATIONS              => 'sometimes|integer|min:1',
         Entity::CREDITS_EXPIRABLE       => 'sometimes|integer|in:0,1',
-        Entity::CREDITS_EXPIRY_INTERVAL => 'required_only_if:credits_expirable,1|integer',
-        Entity::CREDITS_EXPIRY_PERIOD   => 'required_only_if:credits_expirable,1|string|custom',
+        Entity::CREDITS_EXPIRY_INTERVAL => 'required_if:credits_expirable,1|integer|min:1',
+        Entity::CREDITS_EXPIRY_PERIOD   => 'required_if:credits_expirable,1|string|custom',
     ];
 
     protected static $editRules = [
@@ -27,7 +27,8 @@ class Validator extends Base\Validator
         Entity::CREDIT_TYPE             => 'sometimes|in:fee,amount',
         Entity::ITERATIONS              => 'sometimes|integer|min:1',
         Entity::CREDITS_EXPIRABLE       => 'sometimes|integer|in:0,1',
-        Entity::CREDITS_EXPIRY_INTERVAL => 'required_only_if:credits_expirable,1|integer',
+        Entity::CREDITS_EXPIRY_INTERVAL => 'required_if:credits_expirable,1|integer',
+        Entity::CREDITS_EXPIRY_PERIOD   => 'required_if:credits_expirable,1|string|custom',
     ];
 
     protected function validateCreditsExpiryPeriod($attribute, $value)

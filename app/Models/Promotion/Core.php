@@ -37,9 +37,7 @@ class Core extends Base\Core
 
         if ($promotion->areCreditsExpirable() === true)
         {
-            $schedule = $promotion->schedule;
-
-            $schedule = $this->addOrUpdateSchedule($schedule, $input);
+            $schedule = $this->createSchedule($input);
 
             $promotion->schedule()->associate($schedule);
         }
@@ -70,40 +68,23 @@ class Core extends Base\Core
 
     protected function createSchedule(array $input)
     {
-        $scheduleName =  $input[Entity::CREDITS_EXPIRY_INTERVAL] . '/' .
-                            $input[Entity::CREDITS_EXPIRY_PERIOD];
+        $schedule = $this->repo->schedule->getScheduleByPeriodAndInterval(
+            $input[Entity::CREDITS_EXPIRY_PERIOD], $input[Entity::CREDITS_EXPIRY_INTERVAL]);
 
-        $scheduleInput = [
-            Schedule\Entity::NAME       => $scheduleName,
-            Schedule\Entity::INTERVAL   => $input[Entity::CREDITS_EXPIRY_INTERVAL],
-            Schedule\Entity::PERIOD     => $input[Entity::CREDITS_EXPIRY_PERIOD],
-        ];
-
-        $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
-
-        return $schedule;
-    }
-
-    protected function editSchedule(Schedule\Entity $schedule, array $input)
-    {
-        $scheduleInput = [
-            Schedule\Entity::INTERVAL   => $input[Entity::CREDITS_EXPIRY_INTERVAL],
-        ];
-
-        $schedule = (new Schedule\Core)->editSchedule($schedule, $scheduleInput);
-
-        return $schedule;
-    }
-
-    protected function addOrUpdateSchedule(Schedule\Entity $schedule, array $input)
-    {
         if ($schedule === null)
         {
-            return $this->createSchedule($input);
+            $scheduleName =  $input[Entity::CREDITS_EXPIRY_INTERVAL] . '/' .
+                            $input[Entity::CREDITS_EXPIRY_PERIOD];
+
+            $scheduleInput = [
+                Schedule\Entity::NAME       => $scheduleName,
+                Schedule\Entity::INTERVAL   => $input[Entity::CREDITS_EXPIRY_INTERVAL],
+                Schedule\Entity::PERIOD     => $input[Entity::CREDITS_EXPIRY_PERIOD],
+            ];
+
+            $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
         }
-        else
-        {
-            return $this->editSchedule($schedule, $input);
-        }
+
+        return $schedule;
     }
 }

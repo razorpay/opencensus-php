@@ -14,8 +14,6 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Service extends Base\Service
 {
-    const ONE_DAY_TIME = 1*24*60*60;
-
     public function createSchedule($input)
     {
         $this->trace->info(TraceCode::SCHEDULE_CREATE_REQUEST, $input);
@@ -81,8 +79,8 @@ class Service extends Base\Service
     {
         (new ScheduleTask\Validator)->validateInput('processTasks', $input);
 
-        //all tasks which are due and less than time + 1 day
-        $timestamp = Carbon::now('Asia/Kolkata')->timestamp + self::ONE_DAY_TIME;
+        //all tasks which are due and less than time
+        $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
 
         $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
 

@@ -25,7 +25,7 @@ class Service extends Base\Service
 
         $coupon = $this->repo->coupon->findOrFailPublic($id);
 
-        if ($this->isUsed($coupon) === true)
+        if ($coupon->getUsedCount() > 0)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Deleting a used coupon is not allowed');
@@ -51,19 +51,5 @@ class Service extends Base\Service
         $result = $this->core()->apply($merchant, $coupon);
 
         return $result;
-    }
-
-    //This will check if the entity is used for any merchant
-    protected function isUsed(Entity $coupon): bool
-    {
-        $entity = $coupon->source()->firstOrFail();
-
-        $ns = Constants\Entity::getEntityNamespace($coupon->getEntityType());
-
-        $coreClass = $ns . '\Core';
-
-        $core = (new $coreClass);
-
-        return $core->isUsed($entity);
     }
 }

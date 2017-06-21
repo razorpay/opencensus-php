@@ -25,7 +25,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ID,
-        self::PROMOTION_ID,
         self::EXPIRING_AT,
         self::CAMPAIGN,
         self::VALUE,
@@ -141,10 +140,14 @@ class Entity extends Base\PublicEntity
 
     }
 
-
     public function getUsed()
     {
         return $this->getAttribute(self::USED);
+    }
+
+    public function getUnusedCredits()
+    {
+        return $this->getValue() - $this->getUsed();
     }
 
 // --------------------- End Getters -----------------------------------------
@@ -179,6 +182,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+     public function promotion()
+    {
+        return $this->belongsTo('RZP\Models\Promotion\Entity');
     }
 
 // --------------------- End Foreign Key Relations ---------------------------

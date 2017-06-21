@@ -10,7 +10,7 @@ return [
             'content' => [
                 'name'              => 'Test-Promotion',
                 'amount'            => 100,
-                'credit_type'       => 'fee',
+                'credit_type'       => 'amount',
                 'iterations'        => 1,
                 'credits_expirable' => false,
             ],
@@ -31,7 +31,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
-                'credit_type'             => 'fee',
+                'credit_type'             => 'amount',
                 'iterations'              => 2,
                 'credits_expirable'       => true,
                 'credits_expiry_period'   => 'daily',
@@ -72,7 +72,9 @@ return [
             'url'      => '',
             'method'   => 'PATCH',
             'content'  => [
-                'credits_expiry_interval'  => '3'
+                'credits_expirable'        => true,
+                'credits_expiry_interval'  => '3',
+                'credits_expiry_period'    => 'monthly'
             ]
         ],
         'response' => [
@@ -80,7 +82,6 @@ return [
                 'id'                => null,
                 'name'              => 'Test-Promotion',
                 'amount'            => 100,
-                'credits_expirable' => true,
             ]
         ]
     ],
@@ -176,7 +177,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
-                'credit_type'             => 'fee',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expirable'       => true,
                 'credits_expiry_interval' => 'random',
@@ -205,7 +206,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
-                'credit_type'             => 'fee',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expirable'       => true,
                 'credits_expiry_interval' => 2,
@@ -234,7 +235,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
-                'credit_type'             => 'fee',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expirable'       => true,
                 'credits_expiry_interval' => 2,
@@ -246,7 +247,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The credits expiry period must be sent'
+                    'description' => 'The credits expiry period field is required when credits expirable is 1.'
                 ]
             ],
             'status_code' => 400,
@@ -262,7 +263,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'amount'                  => 100,
-                'credit_type'             => 'fee',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expirable'       => true,
                 'credits_expiry_period'   => 'monthly',
@@ -274,7 +275,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The credits expiry interval must be sent'
+                    'description' => 'The credits expiry interval field is required when credits expirable is 1.'
                 ]
             ],
             'status_code' => 400,

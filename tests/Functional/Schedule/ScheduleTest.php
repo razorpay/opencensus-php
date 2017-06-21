@@ -194,6 +194,7 @@ class ScheduleTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion['id'],
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -204,7 +205,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(1);
+        $time->addDay(2);
 
         Carbon::setTestNow($time);
 
@@ -229,6 +230,7 @@ class ScheduleTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion['id'],
             'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -267,7 +269,8 @@ class ScheduleTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion1['id'],
             'entity_type' => 'promotion',
-            'code'        => 'RANDOM1'
+            'code'        => 'RANDOM1',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon1 = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -275,7 +278,8 @@ class ScheduleTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion2['id'],
             'entity_type' => 'promotion',
-            'code'        => 'RANDOM2'
+            'code'        => 'RANDOM2',
+            'merchant_id' => '100000Razorpay',
         ];
 
         $coupon2 = $this->fixtures->create('coupon:coupon', $couponAttributes);
@@ -292,7 +296,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(1);
+        $time->addDay(2);
 
         Carbon::setTestNow($time);
 

@@ -968,6 +968,13 @@ class Core extends Base\Core
 
     protected function createCreditTransaction(int $amount, Entity $txn, string $creditType)
     {
-        (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+        try
+        {
+            (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
     }
 }

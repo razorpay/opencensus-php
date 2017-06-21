@@ -24,8 +24,7 @@ class CreateCoupons extends Migration
             $table->char(Coupon::ID, Coupon::ID_LENGTH)
                   ->primary();
 
-            $table->char(Payment::MERCHANT_ID, Payment::ID_LENGTH)
-                  ->nullable();
+            $table->char(Payment::MERCHANT_ID, Payment::ID_LENGTH);
 
             $table->char(Coupon::ENTITY_ID, Coupon::ID_LENGTH);
 
