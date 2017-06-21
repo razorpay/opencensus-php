@@ -119,7 +119,7 @@ export default class InvoicesNewContainer extends Component {
       this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete(),
     ];
-    let invoiceId = this.props.id;
+    let invoiceId = this.props.match.params.id;
 
     if (invoiceId) {
       promises.push(this.props.fetchInvoice(invoiceId));
@@ -503,7 +503,6 @@ export default class InvoicesNewContainer extends Component {
                                     class="form-control input-xs"
                                     placeholder="Receipt number"
                                     disabled={locked}
-                                    autoFocus={true}
                                   />}
                             </div>
 
@@ -532,14 +531,8 @@ export default class InvoicesNewContainer extends Component {
                               component={TypeAhead}
                               options={this.props.customers}
                               selected={this.props.customer_id}
-                              selectedLabel={selectedCustomer => {
-                                return (
-                                  selectedCustomer.name ||
-                                  selectedCustomer.contact ||
-                                  selectedCustomer.email
-                                );
-                              }}
                               optionLabelPath="displayName"
+                              selectedOptionLabelPath="selectedDisplayName"
                               placeholder="Select a customer"
                               onQuickAdd={this.quickCreateCustomer}
                               disabled={isIssued || locked}
@@ -556,11 +549,7 @@ export default class InvoicesNewContainer extends Component {
                                   value
                                 );
                                 if (selected) {
-                                  return (
-                                    selected.name ||
-                                    selected.contact ||
-                                    selected.email
-                                  );
+                                  return selected.selectedDisplayName;
                                 }
                                 return value;
                               }}
