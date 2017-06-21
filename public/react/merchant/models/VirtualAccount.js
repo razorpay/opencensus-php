@@ -9,6 +9,7 @@ export default class VirtualAccount extends GenericEntity {
   resourceFields = [
     'id',
     'name',
+    'description',
     'descriptor',
     'receiver_types',
     'customer_id',

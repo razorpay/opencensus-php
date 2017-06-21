@@ -108,16 +108,16 @@ export default class CreateVirtualAccount extends Component {
             ? <VirtualAccountDetails virtualAccount={virtualAccount} />
             : <form onSubmit={handleSubmit(this.save)}>
                 <div class="form-group">
-                  <label>Beneficiary Name (Optional)</label>
+                  <label>Account Description</label>
                   <Field
-                    name="name"
+                    name="description"
                     class="form-control"
                     component="input"
                     required={true}
                     autoFocus={true}
                   />
                   <small class="help-block">
-                    Your billing label, Concord Co. will be used as the default beneficiary name
+                    Account description is only displayed on the dashboard and is not shared with the customer.
                   </small>
                 </div>
 

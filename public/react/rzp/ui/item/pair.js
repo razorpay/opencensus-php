@@ -72,9 +72,9 @@ export const virtualAccountId = {
   title: 'Virtual Account ID',
   value: id.virtualAccount,
 };
-export const beneficiaryName = {
-  title: 'Beneficiary Name',
-  value: item => item.name,
+export const accountDescription = {
+  title: 'Account Description',
+  value: item => item.description,
 };
 export const amountPaid = {
   title: 'Amount Paid',

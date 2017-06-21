@@ -12,7 +12,7 @@ import {
 } from 'merchant/modules/virtualaccounts';
 import {
   virtualAccountId,
-  beneficiaryName,
+  accountDescription,
   amountPaid,
   status,
   createdAt,
@@ -52,7 +52,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
             title="Virtual Accounts"
             columns={[
               virtualAccountId,
-              beneficiaryName,
+              accountDescription,
               amountPaid,
               status,
               createdAt,
