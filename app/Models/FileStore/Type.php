@@ -127,6 +127,7 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
+        self::RBL_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,

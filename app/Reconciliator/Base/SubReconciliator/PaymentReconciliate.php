@@ -330,8 +330,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
-        $this->persistAccountDetails($rowDetails);
-
         $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
@@ -607,6 +605,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
+        $this->persistAccountDetails($rowDetails, $gatewayPayment);
+
         $this->persistReferenceNumber($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
@@ -668,12 +668,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS];
 
-        if (empty($customerDetails[BaseReconciliate::CUSTOMER_ID]) === true)
+        if (empty($customerDetails[BaseReconciliate::CUSTOMER_ID]) === false)
         {
             $this->persistNbCustomerId($customerDetails, $gatewayPayment);
         }
 
-        if (empty($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === true)
+        if (empty($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === false)
         {
             $this->persistNbCustomerName($customerDetails, $gatewayPayment);
         }

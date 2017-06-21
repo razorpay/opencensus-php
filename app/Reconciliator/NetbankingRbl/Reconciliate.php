@@ -19,7 +19,6 @@ class Reconciliate extends Base\Reconciliate
         ClaimFields::MERCHANT_NAME,
         ClaimFields::PGI_STATUS,
         ClaimFields::ERROR_DESCRIPTION,
-        ClaimFields::TRANSACTION_STATUS,
     ];
 
     const TYPE_TO_COLUMN_HEADER_MAP = [

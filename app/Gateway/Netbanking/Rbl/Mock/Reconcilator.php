@@ -66,11 +66,10 @@ class Reconcilator extends Base\RefundFile
 
         $totalAmount = 0;
 
-        foreach ($input['data'] as $row)
+        foreach ($input as $row)
         {
-            s($row);
             $date = Carbon::createFromTimestamp(
-                        $row['created_at'],
+                        $row['payment']['created_at'],
                         'Asia/Kolkata')
                         ->format('m-d-y h:m:s');
 
@@ -80,15 +79,15 @@ class Reconcilator extends Base\RefundFile
                 ClaimFields::USER_ID            => 342355,
                 ClaimFields::DEBIT_ACCOUNT      => '309002069863',
                 ClaimFields::CREDIT_ACCOUNT     => '309001141935',
-                ClaimFields::TRANSACTION_AMOUNT => $row['amount'] / 100,
-                ClaimFields::PGI_REFERENCE      => $row['bank_payment_id'],
-                ClaimFields::BANK_REFERENCE     => $row['id'],
+                ClaimFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
+                ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
+                ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 ClaimFields::PGI_STATUS         => $this->getGatewayStatus($row),
                 ClaimFields::ERROR_DESCRIPTION  => $this->getErrorMessage($row),
             ];
 
-            $totalAmount +=  $row['amount'] / 100;
+            $totalAmount +=  $row['payment']['amount'] / 100;
         }
 
         return [$totalAmount, $data];
@@ -96,7 +95,7 @@ class Reconcilator extends Base\RefundFile
 
     protected function getGatewayStatus(array $row)
     {
-        if ($row['status'] === 'SUC')
+            if ($row['gateway']['status'] === 'SUC')
         {
             return 'Success';
         }
@@ -106,7 +105,7 @@ class Reconcilator extends Base\RefundFile
 
     protected function getErrorMessage(array $row)
     {
-        if (empty($row['error_message']) === true)
+        if (empty($row['gateway']['error_message']) === true)
         {
             return 'NA';
         }

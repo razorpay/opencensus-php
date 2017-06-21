@@ -8,6 +8,7 @@ use Mail;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment;
 use RZP\Constants\MailTags;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
@@ -42,7 +43,7 @@ class ClaimsFile extends Base\RefundFile
             FileStore\Format::TXT,
             $txt,
             $fileName,
-            FileStore\Type::RBL_NETBANKING_REFUND
+            FileStore\Type::RBL_NETBANKING_CLAIM
         );
 
         $file = $creator->get();
@@ -54,7 +55,7 @@ class ClaimsFile extends Base\RefundFile
         return [
             'local_file_path' => $file['local_file_path'],
             'signed_url'      => $signedFileUrl,
-            'count'           => count($data) - 1,
+            'count'           => count($data),
             'file_name'       => basename($file['local_file_path']),
             'total_amount'    => $totalAmount,
         ];

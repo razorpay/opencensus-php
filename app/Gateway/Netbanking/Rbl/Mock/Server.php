@@ -5,6 +5,8 @@ namespace RZP\Gateway\Netbanking\Rbl\Mock;
 use RZP\Gateway\Base;
 use RZP\Models\Bank\IFSC;
 use RZP\Gateway\Netbanking\Rbl\Status;
+use RZP\Models\Payment;
+use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Rbl\RequestFields;
 use RZP\Gateway\Netbanking\Rbl\ResponseFields;
 use RZP\Models\Currency\Currency;
@@ -106,8 +108,28 @@ class Server extends Base\Mock\Server
         return $decryptedData;
     }
 
-    public function generateReconcilation($input)
+    public function generateReconcilation()
     {
-        return (new Reconcilator)->generate($input);
+        $input = [
+            'gateway' => 'netbanking_rbl'
+        ];
+
+        $payments = (new Payment\Repository)->fetch($input, '10000000000000');
+
+        $inputData = [];
+
+        foreach ($payments as $payment)
+        {
+            $data['payment'] = $payment->toArray();
+
+            $gatewayInput['payment_id'] = $payment['id'];
+
+            $gatewayPayment = (new Netbanking\Base\Repository)->fetch($gatewayInput);
+
+            $data['gateway'] = $gatewayPayment[0]->toArray();
+
+            $inputData[] = $data;
+        }
+        return (new Reconcilator)->generate($inputData);
     }
 }

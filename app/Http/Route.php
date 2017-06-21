@@ -605,7 +605,6 @@ final class Route
         'mock_wallet_payment_get',
         'mock_upi_icici_payment',
         'mock_wallet_payment_with_paymentid',
-        'mock_generate_reconcilation',
         'dummy_return_callback',
         'emi_plans_fetch_multiple',
         'customer_get_saved_status',
@@ -938,6 +937,7 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
+        'mock_generate_reconcilation'
     ];
 
     public static $proxy = [
