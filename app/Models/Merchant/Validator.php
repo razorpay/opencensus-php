@@ -9,6 +9,7 @@ use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
 {
@@ -72,6 +73,8 @@ class Validator extends Base\Validator
         Entity::LOGO_URL                    => 'sometimes|max:2000',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
         Entity::HANDLE                      => 'sometimes|nullable|size:4|custom|unique:merchants,handle,null',
+        MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',
+        MerchantDetail::P_GSTIN             => 'sometimes|nullable|string',
     ];
 
     protected static $actionRules = [

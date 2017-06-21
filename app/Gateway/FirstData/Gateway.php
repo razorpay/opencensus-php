@@ -822,6 +822,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAction($this->action);
 
+        $gatewayPayment->setCapsPaymentId(strtoupper($input['payment'][Payment\Entity::ID]));
+
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;

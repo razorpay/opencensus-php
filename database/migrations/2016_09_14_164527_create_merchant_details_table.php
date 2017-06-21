@@ -80,6 +80,12 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_DOE)
                   ->nullable();
 
+            $table->string(MerchantDetail::GSTIN)
+                  ->nullable();
+
+            $table->string(MerchantDetail::P_GSTIN)
+                  ->nullable();
+
             $table->string(MerchantDetail::COMPANY_CIN)
                   ->nullable();
 

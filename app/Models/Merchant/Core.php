@@ -218,11 +218,12 @@ class Core extends Base\Core
     /**
      * Edit merchant configuration
      *
-     * @param \RZP\Models\Merchant\Entity $merchant
-     * @param array $input
-     * @return \RZP\Models\Merchant\Entity
+     * @param Entity $merchant
+     * @param array  $input
+     *
+     * @return Entity
      */
-    public function editConfig($merchant, $input)
+    public function editConfig($merchant, $input): Entity
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
