@@ -132,6 +132,10 @@ class Service extends Base\Service
 
     protected function eventVpaEdited($vpa)
     {
-        $this->app['events']->fire('api.vpa.edited', array($vpa));
+        $eventPayload = [
+            'main' => $vpa
+        ];
+
+        $this->app['events']->fire('api.vpa.edited', $eventPayload);
     }
 }

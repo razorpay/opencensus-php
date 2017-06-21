@@ -1846,7 +1846,7 @@ trait Authorize
 
         if ($activated === true)
         {
-            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE);
+            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
         }
 
         return $activated;
@@ -2159,7 +2159,11 @@ trait Authorize
 
     protected function eventPaymentAuthorized()
     {
-        $this->app['events']->fire('api.payment.authorized', [$this->payment]);
+        $eventPayload = [
+            'main' => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.authorized', $eventPayload);
     }
 
     protected function traceAuthorizeFailedOperationData(Payment\Entity $payment)

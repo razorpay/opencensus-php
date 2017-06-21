@@ -614,7 +614,11 @@ class Processor
 
     protected function eventPaymentFailed()
     {
-        $this->app['events']->fire('api.payment.failed', array($this->payment));
+        $eventPayload = [
+            'main' => $this->payment
+        ];
+
+        $this->app['events']->fire('api.payment.failed', $eventPayload);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)

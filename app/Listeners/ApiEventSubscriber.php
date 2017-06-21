@@ -32,6 +32,10 @@ class ApiEventSubscriber extends Base\Core
 
     protected $params;
 
+    protected $mainParam;
+
+    protected $withParams;
+
     protected $webhookEnabledForEvent = false;
 
     /**
@@ -61,15 +65,30 @@ class ApiEventSubscriber extends Base\Core
     {
         $event = $this->getFiringEvent($event);
 
-        //
-        // @todo: This is being done after laravel 5.4 upgrade.
-        //        Still need to figure out good explanation for this.
-        //
-        $params = $params[0];
+        if (is_sequential_array($params) === true)
+        {
+            $this->mainParam = $params[0];
+        }
+        else
+        {
+            $this->mainParam = $params['main'];
+            $this->withParams = $params['with'] ?? [];
+        }
 
-        $this->params = $params;
+        //
+        // Some events can send multiple entities in the array.
+        // The first entity should be the main entity and the others
+        // should be helper entities only.
+        // For example, if invoice events sends 3 entities,
+        // the first one should be of invoice and the second
+        // and third should be of payment and order.
+        //
+        // We use allParams to construct the payload.
+        // We use the first param to get the associated merchant,
+        // updated_at and other things like that.
+        //
 
-        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
+        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($this->mainParam);
 
         //
         // Doesn't execute the event if
@@ -86,7 +105,15 @@ class ApiEventSubscriber extends Base\Core
 
         $func = 'on' . studly_case($event);
 
-        return $this->$func($params);
+        //
+        // This is to maintain backward compatibility and to avoid code
+        // changes to all the events. The existing events will have just
+        // 1 param and hence should follow the older flow.
+        // If any event has more than 1 param, that should be handled
+        // by the event handling function.
+        //
+
+        return $this->$func($this->mainParam);
     }
 
     /**
@@ -174,6 +201,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onSubscriptionCharged($subscription)
+    {
+        $payload = $this->getSubscriptionPayload($subscription);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     // protected function onSubscriptionExpired($subscription)
     // {
     //     $payload = $this->getSubscriptionPayload($subscription);
@@ -235,6 +269,19 @@ class ApiEventSubscriber extends Base\Core
         $partialPayload[Constants\Entity::SUBSCRIPTION] = [
             'entity' => $subscription->toArrayPublic()
         ];
+
+        if (empty($this->withParams) === false)
+        {
+            foreach ($this->withParams as $withParamKey => $withParamValue)
+            {
+                if (empty($withParamValue) === false)
+                {
+                    $partialPayload[$withParamKey] = [
+                        'entity' => $withParamValue->toArrayPublic()
+                    ];
+                }
+            }
+        }
 
         return $partialPayload;
     }
@@ -318,7 +365,7 @@ class ApiEventSubscriber extends Base\Core
     protected function getWebhookData($payload)
     {
         $eventFired = $this->event;
-        $entity = $this->params;
+        $entity = $this->mainParam;
         $webhook = $entity->merchant->webhook;
 
         $attributes = array(

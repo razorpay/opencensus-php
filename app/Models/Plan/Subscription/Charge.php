@@ -106,7 +106,7 @@ class Charge extends Base\Core
 
             if ($manual === false)
             {
-                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice);
+                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment);
             }
 
             return false;
@@ -120,7 +120,7 @@ class Charge extends Base\Core
         if (($payment->isCaptured() === false) and
             ($manual === false))
         {
-            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
+            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, true);
 
             return false;
         }
@@ -209,8 +209,10 @@ class Charge extends Base\Core
 
         if ($oldStatus !== Status::ACTIVE)
         {
-            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
         }
+
+        (new Core)->eventSubscriptionCharged($subscription, $capturedPayment);
 
         //
         // This must be sent after saving the invoice and subscription
@@ -223,6 +225,7 @@ class Charge extends Base\Core
     public function handleAuthorizationOrCaptureFailure(
         Entity $subscription,
         Invoice\Entity $invoice,
+        Payment\Entity $payment = null,
         bool $captureFailure = false)
     {
         $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
@@ -275,7 +278,7 @@ class Charge extends Base\Core
             $this->repo->saveOrFail($subscription->task);
         });
 
-        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
+        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus(), $payment);
     }
 
     protected function validateInvoiceStatusBeforeCharging(

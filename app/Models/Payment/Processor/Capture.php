@@ -527,7 +527,11 @@ trait Capture
 
         if ($payment->getApiOrderId() !== null)
         {
-            $this->app['events']->fire('api.order.paid', array($payment));
+            $eventPayload = [
+                'main' => $payment
+            ];
+
+            $this->app['events']->fire('api.order.paid', $eventPayload);
         }
     }
 
@@ -540,14 +544,22 @@ trait Capture
             return;
         }
 
-        $this->app['events']->fire('api.invoice.paid', array($payment));
+        $eventPayload = [
+            'main' => $payment
+        ];
+
+        $this->app['events']->fire('api.invoice.paid', $eventPayload);
     }
 
     protected function eventPaymentCaptured()
     {
         $payment = $this->payment;
 
-        $this->app['events']->fire('api.payment.captured', array($payment));
+        $eventPayload = [
+            'main' => $payment
+        ];
+
+        $this->app['events']->fire('api.payment.captured', $eventPayload);
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)

@@ -20,6 +20,7 @@ class Contains
         Type::SUBSCRIPTION_ACTIVATED    => [Constants::SUBSCRIPTION],
         Type::SUBSCRIPTION_OVERDUE      => [Constants::SUBSCRIPTION],
         Type::SUBSCRIPTION_HALTED       => [Constants::SUBSCRIPTION],
+        Type::SUBSCRIPTION_CHARGED      => [Constants::PAYMENT, Constants::SUBSCRIPTION],
         // Type::SUBSCRIPTION_EXPIRED      => [Constants::SUBSCRIPTION],
     ];
 
