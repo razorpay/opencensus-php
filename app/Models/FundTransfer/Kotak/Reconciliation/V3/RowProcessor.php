@@ -68,7 +68,13 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->setBankStatusCode($bankStatusCode);
 
         $processedAtDate = $this->parsedData['date_time'];
-        $processedAtTimestamp = Carbon::createFromFormat('d/m/Y H:i:s', $processedAtDate, 'Asia/Kolkata')->timestamp;
+
+        $processedAtTimestamp = null;
+
+        if ($processedAtDate !== null)
+        {
+           $processedAtTimestamp = Carbon::createFromFormat('d/m/Y H:i:s', $processedAtDate, 'Asia/Kolkata')->timestamp;
+        }
 
         $this->reconEntity->setDateTime($processedAtDate);
 
