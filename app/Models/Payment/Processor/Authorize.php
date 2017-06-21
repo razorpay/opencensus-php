@@ -696,7 +696,11 @@ trait Authorize
             return;
         }
 
-        if ($payment->isWallet() === true)
+        if ($payment->isOpenWalletPayment() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::OPENWALLET);
+        }
+        else if ($payment->isWallet() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
         }
