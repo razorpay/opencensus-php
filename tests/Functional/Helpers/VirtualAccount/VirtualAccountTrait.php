@@ -83,6 +83,20 @@ trait VirtualAccountTrait
         return $response;
     }
 
+    private function fetchVirtualAccountPayments(string $id)
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/virtual_accounts/' . $id . '/payments',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function payVirtualAccount(string $virtualAccountId, array $paymentArray = [])
     {
         $defaultPaymentArray = $this->getDefaultBankTransferArray();
@@ -100,9 +114,7 @@ trait VirtualAccountTrait
             'content' => $paymentArray,
         ];
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -127,7 +139,9 @@ trait VirtualAccountTrait
         return [
             'name'            => 'Test virtual account',
             'amount_expected' => 10000,
-            'receiver_type'   => 'bank_account',
+            'receiver_types'  => [
+                'bank_account'
+            ],
             'notes'           => [
                 'a' => 'b',
             ],

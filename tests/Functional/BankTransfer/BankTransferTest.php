@@ -29,9 +29,7 @@ class BankTransferTest extends TestCase
 
         $this->bankAccount = $this->createVirtualAccount();
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
     }
 
     public function testBankTransferProcess()
@@ -266,9 +264,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

@@ -101,7 +101,7 @@ class Receiver
 
         if ($this->mode === Mode::TEST)
         {
-            $provider = Provider::VVS;
+            $provider = Provider::DASHBOARD;
         }
 
         return $provider;

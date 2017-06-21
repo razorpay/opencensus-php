@@ -13,7 +13,9 @@ class Service extends Base\Service
 {
     protected $core;
 
-    const DEFAULT_RECEIVER_TYPE = Receiver::BANK_ACCOUNT;
+    const DEFAULT_RECEIVER_TYPES = [
+        Receiver::BANK_ACCOUNT,
+    ];
 
     public function __construct()
     {
@@ -32,13 +34,13 @@ class Service extends Base\Service
 
         $customer = $this->getCustomerIfGiven($input);
 
-        $this->setDefaultReceiverTypeIfNeeded($input);
+        $this->setDefaultReceiverTypesIfNeeded($input);
 
         $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
         {
             $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPE]);
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
 
             $this->repo->saveOrFail($virtualAccount);
 
@@ -57,7 +59,8 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->findByIdAndMerchantWithRelations(
                                 $id,
                                 $this->merchant,
@@ -69,7 +72,8 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $virtualAccounts = $this->repo->virtual_account
+        $virtualAccounts = $this->repo
+                                ->virtual_account
                                 ->fetch($input, $this->merchant->getId());
 
         return $virtualAccounts->toArrayPublic();
@@ -77,7 +81,8 @@ class Service extends Base\Service
 
     public function update(string $id, array $input)
     {
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
@@ -87,12 +92,25 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $virtualAccount = $this->repo->virtual_account
+        $virtualAccount = $this->repo
+                               ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->repo->deleteOrFail($virtualAccount);
 
         return $virtualAccount->toArrayDeleted();
+    }
+
+    public function fetchPayments(string $virtualAccountId)
+    {
+        $payments = $this->repo
+                         ->payment
+                         ->fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+                            $virtualAccountId,
+                            $this->merchant
+                            );
+
+        return $payments->toArrayPublic();
     }
 
     protected function getCustomerIfGiven(array $input)
@@ -103,23 +121,24 @@ class Service extends Base\Service
         {
             $customerId = $input[Entity::CUSTOMER_ID];
 
-            $customer = $this->repo->customer
+            $customer = $this->repo
+                             ->customer
                              ->findByPublicIdAndMerchant($customerId, $this->merchant);
         }
 
         return $customer;
     }
 
-    protected function setDefaultReceiverTypeIfNeeded(array & $input)
+    protected function setDefaultReceiverTypesIfNeeded(array & $input)
     {
-        if (empty($input[Entity::RECEIVER_TYPE]) === true)
+        if (empty($input[Entity::RECEIVER_TYPES]) === true)
         {
-            $input[Entity::RECEIVER_TYPE] = self::DEFAULT_RECEIVER_TYPE;
+            $input[Entity::RECEIVER_TYPES] = self::DEFAULT_RECEIVER_TYPES;
         }
 
-        if (is_array($input[Entity::RECEIVER_TYPE]) === false)
+        if (is_array($input[Entity::RECEIVER_TYPES]) === false)
         {
-            $input[Entity::RECEIVER_TYPE] = [$input[Entity::RECEIVER_TYPE]];
+            $input[Entity::RECEIVER_TYPES] = [$input[Entity::RECEIVER_TYPES]];
         }
     }
 

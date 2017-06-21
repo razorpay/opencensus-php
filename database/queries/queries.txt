@@ -2180,3 +2180,19 @@ ALTER TABLE invitations
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN time BIGINT;
+
+# Add column locked in iins
+ALTER TABLE iins
+    ADD COLUMN locked TINYINT(1) DEFAULT 0 AFTER enabled;
+
+# GST fields
+ALTER TABLE merchant_details
+    ADD COLUMN gstin VARCHAR(255) AFTER business_doe,
+    ADD COLUMN p_gstin VARCHAR(255) AFTER gstin;
+
+ALTER TABLE first_data
+    ADD COLUMN caps_payment_id VARCHAR(14) AFTER gateway_transaction_id;
+
+ALTER TABLE pricing
+    ADD COLUMN min_fee INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER fixed_rate,
+    ADD COLUMN max_fee INTEGER UNSIGNED AFTER min_fee;

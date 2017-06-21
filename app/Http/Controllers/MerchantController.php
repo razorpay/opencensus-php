@@ -698,4 +698,20 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getGSTDetails()
+    {
+        $response = (new Merchant\Service)->getGSTDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function editGSTDetails()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->editGSTDetails($input);
+
+        return ApiResponse::json($response);
+    }
 }

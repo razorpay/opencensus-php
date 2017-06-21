@@ -12,4 +12,11 @@ class VirtualAccountController extends Controller
     use Traits\HasCrudMethods;
 
     protected $service = VirtualAccount\Service::class;
+
+    public function getPayments(string $id)
+    {
+        $response = $this->service()->fetchPayments($id);
+
+        return ApiResponse::json($response);
+    }
 }

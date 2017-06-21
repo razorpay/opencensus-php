@@ -267,7 +267,6 @@ trait SubscriptionTrait
             $this->assertArrayHasKey('current_end'     , $subscription);
             $this->assertArrayHasKey('ended_at'        , $subscription);
             $this->assertArrayHasKey('quantity'        , $subscription);
-            $this->assertArrayHasKey('token_id'        , $subscription);
             $this->assertArrayHasKey('notes'           , $subscription);
             $this->assertArrayHasKey('charge_at'       , $subscription);
             $this->assertArrayHasKey('start_at'        , $subscription);

@@ -74,6 +74,8 @@ class TransactionTest extends TestCase
 
         $adj = $this->startTest();
 
+        $this->ba->addAdminAuthHeaders(null, null);
+
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn, 'txnDataAfterAddingAdjWithNoEscrowUpdate');
     }

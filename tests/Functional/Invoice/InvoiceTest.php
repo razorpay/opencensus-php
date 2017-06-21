@@ -1664,8 +1664,6 @@ class InvoiceTest extends TestCase
 
     public function testIssueInvoiceByBatchId()
     {
-        $this->fixtures->merchant->addFeatures(['invoice_batch']);
-
         $this->testCreateDraftInvoiceWithSomeData();
         $this->testCreateDraftInvoiceWithSomeData();
         $this->testCreateDraftInvoiceWithSomeData();

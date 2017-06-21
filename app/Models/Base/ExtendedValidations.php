@@ -127,8 +127,11 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      * Create notes validation
      *
      * @param string $attribute
-     * @param array $notes
-     * @param array $parameters
+     * @param array  $notes
+     * @param array  $parameters
+     *
+     * @return bool
+     * @throws Exception\BadRequestException
      */
     protected function validateNotes($attribute, $notes, $parameters)
     {
@@ -159,6 +162,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      * Check notes array is flat
      *
      * @param array $notes
+     *
+     * @return null|string
      */
     protected function validateNotesKeyValue(array $notes)
     {
