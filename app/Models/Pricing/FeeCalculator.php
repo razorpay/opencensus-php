@@ -11,6 +11,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Transfer\ToType;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -174,13 +175,24 @@ class FeeCalculator
             TraceCode::PRICING_RULE_SELECTION,
             ['count' => count($rules)]);
 
-        if ($feature === Pricing\Feature::PAYMENT)
+        $rule = null;
+
+        switch ($feature)
         {
-            $rule = $this->getRelevantPaymentPricingRule($rules, $method);
-        }
-        else if ($feature === Pricing\Feature::PAYOUT)
-        {
-            $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+            case Pricing\Feature::PAYMENT:
+                $rule = $this->getRelevantPaymentPricingRule($rules, $method);
+
+                break;
+
+            case Pricing\Feature::PAYOUT:
+                $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+
+                break;
+
+            case Pricing\Feature::TRANSFER:
+                $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+
+                break;
         }
 
         if ($rule === null)
@@ -197,6 +209,26 @@ class FeeCalculator
     protected function getRelevantPayoutPricingRule($rules, $method)
     {
         $rule = $this->getRelevantPricingRuleForMethod($rules);
+
+        return $rule;
+    }
+
+    protected function getRelevantTransferPricingRule($rules, $method)
+    {
+        $rule = null;
+
+        if ($method === ToType::ACCOUNT)
+        {
+            // Account transfer filter
+        }
+        else if ($method === ToType::CUSTOMER)
+        {
+            // Customer Transfer filter
+        }
+        else
+        {
+            $rule = $this->getRelevantPricingRuleForMethod($rules);
+        }
 
         return $rule;
     }
