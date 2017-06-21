@@ -35,6 +35,7 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Upi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -831,7 +832,7 @@ trait Authorize
         (new Offer\Core)->validateOfferApplicableOnPayment($payment);
     }
 
-    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -858,15 +859,7 @@ trait Authorize
         }
 
         // set token for local card saving in gateway input
-        if ($payment->getTokenId() !== null)
-        {
-            $gatewayInput['token'] = $payment->localToken;
-        }
-        // TODO: CHECK IF THIS IS OKAY HERE!!!
-        else if ($payment->getGlobalTokenId() !== null)
-        {
-            $gatewayInput['token'] = $payment->globalToken;
-        }
+        $gatewayInput['token'] = $payment->getGlobalOrLocalTokenEntity();
 
         $customProperties = [
             'otpSubmitUrl' => $this->getOtpSubmitUrl(),
@@ -1813,20 +1806,47 @@ trait Authorize
 
             $token->incrementUsedCount();
 
-            // TODO: THIS NEEDS TO BE FIXED! WE CANNOT
-            // ASSOCIATE TERMINAL TO GLOBAL TOKEN!
-            if (($token->isLocal() or !$token->isLocal()) and
-                ($payment->isCard()) and
+            if (($payment->isCard() === true) and
                 ($payment->isRecurring() === true) and
                 ($token->isRecurring() === false))
             {
                 $token->setRecurring(true);
+
+                $this->createAndSetTerminalInGatewayToken($payment, $token);
 
                 $token->terminal()->associate($payment->terminal);
             }
 
             $this->repo->saveOrFail($token);
         }
+    }
+
+    protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
+    {
+        $reference = $payment->getReferenceForGatewayTokens();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        if ($gatewayTokens->count() > 0)
+        {
+            //
+            // Not throwing an exception here because it might
+            // screw up with the flow. Going to just trace as critical.
+            //
+            $this->trace->critical(
+                TraceCode::GATEWAY_TOKEN_ALREADY_PRESENT,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'payment_terminal_id'   => $payment->terminal->getId(),
+                    'token_id'              => $token->getId(),
+                    'gateway_tokens_count'  => $gatewayTokens->count(),
+                    'gateway_tokens'        => $gatewayTokens->toArray()
+                ]);
+
+            return;
+        }
+
+        (new GatewayToken\Core)->create($payment, $token, $reference);
     }
 
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
