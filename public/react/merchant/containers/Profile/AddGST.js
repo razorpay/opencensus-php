@@ -158,8 +158,8 @@ export default class AddGST extends Component {
 
             <div class="help-block">
               {isPGST
-                ? 'After submitting the provisional GSTIN, you can submit the final GSTIN later.'
-                : 'final GSTIN once submitted cannot be updated via dashboard'}
+                ? 'You can submit your final GSTIN here once you have received it.'
+                : 'final GSTIN once submitted cannot be updated via dashboard.'}
 
             </div>
 
