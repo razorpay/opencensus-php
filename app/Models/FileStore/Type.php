@@ -80,6 +80,7 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
+            self::RBL_NETBANKING_CLAIM,
             self::ICICI_UPI_REFUND,
             self::REPORT,
             self::BENEFICIARY_FILE,

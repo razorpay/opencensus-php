@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Rbl;
+namespace RZP\Gateway\Netbanking\Rbl\Mock;
 
 use Carbon\Carbon;
 use Mail;
@@ -9,11 +9,13 @@ use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Payment\Gateway;
 use RZP\Constants\MailTags;
+use RZP\Gateway\Netbanking\Rbl\Constants;
+use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
-class ClaimsFile extends Base\RefundFile
+class Reconcilator extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Rbl_Netbanking_Claims';
+    protected static $fileToWriteName = 'Rbl_Netbanking_Reconcilation';
 
     protected static $headers = [
         ClaimFields::SERIAL_NO,
@@ -27,12 +29,11 @@ class ClaimsFile extends Base\RefundFile
         ClaimFields::MERCHANT_NAME,
         ClaimFields::PGI_STATUS,
         ClaimFields::ERROR_DESCRIPTION,
-        ClaimFields::TRANSACTION_STATUS,
     ];
 
     public function generate($input)
     {
-        list($totalAmount, $data) = $this->getClaimsData($input);
+        list($totalAmount, $data) = $this->getReconcilationData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -42,25 +43,22 @@ class ClaimsFile extends Base\RefundFile
             FileStore\Format::TXT,
             $txt,
             $fileName,
-            FileStore\Type::RBL_NETBANKING_REFUND
+            FileStore\Type::RBL_NETBANKING_CLAIM
         );
 
         $file = $creator->get();
 
         $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
-        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
         return [
             'local_file_path' => $file['local_file_path'],
-            'signed_url'      => $signedFileUrl,
-            'count'           => count($data) - 1,
+            'count'           => count($data),
             'file_name'       => basename($file['local_file_path']),
             'total_amount'    => $totalAmount,
         ];
     }
 
-    protected function getClaimsData($input)
+    protected function getReconcilationData($input)
     {
         $data = [];
 
@@ -70,50 +68,35 @@ class ClaimsFile extends Base\RefundFile
 
         foreach ($input['data'] as $row)
         {
+            s($row);
             $date = Carbon::createFromTimestamp(
-                        $row['payment']['created_at'],
+                        $row['created_at'],
                         'Asia/Kolkata')
                         ->format('m-d-y h:m:s');
 
             $data[] = [
                 ClaimFields::SERIAL_NO          => $index++,
                 ClaimFields::TRANSACTION_DATE   => $date,
-                ClaimFields::USER_ID            => $row['gateway']['customer_id'],
-                ClaimFields::DEBIT_ACCOUNT      => $row['gateway']['account_number'],
-                ClaimFields::CREDIT_ACCOUNT     => $row['gateway']['credit_account_number'],
-                ClaimFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
-                ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
-                ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
+                ClaimFields::USER_ID            => 342355,
+                ClaimFields::DEBIT_ACCOUNT      => '309002069863',
+                ClaimFields::CREDIT_ACCOUNT     => '309001141935',
+                ClaimFields::TRANSACTION_AMOUNT => $row['amount'] / 100,
+                ClaimFields::PGI_REFERENCE      => $row['bank_payment_id'],
+                ClaimFields::BANK_REFERENCE     => $row['id'],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 ClaimFields::PGI_STATUS         => $this->getGatewayStatus($row),
                 ClaimFields::ERROR_DESCRIPTION  => $this->getErrorMessage($row),
-                ClaimFields::TRANSACTION_STATUS => $this->getPaymentStatus($row),
             ];
 
-            $totalAmount +=  $row['payment']['amount'] / 100;
+            $totalAmount +=  $row['amount'] / 100;
         }
 
         return [$totalAmount, $data];
     }
 
-    protected function getPaymentStatus(array $row)
-    {
-        if (in_array($row['payment']['status'],
-                    [
-                        Payment\Status::AUTHORIZED,
-                        Payment\Status::REFUNDED,
-                        Payment\Status::CAPTURED
-                    ]) === true)
-        {
-            return 'Success';
-        }
-
-        return 'Failed';
-    }
-
     protected function getGatewayStatus(array $row)
     {
-        if ($row['gateway']['status'] === 'SUC')
+        if ($row['status'] === 'SUC')
         {
             return 'Success';
         }
@@ -123,7 +106,7 @@ class ClaimsFile extends Base\RefundFile
 
     protected function getErrorMessage(array $row)
     {
-        if (empty($row['gateway']['error_message']) === true)
+        if (empty($row['error_message']) === true)
         {
             return 'NA';
         }

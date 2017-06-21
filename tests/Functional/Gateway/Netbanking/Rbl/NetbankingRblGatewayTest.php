@@ -178,15 +178,32 @@ class NetbankingRblGatewayTest extends TestCase
 
         $payments = $this->createPaymentsToClaim();
 
+        $this->setPaymentsReconciledAtToday();
+
         $this->createRefundsForFileGeneration($payments);
 
         $data = $this->generateRefundsExcelForNb($this->bank);
+
+        s($data);
 
         $this->assertTrue(file_exists($data['netbanking_rbl']['file']));
 
         unlink($data['netbanking_rbl']['file']);
 
         $this->checkMailQueue();
+    }
+
+    protected function setPaymentsReconciledAtToday()
+    {
+        // Set the transactions to be reconciled today
+        $transactions = $this->getEntities('transaction', [], true);
+
+        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+
+        foreach ($transactions['items'] as $transaction)
+        {
+            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
+        }
     }
 
     protected function createPaymentsToClaim()

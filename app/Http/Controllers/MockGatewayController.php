@@ -226,7 +226,10 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
+        sd($input);
+
         $driver = 'netbanking_'.$bank;
+
         $server = $this->gateway->server($driver);
 
         $data = $server->authorize($input);
@@ -258,6 +261,7 @@ class MockGatewayController extends Controller
 
         $server = $this->gateway->server($driver);
 
+
         return $server->authorize($input, $paymentId);
     }
 
@@ -272,5 +276,16 @@ class MockGatewayController extends Controller
         //return $server->authorize($input, $paymentId);
 
         return;
+    }
+
+    public function generateNetbankingReconcilation($bank)
+    {
+        $input = Request::all();
+
+        $driver = 'netbanking_'.$bank;
+
+        $server = $this->gateway->server($driver);
+
+        return $server->generateReconcilation($input);
     }
 }

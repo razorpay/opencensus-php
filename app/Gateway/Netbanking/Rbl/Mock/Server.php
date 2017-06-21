@@ -105,4 +105,9 @@ class Server extends Base\Mock\Server
 
         return $decryptedData;
     }
+
+    public function generateReconcilation($input)
+    {
+        return (new Reconcilator)->generate($input);
+    }
 }

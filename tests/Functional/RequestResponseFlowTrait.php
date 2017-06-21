@@ -278,6 +278,8 @@ trait RequestResponseFlowTrait
     {
         $response = $this->sendRequest($request, $callback);
 
+        s($response);
+
         return $this->getJsonContentFromResponse($response, $callback);
     }
 
