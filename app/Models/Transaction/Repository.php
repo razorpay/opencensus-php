@@ -149,41 +149,6 @@ class Repository extends Base\Repository
     }
 
     /**
-     * We need to fetch only those transactions which are settled.
-     *
-     * @param  [type] $merchantId               [description]
-     * @param  [type] $from                     [description]
-     * @param  [type] $to                       [description]
-     * @param  [type] $count                    [description]
-     * @param  [type] $skip                     [description]
-     * @param  [type] $entityToRelationFetchMap [description]
-     * @return [type]                           [description]
-     */
-    public function fetchEntitiesForDSPReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
-    {
-        $settlements = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
-
-        $settlementIds = $settlements->pluck('id')->all();
-
-        $txns = $this->newQuery()
-                     ->merchantId($merchantId)
-                     ->whereIn(Entity::TYPE, ['payment', 'refund'])
-                     ->whereIn(Entity::SETTLEMENT_ID, $settlementIds)
-                     ->where(Entity::SETTLED, true)
-                     ->with('merchant')
-                     ->latest()
-                     ->get();
-
-        $this->trace->info(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            ['time' => time()]);
-
-        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
-
-        return $txns;
-    }
-
-    /**
      * Fetches and associates with Transaction entity
      *
      * @param $entities - Array of Transaction entities

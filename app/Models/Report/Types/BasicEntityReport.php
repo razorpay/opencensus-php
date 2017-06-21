@@ -265,9 +265,12 @@ class BasicEntityReport extends BaseReport
      * @param $from, $to, $count, $skip
      * @return [$formattedData, $fetchCount] array
      */
-    protected function getReportData($from, $to, $count, $skip): array
+    protected function getReportData($from, $to, $count, $skip, $merchantId = null): array
     {
-        $merchantId = $this->merchant->getId();
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->getId();
+        }
 
         $begin = time();
 
