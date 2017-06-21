@@ -298,9 +298,11 @@ class Core extends Base\Core
         Transaction\Entity $transaction,
         Merchant\Balance\Entity $merchantBalance)
     {
-        $amountCredits = $merchantBalance->getAmountCredits();
+        $merchantId = $merchantBalance->merchant->getId();
 
-        $feeCredits = $merchantBalance->getFeeCredits();
+        $amountCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'amount');
+
+        $feeCredits = $this->repo->credits->getMerchantCredits($merchantId, 'fee');
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -334,9 +336,11 @@ class Core extends Base\Core
         Transaction\Entity $transaction,
         Merchant\Balance\Entity $merchantBalance)
     {
-        $amountCredits = $merchantBalance->getAmountCredits();
+        $merchantId = $merchantBalance->merchant->getId();
 
-        $feeCredits = $merchantBalance->getFeeCredits();
+        $amountCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'amount');
+
+        $feeCredits = $this->repo->credits->getMerchantCredits($merchantId, 'fee');
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -823,7 +827,9 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $amountCredits = $merchantBalance->getAmountCredits();
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $amountCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'amount');
 
         // Removing Assert for now, as there is a race condition. if 2 payments
         // are authorized at the same time where we create txn on auth with. both
@@ -868,7 +874,9 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $feeCredits = $merchantBalance->getFeeCredits();
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $feeCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'fee');
 
         if ($feeCredits < $fee)
         {

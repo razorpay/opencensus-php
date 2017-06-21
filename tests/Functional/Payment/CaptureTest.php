@@ -776,7 +776,7 @@ class CaptureTest extends TestCase
         //These never expire. Should be used at last
         $credit1 = $this->fixtures->create('credits', [
                        'type'        => 'amount',
-                       'value'       => 50000,
+                       'value'       => 1000000,
                    ]);
 
         $credit2 = $this->fixtures->create('credits', [
@@ -784,8 +784,6 @@ class CaptureTest extends TestCase
                        'value' => 10000,
                        'expiring_at' => time() + 1*24*60*60,
                    ]);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 44000]);
 
         $pricing = $this->fixtures->base->createEntity('pricing', [
             'plan_id'           => '10ZeroPricingP',
@@ -805,7 +803,7 @@ class CaptureTest extends TestCase
 
         $creditTransactions = $this->getEntities('credits_transaction', [], true);
 
-        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 34000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 990000);
         $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
         $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
         $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
@@ -909,6 +907,18 @@ class CaptureTest extends TestCase
     // Amount Credit > 0
     public function testTransactionOnCaptureWithAmountCreditForPostpaid()
     {
+         //These never expire. Should be used at last
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 20000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'amount',
+                       'value' => 10000,
+                       'expiring_at' => time() + 1*24*60*60,
+                   ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 24000]);
 
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
@@ -949,6 +959,17 @@ class CaptureTest extends TestCase
     // Fee Credit > 0
     public function testTransactionOnCaptureWithFeeCreditForPostpaid()
     {
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 20000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'fee',
+                       'value' => 10000,
+                       'expiring_at' => time() + 1*24*60*60,
+                   ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);
 
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);

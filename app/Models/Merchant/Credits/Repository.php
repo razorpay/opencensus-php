@@ -83,4 +83,21 @@ class Repository extends Base\Repository
                     ->whereRaw(Entity::VALUE . '>' . Entity::USED)
                     ->first();
     }
+
+    public function getMerchantCredits(string $merchantId, string $type)
+    {
+        $query = $this->newQuery()
+                    ->selectRaw('sum(value - used) as sum')
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(function ($query)
+                        {
+                            $query->where(Entity::EXPIRING_AT, '>', time())
+                              ->orWhereNull(Entity::EXPIRING_AT);
+                        }
+                    )
+                    ->where(Entity::TYPE, '=', $type)
+                    ->first();
+
+        return $query->getAttribute('sum');
+    }
 }
