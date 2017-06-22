@@ -1198,6 +1198,7 @@ final class Route
         'iin_edit'                         => Permission::EDIT_IIN_RULE,
         'offer_create'                     => Permission::CREATE_MERCHANT_OFFER,
         'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
+        'merchant_edit_config'             => Permission::ASSIGN_MERCHANT_HANDLE,
     ];
 
     public static $direct = [
