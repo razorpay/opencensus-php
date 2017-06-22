@@ -861,12 +861,46 @@ trait Authorize
         // set token for local card saving in gateway input
         $gatewayInput['token'] = $payment->getGlobalOrLocalTokenEntity();
 
+        //
+        // This is mostly required for first data recurring.
+        // They need gateway merchant id of the terminal to be
+        // sent in the recurring request.
+        // The terminal is set as part of gateway_token.
+        // The normal token may/will not have a terminal (not correct one at least)
+        // That whole global token wala stuff. One customer, one token, multiple
+        // subscriptions/terminals.
+        //
+        $this->setGatewayTokenInInput($payment, $gatewayInput);
+
         $customProperties = [
             'otpSubmitUrl' => $this->getOtpSubmitUrl(),
             'callbackUrl' => $this->getCallbackUrl()
         ];
 
         $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
+    }
+
+    protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $token = $gatewayInput['token'];
+
+        if (empty($token) === true)
+        {
+            return;
+        }
+
+        $reference = $payment->getReferenceForGatewayToken();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        //
+        // It's possible that there are no gateway tokens for this.
+        // For NB, wallets, non-recurring cards, first recurring card, etc.
+        //
+        if ($gatewayTokens->count() === 1)
+        {
+            $gatewayInput['gateway_token'] = $gatewayTokens->first();
+        }
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
@@ -1828,7 +1862,7 @@ trait Authorize
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
     {
-        $reference = $payment->getReferenceForGatewayTokens();
+        $reference = $payment->getReferenceForGatewayToken();
 
         $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 

@@ -243,7 +243,7 @@ class TransactionFilter extends Terminal\Filter
 
                 $gatewayTokensCount = $gatewayTokens->count();
 
-                if ($gatewayTokensCount !== 1)
+                if ($gatewayTokensCount === 1)
                 {
                     //
                     // For second recurring payment, ensure that we select a terminal
@@ -268,7 +268,7 @@ class TransactionFilter extends Terminal\Filter
                 else
                 {
                     throw new Exception\LogicException(
-                        'Should have gotten exactly gateway token.',
+                        'Should have gotten exactly 1 gateway token.',
                         ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
                         [
                             'gateway_tokens_count'  => $gatewayTokensCount,

@@ -56,7 +56,7 @@ class Entity extends Base\PublicEntity
 
     public function token()
     {
-        return $this->belongsTo('RZP\Models\Token\Entity');
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity');
     }
 
     public function terminal()

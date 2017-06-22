@@ -239,6 +239,12 @@ class RecurringPaymentTest extends TestCase
                 'terminal_id' => '1000CybrsTrmnl',
             ]);
 
+        $this->fixtures->create('gateway_token',
+            [
+                'token_id' => '100000custcard',
+                'terminal_id' => '1000CybrsTrmnl'
+            ]);
+
         $content = $this->doS2sRecurringPayment($payment);
 
         $payment[Payment::CARD] = [];
