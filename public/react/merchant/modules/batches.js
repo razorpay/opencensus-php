@@ -40,3 +40,13 @@ export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
 
 export const refundBatchesReducer = makeCollectionReducer(REFUND);
 export const paymentLinkBatchesReducer = makeCollectionReducer(PAYMENT_LINK);
+
+export const issuePaymentLinkBatch = (batchId, data) => {
+  return {
+    type: `${PAYMENT_LINK}_ISSUE`,
+    payload: ajax(`/invoices/batch/${batchId}/issue`, {
+      data,
+      method: 'POST',
+    }),
+  };
+};

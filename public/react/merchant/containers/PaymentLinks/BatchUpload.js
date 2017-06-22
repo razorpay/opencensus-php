@@ -20,8 +20,8 @@ export default class BatchUploadContainer extends Component {
         sampleUrl="https://dashboard.razorpay.com/files/sample_batch_payment_links.xlsx"
         closeUrl="/paymentlinks/batchuploads"
         title="payment links"
-        uploadBatch={uploadBatch}
         modeFormatted={this.props.modeFormatted}
+        {...this.props}
       />
     );
   }

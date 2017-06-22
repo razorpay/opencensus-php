@@ -52,21 +52,6 @@ export const mapValues = values => title => {
 // this is notes + order_id mixed
 export const paymentOrder = orders => mapValues(orders)(orderId.title);
 
-export const batchDownload = mode => {
-  return {
-    title: 'Actions',
-    value: item => (
-      <a
-        class="btn btn-default btn-xs"
-        href={`/${mode}/batches/${item.id}/download`}
-        target="_blank"
-      >
-        Download
-      </a>
-    ),
-  };
-};
-
 // Virtual Accounts
 export const virtualAccountId = {
   title: 'Virtual Account ID',

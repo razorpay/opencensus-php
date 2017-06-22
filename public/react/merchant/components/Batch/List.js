@@ -2,10 +2,48 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
-import { batchId, totalCount, status, batchDownload } from 'rzp/ui/item/pair';
+import { batchId, totalCount, status } from 'rzp/ui/item/pair';
+
+const Button = ({ onClick, children }) => (
+  <button class="btn btn-default btn-xs" onClick={onClick}>{children}</button>
+);
+
+function batchActions(mode, viewAll, issueAll) {
+  return {
+    viewAll,
+    issueAll,
+    title: 'Actions',
+    value: item => (
+      <div>
+        <Button
+          onClick={_ => open(`/${mode}/batches/${item.id}/download`, '_blank')}
+        >
+          Download
+        </Button>
+        {item.type === 'payment_link' &&
+          <span>
+            {viewAll &&
+              <Button onClick={_ => viewAll(item)}>view all links</Button>}
+            {issueAll &&
+              <Button onClick={_ => issueAll(item)}>Issue all links</Button>}
+          </span>}
+      </div>
+    ),
+  };
+}
 
 export default function BatchList(props) {
-  let { mode, docUrl, count, skip, paginate, onSubmit, uploadUrl } = props;
+  let {
+    mode,
+    docUrl,
+    count,
+    skip,
+    paginate,
+    onSubmit,
+    uploadUrl,
+    viewAll,
+    issueAll,
+  } = props;
   return (
     <div class="content-wrapper">
       <TetherComponent
@@ -35,7 +73,12 @@ export default function BatchList(props) {
       />
       <DataTable
         title="Batch Uploads"
-        columns={[batchId, totalCount, status, batchDownload(mode)]}
+        columns={[
+          batchId,
+          totalCount,
+          status,
+          batchActions(mode, viewAll, issueAll),
+        ]}
         count={count}
         skip={skip}
         paginate={paginate}
