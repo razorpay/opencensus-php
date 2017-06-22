@@ -138,15 +138,18 @@ export default class CreatePaymentLink extends Component {
 
                 <ShowWhen featureEnabled="Partial_Payment">
                   <div class="form-group">
-                    <div class="checkbox col-md-8 col-md-offset-3">
-                      <label>
+                    <div class="col-md-8 col-md-offset-3">
+                      <div class="rzpChecbox">
                         <Field
                           name="partial_payment"
+                          id="partial_payment"
                           component="input"
                           type="checkbox"
                         />
-                        Allow partial payments for the payment
-                      </label>
+                        <label for="partial_payment">
+                          Enable Partial Payments
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </ShowWhen>

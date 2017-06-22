@@ -594,7 +594,40 @@ export default class InvoicesNewContainer extends Component {
                               component={LineItemTable}
                               items={this.props.items}
                               disabled={isIssued || locked}
+                              invoice={invoice}
                               invoiceTotal={invoiceTotal}
+                            />
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12 partial-payment">
+                            <ShowWhen featureEnabled="Partial_Payment">
+                              <div class="rzpChecbox">
+                                <Field
+                                  name="partial_payment"
+                                  id="partial_payment"
+                                  component="input"
+                                  type="checkbox"
+                                />
+                                <label for="partial_payment">
+                                  Enable Partial Payments
+                                </label>
+                              </div>
+                            </ShowWhen>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12">
+                            <InlineField
+                              formName="newInvoice"
+                              name="comment"
+                              component={AutoResizeTextarea}
+                              class="form-control input-xs"
+                              rows={2}
+                              placeholder="Customer Notes"
+                              disabled={locked}
                             />
                           </div>
                         </div>

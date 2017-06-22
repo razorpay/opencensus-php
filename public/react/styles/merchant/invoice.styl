@@ -343,3 +343,18 @@ $muted = rgba(0, 0, 0, 0.27)
     margin-right: -15px;
   }
 }
+
+.partial-payment {
+  .rzpChecbox [type=checkbox]:checked+label:before,
+  .rzpChecbox [type=checkbox]:not(:checked)+label:before  {
+    width: 16px;
+    height: 16px;
+  }
+
+  .rzpChecbox [type=checkbox]:checked+label:after,
+  .rzpChecbox [type=checkbox]:not(:checked)+label:after {
+    font-size: 11px;
+    top: 0;
+    left: 3px;
+  }
+}

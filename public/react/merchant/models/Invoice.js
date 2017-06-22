@@ -28,6 +28,7 @@ const editableFieldsInIssuedState = [
   'notes',
   'receipt',
   'comment',
+  'partial_payment',
 ];
 
 export default class Invoice extends GenericEntity {
