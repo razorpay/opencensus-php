@@ -42,7 +42,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::post('/track_lead', 'UserController@trackLead');
-        Route::get('/token/{token}/details', 'UserController@getDetailsFromToken');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -273,4 +272,9 @@ Route::group(['middleware' => ['auth.cron']], function()
 {
     Route::post('/{mode}/analytics/aggregations/day', 'AdminController@updateDayAggregations');
     Route::post('/{mode}/analytics/aggregations/{type}', 'TransactionController@updateTypeAggregations');
+});
+
+Route::group(['middleware' => ['auth.oauth']], function()
+{
+    Route::get('/token/{token}/details', 'UserController@getDetailsFromToken');
 });

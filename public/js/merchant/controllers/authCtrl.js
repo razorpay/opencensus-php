@@ -590,7 +590,7 @@ app
 
                   if (
                     parser.hostname ||
-                    window.location.hostname === 'auth.razorpay.{com|dev}'
+                    window.location.hostname === 'auth.razorpay.(com|dev)'
                   ) {
                     window.location.href = next;
                     return false;

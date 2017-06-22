@@ -49,6 +49,7 @@ class Kernel extends HttpKernel {
         'admin_access'  => 'App\Http\Middleware\AdminAccess',
         'cors'          => 'App\Http\Middleware\Cors',
         'verified'      => 'App\Http\Middleware\Verified',
+        'auth.oauth'    => 'App\Http\Middleware\OAuth',
     ];
 
 }
