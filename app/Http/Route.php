@@ -293,6 +293,7 @@ final class Route
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
+        'reports_transaction_dsp'                 => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
@@ -944,6 +945,7 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
+        'reports_transaction_dsp',
         'invitation_fetch_by_token',
         'invitation_action',
     ];
@@ -1281,6 +1283,7 @@ final class Route
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
             'refund_retry_failed',
+            'reports_transaction_dsp',
         ],
 
         'kotak' => [

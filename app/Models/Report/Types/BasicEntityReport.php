@@ -3,7 +3,6 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Report;
 use RZP\Trace\TraceCode;

@@ -484,6 +484,15 @@ class MerchantController extends Controller
         return $report->getReport($input);
     }
 
+    public function getDSPTransactionReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\DSPTransactionReport(E::TRANSACTION);
+
+        return $report->getReport($input);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
