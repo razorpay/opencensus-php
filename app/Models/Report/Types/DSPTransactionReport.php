@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Report\Types;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -9,7 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
-use RZP\Models\Transaction\FeeBreakup;
+use RZP\Mail\Report\DSPReport as DSPMail;
 
 class DSPTransactionReport extends BasicEntityReport
 {
@@ -83,10 +84,15 @@ class DSPTransactionReport extends BasicEntityReport
 
         $fullpath = $this->createCsvFile($data, $merchantId, null, 'files/report');
 
-        return $data;
+        $reportingMail = new DSPMail('ankit.agarwal@razorpay.com', $fullpath);
+
+        Mail::queue($reportingMail);
+
+        return [
+            'to'   => $to,
+            'from' => $from
+        ];
     }
-
-
 
     protected function fetchFormattedDataForReport($entities): array
     {
