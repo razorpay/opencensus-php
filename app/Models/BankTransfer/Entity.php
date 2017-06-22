@@ -226,6 +226,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPECTED, $expected);
     }
 
+    public function setUtr(string $utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
+    }
+
     public function setNotified(bool $notified)
     {
         $this->setAttribute(self::NOTIFIED, $notified);

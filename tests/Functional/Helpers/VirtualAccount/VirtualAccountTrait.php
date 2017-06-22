@@ -127,7 +127,7 @@ trait VirtualAccountTrait
             'payer_account'  => '7654321234567',
             'payer_ifsc'     => 'HDFC0000001',
             'mode'           => 'neft',
-            'transaction_id' => 'utr_'.rand(10000000,99999999),
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => time(),
             'amount'         => 100,
             'description'    => 'Test bank transfer',
@@ -138,6 +138,7 @@ trait VirtualAccountTrait
     {
         return [
             'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
             'amount_expected' => 10000,
             'receiver_types'  => [
                 'bank_account'

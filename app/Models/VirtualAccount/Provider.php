@@ -20,6 +20,7 @@ class Provider
         self::DASHBOARD,
     ];
 
+    // Kotak's whitelisted IP
     const KOTAK_IP = '14.141.97.12';
 
     // Each provider gives us a range of bank accounts
