@@ -70,6 +70,57 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
+    public function testPaymentFailedWithMissingChecksum()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            // unset($content[ResponseFields::CHECKSUM]);
+            $content[ResponseFields::STATUS_CODE] = StatusCode::INTERNAL_ERROR;
+            $content[ResponseFields::RESPONSE_CODE] = 'FAILED';
+            $content[ResponseFields::RESPONSE_DESCRIPTION] = 'BAD_REQUEST';
+        });
+
+        $data = $this->testData['testPaymentFailureFlow'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('unknown', $payment['two_factor_auth']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $expected = $this->testData['testFailedPaymentWalletEntity'];
+
+        $expected['response_description'] = 'BAD_REQUEST';
+
+        $this->assertArraySelectiveEquals($expected, $wallet);
+    }
+
+    public function testSuccessfulPaymentWithMissingChecksum()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[ResponseFields::STATUS_CODE] = StatusCode::SUCCESS;
+            $content[ResponseFields::RESPONSE_CODE] = 'SUCCESS';
+            $content[ResponseFields::RESPONSE_DESCRIPTION] = 'BAD_REQUEST';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');

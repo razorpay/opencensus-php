@@ -110,7 +110,10 @@ class Server extends Base\Mock\Server
 
     protected function getGatewayResponse(array $content)
     {
-        $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+        if ($content[ResponseFields::RESPONSE_DESCRIPTION] !== 'BAD_REQUEST')
+        {
+            $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+        }
 
         $gatewayResponse = [];
         $gatewayResponse['response'] = implode('|', array_values($content));
