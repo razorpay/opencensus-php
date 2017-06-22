@@ -64,7 +64,7 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   state => {
-    let customers = state.customers.customers;
+    let customers = state.customers.items;
     return {
       session: state.session,
       customers,

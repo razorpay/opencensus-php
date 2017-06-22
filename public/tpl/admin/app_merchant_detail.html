@@ -86,6 +86,11 @@
         <a href class="list-group-item" ng-click="openAssignBanks()" dynamic-tooltip="assign_merchant_banks" ng-show="admin.permissions.indexOf('assign_merchant_banks') !== -1">
           Assign Banks <i class="pull-right fa fa-university"></i>
         </a>
+        <a href class="list-group-item" ng-click="openAssignMerchantHandle()" dynamic-tooltip="assign_merchant_handle" ng-show="admin.permissions.indexOf('assign_merchant_handle') !== -1">
+          Assign Merchant Handle
+          <i class="pull-right fa fa-at"></i>
+        </a>
+
         <a href class="list-group-item" ng-click="openAddAdjustment()" dynamic-tooltip="add_merchant_adjustment" ng-show="admin.permissions.indexOf('add_merchant_adjustment') !== -1">
           Add Adjustment <i class="pull-right fa fa-adjust"></i>
         </a>
@@ -339,7 +344,10 @@
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
         </div>
-
+        <div class="list-group-item">
+          <span class="pull-right">{{merchant.details.handle}}</span>
+          Merchant Handle
+        </div>
         <!--
           If we have only one email, show it as such, but if there are more than one,
           use a show/hide menu to list all the emails nicely
@@ -839,6 +847,26 @@
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
   </div>
+</script>
+
+<script type="text/ng-template" id="assignMerchantHandle.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Merchant Handle</h3>
+  </div>
+  <form>
+    <div class="modal-body">
+      <div class="form-group row">
+        <label class="col-lg-12">Merchant Handle</label>
+        <div class="col-lg-6">
+          <input class="form-control" name="handle" ng-model="handle" placeholder="XXXX" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(handle)">Save</button>
+    </div>
+  </form>
 </script>
 
 <script type="text/ng-template" id="assignScheduleModalContent.html">

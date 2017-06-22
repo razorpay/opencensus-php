@@ -182,10 +182,6 @@ return [
             'url'       => 'account/config',
             'routeName' => 'get_config'
         ],
-        'merchant_edit_config'              => [
-            'url'       => 'account/config',
-            'routeName' => 'put_config'
-        ],
         'merchant_edit_config_logo'         => [
             'url'       => 'account/config/logo',
             'routeName' => 'post_config_logo'
@@ -291,13 +287,13 @@ return [
             'url'       => 'merchant/gst',
             'routeName' => 'merchant_gst_edit'
         ],
-        
+
          // Invitations
         'invitation_create'                 => [
             'url'       => 'invitations',
             'routeName' => 'invitations_send'
          ],
-        
+
         'invitation_resend'                 => [
             'url'       => 'invitations/{id}/resend',
             'routeName' => 'invitation_resend'
@@ -311,6 +307,32 @@ return [
             'routeName' => 'invitations_delete'
         ],
         'invitation_fetch'                  => 'invitations',
+
+        // Virtual Accounts
+        'virtual_account_fetch_multiple'    => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_fetch'             => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_create'            => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_update'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_delete'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_fetch_payments'    => [
+            'url'       => 'virtual_accounts/{id}/payments',
+            'routeName' => 'virtual_accounts_read'
+        ],
     ],
 
     // auth
@@ -322,6 +344,12 @@ return [
         'balance_fetch'                     => [
             'url'       => 'balance',
             'routeName' => 'balance_get'
+        ],
+
+        // Edit Merchant config
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
         ],
 
         // Admin Payment Actions
@@ -388,6 +416,9 @@ return [
 
         // Accept/Reject Invitation
         'invitation_action'                 => 'invitations/{id}/{action}',
+
+        // Make test payment for Virtual Account
+        'bank_transfer_process'             => 'ecollect/validate',
     ],
 
     // auth

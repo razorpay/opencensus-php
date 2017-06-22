@@ -24,6 +24,10 @@ import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
+import {
+  virtualAccountsReducer,
+  virtualAccountReducer,
+} from 'merchant/modules/virtualaccounts';
 
 import {
   refundBatchesReducer,
@@ -77,4 +81,6 @@ export default combineReducers({
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,
   reversals: reversalsReducer,
+  virtualaccounts: virtualAccountsReducer,
+  virtualaccount: virtualAccountReducer,
 });

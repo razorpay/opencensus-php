@@ -44,6 +44,10 @@ export function isPresent(obj) {
   return !isBlank(obj);
 }
 
+export const isNone = value => {
+  return value === null || value === undefined;
+};
+
 export const findBy = (array, prop, value) => {
   return array.find(item => {
     return item[prop] === value;

@@ -34,7 +34,9 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Payment Link ID: <strong>{invoice.id}</strong>
+              <i class="icon icon-link text-primary" />
+              {' '}
+              <strong>{invoice.id}</strong>
 
               <ShowWhen notMyRole="support finance">
                 <div class="btn-toolbar pull-right">
