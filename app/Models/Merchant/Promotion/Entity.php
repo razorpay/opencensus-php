@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRED, true);
     }
 
-    public function updateRemainingRuns()
+    public function decrementRemainingRuns()
     {
         $this->decrement(self::REMAINING_RUNS);
     }

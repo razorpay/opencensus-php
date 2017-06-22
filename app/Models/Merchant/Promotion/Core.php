@@ -50,10 +50,10 @@ class Core extends Base\Core
     }
 
     protected function addAndExpireCredits(
-        $merchant,
-        $promotion,
-        $merchantPromotion,
-        $scheduleTask)
+        Merchant\Entity $merchant,
+        Promotion\Entity $promotion,
+        Entity $merchantPromotion,
+        Task\Entity $scheduleTask)
     {
         $this->repo->transaction(
             function() use (
@@ -68,7 +68,7 @@ class Core extends Base\Core
                 {
                     $this->applyCredits($merchant, $promotion, $scheduleTask);
 
-                    $merchantPromotion->updateRemainingRuns();
+                    $merchantPromotion->decrementRemainingRuns();
 
                     $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
 

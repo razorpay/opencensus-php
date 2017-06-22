@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::ITERATIONS              => 'sometimes|integer|min:1',
         Entity::CREDITS_EXPIRABLE       => 'sometimes|integer|in:0,1',
         Entity::CREDITS_EXPIRY_INTERVAL => 'required_if:credits_expirable,1|integer|min:1',
+        //TODO discuss
         Entity::CREDITS_EXPIRY_PERIOD   => 'required_if:credits_expirable,1|string|custom',
     ];
 

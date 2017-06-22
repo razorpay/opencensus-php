@@ -54,7 +54,7 @@ class Core extends Base\Core
 
     protected function validateMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
-        $promotion = $coupon->source;
+        $promotion = $this->getPromotionEntity($coupon);
 
         $merchantPromotion = $this->repo->merchant_promotion
                                         ->findByMerchantAndPromotionId(
@@ -73,7 +73,7 @@ class Core extends Base\Core
 
     protected function applyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
-        $promotion = $coupon->source;
+        $promotion = $this->getPromotionEntity($coupon);
 
         // This need to be in transaction, as credits are applied here,
         // And Schedule for next run is also created via Merchant Promotion
@@ -95,11 +95,20 @@ class Core extends Base\Core
 
                 $coupon->incrementUsedCount();
 
-                $merchantPromotion->updateRemainingRuns();
+                $merchantPromotion->decrementRemainingRuns();
 
                 $this->repo->saveOrFail($coupon);
 
                 $this->repo->saveOrFail($merchantPromotion);
             });
+    }
+
+    protected function getPromotionEntity(Entity $coupon)
+    {
+        $couponSource = $coupon->source;
+
+        assert($couponSource->getEntity() === 'promotion');
+
+        return $couponSource;
     }
 }

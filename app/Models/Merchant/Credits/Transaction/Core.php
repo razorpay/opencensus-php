@@ -17,7 +17,7 @@ class Core extends Base\Core
                         $timestamp, $txn->merchant->getId(), $creditType);
 
 
-        //The amount of credits to be decudced will be reflected in the credit log
+        //The amount of credits to be deducted will be reflected in the credit log
         //specifying how many credits are used from what log.
 
         $this->repo->transaction(function() use ($credits, $creditAmount, $txn)

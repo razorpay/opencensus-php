@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Coupon;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -74,9 +75,11 @@ class CouponsTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
 
-        $this->testData[__FUNCTION__]['request']['content']['start_date'] = time() + 1*24*60*60;
+        $tomorrowTimestamp = Carbon::tomorrow()->timestamp;
 
-        $this->testData[__FUNCTION__]['request']['content']['end_date'] = time();
+        $this->testData[__FUNCTION__]['request']['content']['start_date'] = $tomorrowTimestamp;
+
+        $this->testData[__FUNCTION__]['request']['content']['end_date'] = Carbon::now()->timestamp;
 
         $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__ . 'ExceptionData']['response'];
 
@@ -89,16 +92,7 @@ class CouponsTest extends TestCase
     {
         $this->createCoupon();
 
-        $request = [
-            'content' => [
-                'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester',
-                'email' => 'test@localhost.com',
-                'coupon_code' => 'RANDOM-123',
-            ],
-            'url'    => '/merchants',
-            'method' => 'POST'
-        ];
+        $request = $this->testData[__FUNCTION__]['request'];
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -118,16 +112,7 @@ class CouponsTest extends TestCase
     {
         $this->createCoupon();
 
-        $request = [
-            'content' => [
-                'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester',
-                'email' => 'test@localhost.com',
-                'coupon_code' => 'RANDOM-321',
-            ],
-            'url'    => '/merchants',
-            'method' => 'POST'
-        ];
+        $request = $this->testData[__FUNCTION__]['request'];
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -362,10 +347,12 @@ class CouponsTest extends TestCase
     {
         $promotion = $this->fixtures->create('promotion:onetime');
 
+        $yesterdayTimestamp = Carbon::yesterday()->timestamp;
+
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
-            'end_date'    => time() - 1*24*60*60,
+            'end_date'    => $yesterdayTimestamp,
             'merchant_id' => '100000Razorpay',
         ];
 
@@ -390,10 +377,12 @@ class CouponsTest extends TestCase
     {
         $promotion = $this->fixtures->create('promotion:onetime');
 
+        $tomorrowTimestamp = Carbon::tomorrow()->timestamp;
+
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
-            'start_date'  => time() + 1*24*60*60,
+            'start_date'  => $tomorrowTimestamp,
             'merchant_id' => '100000Razorpay',
         ];
 

@@ -39,14 +39,14 @@ class Validator extends Base\Validator
             ($input[Entity::START_DATE] < time()))
         {
             throw new  Exception\BadRequestValidationFailureException(
-                'Start date can not be less that present timestamp');
+                'Start date can not be in the past');
         }
 
         if ((isset($input[Entity::END_DATE]) === true) and
             ($input[Entity::END_DATE] < time()))
         {
             throw new  Exception\BadRequestValidationFailureException(
-                'End date can not be less that present timestamp');
+                'End date can not be in the past');
         }
 
         if ((isset($input[Entity::START_DATE]) === false) or
