@@ -6,6 +6,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models;
 use RZP\Exception;
+use RZP\Base\Common;
 
 class Service extends Base\Service
 {
@@ -45,7 +46,11 @@ class Service extends Base\Service
     {
         Entity::validateEntityOrFailPublic($entity);
 
-        $entities = $this->repo->$entity->fetch($input);
+        $merchantId = $input[Common::MERCHANT_ID] ?? null;
+
+        unset($input[Common::MERCHANT_ID]);
+
+        $entities = $this->repo->$entity->fetch($input, $merchantId);
 
         return $entities->toArrayAdmin();
     }
