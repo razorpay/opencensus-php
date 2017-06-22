@@ -27,6 +27,18 @@ class CreditsTest extends TestCase
      */
     public function testCredits()
     {
+
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
@@ -52,6 +64,17 @@ class CreditsTest extends TestCase
      */
     public function testCredits2()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
@@ -86,6 +109,17 @@ class CreditsTest extends TestCase
 
     public function testPartialCredits()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
@@ -112,6 +146,17 @@ class CreditsTest extends TestCase
 
     public function testFeeCredits()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('10000', 'fee');
 
@@ -136,6 +181,17 @@ class CreditsTest extends TestCase
     // credits are updated or not.
     public function testFeeCredits2()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('10000', 'fee');
 
