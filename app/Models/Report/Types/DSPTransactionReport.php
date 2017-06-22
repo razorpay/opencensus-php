@@ -80,7 +80,6 @@ class DSPTransactionReport extends BasicEntityReport
 
         $fullpath = $this->writeDataToCsv($input, $filename);
 
-        // Currently hard coding the mail address, will remove it later
         $reportingMail = new DSPMail($email, $fullpath);
 
         Mail::queue($reportingMail);
@@ -142,7 +141,7 @@ class DSPTransactionReport extends BasicEntityReport
                 self::AMOUNT                => $txn->getAmount(),
                 self::STATUS                => 'SUCCESS',
                 self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn),
-                self::SETTLED               => $txn->isSettled()
+                self::SETTLED               => $txn->isSettled() ? 'True' : 'False'
 
             ];
 
