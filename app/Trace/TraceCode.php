@@ -159,6 +159,8 @@ class TraceCode
     const REQUESTS_JOB_ERROR                            = 'REQUESTS_JOB_ERROR';
     const MOCK_DRIP_REQUEST                             = 'MOCK_DRIP_REQUEST';
 
+    const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
+
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';

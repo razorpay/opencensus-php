@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -11,6 +12,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class Dashboard extends Job implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
+
+    const MAX_ALLOWED_ATTEMPTS = 5;
+    const RELEASE_WAIT_SECS    = 60;
+
+    const JOB_DELETED          = 'job_deleted';
+    const JOB_RELEASED         = 'job_released';
+
 
     protected $data;
 
@@ -34,23 +42,57 @@ class Dashboard extends Job implements ShouldQueue
         if (isset($this->data['type']) === false)
         {
             $this->trace->error(
-                            TraceCode::DASHBOARD_INTEGRATION_ERROR,
-                            [
-                                'data' => $this->data,
-                            ]);
-
-            throw new Exception\IntegrationException(
-                'Dashboard job does not have a type key',
+                TraceCode::DASHBOARD_INTEGRATION_ERROR,
                 [
                     'data' => $this->data,
                 ]);
+
+            $this->delete();
         }
 
-        $className  = '\RZP\Dashboard\\' . ucfirst($this->data['type']);
+        try
+        {
+            $className  = '\RZP\Dashboard\\' . ucfirst($this->data['type']);
 
-        //will be payment or refund
-        $entity = new $className();
+            //will be payment or refund
+            $entity = new $className();
 
-        $entity->postRequest($this, $this->data);
+            $entity->postRequest($this, $this->data);
+
+            $this->delete();
+        }
+        catch(\Throwable $e)
+        {
+            $this->handleException($e);
+        }
+    }
+
+    /**
+     * When an exception occurs, the job gets deleted if it has
+     * exceeded the maximum attempts. Otherwise it is released back
+     * into the queue after the set release wait time
+     *
+     * @param Throwable $e
+     */
+    protected function handleException(\Throwable $e)
+    {
+        $jobAction = self::JOB_DELETED;
+
+        if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
+        {
+            $this->delete();
+        }
+        else
+        {
+            $this->release(self::RELEASE_WAIT_SECS);
+
+            $jobAction = self::JOB_RELEASED;
+        }
+
+        $this->trace->traceException(
+            $e,
+            Trace::ERROR,
+            TraceCode::DASHBOARD_JOB_ERROR,
+            ['job_action' => $jobAction]);
     }
 }

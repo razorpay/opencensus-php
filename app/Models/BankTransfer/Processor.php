@@ -3,6 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -40,7 +41,9 @@ class Processor extends Base\Core
     {
         $bankTransfer = $this->core->create($input);
 
-        if (($this->isUtrUnique($bankTransfer) === true) and
+        $this->setUtrInTestMode($bankTransfer);
+
+        if (($this->utrCheck($bankTransfer) === true) and
             ($this->isTransferExpected($bankTransfer) === true))
         {
             $bankTransfer->setExpected(true);
@@ -90,7 +93,24 @@ class Processor extends Base\Core
         });
     }
 
-    protected function isUtrUnique(Entity $bankTransfer): bool
+    protected function setUtrInTestMode(Entity $bankTransfer)
+    {
+        // Dashboard provider is used in test mode
+        // to simulate payments to a virtual account.
+        //
+        // UTR is not sent by dashboard in test mode, but is exposed to the merchant.
+        // So we add a mock UTR here itself, and skip the uniqueness check.
+        if (($this->mode === Mode::TEST) and
+            ($this->provider === Provider::DASHBOARD) and
+            ($this->env !== 'testing'))
+        {
+            $mockedUtr = $this->getMockedUtr();
+
+            $bankTransfer->setUtr($mockedUtr);
+        }
+    }
+
+    protected function utrCheck(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
@@ -113,6 +133,11 @@ class Processor extends Base\Core
         );
 
         return false;
+    }
+
+    protected function getMockedUtr(): string
+    {
+        return strtoupper(random_alphanum_string(22));
     }
 
     protected function isTransferExpected(Entity $bankTransfer): bool
@@ -190,7 +215,15 @@ class Processor extends Base\Core
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment::AMOUNT]      = $bankTransfer->getAmount();
-        $paymentArray[Payment::CUSTOMER_ID] = $this->virtualAccount->getPublicCustomerId();
+
+        if ($this->virtualAccount->hasCustomer() === true)
+        {
+            $customer = $this->virtualAccount->customer;
+
+            $paymentArray[Payment::CUSTOMER_ID] = $customer->getPublicId();
+            $paymentArray[Payment::CONTACT]     = $customer->getContact();
+            $paymentArray[Payment::EMAIL]       = $customer->getEmail();
+        }
 
         return $paymentArray;
     }
