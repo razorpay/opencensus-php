@@ -121,27 +121,29 @@ export default class CreateVirtualAccount extends Component {
                   </small>
                 </div>
 
-                <div class="form-group">
-                  <label>Descriptor</label>
-                  <Field
-                    name="descriptor"
-                    component="input"
-                    class="form-control"
-                    placeholder="Accepts alphanumberic, upto 10 chars"
-                    normalize={value => value.toUpperCase()}
-                    onChange={event => {
-                      let value = event.target.value;
-                      if (/^[a-z0-9]{0,10}$/i.test(value)) {
-                        this.props.change('descriptor', value);
-                      } else {
-                        event.preventDefault();
-                      }
-                    }}
-                  />
-                  <small class="help-block">
-                    Descriptor will be a part of the account number generated.
-                  </small>
-                </div>
+                {handle
+                  ? <div class="form-group">
+                      <label>Descriptor</label>
+                      <Field
+                        name="descriptor"
+                        component="input"
+                        class="form-control"
+                        placeholder="Accepts alphanumberic, upto 10 chars"
+                        normalize={value => value.toUpperCase()}
+                        onChange={event => {
+                          let value = event.target.value;
+                          if (/^[a-z0-9]{0,10}$/i.test(value)) {
+                            this.props.change('descriptor', value);
+                          } else {
+                            event.preventDefault();
+                          }
+                        }}
+                      />
+                      <small class="help-block">
+                        Descriptor will be a part of the account number generated.
+                      </small>
+                    </div>
+                  : null}
 
                 <div class="Modal__actions clearfix">
                   {handle

@@ -40,16 +40,6 @@ export default props => {
 
                 <div style={{ margin: '24px 0' }}>
                   <EntityDetailRow
-                    label="Created At"
-                    value={() => (
-                      <Time
-                        value={virtualaccount.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
-                  />
-
-                  <EntityDetailRow
                     label="Amount Paid"
                     value={() => <Amount value={virtualaccount.amount_paid} />}
                   />
@@ -64,8 +54,18 @@ export default props => {
                   />
 
                   <EntityDetailRow
-                    label="Bank Account ID"
-                    value={virtualaccount.bank_account.id}
+                    label="Account Description"
+                    value={virtualaccount.description}
+                  />
+
+                  <EntityDetailRow
+                    label="Created At"
+                    value={() => (
+                      <Time
+                        value={virtualaccount.created_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
                   />
                 </div>
 

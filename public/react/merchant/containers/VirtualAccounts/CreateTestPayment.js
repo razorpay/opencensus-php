@@ -71,7 +71,7 @@ export default class CreateTestPayment extends Component {
         <div class="modal-body">
           <form onSubmit={handleSubmit(this.createTestPayment)}>
             <div class="form-group">
-              <label>Amount</label>
+              <label>Amount (INR)</label>
               <Field
                 name="amount"
                 class="form-control"
