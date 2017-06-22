@@ -220,6 +220,10 @@ return [
             'url'       => 'invoices/{id}/cancel',
             'routeName' => 'invoice_cancel'
         ],
+        'invoice_issue_by_batch'            => [
+            'url'       => 'invoices/batch/{batchId}/issue',
+            'routeName' => 'invoice_issue_by_batch',
+        ],
 
         // Customers
         'customer_fetch_multiple'           => [
