@@ -23,8 +23,12 @@ import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
-import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import referralsReducer from 'merchant/modules/referrals';
+
+import {
+  refundBatchesReducer,
+  paymentLinkBatchesReducer,
+} from 'merchant/modules/batches';
 
 import {
   paymentsReducer,
@@ -47,6 +51,8 @@ export default combineReducers({
   home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
+  paymentlinkbatches: paymentLinkBatchesReducer,
+  refundbatches: refundBatchesReducer,
   subscriptions: subscriptionsReducer,
   plans: plansReducer,
   profile: profileReducer,
@@ -67,7 +73,6 @@ export default combineReducers({
   refunds: refundsReducer,
   refund: refundReducer,
   referrals: referralsReducer,
-  batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,

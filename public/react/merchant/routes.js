@@ -11,7 +11,7 @@ const entityMap = {
   '/refunds/:id(rfnd_.+)': RefundDetails,
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
-  '/paymentlinks/:id': PaymentLinkDetails,
+  '/paymentlinks/:id(inv_.+)': PaymentLinkDetails,
   '/invoices/:id/details': PaymentLinkDetails,
 
   '/marketplace/payments/:id': PaymentsDetails,
