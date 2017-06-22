@@ -275,6 +275,33 @@ class NetbankingAxisGatewayTest extends TestCase
             });
     }
 
+    public function testMulipleTableVerifyResponse()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockMultipleVerifyTables('F');
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+    }
+
+    public function testMulipleSuccessTableVerifyResponse()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockMultipleVerifyTables('S');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
     /**
      * In some cases when authorize was a failure,
      * verify returns a null response
@@ -303,6 +330,8 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetBankPaymentId();
 
         $this->runRequestResponseFlow(
             $data,
@@ -469,7 +498,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content['PAID'] = 'N';
+                if ($action !== 'multiple_tables')
+                {
+                    $content['PAID'] = 'N';
+                }
             });
     }
 
@@ -478,7 +510,37 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content['PaymentStatus'] = 'F';
+                if ($action !== 'multiple_tables')
+                {
+                    $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+                    $content['BID'] = $gatewayEntity['bank_payment_id'];
+                    $content['PaymentStatus'] = 'F';
+                }
+            });
+    }
+
+    protected function mockMultipleVerifyTables($status)
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($status)
+            {
+                if ($action === 'multiple_tables')
+                {
+                    $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+                    $content->Table1->BID = $gatewayEntity['bank_payment_id'];
+
+                    $response = (array) $content;
+                    $array = json_decode(json_encode($response), true);
+
+                    $table2 = array_flip($array['Table1']);
+
+                    $content->addChild('Table2');
+                    array_walk_recursive($table2, array ($content->Table2, 'addChild'));
+
+                    $content->Table1->PaymentStatus = $status;
+                }
             });
     }
 
@@ -496,9 +558,12 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $gatewayEntity = $this->getLastEntity('netbanking', true);
+                if ($action !== 'multiple_tables')
+                {
+                    $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-                $content['BID'] = $gatewayEntity['bank_payment_id'];
+                    $content['BID'] = $gatewayEntity['bank_payment_id'];
+                }
             });
     }
 }

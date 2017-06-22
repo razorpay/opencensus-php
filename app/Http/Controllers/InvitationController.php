@@ -19,6 +19,13 @@ class InvitationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchByToken(string $token)
+    {
+        $data = $this->service()->fetchByToken($token);
+
+        return ApiResponse::json($data);
+    }
+
     public function list()
     {
         $data = $this->service()->list();
@@ -28,7 +35,9 @@ class InvitationController extends Controller
 
     public function postResend(string $id)
     {
-        $data = $this->service()->resend($id);
+        $input = Request::all();
+
+        $data = $this->service()->resend($id, $input);
 
         return ApiResponse::json($data);
     }

@@ -28,18 +28,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'ifsc_code' => 'ICIC0001206',
-                'account_number' => '0002020000304030434',
+                'entity'           => 'bank_account',
+                'ifsc'             => 'ICIC0001206',
+                'ifsc_code'        => 'ICIC0001206',
+                'name'             => 'Test R4zorpay',
                 'beneficiary_name' => 'Test R4zorpay',
-                'beneficiary_address1' => 'address 1',
-                'beneficiary_address2' => 'address 2',
-                'beneficiary_address3' => 'address 3',
-                'beneficiary_city' => 'Kolkata',
-                'beneficiary_state' => 'WB',
-                'beneficiary_country' => 'IN',
-                'beneficiary_pin' => '123456',
-                'beneficiary_email' => 'random@email.com',
-                'beneficiary_mobile' => '9988776655',
+                'account_number'   => '0002020000304030434',
             ]
         ]
     ],

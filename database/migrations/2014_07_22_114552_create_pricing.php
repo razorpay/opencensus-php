@@ -64,6 +64,14 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Pricing::MIN_FEE)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Pricing::MAX_FEE)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
 

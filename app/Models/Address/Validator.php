@@ -15,8 +15,8 @@ class Validator extends Base\Validator
         Entity::LINE2   => 'sometimes|string|between:5,255',
         Entity::CITY    => 'sometimes|string|between:2,32',
         Entity::ZIPCODE => 'sometimes|string|between:2,10',
-        Entity::STATE   => 'sometimes|string|between:2,32',
-        Entity::COUNTRY => 'sometimes|string|between:2,64|custom',
+        Entity::STATE   => 'required|string|between:2,32',
+        Entity::COUNTRY => 'required|string|between:2,64|custom',
         Entity::PRIMARY => 'sometimes|in:0,1',
     ];
 

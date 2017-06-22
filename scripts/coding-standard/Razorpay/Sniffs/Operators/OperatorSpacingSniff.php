@@ -1,6 +1,12 @@
 <?php
 
-class Razorpay_Sniffs_Operators_OperatorSpacingSniff implements PHP_CodeSniffer_Sniff
+namespace Razorpay\Sniffs\Operators;
+
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Util\Tokens as PHP_CodeSniffer_Tokens;
+
+class OperatorSpacingSniff implements Sniff
 {
 
     /**
@@ -49,7 +55,7 @@ class Razorpay_Sniffs_Operators_OperatorSpacingSniff implements PHP_CodeSniffer_
      *
      * @return void
      */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 

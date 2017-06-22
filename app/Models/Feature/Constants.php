@@ -6,7 +6,6 @@ class Constants
 {
     const ENTITY_IDS            = 'entity_ids';
     const NAMES                 = 'names';
-
     const DUMMY                 = 'dummy';
     const WEBHOOKS              = 'webhooks';
     const AGGREGATOR            = 'aggregator';
@@ -32,8 +31,8 @@ class Constants
     const SUBSCRIPTIONS         = 'subscriptions';
     const ZOHO                  = 'zoho';
     const EXPOSE_DOWNTIMES      = 'expose_downtimes';
-    const NEW_LOAD_SORTING      = 'new_load_sorting';
     const PAYMENT_FAILURE_EMAIL = 'payment_failure_email';
+    const VIRTUAL_ACCOUNTS      = 'virtual_accounts';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -62,8 +61,8 @@ class Constants
         self::SUBSCRIPTIONS         => true,
         self::ZOHO                  => true,
         self::EXPOSE_DOWNTIMES      => true,
-        self::NEW_LOAD_SORTING      => true,
         self::PAYMENT_FAILURE_EMAIL => true,
+        self::VIRTUAL_ACCOUNTS      => true,
     ];
 
     public static $visibleFeaturesMap = [

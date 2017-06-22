@@ -225,6 +225,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateDraftInvoiceWithSomeData()
     {
+        $this->ba->privateAuth();
+
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -1658,6 +1660,42 @@ class InvoiceTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testIssueInvoiceByBatchId()
+    {
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+
+        $response = $this->getEntities('invoice');
+
+        $ids = array_column($response['items'], 'id');
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 2,
+            ]);
+
+        // Associate 2 invoices with above batch
+
+        $this->fixtures->invoice->edit($ids[0], ['batch_id' => '00000000000001']);
+        $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001']);
+
+        $this->startTest();
+
+        $response = $this->getEntities('invoice');
+
+        $invoices = $response['items'];
+
+        // Assert that invoices of the batch have gotten issued
+
+        $this->assertEquals('issued', $invoices[0]['status']);
+        $this->assertEquals('draft', $invoices[1]['status']);
+        $this->assertEquals('issued', $invoices[2]['status']);
     }
 
     // -------------------- Protected methods --------------------

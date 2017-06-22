@@ -745,6 +745,24 @@ class Service extends Base\Service
         return $preferences;
     }
 
+    public function getGSTDetails(): array
+    {
+        return $this->merchant->merchantDetail->toArrayGST();
+    }
+
+    public function editGSTDetails(array $input): array
+    {
+        $merchantDetail = $this->merchant->merchantDetail;
+
+        $merchantDetail->getValidator()->validateIsGSTEditable($input);
+
+        $merchantDetail->edit($input);
+
+        $this->repo->saveOrFail($merchantDetail);
+
+        return $merchantDetail->toArrayGST();
+    }
+
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since

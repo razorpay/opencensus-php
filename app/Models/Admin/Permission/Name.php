@@ -6,6 +6,7 @@ use RZP\Models\Merchant;
 
 class Name
 {
+    const VIEW_HOMEPAGE                       = 'view_homepage';
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
@@ -137,11 +138,15 @@ class Name
     const VIEW_ALL_WORKFLOW                   = 'view_all_workflow';
     const EDIT_WORKFLOW                       = 'edit_workflow';
     const DELETE_WORKFLOW                     = 'delete_workflow';
+    const VIEW_WORKFLOW_REQUESTS              = 'view_workflow_requests';
     const CREATE_GATEWAY_RULE                 = 'create_gateway_rule';
     const EDIT_GATEWAY_RULE                   = 'edit_gateway_rule';
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
     const VIEW_GATEWAY_RULE                   = 'view_gateway_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
+    const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
+    const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
+    const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
