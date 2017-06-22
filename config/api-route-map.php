@@ -457,6 +457,8 @@ return [
         'terminal_toggle'                   => 'terminals/{id}/toggle',
         // Delete Terminal
         'terminal_delete'                   => 'terminals/{id}',
+        // Edit Terminal
+        'terminal_edit'                     => 'terminals/{id}',
         // Terminal Change Primary Merchant
         'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
         // Terminal Assign Sub Merchants

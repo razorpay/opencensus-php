@@ -436,15 +436,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function editTerminal($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
@@ -513,21 +504,6 @@ class AdminController extends Controller
         list($error, $data) = $response = (new Admin\Service)->confirmUser($input['email']);
 
         return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * This is currently not supported on the API
-     * so we just return an error
-     * @param  int $iin IIN to delete
-     */
-    public function deleteIIN($iin)
-    {
-        /*list($error, $data) = $response = (new Admin\Service)
-            ->deleteIin($iin);*/
-
-        $error = ["IIN Delete not implemented on API"];
-
-        return AppResponse::jsonResponse($error, []);
     }
 
     public function postSlackQuery()
