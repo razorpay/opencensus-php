@@ -182,10 +182,6 @@ return [
             'url'       => 'account/config',
             'routeName' => 'get_config'
         ],
-        'merchant_edit_config'              => [
-            'url'       => 'account/config',
-            'routeName' => 'put_config'
-        ],
         'merchant_edit_config_logo'         => [
             'url'       => 'account/config/logo',
             'routeName' => 'post_config_logo'
@@ -348,6 +344,12 @@ return [
         'balance_fetch'                     => [
             'url'       => 'balance',
             'routeName' => 'balance_get'
+        ],
+
+        // Edit Merchant config
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
         ],
 
         // Admin Payment Actions

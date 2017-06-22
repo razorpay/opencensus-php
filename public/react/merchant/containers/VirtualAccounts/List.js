@@ -6,6 +6,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import VirtualAccountsListFilter
   from 'merchant/components/VirtualAccounts/ListFilter';
 import CreateVirtualAccount from './CreateVirtualAccount';
+import { fetchConfig } from 'merchant/modules/config';
 import { openModal } from 'rzp/modules/modals';
 import {
   fetchVirtualAccounts as fetchAll,
@@ -18,8 +19,13 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 
-@connect(state => state.virtualaccounts, { fetchAll, openModal })
+@connect(state => state.virtualaccounts, { fetchAll, fetchConfig, openModal })
 export default class VirtualAccountsListContainer extends ListContainer {
+  componentWillMount() {
+    super.componentWillMount();
+    this.props.fetchConfig();
+  }
+
   showCreateVAModal = () => {
     this.props.openModal({
       size: 'small',

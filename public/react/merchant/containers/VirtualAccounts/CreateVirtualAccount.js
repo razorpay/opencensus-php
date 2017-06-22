@@ -48,7 +48,7 @@ const selector = formValueSelector('createVirtualAccount');
   state => {
     return {
       descriptor: selector(state, 'descriptor'),
-      ...state.config,
+      ...state.config.config,
     };
   },
   {
@@ -158,7 +158,7 @@ export default class CreateVirtualAccount extends Component {
                       </div>
                     : null}
                   <AsyncButton
-                    class="btn btn-primary pull-right"
+                    class={`btn btn-primary ${handle ? 'pull-right' : 'btn-block'}`}
                     text="Create"
                     pendingText="Creating..."
                     onClick={handleSubmit(this.save)}
