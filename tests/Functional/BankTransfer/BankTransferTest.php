@@ -86,12 +86,14 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($response['id']);
         $this->assertNotNull($response['utr']);
 
-        $this->assertEquals('neft', $response['mode']);
+        $this->assertEquals('NEFT', $response['mode']);
         $this->assertEquals($virtualAccount['id'], $response['virtual_account_id']);
         $this->assertEquals($payment['id'], $response['payment_id']);
-        $this->assertEquals('HDFC', $response['payer_bank']);
+        $this->assertEquals('bank_transfer', $response['entity']);
 
-        $this->assertStringStartsWith('XXXX-XXXX-XXXX-', $response['payer_account']);
+        // Payer details are currently not public, uncomment this when they are.
+        // $this->assertEquals('HDFC Bank', $response['payer_bank']);
+        // $this->assertStringStartsWith('XXXX-XXXX-XXXX-', $response['payer_account']);
     }
 
     public function testBankTransferProcessDuplicateUtr()
