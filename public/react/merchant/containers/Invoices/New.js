@@ -601,9 +601,9 @@ export default class InvoicesNewContainer extends Component {
                         </div>
 
                         <div class="row">
-                          <div class="col-md-12 partial-payment">
+                          <div class="col-md-12">
                             <ShowWhen featureEnabled="Partial_Payment">
-                              <div class="rzpChecbox">
+                              <div class="rzpChecbox rzpChecbox-sm">
                                 <Field
                                   name="partial_payment"
                                   id="partial_payment"

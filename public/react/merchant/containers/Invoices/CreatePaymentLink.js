@@ -139,7 +139,7 @@ export default class CreatePaymentLink extends Component {
                 <ShowWhen featureEnabled="Partial_Payment">
                   <div class="form-group">
                     <div class="col-md-8 col-md-offset-3">
-                      <div class="rzpChecbox">
+                      <div class="rzpChecbox rzpChecbox-sm">
                         <Field
                           name="partial_payment"
                           id="partial_payment"
