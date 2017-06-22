@@ -84,6 +84,7 @@ class DSPTransactionReport extends BasicEntityReport
 
         $fullpath = $this->createCsvFile($data, $merchantId, null, 'files/report');
 
+        // Currently hard coding the mail address, will remove it later
         $reportingMail = new DSPMail('ankit.agarwal@razorpay.com', $fullpath);
 
         Mail::queue($reportingMail);
@@ -100,6 +101,11 @@ class DSPTransactionReport extends BasicEntityReport
 
         foreach ($entities as $txn)
         {
+            if ($txn->isTypeSettlement() or $txn->isTypeAdjustment())
+            {
+                continue;
+            }
+
             $clientFields = $this->getClientFields($txn);
 
             $row = [
