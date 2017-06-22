@@ -16,11 +16,4 @@ class Terminal extends Entity
     {
         return parent::all();
     }
-
-    public function edit($id, $params)
-    {
-        $relativeUrl = $this->getEntityUrl() . $id;
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
 }

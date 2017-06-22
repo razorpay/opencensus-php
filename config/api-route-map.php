@@ -291,13 +291,13 @@ return [
             'url'       => 'merchant/gst',
             'routeName' => 'merchant_gst_edit'
         ],
-        
+
          // Invitations
         'invitation_create'                 => [
             'url'       => 'invitations',
             'routeName' => 'invitations_send'
          ],
-        
+
         'invitation_resend'                 => [
             'url'       => 'invitations/{id}/resend',
             'routeName' => 'invitation_resend'
@@ -426,6 +426,8 @@ return [
         'terminal_toggle'                   => 'terminals/{id}/toggle',
         // Delete Terminal
         'terminal_delete'                   => 'terminals/{id}',
+        // Edit Terminal
+        'terminal_edit'                     => 'terminals/{id}',
         // Terminal Change Primary Merchant
         'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
         // Terminal Assign Sub Merchants

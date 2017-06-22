@@ -188,16 +188,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
-        // IIN Routes
-        Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
-
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
-        // Terminal Routes
-        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
 
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');

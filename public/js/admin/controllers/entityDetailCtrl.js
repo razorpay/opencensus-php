@@ -178,10 +178,19 @@ app
               delete data[i];
             }
           }
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id,
-            data
-          );
+          var terminalData = {
+            route_name: 'terminal_edit',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: terminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -329,20 +338,6 @@ app
 
       // IIN Specific actions
       $scope.iin = {
-        delete: function(id) {
-          var request = $http.delete('/admin/' + $scope.mode + '/iin/' + id);
-          request
-            .success(function(data) {
-              if (data.success) {
-                alert('IIN deleted');
-              } else {
-                alert(data.errors);
-              }
-            })
-            .error(function() {
-              alert('There was an error while deleting the IIN');
-            });
-        },
         edit: function(iin) {
           var iinId = iin.iin;
 
