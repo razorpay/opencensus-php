@@ -9,7 +9,7 @@ class Refund extends Base
 {
     protected function processEntry(array & $entry)
     {
-        $paymentId = $entry[Batch\Header::PAYMENT_ID];
+        $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
         $amount    = $entry[Batch\Header::AMOUNT];
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant(
