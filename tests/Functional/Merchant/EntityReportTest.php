@@ -192,6 +192,44 @@ class EntityReportTest extends TestCase
         $this->assertArrayNotHasKey('acquirer_data', $paymentReport[0]);
     }
 
+    public function testDspReport()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'receipt' => 'randon string',
+                'notes' => [
+                    'ref_1' => 'random 1',
+                    'ref_2' => 'random 2',
+                    'ref_3' => 'random 3',
+                    'ref_5' => 'random 5',
+                    'ref_6' => 'random 6',
+                    'ref_7' => 'random 7',
+                    'ref_8' => 'random 8',
+                    'ref_9' => 'random 9'
+                ]
+
+            ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'day'         => 'yesterday',
+            'merchant_id' => '10000000000000',
+            'email'       => 'test1@razorpay.com',
+        ];
+
+        $data = $this->fetchDSPReport($input);
+    }
+
     public function testBrokingReport()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
@@ -256,6 +294,18 @@ class EntityReportTest extends TestCase
             'content' => $content);
 
         $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchDSPReport($content)
+    {
+        $request = array(
+            'url' => '/reports/transaction/dsp',
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->appAuth();
 
         return $this->makeRequestAndGetContent($request);
     }

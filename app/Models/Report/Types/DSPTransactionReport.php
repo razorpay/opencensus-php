@@ -28,7 +28,6 @@ class DSPTransactionReport extends BasicEntityReport
                 E::PAYMENT . '.' . E::NETBANKING,
                 E::PAYMENT . '.' . E::BILLDESK
             ],
-            E::SETTLEMENT   => [],
         ]
     ];
 
@@ -50,7 +49,7 @@ class DSPTransactionReport extends BasicEntityReport
     const AMOUNT                = "Amount(Rs.Ps)";
     const STATUS                = "Status";
     const CREDIT_ACCOUNT_NUMBER = "CREDITACNO";
-    const SETTLED               = "settled";
+    const SETTLED               = "Settled";
 
     protected $allowed = [
         E::TRANSACTION
@@ -74,25 +73,42 @@ class DSPTransactionReport extends BasicEntityReport
 
         $this->setDefaults();
 
-        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
+        $this->setMerchant($merchantId);
 
-        // currently limiting the api response can break the merchant integration
-        // so overwriting the limits for now
-        list($count, $skip) = [self::BATCH_LIMIT, 0];
+        $email = $input['email'] ?? $this->merchant->getEmail();
 
-        list($data, $count) = $this->getReportData($from, $to, $count, $skip, $merchantId);
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $fullpath = $this->createCsvFile($data, $merchantId, null, 'files/report');
+        $filename = $this->generateFilename($now);
+
+        $fullpath = $this->writeDataToCsv($input, $filename);
 
         // Currently hard coding the mail address, will remove it later
-        $reportingMail = new DSPMail('ankit.agarwal@razorpay.com', $fullpath);
+        $reportingMail = new DSPMail($email, $fullpath);
 
         Mail::queue($reportingMail);
 
         return [
-            'to'   => $to,
-            'from' => $from
+            'merchantId' => $merchantId,
+            'email'      => $email,
+            'file'       => $fullpath
         ];
+    }
+
+    protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
+    {
+        $entity = $this->entity;
+
+        $repo = $this->repo->$entity;
+
+        return $repo->fetchEntitiesForDSPReport(
+                        $merchantId,
+                        $from,
+                        $to,
+                        $count,
+                        $skip,
+                        $this->relationsToFetch
+        );
     }
 
     protected function fetchFormattedDataForReport($entities): array
@@ -101,11 +117,6 @@ class DSPTransactionReport extends BasicEntityReport
 
         foreach ($entities as $txn)
         {
-            if ($txn->isTypeSettlement() or $txn->isTypeAdjustment())
-            {
-                continue;
-            }
-
             $clientFields = $this->getClientFields($txn);
 
             $row = [
@@ -126,8 +137,8 @@ class DSPTransactionReport extends BasicEntityReport
                 self::TRANSACTION_DATE      => $this->getTxnDate($txn),
                 self::AMOUNT                => $txn->getAmount(),
                 self::STATUS                => 'SUCCESS',
-                self::CREDIT_ACCOUNT_NUMBER => $this->getAccountNumber($txn),
-                self::SETTLED               => $txn->isSettled()
+                self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn),
+                self::SETTLED               => ($txn->isSettled() === true)
 
             ];
 
@@ -140,21 +151,18 @@ class DSPTransactionReport extends BasicEntityReport
     protected function getClientFields($txn)
     {
         $fields = [
-            'ref_1' => null,
-            'ref_2' => null,
-            'ref_3' => null,
-            'ref_4' => null,
+            'ref_1' => 'NA',
+            'ref_2' => 'NA',
+            'ref_3' => 'NA',
+            'ref_4' => 'NA',
         ];
 
-        if ($txn->isTypePayment())
+        $payment = $this->getPayment($txn);
+
+        $order = $payment->order;
+
+        if ($order !== null)
         {
-            $order = $txn->source->order;
-
-            if ($order === null)
-            {
-                return $fields;
-            }
-
             $notes = $order->getNotes();
 
             switch (true)
@@ -176,10 +184,9 @@ class DSPTransactionReport extends BasicEntityReport
         return $fields;
     }
 
-    protected function getBank($txn)
+    protected function getPayment($txn)
     {
         $payment = null;
-        $bank = null;
 
         switch (true)
         {
@@ -190,21 +197,24 @@ class DSPTransactionReport extends BasicEntityReport
             case $txn->isTypeRefund():
                 $payment = $txn->source->payment;
                 break;
-
-            default:
-                break;
         }
 
-        if ($payment !== null)
+        return $payment;
+    }
+
+    protected function getBank($txn)
+    {
+        $payment = $this->getPayment($txn);
+
+        $bank = null;
+
+        if ($payment->isCard())
         {
-            if ($payment->isCard())
-            {
-                $bank = $payment->card->getIssuer();
-            }
-            else
-            {
-                $bank = $payment->getBank();
-            }
+            $bank = $payment->card->getIssuer();
+        }
+        else if ($payment->isNetbanking())
+        {
+            $bank = $payment->getBank();
         }
 
         return $bank;
@@ -216,41 +226,39 @@ class DSPTransactionReport extends BasicEntityReport
 
         // Format dd/mm/yyyy hh:mm,
         $txnDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
-                         ->format('d/m/Y H:i');
+                         ->format('d/m/Y H:i:s');
 
         return $txnDate;
     }
 
     protected function getTxnBankReferenceNo($txn)
     {
-        if ($txn->isTypePayment() === false)
-        {
-            return null;
-        }
+        $payment = $this->getPayment($txn);
 
-        $payment = $txn->source;
+        $bankTxnNumber = 'NA';
 
-        $bankTxnNumber = null;
-
-        if ($payment->getGateway() === self::BILLDESK)
+        if ($payment->isNetbanking() === true)
         {
-            $bankTxnNumber = $payment->billdesk->getBankReferenceNo();
-        }
-        else if ($payment->getRelation('netbanking') !== null)
-        {
-            $bankTxnNumber = $payment->netbanking->getBankPaymentId();
+            if ($payment->getGateway() === self::BILLDESK)
+            {
+                $bankTxnNumber = $payment->billdesk->getBankReferenceNo();
+            }
+            else if ($payment->getRelation('netbanking') !== null)
+            {
+                $bankTxnNumber = $payment->netbanking->getBankPaymentId();
+            }
         }
 
         return $bankTxnNumber;
     }
 
-    protected function getAccountNumber($txn)
+    protected function getCreditAccountNumber($txn)
     {
-        $bankAccountNumber = null;
+        $bankAccountNumber = 'NA';
 
-        if ($txn->isTypeSettlement())
+        if ($txn->isSettled() === true)
         {
-            $bankAccountNumber = $txn->source->bankAccount->getAccountNumber();
+            $bankAccountNumber = $txn->settlement->bankAccount->getAccountNumber();
         }
 
         return $bankAccountNumber;

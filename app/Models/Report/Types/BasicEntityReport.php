@@ -94,7 +94,7 @@ class BasicEntityReport extends BaseReport
 
         // currently limiting the api response can break the merchant integration
         // so overwriting the limits for now
-        list($count, $skip) = [self::BATCH_LIMIT, 0];
+        list($count, $skip) = [200000, 0];
 
         list($data, $count) = $this->getReportData($from, $to, $count, $skip);
 
@@ -265,12 +265,9 @@ class BasicEntityReport extends BaseReport
      * @param $from, $to, $count, $skip
      * @return [$formattedData, $fetchCount] array
      */
-    protected function getReportData($from, $to, $count, $skip, $merchantId = null): array
+    protected function getReportData($from, $to, $count, $skip): array
     {
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant->getId();
-        }
+        $merchantId = $this->merchant->getId();
 
         $begin = time();
 
