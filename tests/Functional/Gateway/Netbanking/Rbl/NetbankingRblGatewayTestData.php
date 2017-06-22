@@ -125,4 +125,53 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
+    'testAuthFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testPaymentFailedNetbankingEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        =>  true,
+        'bank'            => 'PUNB',
+        'status'          => 'F'
+    ],
+
+    'testPaymentVerifySuccessEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'S'
+    ],
+
+    'testAuthFailedVerifySuccessEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'S'
+    ],
+
+    'testAuthFailedVerifyFailedEntity' => [
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'F'
+    ],
+
+    'testAuthSuccessVerifyFailedNetbankingEntity' => [
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'F'
+    ],
 ];

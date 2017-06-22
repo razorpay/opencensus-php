@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Pnb;
 
-class Constants
+class Status
 {
     const RZP_NAME    = 'Razorpay';
     const RZP_EMAIL   = 'support@razorpay.com';
