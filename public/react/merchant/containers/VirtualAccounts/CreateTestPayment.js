@@ -76,6 +76,7 @@ export default class CreateTestPayment extends Component {
                 name="amount"
                 class="form-control"
                 component={InputField}
+                placeholder="Amount in INR"
                 autoFocus={true}
                 validate={required()}
               />

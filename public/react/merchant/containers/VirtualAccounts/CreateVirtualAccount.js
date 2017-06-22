@@ -150,8 +150,9 @@ export default class CreateVirtualAccount extends Component {
                     ? <div class="pull-left">
                         <div>Account Number</div>
                         <b>
-                          RZRP
+                          RZRP-
                           {handle.padStart(4, '×')}
+                          -
                           {descriptor.padStart(10, '×')}
                         </b>
                       </div>
