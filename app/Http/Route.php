@@ -1191,6 +1191,7 @@ final class Route
         'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
         'terminal_toggle'                  => '*',
         'terminal_delete'                  => Permission::DELETE_TERMINAL,
+        'terminal_edit'                    => Permission::EDIT_TERMINAL,
         'terminal_reassign_merchant'       => Permission::ASSIGN_MERCHANT_TERMINAL,
         'terminal_add_merchant'            => '*',
         'terminal_remove_merchant'         => '*',
