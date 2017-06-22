@@ -18,7 +18,7 @@ class CreateGatewayTokens extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::TOKEN, function(Blueprint $table)
+        Schema::create(Table::GATEWAY_TOKEN, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 

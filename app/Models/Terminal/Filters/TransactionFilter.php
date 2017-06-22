@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use App;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;

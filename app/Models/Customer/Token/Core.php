@@ -27,6 +27,7 @@ class Core extends Base\Core
         {
             $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);
 
+            // TODO: Need to check how is this used.
             $token->terminal()->associate($terminal);
 
             unset($input[Token\Entity::TERMINAL_ID]);

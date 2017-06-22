@@ -1057,6 +1057,9 @@ class Gateway extends Base\Gateway
         {
             $body[ApiRequestFields::V1_PAYMENT] = [
                 ApiRequestFields::V1_HOSTED_DATA_ID  => $input['token']->getId(),
+                // TODO: Can we instead get this via payment's terminal?
+                // since token's terminal is deprecated now. The other way
+                // is to get from gateway_token, which we can pass on.
                 ApiRequestFields::V1_HOSTED_STORE_ID => $input['token']->terminal->getGatewayMerchantId(),
             ];
         }

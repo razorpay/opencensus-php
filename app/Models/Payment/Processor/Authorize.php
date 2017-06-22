@@ -1814,6 +1814,11 @@ trait Authorize
 
                 $this->createAndSetTerminalInGatewayToken($payment, $token);
 
+                //
+                // This is being done simply. Can be removed.
+                // Shouldn't be required now since we are using
+                // gateway_token for terminal.
+                //
                 $token->terminal()->associate($payment->terminal);
             }
 
