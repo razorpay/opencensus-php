@@ -95,9 +95,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
 
-        // This also returns credits
-        Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
-
         // Invitation and Team Support
         Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
 
