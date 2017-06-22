@@ -8,7 +8,7 @@ const currencies = {
 };
 
 const getCurrency = item => (currencies[item.currency] || '') + ' ';
-const getAmount = key => item =>
+export const getAmount = key => item =>
   getCurrency(item) + getFixedINRAmount(item[key || 'amount']);
 
 export const amount = getAmount();

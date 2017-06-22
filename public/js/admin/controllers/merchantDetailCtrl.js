@@ -791,6 +791,40 @@ app
           });
       };
 
+      $scope.assignMerchantHandle = function(handle) {
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: {
+            route_name: 'merchant_edit_config',
+            merchant_id: $scope.merchant.id,
+            body: {
+              handle: handle,
+            },
+          },
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Merchant handle saved successfully',
+                true
+              );
+              generateMerchant();
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
+
       $scope.assignBanks = function(bankdata) {
         var data = { banks: [] };
         angular.forEach(bankdata, function(i, e) {
@@ -1534,6 +1568,22 @@ app
           $scope.assignBanks(bankdata);
         }, $.noop);
       };
+
+      $scope.openAssignMerchantHandle = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'assignMerchantHandle.html',
+          controller: 'assignMerchantHandleCtrl',
+          resolve: {
+            handle: function() {
+              return $scope.merchant.details.handle;
+            },
+          },
+        });
+        modalInstance.result.then(function(handle) {
+          $scope.assignMerchantHandle(handle);
+        }, $.noop);
+      };
+
       $scope.openAddAdjustment = function() {
         var modalInstance = $modal.open({
           templateUrl: 'addAdjustmentModalContent.html',
@@ -2054,6 +2104,7 @@ app
       // by the API as false
       var forcedMethods = [
         'aeps',
+        'bank_transfer',
         'mobikwik',
         'payzapp',
         'payumoney',
@@ -2170,6 +2221,20 @@ app
       });
       $scope.ok = function(bankdata) {
         $modalInstance.close(bankdata);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('assignMerchantHandleCtrl', [
+    '$scope',
+    '$modalInstance',
+    'handle',
+    function($scope, $modalInstance, handle) {
+      $scope.handle = handle;
+      $scope.ok = function(handle) {
+        $modalInstance.close(handle);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

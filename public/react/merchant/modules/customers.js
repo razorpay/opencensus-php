@@ -1,4 +1,9 @@
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import {
+  makeActionCollectionReducer,
+  listFetchPendingState,
+  listFetchSuccessState,
+  listFetchErrorState,
+} from 'rzp/modules/collection';
 import Customer from 'merchant/models/Customer';
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH';
@@ -44,50 +49,8 @@ export const deleteCustomer = params => {
   };
 };
 
-let initialState = {
-  loading: true,
-  customers: [],
-  count: 0,
-};
-
-export default function(state = initialState, action) {
-  switch (action.type) {
-    case `${CUSTOMERS_FETCH}::PENDING`:
-    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return set(state, 'loading', true);
-
-    case `${CUSTOMERS_FETCH}::SUCCESS`:
-    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        customers: action.payload.data.items,
-        count: action.payload.data.count,
-      });
-
-    case `${CUSTOMERS_FETCH}::ERROR`:
-    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::ERROR`:
-      return merge(state, {
-        loading: false,
-        error: action.error,
-      });
-
-    case `${CUSTOMER_CREATE}::SUCCESS`:
-      return set(state, 'customers', unshift(state.customers, action.payload));
-
-    case `${CUSTOMER_EDIT}::SUCCESS`:
-      let customerIndex = state.customers.findIndex(
-        item => item.id === action.payload.id
-      );
-      return set(state, `customers.${customerIndex}`, action.payload);
-
-    case `${CUSTOMER_DELETED}::SUCCESS`:
-      var customersList = remove(
-        state.customers,
-        customer => customer.id === action.id
-      );
-      return set(state, 'customers', customersList);
-
-    default:
-      return state;
-  }
-}
+export default makeActionCollectionReducer('CUSTOMERS', {
+  [`${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`]: listFetchPendingState,
+  [`${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`]: listFetchSuccessState,
+  [`${CUSTOMERS_AUTOCOMPLETE_FETCH}::ERROR`]: listFetchErrorState,
+});

@@ -4,6 +4,7 @@ const baseUrl = {
   pay: '/payments/',
   rfnd: '/refunds/',
   order: '/orders/',
+  va: '/virtualaccounts/',
   // trf: '/marketplace/transfers/',
   // acc: '/marketplace/accounts/',
   // rvrsl: '/marketplace/reversals/',
@@ -28,8 +29,9 @@ export const idLink = id => {
 };
 
 const makePropLink = prop => item => idLink(item[prop]);
-const makeIdLink = type => item =>
-  idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
+const makeIdLink = type => item => {
+  return idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
+};
 
 export const payment = makeIdLink('payment');
 export const refund = makeIdLink('refund');
@@ -41,3 +43,5 @@ export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
+
+export const virtualAccount = makeIdLink('virtual_account');

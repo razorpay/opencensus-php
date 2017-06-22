@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+import { matchDetail } from 'merchant/routes';
+import Slider from 'rzp/ui/Slider';
+import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/HomeContainer';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
@@ -14,9 +17,7 @@ import Reports from 'merchant/containers/Reports';
 import TeamManagement from 'merchant/containers/Team';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
-import { matchDetail } from 'merchant/routes';
-import Slider from 'rzp/ui/Slider';
-import ShowWhen from 'merchant/components/ShowWhen';
+import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 
 // Below will be removed with old navigation removal
 import PaymentsList from 'merchant/containers/Payments/List';
@@ -34,6 +35,7 @@ import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
 import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
+import { openSlider } from 'rzp/modules/slider';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -77,7 +79,7 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, { setBaseLocation, setActiveEntity })
+@connect(null, { setBaseLocation, setActiveEntity, openSlider })
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity } = this.props;
@@ -131,6 +133,7 @@ export default class Content extends Component {
                 />
 
                 <Route path="/marketplace" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
 
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
@@ -185,6 +188,7 @@ export default class Content extends Component {
                 <Route path="/customers" component={InvoicingContainer} />
 
                 <Route path="/marketplace" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
 
@@ -288,6 +292,13 @@ export default class Content extends Component {
 
   componentWillReceiveProps(props) {
     this.setBaseLocation(props.location);
+    this.showSliderView();
+  }
+
+  showSliderView() {
+    if (this.detailView && this.baseLocation) {
+      this.props.openSlider();
+    }
   }
 
   render() {
@@ -296,9 +307,7 @@ export default class Content extends Component {
 
     if (DetailView) {
       DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation}>
-            <DetailView />
-          </Slider>
+        ? <Slider closeUrl={this.baseLocation}> <DetailView /> </Slider>
         : <DetailView />;
     }
 
