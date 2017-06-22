@@ -25,7 +25,7 @@ return [
 
     'permissions' => [
         PermissionCategory::GENERAL => [
-            Permission::VIEW_HOMEPAGE       => 'View Dashboard Home',
+            Permission::VIEW_HOMEPAGE          => 'View Dashboard Home',
         ],
 
         PermissionCategory::MERCHANT => [
@@ -214,7 +214,8 @@ return [
             ],
             Permission::EDIT_MERCHANT_OFFER => [
                 'description' => 'Edit offer for a merchant',
-            ]
+            ],
+            Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
         ],
 
         PermissionCategory::PRICING => [
