@@ -117,6 +117,13 @@ class DSPTransactionReport extends BasicEntityReport
 
         foreach ($entities as $txn)
         {
+            $payment = $this->getPayment($txn);
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                continue;
+            }
+
             $clientFields = $this->getClientFields($txn);
 
             $row = [
@@ -138,7 +145,7 @@ class DSPTransactionReport extends BasicEntityReport
                 self::AMOUNT                => $txn->getAmount(),
                 self::STATUS                => 'SUCCESS',
                 self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn),
-                self::SETTLED               => ($txn->isSettled() === true)
+                self::SETTLED               => $txn->isSettled()
 
             ];
 

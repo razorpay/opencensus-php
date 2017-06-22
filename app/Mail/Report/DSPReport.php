@@ -44,7 +44,7 @@ class DSPReport extends Mailable
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $data = ['body' => 'Report for ' .$today];
+        $data = ['body' => 'Payment Report for ' .$today];
 
         $this->with($data);
 
