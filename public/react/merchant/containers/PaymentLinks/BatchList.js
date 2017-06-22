@@ -3,13 +3,13 @@ import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchList from 'merchant/components/Batch/List';
 
-import { fetchRefundBatches as fetchAll } from 'merchant/modules/batches';
+import { fetchPaymentLinkBatches as fetchAll } from 'merchant/modules/batches';
 
 @connect(
   state => {
     return {
       mode: state.session.mode,
-      ...state.refundbatches,
+      ...state.paymentlinkbatches,
     };
   },
   { fetchAll }
@@ -23,8 +23,8 @@ export default class BatchListContainer extends ListContainer {
         skip={this.state.skip}
         paginate={this.paginate}
         onSubmit={this.search}
-        docUrl="https://docs.razorpay.com/v1/page/batch-refunds"
-        uploadUrl="/refunds/batchupload"
+        docUrl="https://docs.razorpay.com/v1/page/payment-links-batch-import"
+        uploadUrl="/paymentlinks/batchuploads/new"
         {...this.props}
       />
     );

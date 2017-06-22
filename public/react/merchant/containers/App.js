@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import ModalDialog from 'rzp/ui/ModalDialog';
-import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';

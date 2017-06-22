@@ -122,6 +122,10 @@ export const mpPaymentsReducer = makeCollectionReducer('MP_PAYMENTS');
 export const fetchRefunds = params => fetchAll(params, Refund, 'REFUNDS');
 export const refundsReducer = makeCollectionReducer('REFUNDS');
 
+export const fetchLinkBatches = params =>
+  fetchAll(params, LinkBatch, 'BATCHLINKS');
+export const linkBatchesReducer = makeCollectionReducer('BATCHLINKS');
+
 export const fetchSettlements = params =>
   fetchAll(params, Settlement, 'SETTLEMENTS');
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');

@@ -8,7 +8,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/HomeContainer';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
-import PaymentLinks from 'merchant/containers/PaymentLinks/List';
+import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Customers from 'merchant/containers/Customers/List';
