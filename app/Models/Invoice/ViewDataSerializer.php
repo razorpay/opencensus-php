@@ -22,6 +22,12 @@ class ViewDataSerializer extends Base\Core
         Entity::EXPIRED_AT
     ];
 
+    protected static $appendAmountFormatted = [
+        Entity::AMOUNT,
+        Entity::AMOUNT_DUE,
+        Entity::AMOUNT_PAID
+    ];
+
     protected $invoice;
     protected $merchant;
 
@@ -84,12 +90,15 @@ class ViewDataSerializer extends Base\Core
         $invoiceData = $this->invoice->toArrayPublic();
 
         $isInvoicePaid = $this->invoice->isPaid();
-        $invoiceAmountFormatted = number_format($invoiceData[Entity::AMOUNT] / 100, 2);
 
         $invoiceData += [
             'is_paid'          => $isInvoicePaid,
-            'amount_formatted' => $invoiceAmountFormatted,
         ];
+
+        foreach (self::$appendAmountFormatted as $key)
+        {
+            $invoiceData[$key . '_formatted'] = number_format($invoiceData[$key] / 100, 2);
+        }
 
         foreach (self::$appendEpochsFormatted as $key)
         {
