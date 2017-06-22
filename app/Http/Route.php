@@ -944,6 +944,7 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'merchant_fetch_users',
         'reports_transaction_dsp',
         'invitation_fetch_by_token',
         'invitation_action',
