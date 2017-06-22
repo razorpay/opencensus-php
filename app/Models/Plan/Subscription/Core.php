@@ -367,6 +367,11 @@ class Core extends Base\Core
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
 
+    public function cancel(Entity $subscription)
+    {
+        
+    }
+
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
