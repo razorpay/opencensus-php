@@ -1281,6 +1281,7 @@ final class Route
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
             'refund_retry_failed',
+            'reports_transaction_dsp',
         ],
 
         'kotak' => [
