@@ -58,14 +58,11 @@ class DSPTransactionReport extends BasicEntityReport
     const BILLDESK = 'billdesk';
 
     /**
-     * Gets report data as array
-     *
-     * Not being used anywhere on dashboard
-     * Keeping it to maintain backward compatibility
-     *
-     * @param $input array
-     *        expected : 'day', 'month', 'year'
-     * @return $data array
+     * Report for DSP Blackrock Merchant
+     * @param  array  $input ['day'         => 'yesterday/today',
+     *                        'merchant_id' => 'Merchant Id'
+     *                        'email'       => <for testing purpose only>]
+     * @return [type]        [description]
      */
     public function getReport(array $input)
     {
