@@ -4,6 +4,7 @@ namespace RZP\Models\Coupon;
 
 use RZP\Models\Base;
 use RZP\Base\JitValidator;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
@@ -15,20 +16,15 @@ class Repository extends Base\Repository
         Entity::ENTITY_TYPE         => 'sometimes|string',
     ];
 
-    protected $applyCouponRules = [
-        Entity::CODE                => 'required|string',
-        Entity::MERCHANT_ID         => 'required|alpha_num|max:14',
-    ];
-
     public function fetchByCode(array $input)
     {
-        (new JitValidator)->rules($this->applyCouponRules)
-                          ->input($input)
-                          ->caller($this)
-                          ->validate();
-
         return $this->newQuery()
                     ->where(Entity::CODE, '=', $input['code'])
+                    ->where(function ($query) use ($input)
+                    {
+                        $query->where(Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
+                              ->orWhere(Entity::MERCHANT_ID, '=', $input['merchant_id']);
+                    })
                     ->first();
     }
 }

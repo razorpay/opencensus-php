@@ -42,7 +42,7 @@ class CreateMerchantPromotion extends Migration
                   ->on(Table::MERCHANT)
                   ->onDelete('cascade');
 
-            $table->unique(['merchant_id', 'promotion_id']);
+            $table->unique([MerchantPromotion::MERCHANT_ID, MerchantPromotion::PROMOTION_ID]);
 
             $table->foreign(MerchantPromotion::PROMOTION_ID)
                   ->references(Promotion::ID)

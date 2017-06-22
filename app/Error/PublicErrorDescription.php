@@ -464,6 +464,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_RULE_EXISTS                                       = 'Gateway rule already exists for the given criteria';
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
 
+    const BAD_REQUEST_COUPON_LIMIT_REACHED                                      = 'Coupon Limit Reached';
     const BAD_REQUEST_COUPON_ALREADY_USED                                       = 'Coupon Code Already Used';
     const BAD_REQUEST_INVALID_COUPON_CODE                                       = 'Coupon Code Not Found';
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon Not valid for this merchant';

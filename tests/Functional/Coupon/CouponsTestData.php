@@ -37,7 +37,7 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_EXPIRED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_LIMIT_REACHED
         ],
     ],
 

@@ -27,6 +27,12 @@ class Validator extends Base\Validator
         self::COUPON_EXPIRY,
     ];
 
+    protected static $applyRules = [
+        Entity::CODE          => 'required|string',
+        Entity::MERCHANT_ID   => 'required|alpha_num|max:14',
+    ];
+
+
     public function validateCouponExpiry(array $input)
     {
         if ((isset($input[Entity::START_DATE]) === true) and
@@ -58,11 +64,18 @@ class Validator extends Base\Validator
 
     public function validateApplyCoupon(Merchant\Entity $merchant)
     {
+        if (($this->entity->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
+            ($this->entity->getMerchantId() !== $merchant->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT);
+        }
+
         if (($this->entity->getUsage() !== null) and
             ($this->entity->getUsedCount() === $this->entity->getUsage()))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_COUPON_EXPIRED);
+                ErrorCode::BAD_REQUEST_COUPON_LIMIT_REACHED);
         }
 
         if (($this->entity->getStartDate() !== null) and
@@ -77,13 +90,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_EXPIRED);
-        }
-
-        if (($this->entity->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
-            ($this->entity->getMerchantId() !== $merchant->getId()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT);
         }
     }
 }

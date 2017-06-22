@@ -38,6 +38,8 @@ class Service extends Base\Service
 
     public function apply(array $input)
     {
+        (new Validator)->validateInput('apply', $input);
+
         $coupon = $this->repo->coupon->fetchByCode($input);
 
         if ($coupon === null)
