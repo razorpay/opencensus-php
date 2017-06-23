@@ -297,7 +297,7 @@ class Validator extends Base\Validator
 
         $merchant = $this->entity->merchant;
 
-        $feature = Feature\Constants::INV_PARTIAL_PAYMENTS;
+        $feature = Feature\Constants::INVOICE_PARTIAL_PAYMENTS;
 
         if ($merchant->isFeatureEnabled($feature) === false)
         {
