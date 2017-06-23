@@ -586,13 +586,12 @@ app
                 if ($state.params.next !== undefined) {
                   var next = $state.params.next;
                   var parser = document.createElement('a');
-                  parser.href = next;
+                  parser.href = $state.params.next;
 
-                  if (
-                    parser.hostname ||
-                    window.location.hostname === 'auth.razorpay.(com|dev)'
-                  ) {
-                    window.location.href = next;
+                  var hostname = parser.hostname || window.location.hostname;
+
+                  if (/^auth.razorpay.(com|dev)$/.test(hostname)) {
+                    window.location.href = parser.href;
                     return false;
                   }
                 }
