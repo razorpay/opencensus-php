@@ -269,32 +269,41 @@ class DSPTransactionReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $day = $input['day'];
-
         $from = $to = null;
 
-        if ($day === 'today')
+        if (isset($input['day']) === true)
         {
-            $from = Carbon::now('Asia/Kolkata')
-                          ->startOfDay()
-                          ->timestamp;
+            $day = $input['day'];
 
-            $to = Carbon::now('Asia/Kolkata')
-                        ->timestamp;
+            if ($day === 'today')
+            {
+                $from = Carbon::now('Asia/Kolkata')
+                              ->startOfDay()
+                              ->timestamp;
+
+                $to = Carbon::now('Asia/Kolkata')
+                            ->timestamp;
+            }
+            else if ($day === 'yesterday')
+            {
+                $from = Carbon::now('Asia/Kolkata')
+                               ->startOfDay()
+                               ->subDay()
+                               ->timestamp;
+
+                $to = Carbon::now('Asia/Kolkata')
+                            ->startOfDay()
+                            ->timestamp - 1;
+            }
         }
-        else if ($day === 'yesterday')
+        elseif ((isset($input['to']) === true) and
+                    (isset($input['from']) === true))
         {
-            $from = Carbon::now('Asia/Kolkata')
-                           ->startOfDay()
-                           ->subDay()
-                           ->timestamp;
+            $to = $input['to'];
 
-            $to = Carbon::now('Asia/Kolkata')
-                        ->startOfDay()
-                        ->timestamp - 1;
-
-
+            $from = $input['from'];
         }
+
         return [$from, $to];
     }
 }
