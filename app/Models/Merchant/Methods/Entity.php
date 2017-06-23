@@ -109,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::ENTITY,
+        self::BANK_TRANSFER,
     ];
 
     protected $defaults = array(
