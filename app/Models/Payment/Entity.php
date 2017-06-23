@@ -1489,10 +1489,14 @@ class Entity extends Base\PublicEntity
 
     public function getNetbankingReferenceId()
     {
+        $netbankingRefId = null;
+
         if ($this->isNetbanking() === true)
         {
-            return $this->getAttribute(self::REFERENCE1);
+            $netbankingRefId = $this->getAttribute(self::REFERENCE1);
         }
+
+        return $netbankingRefId;
     }
 
     /**

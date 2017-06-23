@@ -238,19 +238,7 @@ class DSPTransactionReport extends BasicEntityReport
     {
         $payment = $this->getPayment($txn);
 
-        $bankTxnNumber = 'NA';
-
-        if ($payment->isNetbanking() === true)
-        {
-            if ($payment->getGateway() === self::BILLDESK)
-            {
-                $bankTxnNumber = $payment->billdesk->getBankReferenceNo();
-            }
-            else if ($payment->getRelation('netbanking') !== null)
-            {
-                $bankTxnNumber = $payment->netbanking->getBankPaymentId();
-            }
-        }
+        $bankTxnNumber = $payment->getNetbankingReferenceId() ?? 'NA';
 
         return $bankTxnNumber;
     }
