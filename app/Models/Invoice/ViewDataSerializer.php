@@ -117,7 +117,13 @@ class ViewDataSerializer extends Base\Core
         {
             $epoch = $invoiceData[$key];
 
-            $epochFormatted = ($epoch !== null) ? Carbon::createFromTimestamp($epoch, 'Asia/Kolkata') : null;
+            $epochFormatted = null;
+
+            if ($epoch !== null)
+            {
+                $epochFormatted = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                                        ->format('j M Y');
+            }
 
             $invoiceData[$key . '_formatted'] = $epochFormatted;
         }
