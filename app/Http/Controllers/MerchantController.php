@@ -275,13 +275,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getBankAccount()
-    {
-        list($error, $data) = (new Merchant\Service)->fetchBankAccount();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     /**
      * Upload Batch File
      * @param  string $mode Live/Test Mode

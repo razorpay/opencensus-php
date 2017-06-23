@@ -187,6 +187,12 @@ return [
             'routeName' => 'post_config_logo'
         ],
 
+        // Bank Account Fetch
+        'bank_account_fetch'                => [
+            'url'       => 'account/bank_account',
+            'routeName' => 'bank_account_fetch'
+        ],
+
         // Features
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
