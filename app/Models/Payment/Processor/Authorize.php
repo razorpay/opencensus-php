@@ -511,7 +511,9 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        if ($subscription->isExpired() === true)
+        $subscriptionStatus = $subscription->getStatus();
+
+        if (in_array($subscriptionStatus, Subscription\Status::$nonChargeableStatuses, true) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_EXPIRED,

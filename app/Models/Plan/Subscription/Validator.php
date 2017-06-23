@@ -5,8 +5,10 @@ namespace RZP\Models\Plan\Subscription;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -95,6 +97,64 @@ class Validator extends Base\Validator
                 'plan_id should be sent in the request to create a subscription.',
                 'plan_id');
         }
+    }
+
+    public function validateSubscriptionCancellable()
+    {
+        $subscription = $this->entity;
+
+        $currentStatus = $subscription->getStatus();
+
+        if (in_array($currentStatus, Status::$nonCancellableStatuses, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Subscription is not cancellable in ' . $currentStatus . ' status.',
+                'status',
+                [
+                    'subscription_id' => $subscription->getId(),
+                ]);
+        }
+    }
+
+    public function validateSubscriptionChargeable(Invoice\Entity $invoice, bool $manual)
+    {
+        $subscription = $this->entity;
+        $valid = true;
+
+        if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
+
+            $valid = false;
+        }
+
+        //
+        // This happens when two crons picked up the same invoice
+        // and queued the charge on them.
+        // If one of the queue picks it up first, it would have marked the
+        // invoice as paid and now this queue gets executed.
+        //
+        if ($invoice->isPaid() === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
+
+            $valid = false;
+        }
+        //
+        // When a different cron picked up the invoice for a charge
+        // and got queued, the status could have gone into
+        // halted. If this happened, we should not attempt
+        // to charge the subscription now.
+        //
+        else if (($invoice->getSubscriptionStatus() === Invoice\Status::HALTED) and
+                 ($manual === false))
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_HALTED;
+
+            $valid = false;
+        }
+
+        return [$valid, $traceCode];
     }
 
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)

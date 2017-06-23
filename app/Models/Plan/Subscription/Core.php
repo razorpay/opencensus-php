@@ -19,6 +19,11 @@ class Core extends Base\Core
 {
     use DispatchesJobs;
 
+    /**
+     * Lock wait timeout for acquiring
+     */
+    const MUTEX_LOCK_TIMEOUT = 60;
+
     protected $mutex;
 
     public function __construct()
@@ -95,6 +100,13 @@ class Core extends Base\Core
 
     public function expireSubscription(Entity $subscription)
     {
+        //
+        // This is required because all the subscriptions are retrieved in bulk.
+        // By the time this subscription is expired, it's possible that the
+        // subscription's status is changed.
+        //
+        $subscription = $subscription->reload();
+
         if (($subscription->getStatus() !== Status::CREATED) or
             ($subscription->getStartAt() === null))
         {
@@ -369,7 +381,21 @@ class Core extends Base\Core
 
     public function cancel(Entity $subscription)
     {
-        
+        $subscription->getValidator()->validateSubscriptionCancellable();
+
+        return $this->mutex->acquireAndRelease(
+            $subscription->getId(),
+            function () use ($subscription)
+            {
+                $subscription->setStatus(Status::CANCELLED);
+
+                $this->repo->saveOrFail($subscription);
+
+                return $subscription;
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int

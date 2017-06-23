@@ -76,56 +76,68 @@ class Charge extends Base\Core
         //
         $manual = $data['manual'];
 
-        $valid = $this->validateInvoiceStatusBeforeCharging($invoice, $subscription, $manual);
+        list($valid, $traceCode) = $subscription->getValidator()->validateSubscriptionChargeable($invoice, $manual);
 
         if ($valid === false)
         {
+            $this->trace->critical(
+                $traceCode,
+                [
+                    'invoice_id'        => $invoice->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+
             return false;
         }
 
-        $this->processor = new Payment\Processor\Processor($subscription->merchant);
-
-        if ($manual === false)
-        {
-            //
-            // This needs to be incremented every time we attempt to authorize a payment.
-            // Using this attribute, we would decide whether to retry or not.
-            //
-            $subscription->incrementAuthAttempts();
-        }
-
-        $payment = null;
-
-        try
-        {
-            $payment = $this->authorizePayment($recurringPayload);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-
-            if ($manual === false)
+        return $this->mutex->acquireAndRelease(
+            $subscription->getId(),
+            function() use ($subscription, $invoice, $manual, $recurringPayload)
             {
-                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice);
-            }
+                $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
-            return false;
-        }
+                if ($manual === false)
+                {
+                    //
+                    // This needs to be incremented every time we attempt to authorize a payment.
+                    // Using this attribute, we would decide whether to retry or not.
+                    //
+                    $subscription->incrementAuthAttempts();
+                }
 
-        //
-        // If it's already captured, `handleCaptureSuccess` would have been
-        // called in the auto capture flow itself.
-        // Hence, we don't have to handle for captured successfully flow, here.
-        //
-        if (($payment->isCaptured() === false) and
-            ($manual === false))
-        {
-            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
+                $payment = null;
 
-            return false;
-        }
+                try
+                {
+                    $payment = $this->authorizePayment($recurringPayload);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException($ex);
 
-        return true;
+                    if ($manual === false)
+                    {
+                        $this->handleAuthorizationOrCaptureFailure($subscription, $invoice);
+                    }
+
+                    return false;
+                }
+
+                //
+                // If it's already captured, `handleCaptureSuccess` would have been
+                // called in the auto capture flow itself.
+                // Hence, we don't have to handle for captured successfully flow, here.
+                //
+                if (($payment->isCaptured() === false) and
+                    ($manual === false))
+                {
+                    $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
+
+                    return false;
+                }
+
+                return true;
+            });
     }
 
     public function handleCaptureSuccess(
