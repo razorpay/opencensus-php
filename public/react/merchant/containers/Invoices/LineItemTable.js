@@ -60,7 +60,7 @@ export default class InvoiceLineItemTable extends Component {
               <td class="text-right">Sub Total</td>
               <td colSpan="2" class="text-right">₹ {invoiceTotal}</td>
             </tr>
-            <tr class={`${invoice.isNew ? 'total' : ''}`}>
+            <tr class={`${invoice.amount_paid ? '' : 'total'}`}>
               <td class="no-border" />
               <td class="text-right no-border"><b>Total</b></td>
               <td colSpan="2" class="text-right no-border">
@@ -68,7 +68,7 @@ export default class InvoiceLineItemTable extends Component {
               </td>
             </tr>
 
-            {!invoice.isNew
+            {invoice.amount_paid
               ? <tr class="text-success">
                   <td class="no-border" />
                   <td class="text-right no-border"><b>Amount Paid</b></td>
@@ -78,7 +78,7 @@ export default class InvoiceLineItemTable extends Component {
                 </tr>
               : null}
 
-            {!invoice.isNew
+            {invoice.amount_paid
               ? <tr class="total">
                   <td class="no-border" />
                   <td class="text-right"><b>Amount Due</b></td>

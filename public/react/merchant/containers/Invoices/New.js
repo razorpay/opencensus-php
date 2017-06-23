@@ -603,12 +603,13 @@ export default class InvoicesNewContainer extends Component {
                         <div class="row">
                           <div class="col-md-12">
                             <ShowWhen featureEnabled="Partial_Payment">
-                              <div class="rzpChecbox rzpChecbox-sm">
+                              <div class="rzpCheckbox rzpCheckbox-sm">
                                 <Field
                                   name="partial_payment"
                                   id="partial_payment"
                                   component="input"
                                   type="checkbox"
+                                  disabled={locked}
                                 />
                                 <label for="partial_payment">
                                   Enable Partial Payments

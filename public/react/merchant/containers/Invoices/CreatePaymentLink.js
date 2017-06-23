@@ -93,6 +93,11 @@ export default class CreatePaymentLink extends Component {
     let isTestMode = this.props.mode === 'test';
     let isNewForm = !(invoice && !isBlank(invoice.line_items));
     let isEdit = !!invoice;
+    let status = invoice.status;
+    let isPaid = status === 'paid';
+    let isCancelled = status === 'cancelled';
+    let isExpired = status === 'expired';
+    let locked = isPaid || isExpired || isCancelled;
 
     return (
       <div>
@@ -146,12 +151,13 @@ export default class CreatePaymentLink extends Component {
                 <ShowWhen featureEnabled="Partial_Payment">
                   <div class="form-group">
                     <div class="col-md-8 col-md-offset-3">
-                      <div class="rzpChecbox rzpChecbox-sm">
+                      <div class="rzpCheckbox rzpCheckbox-sm">
                         <Field
                           name="partial_payment"
                           id="partial_payment"
                           component="input"
                           type="checkbox"
+                          disabled={locked}
                         />
                         <label for="partial_payment">
                           Enable Partial Payments
