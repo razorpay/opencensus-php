@@ -93,7 +93,7 @@ export default class CreatePaymentLink extends Component {
     let isTestMode = this.props.mode === 'test';
     let isNewForm = !(invoice && !isBlank(invoice.line_items));
     let isEdit = !!invoice;
-    let status = invoice.status;
+    let status = invoice && invoice.status;
     let isPaid = status === 'paid';
     let isCancelled = status === 'cancelled';
     let isExpired = status === 'expired';
