@@ -148,7 +148,7 @@ export default class CreatePaymentLink extends Component {
                   </div>
                 </div>
 
-                <ShowWhen featureEnabled="Inv_Partial_Payments">
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
                   <div class="form-group">
                     <div class="col-md-8 col-md-offset-3">
                       <div class="rzpCheckbox rzpCheckbox-sm">
