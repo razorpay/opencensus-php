@@ -193,8 +193,11 @@
                   if (data.invoice.partial_payment) {
                     window.location.reload()
                   } else {
-                    data.invoice.status = 'paid';
-                    data.invoice.is_paid = true;
+                    let invoice = data.invoice;
+                    invoice.amount_due_formatted = '0.00';
+                    invoice.amount_paid_formatted = invoice.amount_formatted;
+                    invoice.status = 'paid';
+                    invoice.is_paid = true;
                     this.rerender(data)
                   }
                 }
