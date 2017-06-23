@@ -23,7 +23,7 @@ export default class BatchUpload extends Component {
       affirmativePendingLabel: 'Submitting...',
       action: () =>
         this.props
-          .uploadBatch(this.state.file, this.props.batchType)
+          .uploadBatch(this.state.file)
           .then(() => {
             this.props.showNotification({
               type: 'success',
