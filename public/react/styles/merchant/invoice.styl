@@ -141,7 +141,7 @@ $muted = rgba(0, 0, 0, 0.27)
   }
 
   .inv__cta, .inv__info {
-    max-width: 280px;
+    max-width: 310px;
     margin-bottom: 16px;
   }
 
@@ -364,5 +364,21 @@ $muted = rgba(0, 0, 0, 0.27)
 
   label {
     font-size: 12px;
+  }
+}
+
+.table-inv_payments {
+  margin-bottom: 0;
+
+  > tbody > tr > td {
+    padding-left: 0
+
+    &:last-child {
+      padding-right: 0
+    }
+  }
+
+  time {
+    font-size: 10px;
   }
 }

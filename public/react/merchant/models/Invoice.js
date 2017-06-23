@@ -1,6 +1,7 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
+import Payment from 'merchant/models/Payment';
 
 const createFields = [
   'id',
@@ -85,6 +86,13 @@ export default class Invoice extends GenericEntity {
       },
     }).then(response => {
       return new Invoice().deserialize(response.data);
+    });
+  }
+
+  fetchPayments() {
+    let payment = new Payment();
+    return payment.fetchAll({
+      invoice_id: this.id,
     });
   }
 

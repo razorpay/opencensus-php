@@ -6,7 +6,7 @@ import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountDetails from 'merchant/components/VirtualAccounts/AccountDetails';
 import Table from 'rzp/ui/Table/Index';
-import { paymentId, amount, status } from 'rzp/ui/item/pair';
+import { paymentId, amount } from 'rzp/ui/item/pair';
 
 export default props => {
   let {

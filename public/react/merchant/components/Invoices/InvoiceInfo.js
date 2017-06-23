@@ -1,6 +1,9 @@
 import { NavLink } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import Clipboard from 'rzp/ui/Clipboard';
+import { titleCase } from 'rzp/utils/rzp-utils';
+import Table from 'rzp/ui/Table/Index';
+import { paymentId, amount, createdAt } from 'rzp/ui/item/pair';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -19,31 +22,63 @@ export default ({ invoice }) => {
 
   return (
     <div class="inv__info">
-      <h4>Invoice {invoice.status}</h4>
-      <dl>
-        {isPaid
-          ? <div>
-              <dt>Payment Id</dt>
-              <dd>
-                <NavLink to={`/payments/${invoice.payment_id}`}>
-                  <code>{invoice.payment_id}</code>
-                </NavLink>
-              </dd>
+      <h4>Invoice {titleCase(invoice.status)}</h4>
 
-              <dt>Paid On</dt>
-              <dd>
-                <Time
-                  value={invoice.paid_at}
-                  format="DD MMM YYYY, hh:mm:ss a"
-                />
-              </dd>
-            </div>
-          : <div>
-              <dt>Payment Link</dt>
-              <dd>
-                <Clipboard value={invoice.short_url} />
-              </dd>
-            </div>}
+      <dl>
+        {
+          do {
+            if (invoice.partial_payment) {
+              if (invoice.payments) {
+                <div>
+                  <dt>Payments</dt>
+                  <Table
+                    class="table-noborder table-inv_payments"
+                    rows={invoice.payments}
+                    columns={[
+                      {
+                        value: item => {
+                          return (
+                            <div>
+                              {paymentId.value(item)}
+                              <div>{createdAt.value(item)}</div>
+                            </div>
+                          );
+                        },
+                      },
+                      amount,
+                    ]}
+                    showHeaders={false}
+                  />
+                </div>;
+              }
+            } else if (isPaid) {
+              <div>
+                <dt>Payment Id</dt>
+                <dd>
+                  <NavLink to={`/payments/${invoice.payment_id}`}>
+                    <code>{invoice.payment_id}</code>
+                  </NavLink>
+                </dd>
+
+                <dt>Paid On</dt>
+                <dd>
+                  <Time
+                    value={invoice.paid_at}
+                    format="DD MMM YYYY, hh:mm:ss a"
+                  />
+                </dd>
+              </div>;
+            } else {
+              <div>
+                <dt>Payment Link</dt>
+                <dd>
+                  <Clipboard value={invoice.short_url} />
+                </dd>
+              </div>;
+            }
+          }
+        }
+
         {invoice.email_status &&
           <div>
             <dt>Email Sent to</dt>

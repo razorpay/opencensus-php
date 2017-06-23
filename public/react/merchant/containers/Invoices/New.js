@@ -122,7 +122,13 @@ export default class InvoicesNewContainer extends Component {
     let invoiceId = this.props.match.params.id;
 
     if (invoiceId) {
-      promises.push(this.props.fetchInvoice(invoiceId));
+      promises.push(
+        this.props.fetchInvoice(invoiceId).then(invoice => {
+          if (invoice.partial_payment) {
+            this.props.fetchInvoicePayments(invoiceId);
+          }
+        })
+      );
     } else {
       this.props.initializeInvoice();
     }
