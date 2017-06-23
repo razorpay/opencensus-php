@@ -257,7 +257,9 @@ class Generator extends Base\Core
 
         $invoice->build($input);
 
-        (new Validator)->validateInput(camel_case($operation), $input);
+        $validator = $invoice->getValidator();
+
+        $validator->validateInput(camel_case($operation), $input);
 
         //
         // This is being done because dashboard can create an invoice
@@ -265,7 +267,7 @@ class Generator extends Base\Core
         // any keys at all.
         //
 
-        $invoice->getValidator()->validateMerchantSpecificData();
+        $validator->validateMerchantSpecificData();
 
         //
         // This is being done so that we can do associations
