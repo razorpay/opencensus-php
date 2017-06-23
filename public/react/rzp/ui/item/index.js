@@ -1,15 +1,10 @@
-import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import Time from 'rzp/ui/Time';
+import Amount from 'rzp/ui/Amount';
 import StatusLabel from 'merchant/components/StatusLabel';
 
-const currencies = {
-  INR: '₹',
-  USD: '$',
-};
-
-const getCurrency = item => (currencies[item.currency] || '') + ' ';
-export const getAmount = key => item =>
-  getCurrency(item) + getFixedINRAmount(item[key || 'amount']);
+export const getAmount = key => item => (
+  <Amount currency={item.currency || ''} value={item[key || 'amount']} />
+);
 
 export const amount = getAmount();
 export const amountRefunded = getAmount('amount_refunded');

@@ -284,7 +284,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-.rzpChecbox {
+.rzpCheckbox {
   margin-bottom: 5px;
 
   [type='checkbox']:not(:checked), [type='checkbox']:checked {
@@ -325,6 +325,10 @@ a.breadcrumb__backNav--link {
 
   [type='checkbox']:checked + label::after {
     opacity: 1
+  }
+
+  [type='checkbox']:disabled + label {
+    cursor: not-allowed;
   }
 }
 

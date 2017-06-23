@@ -7,6 +7,13 @@
   border-bottom: 1px solid #eaeff0;
 }
 
+.table-noborder {
+  border-color: transparent;
+  > tbody > tr > td {
+    border-color: transparent
+  }
+}
+
 .table > thead > tr > th {
   background-color: #eaeff0;
   border-bottom: 1px solid #ddd;
@@ -30,6 +37,7 @@ code {
   color: inherit;
   background-color: inherit;
   font-size: inherit;
+  padding-left: 0;
 }
 
 .progress, .progress-bar {
@@ -114,6 +122,10 @@ code {
 
 .label-muted {
   background-color: #999;
+}
+
+.label-partially-paid {
+  background-color: #E8B248;
 }
 
 .checkbox label.i-switch {

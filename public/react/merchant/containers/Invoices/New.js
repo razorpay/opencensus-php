@@ -122,7 +122,14 @@ export default class InvoicesNewContainer extends Component {
     let invoiceId = this.props.match.params.id;
 
     if (invoiceId) {
-      promises.push(this.props.fetchInvoice(invoiceId));
+      promises.push(
+        this.props.fetchInvoice(invoiceId).then(invoice => {
+          if (invoice.partial_payment) {
+            this.props.fetchInvoicePayments(invoiceId);
+          }
+          return invoice;
+        })
+      );
     } else {
       this.props.initializeInvoice();
     }
@@ -594,7 +601,41 @@ export default class InvoicesNewContainer extends Component {
                               component={LineItemTable}
                               items={this.props.items}
                               disabled={isIssued || locked}
+                              invoice={invoice}
                               invoiceTotal={invoiceTotal}
+                            />
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12">
+                            <ShowWhen featureEnabled="Inv_Partial_Payments">
+                              <div class="rzpCheckbox rzpCheckbox-sm">
+                                <Field
+                                  name="partial_payment"
+                                  id="partial_payment"
+                                  component="input"
+                                  type="checkbox"
+                                  disabled={locked}
+                                />
+                                <label for="partial_payment">
+                                  Enable Partial Payments
+                                </label>
+                              </div>
+                            </ShowWhen>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12">
+                            <InlineField
+                              formName="newInvoice"
+                              name="comment"
+                              component={AutoResizeTextarea}
+                              class="form-control input-xs"
+                              rows={2}
+                              placeholder="Customer Notes"
+                              disabled={locked}
                             />
                           </div>
                         </div>

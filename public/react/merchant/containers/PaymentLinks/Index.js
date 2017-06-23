@@ -12,7 +12,10 @@ export default class PaymentLinksContainer extends Component {
       <tabbed-container>
         <header id="link-header">
           <NavLink exact to="/paymentlinks">Payment Links</NavLink>
-          <ShowWhen featureEnabled="batch_import_links">
+          <ShowWhen
+            myRole="owner manager operations admin"
+            featureEnabled="batch_import_links"
+          >
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
             </NavLink>

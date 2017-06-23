@@ -1,9 +1,9 @@
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-export default ({ rows, columns, showHeaders = true }) => {
+export default ({ rows, columns, className, showHeaders = true }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover">
+      <table class={`table table-hover ${className}`}>
         {showHeaders
           ? <thead>
               <tr>
