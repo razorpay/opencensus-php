@@ -68,7 +68,7 @@ class Gateway
         Wallet::PAYUMONEY,
         Wallet::OLAMONEY,
         Wallet::FREECHARGE,
-        Wallet::MPESA,
+        // Wallet::MPESA,
     ];
 
     /**
