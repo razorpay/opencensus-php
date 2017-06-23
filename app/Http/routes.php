@@ -95,9 +95,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
 
-        // This also returns credits
-        Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
-
         // Invitation and Team Support
         Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
 
@@ -180,7 +177,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 

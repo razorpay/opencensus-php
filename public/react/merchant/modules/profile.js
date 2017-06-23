@@ -5,17 +5,16 @@ const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
 const GST_SAVE = 'GST_SAVE';
 
-export const fetchAjax = url => {
-  return ajax({
-    url,
-    appendModeInURL: false,
-  });
-};
-
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
-    payload: fetchAjax('/bank_account'),
+    payload: ajax({
+      url: '/user/generic',
+      data: {
+        route_name: 'bank_account_fetch',
+      },
+      appendModeInURL: false,
+    }),
   };
 };
 
@@ -115,7 +114,6 @@ export default function(state = initialState, action) {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
-
 
     case `${GST_FETCH}::SUCCESS`:
     case `${GST_SAVE}::SUCCESS`:
