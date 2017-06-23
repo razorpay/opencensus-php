@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID      => 'sometimes|public_id',
+        Entity::PAYMENT_ID      => 'sometimes|alpha_dash',
         Entity::CHECKOUT_ID     => 'sometimes|alpha_num',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num'
     );
