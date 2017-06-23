@@ -10,6 +10,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email } from 'rzp/utils/validators';
+import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 function validate(values) {
@@ -43,7 +44,7 @@ function validate(values) {
   return errors;
 }
 
-@connect(state => state.session, { saveInvoice })
+@connect(state => state.session, { saveInvoice, showNotification })
 @reduxForm({
   form: 'newPaymentLink',
   initialValues: {
@@ -75,6 +76,10 @@ export default class CreatePaymentLink extends Component {
       .then(invoice => {
         this.props.onSave(invoice);
         this.props.closeModal();
+        this.props.showNotification({
+          type: 'success',
+          message: 'Payment link saved successfully',
+        });
       })
       .catch(({ errors }) => {
         this.setState({

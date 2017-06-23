@@ -41,12 +41,20 @@ export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
 export const refundBatchesReducer = makeCollectionReducer(REFUND);
 export const paymentLinkBatchesReducer = makeCollectionReducer(PAYMENT_LINK);
 
-export const issuePaymentLinkBatch = (batchId, data) => {
+export const issuePaymentLinkBatch = (batchId, body) => {
   return {
     type: `${PAYMENT_LINK}_ISSUE`,
-    payload: ajax(`/invoices/batch/${batchId}/issue`, {
-      data,
+    payload: ajax({
       method: 'POST',
+      url: '/user/generic',
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'invoice_issue_by_batch',
+        url_params: JSON.stringify({
+          '{batchId}': batchId,
+        }),
+        body,
+      },
     }),
   };
 };

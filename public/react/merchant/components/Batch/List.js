@@ -4,29 +4,43 @@ import TetherComponent from 'react-tether';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
 import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 
-const Button = ({ onClick, children }) => (
-  <button class="btn btn-default btn-xs" onClick={onClick}>{children}</button>
-);
-
 function batchActions(mode, viewAll, issueAll) {
   return {
     viewAll,
     issueAll,
     title: 'Actions',
     value: item => (
-      <div>
-        <Button
-          onClick={_ => open(`/${mode}/batches/${item.id}/download`, '_blank')}
+      <div class="btn-toolbar">
+        <a
+          class="btn btn-xs btn-default"
+          href={`/${mode}/batches/${item.id}/download`}
+          target="_blank"
         >
           Download
-        </Button>
-        {item.type === 'payment_link' &&
-          <span>
-            {viewAll &&
-              <Button onClick={_ => viewAll(item)}>view all links</Button>}
-            {issueAll &&
-              <Button onClick={_ => issueAll(item)}>Issue all links</Button>}
-          </span>}
+        </a>
+        {
+          do {
+            if (item.type === 'payment_link') {
+              if (viewAll) {
+                <button
+                  class="btn btn-default btn-xs"
+                  onClick={_ => viewAll(item)}
+                >
+                  view all links
+                </button>;
+              }
+
+              if (issueAll && item.status === 'processed') {
+                <button
+                  class="btn btn-default btn-xs"
+                  onClick={_ => issueAll(item)}
+                >
+                  Issue all links
+                </button>;
+              }
+            }
+          }
+        }
       </div>
     ),
   };

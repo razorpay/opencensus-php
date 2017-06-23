@@ -2,12 +2,9 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchList from 'merchant/components/Batch/List';
-
-import { showNotification } from 'rzp/modules/notifications';
-import {
-  fetchPaymentLinkBatches as fetchAll,
-  issuePaymentLinkBatch,
-} from 'merchant/modules/batches';
+import IssueAllLinks from './IssueAllLinks';
+import { openModal } from 'rzp/modules/modals';
+import { fetchPaymentLinkBatches as fetchAll } from 'merchant/modules/batches';
 
 @connect(
   state => {
@@ -16,30 +13,13 @@ import {
       ...state.paymentlinkbatches,
     };
   },
-  { fetchAll, showNotification, issuePaymentLinkBatch }
+  { fetchAll, openModal }
 )
 export default class BatchListContainer extends ListContainer {
   issueAll = item => {
-    this.context.confirm({
-      message: 'Issue all payment links?',
-      affirmativeLabel: 'Yes',
-      affirmativePendingLabel: 'Issuing...',
-      action: () => {
-        this.props
-          .issuePaymentLinkBatch(item.id)
-          .then(() => {
-            this.props.showNotification({
-              type: 'success',
-              message: 'Successful',
-            });
-          })
-          .catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors,
-            });
-          });
-      },
+    this.props.openModal({
+      size: 'small',
+      component: <IssueAllLinks batchId={item.id} />,
     });
   };
 
