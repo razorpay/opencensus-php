@@ -2043,10 +2043,13 @@ class Entity extends Base\PublicEntity
 
     public function shouldFailOnRiskFailure()
     {
-        if (($this->isCard() === true) and
-            ($this->card->isInternational() === true))
+        if ($this->isCard() === true)
         {
-            return true;
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
         }
 
         return false;
