@@ -1338,26 +1338,6 @@ class Service extends Base\Service
         return [$response, $error];
     }
 
-    public function editCredits($merchantId, $input)
-    {
-        $this->setApiCredentials(null, 'live');
-
-        try
-        {
-            $response = $this->api->merchant->
-                fetch($merchantId)->editCredits($input);
-            $this->logActionToSlack($merchantId, Actions::FREE_CREDITS_EDIT, $input);
-
-            return [null, $response->toArray()];
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-
-    }
-
     public function makeRawApiCall($path)
     {
         $input = \Input::all();

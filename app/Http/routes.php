@@ -177,7 +177,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 

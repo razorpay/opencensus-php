@@ -123,13 +123,6 @@ class Merchant extends Entity
         return $this->request('GET', self::PROXY_BALANCE_URL);
     }
 
-    public function editCredits($params)
-    {
-        $relativeUrl = $this->getEntityUrl() . $this->id . '/credits';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function setId($id)
     {
         $this->attributes['id'] = $id;
