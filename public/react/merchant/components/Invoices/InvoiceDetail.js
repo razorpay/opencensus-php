@@ -73,7 +73,7 @@ export default props => {
                   />
 
                   <DetailRow
-                    label="Expire by"
+                    label={isExpired ? 'Expired on' : 'Expires on'}
                     value={() => (
                       <Time
                         value={invoice.expire_by}

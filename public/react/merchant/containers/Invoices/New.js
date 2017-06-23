@@ -609,7 +609,7 @@ export default class InvoicesNewContainer extends Component {
 
                         <div class="row">
                           <div class="col-md-12">
-                            <ShowWhen featureEnabled="Partial_Payment">
+                            <ShowWhen featureEnabled="Inv_Partial_Payments">
                               <div class="rzpCheckbox rzpCheckbox-sm">
                                 <Field
                                   name="partial_payment"
