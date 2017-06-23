@@ -257,7 +257,9 @@ class DSPTransactionReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $from = $to = null;
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+
+        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
 
         if (isset($input['day']) === true)
         {
@@ -284,12 +286,17 @@ class DSPTransactionReport extends BasicEntityReport
                             ->timestamp - 1;
             }
         }
-        elseif ((isset($input['to']) === true) and
-                    (isset($input['from']) === true))
+        else
         {
-            $to = $input['to'];
+            if (isset($input['from']) === true)
+            {
+                $from = $input['from'];
+            }
 
-            $from = $input['from'];
+            if (isset($input['to']) === true)
+            {
+                $to = $input['to'];
+            }
         }
 
         return [$from, $to];
