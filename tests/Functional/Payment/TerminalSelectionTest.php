@@ -318,6 +318,15 @@ class TerminalSelectionTest extends TestCase
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
 
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
@@ -336,6 +345,15 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
@@ -384,6 +402,15 @@ class TerminalSelectionTest extends TestCase
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
 
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
@@ -408,6 +435,15 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);

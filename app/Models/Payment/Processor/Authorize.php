@@ -486,6 +486,8 @@ trait Authorize
         $this->validatePaymentNetworkSupported($payment);
 
         $this->runInternationalChecks($payment);
+
+        $this->runFraudChecks($payment);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment)
@@ -903,10 +905,16 @@ trait Authorize
         }
 
         $this->validateInternationalAllowed($payment);
+    }
 
-        $this->validateFraudDetection($payment);
+    protected function runFraudChecks(Payment\Entity $payment)
+    {
+        if ($payment->shouldRunFraudChecks() === true)
+        {
+            $this->validateFraudDetection($payment);
 
-        $this->validateBlockedInternationalCard($payment->card);
+            $this->validateBlockedCard($payment->card);
+        }
     }
 
     protected function validateInternationalAllowed(Payment\Entity $payment)
@@ -922,7 +930,7 @@ trait Authorize
         }
     }
 
-    protected function validateBlockedInternationalCard(Card\Entity $card)
+    protected function validateBlockedCard(Card\Entity $card)
     {
         if ($card->isBlocked() === true)
         {
