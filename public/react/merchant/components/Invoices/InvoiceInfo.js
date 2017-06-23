@@ -15,6 +15,7 @@ export default ({ invoice }) => {
   let isNew = !invoice.id;
   let isDraft = status === 'draft';
   let isPaid = status === 'paid';
+  let isPartiallyPaid = status === 'partially_paid';
 
   if (isNew || isDraft) {
     return null;
@@ -22,12 +23,12 @@ export default ({ invoice }) => {
 
   return (
     <div class="inv__info">
-      <h4>Invoice {titleCase(invoice.status)}</h4>
+      <h4>Invoice - {titleCase(invoice.status)}</h4>
 
       <dl>
         {
           do {
-            if (invoice.partial_payment) {
+            if (isPartiallyPaid) {
               if (invoice.payments) {
                 <div>
                   <dt>Payments</dt>
@@ -106,7 +107,7 @@ export default ({ invoice }) => {
               </span>
             </dd>
           </div>}
-        {isPaid &&
+        {(isPaid || isPartiallyPaid) &&
           <div>
             <dt>Payment Link</dt>
             <dd>
