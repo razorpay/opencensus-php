@@ -1487,6 +1487,18 @@ class Entity extends Base\PublicEntity
         ];
     }
 
+    public function getNetbankingReferenceId()
+    {
+        $netbankingRefId = null;
+
+        if ($this->isNetbanking() === true)
+        {
+            $netbankingRefId = $this->getAttribute(self::REFERENCE1);
+        }
+
+        return $netbankingRefId;
+    }
+
     /**
      * This is a heuristic method that tries to find
      * an order id the notes section
