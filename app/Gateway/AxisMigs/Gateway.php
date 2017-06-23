@@ -939,7 +939,10 @@ class Gateway extends Base\Gateway
 
             $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-            if (ThreeDSecureStatus::getThreeDSstatus($threeDSstatus) === Payment\TwoFactorAuth::FAILED)
+            $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
+
+            if (($authStatus === Payment\TwoFactorAuth::FAILED) or
+                ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
                 if ($input['merchant']['international'] === false)
                 {

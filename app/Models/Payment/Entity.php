@@ -2026,4 +2026,29 @@ class Entity extends Base\PublicEntity
 
         return min($timeWindow, $autoRefundDelay);
     }
+
+    public function shouldRunFraudChecks()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function shouldFailOnRiskFailure()
+    {
+        if (($this->isCard() === true) and
+            ($this->card->isInternational() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

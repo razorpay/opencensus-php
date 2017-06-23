@@ -526,9 +526,11 @@ class Gateway extends Base\Gateway
 
     protected function getSoapHeaders()
     {
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
         $headers = [
-            new SoapHeader(Url::WSDL, Constants::USER_ID, $this->getSoapUserId()),
-            new SoapHeader(Url::WSDL, Constants::PASSWORD, $this->getSoapPassword())
+            new SoapHeader($wsseNs, Constants::USER_ID, $this->getSoapUserId()),
+            new SoapHeader($wsseNs, Constants::PASSWORD, $this->getSoapPassword())
         ];
 
         return $headers;
