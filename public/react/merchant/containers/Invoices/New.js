@@ -127,6 +127,7 @@ export default class InvoicesNewContainer extends Component {
           if (invoice.partial_payment) {
             this.props.fetchInvoicePayments(invoiceId);
           }
+          return invoice;
         })
       );
     } else {
