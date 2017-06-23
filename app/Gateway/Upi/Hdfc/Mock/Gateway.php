@@ -12,9 +12,23 @@ class Gateway extends Hdfc\Gateway
 {
     use Base\Mock\GatewayTrait;
 
-    public function authorize(array $input)
+    protected function putMockPaymentGatewayUrl(array & $request)
     {
-        return $this->authorizeMock($input);
+        $route = 'mock_upi_payment';
+
+        $url = $this->route->getUrlWithPublicAuth($route);
+
+        if ($request['method'] === 'get')
+        {
+            // The key thing now is to replace the url from gateway to our mock one!
+            $parts = parse_url($request['url']);
+
+            $url = $url . '&' .$parts['query'];
+
+            $request['url'] = $url;
+        }
+
+        $request['url'] = $url;
     }
 
     protected function getUrl($type = 'authorize')

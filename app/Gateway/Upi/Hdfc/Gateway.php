@@ -65,7 +65,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $gatewayPayment = $this->createGatewayEntity($attributes);
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -407,7 +407,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
 
-        $refund = $this->createGatewayRefundEntity($attributes);
+        $refund = $this->createGatewayPaymentEntity($attributes);
 
         $request =  $this->getRefundRequestArray($input);
 
