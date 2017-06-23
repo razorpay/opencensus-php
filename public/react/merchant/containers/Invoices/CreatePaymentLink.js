@@ -2,6 +2,8 @@ import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import moment from 'moment';
+import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -163,6 +165,24 @@ export default class CreatePaymentLink extends Component {
                       name="receipt"
                       component="input"
                       class="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label help-label">
+                    Expire By
+                  </label>
+                  <div class="col-md-4">
+                    <Field
+                      name="expire_by"
+                      component={DatePickerField}
+                      endOfDayTimeStamp={true}
+                      showClearDate={true}
+                      isOutsideRange={day => {
+                        let diff = moment().diff(day, 'hours') / 24;
+                        return Math.floor(diff) > 0;
+                      }}
                     />
                   </div>
                 </div>

@@ -8,6 +8,7 @@ const createFields = [
   'currency',
   'partial_payment',
   'date',
+  'expire_by',
   'draft',
   'customer_id',
   'customer',
@@ -24,6 +25,7 @@ const createFields = [
 
 const editableFieldsInIssuedState = [
   'date',
+  'expire_by',
   'terms',
   'notes',
   'receipt',

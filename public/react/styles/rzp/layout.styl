@@ -327,7 +327,24 @@ body.ReactModal__Body--open {
 
 .DateInput__display-text {
   color: #aaa;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+.SingleDatePickerInput__clear-date {
+  margin: 0;
+  padding: 0 8px;
+  svg {
+    fill: #ccc;
+  }
+}
+
+.SingleDatePickerInput__clear-date--hover,
+.SingleDatePickerInput__clear-date:focus {
+  background-color: transparent;
+  border-radius: 0;
+  svg {
+    fill: #666;
+  }
 }
 
 .DateInput__display-text--disabled {

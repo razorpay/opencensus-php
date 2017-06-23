@@ -71,6 +71,17 @@ export default props => {
                     label="Invoice Date"
                     value={() => <Time value={invoice.date} />}
                   />
+
+                  <DetailRow
+                    label="Expire by"
+                    value={() => (
+                      <Time
+                        value={invoice.expire_by}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
+                  />
+
                   <DetailRow label="Receipt" value={invoice.receipt} />
                   <DetailRow label="Payment Link" value={invoice.short_url} />
                   <DetailRow
