@@ -7,9 +7,14 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Gateway\Netbanking\Base\Entity;
 
 class ClaimsFile extends Base\RefundFile
 {
+    const PAYMENT_ENTITY = 'payment';
+
+    const GATEWAY_ENTITY = 'gateway';
+
     protected static $fileToWriteName = 'Rbl_Netbanking_Claims';
 
     protected static $headers = [
@@ -68,19 +73,21 @@ class ClaimsFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
-                        $row['payment']['created_at'],
+                        $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         'Asia/Kolkata')
                         ->format('m-d-y h:m:s');
+
+            $paymentAmount = $this->getFormattedAmount($row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT]);
 
             $data[] = [
                 ClaimFields::SERIAL_NO          => $index++,
                 ClaimFields::TRANSACTION_DATE   => $date,
-                ClaimFields::USER_ID            => $row['gateway']['customer_id'],
-                ClaimFields::DEBIT_ACCOUNT      => $row['gateway']['account_number'],
-                ClaimFields::CREDIT_ACCOUNT     => $row['gateway']['credit_account_number'],
-                ClaimFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
-                ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
-                ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
+                ClaimFields::USER_ID            => $row[self::GATEWAY_ENTITY][Entity::CUSTOMER_ID],
+                ClaimFields::DEBIT_ACCOUNT      => $row[self::GATEWAY_ENTITY][Entity::ACCOUNT_NUMBER],
+                ClaimFields::CREDIT_ACCOUNT     => $row[self::GATEWAY_ENTITY][Entity::CREDIT_ACCOUNT_NUMBER],
+                ClaimFields::TRANSACTION_AMOUNT => $paymentAmount,
+                ClaimFields::PGI_REFERENCE      => $row[self::GATEWAY_ENTITY][Entity::BANK_PAYMENT_ID],
+                ClaimFields::BANK_REFERENCE     => $row[self::PAYMENT_ENTITY][Payment\Entity::ID],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 ClaimFields::PGI_STATUS         => $this->getGatewayStatus($row),
                 ClaimFields::ERROR_DESCRIPTION  => $this->getErrorMessage($row),
@@ -101,7 +108,7 @@ class ClaimsFile extends Base\RefundFile
             Payment\Status::CAPTURED
         ];
 
-        if (in_array($row['payment']['status'], $status) === true)
+        if (in_array($row[self::PAYMENT_ENTITY][Payment\Entity::STATUS], $status) === true)
         {
             return 'Success';
         }
@@ -111,7 +118,7 @@ class ClaimsFile extends Base\RefundFile
 
     protected function getGatewayStatus(array $row)
     {
-        if ($row['gateway']['status'] === 'SUC')
+        if ($row[self::GATEWAY_ENTITY][Entity::STATUS] === 'SUC')
         {
             return 'Success';
         }
@@ -121,11 +128,11 @@ class ClaimsFile extends Base\RefundFile
 
     protected function getErrorMessage(array $row)
     {
-        if (empty($row['gateway']['error_message']) === true)
+        if (empty($row[self::GATEWAY_ENTITY][Entity::ERROR_MESSAGE]) === true)
         {
             return 'NA';
         }
 
-        return $row['gateway']['error_message'];
+        return $row[self::GATEWAY_ENTITY][Entity::ERROR_MESSAGE];
     }
 }

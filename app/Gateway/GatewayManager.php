@@ -11,13 +11,13 @@ use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
-    protected $gateways = array();
+    protected $gateways = [];
 
-    protected $mocks = array();
+    protected $mocks = [];
 
-    protected $servers = array();
+    protected $servers = [];
 
-    protected $recons = array();
+    protected $recons = [];
 
     public function __construct($app)
     {

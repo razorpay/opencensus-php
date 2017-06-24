@@ -6,12 +6,18 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
+use RZP\Models\Payment;
 use RZP\Gateway\Netbanking\Rbl\Status;
+use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
 class Reconcilator extends Base\RefundFile
 {
+    const PAYMENT_ENTITY = 'payment';
+
+    const GATEWAY_ENTITY = 'gateway';
+
     protected static $fileToWriteName = 'Rbl_Netbanking_Reconcilation';
 
     protected static $headers = [
@@ -66,7 +72,7 @@ class Reconcilator extends Base\RefundFile
         foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(
-                        $row['payment']['created_at'],
+                        $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         'Asia/Kolkata')
                         ->format('m-d-y h:m:s');
 
@@ -76,15 +82,15 @@ class Reconcilator extends Base\RefundFile
                 ClaimFields::USER_ID            => 342355,
                 ClaimFields::DEBIT_ACCOUNT      => '',
                 ClaimFields::CREDIT_ACCOUNT     => '',
-                ClaimFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
-                ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
-                ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
+                ClaimFields::TRANSACTION_AMOUNT => $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100,
+                ClaimFields::PGI_REFERENCE      => $row[self::GATEWAY_ENTITY][Entity::BANK_PAYMENT_ID],
+                ClaimFields::BANK_REFERENCE     => $row[self::PAYMENT_ENTITY][Payment\Entity::ID],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
                 ClaimFields::PGI_STATUS         => $this->getGatewayStatus($row),
                 ClaimFields::ERROR_DESCRIPTION  => $this->getErrorMessage($row),
             ];
 
-            $totalAmount +=  $row['payment']['amount'] / 100;
+            $totalAmount +=  $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100;
         }
 
         $this->content($data, 'claims_data');
@@ -94,7 +100,7 @@ class Reconcilator extends Base\RefundFile
 
     public function getGatewayStatus(array $row)
     {
-        if ($row['gateway']['status'] === Status::SUCCESS)
+        if ($row[self::GATEWAY_ENTITY][Entity::STATUS] === Status::SUCCESS)
         {
             return 'Success';
         }
@@ -104,12 +110,12 @@ class Reconcilator extends Base\RefundFile
 
     public function getErrorMessage(array $row)
     {
-        if (empty($row['gateway']['error_message']) === true)
+        if (empty($row[self::GATEWAY_ENTITY][Entity::ERROR_MESSAGE]) === true)
         {
             return 'NA';
         }
 
-        return $row['gateway']['error_message'];
+        return $row[self::GATEWAY_ENTITY][Entity::ERROR_MESSAGE];
     }
 
     public function content(& $content, $action = '')
@@ -129,13 +135,13 @@ class Reconcilator extends Base\RefundFile
 
         foreach ($payments as $payment)
         {
-            $data['payment'] = $payment->toArray();
+            $data[self::PAYMENT_ENTITY] = $payment->toArray();
 
-            $gatewayInput['payment_id'] = $payment['id'];
+            $gatewayInput['payment_id'] = $payment[Payment\Entity::ID];
 
             $gatewayPayment = $this->repo->netbanking->fetch($gatewayInput);
 
-            $data['gateway'] = $gatewayPayment[0]->toArray();
+            $data[self::GATEWAY_ENTITY] = $gatewayPayment[0]->toArray();
 
             $inputData[] = $data;
         }

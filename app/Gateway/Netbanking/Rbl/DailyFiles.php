@@ -115,10 +115,11 @@ class DailyFiles extends Base\DailyFiles
         // so forwarding time stamps by 1 day
         list($from, $to) = $this->updateTimeStamps($from, $to);
 
-        $claims= $this->repo->payment->fetchReconciledPaymentsForGateway($from,
-                                                                         $to,
-                                                                         $this->gateway,
-                                                                         $status);
+        $claims= $this->repo->payment
+                            ->fetchReconciledPaymentsForGateway($from,
+                                                                $to,
+                                                                $this->gateway,
+                                                                $status);
 
         if ($claims->count() === 0)
         {

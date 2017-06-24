@@ -279,7 +279,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $driver = 'netbanking_'.$bank;
+        $driver = 'netbanking_' . $bank;
 
         $recon = $this->gateway->recon($driver);
 

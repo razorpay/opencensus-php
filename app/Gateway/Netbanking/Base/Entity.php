@@ -89,7 +89,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
-    public function setCreditAccountNumber($creditAccountNumber)
+    public function setCreditAccountNumber(string $creditAccountNumber)
     {
         $this->setAttribute(self::CREDIT_ACCOUNT_NUMBER, $creditAccountNumber);
     }
