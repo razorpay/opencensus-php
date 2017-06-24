@@ -121,6 +121,8 @@ export default class ReportsContainer extends Component {
                   <option value="transaction">Combined</option>
                   {user.tags.indexOf('Broking_Report') === -1 ||
                     <option value="broking">Broking Report</option>}
+                  {user.tags.indexOf('Dsp_Report') === -1 ||
+                    <option value="dsp_report">DSP Transaction Report</option>}
                   <option value="invoice">Monthly Invoice</option>
                   {user.tags.indexOf('Marketplace') === -1 ||
                     <optgroup label="Marketplace">
