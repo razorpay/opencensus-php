@@ -78,7 +78,7 @@ class ClaimsFile extends Base\RefundFile
                 ClaimFields::USER_ID            => $row['gateway']['customer_id'],
                 ClaimFields::DEBIT_ACCOUNT      => $row['gateway']['account_number'],
                 ClaimFields::CREDIT_ACCOUNT     => $row['gateway']['credit_account_number'],
-                ClaimFields::TRANSACTION_AMOUNT => number_format($row['payment']['amount'] / 100, 2, '.', ''),
+                ClaimFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
                 ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
                 ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,

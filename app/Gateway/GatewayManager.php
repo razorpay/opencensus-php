@@ -7,7 +7,6 @@ use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Base\Core;
 use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager

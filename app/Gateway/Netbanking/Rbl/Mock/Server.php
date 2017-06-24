@@ -3,13 +3,11 @@
 namespace RZP\Gateway\Netbanking\Rbl\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
-use RZP\Gateway\Netbanking;
-use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\RequestFields;
 use RZP\Gateway\Netbanking\Rbl\ResponseFields;
+use RZP\Models\Currency\Currency;
 
 class Server extends Base\Mock\Server
 {
