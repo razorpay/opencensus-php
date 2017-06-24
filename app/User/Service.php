@@ -30,7 +30,7 @@ class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
-    const OAUTH_TOKENS               = 'oauth_tokens';
+    const OAUTH_VERIFY_TOKEN         = 'oauth_verify_token';
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
@@ -883,35 +883,54 @@ class Service extends Base\Service
     public function checkLoggedIn()
     {
         $user = Auth::user();
-        $data = null;
-        $error = null;
 
+        $data = $error = null;
+
+        if ($user === null)
+        {
+            $error[] = 'No user logged in on dashboard';
+
+            return [$error, $data];
+        }
+
+        $currentMerchant = $user->currentMerchant();
+
+        // Verify that the dashboard user has access to authorize the application
+        $allowed = $this->verifyUserRoleForOAuthAuthorize($currentMerchant);
+
+        if ($allowed === false)
+        {
+            $error[] = 'You do not have permissions to authorize this application.';
+
+            return [$error, $data];
+        }
+
+        // Create and cache a random token tying the user to the request
         $token = str_random(30);
-        $cacheKey = $this->makeOauthTokenCacheKey($token);
 
         $data = [
-            'id'            => $user->id,
-            'merchant_id'   => $user->currentMerchant()->id,
-            'role'          => $user->currentMerchant()->role,
+            'user_id'       => $user->id,
+            'user_email'    => $user->email,
+            'merchant_id'   => $currentMerchant->id,
+            'role'          => $currentMerchant->role,
         ];
 
+        $cacheKey = $this->getOAuthVerifyTokenCacheKey($token);
         $this->cache->put($cacheKey, $data, 10);
 
-        $data['token'] = $token;
+        $response = [
+            'token' => $token,
+            'email' => $user->email,
+            'name'  => $user->name
+        ];
 
-        return [$error, $data];
-    }
-
-    private function makeOauthTokenCacheKey($token)
-    {
-        return self::OAUTH_TOKENS . '.' . $token;
+        return [$error, $response];
     }
 
     public function getDetailsFromToken($token)
     {
-        $error = null;
-        $data = null;
-        $cacheKey = $this->makeOauthTokenCacheKey($token);
+        $error = $data = null;
+        $cacheKey = $this->getOAuthVerifyTokenCacheKey($token);
 
         if ($this->cache->has($cacheKey) === true)
         {
@@ -934,6 +953,27 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    /**
+     * Defines the cache key for OAuth verification tokens
+     *
+     * @param string $token
+     *
+     * @return string
+     */
+    private function getOAuthVerifyTokenCacheKey(string $token): string
+    {
+        return self::OAUTH_VERIFY_TOKEN . '.' . $token;
+    }
+
+    protected function verifyUserRoleForOAuthAuthorize($merchant): bool
+    {
+        $allowedRoles = ['owner'];
+
+        $userRole = $merchant->role;
+
+        return (in_array($userRole, $allowedRoles, true) === true);
     }
 
     public function getUserDetails()

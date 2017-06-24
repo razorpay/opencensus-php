@@ -220,6 +220,10 @@ class UserController extends Controller
     /**
      * The auth-service gets details of the currently logged in user
      * using this route (once it has the token)
+     *
+     * @param string $token
+     *
+     * @return \Illuminate\Http\Response
      */
     public function getDetailsFromToken(string $token)
     {
