@@ -53,6 +53,7 @@ class Constants
         self::NOZEROPRICING            => false,
         self::REVERSE                  => true,
         self::BROKING_REPORT           => true,
+        self::DSP_REPORT               => true,
         self::PAYMENT_EMAIL_FETCH      => true,
         self::CREATED_FLOW             => true,
         self::PAYOUT                   => true,
