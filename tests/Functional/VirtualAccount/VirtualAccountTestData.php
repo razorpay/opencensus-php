@@ -11,6 +11,7 @@ return [
         'entity'          => 'virtual_account',
         // 'amount_expected' => 10000,
         'status'          => 'active',
+        'description'     => 'VA for tests',
         'receiver_types'  => [
             'bank_account'
         ],
@@ -25,6 +26,7 @@ return [
         'entity'          => 'virtual_account',
         // 'amount_expected' => 10000,
         'status'          => 'active',
+        'description'     => 'VA for tests',
         'receiver_types'  => ['bank_account'],
         'bank_account'    => [
             'entity' => 'bank_account',
@@ -41,12 +43,14 @@ return [
                 'entity'          => 'virtual_account',
                 // 'amount_expected' => 10000,
                 'status'          => 'active',
+                'description'     => 'VA for tests',
             ],
             [
                 'name'            => 'First VA',
                 'entity'          => 'virtual_account',
                 // 'amount_expected' => 10000,
                 'status'          => 'active',
+                'description'     => 'VA for tests',
             ],
         ],
     ],

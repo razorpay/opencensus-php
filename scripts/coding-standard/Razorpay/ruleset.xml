@@ -41,7 +41,7 @@
         </properties>
     </rule>
 
-    <rule ref="Squiz.Whitespace.LogicalOperatorSpacing"/>
+    <rule ref="Squiz.WhiteSpace.LogicalOperatorSpacing"/>
 
     <!-- Ensures all language constructs (without brackets) contain
     a single space between themselves and their content. -->

@@ -37,7 +37,8 @@ class ThreeDSecureStatus
 
     public static function getThreeDSstatus($status)
     {
-        switch ($status) {
+        switch ($status)
+        {
             case self::Y:
                 return TwoFactorAuth::PASSED;
 

@@ -279,7 +279,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::DATE,
         self::TERMS,
-        // self::PARTIAL_PAYMENT,
+        self::PARTIAL_PAYMENT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
         self::AMOUNT,
@@ -334,16 +334,27 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- Mutators ---------------
 
+    // Following 2 mutators are for converting '' (empty strings)
+    // input to null.
+
     public function setDateAttribute($date)
     {
-        // To convert '' (empty strings coming from url encoded form data)
-        // to null
         if (empty($date))
         {
             $date = null;
         }
 
         $this->attributes[self::DATE] = $date;
+    }
+
+    public function setExpireByAttribute($expireBy)
+    {
+        if (empty($expireBy) === true)
+        {
+            $expireBy = null;
+        }
+
+        $this->attributes[self::EXPIRE_BY] = $expireBy;
     }
 
     // -------------------------------------- End Mutators -----------

@@ -32,6 +32,25 @@ class AmexGatewayTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['card']['number'] = '341111111111111';
         $this->payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 345678,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
     }
 
     public function testPayment()

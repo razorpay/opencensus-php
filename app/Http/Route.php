@@ -34,6 +34,7 @@ final class Route
         'payment_create_fees'                     => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_wallet'                   => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                      => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
+        'payment_create_openwallet'               => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -292,6 +293,7 @@ final class Route
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
+        'reports_transaction_dsp'                 => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
@@ -657,6 +659,7 @@ final class Route
         'payment_create_recurring',
         'payment_create_wallet',
         'payment_create_upi',
+        'payment_create_openwallet',
         'payment_create_aeps',
         'payment_refund',
         'payment_capture',
@@ -942,6 +945,7 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
+        'reports_transaction_dsp',
         'invitation_fetch_by_token',
         'invitation_action',
     ];
@@ -1189,6 +1193,7 @@ final class Route
         'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
         'terminal_toggle'                  => '*',
         'terminal_delete'                  => Permission::DELETE_TERMINAL,
+        'terminal_edit'                    => Permission::EDIT_TERMINAL,
         'terminal_reassign_merchant'       => Permission::ASSIGN_MERCHANT_TERMINAL,
         'terminal_add_merchant'            => '*',
         'terminal_remove_merchant'         => '*',
@@ -1196,6 +1201,7 @@ final class Route
         'iin_edit'                         => Permission::EDIT_IIN_RULE,
         'offer_create'                     => Permission::CREATE_MERCHANT_OFFER,
         'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
+        'merchant_edit_config'             => Permission::ASSIGN_MERCHANT_HANDLE,
     ];
 
     public static $direct = [
@@ -1277,6 +1283,7 @@ final class Route
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
             'refund_retry_failed',
+            'reports_transaction_dsp',
         ],
 
         'kotak' => [
@@ -1331,6 +1338,7 @@ final class Route
         'customer_fetch_tokens'             => [Feature::TOKENS],
         'payment_create_wallet'             => [Feature::S2SWALLET],
         'payment_create_upi'                => [Feature::S2SUPI],
+        'payment_create_openwallet'         => [Feature::OPENWALLET],
         'payment_create_recurring'          => [Feature::RECURRING],
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
@@ -1354,7 +1362,6 @@ final class Route
         'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
-        'invoice_issue_by_batch'            => [Feature::INVOICE_BATCH],
         'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
@@ -1397,6 +1404,7 @@ final class Route
         'payment_create_ajax',
         'payment_create_fees',
         'payment_create_wallet',
+        'payment_create_openwallet',
         'payment_create_upi',
         'payment_callback_post',
         'payment_callback_get',

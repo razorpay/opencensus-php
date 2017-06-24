@@ -162,7 +162,11 @@ class VirtualAccountTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+        $customer = $this->getEntityById('customer', 'cust_100000customer', true);
+
+        $this->assertEquals($customer['id'], $payment['customer_id']);
+        $this->assertEquals($customer['email'], $payment['email']);
+        $this->assertStringEndsWith($customer['contact'], $payment['contact']);
     }
 
     public function testWebhookOnVirtualAccountPay()

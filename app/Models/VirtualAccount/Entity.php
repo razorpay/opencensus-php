@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const STATUS               = 'status';
     const NAME                 = 'name';
     const DESCRIPTOR           = 'descriptor';
+    const DESCRIPTION          = 'description';
     const AMOUNT_EXPECTED      = 'amount_expected';
     const AMOUNT_RECEIVED      = 'amount_received';
     const AMOUNT_PAID          = 'amount_paid';
@@ -37,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::DESCRIPTOR,
+        self::DESCRIPTION,
         self::AMOUNT_EXPECTED,
     ];
 
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::ENTITY,
         self::STATUS,
+        self::DESCRIPTION,
         self::NOTES,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
@@ -108,7 +111,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NAME]) === false)
         {
-            $input[self::NAME] = $this->merchant->getBillingLabel().' Account';
+            $input[self::NAME] = $this->merchant->getBillingLabel();
         }
     }
 
@@ -135,14 +138,6 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters -----------------------------------------
-
-    public function getPublicCustomerId()
-    {
-        if ($this->hasCustomer() === true)
-        {
-            return Customer\Entity::getSignedId($this->getAttribute(self::CUSTOMER_ID));
-        }
-    }
 
     public function getAmountPaid()
     {

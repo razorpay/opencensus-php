@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::ROLE        => 'required|string|custom',
         Entity::EMAIL       => 'required|max:255|email|custom',
         Entity::TOKEN       => 'required|string',
-        Entity::SENDER_NAME => 'required|string',
+        Entity::SENDER_NAME => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -21,7 +21,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $resendRules = [
-        Entity::SENDER_NAME => 'required|string',
+        Entity::SENDER_NAME => 'sometimes|string',
     ];
 
     protected static $actionRules = [

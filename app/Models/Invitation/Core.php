@@ -23,6 +23,8 @@ class Core extends Base\Core
 
         $invitation->build($input);
 
+        $senderName = $this->getSenderName($input);
+
         // Associate user only if it exists
         try
         {
@@ -38,7 +40,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
 
-        $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
+        $this->sendEmail($invitation, $senderName);
 
         return $invitation;
     }
@@ -72,7 +74,9 @@ class Core extends Base\Core
     {
         $invitation->edit($input, 'resend');
 
-        $this->sendEmail($invitation, $input[Entity::SENDER_NAME]);
+        $senderName = $this->getSenderName($input);
+
+        $this->sendEmail($invitation, $senderName);
 
         return $invitation;
     }
@@ -152,6 +156,18 @@ class Core extends Base\Core
                 'invitation' => $invitation->toArrayPublic(),
                 'user_id'    => $userId
             ]);
+    }
+
+    protected function getSenderName(array $input)
+    {
+        if (empty($input[Entity::SENDER_NAME] === true))
+        {
+            return $this->merchant->getName();
+        }
+        else
+        {
+            return $input[Entity::SENDER_NAME];
+        }
     }
 
     protected function sendEmail(Entity $invitation, string $senderName)
