@@ -11,15 +11,15 @@ class DSPReport extends Mailable
 {
     protected $email;
 
-    protected $outputFileLocalPath;
+    protected $signedUrl;
 
-    public function __construct(string $email, string $outputFileLocalPath)
+    public function __construct(string $email, string $signedUrl)
     {
         parent::__construct();
 
         $this->email = $email;
 
-        $this->outputFileLocalPath = $outputFileLocalPath;
+        $this->signedUrl = $signedUrl;
     }
 
     protected function addRecipients()
@@ -60,7 +60,7 @@ class DSPReport extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->outputFileLocalPath);
+        $this->attach($this->signedUrl);
 
         return $this;
     }

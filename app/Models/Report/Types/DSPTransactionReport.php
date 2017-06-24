@@ -4,11 +4,7 @@ namespace RZP\Models\Report\Types;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Base\JitValidator;
-use RZP\Models\Transaction;
+use RZP\Models\FileStore;
 use RZP\Constants\Entity as E;
 use RZP\Mail\Report\DSPReport as DSPMail;
 
@@ -80,14 +76,18 @@ class DSPTransactionReport extends BasicEntityReport
 
         $fullpath = $this->writeDataToCsv($input, $filename);
 
-        $reportingMail = new DSPMail($email, $fullpath);
+        $s3File = $this->createFileAndSave($fullpath, $filename);
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+
+        $reportingMail = new DSPMail($email, $signedUrl);
 
         Mail::queue($reportingMail);
 
         return [
             'merchantId' => $merchantId,
             'email'      => $email,
-            'file'       => $fullpath
+            'file'       => $signedUrl
         ];
     }
 
