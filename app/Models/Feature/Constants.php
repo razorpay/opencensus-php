@@ -21,6 +21,7 @@ class Constants
     const NOZEROPRICING            = 'nozeropricing';
     const REVERSE                  = 'reverse';
     const BROKING_REPORT           = 'broking_report';
+    const DSP_REPORT               = 'dsp_report';
     const PAYMENT_EMAIL_FETCH      = 'payment_email_fetch';
     const CREATED_FLOW             = 'created_flow';
     const PAYOUT                   = 'payout';

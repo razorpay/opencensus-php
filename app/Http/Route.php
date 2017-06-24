@@ -945,7 +945,6 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
-        'reports_transaction_dsp',
         'invitation_fetch_by_token',
         'invitation_action',
     ];
@@ -967,6 +966,7 @@ final class Route
         'webhook_fetch_multiple',
         'balance_fetch',
         'reports_transaction_broking',
+        'reports_transaction_dsp',
         'reports_monthly_invoice',
         'reports_public_entity',
         'reports_public_entity_file',
@@ -1343,6 +1343,7 @@ final class Route
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
+        'reports_transaction_dsp'           => [Feature::DSP_REPORT],
         'payment_payout'                    => [Feature::PAYOUT],
         'payout_create'                     => [Feature::PAYOUT],
         'payout_fetch_by_id'                => [Feature::PAYOUT],
