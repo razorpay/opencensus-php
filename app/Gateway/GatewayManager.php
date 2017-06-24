@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Base\Core;
 use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
@@ -16,6 +17,8 @@ class GatewayManager extends \Illuminate\Support\Manager
     protected $mocks = array();
 
     protected $servers = array();
+
+    protected $recons = array();
 
     public function __construct($app)
     {
@@ -134,6 +137,31 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $servers[$driver];
     }
 
+    public function recon($driver)
+    {
+        $recons = & $this->recons;
+
+        if (isset($recons[$driver]))
+        {
+            return $recons[$driver];
+        }
+
+        $recon = $this->getReconClass($driver);
+
+        $recon = new $recon;
+
+        $recons[$driver] = $recon;
+
+        return $recons[$driver];
+    }
+
+    public function setRecon($driver, $recon = null)
+    {
+        $this->recons[$driver] = $recon;
+
+        return $recon;
+    }
+
     public function getServerClass($driver)
     {
         $server = $this->getGatewayNamespace($driver, true) . '\\Server';
@@ -174,6 +202,13 @@ class GatewayManager extends \Illuminate\Support\Manager
         $class = $this->getServerClass($driver);
 
         $this->servers[$driver] = new $class;
+    }
+
+    public function getReconClass($driver)
+    {
+        $recon = $this->getGatewayNamespace($driver, true) . '\\Reconcilator';
+
+        return $recon;
     }
 
     public function resetDriver($driver)

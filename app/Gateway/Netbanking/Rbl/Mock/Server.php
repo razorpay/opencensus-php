@@ -107,30 +107,4 @@ class Server extends Base\Mock\Server
 
         return $decryptedData;
     }
-
-    public function generateReconcilation()
-    {
-        $input = [
-            'gateway' => 'netbanking_rbl'
-        ];
-
-        $payments = $this->repo->payment->fetch($input, '10000000000000');
-
-        $inputData = [];
-
-        foreach ($payments as $payment)
-        {
-            $data['payment'] = $payment->toArray();
-
-            $gatewayInput['payment_id'] = $payment['id'];
-
-            $gatewayPayment = $this->repo->netbanking->fetch($gatewayInput);
-
-            $data['gateway'] = $gatewayPayment[0]->toArray();
-
-            $inputData[] = $data;
-        }
-
-        return (new Reconcilator)->generate($inputData);
-    }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking;
 
+use Mockery;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
@@ -13,18 +14,32 @@ class ReconcilationTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/ReconcilationTestData.php';
+
         parent::setUp();
 
         $this->ba->appAuth();
 
-        $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
+        $this->gateway = '';
     }
 
     public function testRblManualReconcilation()
     {
+        $this->gateway = 'netbanking_rbl';
+
         $payment = $this->createPayment('netbanking_rbl');
 
         $netbanking = $this->createNetbanking($payment['id'], 'RATN');
+
+        $this->mockReconContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'claims_data')
+            {
+                $content['0']['Debit Account'] = '309002069863';
+
+                $content['0']['Credit Account'] = '309001141935';
+            }
+        });
 
         $fileContents = $this->generateFile('rbl', []);
 
@@ -39,6 +54,35 @@ class ReconcilationTest extends TestCase
         $this->assertEquals('309001141935', $gatewayEnttiy['credit_account_number']);
     }
 
+    public function testRblWrongFormatReconcilation()
+    {
+        $this->gateway = 'netbanking_rbl';
+
+        $payment = $this->createPayment('netbanking_rbl');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'RATN');
+
+        $this->mockReconContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'claims_data')
+            {
+                $content['0']['extra_row'] = 'abc';
+            }
+        });
+
+        $fileContents = $this->generateFile('rbl', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+             function() use ($uploadedFile)
+            {
+                 $this->reconcile('NetbankingRbl', $uploadedFile);
+            });
+    }
 
     protected function reconcile($gateway, $uploadedFile)
     {
@@ -116,5 +160,24 @@ class ReconcilationTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    protected function mockRecon()
+    {
+        $class = $this->app['gateway']->getReconClass($this->gateway);
+
+        return Mockery::mock($class, [])->makePartial();
+    }
+
+    protected function mockReconContentFunction($closure)
+    {
+        $recon =  $this->mockRecon()
+                       ->shouldReceive('content')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->app['gateway']->setRecon($this->gateway, $recon);
+
+        return $recon;
     }
 }

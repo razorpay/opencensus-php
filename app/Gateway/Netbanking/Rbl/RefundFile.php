@@ -85,18 +85,13 @@ class RefundFile extends Base\RefundFile
                 RefundFields::MERCHANT_ID        => $row['terminal']['gateway_merchant_id'],
                 RefundFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
                 RefundFields::PGI_REFERENCE      => $row['payment']['id'],
-                RefundFields::TRANSACTION_AMOUNT => $this->getFormatedAmount($row['payment']['amount']),
-                RefundFields::REFUND_AMOUNT      => $this->getFormatedAmount($row['refund']['amount']),
+                RefundFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
+                RefundFields::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
             ];
 
             $totalAmount += $row['refund']['amount'] / 100;
         }
 
         return [$totalAmount, $data];
-    }
-
-    protected function getFormatedAmount($amount)
-    {
-        return number_format($amount / 100, 2, '.', '');
     }
 }

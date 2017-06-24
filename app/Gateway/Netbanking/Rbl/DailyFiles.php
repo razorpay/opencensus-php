@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Gateway\Netbanking\Base;
@@ -51,6 +52,24 @@ class DailyFiles extends Base\DailyFiles
             );
         }
 
+        if (($amount['claims'] - $amount['refunds']) < 0)
+        {
+            $message = 'Claims Total Amount for RBL is less than Refund Amount';
+
+            $data = [
+                'refundsData' => $refundsData,
+                'claimsData'  => $claimsData,
+            ];
+
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.settlements'),
+                ]
+            );
+        }
+
         return [
             'refunds' => $refundsData['local_file_path'],
             'claims'  => $claimsData['local_file_path'],
@@ -80,6 +99,10 @@ class DailyFiles extends Base\DailyFiles
         Mail::queue($dailyFileMail);
     }
 
+    /**
+     * This is done because we just want
+     * to pick up reconciled payments
+     */
     protected function getClaimsData($from, $to)
     {
         $status = [

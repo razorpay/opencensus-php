@@ -708,7 +708,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * Saving debit account into the DB
      *
-     * @param array        $debitAccount
+     * @param array        $accountDetails
      * @param PublicEntity $gatewayPayment
      */
     protected function persistDebitAccount(array $accountDetails, PublicEntity $gatewayPayment)
@@ -719,9 +719,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * Saving debit account into the DB
+     * Saving crebit account into the DB
      *
-     * @param array        $creditAccount
+     * @param array        $accountDetails
      * @param PublicEntity $gatewayPayment
      */
     protected function persistCreditAccount(array $accountDetails, PublicEntity $gatewayPayment)

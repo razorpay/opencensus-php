@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
+use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
@@ -54,7 +55,7 @@ class Reconcilator extends Base\RefundFile
         ];
     }
 
-    protected function getReconcilationData($input)
+    public function getReconcilationData($input)
     {
         $data = [];
 
@@ -73,8 +74,8 @@ class Reconcilator extends Base\RefundFile
                 ClaimFields::SERIAL_NO          => $index++,
                 ClaimFields::TRANSACTION_DATE   => $date,
                 ClaimFields::USER_ID            => 342355,
-                ClaimFields::DEBIT_ACCOUNT      => '309002069863',
-                ClaimFields::CREDIT_ACCOUNT     => '309001141935',
+                ClaimFields::DEBIT_ACCOUNT      => '',
+                ClaimFields::CREDIT_ACCOUNT     => '',
                 ClaimFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
                 ClaimFields::PGI_REFERENCE      => $row['gateway']['bank_payment_id'],
                 ClaimFields::BANK_REFERENCE     => $row['payment']['id'],
@@ -86,12 +87,14 @@ class Reconcilator extends Base\RefundFile
             $totalAmount +=  $row['payment']['amount'] / 100;
         }
 
+        $this->content($data, 'claims_data');
+
         return [$totalAmount, $data];
     }
 
-    protected function getGatewayStatus(array $row)
+    public function getGatewayStatus(array $row)
     {
-            if ($row['gateway']['status'] === 'SUC')
+        if ($row['gateway']['status'] === Status::SUCCESS)
         {
             return 'Success';
         }
@@ -99,7 +102,7 @@ class Reconcilator extends Base\RefundFile
         return 'Failed';
     }
 
-    protected function getErrorMessage(array $row)
+    public function getErrorMessage(array $row)
     {
         if (empty($row['gateway']['error_message']) === true)
         {
@@ -107,5 +110,36 @@ class Reconcilator extends Base\RefundFile
         }
 
         return $row['gateway']['error_message'];
+    }
+
+    public function content(& $content, $action = '')
+    {
+        return $content;
+    }
+
+    public function generateReconcilation()
+    {
+        $input = [
+            'gateway' => 'netbanking_rbl'
+        ];
+
+        $payments = $this->repo->payment->fetch($input, '10000000000000');
+
+        $inputData = [];
+
+        foreach ($payments as $payment)
+        {
+            $data['payment'] = $payment->toArray();
+
+            $gatewayInput['payment_id'] = $payment['id'];
+
+            $gatewayPayment = $this->repo->netbanking->fetch($gatewayInput);
+
+            $data['gateway'] = $gatewayPayment[0]->toArray();
+
+            $inputData[] = $data;
+        }
+
+        return $this->generate($inputData);
     }
 }

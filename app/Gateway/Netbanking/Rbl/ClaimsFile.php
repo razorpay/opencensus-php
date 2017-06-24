@@ -95,12 +95,13 @@ class ClaimsFile extends Base\RefundFile
 
     protected function getPaymentStatus(array $row)
     {
-        if (in_array($row['payment']['status'],
-                    [
-                        Payment\Status::AUTHORIZED,
-                        Payment\Status::REFUNDED,
-                        Payment\Status::CAPTURED
-                    ]) === true)
+        $status = [
+            Payment\Status::AUTHORIZED,
+            Payment\Status::REFUNDED,
+            Payment\Status::CAPTURED
+        ];
+
+        if (in_array($row['payment']['status'], $status) === true)
         {
             return 'Success';
         }

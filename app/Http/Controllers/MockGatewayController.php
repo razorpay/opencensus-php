@@ -281,8 +281,8 @@ class MockGatewayController extends Controller
 
         $driver = 'netbanking_'.$bank;
 
-        $server = $this->gateway->server($driver);
+        $recon = $this->gateway->recon($driver);
 
-        return $server->generateReconcilation();
+        return $recon->generateReconcilation();
     }
 }
