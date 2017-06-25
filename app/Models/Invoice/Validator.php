@@ -5,11 +5,12 @@ namespace RZP\Models\Invoice;
 use Carbon\Carbon;
 
 use RZP\Base;
-use RZP\Models\Merchant;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\LogicException;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -53,7 +54,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -84,7 +85,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -110,7 +111,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -133,7 +134,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean',
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::BILLING_START       => 'sometimes|epoch',
@@ -147,6 +148,8 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
     ];
 
     protected static $issueBatchRules = [
@@ -283,6 +286,25 @@ class Validator extends Base\Validator
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
+    }
+
+    public function validatePartialPayment($attribute, $value)
+    {
+        if ($value === '0')
+        {
+            return;
+        }
+
+        $merchant = $this->entity->merchant;
+
+        $feature = Feature\Constants::INVOICE_PARTIAL_PAYMENTS;
+
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Partial payment feature is not enabled',
+                Entity::PARTIAL_PAYMENT);
+        }
     }
 
     /**

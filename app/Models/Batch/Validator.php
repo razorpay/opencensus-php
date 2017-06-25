@@ -152,12 +152,17 @@ class Validator extends Base\Validator
             }
         }
 
-        if (count($errors) > 0)
+        $errorsCount = count($errors);
+
+        if ($errorsCount > 0)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
                 Entity::FILE,
-                $errors);
+                [
+                    'count'  => $errorsCount,
+                    'errors' => $errors,
+                ]);
         }
     }
 }

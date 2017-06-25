@@ -238,19 +238,7 @@ class DSPTransactionReport extends BasicEntityReport
     {
         $payment = $this->getPayment($txn);
 
-        $bankTxnNumber = 'NA';
-
-        if ($payment->isNetbanking() === true)
-        {
-            if ($payment->getGateway() === self::BILLDESK)
-            {
-                $bankTxnNumber = $payment->billdesk->getBankReferenceNo();
-            }
-            else if ($payment->getRelation('netbanking') !== null)
-            {
-                $bankTxnNumber = $payment->netbanking->getBankPaymentId();
-            }
-        }
+        $bankTxnNumber = $payment->getNetbankingReferenceId() ?? 'NA';
 
         return $bankTxnNumber;
     }
@@ -269,32 +257,48 @@ class DSPTransactionReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $day = $input['day'];
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $from = $to = null;
+        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
 
-        if ($day === 'today')
+        if (isset($input['day']) === true)
         {
-            $from = Carbon::now('Asia/Kolkata')
-                          ->startOfDay()
-                          ->timestamp;
+            $day = $input['day'];
 
-            $to = Carbon::now('Asia/Kolkata')
-                        ->timestamp;
+            if ($day === 'today')
+            {
+                $from = Carbon::now('Asia/Kolkata')
+                              ->startOfDay()
+                              ->timestamp;
+
+                $to = Carbon::now('Asia/Kolkata')
+                            ->timestamp;
+            }
+            else if ($day === 'yesterday')
+            {
+                $from = Carbon::now('Asia/Kolkata')
+                               ->startOfDay()
+                               ->subDay()
+                               ->timestamp;
+
+                $to = Carbon::now('Asia/Kolkata')
+                            ->startOfDay()
+                            ->timestamp - 1;
+            }
         }
-        else if ($day === 'yesterday')
+        else
         {
-            $from = Carbon::now('Asia/Kolkata')
-                           ->startOfDay()
-                           ->subDay()
-                           ->timestamp;
+            if (isset($input['from']) === true)
+            {
+                $from = $input['from'];
+            }
 
-            $to = Carbon::now('Asia/Kolkata')
-                        ->startOfDay()
-                        ->timestamp - 1;
-
-
+            if (isset($input['to']) === true)
+            {
+                $to = $input['to'];
+            }
         }
+
         return [$from, $to];
     }
 }

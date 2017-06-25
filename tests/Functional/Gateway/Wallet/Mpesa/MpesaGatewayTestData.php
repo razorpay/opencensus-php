@@ -30,7 +30,7 @@ return [
         'amount'          => 50000,
         'currency'        => 'INR',
         'base_amount'     => 50000,
-        'status'          => 'authorized',
+        'status'          => 'captured',
         'two_factor_auth' => 'passed',
         'method'          => 'wallet',
         'wallet'          => 'mpesa',
@@ -83,7 +83,7 @@ return [
         ],
     ],
 
-    'testOtpPaymentVerify' => [
+    'testAuthPaymentVerify' => [
         'payment'                   => [
             'verified'              => 1
         ],
