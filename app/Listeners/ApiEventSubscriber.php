@@ -65,6 +65,10 @@ class ApiEventSubscriber extends Base\Core
     {
         $event = $this->getFiringEvent($event);
 
+        //
+        // sequential_array check is present here only
+        // to ensure backward compatibility.
+        //
         if (is_sequential_array($params) === true)
         {
             $this->mainParam = $params[0];
@@ -104,14 +108,6 @@ class ApiEventSubscriber extends Base\Core
         $event = str_replace('.', '_', $event);
 
         $func = 'on' . studly_case($event);
-
-        //
-        // This is to maintain backward compatibility and to avoid code
-        // changes to all the events. The existing events will have just
-        // 1 param and hence should follow the older flow.
-        // If any event has more than 1 param, that should be handled
-        // by the event handling function.
-        //
 
         return $this->$func($this->mainParam);
     }
@@ -270,18 +266,7 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $subscription->toArrayPublic()
         ];
 
-        if (empty($this->withParams) === false)
-        {
-            foreach ($this->withParams as $withParamKey => $withParamValue)
-            {
-                if (empty($withParamValue) === false)
-                {
-                    $partialPayload[$withParamKey] = [
-                        'entity' => $withParamValue->toArrayPublic()
-                    ];
-                }
-            }
-        }
+        $this->addExtraDataToPayload($partialPayload);
 
         return $partialPayload;
     }
@@ -370,7 +355,7 @@ class ApiEventSubscriber extends Base\Core
 
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
-            Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
+            Event\Entity::CONTAINS    => $this->getEntityNamesInPayload($payload),
             Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
         );
 
@@ -387,6 +372,45 @@ class ApiEventSubscriber extends Base\Core
         );
 
         return $data;
+    }
+
+    /**
+     * The same event may or may not contain some entities, based on the state.
+     * For example, if subscription.overdue is fired on an auth failure,
+     * the payload will contain only subscription entity not contain `payment` entity.
+     * If it's fired on capture failure, it'll contain both subscription and payment
+     * entity. For this reason, we cannot have a static list of contains array.
+     *
+     * @param array $payload
+     *
+     * @return array
+     */
+    protected function getEntityNamesInPayload(array $payload)
+    {
+        $contains = [];
+
+        foreach ($payload as $entityName => $entityData)
+        {
+            $contains[] = $entityName;
+        }
+
+        return $contains;
+    }
+
+    protected function addExtraDataToPayload(array & $partialPayload)
+    {
+        if (empty($this->withParams) === false)
+        {
+            foreach ($this->withParams as $withParamKey => $withParamValue)
+            {
+                if (empty($withParamValue) === false)
+                {
+                    $partialPayload[$withParamKey] = [
+                        'entity' => $withParamValue->toArrayPublic()
+                    ];
+                }
+            }
+        }
     }
 
     protected function isWebhookEnabledForEvent($params)
