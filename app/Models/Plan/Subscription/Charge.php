@@ -5,6 +5,7 @@ namespace RZP\Models\Plan\Subscription;
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Schedule\Library;
 use RZP\Trace\Trace;
@@ -32,12 +33,21 @@ class Charge extends Base\Core
      */
     protected $processor;
 
+    protected $mutex;
+
     /**
      * Maximum authorization attempts allowed for subscription charge.
      *
      * TODO: Make this merchant configurable.
      */
     const MAX_AUTH_ATTEMPTS = 3;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
      * This is called via the queue to initiate the actual
@@ -83,8 +93,9 @@ class Charge extends Base\Core
             $this->trace->critical(
                 $traceCode,
                 [
-                    'invoice_id'        => $invoice->getId(),
-                    'subscription_id'   => $subscription->getId(),
+                    'invoice_id'            => $invoice->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
                 ]);
 
             return false;
@@ -92,7 +103,7 @@ class Charge extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function() use ($subscription, $invoice, $manual, $recurringPayload)
+            function () use ($subscription, $invoice, $manual, $recurringPayload)
             {
                 $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
@@ -137,7 +148,7 @@ class Charge extends Base\Core
                 }
 
                 return true;
-            });
+            }, 120, ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     public function handleCaptureSuccess(

@@ -830,5 +830,23 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testSubscriptionCancel' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'subscription',
+                'plan_id' => 'plan_1000000000plan',
+                'customer_id' => 'cust_100000customer',
+                'status' => 'cancelled',
+                'auth_attempts' => 0,
+                'total_count' => 6,
+                'paid_count' => 1,
+            ]
+        ],
+    ],
 ];

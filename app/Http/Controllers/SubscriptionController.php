@@ -41,14 +41,14 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $subscription = $this->service('subscription')->create($input);
+        $subscription = $this->service()->create($input);
 
         return ApiResponse::json($subscription);
     }
 
     public function getSubscription(string $id)
     {
-        $subscription = $this->service('subscription')->fetch($id);
+        $subscription = $this->service()->fetch($id);
 
         return ApiResponse::json($subscription);
     }
@@ -57,45 +57,43 @@ class SubscriptionController extends Controller
     {
         $input = Request::input();
 
-        $subscriptions = $this->service('subscription')->fetchMultiple($input);
+        $subscriptions = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($subscriptions);
     }
 
     public function postCreateAndChargeSubscriptionInvoices()
     {
-        $summary = $this->service('subscription')->createAndChargeInvoices();
+        $summary = $this->service()->createAndChargeInvoices();
 
         return ApiResponse::json($summary);
     }
 
     public function postRetrySubscriptions()
     {
-        $summary = $this->service('subscription')->retrySubscriptions();
+        $summary = $this->service()->retrySubscriptions();
 
         return ApiResponse::json($summary);
     }
 
     public function postChargeSubscriptionInvoiceManually($invoiceId)
     {
-        $subscription = $this->service('subscription')->chargeSubscriptionInvoiceManually($invoiceId);
+        $subscription = $this->service()->chargeSubscriptionInvoiceManually($invoiceId);
 
         return ApiResponse::json($subscription);
     }
 
     public function postExpireSubscriptions()
     {
-        $summary = $this->service('subscription')->expireSubscriptions();
+        $summary = $this->service()->expireSubscriptions();
 
         return ApiResponse::json($summary);
     }
 
     public function postCancelSubscription($subscriptionId)
     {
-        $subscription = $this->service('subscription')->cancelSubscription($subscriptionId);
+        $subscription = $this->service()->cancelSubscription($subscriptionId);
 
         return ApiResponse::json($subscription);
     }
-
-
 }

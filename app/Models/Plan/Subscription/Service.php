@@ -209,13 +209,9 @@ class Service extends Base\Service
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_CANCEL,
-            [
-                'subscription_id' => $subscriptionId
-            ]);
+        $subscription = $this->core->cancel($subscription);
 
-        return $this->core->cancel($subscription);
+        return $subscription->toArrayPublic();
     }
 
     public function chargeSubscriptionInvoiceManually(string $invoiceId)

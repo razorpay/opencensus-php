@@ -112,6 +112,7 @@ class Validator extends Base\Validator
                 'status',
                 [
                     'subscription_id' => $subscription->getId(),
+                    'status'          => $currentStatus,
                 ]);
         }
     }
@@ -120,6 +121,12 @@ class Validator extends Base\Validator
     {
         $subscription = $this->entity;
         $valid = true;
+
+        //
+        // This will be empty only when valid is true,
+        // in which case, we don't care about it's value.
+        //
+        $traceCode = '';
 
         if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
         {
