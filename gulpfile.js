@@ -20,6 +20,9 @@ const uglify = require('gulp-uglify');
 const rev = require('gulp-rev');
 const webpackConfig = require('./webpack.config.js');
 
+const iconfont = require('gulp-iconfont');
+const iconfontCss = require('gulp-iconfont-css');
+
 const revMap = {};
 let isDevelopment = false;
 
@@ -237,3 +240,28 @@ const watch = () => {
 
 gulp.task('watch:full', ['clean', 'dev:webpack'], watch);
 gulp.task('watch', ['clean', 'dev:webpack'], watch);
+
+// Gulp task to generate font icons from svg (run: gulp iconfont)
+const fontName = 'icons';
+gulp.task('iconfont', function() {
+  gulp
+    .src(['public/react/styles/merchant/svgs/*.svg'])
+    .pipe(
+      iconfontCss({
+        fontName: fontName,
+        targetPath: 'style.css',
+        fontPath: './',
+        cssClass: 'icon',
+      })
+    )
+    .pipe(
+      iconfont({
+        fontName: fontName,
+        formats: ['svg', 'ttf', 'eot', 'woff'], // default, 'woff2' and 'svg' are available
+        normalize: true,
+        prependUnicode: true, // recommended option
+        fontHeight: 1001,
+      })
+    )
+    .pipe(gulp.dest('public/react/styles/fonts/'));
+});
