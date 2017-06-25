@@ -1,29 +1,19 @@
 <?php
- 
- 
+
+
 return [
- 
+
     'default'   => 'guzzle6',
- 
- 
+
+
     'adapters' => [
- 
+
         /**
          * @link https://github.com/php-http/guzzle6-adapter
          */
         'guzzle6' => [
-            'factory' => 'httplug.factory.guzzle6',
-            'plugins' => [
-                    'httplug.plugin.authentication.my_wsse',
-                    'httplug.plugin.cache',
-                    'httplug.plugin.retry',
-
-            ],
- 
-            'config' => [
-                'redirects' => 3,
-                'timeout' => 20,
-            ],
+            'redirects' => 3,
+            'timeout' => 20,
         ],
 
         /**
@@ -58,7 +48,7 @@ return [
               'proxy'       => null,
             ],
         ],
-        
+
         /**
          * @link https://github.com/php-http/react-adapter
          */
@@ -67,5 +57,5 @@ return [
         ],
 
     ],
- 
+
 ];
