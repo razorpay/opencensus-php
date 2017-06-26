@@ -7,22 +7,26 @@ use Requests_Response_Headers;
 
 trait GatewayTrait
 {
-    public function authorizeMock(array $input)
+    public function authorizeMock(array $input, $route = null)
     {
         $request = parent::authorize($input);
 
-        if (is_array($request))
+        if (is_array($request) and isset($request['method']))
         {
-            $this->putMockPaymentGatewayUrl($request);
+            $this->putMockPaymentGatewayUrl($request, $route);
         }
 
         return $request;
     }
 
-    protected function putMockPaymentGatewayUrl(array & $request)
+    protected function putMockPaymentGatewayUrl(array & $request, $route)
     {
         $gateway = $this->gateway;
-        $route = 'mock_'.$gateway.'_payment';
+
+        if (is_null($route))
+        {
+            $route = 'mock_' . $gateway . '_payment';
+        }
 
         $url = $this->route->getUrlWithPublicAuth($route);
 

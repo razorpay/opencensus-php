@@ -8,6 +8,12 @@ class Gateway extends Base\Gateway
 {
     const ACQUIRER = null;
 
+    /**
+     * Used in Mock\GatewayTrait, but defined here because
+     * traits can't define constants
+     */
+    const MOCK_ROUTE    = 'mock_upi_payment';
+
     protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);

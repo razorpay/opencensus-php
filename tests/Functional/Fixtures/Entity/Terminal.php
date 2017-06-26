@@ -993,7 +993,7 @@ class Terminal extends Base
         $this->createSharedAmexTerminal($attributes);
     }
 
-    public function createSharedUpiTerminal(array $attributes)
+    public function createSharedUpiIciciTerminal(array $attributes)
     {
         $termId = Shared::UPI_ICICI_RAZORPAY_TERMINAL;
 
