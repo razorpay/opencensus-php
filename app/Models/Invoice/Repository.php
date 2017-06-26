@@ -24,6 +24,7 @@ class Repository extends Base\Repository
 
         // Note: Dotted notation works and expands both line_items
         // followed by taxes of it.
+
         Entity::LINE_ITEMS . '.' . LineItem\Entity::TAXES,
     ];
 
@@ -46,7 +47,6 @@ class Repository extends Base\Repository
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
 
-        self::EXPAND              => 'sometimes|array|max:5',
         self::EXPAND . '.*'       => 'string|in:payments,',
     ];
 

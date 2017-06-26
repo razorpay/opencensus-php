@@ -109,7 +109,7 @@ class ViewDataSerializer extends Base\Core
     {
         // Reload is needed as from Payment\Processor\Notify, the invoice
         // object passed as part of construct does not have relations loaded.
-        $this->repo->reload($this->invoice);
+        $this->repo->loadRelations($this->invoice);
 
         $invoiceData = $this->invoice->toArrayPublic();
 

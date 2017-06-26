@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "010186398ff70ccb972fe153a12f2917",
+    "content-hash": "cff5964032a7a9f94abf14805194582a",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -4831,7 +4831,7 @@
         },
         {
             "name": "razorpay/spine",
-            "version": "dev-laravel5.4",
+            "version": "dev-laravel5.4_expands_test",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
@@ -4875,7 +4875,7 @@
                 "spine"
             ],
             "support": {
-                "source": "https://github.com/razorpay/spine/tree/laravel5.4",
+                "source": "https://github.com/razorpay/spine/tree/laravel5.4_expands_test",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
             "time": "2017-07-03T03:54:18+00:00"

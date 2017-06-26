@@ -104,6 +104,13 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->reload($entity);
     }
 
+    public function loadRelations($entity)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->loadRelations($entity);
+    }
+
     public function determineLiveOrTestModeForEntity($id, $entity)
     {
         $repo = $this->driver($entity);

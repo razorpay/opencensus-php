@@ -39,10 +39,13 @@ trait RepositoryFetch
     ];
 
     protected $fetchParamRules = [
-        'from'          => 'integer',
-        'to'            => 'integer',
-        'count'         => 'integer|min:1',
-        'skip'          => 'integer',
+        'from'              => 'integer',
+        'to'                => 'integer',
+        'count'             => 'integer|min:1',
+        'skip'              => 'integer',
+
+        self::EXPAND        => 'sometimes|array|max:5',
+        self::EXPAND . '.*' => 'string|in:',
     ];
 
     protected $defaultFetchParamRules;
