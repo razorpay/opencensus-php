@@ -58,13 +58,6 @@ class TransactionFilter extends Terminal\Filter
 
     public function methodFilter($terminal, $input)
     {
-        $featureCheck = true;
-
-        if ($featureCheck === true)
-        {
-            return true;
-        }
-
         $method = $input['payment']->getMethod();
 
         switch ($method)
@@ -100,12 +93,6 @@ class TransactionFilter extends Terminal\Filter
     // Applicable only for card and emi
     public function networkFilter($terminal, $input)
     {
-        $featureCheck = false;
-
-        if ($featureCheck === true)
-        {
-            return true;
-        }
         if ($input['payment']->isMethodCardOrEmi())
         {
             $network = $input['payment']->card->getNetworkCode();

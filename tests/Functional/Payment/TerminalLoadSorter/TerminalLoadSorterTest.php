@@ -120,7 +120,9 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testCreateGatewayRuleWithAlreadyExistingRule()
     {
-        $existingRule = $this->fixtures->create('gateway_rule:card');
+        $existingRule = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter',
+        ]);
 
         $this->ba->appAuth();
 
@@ -134,6 +136,7 @@ class TerminalLoadSorterTest extends TestCase
     public function testCreateGatewayRuleWithConflictingRulesButTotalLoadNotExceedingMaxLoad()
     {
         $existingRule = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter',
             'network' => null,
             'load' => 60,
         ]);
@@ -146,6 +149,7 @@ class TerminalLoadSorterTest extends TestCase
     public function testCreateGatewayRuleWithConflictingRulesButTotalLoadExceedsMaxLoad()
     {
         $existingRule = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter',
             'network' => null,
             'load' => 60,
         ]);
@@ -157,7 +161,9 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testUpdadateGatewayRuleLoad()
     {
-        $existingRule = $this->fixtures->create('gateway_rule:card');
+        $existingRule = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter'
+        ]);
 
         $this->ba->appAuth();
 
@@ -168,9 +174,12 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testUpdateGatewayRuleLoadButWithTotalLoadExceedingMaxLoad()
     {
-        $rule1 = $this->fixtures->create('gateway_rule:card');
+        $rule1 = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter',
+        ]);
 
         $rule2 = $existingRule = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter',
             'network' => null,
             'load' => 50,
         ]);
@@ -184,7 +193,9 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testDeleteGatewayRule()
     {
-        $rule = $this->fixtures->create('gateway_rule:card');
+        $rule = $this->fixtures->create('gateway_rule:card', [
+            'type' => 'sorter',
+        ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule->getId();
 

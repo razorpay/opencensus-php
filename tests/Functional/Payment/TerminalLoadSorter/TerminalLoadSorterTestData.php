@@ -10,6 +10,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'axis_migs',
                 'method'           => 'card',
                 'network'          => 'VISA',
@@ -24,6 +25,7 @@ return [
         'response' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'axis_migs',
                 'method'           => 'card',
                 'network'          => 'VISA',
@@ -40,6 +42,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'xyz',
                 'method'           => 'card',
                 'network'          => 'VISA',
@@ -70,6 +73,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'netbanking_hdfc',
                 'method'           => 'card',
                 'network'          => 'VISA',
@@ -100,6 +104,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'hdfc',
                 'method'           => 'xyz',
                 'network'          => 'VISA',
@@ -130,6 +135,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'hdfc',
                 'method'           => 'card',
                 'network'          => 'xyz',
@@ -160,6 +166,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'axis_migs',
                 'method'           => 'card',
                 'network'          => 'DICL',
@@ -190,6 +197,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'hdfc',
                 'method'           => 'card',
                 'network'          => 'VISA',
@@ -220,6 +228,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'hdfc',
                 'method'           => 'card',
                 'method_type'      => 'xyz',
@@ -251,6 +260,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
+                'type'             => 'sorter',
                 'gateway'          => 'hdfc',
                 'method'           => 'card',
                 'network'          => 'VISA',
@@ -281,6 +291,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'type'        => 'sorter',
                 'gateway'     => 'billdesk',
                 'method'      => 'netbanking',
                 'issuer'      => 'SBIN',
@@ -305,6 +316,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'type'        => 'sorter',
                 'gateway'     => 'hdfc',
                 'method'      => 'netbanking',
                 'issuer'      => 'SBIN',
@@ -332,6 +344,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'type'        => 'sorter',
                 'gateway'     => 'netbanking_hdfc',
                 'method'      => 'netbanking',
                 'load'        => 50
@@ -357,6 +370,7 @@ return [
     'testCreateGatewayRuleForNetbankingWithIssuerNotSupportedByGateway' => [
         'request' => [
             'content' => [
+                'type'        => 'sorter',
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'ebs',
                 'issuer'      => 'ALLA',
@@ -385,6 +399,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'type'        => 'sorter',
                 'gateway'     => 'wallet_jiomoney',
                 'method'      => 'wallet',
                 'load'        => 50
@@ -407,6 +422,7 @@ return [
         'request' => [
             'content' => [
                 'method'      => 'card',
+                'type'        => 'sorter',
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
@@ -434,6 +450,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'type'        => 'sorter',
                 'gateway'     => 'axis_migs',
                 'method'      => 'card',
                 'network'     => 'VISA',
@@ -458,6 +475,7 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
+                'type'        => 'sorter',
                 'gateway'     => 'axis_migs',
                 'method'      => 'card',
                 'network'     => 'VISA',
@@ -484,6 +502,7 @@ return [
     'testUpdadateGatewayRuleLoad' => [
         'request' => [
             'content' => [
+                'type' => 'sorter',
                 'load' => 70,
             ],
             'method' => 'PATCH',
@@ -502,6 +521,7 @@ return [
     'testUpdateGatewayRuleLoadButWithTotalLoadExceedingMaxLoad' => [
         'request' => [
             'content' => [
+                'type' => 'sorter',
                 'load' => 70
             ],
             'method' => 'PATCH',
@@ -538,6 +558,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'axis_migs',
                     'network' => 'VISA',
                     'load'    => 70,
@@ -551,6 +572,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'axis_migs',
                     'network' => 'MC',
                     'load'    => 70,
@@ -564,6 +586,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'axis_migs',
                     'network' => 'VISA',
                     'load'    => 70,
@@ -577,6 +600,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'axis_migs',
                     'network' => 'VISA',
                     'load'    => 70,
@@ -595,6 +619,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway'          => 'cybersource',
                     'method_type'      => 'credit',
                     'network'          => 'VISA',
@@ -611,6 +636,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
                     'gateway'     => 'axis_migs',
                     'network'     => 'VISA',
@@ -625,6 +651,7 @@ return [
             'method' => 'netbanking',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'paytm',
                     'issuer'  => 'HDFC',
                     'load'    => 70
@@ -638,6 +665,7 @@ return [
             'method' => 'wallet',
             'rules' => [
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'wallet_mobikwik',
                     'load'    => 70,
                 ]
@@ -651,16 +679,19 @@ return [
         'method' => 'card',
         'rules' => [
             [
+                'type'    => 'sorter',
                 'gateway' => 'hdfc',
                 'network' => 'VISA',
                 'load'    => 30
             ],
             [
+                'type'    => 'sorter',
                 'gateway' => 'axis_migs',
                 'network' => 'VISA',
                 'load'    => 60
             ],
             [
+                'type'    => 'sorter',
                 'gateway' => 'cybersource',
                 'network' => 'VISA',
                 'load'    => 10
@@ -677,9 +708,10 @@ return [
             'international' => false,
             'rules' => [
                 [
-                    'gateway'       => 'hdfc',
-                    'network'       => 'VISA',
-                    'load'          => 7000
+                    'type'    => 'sorter',
+                    'gateway' => 'hdfc',
+                    'network' => 'VISA',
+                    'load'    => 7000
                 ]
             ],
             'test_chance' => 5000,
@@ -691,9 +723,10 @@ return [
             'international' => true,
             'rules' => [
                 [
-                    'gateway'       => 'hdfc',
-                    'network'       => 'VISA',
-                    'load'          => 7000
+                    'type'    => 'sorter',
+                    'gateway' => 'hdfc',
+                    'network' => 'VISA',
+                    'load'    => 7000
                 ]
             ],
             'test_chance' => 5000,
@@ -705,6 +738,7 @@ return [
             'international' => true,
             'rules' => [
                 [
+                    'type'          => 'sorter',
                     'gateway'       => 'hdfc',
                     'network'       => 'VISA',
                     'international' => true,

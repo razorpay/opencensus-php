@@ -43,6 +43,16 @@ class Entity extends Base\PublicEntity
 
     const MAX_LOAD = 10000;
 
+    // Rule types
+    const SORTER = 'sorter';
+    const FILTER = 'filter';
+
+    // Filter types
+    const SELECT = 'select';
+    const REJECT = 'reject';
+
+    const MAX_INT_VAL = 4294967295;
+
     /**
      * Attributes used for comparing terminal to rule
      */
@@ -65,9 +75,10 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::ISSUER,
         self::GATEWAY_ACQUIRER,
+        self::NETWORK_CATEGORY,
+        self::CATEGORY2,
+        self::TERMINAL_TYPE,
         self::INTERNATIONAL,
-        self::MIN_AMOUNT,
-        self::MAX_AMOUNT,
         self::IINS,
     ];
 
@@ -78,6 +89,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::INTERNATIONAL => 'boolean',
         self::LOAD          => 'int',
+        self::IINS          => 'array',
     ];
 
     protected $fillable = [
@@ -130,13 +142,22 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::NETWORK,
-        self::ISSUER
+        self::ISSUER,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::LOAD
+    ];
+
+    protected static $unsetEditInput = [
+        self::TYPE,
+    ];
+
+    protected $defaults = [
+        self::MIN_AMOUNT => 0,
+        self::MAX_AMOUNT => self::MAX_INT_VAL,
     ];
 
     public function getLoad()
@@ -199,11 +220,15 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::FILTER_TYPE) === 'reject');
     }
 
+    public function getIins()
+    {
+        return $this->getAttribute(self::IINS);
+    }
+
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
     {
-        sd($this->getLoad());
         if (empty($this->getAttribute(self::LOAD)) === false)
         {
             $load = round(($this->getAttribute(self::LOAD) / 100), 2);
@@ -245,6 +270,17 @@ class Entity extends Base\PublicEntity
     }
 
     //----------------- Mutators End--------------------------------------------
+
+
+    public function getIinsAttribute($value)
+    {
+        if (empty($value) === true)
+        {
+            return [];
+        }
+
+        return json_decode($value, true);
+    }
 
     /**
      * Evaluates if a rule's terminal related attributes match those of

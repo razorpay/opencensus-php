@@ -146,11 +146,9 @@ class Category
         return in_array($category, self::CATEGORIES_ALL, true);
     }
 
-    public static function isNetworkCategoryValid($input)
+    public static function isNetworkCategoryValid(string $networkCategory, string $method, string $gateway)
     {
-        $category = $input[Entity::NETWORK_CATEGORY];
-
-        if ($category === self::INVALID)
+        if ($networkCategory === self::INVALID)
         {
             return false;
         }
@@ -174,7 +172,7 @@ class Category
         // No need to worry about duplicates. we only need values
         $values = array_values($allCategories);
 
-        return in_array($category, $values, true);
+        return in_array($networkCategory, $values, true);
     }
 
     public static function getDefaultForMethodAndGateway($method, $gateway)
@@ -254,5 +252,17 @@ class Category
         }
 
         return null;
+    }
+
+    protected static function getNetwork($input)
+    {
+        $network = null;
+
+        if ($input[Entity::GATEWAY] === Gateway::AMEX)
+        {
+            $network = Network::AMEX;
+        }
+
+        return $network;
     }
 }

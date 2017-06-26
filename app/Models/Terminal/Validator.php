@@ -409,7 +409,13 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (Category::isNetworkCategoryValid($input) === false)
+        $networkCategory = $input[Entity::NETWORK_CATEGORY];
+
+        $method = $this->getMethod($input);
+
+        $gateway = $input[Entity::GATEWAY];
+
+        if (Category::isNetworkCategoryValid($networkCategory, $method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
@@ -448,5 +454,25 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
         }
+    }
+
+    protected static function getMethod($input)
+    {
+        if (empty($input[Entity::CARD]) === false)
+        {
+            return Method::CARD;
+        }
+
+        if (empty($input[Entity::NETBANKING]) === false)
+        {
+            return Method::NETBANKING;
+        }
+
+        if (empty($input[Entity::EMI]) === false)
+        {
+            return Method::EMI;
+        }
+
+        return null;
     }
 }

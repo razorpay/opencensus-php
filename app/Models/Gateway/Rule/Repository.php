@@ -11,51 +11,79 @@ class Repository extends Base\Repository
     /**
      * Attributes used for fetching rules matching these keys from database
      */
-    const QUERY_ATTRIBUTES = [
-        Entity::MERCHANT_ID,
+    protected $defaultQueryAttributes = [
+        Entity::TYPE,
+        Entity::GROUP,
         Entity::METHOD,
         Entity::METHOD_TYPE,
         Entity::NETWORK,
         Entity::ISSUER,
+        Entity::MIN_AMOUNT,
+        Entity::MAX_AMOUNT,
+        Entity::EMI_DURATION,
         Entity::INTERNATIONAL,
+    ];
+
+    protected $sorterQueryAttributes = [
+        Entity::MERCHANT_ID,
+    ];
+
+    protected $filterQueryAttributes = [
+        Entity::GATEWAY,
+        Entity::FILTER_TYPE,
+        Entity::TERMINAL_TYPE,
+        Entity::NETWORK_CATEGORY,
+        Entity::GATEWAY_ACQUIRER,
+        Entity::CATEGORY2,
     ];
 
     protected $entityFetchParamRules = [
         Entity::GATEWAY          => 'sometimes|string|max:25',
         Entity::MERCHANT_ID      => 'sometimes|alpha_num|size:14',
+        Entity::TYPE             => 'sometimes|string|in:sorter,filter',
+        Entity::GROUP            => 'sometimes|string|max:50',
+        Entity::FILTER_TYPE      => 'sometimes|in:select,reject',
         Entity::METHOD           => 'sometimes|string',
         Entity::METHOD_TYPE      => 'sometimes|string',
         Entity::GATEWAY_ACQUIRER => 'sometimes|string',
+        Entity::NETWORK_CATEGORY => 'sometimes|string',
+        Entity::TERMINAL_TYPE    => 'sometimes|in:shared,direct',
         Entity::NETWORK          => 'sometimes|string',
         Entity::INTERNATIONAL    => 'sometimes|boolean',
         Entity::ISSUER           => 'sometimes|string',
+        Entity::MIN_AMOUNT       => 'sometimes|integer',
+        Entity::MAX_AMOUNT       => 'sometimes|integer',
+        Entity::EMI_DURATION     => 'sometimes|integer',
+        Entity::CATEGORY2        => 'sometimes|string',
     ];
 
-    /**
-     * If we have rule R1 for gateway A with network null, and we are defining new rule R2
-     * for gateway B with network VISA. For a VISA payment both rules R1 and R2 will
-     * be applicable, i.e rule R1's criteria satisfies R2's criteria.
-     *
-     * This method computes the total load across all such rules which match the
-     * new rule's criteria
-     *
-     * @param  Entity $rule New rule entity
-     * @return int          Total load across matching rules
-     */
-    public function getTotalLoadForRulesWithMatchingCriteria(Entity $rule): int
-    {
-        $params = [];
+    protected static $unsetFetchInput = [
+        Entity::LOAD,
+        Entity::IINS
+    ];
 
+    public function fetch(array $params, string $merchantId = null): Base\PublicCollection
+    {
+        $this->unsetParams($params);
+
+        return parent::fetch($params);
+    }
+
+    public function getRulesWithMatchingCriteria(Entity $rule)
+    {
         $input = $rule->toArray();
 
-        foreach (self::QUERY_ATTRIBUTES as $key)
+        $queryAttributes = $this->getQueryAttributes($rule);
+
+        $input = array_filter($input, function ($value, $key) use ($queryAttributes)
         {
-            $params[$key] = $input[$key] ?? null;
-        }
+            return ((in_array($key, $queryAttributes, true) === true) and
+                    ($value !== null));
+        }, ARRAY_FILTER_USE_BOTH);
 
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $params);
+        $this->buildSelectionQuery($query, $input);
 
         // If the rule against which we are matching is an existing rule, we exclude
         // it in the query
@@ -64,7 +92,19 @@ class Repository extends Base\Repository
             $query->where(Entity::ID, '!=', $rule->getId());
         }
 
-        return (int) $query->sum(Entity::LOAD);
+        $rules = $query->get();
+
+        $rules = $rules->filter(function ($r) use ($rule)
+        {
+            if (empty($r->getIins()) === true)
+            {
+                return true;
+            }
+
+            return count(array_intersect($rule->getIins(), $r->getIins())) > 0;
+        });
+
+        return $rules;
     }
 
     /**
@@ -100,27 +140,30 @@ class Repository extends Base\Repository
     {
         foreach ($params as $key => $value)
         {
-            if (is_array($value) === true)
-            {
-                $query->whereIn($key, $value);
-            }
-            else
-            {
-                $this->addQueryForAttribute($query, $key, $params);
-            }
+            $this->addQueryForAttribute($query, $key, $params);
         }
     }
 
     protected function addQueryForAttribute($query, $key, $params)
     {
-        $value = $params[$key];
-
-        if ($value !== null)
+        if ($params[$key] !== null)
         {
-            $query->where(function ($query) use ($key, $value)
+            $query->where(function ($query) use ($key, $params)
             {
-                $query->where($key, '=', $value);
+                $func = 'addQueryFor' . studly_case($key);
 
+                if (method_exists($this, $func) === true)
+                {
+                    $this->$func($query, $params);
+                }
+                else if (is_array($params[$key]) === true)
+                {
+                    $query->whereIn($key, $params[$key]);
+                }
+                else
+                {
+                    $query->where($key, '=', $params[$key]);
+                }
                 // For some attributes in which null satisfies the selection
                 // criteria add a clause like IR WHERE <key> IS NULL
                 if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
@@ -128,6 +171,38 @@ class Repository extends Base\Repository
                     $query->orWhereNull($key);
                 }
             });
+        }
+    }
+
+    protected function addQueryForFilterType($query, $params)
+    {
+        $query->where(Entity::FILTER_TYPE, '!=', $params[Entity::FILTER_TYPE]);
+    }
+
+    protected function addQueryForMinAmount($query, $params)
+    {
+        $query->where(Entity::MIN_AMOUNT, '<=', $params[Entity::MAX_AMOUNT]);
+    }
+
+    protected function addQueryForMaxAmount($query, $params)
+    {
+        $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MAX_AMOUNT]);
+    }
+
+    protected function getQueryAttributes(Entity $rule)
+    {
+        $attributesArray = ($rule->getType() === Entity::SORTER) ?
+                                $this->sorterQueryAttributes :
+                                $this->filterQueryAttributes;
+
+        return array_merge($this->defaultQueryAttributes, $attributesArray);
+    }
+
+    private function unsetParams(array & $params)
+    {
+        foreach (self::$unsetFetchInput as $key)
+        {
+            unset($params[$key]);
         }
     }
 }

@@ -101,10 +101,6 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        $filteredTerminals = (new Filters\RuleFilter)->filter($filteredTerminals, $this->input);
-
-        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
-
         //
         // Sorting is done on the final list of filtered terminals.
         // The sorting is run for each of the sorting classes.

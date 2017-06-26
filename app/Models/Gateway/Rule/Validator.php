@@ -5,17 +5,20 @@ namespace RZP\Models\Gateway\Rule;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Card\Network;
 use RZP\Models\Card;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Terminal\Category;
 
 class Validator extends Base\Validator
 {
+    const AMOUNTS = 'amounts';
+
     protected static $createRules = [
         Entity::GATEWAY          => 'required|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::TYPE             => 'required|string|in:sorter,filter',
+        Entity::TYPE             => 'required|in:sorter,filter',
         Entity::GROUP            => 'sometimes|filled|string|max:50',
         Entity::FILTER_TYPE      => 'required_if:type,filter|in:select,reject',
         Entity::LOAD             => 'required_if:type,sorter|filled|numeric|between:0,100',
@@ -23,20 +26,22 @@ class Validator extends Base\Validator
         Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
-        Entity::MIN_AMOUNT       => 'sometimes|filled|integer',
-        Entity::MAX_AMOUNT       => 'sometimes|filled|integer',
+        Entity::MIN_AMOUNT       => 'sometimes|filled|integer|min:0',
+        Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
         Entity::EMI_DURATION     => 'sometimes_if:method,emi|integer|in:3,6,9,12,18,24',
-        Entity::IINS             => 'sometimes|filled|array',
+        Entity::IINS             => 'sometimes_if:method,card,emi|filled|array|custom',
         Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
-        Entity::NETWORK_CATEGORY => 'sometimes|string|max:30',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
-        Entity::NETWORK_CATEGORY => 'sometimes|filled|string',
-        Entity::CATEGORY2        => 'sometimes|filled|string|max:30',
-        Entity::TERMINAL_TYPE    => 'sometimeds_if:type,filter|in:shared,direct'
+        Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
+        Entity::CATEGORY2        => 'sometimes_if:type,filter|filled|string|max:30|custom',
+        Entity::TERMINAL_TYPE    => 'sometimes_if:type,filter|in:shared,direct'
     ];
 
     protected static $editRules = [
-        Entity::LOAD => 'sometimes|filled|numeric|between:0,100'
+        Entity::TYPE        => 'required|in:sorter,filter',
+        Entity::GROUP       => 'sometimes_if:type,filter|filled|string|max:50',
+        Entity::FILTER_TYPE => 'sometimes_if:type,filter|filled|in:select,reject',
+        Entity::LOAD        => 'sometimes_if:type,sorter|filled|numeric|between:0,100',
     ];
 
     protected static $createValidators = [
@@ -45,9 +50,11 @@ class Validator extends Base\Validator
         Entity::ISSUER,
         Entity::NETWORK,
         Entity::GATEWAY_ACQUIRER,
+        Entity::NETWORK_CATEGORY,
+        self::AMOUNTS,
     ];
 
-    public function validateGateway(string $attribute, string $gateway)
+    protected function validateGateway(string $attribute, string $gateway)
     {
         if (Gateway::isValidGateway($gateway) === false)
         {
@@ -56,7 +63,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateGatewayAcquirer(array $input)
+    protected function validateGatewayAcquirer(array $input)
     {
         $gateway = $input[Entity::GATEWAY];
 
@@ -79,7 +86,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMethod(array $input)
+    protected function validateMethod(array $input)
     {
         $method = $input[Entity::METHOD];
 
@@ -91,14 +98,18 @@ class Validator extends Base\Validator
                         $method . ' is not a valid payment method');
         }
 
-        // if (Gateway::isMethodSupported($method, $gateway) === false)
-        // {
-        //     throw new Exception\BadRequestValidationFailureException(
-        //         'Gateway ' . $gateway . ' does not support ' . $method . ' method');
-        // }
+        // Verify if gateway supports given method only if the rule type is sorter
+        if ($input[Entity::TYPE] === Entity::SORTER)
+        {
+            if (Gateway::isMethodSupported($method, $gateway) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Gateway ' . $gateway . ' does not support ' . $method . ' method');
+            }
+        }
     }
 
-    public function validateMethodType(array $input)
+    protected function validateMethodType(array $input)
     {
         $method = $input[Entity::METHOD];
 
@@ -119,7 +130,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIssuer(array $input)
+    protected function validateIssuer(array $input)
     {
         $issuer = $input[Entity::ISSUER] ?? null;
 
@@ -215,6 +226,73 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $network . ' is not a valid network for gateway ' . $gateway);
+        }
+    }
+
+    protected function validateAmounts(array $input)
+    {
+        if ((empty($input[Entity::MIN_AMOUNT]) === true) or
+            (empty($input[Entity::MAX_AMOUNT]) === true))
+        {
+            return;
+        }
+
+        $result = ($input[Entity::MIN_AMOUNT] < $input[Entity::MAX_AMOUNT]);
+
+        if ($result === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'min_amount should be lesser than max_amount');
+        }
+    }
+
+    protected function validateIins(string $attribute, array $iins)
+    {
+        if (is_associative_array($iins) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException("
+                iins should be sent as a numerically indexed array");
+        }
+
+        $invalidIin = array_first($iins, function ($iin)
+        {
+            return strlen($iin) > 6;
+        });
+
+        if (empty($invalidIin) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'iins should not be longer than 6 characters');
+        }
+    }
+
+    protected function validateNetworkCategory(array $input)
+    {
+        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        {
+            return;
+        }
+
+        list($networkCategory, $method, $gateway) = [
+            $input[Entity::NETWORK_CATEGORY],
+            $input[Entity::METHOD],
+            $input[Entity::GATEWAY]];
+
+        if (Category::isNetworkCategoryValid($networkCategory, $method, $gateway) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category provided invalid for gateway',
+                Entity::NETWORK_CATEGORY,
+                [$input[Entity::NETWORK_CATEGORY]]);
+        }
+    }
+
+    protected function validateCategory2($attribute, $category2)
+    {
+        if (Category::isMerchantCategoryValid($category2) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category :' . $category2 . 'invalid for merchant');
         }
     }
 }

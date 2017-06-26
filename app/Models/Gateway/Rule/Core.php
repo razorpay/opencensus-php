@@ -18,10 +18,11 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        if ($rule->getType() === 'sorter')
-        {
-            $this->validateNewRule($rule, $input);
-        }
+        $this->checkExistingRule($input);
+
+        $validatorMethod = $this->getValidatorMethod($rule);
+
+        $this->$validatorMethod($rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -43,7 +44,9 @@ class Core extends Base\Core
 
         // Checks if the edited load value will cause total load across similar
         // rules to exceed max load value of 100
-        $this->validateTotalLoad($rule);
+        $validatorMethod = $this->getValidatorMethod($rule);
+
+        $this->$validatorMethod($rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -70,14 +73,14 @@ class Core extends Base\Core
 
         // Checks if merchant specific rules are present. If present we only use them
         // and discard other rules
-        // $merchantSpecificRules = $this->getMerchantSpecificRules(
-        //                                     $applicableRules,
-        //                                     $input['merchant']);
+        $merchantSpecificRules = $this->getMerchantSpecificRules(
+                                            $applicableRules,
+                                            $input['merchant']);
 
-        // if ($merchantSpecificRules->isEmpty() === false)
-        // {
-        //     $applicableRules = $merchantSpecificRules;
-        // }
+        if ($merchantSpecificRules->isEmpty() === false)
+        {
+            $applicableRules = $merchantSpecificRules;
+        }
 
         return $applicableRules;
     }
@@ -99,20 +102,8 @@ class Core extends Base\Core
         });
     }
 
-    /**
-     * Checks if the new rule is not a duplicate and that the total load across
-     * rules with criteria matching the current rule's criteria does not exceed
-     * 100 which is the distribution size limit
-     *
-     * @param  Entity $rule  New rule built from input
-     * @param  array  $input Request data
-     */
-    protected function validateNewRule(Entity $rule, array $input)
+    protected function checkExistingRule(array $input)
     {
-        // Unsetting load here as it is not required to check for conflicting rules
-        unset($input[Entity::LOAD]);
-
-        // Checks if there is already a rule defined with the exact same criteria
         $existingRulesCount = $this->repo->gateway_rule->fetch($input)->count();
 
         if ($existingRulesCount > 0)
@@ -120,10 +111,19 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS);
         }
+    }
 
-        // Checks that the total load across all rules with similar criteria doesn't exceed
-        // max load.
-        $this->validateTotalLoad($rule);
+    protected function validateFilterRule(Entity $rule)
+    {
+        $matchingRules = $this->repo
+                              ->gateway_rule
+                              ->getRulesWithMatchingCriteria($rule);
+
+        if ($matchingRules->isNotEmpty() === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'select and reject filter rules for same criteria cannot be present in same group');
+        }
     }
 
     /**
@@ -136,24 +136,29 @@ class Core extends Base\Core
      * @param  Entity $rule  New rule
      * @param  array  $input Request data
      */
-    protected function validateTotalLoad(Entity $rule)
+    protected function validateSorterRule(Entity $rule)
     {
-        $totalLoadForSimilarRules = $this->repo
-                                         ->gateway_rule
-                                         ->getTotalLoadForRulesWithMatchingCriteria($rule);
+        $matchingRules = $this->repo
+                              ->gateway_rule
+                              ->getRulesWithMatchingCriteria($rule);
 
-        $totalLoad = $rule->getLoad() + $totalLoadForSimilarRules;
-
-        if ($totalLoad > Entity::MAX_LOAD)
+        if ($matchingRules->isNotEmpty() === true)
         {
-            $data = [
-                'total_load' => $totalLoad,
-            ];
+            $totalExistingLoad = $matchingRules->sum(Entity::LOAD);
 
-            throw new Exception\BadRequestValidationFailureException(
-                'Load across all gateway rules must be less than 100 percent',
-                null,
-                $data);
+            $totalLoad = $rule->getLoad() + $totalExistingLoad;
+
+            if ($totalLoad > Entity::MAX_LOAD)
+            {
+                $data = [
+                    'total_load' => $totalLoad,
+                ];
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Load across all gateway rules must be less than 100 percent',
+                    null,
+                    $data);
+            }
         }
     }
 
@@ -222,5 +227,10 @@ class Core extends Base\Core
         $gateways = array_values(array_unique($gateways));
 
         return $gateways;
+    }
+
+    private function getValidatorMethod(Entity $rule)
+    {
+        return 'validate' . ucfirst($rule->getType()) . 'Rule';
     }
 }
