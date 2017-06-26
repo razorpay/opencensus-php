@@ -303,6 +303,7 @@ app.controller('EntitiesCtrl', [
         amex: booleanList2,
         card: booleanList2,
         category: ['MCC Code'],
+        category2: ['Category 2'],
         email: ['Email'],
         hold_funds: booleanList,
         international: booleanList,
