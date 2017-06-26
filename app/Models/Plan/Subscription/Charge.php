@@ -95,64 +95,57 @@ class Charge extends Base\Core
             $this->trace->critical(
                 $traceCode,
                 [
-                    'invoice_id'            => $invoice->getId(),
-                    'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscription->getStatus(),
+                    'invoice_id' => $invoice->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'subscription_status' => $subscription->getStatus(),
                 ]);
 
             return false;
         }
 
-        return $this->mutex->acquireAndRelease(
-            $subscription->getId(),
-            function () use ($subscription, $invoice, $manual, $recurringPayload)
+        $this->processor = new Payment\Processor\Processor($subscription->merchant);
+
+        if ($manual === false)
+        {
+            //
+            // This needs to be incremented every time we attempt to authorize a payment.
+            // Using this attribute, we would decide whether to retry or not.
+            //
+            $subscription->incrementAuthAttempts();
+        }
+
+        $payment = null;
+
+        try
+        {
+            $payment = $this->authorizePayment($recurringPayload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+
+            if ($manual === false)
             {
-                $this->processor = new Payment\Processor\Processor($subscription->merchant);
+                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment);
+            }
 
-                if ($manual === false)
-                {
-                    //
-                    // This needs to be incremented every time we attempt to authorize a payment.
-                    // Using this attribute, we would decide whether to retry or not.
-                    //
-                    $subscription->incrementAuthAttempts();
-                }
+            return false;
+        }
 
-                $payment = null;
+        //
+        // If it's already captured, `handleCaptureSuccess` would have been
+        // called in the auto capture flow itself.
+        // Hence, we don't have to handle for captured successfully flow, here.
+        //
+        if (($payment->isCaptured() === false) and
+            ($manual === false))
+        {
+            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, true);
 
-                try
-                {
-                    $payment = $this->authorizePayment($recurringPayload);
-                }
-                catch (\Exception $ex)
-                {
-                    $this->trace->traceException($ex);
+            return false;
+        }
 
-                    if ($manual === false)
-                    {
-                        $this->handleAuthorizationOrCaptureFailure($subscription, $invoice);
-                    }
-
-                    return false;
-                }
-
-                //
-                // If it's already captured, `handleCaptureSuccess` would have been
-                // called in the auto capture flow itself.
-                // Hence, we don't have to handle for captured successfully flow, here.
-                //
-                if (($payment->isCaptured() === false) and
-                    ($manual === false))
-                {
-                    $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
-
-                    return false;
-                }
-
-                return true;
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS);
+        return true;
     }
 
     public function handleCaptureSuccess(
@@ -234,10 +227,14 @@ class Charge extends Base\Core
                 'task_details' => $task->toArray()
             ]);
 
+        $core = (new Core);
+
         if ($oldStatus !== Status::ACTIVE)
         {
-            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
         }
+
+        $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
         //
         // This must be sent after saving the invoice and subscription
@@ -250,6 +247,7 @@ class Charge extends Base\Core
     public function handleAuthorizationOrCaptureFailure(
         Entity $subscription,
         Invoice\Entity $invoice,
+        Payment\Entity $payment = null,
         bool $captureFailure = false)
     {
         $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
@@ -302,7 +300,7 @@ class Charge extends Base\Core
             $this->repo->saveOrFail($subscription->task);
         });
 
-        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
+        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus(), $payment);
     }
 
     protected function validateInvoiceStatusBeforeCharging(

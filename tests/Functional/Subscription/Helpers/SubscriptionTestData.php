@@ -848,4 +848,249 @@ return [
             ]
         ],
     ],
+
+    'subscriptionWebhookDataForAuthFailureOverdue' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'subscription.overdue',
+            'contains' => [
+                'subscription',
+            ],
+            'payload'  => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'            => 'subscription',
+                        'plan_id'           => 'plan_1000000000plan',
+                        'customer_id'       => 'cust_100000customer',
+                        'status'            => 'overdue',
+                        'current_start'     => 1516386600,
+                        'current_end'       => 1521484200,
+                        'ended_at'          => null,
+                        'quantity'          => 1,
+                        'notes'             => [],
+                        'charge_at'         => 1521570600,
+                        'start_at'          => 1516386600,
+                        'end_at'            => 1542652200,
+                        'auth_attempts'     => 1,
+                        'total_count'       => 6,
+                        'paid_count'        => 1,
+                        'customer_notify'   => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'subscriptionWebhookDataForCaptureFailureOverdue' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'subscription.overdue',
+            'contains' => [
+                // 'subscription', 'payment'
+                'subscription'
+            ],
+            'payload'  => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'            => 'subscription',
+                        'plan_id'           => 'plan_1000000000plan',
+                        'customer_id'       => 'cust_100000customer',
+                        'status'            => 'overdue',
+                        'current_start'     => 1516386600,
+                        'current_end'       => 1521484200,
+                        'ended_at'          => null,
+                        'quantity'          => 1,
+                        'notes'             => [],
+                        'charge_at'         => 1521570600,
+                        'start_at'          => 1516386600,
+                        'end_at'            => 1542652200,
+                        'auth_attempts'     => 1,
+                        'total_count'       => 6,
+                        'paid_count'        => 1,
+                        'customer_notify'   => false,
+                    ]
+                ],
+                // 'payment' => [
+                //     'entity' => [
+                //         'entity'            => 'payment',
+                //         'amount'            => 2000,
+                //         'currency'          => 'INR',
+                //         'status'            => 'authorized',
+                //         'international'     => false,
+                //         'method'            => 'card',
+                //         'amount_refunded'   => 0,
+                //         'refund_status'     => null,
+                //         'captured'          => false,
+                //         'description'       => 'Recurring Payment via Subscription',
+                //         'bank'              => null,
+                //         'wallet'            => null,
+                //         'vpa'               => null,
+                //         'email'             => 'test@razorpay.com',
+                //         'contact'           => '+911234567890',
+                //         'customer_id'       => 'cust_100000customer',
+                //         'notes'             => [],
+                //         'fee'               => null,
+                //         'service_tax'       => null,
+                //         'error_code'        => null,
+                //         'error_description' => null,
+                //         'acquirer_data'     => [],
+                //     ]
+                // ],
+            ],
+        ],
+    ],
+
+    'subscriptionWebhookDataForSuccessAfterOverdue' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'subscription.activated',
+            'contains' => [
+                // 'subscription', 'payment'
+                'subscription'
+            ],
+            'payload'  => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'            => 'subscription',
+                        'plan_id'           => 'plan_1000000000plan',
+                        'customer_id'       => 'cust_100000customer',
+                        'status'            => 'active',
+                        'ended_at'          => null,
+                        'quantity'          => 1,
+                        'notes'             => [],
+                        'auth_attempts'     => 0,
+                        'total_count'       => 6,
+                        'paid_count'        => 2,
+                        'customer_notify'   => false,
+                    ]
+                ],
+                // 'payment' => [
+                //     'entity' => [
+                //         'entity'            => 'payment',
+                //         'amount'            => 2000,
+                //         'currency'          => 'INR',
+                //         'status'            => 'captured',
+                //         'international'     => false,
+                //         'method'            => 'card',
+                //         'amount_refunded'   => 0,
+                //         'refund_status'     => null,
+                //         'captured'          => true,
+                //         'description'       => 'Recurring Payment via Subscription',
+                //         'bank'              => null,
+                //         'wallet'            => null,
+                //         'vpa'               => null,
+                //         'email'             => 'test@razorpay.com',
+                //         'contact'           => '+911234567890',
+                //         'customer_id'       => 'cust_100000customer',
+                //         'notes'             => [],
+                //         'fee'               => 40,
+                //         'service_tax'       => 0,
+                //         'error_code'        => null,
+                //         'error_description' => null,
+                //         'acquirer_data'     => [],
+                //     ]
+                // ],
+            ],
+        ],
+    ],
+
+    'subscriptionWebhookDataForCharge' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'subscription.charged',
+            'contains' => [
+                // 'subscription', 'payment'
+                'subscription'
+            ],
+            'payload'  => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'            => 'subscription',
+                        'plan_id'           => 'plan_1000000000plan',
+                        'customer_id'       => 'cust_100000customer',
+                        'status'            => 'active',
+                        'current_start'     => 1516386600,
+                        'current_end'       => 1521484200,
+                        'ended_at'          => null,
+                        'quantity'          => 1,
+                        'notes'             => [],
+                        'charge_at'         => 1521484200,
+                        'start_at'          => 1516386600,
+                        'end_at'            => 1542652200,
+                        'auth_attempts'     => 0,
+                        'total_count'       => 6,
+                        'paid_count'        => 1,
+                        'customer_notify'   => false,
+                    ]
+                ],
+                // 'payment' => [
+                //     'entity' => [
+                //         'entity'            => 'payment',
+                //         'amount'            => 2000,
+                //         'currency'          => 'INR',
+                //         'status'            => 'captured',
+                //         'international'     => false,
+                //         'method'            => 'card',
+                //         'amount_refunded'   => 0,
+                //         'refund_status'     => null,
+                //         'captured'          => true,
+                //         'description'       => 'Recurring Payment via Subscription',
+                //         'bank'              => null,
+                //         'wallet'            => null,
+                //         'vpa'               => null,
+                //         'email'             => 'test@razorpay.com',
+                //         'contact'           => '+911234567890',
+                //         'customer_id'       => 'cust_100000customer',
+                //         'notes'             => [],
+                //         'fee'               => 40,
+                //         'service_tax'       => 0,
+                //         'error_code'        => null,
+                //         'error_description' => null,
+                //         'acquirer_data'     => [],
+                //     ]
+                // ],
+            ],
+        ],
+    ],
+
+    'subscriptionWebhookDataForFirstActivated' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'subscription.activated',
+            'contains' => [
+                'subscription',
+            ],
+            'payload'  => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'            => 'subscription',
+                        'plan_id'           => 'plan_1000000000plan',
+                        'customer_id'       => 'cust_100000customer',
+                        'status'            => 'active',
+                        'current_start'     => null,
+                        'current_end'       => null,
+                        'ended_at'          => null,
+                        'quantity'          => 1,
+                        'notes'             => [],
+                        'auth_attempts'     => 0,
+                        'total_count'       => 6,
+                        'paid_count'        => 0,
+                        'customer_notify'   => false,
+                        // These fields are like this because this is
+                        // first activated. In first activated we fire
+                        // webhook first and then make a charge, unlike
+                        // other active fires.
+                        // 'current_start' => NULL
+                        // 'current_end' => NULL
+                        // 'paid_count' => integer 0
+                    ]
+                ],
+            ],
+        ],
+    ]
 ];

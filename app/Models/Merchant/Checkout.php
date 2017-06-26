@@ -27,7 +27,7 @@ class Checkout
 
     const SUBSCRIPTION_ID    = 'subscription_id';
 
-    const DOWNTIME_FILTER_REGEX = '/[a-d]$/';
+    const DOWNTIME_FILTER_REGEX = '/[a-z]$/';
 
     public function __construct()
     {
