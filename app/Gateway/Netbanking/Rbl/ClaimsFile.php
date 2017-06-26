@@ -108,7 +108,7 @@ class ClaimsFile extends Base\RefundFile
             Payment\Status::CAPTURED
         ];
 
-        if (in_array($row[self::PAYMENT_ENTITY][Payment\Entity::STATUS], $status) === true)
+        if (in_array($row[self::PAYMENT_ENTITY][Payment\Entity::STATUS], $status, true) === true)
         {
             return 'Success';
         }
