@@ -121,6 +121,7 @@ export default class ReportsContainer extends Component {
                   <option value="transaction">Combined</option>
                   {user.tags.indexOf('Broking_Report') === -1 ||
                     <option value="broking">Broking Report</option>}
+                  // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
                   {user.tags.indexOf('Dsp_Report') === -1 ||
                     <option value="dsp_report">DSP Transaction Report</option>}
                   <option value="invoice">Monthly Invoice</option>
