@@ -191,6 +191,39 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ON_HOLD_UNTIL);
     }
 
+    public function getBaseAmount()
+    {
+        return $this->getAmount();
+    }
+
+    /**
+     * Called by pricing flow to determine fee based on transfer
+     * method
+     *
+     * @return mixed
+     */
+    public function getMethod()
+    {
+        $method = $this->getToType();
+
+        if ($method === 'merchant')
+        {
+            $method = ToType::ACCOUNT;
+        }
+
+        return $method;
+    }
+
+    /**
+     * Define the pricing features for Transfers
+     *
+     * @return array
+     */
+    public function getPricingFeatures()
+    {
+        return [];
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------
