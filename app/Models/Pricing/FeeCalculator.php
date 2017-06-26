@@ -30,8 +30,6 @@ class FeeCalculator
 
     /**
      * For which fees needs to be calculated.
-     *
-     * @var \RZP\Models\Payment\Entity
      */
     protected $entity;
 
@@ -69,6 +67,7 @@ class FeeCalculator
         }
 
         $this->amount = $amount;
+
 
         $this->getRelevantPricingRule($pricing);
 
@@ -177,23 +176,12 @@ class FeeCalculator
 
         $rule = null;
 
-        switch ($feature)
-        {
-            case Pricing\Feature::PAYMENT:
-                $rule = $this->getRelevantPaymentPricingRule($rules, $method);
+        //
+        // `$feature` is among those defined in Pricing/Feature
+        //
+        $ruleFunction = 'getRelevant' . studly_case($feature) . 'PricingRule';
 
-                break;
-
-            case Pricing\Feature::PAYOUT:
-                $rule = $this->getRelevantPayoutPricingRule($rules, $method);
-
-                break;
-
-            case Pricing\Feature::TRANSFER:
-                $rule = $this->getRelevantPayoutPricingRule($rules, $method);
-
-                break;
-        }
+        $rule = $this->$ruleFunction($rules, $method);
 
         if ($rule === null)
         {
@@ -203,34 +191,10 @@ class FeeCalculator
                 ['entity' => $this->entity->toArray()]);
         }
 
-        $this->pricingRules->push($rule);
-    }
-
-    protected function getRelevantPayoutPricingRule($rules, $method)
-    {
-        $rule = $this->getRelevantPricingRuleForMethod($rules);
-
-        return $rule;
-    }
-
-    protected function getRelevantTransferPricingRule($rules, $method)
-    {
-        $rule = null;
-
-        if ($method === ToType::ACCOUNT)
+        if (empty($rule) === false)
         {
-            // Account transfer filter
+            $this->pricingRules->push($rule);
         }
-        else if ($method === ToType::CUSTOMER)
-        {
-            // Customer Transfer filter
-        }
-        else
-        {
-            $rule = $this->getRelevantPricingRuleForMethod($rules);
-        }
-
-        return $rule;
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)
@@ -269,6 +233,21 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
         }
+
+        return $rule;
+    }
+
+    protected function getRelevantPayoutPricingRule($rules, $method)
+    {
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
+
+        return $rule;
+    }
+
+    protected function getRelevantTransferPricingRule($rules, $method)
+    {
+        return (count($rules) > 0) ? $rules[0] : [];
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
 
         return $rule;
     }
@@ -764,6 +743,7 @@ class FeeCalculator
       * If fee is less than min_fee, then min_fee will be charged.
       * If max_fee is available and fee is above max_fee,
       *  then max_fee will be charged.
+     *
       * @param int $fee
       * @param int $min
       * @param int $max
