@@ -71,9 +71,6 @@ return array(
     VirtualAccount\Provider::YESBANK => array(
         'secret'    => env('YESBANK_SECRET'),
     ),
-    VirtualAccount\Provider::VVS => array(
-        'secret'    => env('VVS_SECRET'),
-    ),
 
     'lumberjack' => array(
         'url'           => env('LUMBERJACK_URL'),

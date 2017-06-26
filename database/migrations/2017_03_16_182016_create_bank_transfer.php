@@ -45,7 +45,7 @@ class CreateBankTransfer extends Migration
 
             $table->string(BankTransfer::UTR, 30);
 
-            $table->integer(BankTransfer::TIME);
+            $table->bigInteger(BankTransfer::TIME);
 
             $table->text(BankTransfer::DESCRIPTION)
                   ->nullable();

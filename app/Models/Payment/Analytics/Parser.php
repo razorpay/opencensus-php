@@ -103,15 +103,20 @@ class Parser extends Base\Core
 
         $referer = $pa[Entity::REFERER] ?? null;
 
+        $platform = $pa[Entity::PLATFORM] ?? null;
+
         if (($library !== null) and
             ($library === Metadata::CHECKOUTJS) and
-            ($referer === null))
+            ($referer === null) and
+            ($platform !== Metadata::BROWSER))
         {
-            $this->trace->error(
+            $this->trace->warning(
                 TraceCode::PAYMENT_ANALYTICS_INCORRECT_DATA,
                 [
+                    Entity::PAYMENT_ID => $pa[Entity::PAYMENT_ID],
                     Entity::LIBRARY => $library,
                     Entity::REFERER => $referer,
+                    Entity::PLATFORM => $platform
                 ]);
         }
     }

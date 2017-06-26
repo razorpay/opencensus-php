@@ -29,9 +29,7 @@ class BankTransferTest extends TestCase
 
         $this->bankAccount = $this->createVirtualAccount();
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
     }
 
     public function testBankTransferProcess()
@@ -88,12 +86,14 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($response['id']);
         $this->assertNotNull($response['utr']);
 
-        $this->assertEquals('neft', $response['mode']);
+        $this->assertEquals('NEFT', $response['mode']);
         $this->assertEquals($virtualAccount['id'], $response['virtual_account_id']);
         $this->assertEquals($payment['id'], $response['payment_id']);
-        $this->assertEquals('HDFC', $response['payer_bank']);
+        $this->assertEquals('bank_transfer', $response['entity']);
 
-        $this->assertStringStartsWith('XXXX-XXXX-XXXX-', $response['payer_account']);
+        // Payer details are currently not public, uncomment this when they are.
+        // $this->assertEquals('HDFC Bank', $response['payer_bank']);
+        // $this->assertStringStartsWith('XXXX-XXXX-XXXX-', $response['payer_account']);
     }
 
     public function testBankTransferProcessDuplicateUtr()
@@ -261,14 +261,12 @@ class BankTransferTest extends TestCase
 
         if (isset($utr) === false)
         {
-            $utr = 'utr_'.rand(10000000,99999999);
+            $utr = strtoupper(random_alphanum_string(22));
         }
 
         $request['content']['transaction_id'] = $utr;
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

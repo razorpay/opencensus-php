@@ -484,14 +484,16 @@ class MerchantController extends Controller
         return $report->getReport($input);
     }
 
-    public function getInvoiceReport()
+    public function getDSPTransactionReport()
     {
         $input = Request::all();
 
-        return (new Report\Types\InvoiceReport)->getInvoice($input);
+        $report = new Report\Types\DSPTransactionReport(E::TRANSACTION);
+
+        return $report->getReport($input);
     }
 
-    public function getInvoiceReportV2()
+    public function getInvoiceReport()
     {
         $input = Request::all();
 
@@ -697,5 +699,21 @@ class MerchantController extends Controller
         $data = (new Merchant\Service)->getUsers($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function getGSTDetails()
+    {
+        $response = (new Merchant\Service)->getGSTDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function editGSTDetails()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->editGSTDetails($input);
+
+        return ApiResponse::json($response);
     }
 }

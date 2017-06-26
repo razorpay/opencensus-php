@@ -10,14 +10,18 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ID    => 'required|string|max:14',
-        Entity::ROLE  => 'required|string|custom',
-        Entity::EMAIL => 'required|max:255|email|custom',
-        Entity::TOKEN => 'required|string',
+        Entity::ROLE        => 'required|string|custom',
+        Entity::EMAIL       => 'required|max:255|email|custom',
+        Entity::TOKEN       => 'required|string',
+        Entity::SENDER_NAME => 'sometimes|string',
     ];
 
     protected static $editRules = [
         Entity::ROLE => 'required|string|custom',
+    ];
+
+    protected static $resendRules = [
+        Entity::SENDER_NAME => 'sometimes|string',
     ];
 
     protected static $actionRules = [
@@ -34,7 +38,7 @@ class Validator extends Base\Validator
                       ->isEmpty()) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_ALREADY_INVITED);
+                ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_INVITED);
         }
 
         if (($merchant->users
@@ -42,7 +46,7 @@ class Validator extends Base\Validator
                       ->isEmpty()) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_ALREADY_A_MEMBER);
+                ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER);
         }
     }
 

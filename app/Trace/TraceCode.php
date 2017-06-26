@@ -159,6 +159,8 @@ class TraceCode
     const REQUESTS_JOB_ERROR                            = 'REQUESTS_JOB_ERROR';
     const MOCK_DRIP_REQUEST                             = 'MOCK_DRIP_REQUEST';
 
+    const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
+
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';
@@ -474,7 +476,7 @@ class TraceCode
     const BANK_TRANSFER_PROCESS_DUPLICATE_UTR       = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
     const BANK_TRANSFER_NOTIFY_REQUEST              = 'BANK_TRANSFER_NOTIFY_REQUEST';
     const BANK_TRANSFER_UNEXPECTED_NOTIFY           = 'BANK_TRANSFER_UNEXPECTED_NOTIFY';
-    const BANK_TRANSFER_IP_VALIDATION_FAILED        = 'BANK_TRANSFER_IP_VALIDATION_FAILED';
+    const BANK_TRANSFER_PROVIDER_VALIDATION_FAILED  = 'BANK_TRANSFER_PROVIDER_VALIDATION_FAILED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -708,13 +710,20 @@ class TraceCode
 // Trace codes for gateway
     const USER_EDIT                                     = 'USER_EDIT';
 
+// Trace code for Invitation
+    const INVITATION_CREATE                             = 'INVITATION_CREATE';
+    const INVITATION_EDIT                               = 'INVITATION_EDIT';
+    const INVITATION_ACCEPT                             = 'INVITATION_ACCEPT';
+    const INVITATION_REJECT                             = 'INVITATION_REJECT';
+    const INVITATION_EMAIL                              = 'INVITATION_EMAIL';
+
 // Trace codes for gateway load rules
-    const GATEWAY_RULE_CREATE_REQUEST            = 'GATEWAY_RULE_CREATE_REQUEST';
-    const GATEWAY_RULE_DELETE_REQUEST            = 'GATEWAY_RULE_DELETE_REQUEST';
-    const GATEWAY_RULE_UPDATE_REQUEST            = 'GATEWAY_RULE_UPDATE_REQUEST';
-    const GATEWAY_RULES_POST_FILTER              = 'GATEWAY_RULES_POST_FILTER';
-    const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
-    const GATEWAY_LOAD_SORTING_FALLBACK          = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
+    const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
+    const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
+    const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
+    const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
+    const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';

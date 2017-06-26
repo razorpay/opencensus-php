@@ -63,6 +63,8 @@ class MailTags
     // Heimdall Email Tags
     const ADMIN_INVITE_MERCHANT            = 'admin_invite_merchant';
 
+    const MERCHANT_INVITATION_MAIL         = 'merchant_invitation_mail';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

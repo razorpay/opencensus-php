@@ -83,6 +83,20 @@ trait VirtualAccountTrait
         return $response;
     }
 
+    private function fetchVirtualAccountPayments(string $id)
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/virtual_accounts/' . $id . '/payments',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function payVirtualAccount(string $virtualAccountId, array $paymentArray = [])
     {
         $defaultPaymentArray = $this->getDefaultBankTransferArray();
@@ -100,9 +114,7 @@ trait VirtualAccountTrait
             'content' => $paymentArray,
         ];
 
-        $vvsSecret = \Config::get('applications.vvs.secret');
-
-        $this->ba->appAuth('rzp_test', $vvsSecret);
+        $this->ba->appAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -115,9 +127,9 @@ trait VirtualAccountTrait
             'payer_account'  => '7654321234567',
             'payer_ifsc'     => 'HDFC0000001',
             'mode'           => 'neft',
-            'transaction_id' => 'utr_'.rand(10000000,99999999),
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => time(),
-            'amount'         => 10000,
+            'amount'         => 100,
             'description'    => 'Test bank transfer',
         ];
     }
@@ -126,8 +138,11 @@ trait VirtualAccountTrait
     {
         return [
             'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
             'amount_expected' => 10000,
-            'receiver_type'   => 'bank_account',
+            'receiver_types'  => [
+                'bank_account'
+            ],
             'notes'           => [
                 'a' => 'b',
             ],

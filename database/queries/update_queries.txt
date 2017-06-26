@@ -491,3 +491,14 @@ set processed_at = updated_at, settled_on = updated_at
 where utr is not null
 and processed_at is null;
 
+
+# Invitation Migration
+# Dump invitations from Dashboard
+mysqldump -h host --no-create-info --complete-insert -u user -p dbd invitations > dash_invitations.sql;
+
+# Import invitation on API
+source dash_invitations.sql;
+
+# mapping payment id to caps_payment_id
+UPDATE first_data
+    SET caps_payment_id = UPPER(payment_id);

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Razorpay\IFSC\IFSC;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -50,7 +52,7 @@ class Entity extends Base\PublicEntity
     const REQ_UTR            = 'transaction_id';
 
     // The IFSC we receive in the process bank_transfer API is often a mocked one.
-    // This is the key we show the merchant, as the bank can be derived from the IFSC.
+    // But we can get the bank name from it.
     const PAYER_BANK         = 'payer_bank';
 
     protected $fillable = [
@@ -68,11 +70,13 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::UTR,
         self::MODE,
         self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
-        self::PAYER_ACCOUNT,
+        // This will be added later, upon request
+        // self::PAYER_ACCOUNT,
         self::PAYER_BANK,
     ];
 
@@ -86,6 +90,10 @@ class Entity extends Base\PublicEntity
         self::UTR,
     ];
 
+    protected static $modifiers = [
+        self::AMOUNT,
+    ];
+
     protected $defaults = [
         self::EXPECTED => false,
         self::NOTIFIED => false,
@@ -93,10 +101,12 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
+        self::ENTITY,
         self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
         self::PAYER_ACCOUNT,
         self::PAYER_BANK,
+        self::MODE,
     ];
 
     protected static $sign = 'bt';
@@ -132,7 +142,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $input[self::REQ_UTR]);
     }
 
-    // ----------------------- Getters -----------------------------------------
+    // ----------------------- Public Setters ----------------------------------
 
     public function setPublicPayerAccountAttribute(array & $array)
     {
@@ -148,7 +158,7 @@ class Entity extends Base\PublicEntity
     {
         $ifsc = $array[self::PAYER_IFSC];
 
-        $array[self::PAYER_BANK] = substr($ifsc, 0, 4);
+        $array[self::PAYER_BANK] = IFSC::getBankName($ifsc);
     }
 
     public function setPublicVirtualAccountIdAttribute(array & $array)
@@ -170,6 +180,20 @@ class Entity extends Base\PublicEntity
             $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
         }
     }
+
+    public function setPublicModeAttribute(array & $array)
+    {
+        $array[self::MODE] = strtoupper($array[self::MODE]);
+    }
+
+    // -------------------------- Modifiers ------------------------------------
+
+    public function modifyAmount(array & $input)
+    {
+        $input[self::AMOUNT] = (int) ($input[self::AMOUNT] * 100);
+    }
+
+    // -------------------------- Getters --------------------------------------
 
     public function getAmount()
     {
@@ -211,6 +235,11 @@ class Entity extends Base\PublicEntity
     public function setExpected(bool $expected)
     {
         $this->setAttribute(self::EXPECTED, $expected);
+    }
+
+    public function setUtr(string $utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
     }
 
     public function setNotified(bool $notified)

@@ -231,7 +231,7 @@ class Repository extends Base\Repository
 
         Customer\Entity::stripSignWithoutValidation($customerId);
 
-        $customerIdAttr = $this->repo->invoice->dbColumn(Entity::CUSTOMER_ID);
+        $customerIdAttr = $this->dbColumn(Entity::CUSTOMER_ID);
 
         $query->where($customerIdAttr, $customerId);
     }
@@ -241,7 +241,7 @@ class Repository extends Base\Repository
         $orderId = (new Order\Entity)
                         ->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $orderIdAttribute = $this->repo->invoice->dbColumn(Entity::ORDER_ID);
+        $orderIdAttribute = $this->dbColumn(Entity::ORDER_ID);
 
         $query->where($orderIdAttribute, '=', $orderId);
     }
@@ -251,7 +251,7 @@ class Repository extends Base\Repository
         $batchId = (new Batch\Entity)
                         ->verifyIdAndSilentlyStripSign($params[Entity::BATCH_ID]);
 
-        $batchIdAttribute = $this->repo->batch->dbColumn(Entity::BATCH_ID);
+        $batchIdAttribute = $this->dbColumn(Entity::BATCH_ID);
 
         $query->where($batchIdAttribute, '=', $batchId);
     }

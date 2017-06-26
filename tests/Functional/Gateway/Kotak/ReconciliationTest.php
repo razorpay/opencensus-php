@@ -68,7 +68,7 @@ class ReconciliationTest extends TestCase
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
 
-        $notNullKeys = ['utr', 'settled_on', 'processed_at'];
+        $notNullKeys = ['utr', 'settled_on'];
         foreach ($notNullKeys as $key)
         {
             $this->assertNotNull($setl[$key]);
@@ -122,12 +122,7 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
         $this->assertEquals($batchFundTransfer['id'], $settlement['batch_fund_transfer_id']);
 
-        $notNullKeys = ['utr', 'processed_at'];
-        foreach ($notNullKeys as $key)
-        {
-            $this->assertNotNull($settlement[$key]);
-        }
-
+        $this->assertNotNull($settlement['utr']);
         $this->assertNull($settlement['settled_on']);
 
         // Validate settlement attempt entity
@@ -277,7 +272,12 @@ class ReconciliationTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
+        $this->setAdminForInternalAuth();
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->addAdminAuthHeaders(null, null);
 
         $data = $this->getLastEntity('adjustment', true);
 

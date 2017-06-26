@@ -124,18 +124,32 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount();
 
-        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
         $this->assertEquals('active', $virtualAccount['status']);
 
-        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(10000, $virtualAccount['amount_paid']);
         $this->assertEquals('paid', $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+    }
+
+    public function testFetchPaymentsForVirtualAccount()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
     public function testVirtualAccountForCustomer()
@@ -148,7 +162,11 @@ class VirtualAccountTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+        $customer = $this->getEntityById('customer', 'cust_100000customer', true);
+
+        $this->assertEquals($customer['id'], $payment['customer_id']);
+        $this->assertEquals($customer['email'], $payment['email']);
+        $this->assertStringEndsWith($customer['contact'], $payment['contact']);
     }
 
     public function testWebhookOnVirtualAccountPay()

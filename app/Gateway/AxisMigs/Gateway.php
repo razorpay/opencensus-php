@@ -82,14 +82,14 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
-
         if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
         {
             // Payment fails since vpc_MerchTxnRef not set, throw exception
             throw new Exception\GatewayErrorException(
                         Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
@@ -939,7 +939,10 @@ class Gateway extends Base\Gateway
 
             $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-            if (ThreeDSecureStatus::getThreeDSstatus($threeDSstatus) === Payment\TwoFactorAuth::FAILED)
+            $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
+
+            if (($authStatus === Payment\TwoFactorAuth::FAILED) or
+                ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
                 if ($input['merchant']['international'] === false)
                 {
