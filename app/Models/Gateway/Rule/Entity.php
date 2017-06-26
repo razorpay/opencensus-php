@@ -173,6 +173,15 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT => 0,
     ];
 
+    protected static $unsetEditInput = [
+        self::TYPE,
+    ];
+
+    protected $defaults = [
+        self::MIN_AMOUNT => 0,
+        self::MAX_AMOUNT => self::MAX_INT_VAL,
+    ];
+
     public function getLoad()
     {
         return $this->getAttribute(self::LOAD);
@@ -261,6 +270,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getIins()
+    {
+        return $this->getAttribute(self::IINS);
     }
 
     //----------------- Public Setters------------------------------------------

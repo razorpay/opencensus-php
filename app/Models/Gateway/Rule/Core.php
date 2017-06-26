@@ -40,6 +40,8 @@ class Core extends Base\Core
 
         $rule->edit($input);
 
+        // Checks if the edited load value will cause total load across similar
+        // rules to exceed max load value of 100
         $validatorMethod = $this->getValidatorMethod($rule);
 
         $this->$validatorMethod($rule);

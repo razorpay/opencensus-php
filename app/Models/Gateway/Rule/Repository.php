@@ -28,10 +28,6 @@ class Repository extends Base\Repository
         Entity::INTERNATIONAL,
     ];
 
-    /**
-     * Attributes to be used while checking for sorter rules matching given criteria
-     * apart from defaultQueryAttributes
-     */
     protected $sorterQueryAttributes = [
         Entity::MERCHANT_ID,
     ];
@@ -92,7 +88,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $params);
+        $this->buildSelectionQuery($query, $input);
 
         // If the rule against which we are matching is an existing rule, we exclude
         // it in the query
