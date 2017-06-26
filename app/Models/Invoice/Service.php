@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
-use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\Batch;
 

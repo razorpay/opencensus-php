@@ -95,7 +95,7 @@ class BatchIssue extends BaseJob implements ShouldQueue
         {
             $this->trace->traceException(
                             $e,
-                            Trace::ERROR,
+                            null,
                             TraceCode::INVOICE_BATCH_ISSUE_JOB_ERROR,
                             [
                                 Batch\Entity::ID => $this->batchId,

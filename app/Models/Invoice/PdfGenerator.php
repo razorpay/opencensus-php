@@ -3,21 +3,19 @@
 namespace RZP\Models\Invoice;
 
 use Cache;
-use Requests;
 use Config;
-use mikehaertl\wkhtmlto\Pdf;
+use Requests;
 use Mustache_Engine;
+use mikehaertl\wkhtmlto\Pdf;
 
-use RZP\Models\Base;
-use RZP\Models\FileStore;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 
 class PdfGenerator extends Base\Core
 {
-    //
     // Following is cache key to get which holds templates data
-    //
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
@@ -26,10 +24,8 @@ class PdfGenerator extends Base\Core
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
 
-    //
     // If cache hit is a miss, following invoicejs host path will be used
     // to fetch the templates.
-    //
 
     const INVOICE_PDF_TEMPLATE_PATH = '/invoice_standard.mustache';
     const INVOICE_PDF_CSS_PATH      = '/invoice.css';

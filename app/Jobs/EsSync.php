@@ -5,10 +5,10 @@ namespace RZP\Jobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use RZP\Exception\LogicException;
+use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
+use RZP\Exception\LogicException;
 
 /**
  * Es sync job class.
@@ -66,7 +66,7 @@ class EsSync extends Job implements ShouldQueue
         {
             $this->trace->traceException(
                             $e,
-                            Trace::ERROR,
+                            null,
                             TraceCode::ES_SYNC_FAILED,
                             $tracePayload);
 
