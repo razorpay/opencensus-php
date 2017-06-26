@@ -203,7 +203,9 @@ class UserController extends Controller
 
     public function checkLoggedIn()
     {
-        list($error, $data) = (new User\Service)->checkLoggedIn();
+        $queryParams = Input::all();
+
+        list($error, $data) = (new User\Service)->checkLoggedIn($queryParams);
 
         if ($data !== null)
         {

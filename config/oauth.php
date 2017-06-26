@@ -2,5 +2,5 @@
 
 return [
     'auth_user' =>  'rzp_oauth',
-    'auth_pass' =>  env('OAUTH_AUTH_PASS'),
+    'auth_pass' =>  env('RZP_OAUTH_PASS'),
 ];

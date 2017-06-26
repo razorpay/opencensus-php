@@ -42,6 +42,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::post('/track_lead', 'UserController@trackLead');
+
+        Route::options('/logged_in', 'UserController@checkLoggedIn')->middleware('cors', 'auth:user');
+        Route::get('/logged_in', 'UserController@checkLoggedIn')->middleware('cors', 'auth:user');
+        Route::get('/token/{token}/details', 'UserController@getDetailsFromToken')->middleware('auth:oauth');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -54,8 +58,6 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
-        Route::options('/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
-        Route::get('/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
@@ -272,9 +274,4 @@ Route::group(['middleware' => ['auth.cron']], function()
 {
     Route::post('/{mode}/analytics/aggregations/day', 'AdminController@updateDayAggregations');
     Route::post('/{mode}/analytics/aggregations/{type}', 'TransactionController@updateTypeAggregations');
-});
-
-Route::group(['middleware' => ['auth.oauth']], function()
-{
-    Route::get('/user/token/{token}/details', 'UserController@getDetailsFromToken');
 });

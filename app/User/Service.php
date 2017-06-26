@@ -880,7 +880,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function checkLoggedIn()
+    public function checkLoggedIn($queryParams)
     {
         $user = Auth::user();
 
@@ -913,9 +913,11 @@ class Service extends Base\Service
             'user_email'    => $user->email,
             'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role,
+            'query_params'  => $queryParams['query']
         ];
 
         $cacheKey = $this->getOAuthVerifyTokenCacheKey($token);
+
         $this->cache->put($cacheKey, $data, 10);
 
         $response = [
@@ -932,20 +934,13 @@ class Service extends Base\Service
         $error = $data = null;
         $cacheKey = $this->getOAuthVerifyTokenCacheKey($token);
 
-        if ($this->cache->has($cacheKey) === true)
-        {
-            $data = $this->cache->get($cacheKey);
+        $data = $this->cache->get($cacheKey);
 
-            if ($data['role'] !== 'owner')
-            {
-                $error[] = 'You do not have the required permissions to allow access.';
-            }
-            else
-            {
-                $user = (new Entity)->findOrFail($data['id']);
-                $data['user'] = $user;
-                $data['user']['merchant_id'] = $data['merchant_id'];
-            }
+        if ($data !== null)
+        {
+            $user = (new Entity)->findOrFail($data['user_id']);
+            $data['user'] = $user;
+            $data['user']['merchant_id'] = $data['merchant_id'];
         }
         else
         {
