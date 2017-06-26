@@ -42,6 +42,8 @@ class Charge extends Base\Core
      */
     const MAX_AUTH_ATTEMPTS = 3;
 
+    const MUTEX_LOCK_TIMEOUT = 120;
+
     public function __construct()
     {
         parent::__construct();
@@ -148,7 +150,9 @@ class Charge extends Base\Core
                 }
 
                 return true;
-            }, 120, ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     public function handleCaptureSuccess(

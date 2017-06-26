@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Subscription;
 
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -49,6 +50,97 @@ class SubscriptionCancelTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
         $this->assertEquals(0, $result['invoices_created']);
+    }
+
+    public function testSubscriptionCancelWhenOverdue()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->failCharge();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals(1, $subscription['auth_attempts']);
+        $this->assertEquals('auth_failure', $subscription['error_status']);
+
+        $this->makeCancelRequest($subscription['id']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('cancelled', $subscription['status']);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->assertEquals(0, $result['invoices_created']);
+        $this->assertEquals('cancelled', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
+    }
+
+    public function testSubscriptionCancelWhenHalted()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->failCharge();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        foreach (range(1,2) as $i)
+        {
+            $this->failCharge();
+
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+                ->addDay(1)
+                ->addMinute(1);
+
+            Carbon::setTestNow($chargeAt);
+
+            $result = $this->makeSubscriptionRetryCronRequest();
+            $this->assertEquals(1, $result['queued']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        $invoices = $this->getEntities('invoice', [], true);
+        $this->assertEquals(2, $invoices['count']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('halted', $subscription['status']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('halted', $invoice['subscription_status']);
+
+        $this->clearMock();
+
+        $this->makeCancelRequest($subscription['id']);
+
+        try
+        {
+            $this->chargeSubscriptionInvoiceManually($invoice);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE', $ex->getCode());
+
+            return;
+        }
+
+        $this->assertTrue(false);
     }
 
     protected function makeCancelRequest(string $subscriptionId)

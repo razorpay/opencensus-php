@@ -407,6 +407,8 @@ class Core extends Base\Core
             {
                 $subscription->setStatus(Status::CANCELLED);
 
+                // TODO: We should also reset all error fields.
+
                 $this->repo->saveOrFail($subscription);
 
                 return $subscription;
