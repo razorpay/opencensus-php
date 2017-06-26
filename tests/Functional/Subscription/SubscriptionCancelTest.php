@@ -31,6 +31,13 @@ class SubscriptionCancelTest extends TestCase
         $this->mockTokenex();
     }
 
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        Carbon::setTestNow();
+    }
+
     public function testSubscriptionChargeAfterCancel()
     {
         $this->doAuthTxnForNewSubscription();
@@ -50,6 +57,8 @@ class SubscriptionCancelTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
         $this->assertEquals(0, $result['invoices_created']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionCancelWhenOverdue()
@@ -82,6 +91,8 @@ class SubscriptionCancelTest extends TestCase
         $this->assertEquals(0, $result['invoices_created']);
         $this->assertEquals('cancelled', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionCancelWhenHalted()
@@ -128,6 +139,8 @@ class SubscriptionCancelTest extends TestCase
         $this->clearMock();
 
         $this->makeCancelRequest($subscription['id']);
+
+        Carbon::setTestNow();
 
         try
         {
