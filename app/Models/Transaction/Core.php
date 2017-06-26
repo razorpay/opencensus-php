@@ -633,20 +633,25 @@ class Core extends Base\Core
 
         $amount = $transfer->getAmount();
 
+        list($fee, $serviceTax, $feesSplit) =
+            (new Pricing\Fee)->calculateMerchantFees($transfer);
+
         $settledAt = time();
 
+        $transferAmount = abs($amount + $fee);
+
         $values = [
-            Transaction\Entity::DEBIT         => $amount,
+            Transaction\Entity::DEBIT         => $transferAmount,
             Transaction\Entity::CREDIT        => 0,
             Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
             Transaction\Entity::GATEWAY_FEE   => 0,
-            Transaction\Entity::API_FEE       => 0,
+            Transaction\Entity::API_FEE       => $fee,
             Transaction\Entity::RECONCILED_AT => time(),
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
-            Transaction\Entity::FEE           => 0,
-            Transaction\Entity::SERVICE_TAX   => 0,
-            Transaction\Entity::AMOUNT        => $amount,
+            Transaction\Entity::FEE           => $fee,
+            Transaction\Entity::SERVICE_TAX   => $serviceTax,
+            Transaction\Entity::AMOUNT        => $transferAmount,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
         ];
