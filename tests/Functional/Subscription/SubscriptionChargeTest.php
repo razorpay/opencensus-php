@@ -933,7 +933,7 @@ class SubscriptionChargeTest extends TestCase
 
         // subscription.activated event fired after first charge
         $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
-        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->chargeSubscriptionsViaCron($subscription['charge_at'] + 10);
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
@@ -942,7 +942,7 @@ class SubscriptionChargeTest extends TestCase
         $this->failOnCapture();
 
         // First failure
-        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at'] + 10);
         $this->assertEquals(1, $result['invoices_created']);
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('overdue', $subscription['status']);

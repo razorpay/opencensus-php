@@ -265,7 +265,7 @@ class Core extends Base\Core
             ]
         ];
 
-        $this->app['events']->fire('api.subscription.charged', $eventPayload, ['jdjd' => 'dvfvf']);
+        $this->app['events']->fire('api.subscription.charged', $eventPayload);
     }
 
     public function charge(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
