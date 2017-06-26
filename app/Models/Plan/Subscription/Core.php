@@ -5,6 +5,7 @@ namespace RZP\Models\Plan\Subscription;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
@@ -236,13 +237,17 @@ class Core extends Base\Core
         $event = Status::$webhookStatuses[$status];
 
         $eventPayload = [
-            'main' => $subscription,
+            ApiEventSubscriber::MAIN => $subscription,
         ];
 
-        if ($payment !== null)
-        {
-            $eventPayload['with'] = [Constants\Entity::PAYMENT => $payment];
-        }
+        //
+        // For now, commenting this out. Will add it later
+        // depending on merchants' use cases.
+        //
+        // if ($payment !== null)
+        // {
+        //     $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
+        // }
 
         $this->app['events']->fire('api.' . $event, $eventPayload);
     }
@@ -250,13 +255,17 @@ class Core extends Base\Core
     public function eventSubscriptionCharged(Entity $subscription, Payment\Entity $payment)
     {
         $eventPayload = [
-            'main' => $subscription,
-            'with' => [
-                Constants\Entity::PAYMENT => $payment
+            ApiEventSubscriber::MAIN => $subscription,
+            ApiEventSubscriber::WITH => [
+                //
+                // For now, commenting this out. Will add it later
+                // depending on merchants' use cases.
+                //
+                // Constants\Entity::PAYMENT => $payment,
             ]
         ];
 
-        $this->app['events']->fire('api.subscription.charged', $eventPayload);
+        $this->app['events']->fire('api.subscription.charged', $eventPayload, ['jdjd' => 'dvfvf']);
     }
 
     public function charge(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)

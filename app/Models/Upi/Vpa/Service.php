@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Upi\Vpa;
 
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -133,7 +134,7 @@ class Service extends Base\Service
     protected function eventVpaEdited($vpa)
     {
         $eventPayload = [
-            'main' => $vpa
+            ApiEventSubscriber::MAIN => $vpa
         ];
 
         $this->app['events']->fire('api.vpa.edited', $eventPayload);

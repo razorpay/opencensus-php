@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Http\BasicAuth;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Plan\Subscription;
 use RZP\Error;
 use RZP\Error\ErrorCode;
@@ -2172,7 +2173,7 @@ trait Authorize
     protected function eventPaymentAuthorized()
     {
         $eventPayload = [
-            'main' => $this->payment,
+            ApiEventSubscriber::MAIN => $this->payment,
         ];
 
         $this->app['events']->fire('api.payment.authorized', $eventPayload);

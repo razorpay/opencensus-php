@@ -989,6 +989,8 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->makeSubscriptionChargeCronRequest();
 
         $this->assertEquals(1, $result['total']);
+
+        Carbon::setTestNow();
     }
 
     public function testToArrayPublicConversion()

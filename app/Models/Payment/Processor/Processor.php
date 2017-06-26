@@ -9,6 +9,7 @@ use RZP\Dashboard\Dashboard;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
@@ -632,7 +633,7 @@ class Processor
     protected function eventPaymentFailed()
     {
         $eventPayload = [
-            'main' => $this->payment
+            ApiEventSubscriber::MAIN => $this->payment
         ];
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);

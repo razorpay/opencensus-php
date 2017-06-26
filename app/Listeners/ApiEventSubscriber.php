@@ -32,11 +32,26 @@ class ApiEventSubscriber extends Base\Core
 
     protected $params;
 
-    protected $mainParam;
+    /**
+     * For invoice.paid, the mainEntity would consist of the invoice entity.
+     * The data from mainEntity is used to get updated_at and merchant.
+     *
+     * @var Base\PublicEntity
+     */
+    protected $mainEntity;
 
-    protected $withParams;
+    /**
+     * For invoice.paid, the withPayload can consist of payment and order.
+     * These are like helper entities or extra information for the merchant.
+     *
+     * @var array
+     */
+    protected $withPayload;
 
     protected $webhookEnabledForEvent = false;
+
+    const MAIN = 'main';
+    const WITH = 'with';
 
     /**
      * Events for which other things apart from
@@ -71,12 +86,12 @@ class ApiEventSubscriber extends Base\Core
         //
         if (is_sequential_array($params) === true)
         {
-            $this->mainParam = $params[0];
+            $this->mainEntity = $params[0];
         }
         else
         {
-            $this->mainParam = $params['main'];
-            $this->withParams = $params['with'] ?? [];
+            $this->mainEntity = $params[self::MAIN];
+            $this->withPayload = $params[self::WITH] ?? [];
         }
 
         //
@@ -92,7 +107,7 @@ class ApiEventSubscriber extends Base\Core
         // updated_at and other things like that.
         //
 
-        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($this->mainParam);
+        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($this->mainEntity);
 
         //
         // Doesn't execute the event if
@@ -109,7 +124,7 @@ class ApiEventSubscriber extends Base\Core
 
         $func = 'on' . studly_case($event);
 
-        return $this->$func($this->mainParam);
+        return $this->$func($this->mainEntity);
     }
 
     /**
@@ -350,12 +365,19 @@ class ApiEventSubscriber extends Base\Core
     protected function getWebhookData($payload)
     {
         $eventFired = $this->event;
-        $entity = $this->mainParam;
+        $entity = $this->mainEntity;
         $webhook = $entity->merchant->webhook;
 
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
-            Event\Entity::CONTAINS    => $this->getEntityNamesInPayload($payload),
+            //
+            // The same event may or may not contain some entities, based on the state.
+            // For example, if subscription.overdue is fired on an auth failure,
+            // the payload will contain only subscription entity not contain `payment` entity.
+            // If it's fired on capture failure, it'll contain both subscription and payment
+            // entity. For this reason, we cannot have a static list of contains array.
+            //
+            Event\Entity::CONTAINS    => array_keys($payload),
             Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
         );
 
@@ -374,48 +396,27 @@ class ApiEventSubscriber extends Base\Core
         return $data;
     }
 
-    /**
-     * The same event may or may not contain some entities, based on the state.
-     * For example, if subscription.overdue is fired on an auth failure,
-     * the payload will contain only subscription entity not contain `payment` entity.
-     * If it's fired on capture failure, it'll contain both subscription and payment
-     * entity. For this reason, we cannot have a static list of contains array.
-     *
-     * @param array $payload
-     *
-     * @return array
-     */
-    protected function getEntityNamesInPayload(array $payload)
-    {
-        $contains = [];
-
-        foreach ($payload as $entityName => $entityData)
-        {
-            $contains[] = $entityName;
-        }
-
-        return $contains;
-    }
-
     protected function addExtraDataToPayload(array & $partialPayload)
     {
-        if (empty($this->withParams) === false)
+        foreach ($this->withPayload as $withKey => $withValue)
         {
-            foreach ($this->withParams as $withParamKey => $withParamValue)
+            //
+            // This check is required since sometimes, the entity could be null.
+            // In those cases, we don't want to send the entity key at all
+            // in the webhook payload.
+            //
+            if ($withValue instanceof Base\PublicEntity)
             {
-                if (empty($withParamValue) === false)
-                {
-                    $partialPayload[$withParamKey] = [
-                        'entity' => $withParamValue->toArrayPublic()
-                    ];
-                }
+                $partialPayload[$withKey] = [
+                    'entity' => $withValue->toArrayPublic()
+                ];
             }
         }
     }
 
-    protected function isWebhookEnabledForEvent($params)
+    protected function isWebhookEnabledForEvent(Base\PublicEntity $entity)
     {
-        $webhook = $this->repo->webhook->findByMerchant($params->merchant);
+        $webhook = $this->repo->webhook->findByMerchant($entity->merchant);
 
         return (($webhook !== null) and
                 ($webhook->isActive()) and

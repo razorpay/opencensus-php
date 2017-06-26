@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
@@ -528,7 +529,7 @@ trait Capture
         if ($payment->getApiOrderId() !== null)
         {
             $eventPayload = [
-                'main' => $payment
+                ApiEventSubscriber::MAIN => $payment
             ];
 
             $this->app['events']->fire('api.order.paid', $eventPayload);
@@ -545,7 +546,7 @@ trait Capture
         }
 
         $eventPayload = [
-            'main' => $payment
+            ApiEventSubscriber::MAIN => $payment
         ];
 
         $this->app['events']->fire('api.invoice.paid', $eventPayload);
@@ -556,7 +557,7 @@ trait Capture
         $payment = $this->payment;
 
         $eventPayload = [
-            'main' => $payment
+            ApiEventSubscriber::MAIN => $payment
         ];
 
         $this->app['events']->fire('api.payment.captured', $eventPayload);

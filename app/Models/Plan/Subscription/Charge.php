@@ -207,12 +207,14 @@ class Charge extends Base\Core
                 'task_details' => $task->toArray()
             ]);
 
+        $core = (new Core);
+
         if ($oldStatus !== Status::ACTIVE)
         {
-            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
+            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
         }
 
-        (new Core)->eventSubscriptionCharged($subscription, $capturedPayment);
+        $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
         //
         // This must be sent after saving the invoice and subscription
