@@ -1,6 +1,6 @@
 <?php
 
 return [
-    'auth_user' =>  'rzp_oauth',
-    'auth_pass' =>  env('RZP_OAUTH_PASS'),
+    'auth_user' =>  'rzp_auth',
+    'auth_pass' =>  env('AUTH_SERVICE_PASS'),
 ];
