@@ -629,7 +629,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $refund = $this->createGatewayEntity($attributes);
+        $refund = $this->createGatewayPaymentEntity($attributes);
 
         $request = $this->getRefundRequest($input);
 
