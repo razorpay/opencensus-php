@@ -89,6 +89,8 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::INTERNATIONAL => 'boolean',
         self::LOAD          => 'int',
+        self::MIN_AMOUNT    => 'int',
+        self::MAX_AMOUNT    => 'int',
         self::IINS          => 'array',
     ];
 
@@ -99,6 +101,11 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::FILTER_TYPE,
         self::LOAD,
+        self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::TERMINAL_TYPE,
+        self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
@@ -107,11 +114,6 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::IINS,
         self::EMI_DURATION,
-        self::GATEWAY_ACQUIRER,
-        self::INTERNATIONAL,
-        self::NETWORK_CATEGORY,
-        self::TERMINAL_TYPE,
-        self::CATEGORY2,
     ];
 
     protected $visible = [
@@ -122,6 +124,11 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::FILTER_TYPE,
         self::LOAD,
+        self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::TERMINAL_TYPE,
+        self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
@@ -130,11 +137,6 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::IINS,
         self::EMI_DURATION,
-        self::GATEWAY_ACQUIRER,
-        self::INTERNATIONAL,
-        self::NETWORK_CATEGORY,
-        self::TERMINAL_TYPE,
-        self::CATEGORY2,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
@@ -149,10 +151,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::LOAD
-    ];
-
-    protected static $unsetEditInput = [
-        self::TYPE,
     ];
 
     protected $defaults = [
@@ -173,6 +171,11 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
     }
 
     public function getMethodType()
@@ -205,19 +208,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
-    public function isTypeFilter()
+    public function isTypeFilter(): bool
     {
-        return $this->getAttribute(self::TYPE);
+        return ($this->getAttribute(self::TYPE) === self::FILTER);
     }
 
-    public function isSelectFilter()
+    public function isTypeSorter(): bool
     {
-        return ($this->getAttribute(self::FILTER_TYPE) === 'select');
+        return ($this->getAttribute(self::TYPE) === self::SORTER);
     }
 
-    public function isRejectFilter()
+    public function isMethodCardOrEmi(): bool
     {
-        return ($this->getAttribute(self::FILTER_TYPE) === 'reject');
+        return (in_array($this->getMethod(), [Method::CARD, Method::EMI], true) === true);
     }
 
     public function getIins()

@@ -24,10 +24,18 @@ class Repository extends Base\Repository
         Entity::INTERNATIONAL,
     ];
 
+    /**
+     * Attributes to be used while querying for sorter rules apart from
+     * defaultQueryAttributes
+     */
     protected $sorterQueryAttributes = [
         Entity::MERCHANT_ID,
     ];
 
+    /**
+     * Attributes to be used while querying for filter rules apart from the
+     * defaultQueryAttributes
+     */
     protected $filterQueryAttributes = [
         Entity::GATEWAY,
         Entity::FILTER_TYPE,
@@ -57,33 +65,17 @@ class Repository extends Base\Repository
         Entity::CATEGORY2        => 'sometimes|string',
     ];
 
-    protected static $unsetFetchInput = [
-        Entity::LOAD,
-        Entity::IINS
-    ];
-
-    public function fetch(array $params, string $merchantId = null): Base\PublicCollection
-    {
-        $this->unsetParams($params);
-
-        return parent::fetch($params);
-    }
-
     public function getRulesWithMatchingCriteria(Entity $rule)
     {
         $input = $rule->toArray();
 
         $queryAttributes = $this->getQueryAttributes($rule);
 
-        $input = array_filter($input, function ($value, $key) use ($queryAttributes)
-        {
-            return ((in_array($key, $queryAttributes, true) === true) and
-                    ($value !== null));
-        }, ARRAY_FILTER_USE_BOTH);
+        $params = $this->getQueryParams($rule);
 
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $input);
+        $this->buildSelectionQuery($query, $params);
 
         // If the rule against which we are matching is an existing rule, we exclude
         // it in the query
@@ -93,16 +85,6 @@ class Repository extends Base\Repository
         }
 
         $rules = $query->get();
-
-        $rules = $rules->filter(function ($r) use ($rule)
-        {
-            if (empty($r->getIins()) === true)
-            {
-                return true;
-            }
-
-            return count(array_intersect($rule->getIins(), $r->getIins())) > 0;
-        });
 
         return $rules;
     }
@@ -118,11 +100,14 @@ class Repository extends Base\Repository
 
         $this->buildSelectionQuery($query, $params);
 
-        return $query->get();
+        $rules = $query->get();
+
+        return $rules;
     }
 
     /**
      * Adds where clauses to the select query depending on the type of keys
+     * - If the key has a custom function defined use that
      * - If the key is an array builds query like WHERE IN (<val1>, <val2>)
      * - If the key belongs to NULLABLE_ATTRIBUTES builds query like WHERE (key = val OR key IS NULL)
      *   This is required to handle cases where some rules can have null value for thse attributes
@@ -174,11 +159,19 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * We always check for filter_type not equal to that of current rule, so as
+     * to find rules with matching criteria but opposite filter action
+     */
     protected function addQueryForFilterType($query, $params)
     {
         $query->where(Entity::FILTER_TYPE, '!=', $params[Entity::FILTER_TYPE]);
     }
 
+    /**
+     * min_amount and max_amount are handled like below as they reporesent a range
+     * and we want to find rules which overlap this range
+     */
     protected function addQueryForMinAmount($query, $params)
     {
         $query->where(Entity::MIN_AMOUNT, '<=', $params[Entity::MAX_AMOUNT]);
@@ -198,11 +191,25 @@ class Repository extends Base\Repository
         return array_merge($this->defaultQueryAttributes, $attributesArray);
     }
 
-    private function unsetParams(array & $params)
+    /**
+     * Generates query params from entity using only those entity keys which are
+     * present in queryAttributes and which are not null
+     *
+     * @param  Rule  $rule   rule entity to use for query
+     * @return array         query params
+     */
+    protected function getQueryParams(Entity $rule): array
     {
-        foreach (self::$unsetFetchInput as $key)
+        $input = $rule->toArray();
+
+        $queryAttributes = $this->getQueryAttributes($rule);
+
+        $input = array_filter($input, function ($value, $key) use ($queryAttributes)
         {
-            unset($params[$key]);
-        }
+            return ((in_array($key, $queryAttributes, true) === true) and
+                    ($value !== null));
+        }, ARRAY_FILTER_USE_BOTH);
+
+        return $input;
     }
 }

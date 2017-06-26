@@ -1,0 +1,1241 @@
+<?php
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant;
+
+return [
+    'testCreateGatewayRule' => [
+        // Create gsorter ateway rule for card
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => false,
+                    'gateway_acquirer' => 'axis',
+                    'min_amount'       => 0,
+                    'max_amount'       => 4294967295,
+                    'load'             => 50,
+                    'admin'            => true
+                ],
+            ],
+        ],
+        // Create sorter gateway rule for card with min_amount and max_amount
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => false,
+                    'gateway_acquirer' => 'axis',
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'load'             => 50,
+                    'admin'            => true
+                ],
+            ],
+        ],
+        // Create rule with invalid gateway
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'xyz',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'xyz is not a valid gateway',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create sorter rule with invalid gateway for method
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'netbanking_hdfc',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Gateway netbanking_hdfc does not support card method',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid payment method
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'hdfc',
+                    'method'           => 'xyz',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'xyz is not a valid payment method',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid network
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'hdfc',
+                    'method'           => 'card',
+                    'network'          => 'xyz',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'XYZ is not a valid network',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with unsupported network for gateway
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'network'          => 'DICL',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'DICL is not a valid network for gateway axis_migs',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid bank issuer code
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'hdfc',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'XYZ',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'XYZ is not a valid bank code',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid method_type
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'hdfc',
+                    'method'           => 'card',
+                    'method_type'      => 'xyz',
+                    'network'          => 'VISA',
+                    'issuer'           => 'ICIC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Card Type: xyz is not supported',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid acquirer for gateway
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'hdfc',
+                    'method'           => 'card',
+                    'network'          => 'VISA',
+                    'issuer'           => 'ICIC',
+                    'international'    => 0,
+                    'gateway_acquirer' => 'axis',
+                    'load'             => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'axis is not a valid gateway acquirer for hdfc',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create sorter rule for netbanking
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'billdesk',
+                    'method'      => 'netbanking',
+                    'issuer'      => 'SBIN',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'sorter',
+                    'gateway'          => 'billdesk',
+                    'method'           => 'netbanking',
+                    'issuer'           => 'SBIN',
+                    'load'             => 50,
+                    'admin'            => true
+                ],
+            ],
+        ],
+        // Creeate rule with direct netbanking gateway and null issuer
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'netbanking_hdfc',
+                    'method'      => 'netbanking',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'issuer can be null only for shared netbanking gateways',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create netbanking rule with unsupported bank for gateway
+        [
+            'request' => [
+                'content' => [
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'ebs',
+                    'issuer'      => 'ALLA',
+                    'method'      => 'netbanking',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'ALLA is not a supported bank for gateway ebs',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create wallet sorter rule
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'wallet_jiomoney',
+                    'method'      => 'wallet',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'wallet_jiomoney',
+                    'method'      => 'wallet',
+                    'load'        => 50,
+                    'admin'       => true,
+                ],
+            ],
+        ],
+        // test duplicate rule creation
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'load'        => 50
+                ],
+            ],
+            'request' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'post'
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_GATEWAY_RULE_EXISTS
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS,
+            ],
+        ],
+        // test create sorter rule with total load less than 100
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => null,
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'load'        => 60
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'network'     => 'VISA',
+                    'load'        => 40
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'network'     => 'VISA',
+                    'load'        => 40,
+                    'admin'       => true
+                ],
+            ],
+        ],
+        // create sorter rule with total load greater than 100
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => null,
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'load'        => 60
+                ],
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'network'     => 'VISA',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Load across all gateway rules must be less than 100 percent',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create select type filter rule
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'method_type'      => 'credit',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'category2'        => 'ecommerce',
+                    'network_category' => 'ecommerce',
+                    'terminal_type'    => 'shared',
+                    'gateway_acquirer' => 'axis',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'method_type'      => 'credit',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => false,
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'category2'        => 'ecommerce',
+                    'network_category' => 'ecommerce',
+                    'terminal_type'    => 'shared',
+                    'gateway_acquirer' => 'axis',
+                    'admin'            => true
+                ],
+            ],
+        ],
+        // Create reject type filter rule with unsupported network for gateway
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'reject',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'method_type'      => 'credit',
+                    'network'          => 'DICL',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'category2'        => 'ecommerce',
+                    'network_category' => 'ecommerce',
+                    'terminal_type'    => 'shared',
+                    'gateway_acquirer' => 'axis',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'reject',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'method_type'      => 'credit',
+                    'network'          => 'DICL',
+                    'issuer'           => 'HDFC',
+                    'international'    => false,
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'category2'        => 'ecommerce',
+                    'network_category' => 'ecommerce',
+                    'terminal_type'    => 'shared',
+                    'gateway_acquirer' => 'axis',
+                    'admin'            => true
+                ],
+            ],
+        ],
+        // Create filter rule with iin
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'test',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'test',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'admin'       => true,
+                ],
+            ],
+        ],
+        // Create rule with invalid array format for iins
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'test',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['a' => '411111'],
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'iins should be sent as a numerically indexed array',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid iin length
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'test',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['41111'],
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'iins should not be equal to 6 characters',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid merchant category2
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'test',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'category2'   => 'xyz',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Category: xyz invalid for merchant',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rule with invalid terminal network_category
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'network_category' => 'retail_services'
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Category provided invalid for gateway',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Test adding select and rekject filter for same criteria in same group
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'groupA',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 100,
+                    'max_amount'  => 700,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 200,
+                    'max_amount'  => 500,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'select and reject filter rules for same criteria cannot be present in same group',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // test adding select / reject rules for same criteria but in different groups
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'groupA',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 100,
+                    'max_amount'  => 700,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupB',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 200,
+                    'max_amount'  => 500,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupB',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 200,
+                    'max_amount'  => 500,
+                ],
+            ],
+        ],
+        // test adding rules with overlapping iins
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'groupA',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'iins'        => ['411111'],
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'iins'        => ['401201', '411111'],
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'select and reject filter rules for same criteria cannot be present in same group',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+    ],
+
+    'testUpdateGatewayRule' => [
+        // test update sorter rule load
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+                'load'        => 50
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                    'group' => 'groupA',
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'group'       => 'groupA',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'load'        => 70,
+                ]
+            ]
+        ],
+        // test update load for filter rule
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                    'group' => 'groupA',
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'load is editable only for sorter rules',
+                    ]
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // test update sorter rule load, but total load will exceed 100 on update
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+                'load'        => 50
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'axis_migs',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'load'        => 50
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Load across all gateway rules must be less than 100 percent',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // test update rule_type for filter rule
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'groupB',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+            ],
+            'request' => [
+                'content' => [
+                    'filter_type' => 'reject',
+                    'group'       => 'groupB',
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupB',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                ]
+            ]
+        ],
+        // test update rule_type for filter rule but select and reject rules will be in same group on update
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'filter',
+                'filter_type' => 'reject',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'filter_type' => 'select'
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'select and reject filter rules for same criteria cannot be present in same group',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // test update filter_type for sorter rule
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'group'       => 'groupB',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+                'load'        => 50,
+            ],
+            'request' => [
+                'content' => [
+                    'filter_type' => 'reject',
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'filter_type is editable only for filter rules',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // test edit iin for rule
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+                'load'        => 50
+            ],
+            'request' => [
+                'content' => [
+                    'iins' => ['411111'],
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'iins'        => ['411111'],
+                    'load'        => 50,
+                ]
+            ]
+        ],
+        //test update iin for existing rule with iin
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'iins'        => ['411111'],
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+                'load'        => 50
+            ],
+            'request' => [
+                'content' => [
+                    'iins' => ['401201'],
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 0,
+                    'max_amount'  => 4294967295,
+                    'iins'        => ['401201'],
+                    'load'        => 50,
+                ]
+            ]
+        ],
+        // test edit iin for netbanking rule
+        [
+            'to_update' => [
+                'method'      => 'netbanking',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'billdesk',
+                'min_amount'  => 0,
+                'max_amount'  => 4294967295,
+                'load'        => 50
+            ],
+            'request' => [
+                'content' => [
+                    'iins' => ['411111'],
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'iins should be sent only for card or emi rules',
+                    ]
+                ],
+                'status_code' => 400
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ]
+    ],
+
+    'testDeleteGatewayRule' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+                'deleted' => true,
+            ],
+        ],
+    ],
+];

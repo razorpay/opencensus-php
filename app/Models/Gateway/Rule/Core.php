@@ -18,7 +18,7 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        $this->checkExistingRule($input);
+        $this->checkDuplicateRule($input);
 
         $validatorMethod = $this->getValidatorMethod($rule);
 
@@ -71,15 +71,11 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
-        // Checks if merchant specific rules are present. If present we only use them
-        // and discard other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules(
-                                            $applicableRules,
-                                            $input['merchant']);
-
-        if ($merchantSpecificRules->isEmpty() === false)
+        if ($input['payment']->isMethodCardOrEmi() === true)
         {
-            $applicableRules = $merchantSpecificRules;
+            $iins = (array) $input['payment']->card->getIin();
+
+            $applicableRules = $this->getRulesWithOverLappingIins($iins, $applicableRules);
         }
 
         return $applicableRules;
@@ -102,8 +98,20 @@ class Core extends Base\Core
         });
     }
 
-    protected function checkExistingRule(array $input)
+    /**
+     * Checks if there is already aexisting rule with the same attributes with
+     * which we are creating the new rule
+     *
+     * @param  array  $input request data
+     */
+    protected function checkDuplicateRule(array $input)
     {
+        // Before checking for duplicate rules we remove load and iins from inout
+        // if present as rules with same load are not considered duplicate. iins are
+        // removed as it is serialized data and cannot be searched
+        unset($input[Entity::LOAD]);
+        unset($input[Entity::IINS]);
+
         $existingRulesCount = $this->repo->gateway_rule->fetch($input)->count();
 
         if ($existingRulesCount > 0)
@@ -113,11 +121,15 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Checks if theere is arule of opposite filter_type inn the group in which we
+     * are creating the new rule as such a combination is invalid
+     *
+     * @param  Entity $rule Rule entity being created
+     */
     protected function validateFilterRule(Entity $rule)
     {
-        $matchingRules = $this->repo
-                              ->gateway_rule
-                              ->getRulesWithMatchingCriteria($rule);
+        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
 
         if ($matchingRules->isNotEmpty() === true)
         {
@@ -138,9 +150,7 @@ class Core extends Base\Core
      */
     protected function validateSorterRule(Entity $rule)
     {
-        $matchingRules = $this->repo
-                              ->gateway_rule
-                              ->getRulesWithMatchingCriteria($rule);
+        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
 
         if ($matchingRules->isNotEmpty() === true)
         {
@@ -176,60 +186,91 @@ class Core extends Base\Core
 
         $merchant = $input['merchant'];
 
-        $gateways = $this->getTerminalGateways($terminals);
-
         $params = [
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
-            Entity::GATEWAY       => $gateways,
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
+            Entity::CATEGORY2     => $merchant->getCategory2(),
+            // Here min_amount and max_amount are both set to payment_amount
+            // as the final query will be min_amount <= payment_amount <= max_amount
+            Entity::MIN_AMOUNT    => $payment->getAmount(),
+            Entity::MAX_AMOUNT    => $payment->getAmount()
         ];
 
-        $method = $payment->getMethod();
-
-        // For UPI or wallet payments, there is no issuer or network
-        switch ($method)
-        {
-            case Payment\Method::CARD:
-            case Payment\Method::EMI:
-
-                $this->fillCardDetails($params, $payment);
-
-                break;
-
-            case Payment\Method::NETBANKING:
-
-                $params[Entity::ISSUER] = $payment->getBank();
-
-                break;
-        }
+        $this->fillMethodSpecificDetails($params, $payment);
 
         return $params;
     }
 
-    protected function fillCardDetails(array & $params, Payment\Entity $payment)
+    protected function fillMethodSpecificDetails(array & $params, Payment\Entity $payment)
     {
+        $method = $payment->getMethod();
         $card = $payment->card;
+        $emiPlan = $payment->emiPlan;
 
-        $params[Entity::METHOD_TYPE] = $card->getType();
+        switch ($method)
+        {
+            case Payment\Method::CARD:
+                $params[Entity::METHOD_TYPE]   = $card->getType();
+                $params[Entity::NETWORK]       = $card->getNetworkCode();
+                $params[Entity::ISSUER]        = $card->getIssuer();
+                $params[Entity::INTERNATIONAL] = $payment->isInternational();
 
-        $params[Entity::NETWORK] = $card->getNetworkCode();
+                break;
 
-        $params[Entity::ISSUER] = $card->getIssuer();
+            case Payment\Method::EMI:
+                $params[Entity::METHOD_TYPE]  = $card->getType();
+                $params[Entity::NETWORK]      = $card->getNetworkCode();
+                $params[Entity::ISSUER]       = $payment->getBank();
+                $params[Entity::EMI_DURATION] = $emiPlan->getDuration();
 
-        $params[Entity::INTERNATIONAL] = $payment->isInternational();
+                break;
+
+            case Payment\Method::NETBANKING:
+                $params[Entity::ISSUER] = $payment->getBank();
+                break;
+        }
     }
 
-    protected function getTerminalGateways(array $terminals): array
+    protected function getRulesWithMatchingCriteria(Entity $rule): Base\PublicCollection
     {
-        $gateways = array_pluck($terminals, 'gateway');
+        $matchingRules = $this->repo
+                              ->gateway_rule
+                              ->getRulesWithMatchingCriteria($rule);
 
-        $gateways = array_values(array_unique($gateways));
+        if ($rule->isMethodCardOrEmi() === true)
+        {
+            $matchingRules = $this->getRulesWithOverLappingIins($rule->getIins(), $matchingRules);
+        }
 
-        return $gateways;
+        return $matchingRules;
     }
 
-    private function getValidatorMethod(Entity $rule)
+    /**
+     * Returns rules which have iins overlapping with current rules iins.
+     * If any existing rule has null iin, that is also considered overlapping
+     * with current rule
+     *
+     * @param  Base\PublicCollection $rules Collection of exisitng rules which can have
+     *                                      overlapping ins
+     * @return Base\PublicCollection        rules with overlapping iins
+     */
+    protected function getRulesWithOverLappingIins(array $iins, Base\PublicCollection $rules): Base\PublicCollection
+    {
+        $rules = $rules->filter(function ($r) use ($iins)
+        {
+            if ((empty($iins) === true) or (empty($r->getIins()) === true))
+            {
+                return true;
+            }
+
+            return count(array_intersect($iins, $r->getIins())) > 0;
+        });
+
+        return $rules;
+    }
+
+    protected function getValidatorMethod(Entity $rule)
     {
         return 'validate' . ucfirst($rule->getType()) . 'Rule';
     }
