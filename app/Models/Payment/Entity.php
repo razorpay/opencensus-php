@@ -1551,7 +1551,7 @@ class Entity extends Base\PublicEntity
     {
         if ($this->hasSubscription() === true)
         {
-            return $this->getSubscriptionId();
+            $reference = $this->getSubscriptionId();
         }
         else
         {
@@ -1574,8 +1574,10 @@ class Entity extends Base\PublicEntity
             // It should probably go in validateRecurringInput though.
             //
 
-            return null;
+            $reference = null;
         }
+
+        return $reference;
     }
 
     public function setPublicOrderIdAttribute(array & $array)

@@ -1182,26 +1182,6 @@ trait Authorize
     protected function associateLocalCustomerToSubscription(
         Subscription\Entity $subscription, Customer\Entity $customer)
     {
-        //
-        // Check that the subscription is in the global
-        // customer flow and not in the local customer flow.
-        // This also ensures that the customer we received from
-        // the last step is a global customer.
-        //
-        // This flow should be run only for the first 2FA. From the
-        // second 2FA onwards, the subscription will have the customer.
-        //
-
-        if ($customer === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_NOT_FOUND,
-                'customer_id',
-                [
-                    'subscription_id' => $subscription->getId()
-                ]);
-        }
-
         $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $subscription->merchant);
 
         $localCustomer->globalCustomer()->associate($customer);

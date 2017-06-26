@@ -338,8 +338,6 @@ class Core extends Base\Core
         {
             $appTokenId = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
-
             $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
             if ($appToken !== null)
@@ -406,8 +404,7 @@ class Core extends Base\Core
         $appToken = (new AppToken\Core)->getAppByAppTokenId(
             $input[Payment\Entity::APP_TOKEN], $merchant);
 
-        if (($appToken === null) or
-            ($appToken->getMerchantId() !== Account::SHARED_ACCOUNT))
+        if ($appToken === null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_APP_TOKEN_NOT_GLOBAL,
@@ -418,9 +415,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $appTokenCustomer = $this->repo->customer->fetchByAppToken($appToken);
-
-        $appTokenCustomerId = $appTokenCustomer->getId();
+        $appTokenCustomerId = $appToken->getCustomerId();
         $customerId = $customer->getId();
 
         if ($appTokenCustomerId !== $customerId)

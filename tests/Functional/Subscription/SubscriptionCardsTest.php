@@ -8,6 +8,7 @@ use Mockery;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Item;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\TestCase;
@@ -149,9 +150,9 @@ class SubscriptionCardsTest extends TestCase
         {
             $this->doAuthPayment($paymentRequest);
         }
-        catch (BadRequestException $ex)
+        catch (BadRequestValidationFailureException $ex)
         {
-            $this->assertEquals(ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT, $ex->getCode());
+            $this->assertEquals('customer_id is not required and should not be sent', $ex->getMessage());
 
             return;
         }

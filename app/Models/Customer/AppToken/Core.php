@@ -76,9 +76,9 @@ class Core extends Base\Core
         return $apps[0];
     }
 
-    protected function getAppByAppTokenIdAndMerchant($appTokenId, Merchant\Entity $merchant)
+    protected function getAppByAppTokenIdAndMerchant(string $appTokenId, Merchant\Entity $merchant)
     {
-        AppToken\Entity::verifyIdAndSilentlyStripSign($appTokenId);
+        AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
         $appToken = null;
 
