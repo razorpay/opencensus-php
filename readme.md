@@ -59,6 +59,8 @@
 * Set up pre-commit hooks - `cp scripts/git-hooks/pre-commit .git/hooks/`
 * Install phpcs - http://tedshd.logdown.com/posts/246406-php-install-phpcsphp-codesniffer
 
+**Note**: If you ever called `config:cache` during local development, you can undo this by calling `php artisan config:clear`. Otherwise, you might experience that calling getenv() will not return the desired values.
+
 ### Common Test Setup Instructions
 
 * Create two seperate databases for testing (separate from the development ones). (sample names: `api_testing_live`, `api_testing_test`)
