@@ -78,16 +78,16 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl, $input);
     }
 
-    public function makeReconciliateRequest($input)
+    public function makeReconciliateRequest($input, $mode = 'live')
     {
         // Makes a guzzle file request
-        $response = $this->makeGuzzleFileRequest($input);
+        $response = $this->makeGuzzleFileRequest($input, $mode);
 
         // Builds an entity from the response received
         return ApiEntity::buildEntity($response);
     }
 
-    public function makeGuzzleFileRequest($input)
+    public function makeGuzzleFileRequest($input, $mode = 'live')
     {
         // Creates a new Guzzle client
         $client = new Guzzle(['base_url' => Config::get('api.url')]);
@@ -96,7 +96,7 @@ class Admin extends Entity
         $options = array(
             // For reconciliation route, auth is not required.
             // But, sending it just for the sake of it.
-            'auth'      => $this->getApiCredentials(),
+            'auth'      => $this->getApiCredentials($mode),
             'headers'   => ApiRequest::getHeaders(),
             // TODO: Check if $postBody->setField() can be used, instead.
             'body'      => [
@@ -190,10 +190,8 @@ class Admin extends Entity
         }
     }
 
-    protected function getApiCredentials()
+    protected function getApiCredentials($mode = 'live')
     {
-        $mode = 'live';
-
         $id = 'rzp_' . $mode;
 
         $secret = Config::get('api.auth_pass');

@@ -538,9 +538,11 @@ class AdminController extends Controller
 
     public function postReconciliate($mode)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)->makeReconciliateRequest($input);
+        list($error, $response) = (new Admin\Service)->makeReconciliateRequest($input, $mode);
 
         return AppResponse::jsonResponse($error, $response);
     }

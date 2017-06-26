@@ -1577,15 +1577,15 @@ class Service extends Base\Service
         return [null, $response];
     }
 
-    public function makeReconciliateRequest($input)
+    public function makeReconciliateRequest($input, $mode = 'live')
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $mode);
 
         $error = $data = null;
 
         try
         {
-            $data = $this->api->admin->makeReconciliateRequest($input);
+            $data = $this->api->admin->makeReconciliateRequest($input, $mode);
         }
         catch(BadRequestError $e)
         {
