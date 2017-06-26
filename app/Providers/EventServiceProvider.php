@@ -2,10 +2,6 @@
 
 namespace RZP\Providers;
 
-use Trace;
-use Queue;
-use RZP\Trace\TraceCode;
-use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -25,19 +21,4 @@ class EventServiceProvider extends ServiceProvider
             'RZP\Listeners\AuditLogListener',
         ]
     ];
-
-    /**
-     * Register any other events for your application.
-     *
-     * @param  \Illuminate\Contracts\Events\Dispatcher  $events
-     * @return void
-     */
-    public function boot()
-    {
-        parent::boot();
-
-        Queue::failing(function ($failedJob) {
-            Trace::error(TraceCode::QUEUE_JOB_FAILURE, $failedJob->data);
-        });
-    }
 }

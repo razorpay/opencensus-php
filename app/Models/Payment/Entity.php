@@ -1474,6 +1474,8 @@ class Entity extends Base\PublicEntity
                 return [$method, $this->getVpa()];
             case Method::AEPS:
                 return [$method, ''];
+            case Method::BANK_TRANSFER:
+                return [$method, ''];
         }
     }
 
@@ -1483,6 +1485,18 @@ class Entity extends Base\PublicEntity
             self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
             self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
         ];
+    }
+
+    public function getNetbankingReferenceId()
+    {
+        $netbankingRefId = null;
+
+        if ($this->isNetbanking() === true)
+        {
+            $netbankingRefId = $this->getAttribute(self::REFERENCE1);
+        }
+
+        return $netbankingRefId;
     }
 
     /**
@@ -2044,5 +2058,33 @@ class Entity extends Base\PublicEntity
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
         return min($timeWindow, $autoRefundDelay);
+    }
+
+    public function shouldRunFraudChecks()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function shouldFailOnRiskFailure()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

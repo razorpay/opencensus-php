@@ -5,12 +5,14 @@ namespace RZP\Models\Plan\Subscription;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
+use RZP\Constants;
 use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Jobs\Plan\ChargeSubscription;
@@ -234,7 +236,7 @@ class Core extends Base\Core
         return $authAmount;
     }
 
-    public function fireWebhookForStatusUpdate(Entity $subscription, string $status)
+    public function fireWebhookForStatusUpdate(Entity $subscription, string $status, Payment\Entity $payment = null)
     {
         if (array_key_exists($status, Status::$webhookStatuses) === false)
         {
@@ -243,7 +245,36 @@ class Core extends Base\Core
 
         $event = Status::$webhookStatuses[$status];
 
-        $this->app['events']->fire('api.' . $event, array($subscription));
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $subscription,
+        ];
+
+        //
+        // For now, commenting this out. Will add it later
+        // depending on merchants' use cases.
+        //
+        // if ($payment !== null)
+        // {
+        //     $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
+        // }
+
+        $this->app['events']->fire('api.' . $event, $eventPayload);
+    }
+
+    public function eventSubscriptionCharged(Entity $subscription, Payment\Entity $payment)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $subscription,
+            ApiEventSubscriber::WITH => [
+                //
+                // For now, commenting this out. Will add it later
+                // depending on merchants' use cases.
+                //
+                // Constants\Entity::PAYMENT => $payment,
+            ]
+        ];
+
+        $this->app['events']->fire('api.subscription.charged', $eventPayload);
     }
 
     public function charge(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
@@ -367,7 +398,7 @@ class Core extends Base\Core
 
             if ($manual === false)
             {
-                (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
+                (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, $authorizedPayment, true);
             }
 
             return;

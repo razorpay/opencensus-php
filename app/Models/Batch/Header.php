@@ -32,6 +32,7 @@ class Header
     const CUSTOMER_CONTACT  = 'Customer Contact';
     const DESCRIPTION       = 'Description';
     const EXPIRE_BY         = 'Expire By';
+    const PARTIAL_PAYMENT   = 'Partial Payment';
     const PAYMENT_LINK_ID   = 'Payment Link Id';
 
     /**
@@ -67,6 +68,7 @@ class Header
                 self::AMOUNT,
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
             ],
 
             self::OUTPUT => [
@@ -77,6 +79,7 @@ class Header
                 self::AMOUNT,
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
                 self::PAYMENT_LINK_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

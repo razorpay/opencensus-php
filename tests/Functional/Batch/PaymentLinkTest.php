@@ -131,6 +131,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link',
                 Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => null,
             ],
             // Following one should fail
             [
@@ -141,6 +142,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link - 2',
                 Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => 0,
             ],
             [
                 Header::INVOICE_NUMBER   => '#3',
@@ -150,6 +152,7 @@ class PaymentLinkTest extends TestCase
                 Header::AMOUNT           => 100,
                 Header::DESCRIPTION      => 'test payment link - 3',
                 Header::EXPIRE_BY        => null,
+                Header::PARTIAL_PAYMENT  => null,
             ],
         ];
     }

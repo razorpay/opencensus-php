@@ -24,5 +24,6 @@ class Type
     const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
     const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
+    const SUBSCRIPTION_CHARGED      = 'subscription.charged';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 }

@@ -281,6 +281,26 @@ trait SubscriptionTrait
         $times);
     }
 
+    protected function mockAndTestWebhookDataCustom(string $event, string $testDataKey)
+    {
+        $testData = $this->testData[$testDataKey];
+
+        $this->mockInfernoFire(function ($data) use ($testData, $event)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            $subscriptionPayload = $data['event']['payload']['subscription']['entity'];
+
+            $this->assertNotNull($subscriptionPayload['token_id']);
+
+            $this->assertNotNull('webhook_id', $data);
+
+            return true;
+        });
+    }
+
     protected function chargeSubscriptionsViaCron($timestamp = null)
     {
         if ($timestamp !== null)
