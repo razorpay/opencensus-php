@@ -165,7 +165,7 @@ class Base extends BaseModel\Core
 
                 $this->trace->traceException(
                                 $e,
-                                Trace::ERROR,
+                                null,
                                 TraceCode::BATCH_PROCESSING_ERROR,
                                 [
                                     Batch\Entity::ID => $this->batch->getId(),
