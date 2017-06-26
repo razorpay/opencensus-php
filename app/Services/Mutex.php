@@ -116,8 +116,8 @@ class Mutex
                 Trace::ERROR,
                 TraceCode::MUTEX_UNABLE_TO_ACQUIRE,
                 [
-                    'resource' => $resource,
-                    'ttl' => $ttl
+                    'resource'  => $resource,
+                    'ttl'       => $ttl
                 ]);
 
             // Do not block the payment in case of any exception

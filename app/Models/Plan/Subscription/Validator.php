@@ -134,14 +134,13 @@ class Validator extends Base\Validator
 
             $valid = false;
         }
-
         //
         // This happens when two crons picked up the same invoice
         // and queued the charge on them.
         // If one of the queue picks it up first, it would have marked the
         // invoice as paid and now this queue gets executed.
         //
-        if ($invoice->isPaid() === true)
+        else if ($invoice->isPaid() === true)
         {
             $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
 

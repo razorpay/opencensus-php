@@ -90,7 +90,7 @@ class SubscriptionController extends Controller
         return ApiResponse::json($summary);
     }
 
-    public function postCancelSubscription($subscriptionId)
+    public function postCancelSubscription(string $subscriptionId)
     {
         $subscription = $this->service()->cancelSubscription($subscriptionId);
 
