@@ -276,5 +276,5 @@ Route::group(['middleware' => ['auth.cron']], function()
 
 Route::group(['middleware' => ['auth.oauth']], function()
 {
-    Route::get('/token/{token}/details', 'UserController@getDetailsFromToken');
+    Route::get('/user/token/{token}/details', 'UserController@getDetailsFromToken');
 });
