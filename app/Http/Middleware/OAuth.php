@@ -3,10 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Auth;
-use Response;
 
-class OAuth {
+class OAuth
+{
     /**
      * Handle an incoming request.
      *
@@ -17,9 +16,13 @@ class OAuth {
     public function handle($request, Closure $next)
     {
         if (($_SERVER['PHP_AUTH_USER'] !== config('oauth.auth_user')) or
-        ($_SERVER['PHP_AUTH_PW'] !== config('oauth.auth_pass')))
+            ($_SERVER['PHP_AUTH_PW'] !== config('oauth.auth_pass')))
         {
-            return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
+            $response = [
+                'success' => false,
+                'errors' => ['Unauthorised']
+            ];
+            return Response::json($response);
         }
 
         return $next($request);
