@@ -201,22 +201,19 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function checkLoggedIn()
+    /**
+     * Fetch data for the currently active user session
+     *
+     *
+     * @return mixed
+     */
+    public function getSessionData()
     {
         $queryParams = Input::all();
 
-        list($error, $data) = (new User\Service)->checkLoggedIn($queryParams);
+        list($error, $data) = (new User\Service)->getSessionData($queryParams);
 
-        if ($data !== null)
-        {
-            $response = AppResponse::jsonResponse([], $data);
-        }
-        else
-        {
-            $response = AppResponse::unauthorizedResponse($error);
-        }
-
-        return $response;
+        return AppResponse::jsonResponse($error, $data);
     }
 
     /**
@@ -229,7 +226,7 @@ class UserController extends Controller
      */
     public function getDetailsFromToken(string $token)
     {
-        list($error, $data) = (new User\Service)->getDetailsFromToken($token);
+        list($error, $data) = (new User\Service)->getDetailsFromSessionToken($token);
 
         $response = AppResponse::jsonResponse($error, $data);
 

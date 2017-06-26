@@ -43,8 +43,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::post('/track_lead', 'UserController@trackLead');
 
-        Route::options('/logged_in', 'UserController@checkLoggedIn')->middleware('cors', 'auth:user');
-        Route::get('/logged_in', 'UserController@checkLoggedIn')->middleware('cors', 'auth:user');
+        // Adding the following here since auth:user middleware should be after cors
+        Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
+        Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()

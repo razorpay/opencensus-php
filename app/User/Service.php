@@ -25,17 +25,30 @@ use App\Providers\GenericUser;
 use DrewM\MailChimp\MailChimp;
 use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Contracts\Cache\Store;
+use Illuminate\Foundation\Application;
+
 
 class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
-    const OAUTH_VERIFY_TOKEN         = 'oauth_verify_token';
+    const OAUTH_SESSION_TOKEN         = 'oauth_session_token';
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
 
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
+
+    /**
+     * @var Application
+     */
+    protected $app;
+
+    /**
+     * @var Store
+     */
+    protected $cache;
 
     public function __construct()
     {
@@ -880,7 +893,14 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function checkLoggedIn($queryParams)
+    /**
+     * Get data from the current user session
+     *
+     * @param array $queryParams
+     *
+     * @return array
+     */
+    public function getSessionData(array $queryParams): array
     {
         $user = Auth::user();
 
@@ -888,8 +908,11 @@ class Service extends Base\Service
 
         if ($user === null)
         {
-            $error[] = 'No user logged in on dashboard';
-
+            //
+            // If user is null, no active session exists
+            // We simply return null, and allow the Authenticate middleware
+            // to send a 401 response.
+            //
             return [$error, $data];
         }
 
@@ -913,10 +936,10 @@ class Service extends Base\Service
             'user_email'    => $user->email,
             'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role,
-            'query_params'  => $queryParams['query']
+            'query_params'  => $queryParams['query'] ?? []
         ];
 
-        $cacheKey = $this->getOAuthVerifyTokenCacheKey($token);
+        $cacheKey = $this->getOAuthSessionTokenCacheKey($token);
 
         $this->cache->put($cacheKey, $data, 10);
 
@@ -929,16 +952,25 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function getDetailsFromToken($token)
+    /**
+     * Fetch cached data for a session token
+     * Used in auth-service for verifying user creds, S2S
+     *
+     * @param string $token
+     *
+     * @return array
+     */
+    public function getDetailsFromSessionToken(string $token): array
     {
         $error = $data = null;
-        $cacheKey = $this->getOAuthVerifyTokenCacheKey($token);
+        $cacheKey = $this->getOAuthSessionTokenCacheKey($token);
 
         $data = $this->cache->get($cacheKey);
 
         if ($data !== null)
         {
             $user = (new Entity)->findOrFail($data['user_id']);
+
             $data['user'] = $user;
             $data['user']['merchant_id'] = $data['merchant_id'];
         }
@@ -951,17 +983,27 @@ class Service extends Base\Service
     }
 
     /**
-     * Defines the cache key for OAuth verification tokens
+     * Defines the cache key for OAuth session tokens
      *
      * @param string $token
      *
      * @return string
      */
-    private function getOAuthVerifyTokenCacheKey(string $token): string
+    private function getOAuthSessionTokenCacheKey(string $token): string
     {
-        return self::OAUTH_VERIFY_TOKEN . '.' . $token;
+        return self::OAUTH_SESSION_TOKEN . '.' . $token;
     }
 
+    /**
+     * Whether the current user has the require role for
+     * authorizing an OAuth application.
+     *
+     * TODO: Move this check to auth-service
+     *
+     * @param $merchant
+     *
+     * @return bool
+     */
     protected function verifyUserRoleForOAuthAuthorize($merchant): bool
     {
         $allowedRoles = ['owner'];
