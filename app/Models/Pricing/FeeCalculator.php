@@ -11,7 +11,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Models\Transfer\ToType;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -40,6 +40,11 @@ class FeeCalculator
     protected $pricingRules = null;
 
     protected $amount = null;
+
+    /**
+     * @var Trace
+     */
+    protected $trace;
 
     public function __construct($entity)
     {
@@ -170,9 +175,21 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
+        $rulesCount = count($rules);
+
         $this->trace->debug(
             TraceCode::PRICING_RULE_SELECTION,
-            ['count' => count($rules)]);
+            ['count' => $rulesCount]);
+
+        //
+        // If pricing for the feature is optional, no rules may exist
+        // In this case, we simply return
+        //
+        if (($rulesCount === 0) and
+            (Feature::isFeaturePricingOptional($feature) === true))
+        {
+            return;
+        }
 
         $rule = null;
 
@@ -191,10 +208,7 @@ class FeeCalculator
                 ['entity' => $this->entity->toArray()]);
         }
 
-        if (empty($rule) === false)
-        {
-            $this->pricingRules->push($rule);
-        }
+        $this->pricingRules->push($rule);
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)
@@ -246,7 +260,11 @@ class FeeCalculator
 
     protected function getRelevantTransferPricingRule($rules, $method)
     {
-        return (count($rules) > 0) ? $rules[0] : [];
+        //
+        // Transfer pricing rules are optional -
+        // However, if a rule exists, we validate that only one
+        // rule is applied per transfer
+        //
         $rule = $this->getRelevantPricingRuleForMethod($rules);
 
         return $rule;
@@ -743,7 +761,7 @@ class FeeCalculator
       * If fee is less than min_fee, then min_fee will be charged.
       * If max_fee is available and fee is above max_fee,
       *  then max_fee will be charged.
-     *
+      *
       * @param int $fee
       * @param int $min
       * @param int $max
