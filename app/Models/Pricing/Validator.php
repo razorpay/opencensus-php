@@ -15,32 +15,38 @@ use RZP\Models\Bank\IFSC;
 
 class Validator extends Base\Validator
 {
-    protected static $addPlanRuleRules = array(
-        Entity::FEATURE             => 'sometimes|alpha',
-        Entity::GATEWAY             => 'sometimes|',
-        Entity::PLAN_NAME           => 'sometimes|',
-        Entity::PAYMENT_METHOD      => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
-        Entity::INTERNATIONAL       => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
-        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
-        Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
-        Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
+    protected static $addPlanRuleRules = [
+            Entity::FEATURE             => 'sometimes|alpha',
+            Entity::GATEWAY             => 'sometimes|',
+            Entity::PLAN_NAME           => 'sometimes|',
+            Entity::PAYMENT_METHOD      => 'required|string',
+            Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
+            Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
+            Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
+            Entity::INTERNATIONAL       => 'sometimes|in:0,1',
+            Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
+            Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
+            Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
+            Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
+            Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
+            Entity::MIN_FEE             => 'sometimes|integer|max:100000',
+            Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000'
+        ];
 
-    protected static $addPlanRuleValidators = array(
-        'addPlanRuleRate',
-        'addPlanRuleNB',
-        'addPlanRulePaymentNetwork',
-        'addPlanRuleInternational',
-        'addPlanRuleAmountRange',
-        'addPlanRuleFeature',
-        'addPlanRulePricingMethod');
+    protected static $addPlanRuleValidators = [
+            'addPlanRuleRate',
+            'addPlanRuleNB',
+            'addPlanRulePaymentNetwork',
+            'addPlanRuleInternational',
+            'addPlanRuleAmountRange',
+            'addPlanRuleFeature',
+            'addPlanRulePricingMethod',
+            'addPlanRuleMinAndMaxFee'
+        ];
 
-    protected static $createPlanRules = array(
-        Entity::PLAN_NAME => 'required|alpha_num|max:20');
+    protected static $createPlanRules = [
+            Entity::PLAN_NAME => 'required|alpha_num|max:20'
+        ];
 
     protected function validateAddPlanRuleFeature($input)
     {
@@ -201,6 +207,16 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Amount Range Rules require max end of ranges to be greater than'.
                 'min end of range');
+        }
+    }
+
+    protected function validateAddPlanRuleMinAndMaxFee($input)
+    {
+        if (isset($input[Entity::MAX_FEE]) and
+            ($input[Entity::MIN_FEE] > $input[Entity::MAX_FEE]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Min fee chargeable for a rule needs to be greater than Max fee');
         }
     }
 

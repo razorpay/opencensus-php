@@ -73,7 +73,7 @@ class GatewayController extends Controller
 
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
-        return (new Payment\Service)->s2sCallback($paymentId, $input);
+        return $this->service('payment')->s2sCallback($paymentId, $input);
     }
 
     public function callbackGateway($gateway)

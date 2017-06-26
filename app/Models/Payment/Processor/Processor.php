@@ -357,30 +357,47 @@ class Processor
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
         }
 
-        // If payment is not in created state, then that means
-        // it's already been processed. It's possible that payment
-        // may have succeeded. In such cases, we need to send back
-        // exact same response as we would have if the payment succeeded
-        if ($payment->isCreated() === false)
-        {
-            return $this->processPaymentCallbackSecondTime($payment);
-        }
+        $resource = $this->getCallbackMutexResource($payment);
 
-        if (empty($input) === false)
-        {
-            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
-        }
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment, $input)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
 
-        $errorCode = $this->repo->transaction(function() use ($payment, $input)
-        {
-            $this->lockForUpdateAndReload($payment);
+                // If payment is not in created state, then that means
+                // it's already been processed. It's possible that payment
+                // may have succeeded. In such cases, we need to send back
+                // exact same response as we would have if the payment succeeded
+                if ($payment->isCreated() === false)
+                {
+                    return $this->processPaymentCallbackSecondTime($payment);
+                }
 
-            $errorCode = $this->cancelPayment($payment, $input);
+                if (empty($input) === false)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+                }
 
-            return $errorCode;
-        });
+                $errorCode = $this->repo->transaction(function() use ($payment, $input)
+                {
+                    $this->lockForUpdateAndReload($payment);
 
-        throw new Exception\BadRequestException($errorCode);
+                    $errorCode = $this->cancelPayment($payment, $input);
+
+                    return $errorCode;
+                });
+
+                throw new Exception\BadRequestException($errorCode);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
     }
 
     protected function cancelPayment($payment, $input)
@@ -470,7 +487,7 @@ class Processor
                 if (($payment->hasBeenAuthorized() === true) and
                     ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
                 {
-                    return $this->processAuthorizeResponse($payment);
+                    return $this->postPaymentAuthorizeProcessing($payment);
                 }
 
                 $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
@@ -1063,6 +1080,12 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        // Bank transfers are customer-initiated, and so are auto-captured.
+        if ($payment->isBankTransfer() === true)
+        {
+            return true;
+        }
+
         //
         // We do an auto capture only if payment is associated with an order.
         //

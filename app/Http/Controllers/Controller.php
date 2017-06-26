@@ -23,7 +23,7 @@ abstract class Controller extends BaseController
     protected $route;
 
     /**
-     * Service class name which this controller usage
+     * Service class name which this controller uses
      *
      * @var string
      */
@@ -35,6 +35,10 @@ abstract class Controller extends BaseController
      * @var array
      */
     protected $input;
+
+    protected $config;
+
+    protected $ba;
 
     public function __construct()
     {
@@ -90,21 +94,40 @@ abstract class Controller extends BaseController
 
     /**
      * Returns the service instance.
+     * Three ways to get the service instance:
+     *  1. If entity is passed to the function, we get the class
+     *     from the entity namespace.
+     *  2. If service variable is defined in the child controller class,
+     *     we get an object of the class defined by the service variable.
+     *  3. If both the above conditions don't match, we get the entity name
+     *     using the child controller class name and follow the (1) flow.
      *
-     * @param string|null $service
+     * @param null $entity
      *
-     * @return \RZP\Models\Base\Service
+     * @return BaseService
      */
-    protected function service($service = null)
+    protected function service($entity = null): BaseService
     {
-        if ($service !== null)
+        if ($entity !== null)
         {
-            $ns = E::getEntityNamespace($service);
-            $class = $ns . '\\' . 'Service';
-            return new $class;
+            $class = E::getEntityService($entity);
         }
+        else if ($this->service !== null)
+        {
+            $class = $this->service;
+        }
+        else
+        {
+            $controllerClassFQN = explode('\\', static::class);
 
-        $class = $this->service;
+            $controllerClass = end($controllerClassFQN);
+
+            $classNameArray = explode("Controller", $controllerClass);
+
+            $entity = snake_case($classNameArray[0]);
+
+            $class = E::getEntityService($entity);
+        }
 
         return new $class;
     }

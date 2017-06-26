@@ -18,8 +18,7 @@ class CreateInvitationsTable extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Invitation::ID, Invitation::ID_LENGTH)
-                  ->primary();
+            $table->increments(Invitation::ID);
 
             $table->char(Invitation::MERCHANT_ID, Invitation::ID_LENGTH);
 

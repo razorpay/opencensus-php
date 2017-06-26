@@ -11,10 +11,14 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID      => 'sometimes|alpha_num',
+        Entity::PAYMENT_ID      => 'sometimes|alpha_dash',
         Entity::CHECKOUT_ID     => 'sometimes|alpha_num',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num'
     );
+
+    protected $signedIds = [
+        Entity::PAYMENT_ID,
+    ];
 
     public function findForPayment($paymentId)
     {

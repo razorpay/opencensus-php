@@ -6,8 +6,9 @@ use RZP\Exception;
 
 class Type
 {
-    const MERCHANT  = 'merchant';
-    const CUSTOMER  = 'customer';
+    const MERCHANT        = 'merchant';
+    const CUSTOMER        = 'customer';
+    const VIRTUAL_ACCOUNT = 'virtual_account';
 
     public static function validateType($type)
     {
@@ -20,7 +21,7 @@ class Type
 
     public static function getEntityClass($type)
     {
-        $entity = 'RZP\Models\\'.ucfirst($type) . '\Entity';
+        $entity = 'RZP\Models\\' . studly_case($type) . '\Entity';
 
         return $entity;
     }

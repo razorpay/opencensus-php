@@ -1050,6 +1050,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
     }
 
+    public function isBankTransfer()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -1130,7 +1135,7 @@ class Entity extends Base\PublicEntity
 
     public function getTransferId()
     {
-        return $this->getAttribute(SELF::TRANSFER_ID);
+        return $this->getAttribute(self::TRANSFER_ID);
     }
 
     public function getAmount()
@@ -1165,7 +1170,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountTransferred()
     {
-        return $this->getAttribute(SELF::AMOUNT_TRANSFERRED);
+        return $this->getAttribute(self::AMOUNT_TRANSFERRED);
     }
 
     public function getAmountUntransferred()
@@ -1418,6 +1423,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONVERT_CURRENCY);
     }
 
+    public function getGatewayCaptured()
+    {
+        return $this->getAttribute(self::GATEWAY_CAPTURED);
+    }
+
     /**
      * Get the rate at which currency conversion was applied to
      * the payment amount
@@ -1464,6 +1474,8 @@ class Entity extends Base\PublicEntity
                 return [$method, $this->getVpa()];
             case Method::AEPS:
                 return [$method, ''];
+            case Method::BANK_TRANSFER:
+                return [$method, ''];
         }
     }
 
@@ -1473,6 +1485,18 @@ class Entity extends Base\PublicEntity
             self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
             self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
         ];
+    }
+
+    public function getNetbankingReferenceId()
+    {
+        $netbankingRefId = null;
+
+        if ($this->isNetbanking() === true)
+        {
+            $netbankingRefId = $this->getAttribute(self::REFERENCE1);
+        }
+
+        return $netbankingRefId;
     }
 
     /**
@@ -1886,7 +1910,9 @@ class Entity extends Base\PublicEntity
     /**
      * Updates Payment amount_paidout field
      *
-     * @param  int    $amount
+     * @param  int $amount
+     *
+     * @throws Exception\LogicException
      */
     public function payoutAmount(int $amount)
     {
@@ -1999,5 +2025,33 @@ class Entity extends Base\PublicEntity
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
         return min($timeWindow, $autoRefundDelay);
+    }
+
+    public function shouldRunFraudChecks()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function shouldFailOnRiskFailure()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

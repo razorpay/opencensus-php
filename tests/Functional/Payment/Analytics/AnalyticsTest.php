@@ -372,6 +372,7 @@ class AnalyticsTest extends TestCase
             'country' => 'US',
             'network' => 'MasterCard',
         ]);
+
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $requestServer['HTTP_REFERER'] = 'https://hello.com';
@@ -406,5 +407,42 @@ class AnalyticsTest extends TestCase
 
         $this->assertEquals((float) 60.3, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
         $this->assertEquals('maxmind', $paymentAnalytic[AnalyticsEntity::RISK_ENGINE]);
+    }
+
+    public function testAnalyticsCountOnSuccessfulPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://hello.com';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytics = $this->getEntities(E::PAYMENT_ANALYTICS, ['payment_id' => $payment['razorpay_payment_id']], true);
+
+        $this->assertEquals(1, $paymentAnalytics['count']);
+    }
+
+    public function testAnalyticsCountOnFailedPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://hello.com';
+
+        $this->gateway = 'hdfc';
+
+        $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
+        // For 3dsecure case
+        $this->makeRequestAndCatchException(function () use ($payment, $requestServer)
+        {
+            $payment['card']['number'] = '4012001037490014';
+
+            $payment = $this->doAuthPayment($payment, $requestServer);
+        });
+
+        $payment = $this->getLastEntity(E::PAYMENT, true);
+
+        $paymentAnalytics = $this->getEntities(E::PAYMENT_ANALYTICS, ['payment_id' => $payment['id']], true);
+
+        $this->assertEquals(1, $paymentAnalytics['count']);
     }
 }

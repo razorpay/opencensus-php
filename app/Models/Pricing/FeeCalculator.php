@@ -606,9 +606,15 @@ class FeeCalculator
     {
         list($percent, $fixed) = $rule->getRates();
 
+        list($min, $max) = $rule->getMinMaxFees();
+
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
+
+        // Fee is checked with bounds after being rounded up.
+        // This ensures fee will always be within the bound.
+        $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
 
         $rzpFee = $this->createFeeBreakup(
                                 $rule->getFeature(),
@@ -719,5 +725,29 @@ class FeeCalculator
         $denominator = 10000 + $taxPercentage;
 
         return ceil($numerator / $denominator);
+    }
+
+    /**
+      * Checks for the min_fee and max_fee against fee.
+      * If fee is less than min_fee, then min_fee will be charged.
+      * If max_fee is available and fee is above max_fee,
+      *  then max_fee will be charged.
+      * @param int $fee
+      * @param int $min
+      * @param int $max
+      * @return int
+      */
+    protected function compareBoundsAndGetFee($fee, $min, $max)
+    {
+        if ($fee < $min)
+        {
+            $fee = $min;
+        }
+        else if ((is_null($max) === false) and ($fee > $max))
+        {
+            $fee = $max;
+        }
+
+        return $fee;
     }
 }

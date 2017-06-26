@@ -145,7 +145,7 @@ deploy:
       - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
-      - razorpay/aws-code-deploy:
+      - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET
           region: $AWS_REGION

@@ -27,6 +27,8 @@ class Checkout
 
     const SUBSCRIPTION_ID    = 'subscription_id';
 
+    const DOWNTIME_FILTER_REGEX = '/[a-z]$/';
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -410,7 +412,7 @@ class Checkout
     {
         try
         {
-            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            if ($this->shouldExposeDowntime($merchant) === true)
             {
                 $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
 
@@ -424,5 +426,24 @@ class Checkout
         {
             $this->trace->traceException($ex);
         }
+    }
+
+    /**
+     * Checks if the last character of mid is in a certain set of characters
+     * to control rollout
+     * @param  Merchant\Entity $merchant
+     * @return bool            Check if downtime should be exposed to merchant
+     */
+    protected function shouldExposeDowntime(Merchant\Entity $merchant): bool
+    {
+        if ($this->app->environment('prod') === false)
+        {
+            return true;
+        }
+
+        $result = ((preg_match(self::DOWNTIME_FILTER_REGEX, $merchant->getId()) === 1) or
+                    ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true));
+
+        return $result;
     }
 }

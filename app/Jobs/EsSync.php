@@ -42,9 +42,7 @@ class EsSync extends Job implements ShouldQueue
     {
         parent::handle();
 
-        //
         // Trace payload should include all necessary info for debugging.
-        //
 
         $tracePayload = [
             'job_attempts' => $this->attempts(),
@@ -64,7 +62,7 @@ class EsSync extends Job implements ShouldQueue
 
             $this->delete();
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->traceException(
                             $e,
@@ -72,13 +70,11 @@ class EsSync extends Job implements ShouldQueue
                             TraceCode::ES_SYNC_FAILED,
                             $tracePayload);
 
-            //
             // If it's logical error or maximum number of retries has happened
             // just delete the job, else retry the job after a wait.
-            //
 
             if (($e instanceof LogicException) or
-                ($this->attempts() > Base\EsRepository::MAX_JOB_ATTEMPTS))
+                ($this->attempts() >= Base\EsRepository::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }

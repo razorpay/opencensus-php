@@ -15,11 +15,29 @@ class ViewDataSerializer extends Base\Core
 {
     const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
 
-    protected static $appendEpochsFormatted = [
+    /**
+     * {key}_formatted gets appended in view data
+     * which holds the formatted time value for {key}
+     *
+     * @var array
+     */
+    protected static $epochs = [
         Entity::ISSUED_AT,
         Entity::DATE,
         Entity::EXPIRE_BY,
         Entity::EXPIRED_AT
+    ];
+
+    /**
+     * {key}_formatted gets appended in view data
+     * which holds the formatted amount value for {key}
+     *
+     * @var array
+     */
+    protected static $amounts = [
+        Entity::AMOUNT,
+        Entity::AMOUNT_DUE,
+        Entity::AMOUNT_PAID
     ];
 
     protected $invoice;
@@ -69,6 +87,7 @@ class ViewDataSerializer extends Base\Core
 
         return [
             'environment'   => $this->app->environment(),
+
             // Following is sent to view for showing warning(in hosted page and
             // emails) to avoid mis communication.
             'is_test_mode'  => ($this->mode === Mode::TEST),
@@ -84,36 +103,37 @@ class ViewDataSerializer extends Base\Core
         $invoiceData = $this->invoice->toArrayPublic();
 
         $isInvoicePaid = $this->invoice->isPaid();
-        $invoiceAmountFormatted = number_format($invoiceData[Entity::AMOUNT] / 100, 2);
 
         $invoiceData += [
-            'is_paid'          => $isInvoicePaid,
-            'amount_formatted' => $invoiceAmountFormatted,
+            'is_paid' => $isInvoicePaid,
         ];
 
-        foreach (self::$appendEpochsFormatted as $key)
+        foreach (self::$amounts as $key)
+        {
+            $invoiceData[$key . '_formatted'] = number_format($invoiceData[$key] / 100, 2);
+        }
+
+        foreach (self::$epochs as $key)
         {
             $epoch = $invoiceData[$key];
 
-            if ($epoch === null)
-            {
-                $invoiceData[$key . '_formatted'] = null;
-            }
-            else
-            {
-                $formattedEpoch = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
-                                        ->format('j M Y');
+            $epochFormatted = null;
 
-                $invoiceData[$key . '_formatted'] = $formattedEpoch;
+            if ($epoch !== null)
+            {
+                $epochFormatted = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                                        ->format('j M Y');
             }
+
+            $invoiceData[$key . '_formatted'] = $epochFormatted;
         }
 
         array_walk(
             $invoiceData[Entity::LINE_ITEMS],
             function (& $lineItem, $i)
             {
-                $amountFormatted = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
-                $grossAmount = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
+                $amountFormatted      = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
+                $grossAmount          = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
                 $grossAmountFormatted = number_format($grossAmount / 100, 2);
 
                 $lineItem += [

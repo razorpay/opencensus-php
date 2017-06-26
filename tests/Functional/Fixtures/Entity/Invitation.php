@@ -9,7 +9,6 @@ class Invitation extends Base
     public function create(array $attributes = [])
     {
         $defaultValues = [
-           'id'          => '8hd48md930kel3',
            'role'        => 'manager',
            'email'       => 'testTeamInvite@razorpay.com',
            'merchant_id' => self::DEFAULT_MERCHANT_ID,

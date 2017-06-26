@@ -83,6 +83,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD                         = 'Emi is not available for the card used in the transaction';
     const BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT                     = 'Aeps transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT                      = 'UPI transactions are not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT            = 'Bank tranfers are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
@@ -201,6 +202,10 @@ class PublicErrorDescription
     const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                        = 'Setting hour is not permitted for hourly schedules';
     const BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED                     = 'For weekly periods, only schedules with weekday anchors are permitted.';
     const BAD_REQUEST_SCHEDULE_IN_USE                                           = 'Cannot delete a schedule that is currently in use by one or more merchants.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES                    = 'One or more of the given receiver types is invalid.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR                      = 'An active virtual account with the same descriptor already exists for your account.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                    = 'Descriptor field cannot be used as merchant handle is not set for your account.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
@@ -401,13 +406,14 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                     = 'Your account has been disabled';
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                    = 'The user is not authenticated';
     const BAD_REQUEST_USER_NOT_FOUND                                            = 'User not found with the given input';
-    const BAD_REQUEST_USER_ALREADY_INVITED                                      = 'Invitation is already sent to this email';
-    const BAD_REQUEST_USER_ALREADY_A_MEMBER                                     = 'User with given email is already a member of the team';
     const BAD_REQUEST_USER_ROLE_INVALID                                         = 'The given role is not supported';
+    const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
+    const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                              = 'Self-Invitation not allowed';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';
 
+    const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                            = 'Merchant handle must be in uppercase.';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                 = 'Either of percent_rate, min_txn_amount, max_cashback, min_cashback is required';
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';

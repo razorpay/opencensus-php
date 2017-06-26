@@ -280,18 +280,19 @@ class PaymentRetrieveTest extends TestCase
         $mockEs->shouldReceive('searchNotes')
                ->once()
                ->with(
-                    Mockery::on(function ($data)
+                    Mockery::on(function ($actual)
                     {
-                        $testData = array(
-                            'type' => 'payments',
-                            'body' => [
-                                'size' => 10,
+                        $expected = [
+                            'index' => 'api_test',
+                            'type'  => 'payments',
+                            'body'  => [
+                                'size'  => 10,
                                 'query' => [
                                     'bool' => [
                                         'must' => [
                                             'multi_match' => [
-                                                'query' => 'es_random_1',
-                                                'type' => 'cross_fields',
+                                                'query'  => 'es_random_1',
+                                                'type'   => 'cross_fields',
                                                 'fields' => ['notes.*']
                                             ]
                                         ],
@@ -303,8 +304,10 @@ class PaymentRetrieveTest extends TestCase
                                     ]
                                 ]
                             ],
-                        );
-                        $this->assertArraySelectiveEquals($testData, $data);
+                        ];
+
+                        $this->assertArraySelectiveEquals($expected, $actual);
+
                         return true;
                     }))
                ->andReturn([$paymentId]);
@@ -344,27 +347,30 @@ class PaymentRetrieveTest extends TestCase
         $mockEs->shouldReceive('searchNotes')
             ->once()
             ->with(
-                Mockery::on(function ($data)
+                Mockery::on(function ($actual)
                 {
-                    $testData = array(
-                        'type' => 'payments',
-                        'body' => [
-                            'size' => 1000,
+                    $expected = [
+                        'index' => 'api_test',
+                        'type'  => 'payments',
+                        'body'  => [
+                            'size'  => 1000,
                             'query' => [
                                 'bool' => [
                                     'must' => [
                                         'multi_match' => [
-                                            'query' => 'es',
-                                            'type' => 'cross_fields',
+                                            'query'  => 'es',
+                                            'type'   => 'cross_fields',
                                             'fields' => ['notes.*']
-                                        ]
+                                        ],
                                     ],
                                     'filter' => []
-                                ]
+                                ],
                             ]
                         ],
-                    );
-                    $this->assertArraySelectiveEquals($testData, $data);
+                    ];
+
+                    $this->assertArraySelectiveEquals($expected, $actual);
+
                     return true;
                 }))
             ->andReturn($paymentIds);
