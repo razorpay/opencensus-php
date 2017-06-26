@@ -22,6 +22,7 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
     const ACCOUNT_NUMBER        = 'account_number';
+    //Credit Account number is the bank account to which money is transferred.
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
     const INT_PAYMENT_ID        = 'int_payment_id';
     const CAPS_PAYMENT_ID       = 'caps_payment_id';
