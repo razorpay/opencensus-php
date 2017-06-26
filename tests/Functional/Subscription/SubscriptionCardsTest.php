@@ -555,12 +555,51 @@ class SubscriptionCardsTest extends TestCase
 
     public function testPaymentFirst2FaGlobalNoAppToken()
     {
+        $subscription = $this->createSubscription(true, [], [], false, false, false);
 
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        try
+        {
+            $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING, $ex->getCode());
+
+            return;
+        }
+
+        $this->assertTrue(false);
     }
 
     public function testPaymentSecond2FaGlobalNoAppToken()
     {
+        $subscription = $this->createSubscription(false, [], [], false, false, false);
 
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $this->mockSession();
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $this->flushSession();
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['card']['number'] = '4000000000000002';
+
+        try
+        {
+            $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT, $ex->getCode());
+
+            return;
+        }
+
+        $this->assertTrue(false);
     }
 
     public function testPaymentFail2FaGlobalSavedCard()
