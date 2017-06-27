@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\FirstData;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\FirstData;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 
@@ -60,7 +61,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         // We are converting to int after casting to string as PHP randomly
         // returns wrong int values due to differing floating point precisions
         // So something like intval(31946.0) may give 31945 or 31946
-        // Convering to string using number_format and then converting
+        // Converting to string using number_format and then converting
         // is a hack to avoid this issue
 
         $refundAmount = intval(number_format($refundAmount, 2, '.', ''));
@@ -75,7 +76,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * This will be used by getRefundId & getPaymentId
      *
      * The payment id in the file is under column 'SESSION ID ASPD'.
-     * However, the id is sometimes capitalized, somethings not,
+     * However, the id is sometimes capitalized, sometimes not,
      * whereas the ids in our database are case sensitive.
      * So we compare ('SESSION ID ASPD') to 'caps_payment_id' of FirstData
      *
@@ -86,13 +87,18 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 
-        // doing this because sometimes the ids are all caps, sometimes not
-        // the caps_payment_id in database is however all caps! :D
-        // just to be on the safer side.
+        //
+        // doing this because sometimes the session_id (payment_id) is all caps,
+        // sometimes it's not. Since, we are searching with caps_payment_id in
+        // our DB, we capitalize the session_id always, to ensure we always get
+        // caps_payment_id.
+        //
         $capsPaymentId = strtoupper($capsPaymentId);
 
+        //
         // The broad assumption here is that these ids will not collide
-        // The mathematical probility is very low (not zero though)!
+        // The mathematical probability is very low (not zero though)!
+        //
         $payment = $this->app['repo']->first_data
                                      ->findByCapsPaymentIdAndAction(
                                        $capsPaymentId, Action::REFUND);
@@ -135,7 +141,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * raises alert in case of mismatch
      *
      * @param array $row
-     * @return void
+     * @return bool
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {

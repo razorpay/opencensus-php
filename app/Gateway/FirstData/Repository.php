@@ -24,7 +24,9 @@ class Repository extends Base\Repository
      * payment by given gateway caps_payment_id & its respective action
      *
      * @param string $capsPaymentId
-     * @return FirstData\Entity
+     * @param string $action
+     *
+     * @return Entity
      */
     public function findByCapsPaymentIdAndAction(
         string $capsPaymentId, string $action)

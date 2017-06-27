@@ -93,8 +93,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * We don't get service tax for First Data in the MIS files,
      * it is considered as zero
      *
-     * @param  array row
-     * @return 0
+     * @param  array $row
+     * @return int 0
      */
     protected function getGatewayServiceTax($row)
     {
@@ -106,7 +106,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * raises alert in case of mismatch
      *
      * @param array $row
-     * @return void
+     *
+     * @return bool
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
@@ -160,7 +161,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'gateway'         => get_class()
                 ]);
 
-            // there is an anamoly if no card category is present in row
+            // there is an anomaly if no card category is present in row
             return null;
         }
 
@@ -178,7 +179,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /**
      * Sets value of column 'card_type' as card trivia
      *
-     * @param  array  $row
      * @return string $cardType
      */
     protected function getCardTrivia()
@@ -193,7 +193,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'gateway'         => get_class()
                 ]);
 
-            // there is an anamoly if no card category is present in row
+            // there is an anomaly if no card category is present in row
             return null;
         }
 
@@ -222,7 +222,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'gateway'         => get_class()
                 ]);
 
-            // there is an anamoly if no card category is present in row
+            // there is an anomaly if no card category is present in row
             return null;
         }
 
