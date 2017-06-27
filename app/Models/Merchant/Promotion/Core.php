@@ -159,7 +159,7 @@ class Core extends Base\Core
 
          if ($scheduleTask !== null)
          {
-            $creditInput[Credits\Entity::EXPIRING_AT] = $scheduleTask->getNextRunAt();
+            $creditInput[Credits\Entity::EXPIRED_AT] = $scheduleTask->getNextRunAt();
          }
 
         $credit = $this->creditCore->create($merchant, $creditInput);

@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
     const PROMOTION_ID              = 'promotion_id';
     const VALUE                     = 'value';
     const TYPE                      = 'type';
-    const EXPIRING_AT               = 'expiring_at';
+    const EXPIRED_AT                = 'expired_at';
     const USED                      = 'used';
 
     protected $entity               = 'credits';
@@ -25,7 +25,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ID,
-        self::EXPIRING_AT,
+        self::EXPIRED_AT,
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,
@@ -39,7 +39,7 @@ class Entity extends Base\PublicEntity
         self::VALUE,
         self::TYPE,
         self::USED,
-        self::EXPIRING_AT,
+        self::EXPIRED_AT,
         self::CREATED_AT
     );
 
@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
         self::VALUE,
         self::TYPE,
         self::USED,
-        self::EXPIRING_AT,
+        self::EXPIRED_AT,
         self::CREATED_AT
     );
 
@@ -58,7 +58,7 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN          => null,
         self::TYPE              => 'amount',
         self::USED              => 0,
-        self::EXPIRING_AT       => null,
+        self::EXPIRED_AT        => null,
     );
 
     // Casts the attributes to native types

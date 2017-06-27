@@ -296,7 +296,7 @@ class CouponsTest extends TestCase
 
         $credit = $this->getLastEntity('credits', true);
 
-        $this->assertNull($credit['expiring_at']);
+        $this->assertNull($credit['expired_at']);
     }
 
     public function testApplyRecurringCoupon()
@@ -313,10 +313,10 @@ class CouponsTest extends TestCase
 
         $this->startTest();
 
-        //This is to test if the credit created has expiring_at
+        //This is to test if the credit created has expired_at
         $credit = $this->getLastEntity('credits', true);
 
-        $this->assertNotNull($credit['expiring_at']);
+        $this->assertNotNull($credit['expired_at']);
     }
 
     public function testDeleteUsedCoupon()

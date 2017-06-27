@@ -64,12 +64,12 @@ class Repository extends Base\Repository
                     ->whereRaw(Entity::VALUE . '>' . Entity::USED)
                     ->where(function ($query) use ($timestamp)
                         {
-                            $query->where(Entity::EXPIRING_AT, '>', $timestamp)
-                              ->orWhereNull(Entity::EXPIRING_AT);
+                            $query->where(Entity::EXPIRED_AT, '>', $timestamp)
+                              ->orWhereNull(Entity::EXPIRED_AT);
                         }
                     )
-                    //This is done because we want to keep the null expiring at the bottom
-                    ->orderBy(\DB::raw('-`expiring_at`'), 'desc')
+                    //This is done because we want to keep the null EXPIRED at the bottom
+                    ->orderBy(\DB::raw('-`expired_at`'), 'desc')
                     ->get();
 
     }
@@ -79,7 +79,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::PROMOTION_ID, '=', $promotionId)
-                    ->where(Entity::EXPIRING_AT, '<' , $timestamp)
+                    ->where(Entity::EXPIRED_AT, '<' , $timestamp)
                     ->whereRaw(Entity::VALUE . '>' . Entity::USED)
                     ->first();
     }
@@ -91,8 +91,8 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(function ($query)
                         {
-                            $query->where(Entity::EXPIRING_AT, '>', time())
-                              ->orWhereNull(Entity::EXPIRING_AT);
+                            $query->where(Entity::EXPIRED_AT, '>', time())
+                              ->orWhereNull(Entity::EXPIRED_AT);
                         }
                     )
                     ->where(Entity::TYPE, '=', $type)

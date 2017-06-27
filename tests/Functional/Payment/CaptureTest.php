@@ -688,13 +688,13 @@ class CaptureTest extends TestCase
         $credit1 = $this->fixtures->create('credits', [
                        'type'        => 'fee',
                        'value'       => 34000,
-                       'expiring_at' => time() + 2*24*60*60,
+                       'expired_at' => time() + 2*24*60*60,
                    ]);
 
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'fee',
                        'value' => 10000,
-                       'expiring_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1*24*60*60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 44000]);
@@ -782,7 +782,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'amount',
                        'value' => 10000,
-                       'expiring_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1*24*60*60,
                    ]);
 
         $pricing = $this->fixtures->base->createEntity('pricing', [
@@ -916,7 +916,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'amount',
                        'value' => 10000,
-                       'expiring_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1*24*60*60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 24000]);
@@ -967,7 +967,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'fee',
                        'value' => 10000,
-                       'expiring_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1*24*60*60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);

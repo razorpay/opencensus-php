@@ -38,7 +38,7 @@ class CreateCreditsTable extends Migration
             $table->integer(Credits::USED)
                   ->default(0);
 
-            $table->integer(Credits::EXPIRING_AT)
+            $table->integer(Credits::EXPIRED_AT)
                   ->nullable();
 
             $table->integer(Credits::CREATED_AT);
@@ -47,7 +47,7 @@ class CreateCreditsTable extends Migration
             $table->index(Credits::CREATED_AT);
             $table->index(Credits::CAMPAIGN);
             $table->index(Credits::TYPE);
-            $table->index(Credits::EXPIRING_AT);
+            $table->index(Credits::EXPIRED_AT);
 
             $table->foreign(Credits::MERCHANT_ID)
                 ->references(Merchant\Entity::ID)
