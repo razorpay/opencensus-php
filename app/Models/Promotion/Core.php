@@ -104,6 +104,8 @@ class Core extends Base\Core
 
        $anchor = $day->{Anchor::CHECKS[$period]};
 
-       return $anchor;
+       // + 1 because we want to expire the credits 12
+       // of next day not the same day as promotion was applied
+       return $anchor + 1;
     }
 }

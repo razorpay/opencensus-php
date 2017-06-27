@@ -205,7 +205,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(2);
+        $time->addDay(30);
 
         Carbon::setTestNow($time);
 
@@ -241,7 +241,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(1);
+        $time->addDay(30);
 
         Carbon::setTestNow($time);
 
@@ -296,7 +296,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(2);
+        $time->addDay(30);
 
         Carbon::setTestNow($time);
 

@@ -34,7 +34,12 @@ class Validator extends Base\Validator
 
     protected function validateCreditsExpiryPeriod($attribute, $value)
     {
-        if (Period::isPeriodValid($value) === false)
+        $validPeriods = [
+            'monthly',
+            'weekly',
+        ];
+
+        if (in_array($value, $validPeriods) === false)
         {
             throw new  Exception\BadRequestValidationFailureException(
                 'The credits expiry period is not valid',

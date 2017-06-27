@@ -34,7 +34,7 @@ return [
                 'credit_type'             => 'amount',
                 'iterations'              => 2,
                 'credits_expirable'       => true,
-                'credits_expiry_period'   => 'daily',
+                'credits_expiry_period'   => 'monthly',
                 'credits_expiry_interval' => 1,
             ],
             'url'    => '/promotions',
@@ -288,6 +288,6 @@ return [
 
     'scheduleEntity' => [
         'interval' => 1,
-        'period'   => 'daily',
+        'period'   => 'monthly',
     ],
 ];
