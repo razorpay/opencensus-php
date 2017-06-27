@@ -240,6 +240,8 @@ class TraceCode
     const RUN_CREATE_REQUEST                            = 'RUN_CREATE_REQUEST';
     const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
     const INVOICE_SEND_SUBSCRIPTION_NOTIFICATION        = 'INVOICE_SEND_SUBSCRIPTION_NOTIFICATION';
+    const SUBSCRIPTION_CANCEL                           = 'SUBSCRIPTION_CANCEL';
+    const SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE          = 'SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE';
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
@@ -592,6 +594,7 @@ class TraceCode
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
+    const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
     /**
      * Trace code for critical info
