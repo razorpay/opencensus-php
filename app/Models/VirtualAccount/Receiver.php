@@ -166,7 +166,7 @@ class Receiver
                 ]
             );
 
-        if (strlen($accountNumber) !== self::ACCOUNT_NUMBER_LENGTH)
+        if (strlen($accountNumber) > self::ACCOUNT_NUMBER_LENGTH)
         {
             throw new Exception\LogicException('Error in account number generation.');
         }
@@ -195,7 +195,7 @@ class Receiver
     // and now add the default handle (RPAY).
     //
     // If handle is set, we use the standard root (RZRP),
-    // and add the chosen handle, after padding.
+    // and add the chosen handle.
     //
     protected function getHandle(string $root)
     {
@@ -206,27 +206,23 @@ class Receiver
             $merchantHandle = $this->getDefaultHandle($root);
         }
 
-        $accountHandle = $this->padWithRandomDigits(self::HANDLE_LENGTH, $merchantHandle);
-
-        return $accountHandle;
+        return $merchantHandle;
     }
 
     // If handle is not set, descriptor is completely random.
-    //
-    // If handle is set, we use the given desriptor, with paddding.
+    // If handle is set, we use the given desriptor.
     //
     protected function getDescriptor()
     {
         $descriptor = $this->descriptor;
 
-        if ($this->merchant->getHandle() === null)
+        if (($this->merchant->getHandle() === null) or
+            ($descriptor === null))
         {
-            $descriptor = '';
+            $descriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH);
         }
 
-        $accountDescriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH, $descriptor);
-
-        return $accountDescriptor;
+        return $descriptor;
     }
 
     protected function getDefaultHandle(string $root)
