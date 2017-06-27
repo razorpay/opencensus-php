@@ -12,8 +12,12 @@ return [
          * @link https://github.com/php-http/guzzle6-adapter
          */
         'guzzle6' => [
-            'redirects' => 3,
+            'allow_redirects' => [
+                'max' => 3,
+                'strict' => true,
+            ],
             'timeout' => 20,
+            'connect_timeout' => 20,
         ],
 
         /**
