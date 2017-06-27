@@ -162,7 +162,7 @@ class Gateway
         self::WALLET_OPENWALLET   => Settlement\Channel::KOTAK,
         self::WALLET_MPESA        => Settlement\Channel::KOTAK,
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
-        self::UPI_MINDGATE            => Settlement\Channel::KOTAK,
+        self::UPI_MINDGATE        => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
