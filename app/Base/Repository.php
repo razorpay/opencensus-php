@@ -566,7 +566,7 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         // If entity is in old flow use the old method. To be removed later.
-        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
+        if (self::isEntityInOldEsFlow($entity->getEntity()) === true)
         {
             return $this->syncToEsDeprecated($entity, $dirty);
         }
