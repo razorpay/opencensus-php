@@ -65,8 +65,10 @@ class NodalAccount extends Base\Core
 
     protected function getPlainText($amount)
     {
+        $mode = ($amount >= 200000) ? "R" : "N";
+
         $values = [
-            "N",
+            $mode,
             "Razorpay Software Pvt Ltd",
             "7911547334",
             "KKBK0000958",
