@@ -36,7 +36,7 @@ class Shared
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL      = '1000FrstDataTl';
-    const UPI_HDFC_RAZORPAY_TERMINAL        = '100UPIHDFCTmnl';
+    const UPI_MINDGATE_RAZORPAY_TERMINAL    = '100UPIMindgate';
     const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
     const AEPS_ICICI_RAZORPAY_TERMINAL      = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
@@ -69,7 +69,7 @@ class Shared
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
         self::FIRST_DATA_RAZORPAY_TERMINAL,
-        self::UPI_HDFC_RAZORPAY_TERMINAL,
+        self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
@@ -108,7 +108,7 @@ class Shared
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL  => Gateway::FIRST_DATA,
         self::AEPS_ICICI_RAZORPAY_TERMINAL  => Gateway::AEPS_ICICI,
-        self::UPI_HDFC_RAZORPAY_TERMINAL    => Gateway::UPI_HDFC,
+        self::UPI_MINDGATE_RAZORPAY_TERMINAL    => Gateway::UPI_MINDGATE,
         self::UPI_ICICI_RAZORPAY_TERMINAL   => Gateway::UPI_ICICI,
         self::OPENWALLET_RAZORPAY_TERMINAL  => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL       => Gateway::WALLET_MPESA,

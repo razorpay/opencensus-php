@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Gateway\Upi\Hdfc\Mock;
+namespace RZP\Gateway\Upi\Mindgate\Mock;
 
 use App;
 use Carbon\Carbon;
-use Gateway\Upi\Hdfc;
-use RZP\Gateway\Upi\Hdfc\Action;
+use Gateway\Upi\Mindgate;
+use RZP\Gateway\Upi\Mindgate\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
@@ -293,7 +293,7 @@ class Server extends Base\Mock\Server
 
     protected function getEncryptionKey()
     {
-        $key = config('gateway.upi_hdfc.test_merchant_key');
+        $key = config('gateway.upi_mindgate.test_merchant_key');
 
         return hex2bin($key);
     }

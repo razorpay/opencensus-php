@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Hdfc\Mock;
+namespace RZP\Gateway\Upi\Mindgate\Mock;
 
 use RZP\Base;
 

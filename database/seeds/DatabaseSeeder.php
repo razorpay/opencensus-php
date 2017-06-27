@@ -1426,16 +1426,16 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table(Table::TERMINAL)->insert([
-            'id'                        => Terminal\Shared::UPI_HDFC_RAZORPAY_TERMINAL,
+            'id'                        => Terminal\Shared::UPI_MINDGATE_RAZORPAY_TERMINAL,
             'merchant_id'               => Account::DEMO_ACCOUNT,
-            'gateway'                   => Gateway::UPI_HDFC,
+            'gateway'                   => Gateway::UPI_MINDGATE,
             'card'                      => '0',
             'netbanking'                => '0',
             'upi'                       => '1',
-            'gateway_merchant_id'       => 'razorpay_upi_hdfc',
+            'gateway_merchant_id'       => 'razorpay_upi_mindgate',
             'gateway_terminal_id'       => '1234',
             'gateway_merchant_id2'      => 'razorpay@hdfcbank',
-            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_hdfc_terminal_pass'),
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_mindgate_terminal_pass'),
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);

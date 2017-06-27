@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Hdfc;
+namespace RZP\Gateway\Upi\Mindgate;
 
 class Status
 {

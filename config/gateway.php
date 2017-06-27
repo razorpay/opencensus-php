@@ -34,7 +34,7 @@ return array(
         'wallet_olamoney',
         'upi_idfc',
         'upi_icici',
-        'upi_hdfc',
+        'upi_mindgate',
         'upi_npci',
         'aeps_icici',
         'wallet_payzapp',
@@ -71,7 +71,7 @@ return array(
     'mock_wallet_payumoney'    => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney'  => env('AIRTELMONEY_MOCK'),
     'mock_wallet_jiomoney'     => env('JIOMONEY_MOCK'),
-    'mock_upi_hdfc'            => env('UPI_HDFC_MOCK'),
+    'mock_upi_mindgate'        => env('UPI_MINDGATE_MOCK'),
     'mock_upi_icici'           => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'            => env('UPI_IDFC_MOCK'),
     'mock_upi_npci'            => env('UPI_NPCI_MOCK'),
@@ -190,9 +190,9 @@ return array(
         'test_signing_public_key'   => env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
     ],
 
-    'upi_hdfc' => [
-        'test_merchant_id'       => env('UPI_HDFC_TEST_MERCHANT_ID'),
-        'test_merchant_key'      => env('UPI_HDFC_TEST_MERCHANT_KEY'),
+    'upi_mindgate' => [
+        'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
+        'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
     ],
 
     'wallet_payzapp' => array(

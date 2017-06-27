@@ -34,7 +34,7 @@ class Gateway
     const NETBANKING_RBL     = 'netbanking_rbl';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
-    const UPI_HDFC           = 'upi_hdfc';
+    const UPI_MINDGATE       = 'upi_mindgate';
     const UPI_ICICI          = 'upi_icici';
     const UPI_IDFC           = 'upi_idfc';
     const AEPS_ICICI         = 'aeps_icici';
@@ -162,7 +162,7 @@ class Gateway
         self::WALLET_OPENWALLET   => Settlement\Channel::KOTAK,
         self::WALLET_MPESA        => Settlement\Channel::KOTAK,
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
-        self::UPI_HDFC            => Settlement\Channel::KOTAK,
+        self::UPI_MINDGATE            => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
@@ -220,7 +220,7 @@ class Gateway
         ],
 
         Method::UPI => [
-            self::UPI_HDFC,
+            self::UPI_MINDGATE,
             self::UPI_ICICI,
             self::UPI_IDFC,
         ],
@@ -284,7 +284,7 @@ class Gateway
      * @var array
      */
     public static $asynchronous = [
-        self::UPI_HDFC,
+        self::UPI_MINDGATE,
         self::UPI_ICICI,
         self::UPI_IDFC,
         self::SHARP,
@@ -352,7 +352,7 @@ class Gateway
     );
 
     public static $upiToGatewayMap = array(
-        Upi::HDFC   => Gateway::UPI_HDFC,
+        Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
         Upi::IDFC   => Gateway::UPI_IDFC,
     );
@@ -416,7 +416,7 @@ class Gateway
      */
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
-        Gateway::UPI_HDFC,
+        Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::SHARP

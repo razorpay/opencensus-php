@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Hdfc;
+namespace RZP\Gateway\Upi\Mindgate;
 
 use RZP\Error\ErrorCode;
 

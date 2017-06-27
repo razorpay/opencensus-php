@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Hdfc;
+namespace RZP\Gateway\Upi\Mindgate;
 
 use Request;
 use Carbon\Carbon;
@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'hdfc';
 
-    protected $gateway = 'upi_hdfc';
+    protected $gateway = 'upi_mindgate';
 
     const BANK = 'hdfc';
 
@@ -268,7 +268,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Decrypts responses from the HDFC API
+     * Decrypts responses from the Mindgate API
      * @param  string $data
      * @return string
      */
