@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Promotion;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Schedule;
+use RZP\Models\Schedule\Anchor;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
@@ -68,23 +70,40 @@ class Core extends Base\Core
 
     protected function createSchedule(array $input)
     {
-        $schedule = $this->repo->schedule->getScheduleByPeriodAndInterval(
-            $input[Entity::CREDITS_EXPIRY_PERIOD], $input[Entity::CREDITS_EXPIRY_INTERVAL]);
+        $period = $input[Entity::CREDITS_EXPIRY_PERIOD];
+
+        $interval = $input[Entity::CREDITS_EXPIRY_INTERVAL];
+
+        $anchor = $this->getAnchorForPromotion($period);
+
+        $schedule = $this->repo->schedule->getScheduleByPeriodIntervalAndAnchor(
+            $period, $interval, $anchor);
 
         if ($schedule === null)
         {
-            $scheduleName =  $input[Entity::CREDITS_EXPIRY_INTERVAL] . '/' .
-                            $input[Entity::CREDITS_EXPIRY_PERIOD];
+            $scheduleName =  $interval . '/' . $period;
 
             $scheduleInput = [
-                Schedule\Entity::NAME       => $scheduleName,
-                Schedule\Entity::INTERVAL   => $input[Entity::CREDITS_EXPIRY_INTERVAL],
-                Schedule\Entity::PERIOD     => $input[Entity::CREDITS_EXPIRY_PERIOD],
+                Schedule\Entity::NAME     => $scheduleName,
+                Schedule\Entity::INTERVAL => $interval,
+                Schedule\Entity::PERIOD   => $period,
+                Schedule\Entity::ANCHOR   => $anchor,
             ];
 
             $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
         }
 
         return $schedule;
+    }
+
+    protected function getAnchorForPromotion($period)
+    {
+       $anchor = null;
+
+       $day = Carbon::now('Asia/Kolkata');
+
+       $anchor = $day->{Anchor::CHECKS[$period]};
+
+       return $anchor;
     }
 }
