@@ -17,6 +17,8 @@ class AdminAccess
 
     const ORG_HEADER_KEY = 'X-Org-Id';
 
+    const ORG_HOSTNAME_HEADER_KEY = 'X-Org-Hostname';
+
     protected $app;
 
     public function __construct(Application $app)
@@ -81,6 +83,7 @@ class AdminAccess
 
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
+
         if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
             return;
@@ -126,6 +129,20 @@ class AdminAccess
         if ($orgId === null)
         {
             $orgId = $request->headers->get(self::ORG_HEADER_KEY);
+        }
+
+        if ($orgId == null)
+        {
+            $orgHostname = $request->headers->get(self::ORG_HOSTNAME_HEADER_KEY);
+            if (!empty($orgHostname))
+            {
+                $org = $this->repo->org->findOrFailByHostname($orgHostname);
+                $orgPublic = $org->toArrayPublic();
+                if (isset($orgPublic['id']))
+                {
+                    $orgId = $orgPublic['id'];
+                }
+            }
         }
 
         if ($orgId === null)
