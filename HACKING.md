@@ -27,3 +27,7 @@ registration at all.
 # Aggregator Model
 
 We have an aggregator model using which a merchant can register other merchants under him and handle the dashboard on their behalf. In this case, the sub-merchant has a separate merchant account but its default owner is the user account of the main merchant. The email id of the sub-merchant is same as main merchant's by default but a new email can be optionally provided. We are now introducing an option to give the sub-merchant with different email his own user account based on that email. When this option is availed, the sub-merchant has two owners, self and the main merchant's user.
+
+# Reports
+
+We have a feature `dsp_report`which is only for the DSP Blackrock Merchant. They required customized reports. This should not be enabled for other merchants.
