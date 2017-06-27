@@ -94,6 +94,14 @@ class Index extends Command
         {
             throw new LogicException('EsSync: Es repo not found.');
         }
+
+        // 3. Set index name in esRepo. This can be removed in next pr (Now for BC).
+
+        $prefix = $app['config']->get('database.es_entity_index_prefix');
+
+        $indexName = $prefix . $this->entity . '_' . $app['rzp.mode'];
+
+        $this->esRepo->setIndexNameByValue($indexName);
     }
 
     /**

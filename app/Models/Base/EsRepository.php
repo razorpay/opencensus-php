@@ -99,10 +99,17 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             $prefix = $app['config']->get('database.es_entity_index_prefix');
 
-            $this->indexName = $prefix . $entity . '_' . $app['rzp.mode'];
+            $indexName = $prefix . $entity . '_' . $app['rzp.mode'];
 
-            $this->esDao->setIndexNameByValue($this->indexName);
+            $this->setIndexNameByValue($indexName);
         }
+    }
+
+    public function setIndexNameByValue(string $indexName)
+    {
+        $this->indexName = $indexName;
+
+        $this->esDao->setIndexNameByValue($indexName);
     }
 
     public function getFields(): array
