@@ -179,6 +179,10 @@ class Inferno
         return $pluginClient;
     }
 
+    /**
+     * Set client is used for setting client in
+     * test cases
+     */
     public function setClient($client = null)
     {
         $this->client = $client;

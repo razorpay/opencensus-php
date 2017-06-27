@@ -155,8 +155,11 @@ return array(
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
-        /*
+        /**
          * Third party providers
+         * We can use an external service provider in one of our service providers because
+         * of which we are initialising the external service providers before the
+         * application service providers.
          */
         Aws\Laravel\AwsServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
@@ -166,7 +169,7 @@ return array(
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
 
-        /*
+        /**
          * Application Service Providers...
          */
         // RZP\Providers\AppServiceProvider::class,
