@@ -75,7 +75,7 @@ class DSPTransactionReport extends BasicEntityReport
 
         if (isset($input['mail']) === true)
         {
-            $shouldSendMail = ($input['mail'] === 'true');
+            $shouldSendMail = ($input['mail'] === '1');
         }
 
         if ($shouldSendMail === true)
