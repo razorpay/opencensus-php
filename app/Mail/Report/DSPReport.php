@@ -13,13 +13,17 @@ class DSPReport extends Mailable
 
     protected $signedUrl;
 
-    public function __construct(string $email, string $signedUrl)
+    protected $filename;
+
+    public function __construct(string $email, string $signedUrl, string $filename)
     {
         parent::__construct();
 
         $this->email = $email;
 
         $this->signedUrl = $signedUrl;
+
+        $this->filename = $filename;
     }
 
     protected function addRecipients()
@@ -60,7 +64,10 @@ class DSPReport extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->signedUrl);
+        $this->attach($this->signedUrl, [
+            'as'   => $this->filename,
+            'mime' => 'text/csv'
+        ]);
 
         return $this;
     }

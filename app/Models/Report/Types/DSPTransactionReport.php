@@ -80,7 +80,7 @@ class DSPTransactionReport extends BasicEntityReport
 
         if ($shouldSendMail === true)
         {
-            $reportingMail = new DSPMail($email, $signedUrl);
+            $reportingMail = new DSPMail($email, $signedUrl, $filename);
 
             Mail::queue($reportingMail);
         }
