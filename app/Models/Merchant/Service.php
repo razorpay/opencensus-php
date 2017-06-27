@@ -691,7 +691,8 @@ class Service extends Base\Service
     public function createWebhook($input)
     {
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
-        return $webhook->toArray();
+
+        return $webhook->toArrayPublic();
     }
 
     public function editWebhook($webhookId, $input)
@@ -705,14 +706,14 @@ class Service extends Base\Service
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
-        return $webhook->toArray();
+        return $webhook->toArrayPublic();
     }
 
     public function getWebhook($id)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
-        return $webhook->toArray();
+        return $webhook->toArrayPublic();
     }
 
     public function getWebhooks()

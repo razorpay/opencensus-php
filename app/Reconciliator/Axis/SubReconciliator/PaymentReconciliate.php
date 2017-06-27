@@ -20,8 +20,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID    = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE     = 'card_type';
-    const COLUMN_SERVICE_TAX   = ['service_taxat145', 'service_taxat1450', 'service_taxat135',
-                                  'service_taxat1350', 'service_taxat1500'];
+    const COLUMN_SERVICE_TAX   = ['service_tax', 'service_taxat145', 'service_taxat1450',
+                                  'service_taxat135', 'service_taxat1350', 'service_taxat1500'];
     const COLUMN_FEE           = 'commission';
     const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
     const COLUMN_ORDER_ID      = 'order_id';

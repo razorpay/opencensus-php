@@ -80,6 +80,10 @@
         display: block;
       }
 
+      .issued #partial {
+        display: none;
+      }
+
       #button {
         background-color: #4994E6;
         color: #fff;
@@ -117,6 +121,19 @@
             </div>
           </div>
 
+          @if ($data['invoice']['partial_payment'] && $data['invoice']['amount_due'] > 0)
+            <div id="partial" class="card">
+              <h3>You have made a partial payment of ₹ {{ $data['invoice']['amount_paid']/100 }}.</h3>
+              <button id="button" onclick="razorpay.open()">Pay remaining ₹ {{ $data['invoice']['amount_due']/100 }}</button>
+              <div id='break'>
+                <div>Amount Paid<span>₹ {{ $data['invoice']['amount_paid']/100 }}</span></div>
+                <div>Amount Due<span>₹ {{ $data['invoice']['amount_due']/100 }}</span></div>
+                <div>Total<span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
+                <div>Invoice ID<span>{{ $data['invoice']['id'] }}</span></div>
+              </div>
+            </div>
+          @endif
+
           @if ($data['invoice']['status'] !== 'paid')
             @if (isset($data['error']))
               <div id="failure" class="card">
@@ -128,13 +145,20 @@
             @endif
             <script>
               var data = {!!utf8_json_encode($data)!!};
+              var invoiceObj = data.invoice;
               var merchant = data.merchant;
               var options = {
                 key: data.key_id,
-                invoice_id: data.invoice.id,
-                amount: data.invoice.amount,
-                description: 'Invoice #' + data.invoice.id,
+                invoice_id: invoiceObj.id,
+                amount: invoiceObj.amount,
+                description: 'Invoice #' + invoiceObj.id,
                 handler: function(response) {
+                  if (invoiceObj.partial_payment && invoiceObj.amount_due) {
+                    document.querySelector('#partial').style.display = 'block';
+                    document.querySelector('#button').style.display = 'none';
+                    document.querySelector('#partial h3').innerHTML = 'Please wait...';
+                    return location.reload();
+                  }
                   if (data.merchant && data.merchant.name) {
                     document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant.name;
                   }
@@ -142,8 +166,8 @@
                   document.body.className = 'paid';
                 },
                 prefill: {
-                  contact: data.invoice.customer_details.customer_contact,
-                  email: data.invoice.customer_details.customer_email,
+                  contact: invoiceObj.customer_details.customer_contact,
+                  email: invoiceObj.customer_details.customer_email,
                 },
                 callback_url: location.href,
                 theme: {
@@ -175,9 +199,9 @@
                 }
               }
               var razorpay = Razorpay(options);
-              @if (!isset($data['error']))
+              if (!data.error && invoiceObj.status !== 'partially_paid') {
                 razorpay.open();
-              @endif
+              }
             </script>
           @endif
         @else
@@ -190,6 +214,16 @@
               data: data,
               paymentResponseHandler: function(response) {
                 if (response.razorpay_payment_id) {
+                  if (data.invoice.partial_payment) {
+                    window.location.reload()
+                  } else {
+                    let invoice = data.invoice;
+                    invoice.amount_due_formatted = '0.00';
+                    invoice.amount_paid_formatted = invoice.amount_formatted;
+                    invoice.status = 'paid';
+                    invoice.is_paid = true;
+                    this.rerender(data)
+                  }
                   data.invoice.status = 'paid';
                   data.invoice.is_paid = true;
                   this.rerender(data)

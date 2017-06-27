@@ -111,7 +111,8 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ResponseFields::PAYMENT_ID]);
 
-        if ($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS)
+        if (($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS) and
+            ($input['gateway'][ResponseFields::RESPONSE_CODE] !== ResponseCode::SUCCESS))
         {
             return $this->callbackAuthFailureFlow($input);
         }
@@ -621,16 +622,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        //
-        // We always update wallet entity with verify response content as we need
-        // the gateway payment date during refund. So if that is not present in
-        // wallet entity we get it from verify
-        //
-        $verify->content = $this->getVerifyWalletAttributes($verify);
-
-        $gatewayPayment->fill($verify->content);
-
-        $gatewayPayment->saveOrFail();
+        $verify->verifyResponseContent = $this->getVerifyWalletAttributes($verify);
     }
 
     protected function getVerifyWalletAttributes($verify)
@@ -735,7 +727,10 @@ class Gateway extends Base\Gateway
     {
         if ($this->verifiedUsingStatusQuery === true)
         {
-            return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];
+            // In some cases like when the  payment status is INITIATED, Jiomoney
+            // doesn't return a gateway payment id in the STATUSQUERY API response
+            return $content[StatusQueryResponseFields::PAYLOAD_DATA]
+                        [StatusQueryResponseFields::JM_TRAN_REF_NO] ?? null;
         }
         else if ($this->verifiedUsingCheckPaymentStatus === true)
         {
@@ -920,16 +915,33 @@ class Gateway extends Base\Gateway
 
         $gatewayResponseArray = explode('|', $content['response']);
 
+        // In certain failure scenarions, such as request validation, Jiomoney doesn't
+        // send a checksum in the response. To handle such cases, we have this condition
+        // which conditionally removes the checksum attribute from the expected
+        // gateway response attributes
+        if (count($responseFieldsArray) > count($gatewayResponseArray))
+        {
+            array_pop($responseFieldsArray);
+        }
+
         return array_combine($responseFieldsArray, $gatewayResponseArray);
     }
 
     protected function verifySecureHash(array $content)
     {
+        // Checking that the response_code is FAILED in case we don't receive a
+        // checksum in the gateway response, to prevent possible tampering
+        if ((empty($content[ResponseFields::CHECKSUM]) === true) and
+            ($content[ResponseFields::RESPONSE_CODE] === ResponseCode::FAILED))
+        {
+            return;
+        }
+
         $hashArray = $this->getResponseHashArray($content);
 
         $generated = $this->getHashOfArray($hashArray);
 
-        $actual = $content[ResponseFields::CHECKSUM];
+        $actual = $content[ResponseFields::CHECKSUM] ?? '';
 
         $this->compareHashes($actual, $generated);
     }

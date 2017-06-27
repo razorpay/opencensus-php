@@ -1487,6 +1487,18 @@ class Entity extends Base\PublicEntity
         ];
     }
 
+    public function getNetbankingReferenceId()
+    {
+        $netbankingRefId = null;
+
+        if ($this->isNetbanking() === true)
+        {
+            $netbankingRefId = $this->getAttribute(self::REFERENCE1);
+        }
+
+        return $netbankingRefId;
+    }
+
     /**
      * This is a heuristic method that tries to find
      * an order id the notes section
@@ -2013,5 +2025,33 @@ class Entity extends Base\PublicEntity
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
         return min($timeWindow, $autoRefundDelay);
+    }
+
+    public function shouldRunFraudChecks()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function shouldFailOnRiskFailure()
+    {
+        if ($this->isCard() === true)
+        {
+            if (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

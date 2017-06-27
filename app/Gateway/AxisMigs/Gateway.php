@@ -939,7 +939,10 @@ class Gateway extends Base\Gateway
 
             $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-            if (ThreeDSecureStatus::getThreeDSstatus($threeDSstatus) === Payment\TwoFactorAuth::FAILED)
+            $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
+
+            if (($authStatus === Payment\TwoFactorAuth::FAILED) or
+                ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
                 if ($input['merchant']['international'] === false)
                 {
@@ -1059,7 +1062,7 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = null;
 
-        if (isset($content['vpc_TxnResponseCode']))
+        if (isset($content['vpc_TxnResponseCode']) === true)
         {
             $txnResponseCode = $content['vpc_TxnResponseCode'];
         }
@@ -1071,16 +1074,22 @@ class Gateway extends Base\Gateway
 
         $msg = null;
 
-        if (isset($content['vpc_Message']))
+        if (isset($content['vpc_Message']) === true)
         {
             $msg = $content['vpc_Message'];
         }
-        else if (isset($content['ERROR']))
+        else if (isset($content['ERROR']) === true)
         {
             $msg = $content['ERROR'];
         }
 
         $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if (($txnResponseCode !== null) and
+            (isset(TxnResponseCode::$map[$txnResponseCode]) === true))
+        {
+            $code = TxnResponseCode::$map[$txnResponseCode];
+        }
 
         if ($this->action === Base\Action::REFUND)
         {

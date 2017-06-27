@@ -2,9 +2,13 @@
 
 namespace RZP\Mail\Base;
 
+use App;
 use Config;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable as BaseMailable;
+use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
 {
@@ -39,6 +43,32 @@ class Mailable extends BaseMailable
                     ->addMailData()
                     ->addAttachments()
                     ->addHeaders();
+    }
+
+    public function send(MailerContract $mailer)
+    {
+        $app = App::getFacadeRoot();
+        $trace = $app['trace'];
+
+        try
+        {
+            parent::send($mailer);
+        }
+        catch (\Throwable $e)
+        {
+            $trace->traceException($e,
+                                   Trace::ERROR,
+                                   TraceCode::MAILER_JOB_ERROR,
+                                   [
+                                        'from'    => $this->from,
+                                        'to'      => $this->to,
+                                        'subject' => $this->subject
+                                   ]);
+
+            // After logging the exception caught, we rethrw it so that the
+            // retry mechanism for mails is triggerred
+            throw $e;
+        }
     }
 
     /**
