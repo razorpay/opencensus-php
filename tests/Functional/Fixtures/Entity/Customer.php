@@ -68,6 +68,15 @@ class Customer extends Base
             'card_id'       => '100000000lcard',
         ),
         array(
+            'id'            => '100001custcard',
+            'token'         => '10001cardtoken',
+            'customer_id'   => '100000customer',
+            'method'        => 'card',
+            'bank'          => null,
+            'wallet'        => null,
+            'card_id'       => '100000001lcard',
+        ),
+        array(
             'id'            => '10000custgcard',
             'token'         => '1000gcardtoken',
             'customer_id'   => '10000gcustomer',

@@ -308,7 +308,54 @@ class SubscriptionCardsTest extends TestCase
 
     public function testPaymentChargeLocalSavedCard()
     {
+        $subscription = $this->createSubscription(
+            false, [], ['customer_id' => 'cust_100000customer'], false, false, false);
 
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000, 'token_100000custcard');
+
+        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $token = $this->getEntityById('token', 'token_100000custcard', true);
+
+        $this->assertEquals($token['id'], $payment['token_id']);
+        $this->assertNull($payment['global_token_id']);
+        $this->assertEquals(true, $token['recurring']);
+
+        // --------------------------------------------------------------------
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        Carbon::setTestNow($chargeAt);
+
+        $result = $this->makeSubscriptionChargeCronRequest();
+
+        $this->assertEquals(1, $result['total']);
+
+        $payment2 = $this->getLastEntity('payment', true);
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $this->assertNotEquals($payment['id'], $payment2['id']);
+        $this->assertEquals($payment['token_id'], $payment2['token_id']);
+        $this->assertNull($payment2['global_token_id']);
+        $this->assertEquals($payment['customer_id'], $payment2['customer_id']);
+        $this->assertEquals($payment['global_customer_id'], $payment2['global_customer_id']);
+        $this->assertEquals($token['id'], $payment['token_id']);
+        $this->assertNull($payment2['app_token']);
+        $this->assertEquals($subscription2['id'], $payment['subscription_id']);
+        $this->assertEquals($payment['card_id'], $payment2['card_id']);
+
+        $this->assertEquals($subscription['token_id'], $subscription2['token_id']);
+        $this->assertEquals($subscription['customer_id'], $subscription2['customer_id']);
+        $this->assertEquals('cust_100000customer', $subscription['customer_id']);
+        $this->assertEquals(2, $subscription2['paid_count']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentFirst2FaGlobalSavedCard()
@@ -543,6 +590,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($token['id'], 'token_' . $payment['global_token_id']);
         $this->assertNull($payment2['app_token']);
         $this->assertEquals($subscription2['id'], $payment['subscription_id']);
+        // In case of global, we always create a new duplicate local token and card.
         $this->assertNotEquals($payment['card_id'], $payment2['card_id']);
 
         $this->assertEquals($subscription['token_id'], $subscription2['token_id']);
@@ -626,6 +674,92 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['card']['number'] = '4111111111111111';
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $subscription2 = $this->getLastEntity('subscription', true);
+
+        $gatewayToken2 = $this->getLastEntity('gateway_token', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($subscription2['token_id'], $gatewayToken2['token_id']);
+
+        $this->assertNotEquals($gatewayToken1['token_id'], $gatewayToken2['token_id']);
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        // --- The above 2 2FAs would have created two different tokens.
+        // --- Now, on the same token, attempt a normal payment. Not a subscription one.
+        //     It should go through successfully without any issue.
+
+        $paymentRequest = $this->getDefaultPaymentArray();
+        $paymentRequest['save'] = 1;
+        $paymentRequest['token'] = 'token_' . $gatewayToken2['token_id'];
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        // --- the third 2FA should go through successfully.
+        // --- but this 2FA is done with an existing recurring token only.
+        // --- earlier, the logic was that if there's a second recurring
+        //     on the same token, then it should be on private auth only.
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest(
+            $subscription, null, 'token_' . $gatewayToken1['token_id']);
+        unset($paymentRequest['card']);
+        $paymentRequest['card'] = ['cvv' => 111];
+
+        $this->doAuthPayment($paymentRequest);
+
+        // --- a subsequent charge on the subscription's current token is
+        //     made on private auth. This should also be successful without
+        //     any issue.
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        Carbon::setTestNow($chargeAt);
+
+        $this->flushSession();
+
+        $result = $this->makeSubscriptionChargeCronRequest();
+
+        $this->assertEquals(1, $result['total']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+        $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals($gatewayToken2['token_id'], $subscription['token_id']);
+    }
+
+    public function testLocalFlowDifferentCardsAndAuths()
+    {
+        // --- 1st 2FA with local token
+
+        $subscription = $this->createSubscription(
+            false, [], ['customer_id' => 'cust_100000customer'], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000, 'token_100000custcard');
+
+        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $subscription1 = $this->getLastEntity('subscription', true);
+
+        $gatewayToken1 = $this->getLastEntity('gateway_token', true);
+
+        $this->assertEquals($subscription1['token_id'], $gatewayToken1['token_id']);
+
+        // --- the above should have created a gateway token entity.
+        // --- the second 2FA on this should go through successfully.
+        //     a different gateway_token entity is created for this.
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100001custcard');
+
+        $this->fixtures->base->editEntity('card', '100000001lcard', ["type" => 'credit']);
 
         $response = $this->doAuthPayment($paymentRequest);
 
