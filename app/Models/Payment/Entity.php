@@ -1413,9 +1413,20 @@ class Entity extends Base\PublicEntity
 
     public function isSecondRecurring()
     {
-        return (($this->isRecurring() === true) and
-                ($this->getTokenId() !== null) and
-                ($this->localToken->isRecurring() === true));
+        $app = \App::getFacadeRoot();
+
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        if ($this->isRecurring() === false)
+        {
+            return false;
+        }
+
+        $reference = $this->getReferenceForGatewayToken();
+
+        $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
+
+        return ($existingGatewayTokens->count() === 1);
     }
 
     public function getConvertCurrency()

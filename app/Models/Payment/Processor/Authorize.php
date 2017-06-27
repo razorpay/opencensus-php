@@ -756,7 +756,6 @@ trait Authorize
             ($payment->isSecondRecurring() === true))
         {
             $this->verifyAuthForRecurring();
-
             $this->verifyAggregatorIfApplicable($merchant);
         }
     }
