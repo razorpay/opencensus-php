@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Http\BasicAuth;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Plan\Subscription;
 use RZP\Error;
 use RZP\Error\ErrorCode;
@@ -1858,7 +1859,7 @@ trait Authorize
 
         if ($activated === true)
         {
-            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE);
+            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
         }
 
         return $activated;
@@ -2171,7 +2172,11 @@ trait Authorize
 
     protected function eventPaymentAuthorized()
     {
-        $this->app['events']->fire('api.payment.authorized', [$this->payment]);
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.authorized', $eventPayload);
     }
 
     protected function traceAuthorizeFailedOperationData(Payment\Entity $payment)
