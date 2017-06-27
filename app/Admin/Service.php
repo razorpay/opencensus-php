@@ -1473,13 +1473,6 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    public function getMerchantTags($merchantId)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        return [null, $merchant->tagNames()];
-    }
-
     public function confirmUser($email)
     {
         list($error, $data) = (new User\Service)->confirmUserByEmail($email);
