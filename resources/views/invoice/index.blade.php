@@ -80,6 +80,10 @@
         display: block;
       }
 
+      .issued #partial {
+        display: none;
+      }
+
       #button {
         background-color: #4994E6;
         color: #fff;
@@ -117,7 +121,7 @@
             </div>
           </div>
 
-          @if ($data['invoice']['status'] === 'partially_paid')
+          @if ($data['invoice']['partial_payment'] && $data['invoice']['amount_due'] > 0)
             <div id="partial" class="card">
               <h3>You have made a partial payment of ₹ {{ $data['invoice']['amount_paid']/100 }}.</h3>
               <button id="button" onclick="razorpay.open()">Pay remaining ₹ {{ $data['invoice']['amount_due']/100 }}</button>
@@ -142,7 +146,6 @@
             <script>
               var data = {!!utf8_json_encode($data)!!};
               var invoiceObj = data.invoice;
-              var partially_paid = invoiceObj.status === 'partially_paid';
               var merchant = data.merchant;
               var options = {
                 key: data.key_id,
@@ -150,7 +153,8 @@
                 amount: invoiceObj.amount,
                 description: 'Invoice #' + invoiceObj.id,
                 handler: function(response) {
-                  if (partially_paid) {
+                  if (invoiceObj.partial_payment && invoiceObj.amount_due) {
+                    document.querySelector('#partial').style.display = 'block';
                     document.querySelector('#button').style.display = 'none';
                     document.querySelector('#partial h3').innerHTML = 'Please wait...';
                     return location.reload();
@@ -195,7 +199,7 @@
                 }
               }
               var razorpay = Razorpay(options);
-              if (!data.error && !partially_paid) {
+              if (!data.error && invoiceObj.status !== 'partially_paid') {
                 razorpay.open();
               }
             </script>
