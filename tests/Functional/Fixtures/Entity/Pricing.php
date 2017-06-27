@@ -258,6 +258,24 @@ class Pricing extends Base
                         'percent_rate'   => 0,
                         'fixed_rate'     => 0,
                     ),
+                    array(
+                        'id'             => '1ZeroPricingR5',
+                        'plan_id'        => '10ZeroPricingP',
+                        'plan_name'      => 'ZeroPricingPlan',
+                        'feature'        => 'transfer',
+                        'payment_method' => 'account',
+                        'percent_rate'   => 0,
+                        'fixed_rate'     => 0,
+                    ),
+                    array(
+                        'id'             => '1ZeroPricingR6',
+                        'plan_id'        => '10ZeroPricingP',
+                        'plan_name'      => 'ZeroPricingPlan',
+                        'feature'        => 'transfer',
+                        'payment_method' => 'customer',
+                        'percent_rate'   => 0,
+                        'fixed_rate'     => 0,
+                    ),
                 );
 
         $this->addPricingRulesToDb($rows);

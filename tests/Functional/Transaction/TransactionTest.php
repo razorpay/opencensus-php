@@ -118,8 +118,6 @@ class TransactionTest extends TestCase
     {
         $this->markTestSkipped();
 
-        $this->fixtures->create('pricing:zero_pricing_plan');
-
         $payment = $this->fixtures->times(5)->create('payment:authorized',
             ['created_at' => 1467301400]);
 

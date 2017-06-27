@@ -255,7 +255,7 @@ class Core extends Base\Core
 
         if ($oldTransaction === true)
         {
-            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
 
             $fee = 0;
             $serviceTax = 0;
@@ -374,7 +374,7 @@ class Core extends Base\Core
             ]
         );
 
-        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
 
         $transaction->setPricingRule($pricingRuleId);
 

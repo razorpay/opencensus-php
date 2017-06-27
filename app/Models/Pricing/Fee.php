@@ -41,7 +41,7 @@ class Fee extends Base\Core
 
         $method = $entity->getMethod();
 
-        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
+        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method);
     }
 
     public function calculateMerchantFees($entity)

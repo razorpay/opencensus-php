@@ -188,6 +188,10 @@ class FeeCalculator
         if (($rulesCount === 0) and
             (Feature::isFeaturePricingOptional($feature) === true))
         {
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+
+            $this->pricingRules->push($zeroPricingRule);
+
             return;
         }
 
