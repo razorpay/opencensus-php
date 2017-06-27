@@ -47,7 +47,7 @@ class Core extends Base\Core
      * We will create a dummy transaction with no fee split.
      * The actual fee split will be calculated at the time of payment capture
      * @param  Payment\Entity $payment
-     * @return [Transaction\Entity $txn, PublicCollection $feesSplit]
+     * @return array [Transaction\Entity $txn, PublicCollection $feesSplit]
      */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {

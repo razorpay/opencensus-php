@@ -183,7 +183,7 @@ class FeeCalculator
 
         //
         // If pricing for the feature is optional, no rules may exist
-        // In this case, we simply return
+        // In this case, we add the zero pricing rule and return
         //
         if (($rulesCount === 0) and
             (Feature::isFeaturePricingOptional($feature) === true))
