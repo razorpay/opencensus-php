@@ -27,6 +27,7 @@ class Repository extends Base\Repository
         Entity::EMAIL                   => 'sometimes|string|max:255',
         Entity::PARENT_ID               => 'sometimes|string|size:14',
         Entity::CATEGORY                => 'sometimes|string|max:4',
+        Entity::CATEGORY2               => 'sometimes|string|max:4',
         Entity::INTERNATIONAL           => 'sometimes|boolean',
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
