@@ -42,6 +42,8 @@ class SetApiHeaders {
 
         ApiRequest::addHeader('X-Org-Id', $org['id']);
 
+        ApiRequest::addHeader('X-Org-Hostname',$domain);
+
         return $next($request);
 	}
 }
