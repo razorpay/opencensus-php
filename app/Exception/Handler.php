@@ -174,12 +174,12 @@ class Handler extends ExceptionHandler
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
-    protected function gatewayExceptionHandler(BaseException $exception)
+    protected function gatewayExceptionHandler(GatewayErrorException $exception)
     {
         $level = Trace::INFO;
         $code = TraceCode::RECOVERABLE_EXCEPTION;
 
-        if ($exception->isCritical())
+        if ($exception->isCritical() === true)
         {
             $level = Trace::CRITICAL;
             $code = TraceCode::ERROR_EXCEPTION;
