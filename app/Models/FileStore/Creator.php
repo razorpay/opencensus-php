@@ -576,6 +576,11 @@ class Creator extends Base\Core
         {
             $this->zipFile();
         }
+
+        //TODO : hacky way fix it
+        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $this->createUploadedFile($this->getZipFullFilePath(), $fileName);
     }
 
     protected function zipFile()
