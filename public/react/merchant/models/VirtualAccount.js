@@ -1,21 +1,29 @@
 import GenericEntity from './GenericEntity';
 import Payment from './Payment';
 
+const fields = [
+  'id',
+  'name',
+  'description',
+  'descriptor',
+  'customer_id',
+  'status',
+];
+
 export default class VirtualAccount extends GenericEntity {
   listRouteName = 'virtual_account_fetch_multiple';
   detailsRouteName = 'virtual_account_fetch';
   deleteRouteName = 'virtual_account_delete';
 
-  resourceFields = [
-    'id',
-    'name',
-    'description',
-    'descriptor',
-    'receiver_types',
-    'customer_id',
-    'status',
-  ];
   receiver_types = ['bank_account'];
+
+  resourceFields() {
+    let resourceFields = fields.slice();
+    if (this.isNew) {
+      resourceFields.push('receiver_types');
+    }
+    return resourceFields;
+  }
 
   getRouteName() {
     return this.isNew ? 'virtual_account_create' : 'virtual_account_update';
