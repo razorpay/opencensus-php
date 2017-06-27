@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Transfer;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Entity;
 use RZP\Models\Reversal;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
@@ -13,6 +14,8 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 class TransferTest extends TestCase
 {
     use RequestResponseFlowTrait;
+
+    const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     public function setUp()
     {
@@ -76,7 +79,35 @@ class TransferTest extends TestCase
         // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
 
+        $this->checkTransferAndTxnRecords($transfer);
+
         $this->checkPaymentAndTxnRecords($transfer);
+    }
+
+    public function testTransferToAccountWithPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $transfer = $this->createTransfer('account');
+
+        $savedTransfer =  $this->getLastEntity('transfer', true);
+
+        $this->assertEquals($transfer['id'], $savedTransfer['id']);
+
+        $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
+
+        $serviceTax = 3;
+        $expectedFee = 20 + $serviceTax;
+
+        $txnData = [
+            'fee'         => $expectedFee,
+            'service_tax' => $serviceTax,
+            'debit'       => $transfer['amount'] + $expectedFee
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $txnData);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()
@@ -376,7 +407,7 @@ class TransferTest extends TestCase
 
         $this->assertArraySelectiveEquals($expected, $reversal);
 
-        $transaction = $this->getReversalTxn($reversal['id']);
+        $transaction = $this->getSingleTxn('reversal', $reversal['id']);
 
         $this->assertEquals($amount, $transaction['credit']);
 
@@ -430,29 +461,42 @@ class TransferTest extends TestCase
         return $payments['items'][0];
     }
 
-    protected function getTransferPaymentTxn(string $paymentId)
+    protected function getSingleTxn(string $entity = 'payment', string $entityId)
     {
-        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+        $entity = Entity::getEntityClass($entity);
 
-        $txn = $this->getEntities('transaction', ['entity_id' => $paymentId], true);
+        $entity::verifyIdAndSilentlyStripSign($entityId);
+
+        $txn = $this->getEntities('transaction', ['entity_id' => $entityId], true);
 
         $this->assertEquals(1, count($txn['items']));
 
         return $txn['items'][0];
     }
 
-    protected function getReversalTxn(string $reversalId)
+    protected function checkTransferAndTxnRecords($transfer, array $txnData = [])
     {
-        Reversal\Entity::verifyIdAndSilentlyStripSign($reversalId);
+        $txn = $this->getSingleTxn('transfer', $transfer['id']);
 
-        $txn = $this->getEntities('transaction', ['entity_id' => $reversalId], true);
+        $expectedTxn = [
+            'type'          => 'transfer',
+            'entity_id'     => $transfer['id'],
+            'debit'         => $transfer['amount'],
+            'credit'        => 0,
+            'settled'       => false,
+            'fee'           => 0,
+            'service_tax'   => 0,
+        ];
 
-        $this->assertEquals(1, count($txn['items']));
+        if (empty($txnData) === false)
+        {
+            $expectedTxn = array_merge($expectedTxn, $txnData);
+        }
 
-        return $txn['items'][0];
+        $this->assertArraySelectiveEquals($expectedTxn, $txn);
     }
 
-    protected function checkPaymentAndTxnRecords($transfer)
+    protected function checkPaymentAndTxnRecords($transfer, array $txnData = [])
     {
         $id = $transfer['id'];
 
@@ -466,13 +510,22 @@ class TransferTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedPayment, $payment);
 
-        $txn = $this->getTransferPaymentTxn($payment['id']);
+        $txn = $this->getSingleTxn('payment', $payment['id']);
 
         $expectedTxn = [
+            'type'          => 'payment',
+            'entity_id'     => $payment['id'],
             'credit'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
-            'settled'       => false
+            'settled'       => false,
+            'fee'           => 0,
+            'service_tax'   => 0,
         ];
+
+        if (empty($txnData) === false)
+        {
+            $expectedTxn = array_merge($expectedTxn, $txnData);
+        }
 
         $this->assertArraySelectiveEquals($expectedTxn, $txn);
     }

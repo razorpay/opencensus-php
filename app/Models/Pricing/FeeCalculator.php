@@ -195,8 +195,6 @@ class FeeCalculator
             return;
         }
 
-        $rule = null;
-
         //
         // `$feature` is among those defined in Pricing/Feature
         //

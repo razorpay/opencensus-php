@@ -162,30 +162,6 @@ class Pricing extends Base
                 'percent_rate'        => 0,
                 'fixed_rate'          => 0,
             ],
-            [
-                'id'                  => '1zE31zbyeGCTd4',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'transfer',
-                'payment_method'      => 'account',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'percent_rate'        => 200,
-                'fixed_rate'          => 0,
-            ],
-            [
-                'id'                  => '1zE31zbyeGCTd4',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'transfer',
-                'payment_method'      => 'account',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'percent_rate'        => 200,
-                'fixed_rate'          => 0,
-            ],
         ];
 
         $this->addPricingRulesToDb($rows);
@@ -197,44 +173,68 @@ class Pricing extends Base
     {
         $pricingPlanId = '1A0Fkd38fGZPVC';
 
-        $rows = array(
-                    array(
-                        'id'             => '1ABp2Xd3t5aRLX',
-                        'plan_id'        => '1A0Fkd38fGZPVC',
-                        'plan_name'      => 'standard_plan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'card',
-                        'percent_rate'   => 2000,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1osdf0GGDdalfF',
-                        'plan_id'        => '1A0Fkd38fGZPVC',
-                        'plan_name'      => 'standard_plan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'netbanking',
-                        'percent_rate'   => 2000,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1pteg2HHEebmhH',
-                        'plan_id'        => '1A0Fkd38fGZPVC',
-                        'plan_name'      => 'standard_plan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'wallet',
-                        'percent_rate'   => 2000,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1pteg2FFEebmgG',
-                        'plan_id'        => '1A0Fkd38fGZPVC',
-                        'plan_name'      => 'standard_plan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'transfer',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                );
+        $rows = [
+            [
+                'id'             => '1ABp2Xd3t5aRLX',
+                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1osdf0GGDdalfF',
+                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1pteg2HHEebmhH',
+                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'wallet',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1pteg2FFEebmgG',
+                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'                  => '1zE31zbyeGCTd4',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'transfer',
+                'payment_method'      => 'account',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+            ],
+            [
+                'id'                  => '1zE31zbyeGCTd5',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'transfer',
+                'payment_method'      => 'customer',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+            ],
+        ];
 
         $this->addPricingRulesToDb($rows);
 
