@@ -18,6 +18,6 @@ class ErrorClass
 
     public static function isCritical($errorClass)
     {
-        return (in_array($errorClass, self::$criticalErrorClasses, true));
+        return (in_array($errorClass, self::$criticalErrorClasses, true) === true);
     }
 }
