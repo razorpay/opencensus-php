@@ -273,6 +273,8 @@ class DSPTransactionReport extends BasicEntityReport
             }
             else
             {
+                $this->validateInput($input);
+
                 $day = (int) $input['day'];
                 $month = (int) $input['month'];
                 $year = (int) $input['year'];
@@ -286,6 +288,8 @@ class DSPTransactionReport extends BasicEntityReport
         }
         else if (isset($input['month']) === true)
         {
+            $this->validateInput($input);
+
             $month = (int) $input['month'];
             $year = (int) $input['year'];
 
