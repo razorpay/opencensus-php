@@ -1,6 +1,7 @@
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 
 export default ({ virtualaccount }) => {
+  let bankAccount = virtualaccount.receivers[0];
   return (
     <div class="row">
       <div class="col-sm-9">
@@ -9,7 +10,7 @@ export default ({ virtualaccount }) => {
             <tr>
               <td class="text-muted">Account Number</td>
               <td>
-                <b>{virtualaccount.bank_account.account_number}</b>
+                <b>{bankAccount.account_number}</b>
               </td>
             </tr>
             <tr>
@@ -18,12 +19,12 @@ export default ({ virtualaccount }) => {
             </tr>
             <tr>
               <td class="text-muted">IFSC Code</td>
-              <td><b>{virtualaccount.bank_account.ifsc}</b></td>
+              <td><b>{bankAccount.ifsc}</b></td>
             </tr>
             <tr>
               <td colSpan="2" class="text-center">
                 <CustomClipboard
-                  value={`Account Number: ${virtualaccount.bank_account.account_number}\nBeneficiary Name: ${virtualaccount.name}\nIFSC: ${virtualaccount.bank_account.ifsc}`}
+                  value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualaccount.name}\nIFSC: ${bankAccount.ifsc}`}
                 >
                   <div class="copy">Copy to Clipboard</div>
                 </CustomClipboard>

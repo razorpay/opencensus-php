@@ -38,19 +38,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Get the user list for the currently logged in merchant
-     * Only accessible to owners
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getUsersListWithInvites()
-    {
-        $data = (new Merchant\Service)->getUsersListWithInvites();
-
-        return AppResponse::jsonResponse(null, $data);
-    }
-
-    /**
      * Remove the team member on the given merchant.
      *
      * @param  string  $userId
