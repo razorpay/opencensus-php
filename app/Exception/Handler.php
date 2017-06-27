@@ -9,6 +9,7 @@ use ApiResponse;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Error\ErrorClass;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -70,10 +71,17 @@ class Handler extends ExceptionHandler
 
         switch (true)
         {
+            // Order should not be changed,
+            // GatewayErrorException extends RecoverableException
+            case $e instanceof GatewayErrorException
+                $response = $this->gatewayExceptionHandler($e);
+                break;
+
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
                 break;
+
 
             case $e instanceof ProcessTimedOutException:
                 $response = ApiResponse::json(['error' => 'Process timed out']);
@@ -164,6 +172,22 @@ class Handler extends ExceptionHandler
         $this->trace->info(
             TraceCode::RECOVERABLE_EXCEPTION,
             $this->getExceptionDetails($exception));
+
+        return $this->recoverableErrorResponse($this->isDebug(), $exception);
+    }
+
+    protected function gatewayExceptionHandler(BaseException $exception)
+    {
+        $level = Trace::INFO;
+        $code = TraceCode::RECOVERABLE_EXCEPTION;
+
+        if (ErrorClass::isCritical($exception->getError()->getClass()) === true)
+        {
+            $level = Trace::CRITICAL;
+            $code = TraceCode::ERROR_EXCEPTION;
+        }
+
+        $this->trace->addRecord($level, $code, $this->getExceptionDetails($exception));
 
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
