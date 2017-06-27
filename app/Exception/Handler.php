@@ -73,7 +73,7 @@ class Handler extends ExceptionHandler
         {
             // Order should not be changed,
             // GatewayErrorException extends RecoverableException
-            case $e instanceof GatewayErrorException
+            case $e instanceof GatewayErrorException:
                 $response = $this->gatewayExceptionHandler($e);
                 break;
 
