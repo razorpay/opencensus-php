@@ -538,12 +538,6 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
-        // If entity is in old flow use the old method. To be removed later.
-        if (self::isEntityInOldEsFlow($entity->getEntity()) === true)
-        {
-            return $this->syncToEsDeprecated($entity, $dirty);
-        }
-
         $mode = $this->app['rzp.mode'];
 
         $tracePayload = [
