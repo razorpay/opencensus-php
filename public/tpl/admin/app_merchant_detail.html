@@ -2046,6 +2046,8 @@
             <option value="settlement">Settlement</option>
             <option value="transaction">Combined</option>
             <option value="broking" ng-if="merchant.tags.indexOf('Broking_Report') !== -1">Broking Report</option>
+            <!-- DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants -->
+            <option value="dsp_report" ng-if="merchant.tags.indexOf('Dsp_Report') !== -1">DSP Transaction Report</option>
 
             <option value="invoice">Monthly Invoice</option>
 
