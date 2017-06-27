@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const NOTES                = 'notes';
 
     const RECEIVER_TYPES       = 'receiver_types';
+    const RECEIVERS            = 'receivers';
     const BANK_ACCOUNT         = 'bank_account';
 
     const DELETED_AT           = 'deleted_at';
@@ -51,8 +52,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
-        self::BANK_ACCOUNT,
-        self::RECEIVER_TYPES,
+        self::RECEIVERS,
         self::CREATED_AT,
     ];
 
@@ -60,7 +60,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::RECEIVER_TYPES,
     ];
 
     protected $casts = [
@@ -80,6 +79,10 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::NAME,
+    ];
+
+    protected $appends = [
+        self::RECEIVERS,
     ];
 
     protected static $sign = 'va';
@@ -164,6 +167,25 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTOR);
     }
 
+    protected function getReceiversAttribute()
+    {
+        $receivers = [];
+
+        foreach (Receiver::TYPES as $receiverType)
+        {
+            $assoc = studly_case($receiverType);
+
+            $func = 'has' . $assoc;
+
+            if ($this->$func() === true)
+            {
+                $receivers[] = $this->$assoc->toArrayPublic();
+            }
+        }
+
+        return $receivers;
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setStatus(string $status)
@@ -188,23 +210,6 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
-    }
-
-    protected function setPublicReceiverTypesAttribute(array & $array)
-    {
-        $receiverTypes = [];
-
-        foreach (Receiver::TYPES as $receiverType)
-        {
-            $func = 'has' . studly_case($receiverType);
-
-            if ($this->$func() === true)
-            {
-                $receiverTypes[] = $receiverType;
-            }
-        }
-
-        $array[self::RECEIVER_TYPES] = $receiverTypes;
     }
 
     public function incrementAmountPaid(int $amount)

@@ -59,7 +59,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
-        $this->assertRegexp("/RZRPHAND.{2}DESC1234$/", $vba['account_number']);
+        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()
