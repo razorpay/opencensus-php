@@ -15,6 +15,10 @@ import { issuePaymentLinkBatch } from 'merchant/modules/batches';
 })
 @reduxForm({
   form: 'issueAllLinks',
+  initialValues: {
+    sms_notify: 0,
+    email_notify: 0,
+  },
 })
 export default class IssueAllLinksModal extends Component {
   issue = props => {

@@ -101,7 +101,7 @@ export default props => {
                   <p class="text-muted" style={{ lineHeight: '35px' }}>
                     Payments to this account -
                     {' '}
-                    <u>{va_payments.length} payments</u>
+                    {va_payments.length} payments
                   </p>
 
                   <Table

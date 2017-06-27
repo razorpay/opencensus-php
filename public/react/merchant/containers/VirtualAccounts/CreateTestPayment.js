@@ -28,7 +28,7 @@ export default class CreateTestPayment extends Component {
 
   createTestPayment = props => {
     let { virtualAccount } = this.props;
-    let bankAccount = virtualAccount.bank_account;
+    let bankAccount = virtualAccount.receivers[0];
 
     let fieldProps = {
       ...props,

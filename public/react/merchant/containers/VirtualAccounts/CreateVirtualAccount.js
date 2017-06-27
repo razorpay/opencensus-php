@@ -11,6 +11,7 @@ import { fetchConfig } from 'merchant/modules/config';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 
 const VirtualAccountDetails = ({ virtualAccount }) => {
+  let bankAccount = virtualAccount.receivers[0];
   return (
     <div>
       <p class="text-muted">
@@ -19,7 +20,7 @@ const VirtualAccountDetails = ({ virtualAccount }) => {
 
       <div class="form-group">
         <div class="text-muted">Account Number</div>
-        <div><b>{virtualAccount.bank_account.account_number}</b></div>
+        <div><b>{bankAccount.account_number}</b></div>
       </div>
 
       <div class="form-group">
@@ -29,11 +30,11 @@ const VirtualAccountDetails = ({ virtualAccount }) => {
 
       <div class="form-group">
         <div class="text-muted">IFSC Code</div>
-        <div><b>{virtualAccount.bank_account.ifsc}</b></div>
+        <div><b>{bankAccount.ifsc}</b></div>
       </div>
 
       <CustomClipboard
-        value={`Account Number: ${virtualAccount.bank_account.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${virtualAccount.bank_account.ifsc}`}
+        value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
       >
         <button type="button" class="btn btn-primary btn-block">
           Copy details to Clipboard
@@ -150,10 +151,7 @@ export default class CreateVirtualAccount extends Component {
                     ? <div class="pull-left">
                         <div>Account Number</div>
                         <b>
-                          RZRP-
-                          {handle.padStart(4, '×')}
-                          -
-                          {descriptor.padStart(10, '×')}
+                          RZRP{handle}{descriptor}
                         </b>
                       </div>
                     : null}
