@@ -11,7 +11,7 @@ trait GatewayTrait
     {
         $request = parent::authorize($input);
 
-        if (is_array($request) and isset($request['method']))
+        if (is_array($request) and (isset($request['method']) === true))
         {
             $this->putMockPaymentGatewayUrl($request, $route);
         }

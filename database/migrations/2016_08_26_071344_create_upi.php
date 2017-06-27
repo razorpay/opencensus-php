@@ -64,7 +64,7 @@ class CreateUpi extends Migration
             $table->string(Upi::STATUS_CODE)
                   ->nullable();
 
-            $table->string(Upi::NPCI_REFERENCE_ID)
+            $table->string(Upi::NPCI_REFERENCE_ID, 20)
                   ->nullable();
 
             $table->integer(Upi::CREATED_AT);

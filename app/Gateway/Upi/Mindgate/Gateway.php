@@ -2,16 +2,11 @@
 
 namespace RZP\Gateway\Upi\Mindgate;
 
-use Request;
-use Carbon\Carbon;
 use RZP\Exception;
-use ErrorException;
 use RZP\Trace\Trace;
-use Requests_Response;
 use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
@@ -222,12 +217,12 @@ class Gateway extends Base\Gateway
      */
     protected function getMerchantId()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === Mode::LIVE)
         {
-            return $this->config['test_merchant_id'];
+            return $this->terminal->getGatewayTerminalId();
         }
 
-        return $this->terminal->getGatewayTerminalId();
+        return $this->config['test_merchant_id'];
     }
 
     /**
@@ -236,14 +231,12 @@ class Gateway extends Base\Gateway
      */
     protected function getEncryptionKey()
     {
-        $key = $this->config['test_merchant_key'];
-
         if ($this->mode === Mode::LIVE)
         {
-            $key = $this->terminal['gateway_terminal_password'];
+            return $this->terminal['gateway_terminal_password'];
         }
 
-        return hex2bin($key);
+        return $this->config['test_merchant_key'];
     }
 
     /**
@@ -251,20 +244,20 @@ class Gateway extends Base\Gateway
      * @param  string $data
      * @return string
      */
-    public function encrypt($data)
+    public function encrypt($plaintext)
     {
-        $cipher = $this->getCipherInstance();
-
-        return strtoupper(bin2hex($cipher->encrypt($data)));
+        return $this->getCipherInstance()
+                    ->encrypt($plaintext);
     }
 
+    /**
+     * Returns a Crypto instance
+     * @return Crypto class instance
+     * @return Crypto
+     */
     protected function getCipherInstance()
     {
-        $cipher = new AES(AES::MODE_ECB);
-
-        $cipher->setKey($this->getEncryptionKey());
-
-        return $cipher;
+        return new Crypto($this->getEncryptionKey());
     }
 
     /**
@@ -272,11 +265,10 @@ class Gateway extends Base\Gateway
      * @param  string $data
      * @return string
      */
-    public function decrypt($data)
+    public function decrypt(string $ciphertext)
     {
-        $cipher = $this->getCipherInstance();
-
-        return $cipher->decrypt(hex2bin($data));
+        return $this->getCipherInstance()
+                    ->decrypt($ciphertext);
     }
 
     protected function getAuthorizeRequestArray($input)
@@ -288,8 +280,8 @@ class Gateway extends Base\Gateway
 
         $data = [
             $this->getMerchantId(),
-            $input['payment']['id'],
-            $input['payment']['vpa'],
+            $payment['id'],
+            $payment['vpa'],
             $this->formatAmount($payment['amount']),
             $this->getPaymentRemark($input),
             self::EXPIRY_TIMEOUT,
@@ -306,7 +298,7 @@ class Gateway extends Base\Gateway
                 'decrypted_content' => $data,
                 'encrypted'         => $content,
                 'gateway'           => $this->gateway,
-                'payment_id'        => $input['payment']['id'],
+                'payment_id'        => $payment['id'],
             ]);
 
         return $request;
@@ -345,6 +337,8 @@ class Gateway extends Base\Gateway
     {
         $description = $input['merchant']->getFilteredDba();
 
+        // Using ?: works with empty strings as well
+        // (because '' == false) === true
         $description = $description ?: 'Razorpay';
 
         return "Refund for " . substr($description, 0, 36);

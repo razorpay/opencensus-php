@@ -27,11 +27,16 @@ class Gateway extends Base\Gateway
         switch ($action)
         {
             case Base\Action::REFUND:
+
+                $entity->setPaymentId($this->input['payment']['id']);
+
                 $entity->setAmount($this->input['refund']['amount']);
+
                 break;
 
             case Base\Action::AUTHORIZE:
             default:
+
                 $entity->setAmount($this->input['payment']['amount']);
         }
 

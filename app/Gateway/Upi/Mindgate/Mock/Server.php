@@ -119,16 +119,14 @@ class Server extends Base\Mock\Server
 
     public function decrypt($data)
     {
-        $cipher = $this->getCipherInstance();
-
-        return $cipher->decrypt(hex2bin($data));
+        return $this->getCipherInstance()
+                    ->decrypt(hex2bin($data));
     }
 
     protected function encrypt($plaintext)
     {
-        $cipher = $this->getCipherInstance();
-
-        return $cipher->encrypt($plaintext);
+        return $this->getCipherInstance()
+                    ->encrypt($plaintext);
     }
 
     public function getAsyncCallbackContent(array $upiEntity, array $payment)
