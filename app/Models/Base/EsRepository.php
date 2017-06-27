@@ -94,8 +94,9 @@ class EsRepository extends \Razorpay\Spine\Repository
         // same for es dao object.
         if ($entity !== null)
         {
-            $this->indexName = $app['config']->get(
-                sprintf('database.es_%s.%s', $entity, $app['rzp.mode']));
+            $esEntityIndexPrefix = $app['config']->get('database.es_entity_index_prefix');
+
+            $this->indexName = $esEntityIndexPrefix . $entity . '_' . $app['rzp.mode'];
 
             // TODO: Condition can be remove later, handles old flow.
             if ($this->indexName !== null)
@@ -345,7 +346,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         if ($error === true)
         {
-            $this->trace->debug(
+            $this->trace->error(
                 TraceCode::ES_BULK_UPDATE_FAILED,
                 [
                     'params' => $params,

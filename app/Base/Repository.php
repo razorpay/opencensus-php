@@ -6,6 +6,7 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
+use RZP\Base\Common;
 use RZP\Models\Base\EsRepository;
 use RZP\Exception;
 use RZP\Constants;
@@ -432,14 +433,32 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Finds many entities for indexing.
      *
-     * @param int|integer $skip
-     * @param int|integer $take
+     * @param int      $skip
+     * @param int      $take
+     * @param int|null $createdAtStart
+     * @param int|null $createdAtEnd
      *
      * @return array
      */
-    public function findManyForIndexing(int $skip = 0, int $take = 100): array
+    public function findManyForIndexing(
+        int $skip = 0,
+        int $take = 100,
+        int $createdAtStart = null,
+        int $createdAtEnd = null): array
     {
         $query = $this->newQuery();
+
+        $createdAtColumn = $this->dbColumn(Common::CREATED_AT);
+
+        if ($createdAtStart !== null)
+        {
+            $query->where($createdAtColumn, '>=', $createdAtStart);
+        }
+
+        if ($createdAtEnd !== null)
+        {
+            $query->where($createdAtColumn, '<=', $createdAtEnd);
+        }
 
         $this->modifyQueryForIndexing($query);
 
@@ -592,9 +611,16 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return bool
      */
-    protected function isEsSyncNeeded(string $action, array $dirty): bool
+    public function isEsSyncNeeded(string $action, array $dirty): bool
     {
         $esFields = $this->esRepo->getFields();
+
+        // Fields merchant_id and created_at never comes in dirty
+        // as they are not update-able. But keeping this filter here
+        // so during first time indexing these documents are not picked for
+        // indexing as they have nothing search-able.
+
+        $esFields = array_diff($esFields, [Common::ID, Common::MERCHANT_ID, Common::CREATED_AT]);
 
         // If no fields are configured to be in ES in the repository, return false.
         if (count($esFields) === 0)
