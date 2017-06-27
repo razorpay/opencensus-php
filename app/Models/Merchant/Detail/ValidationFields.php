@@ -51,6 +51,12 @@ class ValidationFields
             Entity::WEBSITE_TERMS,
     ];
 
+    /**
+     * Fields required by all types of marketplace linked accounts
+     * for submitting the activation form
+     *
+     * @var array
+     */
     const MARKETPLACE_ACCOUNT_FIELDS = [
             Entity::BANK_ACCOUNT_NAME,
             Entity::BANK_ACCOUNT_NUMBER,
@@ -58,6 +64,14 @@ class ValidationFields
             Entity::BANK_BRANCH_IFSC,
             Entity::BUSINESS_NAME,
             Entity::BUSINESS_TYPE,
+    ];
+
+    /**
+     * Additional fields required when the Marketplace merchant is restricted
+     *
+     * @var array
+     */
+    const MARKETPLACE_ACCOUNT_KYC_FIELDS = [
             Entity::PROMOTER_PAN,
             Entity::ADDRESS_PROOF_URL,
             Entity::PROMOTER_PAN_URL,
