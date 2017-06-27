@@ -72,14 +72,8 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/', 'MerchantController@uploadBatchFile')->name('batch_upload');
             Route::post('{id}/retry', 'MerchantController@retryBatchFile')->name('batch_retry');
         });
-
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
-
-        // Support role does not have access to this
-
-        Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
-        Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
 
         Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
