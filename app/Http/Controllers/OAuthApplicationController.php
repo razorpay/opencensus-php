@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use Trace;
 use ApiResponse;
+use RZP\Models\Merchant;
 
 use Razorpay\OAuth\Application;
 
@@ -32,6 +33,8 @@ class OAuthApplicationController extends Controller
     public function createApplication()
     {
         $input = Request::all();
+
+        $this->addOrUploadImageIfApplicable($input);
 
         $merchantId = $this->auth->getMerchantId();
 
@@ -77,6 +80,8 @@ class OAuthApplicationController extends Controller
     {
         $input = Request::all();
 
+        $this->addOrUploadImageIfApplicable($input);
+
         $merchantId = $this->auth->getMerchantId();
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
@@ -84,5 +89,19 @@ class OAuthApplicationController extends Controller
         $app = $this->service()->update($id, $input);
 
         return ApiResponse::json($app);
+    }
+
+    protected function addOrUploadImageIfApplicable(array & $input)
+    {
+        \Validator::make($input, ['logo' => 'sometimes|file'])->validate();
+
+        if (isset($input['logo']) === true)
+        {
+            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
+
+            $input[Application\Entity::LOGO_URL] = $logoUrl;
+
+            unset($input['logo']);
+        }
     }
 }
