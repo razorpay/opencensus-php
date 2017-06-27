@@ -12,7 +12,9 @@ class ErrorClass
 
     // List of all critical classes
     protected static $criticalErrorClasses = [
-        self::GATEWAY, self::SERVER ];
+        self::GATEWAY,
+        self::SERVER
+    ];
 
     public static function isCritical($errorClass)
     {

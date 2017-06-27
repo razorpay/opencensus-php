@@ -9,7 +9,6 @@ use ApiResponse;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Error\ErrorClass;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -81,7 +80,6 @@ class Handler extends ExceptionHandler
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
                 break;
-
 
             case $e instanceof ProcessTimedOutException:
                 $response = ApiResponse::json(['error' => 'Process timed out']);
@@ -181,7 +179,7 @@ class Handler extends ExceptionHandler
         $level = Trace::INFO;
         $code = TraceCode::RECOVERABLE_EXCEPTION;
 
-        if (ErrorClass::isCritical($exception->getError()->getClass()) === true)
+        if ($exception->isCritical())
         {
             $level = Trace::CRITICAL;
             $code = TraceCode::ERROR_EXCEPTION;
