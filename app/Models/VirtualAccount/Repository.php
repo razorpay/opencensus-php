@@ -12,6 +12,10 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'deleted';
 
+    protected $entityFetchParamRules = [
+        Entity::STATUS     => 'sometimes|string|in:active,closed,paid',
+    ];
+
     public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
     {
         return $this->newQuery()
