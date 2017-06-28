@@ -726,19 +726,29 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistDebitAccount(array $accountDetails, PublicEntity $gatewayPayment)
     {
+        if (empty($accountDetails[BaseReconciliate::ACCOUNT_NUMBER]) === true)
+        {
+            return;
+        }
+
         $accountNumber = $accountDetails[BaseReconciliate::ACCOUNT_NUMBER];
 
         $gatewayPayment->setAccountNumber($accountNumber);
     }
 
     /**
-     * Saving crebit account into the DB
+     * Saving credit account into the DB
      *
      * @param array        $accountDetails
      * @param PublicEntity $gatewayPayment
      */
     protected function persistCreditAccount(array $accountDetails, PublicEntity $gatewayPayment)
     {
+        if (empty($accountDetails[BaseReconciliate::CREDIT_ACCOUNT_NUMBER]) === true)
+        {
+            return;
+        }
+
         $accountNumber = $accountDetails[BaseReconciliate::CREDIT_ACCOUNT_NUMBER];
 
         $gatewayPayment->setCreditAccountNumber($accountNumber);
