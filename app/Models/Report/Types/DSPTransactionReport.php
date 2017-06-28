@@ -53,6 +53,8 @@ class DSPTransactionReport extends BasicEntityReport
 
     const BILLDESK = 'billdesk';
 
+    protected $transactionCount = 0;
+
     public function getReport(array $input)
     {
         $email = $input['email'] ?? $this->merchant->getEmail();
@@ -80,7 +82,9 @@ class DSPTransactionReport extends BasicEntityReport
 
         if ($shouldSendMail === true)
         {
-            $reportingMail = new DSPMail($email, $signedUrl, $filename);
+            $data = $this->createMailData($filename, $signedUrl, $input);
+
+            $reportingMail = new DSPMail($data);
 
             Mail::queue($reportingMail);
         }
@@ -143,6 +147,15 @@ class DSPTransactionReport extends BasicEntityReport
             ];
 
             $data[] = $row;
+        }
+
+        if (count($data) === 0)
+        {
+            $data[] = $this->createDefaultFile();
+        }
+        else
+        {
+            $this->transactionCount = count($data);
         }
 
         return $data;
@@ -322,5 +335,59 @@ class DSPTransactionReport extends BasicEntityReport
         }
 
         return [$from, $to];
+    }
+
+    protected function createDefaultFile()
+    {
+        return [
+            self::BILLER_ID             => '',
+            self::BANK_ID               => '',
+            self::BANK_REF_NUMBER       => '',
+            self::PGI_REF_NUMBER        => '',
+            self::REF_1                 => '',
+            self::REF_2                 => '',
+            self::REF_3                 => '',
+            self::REF_4                 => '',
+            self::REF_5                 => '',
+            self::REF_6                 => '',
+            self::REF_7                 => '',
+            self::REF_8                 => '',
+            self::ACCOUNT_NUMBER        => '',
+            self::ACCOUNT_TYPES         => '',
+            self::TRANSACTION_DATE      => '',
+            self::AMOUNT                => '',
+            self::STATUS                => '',
+            self::CREDIT_ACCOUNT_NUMBER => '',
+            self::SETTLED               => '',
+        ];
+    }
+    protected function createMailData($filename, $signedUrl, $input)
+    {
+        list($from, $to) = $this->getTimestamps($input);
+
+        $fdate = Carbon::createFromTimestamp($from, 'Asia/Kolkata')->format('Y-m-d');
+
+        $tdate = Carbon::createFromTimestamp($to, 'Asia/Kolkata')->format('Y-m-d');
+
+        $fdateTime = Carbon::createFromTimestamp($from, 'Asia/Kolkata')->format('Y-m-d H:i');
+
+        $tdateTime = Carbon::createFromTimestamp($to, 'Asia/Kolkata')->format('Y-m-d H:i');
+
+        if ((isset($input['day']) === true) and
+            ($input['day'] === 'today'))
+        {
+            // $from and $to would be 00:00 to 23:59. In the message body we need to send time as 12:59
+            $tdateTime = Carbon::create(null, null, null, 12, 59, 59, 'Asia/Kolkata')->format('Y-m-d H:i');
+        }
+
+        $data = [
+            'subject'    => 'Razorpay recon report - ' . $fdate .' to ' . $tdate,
+            'body'       => 'Razorpay recon report (Mode: ' . strtoupper($this->mode) .') From ' . $fdateTime .' To ' . $tdateTime . '<br>Total Transaction Count = ' .$this->transactionCount,
+            'signed_url' => $signedUrl,
+            'filename'   => $filename,
+            'emails'     => $input['email']
+        ];
+
+        return $data;
     }
 }
