@@ -23,6 +23,7 @@ class EmiFile extends Base\Core
 
     const EXTENSION = FileStore\Format::XLSX;
 
+    // Signed Url Duration in Minutes
     const SIGNED_URL_DURATION = '15';
 
     public function generate($input, $email = null)
@@ -63,7 +64,6 @@ class EmiFile extends Base\Core
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         $fileData = [
-            'file_path'  => $file['local_file_path'],
             'signed_url' => $signedFileUrl,
             'file_name'  => basename($file['local_file_path']),
         ];
