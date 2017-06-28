@@ -9,48 +9,36 @@ use RZP\Mail\Base\Mailable;
 
 class DSPReport extends Mailable
 {
-    protected $email;
+    protected $data;
 
-    protected $signedUrl;
-
-    protected $filename;
-
-    public function __construct(string $email, string $signedUrl, string $filename)
+    public function __construct(array $data)
     {
         parent::__construct();
 
-        $this->email = $email;
-
-        $this->signedUrl = $signedUrl;
-
-        $this->filename = $filename;
+        $this->data = $data;
     }
 
     protected function addRecipients()
     {
-        $this->to($this->email);
+        $emails = explode(',', $this->data['emails']);
+
+        $this->to($emails);
 
         return $this;
     }
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = 'Razorpay | Report for ' .$today;
-
-        $this->subject($subject);
+        $this->subject($this->data['subject']);
 
         return $this;
     }
 
     protected function addMailData()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $body = ['body' => $this->data['body']];
 
-        $data = ['body' => 'Payment Report for ' .$today];
-
-        $this->with($data);
+        $this->with($body);
 
         return $this;
     }
@@ -64,8 +52,8 @@ class DSPReport extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->signedUrl, [
-            'as'   => $this->filename,
+        $this->attach($this->data['signed_url'], [
+            'as'   => $this->data['filename'],
             'mime' => 'text/csv'
         ]);
 
