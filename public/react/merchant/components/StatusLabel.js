@@ -9,6 +9,7 @@ const StatusLabel = statusMap => ({ status }) => (
 export const invoiceStatusMap = {
   draft: 'label-muted',
   issued: 'label-info',
+  partially_paid: 'label-partially-paid',
   paid: 'label-success',
   cancelled: 'label-danger',
   expired: 'label-danger',
@@ -41,12 +42,19 @@ export const batchUploadStatusMap = {
   failure: 'label-danger',
 };
 
+export const virtualAccountStatusMap = {
+  active: 'label-info',
+  closed: 'label-danger',
+  paid: 'label-success',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   settlement: settlementStatusMap,
   invoice: invoiceStatusMap,
   order: orderStatusMap,
   batch: batchUploadStatusMap,
+  virtual_account: virtualAccountStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -54,5 +62,6 @@ export const OrderStatusLabel = StatusLabel(orderStatusMap);
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
+export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

@@ -436,64 +436,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function deleteTerminal($mode, $terminalId)
-    {
-        list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function editTerminal($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        list($error, $data) = (new Admin\Service)->unassignSubMerchantToTerminal(
-            $mode,
-            $terminalId,
-            $merchantId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-
-    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        list($error, $data) = (new Admin\Service)->assignSubMerchantToTerminal(
-            $mode,
-            $terminalId,
-            $merchantId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function changePrimaryMerchant($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->changeTerminalPrimaryMerchant(
-            $mode,
-            $terminalId,
-            $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function toggleTerminal($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
@@ -505,16 +447,6 @@ class AdminController extends Controller
     {
         $path = 'settlements/reconcile';
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function editCredits($merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)
-            ->editCredits($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }
@@ -545,13 +477,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function getMerchantTags($merchantId)
-    {
-        list($error, $response) = (new Admin\Service)->getMerchantTags($merchantId);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     /**
      * Confirm a user account manually
      */
@@ -562,46 +487,6 @@ class AdminController extends Controller
         list($error, $data) = $response = (new Admin\Service)->confirmUser($input['email']);
 
         return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Edit an existing IIN
-     * @param  int $iin 6 digit IIN
-     */
-    public function putEditIIN($iin)
-    {
-        $input = Input::all();
-        list($error, $data) = $response = (new Admin\Service)
-            ->editIIN($iin, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * This is currently not supported on the API
-     * so we just return an error
-     * @param  int $iin IIN to delete
-     */
-    public function deleteIIN($iin)
-    {
-        /*list($error, $data) = $response = (new Admin\Service)
-            ->deleteIin($iin);*/
-
-        $error = ["IIN Delete not implemented on API"];
-
-        return AppResponse::jsonResponse($error, []);
-    }
-
-    /**
-     * Deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     */
-    public function deleteEMIPlan($emiId)
-    {
-        list($error, $data) = $response = (new Admin\Service)
-            ->deleteEmi($emiId);
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postSlackQuery()
@@ -646,9 +531,11 @@ class AdminController extends Controller
 
     public function postReconciliate($mode)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)->makeReconciliateRequest($input);
+        list($error, $response) = (new Admin\Service)->makeReconciliateRequest($input, $mode);
 
         return AppResponse::jsonResponse($error, $response);
     }

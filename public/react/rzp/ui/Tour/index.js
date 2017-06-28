@@ -60,19 +60,28 @@ class Tour extends Component {
   };
 
   render() {
-    if (!this.props.isActive) {
+    let { isActive, showOverlay } = this.props;
+
+    if (!isActive) {
       return null;
     }
 
     return (
-      <div class="Tour__Overlay">
-        <div class="Tour__TargetLens" style={this.state.targetLensPos} />
+      <div
+        class="Tour__Overlay"
+        style={{
+          position: showOverlay ? 'fixed' : 'static',
+        }}
+      >
+        {showOverlay
+          ? <div class="Tour__TargetLens" style={this.state.targetLensPos} />
+          : null}
         <TetherComponent
           class={`Tour ${this.state.initialized ? 'Tour--initialized' : ''}`}
           target={this.state.target}
           attachment="middle left"
           targetAttachment="middle right"
-          offset="0 -10px"
+          offset="0 -15px"
         >
           <div />{/* required by react-tether */}
           <div class="TourStep__Container">
@@ -88,6 +97,7 @@ class Tour extends Component {
 Tour.defaultProps = {
   isActive: false,
   tourStep: 0,
+  showOverlay: true,
 };
 
 export { Tour, TourStep };

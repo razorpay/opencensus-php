@@ -238,6 +238,9 @@ body {
 
 .content-sm {
   max-width: 800px
+  &.txn-details {
+    margin: auto;
+  }
 }
 
 // React Modal Style Overrides
@@ -327,7 +330,24 @@ body.ReactModal__Body--open {
 
 .DateInput__display-text {
   color: #aaa;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+.SingleDatePickerInput__clear-date {
+  margin: 0;
+  padding: 0 8px;
+  svg {
+    fill: #ccc;
+  }
+}
+
+.SingleDatePickerInput__clear-date--hover,
+.SingleDatePickerInput__clear-date:focus {
+  background-color: transparent;
+  border-radius: 0;
+  svg {
+    fill: #666;
+  }
 }
 
 .DateInput__display-text--disabled {
@@ -413,11 +433,13 @@ body.ReactModal__Body--open {
   font-size: 12px;
 }
 
-.row-action > .btn-group {
+.row-action > .btn-group,
+.row-action.btn-group {
   visibility: hidden;
 }
 
-tr:hover .row-action > .btn-group {
+tr:hover .row-action > .btn-group,
+tr:hover .row-action.btn-group {
   visibility: visible;
 }
 
@@ -460,11 +482,29 @@ tr:hover .row-action > .btn-group {
 }
 
 .txn-details {
-  .panel {
+  > .panel {
     border: none;
 
     > .panel-heading {
-      border-bottom: none;
+      background-color: #fff;
+      line-height: 70px;
+      vertical-align: middle;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 18px;
+
+      .btn-toolbar {
+        padding-top: 26px;
+      }
+
+      > .icon {
+        padding: 4px;
+        border: 2px solid;
+      }
+
+      .icon + strong {
+        margin-left: 5px;
+      }
 
       > .close {
         display: none;
@@ -484,21 +524,25 @@ tr:hover .row-action > .btn-group {
 }
 
 .SwitchMerchantDropdown {
-  .powerselect {
-    height: auto
+  .PowerSelect {
     border: 0;
     width: 145px;
   }
 
-  .powerselect__trigger {
-    padding: 15px;
+  .PowerSelect__Trigger {
+    height: auto
+    padding: 8px;
   }
 
-  .powerselect__trigger-status {
-    top: 24px;
+  .PowerSelect__TriggerStatus {
+    border-top-color: #777;
   }
 
-  .powerselect__placeholder {
+  .PowerSelect__TriggerLabel {
+    padding-right: 8px;
+  }
+
+  .PowerSelect__Placeholder {
     color: #777;
   }
 }
@@ -512,4 +556,24 @@ tr:hover .row-action > .btn-group {
     margin-top: 2px;
     margin-left: 5px;
   }
+}
+
+.detail-row {
+  margin-bottom: 12px;
+
+  > label {
+    font-weight: normal;
+    color: #999;
+
+    &::after {
+      content: ':';
+      position: absolute;
+      right: 0;
+      color: #ccc;
+    }
+  }
+}
+
+.amount {
+  white-space: nowrap;
 }

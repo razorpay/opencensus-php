@@ -33,7 +33,7 @@
     "require-dev": {
         "symfony/dom-crawler": "~3.0",
         "symfony/css-selector": "~3.0",
-        "raveren/kint": ">=0.9",
+        "kint-php/kint": "1.*",
         "laracasts/testdummy": "~2.0",
         "mockery/mockery": "dev-master@dev"
     },

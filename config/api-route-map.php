@@ -182,13 +182,15 @@ return [
             'url'       => 'account/config',
             'routeName' => 'get_config'
         ],
-        'merchant_edit_config'              => [
-            'url'       => 'account/config',
-            'routeName' => 'put_config'
-        ],
         'merchant_edit_config_logo'         => [
             'url'       => 'account/config/logo',
             'routeName' => 'post_config_logo'
+        ],
+
+        // Bank Account Fetch
+        'bank_account_fetch'                => [
+            'url'       => 'account/bank_account',
+            'routeName' => 'bank_account_fetch'
         ],
 
         // Features
@@ -223,6 +225,10 @@ return [
         'invoice_cancel'                    => [
             'url'       => 'invoices/{id}/cancel',
             'routeName' => 'invoice_cancel'
+        ],
+        'invoice_issue_by_batch'            => [
+            'url'       => 'invoices/batch/{batchId}/issue',
+            'routeName' => 'invoice_issue_by_batch',
         ],
 
         // Customers
@@ -280,6 +286,59 @@ return [
             'url'       => 'reversals/{id}',
             'routeName' => 'marketplace_read'
         ],
+
+        // GST
+        'merchant_gst_fetch'    =>  [
+            'url'         => 'merchant/gst',
+            'routeName'   => 'merchant_gst_fetch'
+        ],
+
+        'merchant_gst_edit'     => [
+            'url'       => 'merchant/gst',
+            'routeName' => 'merchant_gst_edit'
+        ],
+
+         // Invitations
+        'invitation_create'                 => [
+            'url'       => 'invitations',
+            'routeName' => 'invitations_send'
+         ],
+
+        'invitation_resend'                 => [
+            'url'       => 'invitations/{id}/resend',
+            'routeName' => 'invitation_resend'
+        ],
+        'invitation_edit'                   => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_edit'
+        ],
+        'invitation_delete'                 => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_delete'
+        ],
+        'invitation_fetch'                  => 'invitations',
+
+        // Virtual Accounts
+        'virtual_account_fetch_multiple'    => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_fetch'             => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_create'            => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_update'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_fetch_payments'    => [
+            'url'       => 'virtual_accounts/{id}/payments',
+            'routeName' => 'virtual_accounts_read'
+        ],
     ],
 
     // auth
@@ -293,6 +352,12 @@ return [
             'routeName' => 'balance_get'
         ],
 
+        // Edit Merchant config
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
+        ],
+
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
@@ -302,6 +367,9 @@ return [
         'payment_capture'                   => 'payments/{id}/capture',
         // View Payment Refunds
         'payment_fetch_refunds'             => 'payments/{id}/refunds',
+        // Offer create / update
+        'offer_create'                      => 'offers',
+        'offer_update'                      => 'offers/{id}',
     ],
 
     // auth
@@ -348,6 +416,15 @@ return [
 
         // Get Org details by hostname (for heimdall specifics)
         'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
+
+        // Get Merchant Users
+        'merchant_fetch_users'              => 'merchants/{id}/users',
+
+        // Accept/Reject Invitation
+        'invitation_action'                 => 'invitations/{id}/{action}',
+
+        // Make test payment for Virtual Account
+        'bank_transfer_process'             => 'ecollect/validate',
     ],
 
     // auth
@@ -373,14 +450,33 @@ return [
 
         'merchant_edit'                     => 'merchants/{id}',
 
+        'merchant_action'                   => 'merchants/{id}/action',
+        'merchant_live_enable'              => 'merchants/{id}/live/enable',
+        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
         // Entities
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
 
-        'merchant_action'                   => 'merchants/{id}/action',
-        'merchant_live_enable'              => 'merchants/{id}/live/enable',
-        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+        // Toggle Terminal
+        'terminal_toggle'                   => 'terminals/{id}/toggle',
+        // Delete Terminal
+        'terminal_delete'                   => 'terminals/{id}',
+        // Edit Terminal
+        'terminal_edit'                     => 'terminals/{id}',
+        // Terminal Change Primary Merchant
+        'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
+        // Terminal Assign Sub Merchants
+        'terminal_add_merchant'             => 'terminals/{id}/merchants/{mid}',
+        // Terminal Remove Sub Merchant
+        'terminal_remove_merchant'          => 'terminals/{id}/merchants/{mid}',
+
+        // Delete EMI Plan
+        'emi_plan_delete'                   => 'emi/{id}',
+
+        // Edit IIN
+        'iin_edit'                          => 'iins/{id}',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',

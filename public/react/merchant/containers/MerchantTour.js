@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Tour, TourStep } from 'rzp/ui/Tour';
+import { fetchGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
@@ -13,8 +14,17 @@ export default class MerchantTour extends Component {
   };
 
   componentWillMount() {
+    if (LocalStorageService.getItem('gst_tour_shown')) {
+      return;
+    }
     let isNewUIEnabled = this.props.user.isNewUIEnabled;
     let isNewUITourShown = LocalStorageService.getItem('newui_tour_shown');
+
+    this.props.fetchGST().then(({ data }) => {
+      if (!data.gstin && !data.p_gstin) {
+        this.showTour();
+      }
+    });
 
     if (isNewUIEnabled && !isNewUITourShown) {
       window.setTimeout(() => {
@@ -32,6 +42,7 @@ export default class MerchantTour extends Component {
   };
 
   closeTour = () => {
+    LocalStorageService.setItem('gst_tour_shown', true);
     this.setState({ isTourActive: false });
   };
 
@@ -40,82 +51,34 @@ export default class MerchantTour extends Component {
   };
 
   render() {
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+
     return (
       <div>
         <Tour
           isActive={this.state.isTourActive}
           tourStep={this.state.activeTourStep}
+          showOverlay={false}
         >
-          <TourStep to="#transactions-nav">
+          <TourStep to={isNewUIEnabled ? '#myaccount-nav' : '#profile-nav'}>
             <p>
-              <b>Payments</b>
-              ,
+              Find Razorpay's
               {' '}
-              <b>Refunds</b>
+              <b>GST</b>
               {' '}
-              and
+              Number and update your
               {' '}
-              <b>Orders</b>
+              <b>GST</b>
               {' '}
-              are moved to Transactions.
-            </p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.closeTour}>
-                Skip
-              </button>
-              <button
-                class="btn btn-link pull-right"
-                onClick={this.gotoNextTourStep}
-              >
-                Next &gt;
-              </button>
-            </div>
-          </TourStep>
-
-          <TourStep to="#myaccount-nav">
-            <p>
-              <b>Profile</b>
-              ,
+              details in
               {' '}
-              <b>Activation</b>
-              ,
+              {isNewUIEnabled ? 'My Account > Profile' : 'Profile'}
               {' '}
-              <b>Credits</b>
-              {' '}
-              and
-              {' '}
-              <b>Add Funds</b>
-              {' '}
-              are moved to My Account.
-            </p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.closeTour}>
-                Skip
-              </button>
-              <button
-                class="btn btn-link pull-right"
-                onClick={this.gotoNextTourStep}
-              >
-                Next &gt;
-              </button>
-            </div>
-          </TourStep>
-
-          <TourStep to="#settings-nav">
-            <p>
-              <b>Configuration</b>
-              ,
-              {' '}
-              <b>API Keys</b>
-              , and
-              {' '}
-              <b>Webhooks</b>
-              {' '}
-              are moved to Settings.
+              tab.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link pull-right" onClick={this.closeTour}>
-                Done!
+                Okay, Got it!
               </button>
             </div>
           </TourStep>

@@ -64,7 +64,7 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   state => {
-    let customers = state.customers.customers;
+    let customers = state.customers.items;
     return {
       session: state.session,
       customers,
@@ -119,10 +119,17 @@ export default class InvoicesNewContainer extends Component {
       this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete(),
     ];
-    let invoiceId = this.props.id;
+    let invoiceId = this.props.match.params.id;
 
     if (invoiceId) {
-      promises.push(this.props.fetchInvoice(invoiceId));
+      promises.push(
+        this.props.fetchInvoice(invoiceId).then(invoice => {
+          if (invoice.partial_payment) {
+            this.props.fetchInvoicePayments(invoiceId);
+          }
+          return invoice;
+        })
+      );
     } else {
       this.props.initializeInvoice();
     }
@@ -503,7 +510,6 @@ export default class InvoicesNewContainer extends Component {
                                     class="form-control input-xs"
                                     placeholder="Receipt number"
                                     disabled={locked}
-                                    autoFocus={true}
                                   />}
                             </div>
 
@@ -532,14 +538,8 @@ export default class InvoicesNewContainer extends Component {
                               component={TypeAhead}
                               options={this.props.customers}
                               selected={this.props.customer_id}
-                              selectedLabel={selectedCustomer => {
-                                return (
-                                  selectedCustomer.name ||
-                                  selectedCustomer.contact ||
-                                  selectedCustomer.email
-                                );
-                              }}
                               optionLabelPath="displayName"
+                              selectedOptionLabelPath="selectedDisplayName"
                               placeholder="Select a customer"
                               onQuickAdd={this.quickCreateCustomer}
                               disabled={isIssued || locked}
@@ -556,11 +556,7 @@ export default class InvoicesNewContainer extends Component {
                                   value
                                 );
                                 if (selected) {
-                                  return (
-                                    selected.name ||
-                                    selected.contact ||
-                                    selected.email
-                                  );
+                                  return selected.selectedDisplayName;
                                 }
                                 return value;
                               }}
@@ -605,8 +601,28 @@ export default class InvoicesNewContainer extends Component {
                               component={LineItemTable}
                               items={this.props.items}
                               disabled={isIssued || locked}
+                              invoice={invoice}
                               invoiceTotal={invoiceTotal}
                             />
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12">
+                            <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                              <div class="rzpCheckbox rzpCheckbox-sm">
+                                <Field
+                                  name="partial_payment"
+                                  id="partial_payment"
+                                  component="input"
+                                  type="checkbox"
+                                  disabled={locked}
+                                />
+                                <label for="partial_payment">
+                                  Enable Partial Payments
+                                </label>
+                              </div>
+                            </ShowWhen>
                           </div>
                         </div>
 

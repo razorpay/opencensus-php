@@ -41,6 +41,7 @@ const validEntities = [
   'wallet',
   'webhook',
   'order',
+  'offer',
 ];
 
 function isTimestamp(key) {

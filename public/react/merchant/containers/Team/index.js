@@ -11,7 +11,8 @@ import User from './User';
 @connect(
   state => {
     return {
-      team: state.team.team,
+      invitations: state.team.invitations,
+      users: state.team.users,
       merchant: state.session.user,
     };
   },
@@ -22,11 +23,12 @@ import User from './User';
 )
 export default class TeamContainer extends Component {
   componentWillMount() {
-    this.props.fetchTeamDetails();
+    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
   }
 
   render() {
-    let { invitations, users } = this.props.team;
+    let invitations = this.props.invitations;
+    let users = this.props.users;
     let otherUsers = users.filter(
       user => user.email !== this.props.merchant.email
     );

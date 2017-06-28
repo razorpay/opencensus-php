@@ -5,6 +5,7 @@ use Auth;
 use Input;
 use App\Lead;
 use App\User;
+use App\Admin;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Http\AppResponse;
@@ -25,7 +26,9 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        list($error, $details) = (new User\Service)->getUserDetails();
+        $domain = \Request::server('SERVER_NAME');
+        list($orgError, $org) = (new Admin\Service)->getOrg($domain);
+        list($userError, $details) = (new User\Service)->getUserDetails();
 
         $data = [
             'isAuthenticated'       => false,
@@ -34,13 +37,15 @@ class UserController extends Controller
             'isPreSignupComplete'   => false,
         ];
 
-        if (empty($error))
+        if (empty($userError) and empty($orgError))
         {
             $data = [
                 'isAuthenticated'       => (bool) $details['user'],
                 'isConfirmed'           => $details['user']['confirmed'],
                 'preSignupData'         => $details['pre_signup'],
                 'isPreSignupComplete'   => $details['pre_signup_complete'],
+                'user'                  => json_encode($details),
+                'org'                   => json_encode($org),
             ];
         }
 

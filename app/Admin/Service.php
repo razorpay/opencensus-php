@@ -531,7 +531,18 @@ class Service extends Base\Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        $activationDetails = (new MerchantDetails\Service)->getActivationFiles($id);
+        $merchantDetail = new MerchantDetails\Service;
+
+        //
+        // If parent_id is set, it is a marketplace linked account
+        // and we set the context for it
+        //
+        if (isset($details['parent_id']) === true)
+        {
+            $merchantDetail->linked_account = true;
+        }
+
+        $activationDetails = $merchantDetail->getActivationFiles($id);
 
         $data = [
             'activation' => $activationDetails,
@@ -1309,35 +1320,6 @@ class Service extends Base\Service
         }
     }
 
-    public function deleteTerminal($mode, $terminalId)
-    {
-        $this->setApiCredentials(null, $mode);
-        try
-        {
-            $response = $this->api->terminal->delete($terminalId);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function editTerminal($mode, $terminalId, $input)
-    {
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->edit($terminalId, $input);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
     public function editName($merchantId, $input)
     {
         $response = $error = null;
@@ -1354,94 +1336,6 @@ class Service extends Base\Service
         }
 
         return [$response, $error];
-    }
-
-    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->unassignSubMerchant($terminalId, $merchantId)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->assignSubMerchant($terminalId, $merchantId)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function changeTerminalPrimaryMerchant($mode, $terminalId, $input)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function toggleTerminal($mode, $terminalId, $input)
-    {
-        $this->setApiCredentials(null, $mode);
-        try
-        {
-            $response = $this->api->terminal->toggle($terminalId, $input);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function editCredits($merchantId, $input)
-    {
-        $this->setApiCredentials(null, 'live');
-
-        try
-        {
-            $response = $this->api->merchant->
-                fetch($merchantId)->editCredits($input);
-            $this->logActionToSlack($merchantId, Actions::FREE_CREDITS_EDIT, $input);
-
-            return [null, $response->toArray()];
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-
     }
 
     public function makeRawApiCall($path)
@@ -1579,48 +1473,9 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    public function getMerchantTags($merchantId)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        return [null, $merchant->tagNames()];
-    }
-
     public function confirmUser($email)
     {
         list($error, $data) = (new User\Service)->confirmUserByEmail($email);
-
-        return [$error, $data];
-    }
-
-    public function editIIN($iin, $input)
-    {
-        // Auth as admin, live mode
-        $this->setApiCredentials(null);
-
-        $this->api->IIN->edit($iin, $input);
-
-        return [null, 'IIN Edit successful'];
-    }
-
-    /**
-     * deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     * @return array
-     */
-    public function deleteEmi($emiId)
-    {
-        $this->setApiCredentials(null);
-        $error = $data = [];
-
-        try
-        {
-            $data = $this->api->EMI->setId($emiId)->delete($emiId);
-        }
-        catch (ApiError $e)
-        {
-            $error = $e->getMessage();
-        }
 
         return [$error, $data];
     }
@@ -1715,15 +1570,15 @@ class Service extends Base\Service
         return [null, $response];
     }
 
-    public function makeReconciliateRequest($input)
+    public function makeReconciliateRequest($input, $mode = 'live')
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $mode);
 
         $error = $data = null;
 
         try
         {
-            $data = $this->api->admin->makeReconciliateRequest($input);
+            $data = $this->api->admin->makeReconciliateRequest($input, $mode);
         }
         catch(BadRequestError $e)
         {

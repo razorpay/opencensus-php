@@ -1,20 +1,26 @@
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-export default ({ rows, columns }) => {
+export default ({ rows, columns, className, showHeaders = true }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            {columns.map((column, index) => <th key={index}>{column[0]}</th>)}
-          </tr>
-        </thead>
+      <table class={`table table-hover ${className}`}>
+        {showHeaders
+          ? <thead>
+              <tr>
+                {columns.map((column, index) => (
+                  <th class={column.columnClass} key={index}>{column.title}</th>
+                ))}
+              </tr>
+            </thead>
+          : null}
         {rows &&
           <tbody>
             {rows.map(item => (
               <EntityItemRow key={item.id} id={item.id}>
                 {columns.map((column, index) => (
-                  <td key={index}>{column[1](item)}</td>
+                  <td class={column.columnClass} key={index}>
+                    {column.value(item)}
+                  </td>
                 ))}
               </EntityItemRow>
             ))}

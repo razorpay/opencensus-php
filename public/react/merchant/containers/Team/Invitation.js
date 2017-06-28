@@ -13,7 +13,7 @@ import {
 } from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
+@connect(state => state.session, {
   fetchTeamDetails,
   resendInvitation,
   cancelInvitation,
@@ -32,7 +32,7 @@ export default class EditInvitation extends Component {
     return this.props
       .updateInvitation(this.props.invite.id, fieldProps)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: "Team member's role has been changed successfully",
@@ -50,7 +50,7 @@ export default class EditInvitation extends Component {
     return this.props
       .cancelInvitation(this.props.invite.id)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: "Team member's invitation has been removed successfully",
@@ -66,10 +66,13 @@ export default class EditInvitation extends Component {
 
   resendInvitation = () => {
     let invite = this.props.invite;
+    let data = {
+      sender_name: this.props.user.user.name,
+    };
     return this.props
-      .resendInvitation(invite.id)
+      .resendInvitation(invite.id, data)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: `Invitation has been successfully resent to ${invite.email}`,
@@ -81,6 +84,10 @@ export default class EditInvitation extends Component {
           message: err.errors,
         });
       });
+  };
+
+  fetchTeamDetails = () => {
+    this.props.fetchTeamDetails({ merchant_id: this.props.user.current });
   };
 
   render() {

@@ -1,10 +1,10 @@
 export default ({ item, rows }) => {
   return (
-    <div class="list-group details-row-container">
-      {rows.map(row => (
-        <div class="list-group-item">
-          <span>{row[0]}</span>
-          <span>{row[1](item)}</span>
+    <div class="details-row-container">
+      {rows.map((row, index) => (
+        <div class={`details-row ${row.rowClass || ''}`} key={index}>
+          <span class="details-cell">{row.title}</span>
+          {row.value(item)}
         </div>
       ))}
     </div>
