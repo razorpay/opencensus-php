@@ -4,7 +4,7 @@ import { set, merge } from 'rzp/utils/immutable';
 const SETTLEMENT_FETCH = 'SETTLEMENT_FETCH';
 const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 
-export const fetchSettlement = id => {
+export const fetchItem = id => {
   let settlement = new Settlement();
 
   return {

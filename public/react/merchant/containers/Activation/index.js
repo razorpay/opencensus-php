@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
 import { fetchActivationDetails } from 'merchant/modules/activation';
 import ActivationWizard from './ActivationWizard';

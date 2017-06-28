@@ -69,26 +69,6 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse([], $data);
     }
 
-    public function getTransactions($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'transaction');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getTransaction($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'transaction');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postAddfunds($mode)
     {
         $this->checkMode($mode);
@@ -155,7 +135,10 @@ class TransactionController extends Controller
 
         if ($error === null)
         {
-            $merchantId = $data['merchant']['id'];
+            $merchantId = $data['merchant_id'];
+
+            list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
+            $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
 

@@ -14,8 +14,8 @@
 
 @if ($isConfirmed and $isPreSignupComplete)
   <script type="text/javascript">
-    window.rzp_user = <?php echo json_encode($user); ?>;
-    window.rzp_org = <?php echo json_encode($org); ?>;
+    window.rzp_user = {!! $user !!};
+    window.rzp_org = {!! $org !!};
   </script>
   <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
   <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>

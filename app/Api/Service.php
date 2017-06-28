@@ -8,6 +8,7 @@ use App\Base;
 use Carbon\Carbon;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
+use App\Generic;
 
 class Service extends Base\Service
 {
@@ -33,37 +34,6 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function fetchEntity($id, $mode, $entity)
-    {
-        $error = (new Validator)->validateInput('fetch', array('id' => $id))->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $collection = [];
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->$entity->fetch($id)->toArray();
-
-            $collection = array(
-                'count' => 1,
-                'entity' => 'collection',
-                'items' => array($data));
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $collection);
-    }
-
     public function fetchCollection(array $input, $mode, $entity)
     {
         $method = 'fetchCollection' . $entity;
@@ -85,14 +55,32 @@ class Service extends Base\Service
             'items'  => [],
         ];
 
+        if ($entity === 'customer')
+        {
+            $routeName = 'customer_fetch_multiple';
+        }
+        else if ($entity === 'item')
+        {
+            $routeName = 'item_fetch_multiple';
+        }
+
         for ($i = 0; $i < 5; $i++)
         {
-            $input = [
-                'skip' => $i * $count,
-                'count' => $count
+            // Using generic
+
+            $customerInput = [
+                'route_name' => $routeName,
+                'mode' => $mode,
+                'query_params' => [
+                    'skip' => $i * $count,
+                    'count' => $count
+                ]
             ];
 
-            list($error, $list) = $this->fetchEntityCollection($input, $mode, $entity);
+            $genericService = new Generic\Service;
+
+            list($error, $list) = $genericService->call('GET', $customerInput);
+
             $collection['count'] = $collection['count'] + $list['count'];
             $collection['items'] = array_merge($collection['items'], $list['items']);
 
@@ -279,7 +267,16 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $merchantId = $this->merchantId;
+
+            if (isset($params['merchant_id']))
+            {
+                $merchantId = $params['merchant_id'];
+                unset($params['merchant_id']);
+            }
+
+            $this->setApiCredentials($merchantId, $mode);
+
             $data = $this->api
                          ->transaction
                          ->generateEntityReportFile($resource, $params)
@@ -302,7 +299,14 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $merchantId = $this->merchantId;
+            if (isset($params['merchant_id']))
+            {
+                $merchantId = $params['merchant_id'];
+                unset($params['merchant_id']);
+            }
+
+            $this->setApiCredentials($merchantId, $mode);
 
             $data = $this->api
                          ->transaction
@@ -354,9 +358,17 @@ class Service extends Base\Service
 
     public function getInvoiceReportData($mode, array $input)
     {
+        $merchantId = $this->merchantId;
+
+        if (isset($input['merchant_id']))
+        {
+            $merchantId = $input['merchant_id'];
+            unset($input['merchant_id']);
+        }
+
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $this->setApiCredentials($merchantId, $mode);
 
             $data = $this->api
                          ->transaction
@@ -364,8 +376,8 @@ class Service extends Base\Service
                          ->toArray();
 
             $data['dates']      = $this->getDateRanges($input['year'], $input['month']);
-            $data['merchant']   = $this->merchant->toArray();
-            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
+            $data['merchant_id'] = $merchantId;
+            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month'], $merchantId);
 
             return [null, $data];
         }
@@ -408,10 +420,10 @@ class Service extends Base\Service
         return Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
     }
 
-    protected function getInvoiceId($year, $month)
+    protected function getInvoiceId($year, $month, $merchantId)
     {
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
-        return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
+        return $merchantId . '/' . $startDate->addMonth()->format('m/y');
     }
 
     public function uploadBatchFile($mode, $input)

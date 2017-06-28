@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import ModalDialog from 'rzp/ui/ModalDialog';
-import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -16,6 +15,9 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
+import User from 'merchant/models/User';
+import MerchantTour from 'merchant/containers/MerchantTour';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
 @connect(state => state.session, {
@@ -32,19 +34,20 @@ export default class App extends Component {
   componentWillMount() {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
-    if (currentMode) {
-      this.props.updateSession({ mode: currentMode });
-    }
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        let role = data.merchants[data.current].role;
+        let user = data;
+        let role = user.userRole;
 
         if (!currentMode) {
-          currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
-          this.props.updateSession({ mode: currentMode });
+          currentMode = user.isActivated ? 'live' : 'test';
+        } else if (!user.isActivated) {
+          currentMode = 'test';
         }
+
+        this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(data);
+        this.initSmooch(user);
       }),
       this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
@@ -62,13 +65,13 @@ export default class App extends Component {
 
   componentWillReceiveProps({ user, history }) {
     if (user.isAuthenticated) {
-      let role = user.merchants[user.current].role;
+      let role = user.userRole;
       this.redirectToRoute(role);
     }
   }
 
   fetchUser() {
-    let user = window.rzp_user;
+    let user = new User(window.rzp_user);
     if (user) {
       delete window.rzp_user;
       this.props.updateSession({ user });
@@ -100,12 +103,15 @@ export default class App extends Component {
           return this.props.history.replace(url);
         case 'support':
           return this.props.history.replace('/payments');
+
+        case null:
+          return this.props.history.replace('/profile');
       }
     }
   }
 
   initSmooch(data) {
-    let role = data.merchants[data.current].role;
+    let role = data.userRole;
     if (window.smoochScript) {
       smoochScript.then(function() {
         var sk_user = function() {
@@ -177,7 +183,7 @@ export default class App extends Component {
   };
 
   lock = () => {
-    let email = this.props.user.contact_email;
+    let email = this.props.user.user.email;
     return this.props.logout().then(() => {
       location.hash = `/access/lockme/${email}`;
       location.reload();
@@ -219,6 +225,10 @@ export default class App extends Component {
         <Sidebar user={user} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
+
+        <ShowWhen myRole="owner">
+          <MerchantTour user={user} />
+        </ShowWhen>
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

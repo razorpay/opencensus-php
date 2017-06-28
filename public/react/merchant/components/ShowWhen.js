@@ -16,10 +16,11 @@ export default class ShowWhen extends Component {
     let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
     let tags = (user.isAuthenticated && user.tags) || [];
+    tags = tags.map(tag => tag.toLowerCase());
     let userRole;
 
     if (user.isAuthenticated) {
-      userRole = user.merchants[user.id].role;
+      userRole = user.userRole;
     }
 
     if (
@@ -29,7 +30,7 @@ export default class ShowWhen extends Component {
       return null;
     }
 
-    if (featureEnabled && tags.indexOf(featureEnabled) === -1) {
+    if (featureEnabled && tags.indexOf(featureEnabled.toLowerCase()) === -1) {
       return null;
     }
 

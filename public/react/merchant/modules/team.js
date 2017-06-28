@@ -9,12 +9,44 @@ const INVITATION_REMOVE = 'INVITATION_REMOVE';
 const USER_UPDATE = 'USER_UPDATE';
 const USER_REMOVE = 'USER_REMOVE';
 
+const fetchInvitations = () => {
+  var params = {
+    route_name: 'invitation_fetch',
+  };
+
+  return ajax({
+    url: '/user/generic',
+    data: params,
+    appendModeInURL: false,
+  });
+};
+
+const fetchUsers = merchant_id => {
+  var params = {
+    route_name: 'merchant_fetch_users',
+    url_params: JSON.stringify({
+      '{id}': merchant_id,
+    }),
+  };
+
+  return ajax({
+    url: '/user/generic',
+    data: params,
+    appendModeInURL: false,
+  });
+};
+
 export const fetchTeamDetails = params => {
   return {
     type: TEAM_FETCH,
-    payload: ajax({
-      url: '/settings/merchants/owned',
-      appendModeInURL: false,
+    payload: Promise.all([
+      fetchInvitations(),
+      fetchUsers(params.merchant_id),
+    ]).then(values => {
+      if (!values[0].success || !values[1].success) {
+        throw "Couldn't load team details";
+      }
+      return values;
     }),
   };
 };
@@ -23,21 +55,31 @@ export const sendInvitation = data => {
   return {
     type: INVITATION_SEND,
     payload: ajax({
-      url: '/settings/invitations',
+      url: '/user/generic',
       method: 'post',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'invitation_create',
+        body: data,
+      },
     }),
   };
 };
 
-export const resendInvitation = inviteId => {
+export const resendInvitation = (inviteId, data) => {
   return {
     type: INVITATION_RESEND,
     payload: ajax({
-      url: `/settings/invitations/${inviteId}/resend`,
-      method: 'get',
+      url: '/user/generic',
+      method: 'put',
       appendModeInURL: false,
+      data: {
+        route_name: 'invitation_resend',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+        }),
+        body: data,
+      },
     }),
   };
 };
@@ -46,10 +88,16 @@ export const updateInvitation = (inviteId, data) => {
   return {
     type: INVITATION_UPDATE,
     payload: ajax({
-      url: `/settings/invitations/${inviteId}`,
-      method: 'put',
+      url: '/user/generic',
+      method: 'patch',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'invitation_edit',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+        }),
+        body: data,
+      },
     }),
   };
 };
@@ -58,9 +106,15 @@ export const cancelInvitation = inviteId => {
   return {
     type: INVITATION_REMOVE,
     payload: ajax({
-      url: `/settings/invitations/${inviteId}`,
+      url: '/user/generic',
       method: 'delete',
       appendModeInURL: false,
+      data: {
+        route_name: 'invitation_delete',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+        }),
+      },
     }),
   };
 };
@@ -90,10 +144,8 @@ export const removeUser = userId => {
 
 let initialState = {
   loading: true,
-  team: {
-    invitations: [],
-    users: [],
-  },
+  invitations: [],
+  users: [],
   error: null,
 };
 
@@ -105,7 +157,8 @@ export default function(state = initialState, action) {
     case `${TEAM_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
-        team: action.payload.data,
+        invitations: action.payload[0].data,
+        users: action.payload[1].data,
       });
 
     case `${TEAM_FETCH}::ERROR`:

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Header from 'rzp/ui/Header';
 
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
+import { fetchSubscriptions } from 'rzp/modules/collection';
 import { fetchPlans } from 'merchant/modules/plans';
 import SubscriptionsList
   from 'merchant/components/Subscriptions/SubscriptionsList';
@@ -13,7 +13,7 @@ import SubscriptionsList
     let subscriptionsState = state.subscriptions;
 
     return {
-      subscriptions: subscriptionsState.subscriptions,
+      items: subscriptionsState.items,
       plans: plansState.plans,
       loading: subscriptionsState.loading && plansState.loading,
     };
@@ -27,7 +27,7 @@ export default class SubscriptionsListContainer extends Component {
   }
 
   render() {
-    let { loading, subscriptions, plans } = this.props;
+    let { loading, items, plans } = this.props;
 
     return (
       <div>
@@ -41,7 +41,7 @@ export default class SubscriptionsListContainer extends Component {
         <div class="content-wrapper">
           <div class="panel panel-default">
             <SubscriptionsList
-              subscriptions={subscriptions}
+              subscriptions={items}
               plans={plans}
               isLoading={loading}
             />

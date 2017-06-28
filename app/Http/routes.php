@@ -42,7 +42,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::post('/track_lead', 'UserController@trackLead');
-
+        Route::get('/invitations/token/{token}', 'InvitationsController@fetchByToken');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -72,14 +72,8 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/', 'MerchantController@uploadBatchFile')->name('batch_upload');
             Route::post('{id}/retry', 'MerchantController@retryBatchFile')->name('batch_retry');
         });
-
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
-
-        // Support role does not have access to this
-
-        Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
-        Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
 
         Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
@@ -95,15 +89,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
 
-        // This also returns credits
-        Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
-
-        // Invitation and Team Support
-        Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
-
-        // Shown in profile page
-        Route::get('settings/invitations', 'InvitationsController@getPendingInvitationsForUser');
-
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
@@ -112,19 +97,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
 
         // Team Administration
-        // TODO: Convert this to POST
-        Route::get('settings/invitations/{invite}/resend', 'InvitationsController@getResendMerchantInvitation')->name('invitation_resend');
         Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember', 'team_users_update');
         Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember', 'team_users_delete');
 
-        // Invite Administration (Owners)
-        Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation')->name('invitations_send');
-        Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation')->name('invitations_edit');
-        Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser')->name('invitations_delete');
-
         // Invitation related (User side)
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
-        Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
         // Update password
         Route::post('/password', 'UserController@postPassword');
@@ -179,22 +156,14 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('admin/{mode}/merchants/aggregations', 'AdminController@getMerchantAggregations');
         Route::get('admin/{mode}/merchants/{merchant_id}/aggregations', 'AdminController@getSingleMerchantAggregations');
 
-        // Might delete this route later if its not used
-        Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
-        Route::get('/admin/triggererror', 'AdminController@undefinedMethod');
-
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
         Route::put('/admin/{id}/edit', 'AdminController@putEdit');
-
-        // EMI Routes
-        Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
 
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 
@@ -202,25 +171,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
-        // IIN Routes
-        Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
-        Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
-        // EMI Plan Routes
-        Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
-
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
-        // Terminal Routes
-        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
-        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
-        Route::put('/admin/{mode}/terminal/{id}/toggle', 'AdminController@toggleTerminal');
-
-        Route::put('/admin/{mode}/terminal/{id}/merchant/{mid}', 'AdminController@assignSubMerchantToTerminal');
-        Route::delete('/admin/{mode}/terminal/{id}/merchant/{mid}', 'AdminController@unassignSubMerchantToTerminal');
-        Route::put('/admin/{mode}/terminal/{id}/reassign', 'AdminController@changePrimaryMerchant');
 
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
@@ -248,12 +203,13 @@ Route::group(['middleware' => ['web']], function () {
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
 
-        Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
-        Route::get('admin/get_current');
-
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
         Route::get('/admin/emailbounces/{email}', 'AdminController@getEmailBounce')->name('email_bounce_get');
         Route::delete('/admin/emailbounces/{email}', 'AdminController@deleteEmailBounce')->name('email_bounce_delete');
+
+        Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
+        Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
+        Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
     });
 });
 

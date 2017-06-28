@@ -4,7 +4,6 @@ import { NavLink } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
-import Header from 'rzp/ui/Header';
 import moment from 'moment';
 import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
@@ -122,9 +121,12 @@ export default class ReportsContainer extends Component {
                   <option value="transaction">Combined</option>
                   {user.tags.indexOf('Broking_Report') === -1 ||
                     <option value="broking">Broking Report</option>}
+                  // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
+                  {user.tags.indexOf('Dsp_Report') === -1 ||
+                    <option value="dsp_report">DSP Transaction Report</option>}
                   <option value="invoice">Monthly Invoice</option>
                   {user.tags.indexOf('Marketplace') === -1 ||
-                    <optgroup label="Marketplace">
+                    <optgroup label="Route">
                       <option value="transfer">Transfer</option>
                       <option value="reversal">Reversal</option>
                     </optgroup>}

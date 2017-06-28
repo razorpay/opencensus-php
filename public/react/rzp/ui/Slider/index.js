@@ -1,14 +1,14 @@
 import { Component } from 'react';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
+import * as SliderActions from 'rzp/modules/slider';
+import { isNone } from 'rzp/utils/rzp-utils';
 import './ModalSlider.styl';
 
 @withRouter
+@connect(state => state.slider, SliderActions)
 export default class ModalSlider extends Component {
-  state = {
-    isOpen: true,
-  };
-
   // Closes the slider
   //  1. When slider `Close` button is clicked
   //  2. When clicking on the document except on the Slider view & on any links
@@ -20,16 +20,16 @@ export default class ModalSlider extends Component {
   };
 
   componentDidMount() {
-    document.addEventListener('click', this.handleDocumentClick);
+    document.addEventListener('click', this.handleDocumentClick, true);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('click', this.handleDocumentClick);
+    document.removeEventListener('click', this.handleDocumentClick, true);
     this.props.onClose();
   }
 
   close = () => {
-    this.setState({ isOpen: false });
+    this.props.closeSlider();
     if (this.props.closeUrl) {
       this.props.history.push(this.props.closeUrl);
     }
@@ -38,7 +38,7 @@ export default class ModalSlider extends Component {
   render() {
     return (
       <Modal
-        isOpen={this.state.isOpen}
+        isOpen={this.props.isOpen}
         closeTimeoutMS={300}
         overlayClassName="ModalSlider__Overlay"
         class="ModalSlider__Content"

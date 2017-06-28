@@ -42,6 +42,8 @@ class Service extends Base\Service
             'business_doe'                => 2,
             'transaction_volume'          => 2,
             'transaction_value'           => 2,
+            'gstin'                       => 2,
+            'p_gstin'                     => 2,
             'promoter_pan'                => 2,
             'promoter_pan_name'           => 2,
 
@@ -666,7 +668,7 @@ class Service extends Base\Service
         }
 
         // Switch $this->merchant to the linked-account entity
-        $this->merchant = Merchant\Entity::findorfail($account->id);
+        $this->merchant = Merchant\Entity::findOrFail($account->id);
 
         $this->linked_account = true;
     }
@@ -678,6 +680,6 @@ class Service extends Base\Service
 
     public function getUrlKeys()
     {
-        return self::$WEBSITE_URLS;
+        return self::WEBSITE_URLS;
     }
 }

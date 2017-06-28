@@ -8,6 +8,8 @@ const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
+const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
+const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
 
 @withRouter
 export default class Sidebar extends Component {
@@ -18,6 +20,8 @@ export default class Sidebar extends Component {
     account: '/profile',
     settings: '/config',
     invoices: '/invoices',
+    marketplace: '/route/payments',
+    paymentlinks: '/paymentlinks',
   };
 
   componentWillReceiveProps(nextProps) {
@@ -40,6 +44,10 @@ export default class Sidebar extends Component {
       routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
     } else if (invoicesRegex.test(pathname)) {
       routes.invoices = pathname.match(invoicesRegex)[0];
+    } else if (MARKETPLACE_ROUTES_REGEX.test(pathname)) {
+      routes.marketplace = pathname.match(MARKETPLACE_ROUTES_REGEX)[0];
+    } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
+      routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
     }
   }
 
@@ -97,7 +105,7 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Payment Links"
                     icon="icon icon-link"
-                    to="/paymentlinks"
+                    to={routes.paymentlinks}
                   />
 
                   <MainNavLink
@@ -116,11 +124,20 @@ export default class Sidebar extends Component {
                   </ShowWhen>
 
                   <MainNavLink
-                    label="Marketplace"
+                    label="Route"
                     icon="icon icon-store"
-                    to="/accounts"
+                    to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
+                    beta={true}
+                  />
+
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-account-balance"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
@@ -141,6 +158,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="My Account"
+                    id="myaccount-nav"
                     icon="icon icon-account"
                     to={routes.account}
                   />
@@ -197,11 +215,20 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
-                    label="Marketplace"
+                    label="Route"
                     icon="icon icon-store text-primary"
-                    to="/accounts"
+                    to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
+                    beta={true}
+                  />
+
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-account-balance text-success"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
@@ -266,6 +293,7 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
+                    id="profile-nav"
                     label="Profile"
                     icon="fa fa-user-o text-info"
                     to="/profile"

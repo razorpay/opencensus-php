@@ -32,7 +32,6 @@ class Service extends Base\Service
     const ACCOUNT_CREATION_NOT_ALLOWED          = "You do not have account creation privileges. Please contact support@razorpay.com";
     const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
     const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
-    const BANK_ACCOUNT_NOT_FOUND                = "Could not find a Bank Account";
 
     public function __construct()
     {
@@ -576,20 +575,6 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
-    public function getUsersListWithInvites()
-    {
-        $merchantId = $this->currentUser
-                           ->currentMerchant()
-                           ->id;
-
-        $users = Merchant\Entity::with('users', 'invitations')
-                                ->where('id', $merchantId)
-                                ->first()
-                                ->toArray();
-
-        return $users;
-    }
-
     /**
      * Get the merchant entity from the gibven merchant id
      *
@@ -848,30 +833,6 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    /**
-     * This one uses Proxy Auth
-     * @return [type]
-     */
-    public function fetchBankAccount()
-    {
-        $merchantId = $this->currentUser->currentMerchant()->id;
-
-        $this->setApiCredentials($merchantId);
-
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchProxyBankAccount()->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [self::BANK_ACCOUNT_NOT_FOUND];
-        }
-
-        return [$error, $data];
     }
 
     public function savePreSignupDetails($merchantId, $input)

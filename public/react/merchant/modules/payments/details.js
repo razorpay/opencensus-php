@@ -7,7 +7,7 @@ const PAYMENT_FETCH_REFUNDS = 'PAYMENT_FETCH_REFUNDS';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 
-export const fetchPayment = id => {
+export const fetchItem = id => {
   let payment = new Payment();
 
   return {

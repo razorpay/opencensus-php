@@ -126,6 +126,17 @@ export default class AddWebhook extends Component {
                 <div class="checkbox">
                   <label>
                     <Field
+                      name="events['payment.captured']"
+                      component="input"
+                      type="checkbox"
+                    />
+                    payment.captured
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <Field
                       name="events['payment.failed']"
                       component="input"
                       type="checkbox"

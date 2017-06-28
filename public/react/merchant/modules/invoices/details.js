@@ -8,6 +8,7 @@ const EMAIL_SEND = 'EMAIL_SEND';
 const INVOICE_ISSUE = 'INVOICE_ISSUE';
 const INVOICE_INIT = 'INVOICE_INIT';
 const INVOICE_CANCEL = 'INVOICE_CANCEL';
+const INVOICE_PAYMENTS_FETCH = 'INVOICE_PAYMENTS_FETCH';
 
 export const fetchInvoice = id => {
   let invoice = new Invoice();
@@ -48,12 +49,21 @@ export const cancelInvoice = params => {
   };
 };
 
+export const fetchInvoicePayments = id => {
+  let invoice = new Invoice({ id });
+  return {
+    type: INVOICE_PAYMENTS_FETCH,
+    payload: invoice.fetchPayments(),
+  };
+};
+
 let initialState = {
   loading: true,
   invoice: {
     customer_details: {},
     line_items: [],
     notes: {},
+    payments: [],
   },
   error: null,
 };
@@ -74,6 +84,9 @@ export default function(state = initialState, action) {
         invoice: action.payload,
         error: null,
       });
+
+    case `${INVOICE_PAYMENTS_FETCH}::SUCCESS`:
+      return set(state, 'invoice.payments', action.payload.data.items);
 
     case `${INVOICE_FETCH}::ERROR`:
       return merge(state, {

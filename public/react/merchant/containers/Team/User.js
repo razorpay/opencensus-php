@@ -12,17 +12,24 @@ import {
 } from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
-  fetchTeamDetails,
-  updateUser,
-  removeUser,
-  ...NotificationsActions,
-})
+@connect(
+  state => {
+    return {
+      merchantId: state.session.user.current,
+    };
+  },
+  {
+    fetchTeamDetails,
+    updateUser,
+    removeUser,
+    ...NotificationsActions,
+  }
+)
 @reduxForm()
 export default class EditUser extends Component {
   componentWillMount() {
     this.props.initialize({
-      role: this.props.user.pivot.role,
+      role: this.props.user.role,
     });
   }
 
@@ -30,7 +37,9 @@ export default class EditUser extends Component {
     return this.props
       .updateUser(this.props.user.id, fieldProps)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({
+          merchant_id: this.props.merchantId,
+        });
         this.props.showNotification({
           type: 'success',
           message: "Team member's role has been changed successfully",
@@ -48,7 +57,9 @@ export default class EditUser extends Component {
     return this.props
       .removeUser(this.props.user.id)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({
+          merchant_id: this.props.merchantId,
+        });
         this.props.showNotification({
           type: 'success',
           message: 'Team member has been removed successfully',
