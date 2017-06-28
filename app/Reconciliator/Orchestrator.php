@@ -64,7 +64,8 @@ class Orchestrator extends Base\Core
         self::NETBANKING_AXIS    => ['it.rico@axisbank.com'],
         self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
-        self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
+        //self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
+        self::NETBANKING_RBL     => [],
         self::JIOMONEY           => [],
         self::EBS                => [],
         // Used when someone from the team needs to send the

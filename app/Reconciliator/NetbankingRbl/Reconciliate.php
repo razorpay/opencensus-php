@@ -45,9 +45,4 @@ class Reconciliate extends Base\Reconciliate
     {
         return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
     }
-
-    public function getDelimiter()
-    {
-        return ',';
-    }
 }

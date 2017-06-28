@@ -146,7 +146,7 @@ class DailyFiles extends Base\DailyFiles
 
         $input['data'] = $data;
 
-        $gateway = $claim->terminal->getGateway();
+        $gateway = $this->gateway;
 
         $action = 'generateClaims';
 

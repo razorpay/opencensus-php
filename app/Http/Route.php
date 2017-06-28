@@ -262,7 +262,7 @@ final class Route
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
-        'mock_generate_reconcilation'             => ['post',     'gateway/mock/reconcilation/{bank}',              'MockGatewayController@generateNetbankingReconcilation'             ],
+        'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{bank}',             'MockGatewayController@generateNetbankingReconciliation'            ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
@@ -949,7 +949,7 @@ final class Route
         'reports_transaction_dsp',
         'invitation_fetch_by_token',
         'invitation_action',
-        'mock_generate_reconcilation',
+        'mock_generate_reconciliation',
     ];
 
     public static $proxy = [

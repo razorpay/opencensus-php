@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Netbanking;
+namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
 use Mockery;
 use Illuminate\Http\UploadedFile;
@@ -8,13 +8,13 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-class ReconcilationTest extends TestCase
+class NetbankingReconcilationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/ReconcilationTestData.php';
+        $this->testDataFilePath = __DIR__.'/NetbankingReconciliationTestData.php';
 
         parent::setUp();
 
@@ -23,7 +23,7 @@ class ReconcilationTest extends TestCase
         $this->gateway = '';
     }
 
-    public function testRblManualReconcilation()
+    public function testRblManualReconciliation()
     {
         $this->gateway = 'netbanking_rbl';
 
@@ -54,7 +54,7 @@ class ReconcilationTest extends TestCase
         $this->assertEquals('309001141935', $gatewayEnttiy['credit_account_number']);
     }
 
-    public function testRblWrongFormatReconcilation()
+    public function testRblWrongFormatReconciliation()
     {
         $this->gateway = 'netbanking_rbl';
 
@@ -152,7 +152,7 @@ class ReconcilationTest extends TestCase
     protected function generateFile($bank, $input)
     {
         $request = [
-            'url'     => '/gateway/mock/reconcilation/' . $bank,
+            'url'     => '/gateway/mock/reconciliation/' . $bank,
             'content' => $input,
             'method'  => 'POST'
         ];

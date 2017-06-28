@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testRblWrongFormatReconcilation' => [
+    'testRblWrongFormatReconciliation' => [
         'response' => [
             'content'     => [
                 'error' => [

@@ -91,12 +91,4 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return null;
     }
-
-    protected function getAccountDetails($row)
-    {
-       if (empty($row[ClaimFields::USER_ID]) === false)
-        {
-            return $row[ClaimFields::USER_ID];
-        }
-    }
 }

@@ -205,7 +205,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     public function getReconClass($driver)
     {
-        $recon = $this->getGatewayNamespace($driver, true) . '\\Reconcilator';
+        $recon = $this->getGatewayNamespace($driver, true) . '\\Reconciliator';
 
         return $recon;
     }

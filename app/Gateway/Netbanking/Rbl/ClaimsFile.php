@@ -49,8 +49,6 @@ class ClaimsFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
-
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         return [

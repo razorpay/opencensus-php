@@ -12,13 +12,13 @@ use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
-class Reconcilator extends Base\RefundFile
+class Reconciliator extends Base\RefundFile
 {
     const PAYMENT_ENTITY = 'payment';
 
     const GATEWAY_ENTITY = 'gateway';
 
-    protected static $fileToWriteName = 'Rbl_Netbanking_Reconcilation';
+    protected static $fileToWriteName = 'Rbl_Netbanking_Reconciliation';
 
     protected static $headers = [
         ClaimFields::SERIAL_NO,
@@ -36,7 +36,7 @@ class Reconcilator extends Base\RefundFile
 
     public function generate($input)
     {
-        list($totalAmount, $data) = $this->getReconcilationData($input);
+        list($totalAmount, $data) = $this->getReconciliationData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -51,8 +51,6 @@ class Reconcilator extends Base\RefundFile
 
         $file = $creator->get();
 
-        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
-
         return [
             'local_file_path' => $file['local_file_path'],
             'count'           => count($data),
@@ -61,7 +59,7 @@ class Reconcilator extends Base\RefundFile
         ];
     }
 
-    public function getReconcilationData($input)
+    protected function getReconciliationData($input)
     {
         $data = [];
 
@@ -98,7 +96,7 @@ class Reconcilator extends Base\RefundFile
         return [$totalAmount, $data];
     }
 
-    public function getGatewayStatus(array $row)
+    protected function getGatewayStatus(array $row)
     {
         if ($row[self::GATEWAY_ENTITY][Entity::STATUS] === Status::SUCCESS)
         {
@@ -108,7 +106,7 @@ class Reconcilator extends Base\RefundFile
         return 'Failed';
     }
 
-    public function getErrorMessage(array $row)
+    protected function getErrorMessage(array $row)
     {
         if (empty($row[self::GATEWAY_ENTITY][Entity::ERROR_MESSAGE]) === true)
         {
@@ -123,7 +121,7 @@ class Reconcilator extends Base\RefundFile
         return $content;
     }
 
-    public function generateReconcilation()
+    public function generateReconciliation($input = null)
     {
         $input = [
             'gateway' => 'netbanking_rbl'
