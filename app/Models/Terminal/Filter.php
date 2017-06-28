@@ -8,7 +8,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Filter
+class Filter extends Base\Core
 {
     /**
      * This should be overridden in the child class with the respective filter properties
@@ -16,10 +16,18 @@ class Filter
      */
     protected $properties;
 
+    protected $input;
+
+    protected $rules;
+
     protected $options;
 
-    public function __construct(Options $options, Base\PublicCollection $rules)
+    public function __construct(array $input, Options $options, Base\PublicCollection $rules)
     {
+        parent::__construct();
+
+        $this->input = $input;
+
         $this->options = $options;
 
         $this->rules = $rules;
@@ -38,11 +46,11 @@ class Filter
      * @return array                           List of terminals after removing the not-applicable terminals
      *                                         from the received collection of terminals
      */
-    public function filter(array $applicableTerminals, array $input, $verbose = false)
+    public function filter(array $applicableTerminals, $verbose = false)
     {
         foreach ($this->properties as $filterProperty)
         {
-            if ($this->shouldSkipFilter($filterProperty, $input) === true)
+            if ($this->shouldSkipFilter($filterProperty) === true)
             {
                 continue;
             }
@@ -54,7 +62,7 @@ class Filter
             {
                 // If the terminal does not match for the given filter property,
                 // remove it from the applicable list of terminals.
-                if ($this->$filterFunction($terminal, $input, $applicableTerminals) !== true)
+                if ($this->$filterFunction($terminal, $applicableTerminals) !== true)
                 {
                     unset($applicableTerminals[$key]);
                 }
@@ -64,7 +72,7 @@ class Filter
                 $applicableTerminals,
                 'Terminals after applying ' . $filterFunction . ' property',
                 $verbose,
-                $input['merchant']->getId());
+                $this->input['merchant']->getId());
         }
 
         // array_values is being used to reindex the array after un-setting.
@@ -95,9 +103,9 @@ class Filter
         }
     }
 
-    protected function shouldSkipFilter(string $property, array $input): bool
+    protected function shouldSkipFilter(string $property): bool
     {
-        $merchant = $input['merchant'];
+        $merchant = $this->input['merchant'];
 
         $skippedFilters = $this->options->getSkippedFilters();
 

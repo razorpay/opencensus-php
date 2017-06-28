@@ -42,9 +42,9 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      * @param $input array
      * @return $sortedTerminals array of Terminal\Entity
      */
-    public function downtimeSorter(array $terminals, array $input): array
+    public function downtimeSorter(array $terminals): array
     {
-        if (in_array($input['payment']->getMethod(), $this->allowedMethods, true) === false)
+        if (in_array($this->input['payment']->getMethod(), $this->allowedMethods, true) === false)
         {
             return $terminals;
         }
@@ -55,7 +55,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
             // for logging of terminals of downtime sorter
             $verbose = true;
 
-            $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $input);
+            $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
 
             if ($downtimes->isEmpty() === true)
             {

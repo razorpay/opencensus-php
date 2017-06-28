@@ -8,9 +8,9 @@ use RZP\Models\Terminal;
 
 class RuleFilter extends Terminal\Filter
 {
-    public function filter(array $terminals, array $input, $verbose = false)
+    public function filter(array $terminals, $verbose = false)
     {
-        $merchant = $input['merchant'];
+        $merchant = $this->input['merchant'];
 
         if ($merchant->isFeatureEnabled(Feature::RULE_FILTER) === false)
         {

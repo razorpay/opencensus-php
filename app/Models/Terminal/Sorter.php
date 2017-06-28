@@ -17,16 +17,24 @@ class Sorter extends Base\Core
      */
     protected $properties;
 
+    protected $input;
+
+    protected $options;
+
     protected $rules;
 
-    public function __construct(Base\PublicCollection $rules)
+    public function __construct(array $input, Options $options, Base\PublicCollection $rules)
     {
         parent::__construct();
 
+        $this->input = $input;
+
         $this->rules = $rules;
+
+        $this->options = $options;
     }
 
-    public function sort($terminals, $input, $verbose = false, $options = null)
+    public function sort($terminals, $verbose = false)
     {
         // No need to sort if there's only one terminal
         if (count($terminals) === 1)
@@ -41,13 +49,13 @@ class Sorter extends Base\Core
         {
             $sorterFunction = $this->getSorterNameForProperty($sorterProperty);
 
-            $currentTerminals = $this->$sorterFunction($currentTerminals, $input, $options);
+            $currentTerminals = $this->$sorterFunction($currentTerminals);
 
             $this->traceTerminals(
                 $currentTerminals,
                 'Terminals after applying ' . $sorterFunction . ' property',
                 $verbose,
-                $input['merchant']->getId());
+                $this->input['merchant']->getId());
         }
 
         return $currentTerminals;

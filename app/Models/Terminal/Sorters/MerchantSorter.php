@@ -23,7 +23,7 @@ class MerchantSorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function categorySorter($terminals, array $input)
+    public function categorySorter($terminals)
     {
         $specificCategoryTerminals = [];
 
@@ -31,7 +31,7 @@ class MerchantSorter extends Terminal\Sorter
 
         $nonCategoryTerminals      = [];
 
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
         $category2 = $input['merchant']->getCategory2();
 

@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Payment\GatewayRule;
 
-use Carbon\Carbon;
-use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal\Options;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;

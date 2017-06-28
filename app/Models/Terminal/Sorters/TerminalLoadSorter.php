@@ -25,14 +25,14 @@ class TerminalLoadSorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function gatewaySorter($terminals, array $input, $options)
+    public function gatewaySorter($terminals)
     {
-        if ($options === null)
+        if ($this->rules->isEmpty() === true)
         {
             return $terminals;
         }
 
-        $merchant = $input['merchant'];
+        $merchant = $this->input['merchant'];
 
         try
         {
@@ -49,18 +49,12 @@ class TerminalLoadSorter extends Terminal\Sorter
                 $this->trace->info(
                     TraceCode::GATEWAY_RULES_POST_FILTER,
                     [
-                        'rules'          => $applicableRules->pluck(Rule\Entity::ID)->toArray(),
-                        'chance_percent' => $options->getChance(),
+                        'rules'          => $this->rules->pluck(Rule\Entity::ID)->toArray(),
+                        'chance_percent' => $this->options->getChance(),
                     ]);
             }
 
-            // If no rules are present for load sorting we return the terminals list as is
-            if ($applicableRules->isEmpty() === true)
-            {
-                return $terminals;
-            }
-
-            $chancePercent = $options->getChance();
+            $chancePercent = $this->options->getChance();
 
             $boostedTerminals = $this->getBoostedTerminals(
                                             $terminals,
