@@ -3,6 +3,7 @@
 namespace RZP\Exception;
 
 use RZP\Error\ErrorCode;
+use RZP\Error\ErrorClass;
 
 class GatewayErrorException extends RecoverableException
 {
@@ -62,6 +63,11 @@ class GatewayErrorException extends RecoverableException
                     PHP_EOL . 'Gateway Error Desc: ' . $desc;
 
         $this->message = $message;
+    }
+
+    public function isCritical()
+    {
+        return (ErrorClass::isCritical($this->getError()->getClass()) === true);
     }
 
     protected function isTwoFaError($errorCode)

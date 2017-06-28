@@ -263,16 +263,26 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest($verify)
     {
         $gatewayPayment = $verify->payment;
+
         $input = $verify->input;
 
-        $content = array(
+        $content = [
             'MessageCode'   => MessageCodes::VERIFY,
             'DateTimeInGMT' => $gatewayPayment['date'],
             'MerchantId'    => $gatewayPayment['merchant_code'],
             'TraceNumber'   => $gatewayPayment['int_payment_id'],
             'Future1'       => '',
             'Future2'       => '',
-        );
+        ];
+
+        // Experimenting with the different date timestamp
+        // for verify calls for our demo merchant.
+        if ($input['merchant']->getId() === '2aTeFCKTYWwfrF')
+        {
+            $date = Carbon::now('Asia/Kolkata')->format('dmYHis');
+
+            $content['DateTimeInGMT'] = $date;
+        }
 
         $request = $this->getRequestArray($content);
 

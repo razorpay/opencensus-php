@@ -379,12 +379,14 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        // self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [
-        self::WALLET_OPENWALLET
+        self::WALLET_OPENWALLET,
+        self::WALLET_MPESA
     ];
 
     /**

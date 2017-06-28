@@ -12,8 +12,10 @@ class FailedToAuthorized extends Base
         {
             $this->view('emails.payment.failed_to_authorized');
         }
-
-        $this->view('emails.payment.customer');
+        else
+        {
+            $this->view('emails.payment.customer');
+        }
 
         return $this;
     }
@@ -24,8 +26,10 @@ class FailedToAuthorized extends Base
         {
             $this->text('emails.payment.failed_to_authorized_text');
         }
-
-        $this->text('emails.payment.customer_text');
+        else
+        {
+            $this->text('emails.payment.customer_text');
+        }
 
         return $this;
     }
