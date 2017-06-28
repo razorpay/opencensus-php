@@ -23,7 +23,7 @@ class EmiFile extends Base\Core
 
     const SIGNED_URL_DURATION = '1440';
 
-    public function generate($input, $email = null)
+    public function generate(array $input, $email = null)
     {
         $emiData = $this->getEmiData($input);
 
@@ -43,7 +43,7 @@ class EmiFile extends Base\Core
         return $fileData['signed_url'];
     }
 
-    protected function generateEmiFile($emiData, $store = 's3')
+    protected function generateEmiFile(array $emiData, $store = 's3')
     {
         $creator = new FileStore\Creator;
 
@@ -69,7 +69,7 @@ class EmiFile extends Base\Core
         return $fileData;
     }
 
-    protected function resetEmail($email)
+    protected function resetEmail(string $email)
     {
         if (empty($email) === false)
         {
@@ -124,15 +124,6 @@ class EmiFile extends Base\Core
         return Str::random(self::EMI_FILE_PASSWORD_LENGTH);
     }
 
-    protected function getZippedFile($fullPath)
-    {
-        $fileArray = array($fullPath);
-
-        $zipPath = $this->makeZipFile($fileArray, $this->emiFilePassword);
-
-        return $zipPath;
-    }
-
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
         // $annualRate is a
@@ -151,16 +142,22 @@ class EmiFile extends Base\Core
         return floor($num / $den);
     }
 
-    protected function sendEmiFile($fileData)
+    protected function sendEmiFile(array $fileData)
     {
-        $emiFileMail = new EmiMail\File($this->bankName, $fileData, $this->emailIdsToSendTo);
+        $emiFileMail = new EmiMail\File(
+            $this->bankName,
+            $fileData,
+            $this->emailIdsToSendTo);
 
         Mail::queue($emiFileMail);
     }
 
     protected function sendEmiPassword()
     {
-        $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword, $this->emailIdsToSendTo);
+        $emiPasswordMail = new EmiMail\Password(
+            $this->bankName,
+            $this->emiFilePassword,
+            $this->emailIdsToSendTo);
 
         Mail::queue($emiPasswordMail);
     }
