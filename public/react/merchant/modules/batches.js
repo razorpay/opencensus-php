@@ -7,14 +7,34 @@ const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
 export const fetchRefundBatches = params => {
   return {
     type: getActionName(REFUND),
-    payload: ajax('/batches?type=refund'),
+    payload: ajax({
+      method: 'GET',
+      url: '/user/generic',
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'batch_fetch_multiple',
+        query_params: JSON.stringify({
+          type: 'refund',
+        }),
+      },
+    }),
   };
 };
 
 export const fetchPaymentLinkBatches = params => {
   return {
     type: getActionName(PAYMENT_LINK),
-    payload: ajax('/batches?type=payment_link'),
+    payload: ajax({
+      method: 'GET',
+      url: '/user/generic',
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'batch_fetch_multiple',
+        query_params: JSON.stringify({
+          type: 'payment_link',
+        }),
+      },
+    }),
   };
 };
 

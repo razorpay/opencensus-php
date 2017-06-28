@@ -197,6 +197,12 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Batches
+        'batch_fetch_multiple'              => [
+            'url'       => 'batches',
+            'routeName' => 'batch_fetch_multiple'
+        ],
+
         // Invoices
         'invoice_fetch_multiple'            => [
             'url'       => 'invoices',

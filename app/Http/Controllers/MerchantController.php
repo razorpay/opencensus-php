@@ -279,22 +279,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Fetch Multiple Batches
-     * @param  string $mode Live/Test Mode
-     * @return Array       Array of error and response
-     */
-    public function fetchMultipleBatches($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $response) = (new Api\Service)->fetchMultipleBatches($mode, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
      * Fetch batch by id
      * @param  string $mode Live/Test Mode
      * @param  string $id   Batch Id
