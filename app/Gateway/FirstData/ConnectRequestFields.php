@@ -19,6 +19,7 @@ class ConnectRequestFields
     const INVOICE_NUMBER         = 'invoicenumber';
     const LANGUAGE               = 'language';
     const MODE                   = 'mode';
+    const MERCHANT_TXN_ID        = 'merchantTransactionId';
     const NUMBER_OF_INSTALLMENTS = 'numberOfInstallments';
     const ORDER_ID               = 'oid';
     const PAYMENT_METHOD         = 'paymentMethod';
