@@ -61,7 +61,6 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const SUBSCRIPTION          = 'subscription';
-    const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
