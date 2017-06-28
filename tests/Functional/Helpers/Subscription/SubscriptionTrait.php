@@ -293,7 +293,7 @@ trait SubscriptionTrait
 
             $subscriptionPayload = $data['event']['payload']['subscription']['entity'];
 
-            $this->assertNotNull($subscriptionPayload['token_id']);
+            $this->assertArrayNotHasKey('token_id', $subscriptionPayload);
 
             $this->assertNotNull('webhook_id', $data);
 

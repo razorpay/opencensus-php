@@ -582,7 +582,6 @@ class Gateway extends Base\Gateway
                 return $this->getFieldsForFormSubmitToBankAcs($input, $response);
 
             case Result::NOT_ENROLLED:
-
                 $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
 
                 $this->validateAndSetEciValue($input, $this->gatewayPayment, $payerAuthEnrollReply);

@@ -89,6 +89,16 @@ class Terminal extends Base
         return $term;
     }
 
+    public function disableTerminal($id = '1RecurringTerm')
+    {
+        return $this->fixtures->edit('terminal', $id, ['enabled' => false]);
+    }
+
+    public function enableTerminal($id = '1RecurringTerm')
+    {
+        return $this->fixtures->edit('terminal', $id, ['enabled' => true]);
+    }
+
     public function createEbsTerminal(array $attributes = [])
     {
         $attributes = [
@@ -421,6 +431,11 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
+        $attributes['type'] = 3;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes['id'] = '3RecurringTerm';
         $attributes['type'] = 3;
 
         $this->createEntityInTestAndLive('terminal', $attributes);

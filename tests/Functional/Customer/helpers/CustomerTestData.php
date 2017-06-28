@@ -221,7 +221,7 @@ return [
                         'wallet'        => 'paytm',
                     ],
                     [
-                        'token'         => '10000cardtoken',
+                        'token'         => '10001cardtoken',
                         'method'        => 'card',
                         'card'          =>  [
                             'last4'         => '1111',

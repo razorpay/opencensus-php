@@ -709,7 +709,33 @@ class SubscriptionCardsTest extends TestCase
         unset($paymentRequest['card']);
         $paymentRequest['card'] = ['cvv' => 111];
 
+        // Doing this so that a different terminal is picked for this 2FA.
+        $this->fixtures->terminal->disableTerminal();
         $this->doAuthPayment($paymentRequest);
+        $this->fixtures->terminal->enableTerminal();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Should go through 2FA.
+        $this->assertEquals('passed', $payment['two_factor_auth']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($gatewayToken1['token_id'], $payment['global_token_id']);
+        $this->assertEquals('3RecurringTerm', $payment['terminal_id']);
+
+        $gatewayTokens = $this->getEntities('gateway_token', [], true);
+
+        // No new gateway token should be created. Use an existing one
+        // and update its terminal.
+        $this->assertEquals(2, $gatewayTokens['count']);
+
+        $gatewayToken1Refreshed = $this->getEntityById('gateway_token', $gatewayToken1['id'], true);
+
+        // Since we are using the same old token.
+        $this->assertEquals($gatewayToken1['token_id'], $gatewayToken1Refreshed['token_id']);
+
+        $this->assertNotEquals($gatewayToken1['terminal_id'], $gatewayToken1Refreshed['terminal_id']);
+
+        $this->assertEquals('3RecurringTerm', $gatewayToken1Refreshed['terminal_id']);
 
         // --- a subsequent charge on the subscription's current token is
         //     made on private auth. This should also be successful without
@@ -729,9 +755,14 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('skipped', $payment['two_factor_auth']);
+
         $this->assertEquals(2, $subscription['paid_count']);
         $this->assertEquals('active', $subscription['status']);
-        $this->assertEquals($gatewayToken2['token_id'], $subscription['token_id']);
+        // Different token is associated with the subscription now.
+        $this->assertEquals($gatewayToken1Refreshed['token_id'], $subscription['token_id']);
     }
 
     public function testLocalFlowDifferentCardsAndAuths()
@@ -795,7 +826,33 @@ class SubscriptionCardsTest extends TestCase
         unset($paymentRequest['card']);
         $paymentRequest['card'] = ['cvv' => 111];
 
+        // Doing this so that a different terminal is picked for this 2FA.
+        $this->fixtures->terminal->disableTerminal();
         $this->doAuthPayment($paymentRequest);
+        $this->fixtures->terminal->enableTerminal();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Should go through 2FA.
+        $this->assertEquals('not_applicable', $payment['two_factor_auth']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('token_' . $gatewayToken1['token_id'], $payment['token_id']);
+        $this->assertEquals('3RecurringTerm', $payment['terminal_id']);
+
+        $gatewayTokens = $this->getEntities('gateway_token', [], true);
+
+        // No new gateway token should be created. Use an existing one
+        // and update its terminal.
+        $this->assertEquals(2, $gatewayTokens['count']);
+
+        $gatewayToken1Refreshed = $this->getEntityById('gateway_token', $gatewayToken1['id'], true);
+
+        // Since we are using the same old token.
+        $this->assertEquals($gatewayToken1['token_id'], $gatewayToken1Refreshed['token_id']);
+
+        $this->assertNotEquals($gatewayToken1['terminal_id'], $gatewayToken1Refreshed['terminal_id']);
+
+        $this->assertEquals('3RecurringTerm', $gatewayToken1Refreshed['terminal_id']);
 
         // --- a subsequent charge on the subscription's current token is
         //     made on private auth. This should also be successful without
@@ -817,7 +874,7 @@ class SubscriptionCardsTest extends TestCase
 
         $this->assertEquals(2, $subscription['paid_count']);
         $this->assertEquals('active', $subscription['status']);
-        $this->assertEquals($gatewayToken2['token_id'], $subscription['token_id']);
+        $this->assertEquals($gatewayToken1['token_id'], $subscription['token_id']);
     }
 
     public function testPaymentFail2FaGlobalSavedCard()

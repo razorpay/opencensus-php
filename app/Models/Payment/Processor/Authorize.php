@@ -245,10 +245,9 @@ trait Authorize
     }
 
     /**
-     * @param array|null     $request
      * @param Payment\Entity $payment
      *
-     * @return array|mixed
+     * @return array
      */
     protected function processAuth(Payment\Entity $payment): array
     {
@@ -755,7 +754,6 @@ trait Authorize
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
             ($payment->isSecondRecurring() === true))
         {
-            $this->verifyAuthForRecurring();
             $this->verifyAggregatorIfApplicable($merchant);
         }
     }
@@ -1024,16 +1022,6 @@ trait Authorize
 
             $this->setPayment($payment);
         });
-    }
-
-    protected function verifyAuthForRecurring()
-    {
-        if (($this->app['basicauth']->isPrivateAuth() === false) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
-        }
     }
 
     protected function processCurrencyConversions(Payment\Entity $payment)
@@ -1833,8 +1821,7 @@ trait Authorize
             $token->incrementUsedCount();
 
             if (($payment->isCard() === true) and
-                ($payment->isRecurring() === true) and
-                ($token->isRecurring() === false))
+                ($payment->isRecurring() === true))
             {
                 $token->setRecurring(true);
 
@@ -1858,7 +1845,21 @@ trait Authorize
 
         $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 
-        if ($gatewayTokens->count() > 0)
+        $gatewayTokensCount = $gatewayTokens->count();
+
+        if ($gatewayTokensCount === 0)
+        {
+            (new GatewayToken\Core)->create($payment, $token, $reference);
+        }
+        else if ($gatewayTokensCount === 1)
+        {
+            $gatewayToken = $gatewayTokens->first();
+
+            $gatewayToken->terminal()->associate($payment->terminal);
+
+            $this->repo->saveOrFail($gatewayToken);
+        }
+        else
         {
             //
             // Not throwing an exception here because it might
@@ -1873,11 +1874,7 @@ trait Authorize
                     'gateway_tokens_count'  => $gatewayTokens->count(),
                     'gateway_tokens'        => $gatewayTokens->toArray()
                 ]);
-
-            return;
         }
-
-        (new GatewayToken\Core)->create($payment, $token, $reference);
     }
 
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
