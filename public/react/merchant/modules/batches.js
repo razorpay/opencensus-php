@@ -4,37 +4,54 @@ import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
 const REFUND = 'REFUND_BATCHES';
 const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
 
+const fetchBatchAjax = id => {
+  return ajax({
+    url: '/user/generic',
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'batch_fetch_by_id',
+      url_params: JSON.stringify({
+        '{id}': id,
+      }),
+    },
+  }).then(response => {
+    return {
+      data: {
+        items: [response.data],
+      },
+    };
+  });
+};
+
+const fetchBatchesAjax = (params, type) => {
+  return ajax({
+    url: '/user/generic',
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'batch_fetch_multiple',
+      query_params: JSON.stringify({
+        ...params,
+        type: type,
+      }),
+    },
+  });
+};
+
 export const fetchRefundBatches = params => {
   return {
     type: getActionName(REFUND),
-    payload: ajax({
-      method: 'GET',
-      url: '/user/generic',
-      appendModeInQueryParam: true,
-      data: {
-        route_name: 'batch_fetch_multiple',
-        query_params: JSON.stringify({
-          type: 'refund',
-        }),
-      },
-    }),
+    payload: params.id
+      ? fetchBatchAjax(params.id)
+      : fetchBatchesAjax(params, 'refund'),
   };
 };
 
 export const fetchPaymentLinkBatches = params => {
   return {
     type: getActionName(PAYMENT_LINK),
-    payload: ajax({
-      method: 'GET',
-      url: '/user/generic',
-      appendModeInQueryParam: true,
-      data: {
-        route_name: 'batch_fetch_multiple',
-        query_params: JSON.stringify({
-          type: 'payment_link',
-        }),
-      },
-    }),
+    payload: params.id
+      ? fetchBatchAjax(params.id)
+      : fetchBatchesAjax(params, 'payment_link'),
   };
 };
 

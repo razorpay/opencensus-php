@@ -279,21 +279,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Fetch batch by id
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function fetchBatchById($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->fetchBatchById($mode, $id);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
      * Download Batch file
      * @param  string $mode Live/Test Mode
      * @param  string $id   Batch Id

@@ -446,35 +446,6 @@ class Service extends Base\Service
         return [$error, $batchRefund];
     }
 
-    public function fetchBatchById($mode, $id)
-    {
-        $error = $collection = null;
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $data = $this->api
-                         ->batch
-                         ->fetch($id)
-                         ->toArray();
-
-            $collection = [
-                            'count' => 1,
-                            'entity' => 'collection',
-                            'items' => array($data),
-                          ];
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $collection];
-    }
-
     public function downloadBatchFile($mode, $id)
     {
         $error = $downloadResponse = null;

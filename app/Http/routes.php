@@ -65,7 +65,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Batch Refund Routes
         Route::group(['prefix' => '{mode}/batches'], function () {
-            Route::get('{id}', 'MerchantController@fetchBatchById')->name('batch_fetch_single');
             Route::get('{id}/download', 'MerchantController@downloadBatchFile')->name('batch_download');
 
             Route::post('/', 'MerchantController@uploadBatchFile')->name('batch_upload');

@@ -197,10 +197,14 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
-        // Batches
+        // Batches [Used for Refunds, Payment Links]
         'batch_fetch_multiple'              => [
             'url'       => 'batches',
             'routeName' => 'batch_fetch_multiple'
+        ],
+        'batch_fetch_by_id'                 => [
+            'url'       => 'batches/{id}',
+            'routeName' => 'batch_fetch_single'
         ],
 
         // Invoices
