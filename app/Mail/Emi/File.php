@@ -55,7 +55,8 @@ class File extends Base
         $this->attach(
             $this->fileData['signed_url'],
             [
-                'as' => $this->fileData['file_name']
+                'as'   => $this->fileData['file_name'],
+                'mime' => 'application/zip'
             ]);
 
         return $this;
