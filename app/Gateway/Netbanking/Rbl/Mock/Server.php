@@ -85,11 +85,6 @@ class Server extends Base\Mock\Server
         return $xml->asXml();
     }
 
-    protected function getStringFromContent($content, $glue = '')
-    {
-        return implode($glue, $content);
-    }
-
     protected function getDecryptedData(string $decryptedString)
     {
         $data = explode('|', $decryptedString);
