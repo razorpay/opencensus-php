@@ -25,7 +25,7 @@ class EmiFile extends Base\Core
 
     const SIGNED_URL_DURATION = '15';
 
-    public function generate(array $input, $email = null)
+    public function generate($input, $email = null)
     {
         $emiData = $this->getEmiData($input);
 
@@ -71,7 +71,7 @@ class EmiFile extends Base\Core
         return $fileData;
     }
 
-    protected function resetEmail(string $email)
+    protected function resetEmail($email)
     {
         if (empty($email) === false)
         {

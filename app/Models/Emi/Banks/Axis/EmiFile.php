@@ -31,7 +31,7 @@ class EmiFile extends Base\EmiFile
         'EMI ID',
     ];
 
-    protected function getEmiData(array $input)
+    protected function getEmiData($input)
     {
         $data = [];
 

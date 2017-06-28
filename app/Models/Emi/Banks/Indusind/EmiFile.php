@@ -56,7 +56,7 @@ class EmiFile extends Base\EmiFile
             'Txn Type',
         ];
 
-    protected function getEmiData(array $input)
+    protected function getEmiData($input)
     {
         $data = [];
 

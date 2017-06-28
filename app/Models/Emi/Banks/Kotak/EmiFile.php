@@ -37,7 +37,7 @@ class EmiFile extends Base\EmiFile
         'Discount / Cashback Amount',
     ];
 
-    protected function getEmiData(array $input)
+    protected function getEmiData($input)
     {
         $data = [];
 
