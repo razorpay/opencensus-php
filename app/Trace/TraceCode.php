@@ -303,6 +303,10 @@ class TraceCode
     const PAYMENT_APP_TOKEN_NOT_FOUND                   = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                          = 'PAYMENT_UPDATE_TOKEN';
     const SAVED_CARDS_UPDATED_WITH_IIN                  = 'SAVED_CARDS_UPDATED_WITH_IIN';
+    const TOKENS_FETCHED_COUNT_FOR_MIGRATE              = 'TOKENS_FETCHED_COUNT_FOR_MIGRATE';
+    const TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED         = 'TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED';
+    const TOKEN_BEING_MIGRATED                          = 'TOKEN_BEING_MIGRATED';
+    const GATEWAY_TOKEN_MIGRATED                        = 'GATEWAY_TOKEN_MIGRATED';
 
     //Pricing
     const PRICING_RULE_SELECTION                        = 'PRICING_RULE_SELECTION';

@@ -4,6 +4,7 @@ namespace RZP\Models\Emi\Banks\Indusind;
 
 use Carbon\Carbon;
 use RZP\Models\Card;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
@@ -13,6 +14,8 @@ class EmiFile extends Base\EmiFile
     protected $emailIdsToSendTo = ['indusind.emi@razorpay.com'];
 
     protected $bankName  = 'IndusInd';
+
+    const TYPE = FileStore\Type::INDUSIND_EMI_FILE;
 
     protected static $headers = [
             'EMI ID',
@@ -52,15 +55,6 @@ class EmiFile extends Base\EmiFile
             'Reward Point',
             'Txn Type',
         ];
-
-    protected function writeEmiFile($emiData)
-    {
-        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
-
-        $path = $this->getExcelFullFilePath();
-
-        return compact('url', 'path');
-    }
 
     protected function getEmiData($input)
     {

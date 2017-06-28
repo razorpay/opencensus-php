@@ -61,6 +61,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const SUBSCRIPTION          = 'subscription';
+    const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
@@ -171,12 +172,12 @@ class Entity
         self::MERCHANT              => \RZP\Models\Merchant::class,
         self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
-        self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
