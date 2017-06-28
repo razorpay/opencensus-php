@@ -105,7 +105,6 @@ class Creator extends Base\Core
     protected $compressionCommand = null;
 
     const DEFAULT_STORE    = 's3';
-    const DEFAULT_METADATA = [];
 
     const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
 
@@ -114,6 +113,8 @@ class Creator extends Base\Core
         parent::__construct();
 
         $this->file = new Entity;
+
+        $this->file->generate([]);
 
         $this->env = $this->app->environment();
 
@@ -126,8 +127,6 @@ class Creator extends Base\Core
     public function setDefaults()
     {
         $this->store(self::DEFAULT_STORE);
-
-        $this->file->setMetadata(self::DEFAULT_METADATA);
     }
 
     /**
@@ -584,7 +583,6 @@ class Creator extends Base\Core
             $this->compressFile();
         }
 
-        $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
     }
 
     /*
@@ -609,7 +607,11 @@ class Creator extends Base\Core
             escapeshellarg($this->getFullFilePath())
         );
 
-        $this->extension($this->compressionFormat)->mime($this->mime);
+        $this->extension($this->compressionFormat);
+
+        $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
+
+        $this->mime($this->localFile->getMimeType());
     }
 
     protected function writeTextFile()
