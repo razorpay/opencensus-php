@@ -28,6 +28,8 @@ class Validator extends Base\Validator
 
     public function validateLiveActionsOnEntity(string $entityId, string $entity, string $permissionName)
     {
+        $entityId = last(explode('_', $entityId));
+
         $actions = (new Core)->fetchOpenActionOnEntityOperation(
             $entityId, $entity, $permissionName);
 
