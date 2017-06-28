@@ -95,7 +95,7 @@ class Creator extends Base\Core
      *
      * @var string Compression Format
      */
-    protected $compressionFormat = null;
+    protected $compressionFormat;
 
     /**
      * Command to be used for zipping
@@ -108,15 +108,12 @@ class Creator extends Base\Core
 
     const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
 
-    public function __construct()
+    public function init()
     {
-        parent::__construct();
-
         $this->file = new Entity;
 
         $this->file->generate([]);
 
-        $this->env = $this->app->environment();
 
         $this->setDefaults();
     }
