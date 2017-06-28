@@ -69,7 +69,6 @@ class GatewayRuleTest extends TestCase
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'hdfc',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50
             ]);
 

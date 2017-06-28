@@ -66,7 +66,8 @@ class CreateGatewayRules extends Migration
                   ->unsigned();
 
             $table->integer(Rule::MAX_AMOUNT)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
             $table->text(Rule::IINS)
                   ->nullable();

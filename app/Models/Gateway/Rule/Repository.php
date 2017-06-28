@@ -174,12 +174,15 @@ class Repository extends Base\Repository
      */
     protected function addQueryForMinAmount($query, $params)
     {
-        $query->where(Entity::MIN_AMOUNT, '<=', $params[Entity::MAX_AMOUNT]);
+        if (isset($params[Entity::MAX_AMOUNT]) === true)
+        {
+            $query->where(Entity::MIN_AMOUNT, '<=', $params[Entity::MAX_AMOUNT]);
+        }
     }
 
     protected function addQueryForMaxAmount($query, $params)
     {
-        $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MAX_AMOUNT]);
+        $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MIN_AMOUNT]);
     }
 
     protected function getQueryAttributes(Entity $rule)

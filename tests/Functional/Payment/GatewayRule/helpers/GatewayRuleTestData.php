@@ -35,7 +35,6 @@ return [
                     'international'    => false,
                     'gateway_acquirer' => 'axis',
                     'min_amount'       => 0,
-                    'max_amount'       => 4294967295,
                     'load'             => 50,
                     'admin'            => true
                 ],
@@ -441,7 +440,6 @@ return [
                     'gateway'     => 'hdfc',
                     'network'     => 'VISA',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'load'        => 50
                 ],
             ],
@@ -481,7 +479,6 @@ return [
                     'gateway'     => 'hdfc',
                     'network'     => null,
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'load'        => 60
                 ]
             ],
@@ -519,7 +516,6 @@ return [
                     'gateway'     => 'hdfc',
                     'network'     => null,
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'load'        => 60
                 ],
             ],
@@ -879,7 +875,6 @@ return [
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'hdfc',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'iins'        => ['411111'],
                 ]
             ],
@@ -892,7 +887,6 @@ return [
                     'gateway'     => 'hdfc',
                     'method'      => 'card',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'iins'        => ['401201', '411111'],
                 ],
                 'url' => '/gateway/rules',
@@ -924,7 +918,6 @@ return [
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50
             ],
             'request' => [
@@ -943,7 +936,6 @@ return [
                     'gateway'     => 'hdfc',
                     'network'     => 'VISA',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'load'        => 70,
                 ]
             ]
@@ -958,7 +950,6 @@ return [
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
             ],
             'request' => [
                 'content' => [
@@ -990,7 +981,6 @@ return [
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50
             ],
             'fixtures' => [
@@ -1000,7 +990,6 @@ return [
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'axis_migs',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'load'        => 50
                 ]
             ],
@@ -1035,7 +1024,6 @@ return [
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
             ],
             'request' => [
                 'content' => [
@@ -1054,7 +1042,6 @@ return [
                     'gateway'     => 'hdfc',
                     'network'     => 'VISA',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                 ]
             ]
         ],
@@ -1068,7 +1055,6 @@ return [
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
             ],
             'fixtures' => [
                 [
@@ -1078,7 +1064,6 @@ return [
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'hdfc',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                 ]
             ],
             'request' => [
@@ -1111,7 +1096,6 @@ return [
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50,
             ],
             'request' => [
@@ -1142,7 +1126,6 @@ return [
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'hdfc',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50
             ],
             'request' => [
@@ -1158,7 +1141,6 @@ return [
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'hdfc',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'iins'        => ['411111'],
                     'load'        => 50,
                 ]
@@ -1173,7 +1155,6 @@ return [
                 'gateway'     => 'hdfc',
                 'iins'        => ['411111'],
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50
             ],
             'request' => [
@@ -1189,7 +1170,6 @@ return [
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'hdfc',
                     'min_amount'  => 0,
-                    'max_amount'  => 4294967295,
                     'iins'        => ['401201'],
                     'load'        => 50,
                 ]
@@ -1203,7 +1183,6 @@ return [
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'billdesk',
                 'min_amount'  => 0,
-                'max_amount'  => 4294967295,
                 'load'        => 50
             ],
             'request' => [

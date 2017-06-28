@@ -51,8 +51,6 @@ class Entity extends Base\PublicEntity
     const SELECT = 'select';
     const REJECT = 'reject';
 
-    const MAX_INT_VAL = 4294967295;
-
     /**
      * Attributes used for comparing terminal to rule
      */
@@ -74,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
+        self::MAX_AMOUNT,
         self::GATEWAY_ACQUIRER,
         self::NETWORK_CATEGORY,
         self::CATEGORY2,
@@ -155,7 +154,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::MIN_AMOUNT => 0,
-        self::MAX_AMOUNT => self::MAX_INT_VAL,
     ];
 
     public function getLoad()

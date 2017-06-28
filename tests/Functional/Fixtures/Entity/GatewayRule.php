@@ -14,7 +14,6 @@ class GatewayRule extends Base
             'gateway'       => 'hdfc',
             'network'       => 'VISA',
             'min_amount'    => 0,
-            'max_amount'    => 4294967295,
             'load'          => 50
         ];
 
@@ -32,7 +31,6 @@ class GatewayRule extends Base
             'method'      => 'netbanking',
             'merchant_id' => Merchant\Account::TEST_ACCOUNT,
             'min_amount'  => 0,
-            'max_amount'  => 4294967295,
             'load'        => 50,
         ];
 
@@ -49,7 +47,6 @@ class GatewayRule extends Base
             'type'        => 'sorter',
             'method'      => 'wallet',
             'min_amount'  => 0,
-            'max_amount'  => 4294967295,
             'merchant_id' => Merchant\Account::TEST_ACCOUNT,
             'load'        => 50,
         ];

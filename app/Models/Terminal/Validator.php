@@ -3,12 +3,13 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
 
 class Validator extends Base\Validator
 {
