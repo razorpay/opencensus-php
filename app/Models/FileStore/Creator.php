@@ -84,30 +84,30 @@ class Creator extends Base\Core
     protected $env;
 
     /**
-     * Flag to signify if file has to be zipped
+     * Flag to signify if file has to be compressed
      *
-     * @var boolean Zip flag
+     * @var boolean Compress flag
      */
-    protected $zipFlag = false;
+    protected $shouldCompress = false;
 
     /**
-     * Format in which file has to be zipped
+     * Format in which file has to be Compress
      *
-     * @var string Zip Format
+     * @var string Compression Format
      */
-    protected $zipFormat = null;
+    protected $compressionFormat = null;
 
     /**
      * Command to be used for zipping
      *
-     * @var string Zip Command
+     * @var string Compression Command
      */
-    protected $zipCommand = null;
+    protected $compressionCommand = null;
 
     const DEFAULT_STORE    = 's3';
     const DEFAULT_METADATA = [];
 
-    const ZIP_COMMAND = 'zip --junk-paths --move';
+    const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
 
     public function __construct()
     {
@@ -214,27 +214,19 @@ class Creator extends Base\Core
         return $this;
     }
 
-    /** Set Zipping Format for file
+    /** Set Compression Params for file
      *
-     * @param Zip format
+     * @param Compression format
      *
      * @return Creator object
      */
-    public function zip($format = 'zip')
+    public function compress($format = 'zip')
     {
-        $this->zipFlag = true;
+        $this->shouldCompress = true;
 
-        $this->zipFormat = $format;
+        $this->compressionFormat = $format;
 
-        switch ($this->zipFormat)
-        {
-            case 'zip':
-                $this->zipCommand = self::ZIP_COMMAND;
-                break;
-
-            default:
-                throw new Exception\LogicException('Not A Valid Zippping Format ' . $this->zipFormat);
-        }
+        $this->setCompressionCommand();
 
         return $this;
     }
@@ -412,17 +404,6 @@ class Creator extends Base\Core
         return $this;
     }
 
-    protected function isZipSupported()
-    {
-        if (($this->zipFlag === true) and
-            (($this->localFile !== null) or
-            ($this->localFilePath !== null)))
-        {
-            throw new Exception\LogicException(
-                'Zip is not supported for Local Files');
-        }
-    }
-
     /**
      * Returns Array of File Store Values
      *
@@ -487,6 +468,19 @@ class Creator extends Base\Core
         return $this->file;
     }
 
+    protected function setCompressionCommand()
+    {
+        switch ($this->compressionFormat)
+        {
+            case 'zip':
+                $this->compressionCommand = self::COMMAND_FOR_ZIPPING;
+                break;
+
+            default:
+                throw new Exception\LogicException('Not A Valid Compression Format ' . $this->compressionFormat);
+        }
+    }
+
     /**
      * Validates the Content before saving
      *
@@ -498,7 +492,18 @@ class Creator extends Base\Core
 
         Type::validateType($this->file->getType());
 
-        $this->isZipSupported();
+        $this->validateCompressionSupport();
+    }
+
+    protected function validateCompressionSupport()
+    {
+        if (($this->shouldCompress === true) and
+            (($this->localFile !== null) or
+            ($this->localFilePath !== null)))
+        {
+            throw new Exception\LogicException(
+                'Compression is not supported for Local Files');
+        }
     }
 
     /**
@@ -574,28 +579,37 @@ class Creator extends Base\Core
                 throw new Exception\LogicException('Not A Valid Extension');
         }
 
-        if ($this->zipFlag === true)
+        if ($this->shouldCompress === true)
         {
-            $this->zipFile();
+            $this->compressFile();
         }
 
         $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
     }
 
-    protected function zipFile()
+    /*
+     * Compress the file and stores in the Compressed file Path
+     * Sample Command :
+     * `zip --junk-paths --move  --password <password> '<compression_path>' '<source_path>'`
+     */
+    protected function compressFile()
     {
-        $zipCommand = $this->zipCommand;
+        $compressionCommand = $this->compressionCommand;
 
         if (empty($this->file->getPassword()) === false)
         {
-            $zipCommand .= " --password " . $password;
+            $compressionCommand .= " --password " . $password;
         }
 
-        exec($zipCommand . " " . escapeshellarg($this->getZipFullFilePath()) . " " . escapeshellarg($this->getFullFilePath()));
+        exec(
+            $compressionCommand .
+            " " .
+            escapeshellarg($this->getCompressedFileFullPath()) .
+            " " .
+            escapeshellarg($this->getFullFilePath())
+        );
 
-        $this->extension('zip');
-
-        $this->mime('application/zip');
+        $this->extension($this->compressionFormat)->mime($this->mime);
     }
 
     protected function writeTextFile()
@@ -691,9 +705,9 @@ class Creator extends Base\Core
         return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
     }
 
-    public function getZipFullFilePath()
+    public function getCompressedFileFullPath()
     {
-        return $this->getStorageDir() . $this->file->getName() . '.zip' ;
+        return $this->getStorageDir() . $this->file->getName() . '.' . Format::ZIP;
     }
 
     protected function getStorageDir()
