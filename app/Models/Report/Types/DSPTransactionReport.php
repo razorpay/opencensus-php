@@ -4,11 +4,7 @@ namespace RZP\Models\Report\Types;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Base\JitValidator;
-use RZP\Models\Transaction;
+use RZP\Models\FileStore;
 use RZP\Constants\Entity as E;
 use RZP\Mail\Report\DSPReport as DSPMail;
 
@@ -57,22 +53,11 @@ class DSPTransactionReport extends BasicEntityReport
 
     const BILLDESK = 'billdesk';
 
-    /**
-     * Report for DSP Blackrock Merchant
-     * @param  array  $input ['day'         => 'yesterday/today',
-     *                        'merchant_id' => 'Merchant Id'
-     *                        'email'       => <for testing purpose only>]
-     * @return [type]        [description]
-     */
     public function getReport(array $input)
     {
-        $merchantId = $input['merchant_id'];
+        $email = $input['email'] ?? $this->merchant->getEmail();
 
         $this->setDefaults();
-
-        $this->setMerchant($merchantId);
-
-        $email = $input['email'] ?? $this->merchant->getEmail();
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -80,15 +65,27 @@ class DSPTransactionReport extends BasicEntityReport
 
         $fullpath = $this->writeDataToCsv($input, $filename);
 
-        $reportingMail = new DSPMail($email, $fullpath);
+        $s3File = $this->createFileAndSave($fullpath, $filename);
 
-        Mail::queue($reportingMail);
+        $this->unlinkFile($fullpath);
 
-        return [
-            'merchantId' => $merchantId,
-            'email'      => $email,
-            'file'       => $fullpath
-        ];
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+
+        $shouldSendMail = false;
+
+        if (isset($input['mail']) === true)
+        {
+            $shouldSendMail = ($input['mail'] === '1');
+        }
+
+        if ($shouldSendMail === true)
+        {
+            $reportingMail = new DSPMail($email, $signedUrl, $filename);
+
+            Mail::queue($reportingMail);
+        }
+
+        return [ 'url' => $signedUrl ];
     }
 
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
@@ -257,37 +254,62 @@ class DSPTransactionReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $from = $to = null;
 
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
-
+        // If day is set, `from` and `to` are of that day start and end only.
+        // If day is not set, month should be set. `from` and `to` will be
+        // the first day and the last day of the month.
         if (isset($input['day']) === true)
         {
-            $day = $input['day'];
-
-            if ($day === 'today')
+            // this is needed for cron input as we can't pass the exact day from
+            // cron
+            if ($input['day'] === 'today')
             {
-                $from = Carbon::now('Asia/Kolkata')
-                              ->startOfDay()
-                              ->timestamp;
-
-                $to = Carbon::now('Asia/Kolkata')
-                            ->timestamp;
+                $date = Carbon::today('Asia/Kolkata')->startOfDay();
             }
-            else if ($day === 'yesterday')
+            else if ($input['day'] === 'yesterday')
             {
-                $from = Carbon::now('Asia/Kolkata')
-                               ->startOfDay()
-                               ->subDay()
-                               ->timestamp;
-
-                $to = Carbon::now('Asia/Kolkata')
-                            ->startOfDay()
-                            ->timestamp - 1;
+                $date = Carbon::yesterday('Asia/Kolkata')->startOfDay();
             }
+            else
+            {
+                $this->validateInput($input);
+
+                $day = (int) $input['day'];
+                $month = (int) $input['month'];
+                $year = (int) $input['year'];
+
+                $date = Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata')
+                              ->startOfDay();
+            }
+
+            $from = $date->timestamp;
+            $to = $date->addDay()->timestamp - 1;
+        }
+        else if (isset($input['month']) === true)
+        {
+            $this->validateInput($input);
+
+            $month = (int) $input['month'];
+            $year = (int) $input['year'];
+
+            assertTrue($month > 0);
+            assertTrue($month <= 12);
+
+            $from = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                          ->startOfDay()
+                          ->timestamp;
+
+            $to = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                        ->endOfMonth()
+                        ->timestamp;
         }
         else
         {
+            $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+
+            $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+
             if (isset($input['from']) === true)
             {
                 $from = $input['from'];

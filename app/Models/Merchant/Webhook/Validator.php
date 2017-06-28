@@ -70,6 +70,11 @@ class Validator extends Base\Validator
 
     protected function validateEvents($input)
     {
+        if (isset($input[Entity::EVENTS]) === false)
+        {
+            return;
+        }
+
         $events = $input[Entity::EVENTS];
 
         foreach ($events as $event => $value)

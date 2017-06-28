@@ -312,6 +312,8 @@ class Validator extends Base\Validator
      * for the invoice.
      *
      * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
      */
     public function validateEditDraftAmount(array $input)
     {
