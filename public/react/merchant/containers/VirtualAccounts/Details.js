@@ -42,9 +42,8 @@ export default class VirtualAccountDetailsContainer extends Component {
     this.context.confirm({
       header: 'Close account?',
       message: 'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
-      affirmativeLabel: 'Close',
-      affirmativePendingLabel: 'Closing...',
-      abortLabel: "No, don't",
+      affirmativeLabel: 'Yes',
+      abortLabel: 'No',
       action: () =>
         this.props
           .saveVirtualAccount({ ...virtualaccount, status: 'closed' })
@@ -52,37 +51,6 @@ export default class VirtualAccountDetailsContainer extends Component {
             this.props.showNotification({
               type: 'success',
               message: 'Account closed successfully',
-            });
-          })
-          .catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors,
-            });
-          }),
-    });
-  };
-
-  deleteAccount = virtualaccount => {
-    this.context.confirm({
-      header: 'Delete account?',
-      message: () => (
-        <span>
-          The account will be closed and all the data for this account will be deleted.
-          {' '}
-          <b>You can’t undo this action.</b>
-        </span>
-      ),
-      affirmativeLabel: 'Delete',
-      affirmativePendingLabel: 'Deleting...',
-      action: () =>
-        this.props
-          .deleteVirtualAccount(virtualaccount)
-          .then(response => {
-            this.props.history.push('/virtualaccounts');
-            this.props.showNotification({
-              type: 'success',
-              message: 'Account deleted successfully',
             });
           })
           .catch(({ errors }) => {
@@ -120,7 +88,6 @@ export default class VirtualAccountDetailsContainer extends Component {
         isLoading={loading}
         statusMsg={statusMsg}
         onClose={this.closeAccount}
-        onDelete={this.deleteAccount}
         onMakeTestPaymentClick={this.openTestPaymentModal}
       />
     );
