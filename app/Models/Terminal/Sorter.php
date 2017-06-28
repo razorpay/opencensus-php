@@ -17,6 +17,15 @@ class Sorter extends Base\Core
      */
     protected $properties;
 
+    protected $rules;
+
+    public function __construct(Base\PublicCollection $rules)
+    {
+        parent::__construct();
+
+        $this->rules = $rules;
+    }
+
     public function sort($terminals, $input, $verbose = false, $options = null)
     {
         // No need to sort if there's only one terminal
@@ -49,7 +58,7 @@ class Sorter extends Base\Core
         return camel_case($sorterProperty) . 'Sorter';
     }
 
-    protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId=null)
+    protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId = null)
     {
         if ($merchantId === '4izmfM9TFCAgFN')
         {

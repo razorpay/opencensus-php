@@ -5,6 +5,8 @@ namespace RZP\Models\Terminal;
 use App;
 use RZP\Constants\Mode as ConstantMode;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace;
@@ -22,6 +24,7 @@ class Selector
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
+        Filters\RuleFilter::class,
     ];
 
     /**
@@ -78,7 +81,7 @@ class Selector
         $merchantTerminals = $this->terminalRepo->getTerminalsForMerchantAndSharedMerchant(
             $this->merchant->getId());
 
-        return $merchantTerminals;
+        return $merchantTerminals->all();
     }
 
     public function select(Options $options = null, $verbose = false)
@@ -87,17 +90,24 @@ class Selector
 
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
 
+        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($terminals, $this->input);
+
         //
         // Initially, the terminals are run through a filter class, which removes
         // the terminals which do not match the filters. For further iterations, the
         // filtered list of terminals is used to further filter upon using the other
         // filter classes.
         //
-        $filteredTerminals = $terminals->all();
+        $filteredTerminals = $terminals;
 
         foreach (self::$filters as $filter)
         {
-            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
+            $filterRules = $this->getRulesForFiltering($applicableRules);
+
+            $filterObj = new $filter($options, $filterRules);
+
+            $filteredTerminals = $filterObj->filter($filteredTerminals, $this->input, $verbose);
+
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
@@ -121,7 +131,12 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose, $options);
+            $sorterRules = $this->getRulesForSorting($applicableRules);
+
+            $sorterObj = new $sorter($sorterRules);
+
+            $sortedTerminals = $sorterObj->sort($sortedTerminals, $this->input, $verbose, $options);
+
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
@@ -170,6 +185,34 @@ class Selector
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+    protected function getRulesForFiltering(Base\PublicCollection $rules): Base\PublicCollection
+    {
+        return $rules->filter(function ($rule)
+        {
+            return ($rule->isTypeFilter() === true);
+        });
+    }
+
+    protected function getRulesForSorting(Base\PublicCollection $rules): Base\PublicCollection
+    {
+        $sorterRules = $rules->filter(function ($rule)
+        {
+            return ($rule->isTypeSorter() === true);
+        });
+
+        $merchantSpecificRules = $rules->filter(function ($rule)
+        {
+            return ($rule->getMerchantId() === $this->merchant->getId());
+        });
+
+        if ($merchantSpecificRules->isNotEmpty() === true)
+        {
+            return $merchantSpecificRules;
+        }
+
+        return $sorterRules;
     }
 
     /**

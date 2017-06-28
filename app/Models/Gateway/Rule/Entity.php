@@ -247,7 +247,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
     }
 
-    public function shouldRejectTerminal(): bool
+    public function isRejectFilter(): bool
     {
         return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
     }
@@ -373,7 +373,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->match($key, $terminal) === false)
+            if ($this->compare($key, $terminal) === false)
             {
                 return false;
             }
@@ -382,8 +382,22 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function match(string $key, Terminal\Entity $terminal): bool
+    protected function compare(string $key, Terminal\Entity $terminal): bool
     {
+        $compareFunc = 'compare' . studly_case($key);
+
+        if (method_exists($this, $compareFunc) === true)
+        {
+            return $this->$compareFunc($terminal);
+        }
+
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
+    }
+
+    protected function compareTerminalType(Terminal\Entity $terminal): bool
+    {
+        $terminalType = $this->getAttribute(self::TERMINAL_TYPE);
+
+        return ($terminalType === 'shared') ? $terminal->isShared() : !$terminal->isShared();
     }
 }

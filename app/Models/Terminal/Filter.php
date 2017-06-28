@@ -4,6 +4,8 @@ namespace RZP\Models\Terminal;
 
 use Trace;
 use RZP\Exception;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
 class Filter
@@ -13,6 +15,15 @@ class Filter
      * @var array
      */
     protected $properties;
+
+    protected $options;
+
+    public function __construct(Options $options, Base\PublicCollection $rules)
+    {
+        $this->options = $options;
+
+        $this->rules = $rules;
+    }
 
     /**
      * Takes input as collection of terminals. Gets the list of all properties applicable to the
@@ -31,6 +42,11 @@ class Filter
     {
         foreach ($this->properties as $filterProperty)
         {
+            if ($this->shouldSkipFilter($filterProperty, $input) === true)
+            {
+                continue;
+            }
+
             $filterFunction = $this->getFilterFunctionForProperty($filterProperty);
 
             // From all possible current terminals
@@ -77,5 +93,18 @@ class Filter
 
             $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+    protected function shouldSkipFilter(string $property, array $input): bool
+    {
+        $merchant = $input['merchant'];
+
+        $skippedFilters = $this->options->getSkippedFilters();
+
+        $isFilterSkipped = in_array($property, $skippedFilters, true);
+
+        $featureEnabled = $merchant->isFeatureEnabled(Feature::RULE_FILTER);
+
+        return (($isFilterSkipped === true) and ($featureEnabled === true));
     }
 }
