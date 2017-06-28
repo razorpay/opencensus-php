@@ -15,7 +15,7 @@ const entityMap = {
   '/paymentlinks/:id(inv_.+)': PaymentLinkDetails,
   '/invoices/:id/details': PaymentLinkDetails,
 
-  '/marketplace/payments/:id': PaymentsDetails,
+  '/route/payments/:id': PaymentsDetails,
   '/virtualaccounts/:id': VirtualAccountDetails,
 };
 
