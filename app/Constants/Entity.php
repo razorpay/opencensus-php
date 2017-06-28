@@ -60,6 +60,7 @@ class Entity
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
@@ -176,6 +177,7 @@ class Entity
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
