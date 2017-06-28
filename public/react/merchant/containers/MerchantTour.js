@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Children } from 'react';
 import { connect } from 'react-redux';
 import { Tour, TourStep } from 'rzp/ui/Tour';
 import { fetchGST } from 'merchant/modules/profile';
@@ -11,28 +11,36 @@ export default class MerchantTour extends Component {
   state = {
     isTourActive: false,
     activeTourStep: 0,
+    showOnboardingTour: false,
+    appendGSTStep: false,
   };
 
   componentWillMount() {
-    if (LocalStorageService.getItem('gst_tour_shown')) {
-      return;
-    }
     let isNewUIEnabled = this.props.user.isNewUIEnabled;
     let isNewUITourShown = LocalStorageService.getItem('newui_tour_shown');
 
-    this.props.fetchGST().then(({ data }) => {
-      if (!data.gstin && !data.p_gstin) {
-        this.showTour();
-      }
-    });
-
     if (isNewUIEnabled && !isNewUITourShown) {
+      this.setState({
+        showOnboardingTour: true,
+      });
       window.setTimeout(() => {
         this.props.openModal({
           size: 'small',
           component: <NewUIOnboardingDialog onShowChanges={this.showTour} />,
         });
-      }, 1000);
+      }, 1500);
+    }
+
+    if (!LocalStorageService.getItem('gst_tour_shown')) {
+      this.props.fetchGST().then(({ data }) => {
+        if (!data.gstin && !data.p_gstin) {
+          if (this.state.showOnboardingTour) {
+            this.setState({ appendGSTStep: true });
+          } else {
+            this.showTour();
+          }
+        }
+      });
     }
   }
 
@@ -52,14 +60,102 @@ export default class MerchantTour extends Component {
 
   render() {
     let isNewUIEnabled = this.props.user.isNewUIEnabled;
+    let showOnboardingTour = this.state.showOnboardingTour;
 
     return (
       <div>
         <Tour
           isActive={this.state.isTourActive}
           tourStep={this.state.activeTourStep}
-          showOverlay={false}
+          showOverlay={this.state.showOnboardingTour}
         >
+          {showOnboardingTour
+            ? Children.toArray([
+                <TourStep to="#transactions-nav">
+                  <p>
+                    <b>Payments</b>
+                    ,
+                    {' '}
+                    <b>Refunds</b>
+                    {' '}
+                    and
+                    {' '}
+                    <b>Orders</b>
+                    {' '}
+                    are moved to Transactions.
+                  </p>
+                  <div class="btn-toolbar">
+                    <button class="btn btn-link" onClick={this.closeTour}>
+                      Skip
+                    </button>
+                    <button
+                      class="btn btn-link pull-right"
+                      onClick={this.gotoNextTourStep}
+                    >
+                      Next &gt;
+                    </button>
+                  </div>
+                </TourStep>,
+
+                <TourStep to="#myaccount-nav">
+                  <p>
+                    <b>Profile</b>
+                    ,
+                    {' '}
+                    <b>Activation</b>
+                    ,
+                    {' '}
+                    <b>Credits</b>
+                    {' '}
+                    and
+                    {' '}
+                    <b>Add Funds</b>
+                    {' '}
+                    are moved to My Account.
+                  </p>
+                  <div class="btn-toolbar">
+                    <button class="btn btn-link" onClick={this.closeTour}>
+                      Skip
+                    </button>
+                    <button
+                      class="btn btn-link pull-right"
+                      onClick={this.gotoNextTourStep}
+                    >
+                      Next &gt;
+                    </button>
+                  </div>
+                </TourStep>,
+
+                <TourStep to="#settings-nav">
+                  <p>
+                    <b>Configuration</b>
+                    ,
+                    {' '}
+                    <b>API Keys</b>
+                    , and
+                    {' '}
+                    <b>Webhooks</b>
+                    {' '}
+                    are moved to Settings.
+                  </p>
+                  <div class="btn-toolbar">
+                    <button
+                      class="btn btn-link pull-right"
+                      onClick={() => {
+                        if (showOnboardingTour) {
+                          this.gotoNextTourStep();
+                        } else {
+                          this.closeTour();
+                        }
+                      }}
+                    >
+                      {showOnboardingTour ? 'Next >' : 'Done!'}
+                    </button>
+                  </div>
+                </TourStep>,
+              ])
+            : null}
+
           <TourStep to={isNewUIEnabled ? '#myaccount-nav' : '#profile-nav'}>
             <p>
               Find Razorpay's
@@ -75,6 +171,30 @@ export default class MerchantTour extends Component {
               {isNewUIEnabled ? 'My Account > Profile' : 'Profile'}
               {' '}
               tab.
+            </p>
+            <div class="btn-toolbar">
+              <button
+                class="btn btn-link pull-right"
+                onClick={this.gotoNextTourStep}
+              >
+                Next &gt;
+              </button>
+            </div>
+          </TourStep>
+
+          <TourStep
+            to="#profile-dropdown"
+            attachment="top center"
+            targetAttachment="bottom left"
+            offset="-15px 12px"
+            arrowLeftPos="75%"
+          >
+            <p>
+              Your
+              {' '}
+              <b>Merchant ID</b>
+              {' '}
+              is here. Also, to revert to old design or to give feedback, click here.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link pull-right" onClick={this.closeTour}>

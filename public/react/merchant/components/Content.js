@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { matchDetail } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import ShowWhen from 'merchant/components/ShowWhen';
-import Home from 'merchant/containers/HomeContainer';
+import Home from 'merchant/containers/Home/Index';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';

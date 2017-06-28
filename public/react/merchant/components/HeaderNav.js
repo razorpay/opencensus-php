@@ -135,7 +135,9 @@ export default ({
                 <span>Documentation</span>
               </a>
             </li>
-            <li><ProfileDropdown user={user} onLogoutClick={onLogout} /></li>
+            <li id="profile-dropdown">
+              <ProfileDropdown user={user} onLogoutClick={onLogout} />
+            </li>
           </ul>
         </div>
       </div>

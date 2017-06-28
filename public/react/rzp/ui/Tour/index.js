@@ -22,6 +22,13 @@ class Tour extends Component {
     if (isActive && tourStep >= 0) {
       children = Children.toArray(children);
       let activeChild = children[tourStep];
+      let {
+        attachment,
+        targetAttachment,
+        offset,
+        arrowTopPos,
+        arrowLeftPos,
+      } = activeChild.props;
       let target = activeChild.props.to;
       let $target = document.querySelector(target);
       let targetLensPos = {};
@@ -36,7 +43,15 @@ class Tour extends Component {
         };
       }
 
-      this.setState({ target, targetLensPos });
+      this.setState({
+        target,
+        targetLensPos,
+        targetAttachment,
+        attachment,
+        offset,
+        arrowTopPos,
+        arrowLeftPos,
+      });
     } else {
       this.setState({ target: null, initialized: false });
     }
@@ -61,7 +76,16 @@ class Tour extends Component {
 
   render() {
     let { isActive, showOverlay } = this.props;
-
+    let {
+      initialized,
+      target,
+      targetAttachment,
+      targetLensPos,
+      attachment,
+      offset,
+      arrowTopPos,
+      arrowLeftPos,
+    } = this.state;
     if (!isActive) {
       return null;
     }
@@ -74,18 +98,24 @@ class Tour extends Component {
         }}
       >
         {showOverlay
-          ? <div class="Tour__TargetLens" style={this.state.targetLensPos} />
+          ? <div class="Tour__TargetLens" style={targetLensPos} />
           : null}
         <TetherComponent
-          class={`Tour ${this.state.initialized ? 'Tour--initialized' : ''}`}
-          target={this.state.target}
-          attachment="middle left"
-          targetAttachment="middle right"
-          offset="0 -15px"
+          class={`Tour ${initialized ? 'Tour--initialized' : ''}`}
+          target={target}
+          attachment={attachment}
+          targetAttachment={targetAttachment}
+          offset={offset}
         >
           <div />{/* required by react-tether */}
           <div class="TourStep__Container">
-            <div class="arrow" />
+            <div
+              class="arrow"
+              style={{
+                top: arrowTopPos,
+                left: arrowLeftPos,
+              }}
+            />
             {this.renderChildren(this.props.children)}
           </div>
         </TetherComponent>

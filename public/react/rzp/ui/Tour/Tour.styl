@@ -3,7 +3,7 @@
 }
 
 .Tour--initialized {
-  // transition: transform 300ms ease-in-out;
+  transition: transform 300ms ease-in-out;
 }
 
 .Tour__Overlay {
@@ -56,10 +56,10 @@
 
 .tether-element-attached-left .arrow {
   top: 50%;
-  left: -11px;
+  left: -11px !important;
   margin-top: -11px;
   border-left-width: 0;
-  border-right-color: #999999;
+  border-right-color: #999;
   border-right-color: #2e3345;
 }
 
@@ -69,4 +69,21 @@
   bottom: -10px;
   border-left-width: 0;
   border-right-color: #2e3345;
+}
+
+.tether-element-attached-top .arrow {
+  left: 50%;
+  top: -11px !important;
+  margin-left: -11px;
+  border-top-width: 0;
+  border-bottom-color: #999;
+  border-bottom-color: #2e3345;
+
+  &:after {
+    content: " ";
+    top: 1px;
+    margin-left: -10px;
+    border-top-width: 0;
+    border-bottom-color: #2e3345;
+  }
 }

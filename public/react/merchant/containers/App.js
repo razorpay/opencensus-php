@@ -17,7 +17,6 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
 import User from 'merchant/models/User';
-import MerchantTour from 'merchant/containers/MerchantTour';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
