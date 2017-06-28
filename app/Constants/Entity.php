@@ -56,10 +56,11 @@ class Entity
     const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
-    const SUBSCRIPTION          = 'subscription';
     const FEE_BREAKUP           = 'fee_breakup';
+    const GATEWAY_RULE          = 'gateway_rule';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const SUBSCRIPTION          = 'subscription';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
@@ -69,7 +70,6 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
-    const GATEWAY_RULE          = 'gateway_rule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';

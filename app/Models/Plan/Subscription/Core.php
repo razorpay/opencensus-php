@@ -37,7 +37,16 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer): Entity
+    /**
+     * @param array                 $input
+     * @param Plan\Entity           $plan
+     * @param Customer\Entity|null  $customer This is not type hinted because customer can be null
+     *                                        also, in case the merchant wants to follow global
+     *                                        customer flow.
+     *
+     * @return Entity
+     */
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
         return (new Creator)->create($input, $plan, $customer);
     }
@@ -500,8 +509,9 @@ class Core extends Base\Core
             Payment\Entity::RECURRING       => '1',
             Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
             Payment\Entity::TOKEN           => $tokenId,
-            Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            // Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Payment\Entity::ORDER_ID        => $order->getPublicId(),
+            // TODO: These fields should not be required to be sent.
             Payment\Entity::EMAIL           => $customer->getEmail(),
             Payment\Entity::CONTACT         => $customer->getContact(),
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',

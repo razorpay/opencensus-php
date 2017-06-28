@@ -428,7 +428,7 @@ class Repository extends Base\Repository
                     ->whereNotIn("transactions.id", function($query)
                         {
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
-                                  ->from(TABLE::FEE_BREAKUP);
+                                  ->from(Table::FEE_BREAKUP);
                         });
 
         return $query->limit(1000)->get();

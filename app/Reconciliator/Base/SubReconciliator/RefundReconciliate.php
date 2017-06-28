@@ -158,7 +158,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return $refundAmount;
     }
 
-    protected function runPreReconciledAtCheckRecon($rowDetails)
+    protected function runPreReconciledAtCheckRecon(array $rowDetails)
     {
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 

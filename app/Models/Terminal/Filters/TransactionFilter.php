@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use App;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Type;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
@@ -42,6 +45,15 @@ class TransactionFilter extends Terminal\Filter
         'recurring',
         'iin',
     ];
+
+    protected $repo;
+
+    public function __construct()
+    {
+        $app = App::getFacadeRoot();
+
+        $this->repo = $app['repo'];
+    }
 
     public function methodFilter($terminal, $input)
     {
@@ -193,7 +205,6 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-
     public function recurringFilter($terminal, $input)
     {
         $payment = $input['payment'];
@@ -217,20 +228,55 @@ class TransactionFilter extends Terminal\Filter
 
             $ba = app('basicauth');
 
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $access = (($ba->isPrivateAuth() === true) or ($ba->isPrivilegeAuth() === true));
+
             // Check if this is the second recurring payment
-            if (($payment->getTokenId() !== null) and
-                ($payment->localToken->isRecurring() === true) and
-                (($ba->isPrivateAuth() === true) or
-                 ($ba->isPrivilegeAuth() === true)))
+            if (($token !== null) and
+                ($token->isRecurring() === true) and
+                ($access === true))
             {
-                // For second recurring payment, ensure that we select a terminal
-                // of the same gateway as for the first recurring payment.
-                $previousGateway = $payment->localToken->terminal->getGateway();
+                $reference = $payment->getReferenceForGatewayToken();
 
-                $currentGateway = $terminal->getGateway();
+                $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 
-                return (($terminal->isNon3DSRecurring() === true) and
-                        ($previousGateway === $currentGateway));
+                $gatewayTokensCount = $gatewayTokens->count();
+
+                if ($gatewayTokensCount === 1)
+                {
+                    //
+                    // For second recurring payment, ensure that we select a terminal
+                    // of the same gateway as for the first recurring payment and also
+                    // of the same merchant (shared, direct)
+                    //
+                    $previousGateway = $gatewayTokens->first()->terminal->getGateway();
+                    $previousMerchant = $gatewayTokens->first()->terminal->getMerchantId();
+
+                    $currentGateway = $terminal->getGateway();
+                    $currentMerchant = $terminal->getMerchantId();
+
+                    return (($terminal->isNon3DSRecurring() === true) and
+                            ($previousGateway === $currentGateway) and
+                            ($previousMerchant === $currentMerchant));
+                }
+                //
+                // If a token is present and is supposed to be subsequent charge,
+                // the corresponding gateway_token must always be present.
+                // If it's not present, there's something wrong somewhere!
+                //
+                else
+                {
+                    throw new Exception\LogicException(
+                        'Should have gotten exactly 1 gateway token.',
+                        ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
+                        [
+                            'gateway_tokens_count'  => $gatewayTokensCount,
+                            'payment_id'            => $payment->getId(),
+                            'token_id'              => $token->getId(),
+                            'reference'             => $reference
+                        ]);
+                }
             }
             else
             {

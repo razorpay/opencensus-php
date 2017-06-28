@@ -103,8 +103,6 @@ class Service extends Base\Service
 
         if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appTokenId);
-
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
             $tokens = $this->core->fetchTokensByCustomer($app->customer);
@@ -128,13 +126,11 @@ class Service extends Base\Service
      */
     public function deleteTokenForGlobalCustomer($token)
     {
-        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
-        if ($appToken !== null)
+        if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appToken);
-
-            $app = (new AppToken\Core)->getAppByAppTokenId($appToken, $this->merchant);
+            $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
             return $this->deleteTokenForCustomer($token, $app->customer);
         }

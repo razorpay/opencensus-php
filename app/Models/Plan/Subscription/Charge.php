@@ -303,6 +303,18 @@ class Charge extends Base\Core
         (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus(), $payment);
     }
 
+    public function updateNextRunAtForSubscription(Entity $subscription)
+    {
+        $this->updateScheduleTask($subscription->task);
+        $subscription->setChargeAt($subscription->task->getNextRunAt());
+
+        $this->repo->transaction(function() use ($subscription)
+        {
+            $this->repo->saveOrFail($subscription);
+            $this->repo->saveOrFail($subscription->task);
+        });
+    }
+
     protected function validateInvoiceStatusBeforeCharging(
         Invoice\Entity $invoice,
         Entity $subscription,

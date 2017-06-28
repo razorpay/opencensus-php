@@ -22,6 +22,7 @@ class Calculator
      * @param  Base\PublicCollection $taxes
      *
      * @return int
+     * @throws BadRequestException
      */
     public static function getTaxableAmountOfLineItem(
         LineItem\Entity $lineItem,

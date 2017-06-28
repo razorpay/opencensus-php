@@ -70,6 +70,10 @@ class Validator extends Base\Validator
     /**
      * Wallets can only be created for customers having
      * Indian mobile numbers
+     *
+     * @param null $number
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateIndianContact($number = null)
     {

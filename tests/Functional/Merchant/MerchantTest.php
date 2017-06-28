@@ -1003,8 +1003,6 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->fixtures->merchant->addFeatures(['cardsaving']);
-
         $response = $this->startTest();
 
         $this->assertNotNull($response['customer']['tokens']);

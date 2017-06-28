@@ -27,10 +27,16 @@ class Service extends Base\Service
     {
         (new Validator)->validateInputBeforeBuild($input);
 
-        $customerId = $input[Entity::CUSTOMER_ID];
         $planId = $input[Entity::PLAN_ID];
 
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $customer = null;
+
+        if (empty($input[Entity::CUSTOMER_ID]) === false)
+        {
+            $customerId = $input[Entity::CUSTOMER_ID];
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        }
+
         $plan = $this->repo->plan->findByPublicIdAndMerchant($planId, $this->merchant);
 
         $subscription = $this->core->create($input, $plan, $customer);

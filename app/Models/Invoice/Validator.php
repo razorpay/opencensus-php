@@ -596,7 +596,8 @@ class Validator extends Base\Validator
 
         $customer = $invoice->customer;
 
-        if (empty($customer))
+        if ((empty($customer) === true) and
+            ($invoice->isOfSubscription() === false))
         {
             throw new BadRequestValidationFailureException(
                 'customer is required.');
