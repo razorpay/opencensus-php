@@ -5,6 +5,7 @@ namespace RZP\Models\Emi\Banks\Rbl;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
 
 class EmiFile extends Base\EmiFile

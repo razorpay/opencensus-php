@@ -40,7 +40,7 @@ class EmiFile extends Base\Core
             ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
         );
 
-        return $emiFile['url'];
+        return $fileData['signed_url'];
     }
 
     protected function generateEmiFile($emiData, $store = 's3')
