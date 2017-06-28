@@ -275,7 +275,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED                         = 'Payment cannot be authorized since subscription does not have any token associated';
     const BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED                         = 'Subscription has already reached its total count of charges';
-    const BAD_REQUEST_SUBSCRIPTION_EXPIRED                                      = 'The subscription has been expired.';
+    const BAD_REQUEST_SUBSCRIPTION_EXPIRED_OR_CANCELLED                         = 'The subscription has been expired or cancelled.';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE                = 'The subscription should be in either active or halted state to charge an on_hold invoice';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED                    = 'This invoice of the subscription cannot be charged.';
     const BAD_REQUEST_SUBSCRIPTION_2FA_NOT_ALLOWED                              = 'Customer payment not allowed for the subscription at this stage.';
@@ -284,6 +284,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT                    = 'customer_id should not be sent in the input for subscription payment';
     const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Subscription payment cannot be made with Flash Checkout disabled';
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING                       = 'Subscription payment cannot be made without saving the card';
+    const BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another subscription operation is in progress';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';

@@ -64,6 +64,10 @@ class Mailable extends BaseMailable
                                         'to'      => $this->to,
                                         'subject' => $this->subject
                                    ]);
+
+            // After logging the exception caught, we rethrw it so that the
+            // retry mechanism for mails is triggerred
+            throw $e;
         }
     }
 

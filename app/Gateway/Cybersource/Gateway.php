@@ -393,7 +393,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestContent($input, 'refund');
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'Asia/Kolkata')
                             ->format('Ymd');
 
         $request['content'][F::TARGET_DATE] = $targetDate;
@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
-        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'Asia/Kolkata')
                             ->format('Ymd');
 
         $content = [

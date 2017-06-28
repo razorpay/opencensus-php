@@ -5,6 +5,7 @@ namespace RZP\Models\Plan\Subscription;
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Schedule\Library;
 use RZP\Trace\Trace;
@@ -32,12 +33,23 @@ class Charge extends Base\Core
      */
     protected $processor;
 
+    protected $mutex;
+
     /**
      * Maximum authorization attempts allowed for subscription charge.
      *
      * TODO: Make this merchant configurable.
      */
     const MAX_AUTH_ATTEMPTS = 3;
+
+    const MUTEX_LOCK_TIMEOUT = 120;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
      * This is called via the queue to initiate the actual
@@ -76,10 +88,18 @@ class Charge extends Base\Core
         //
         $manual = $data['manual'];
 
-        $valid = $this->validateInvoiceStatusBeforeCharging($invoice, $subscription, $manual);
+        list($valid, $traceCode) = $subscription->getValidator()->validateSubscriptionChargeable($invoice, $manual);
 
         if ($valid === false)
         {
+            $this->trace->critical(
+                $traceCode,
+                [
+                    'invoice_id'            => $invoice->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+
             return false;
         }
 

@@ -30,7 +30,7 @@ class TransactionFilter extends Terminal\Filter
     ];
 
     const PREPAID_IINS = [
-        457392,
+        '457392',
     ];
 
     protected $properties = [

@@ -154,11 +154,11 @@ class Inferno
     {
         $factory = app()->make('httplug.message_factory.default');
 
-        $req = $factory->createRequest('POST', $request['url'], $request['headers'], $request['content']);
+        $request = $factory->createRequest('POST', $request['url'], $request['headers'], $request['content']);
 
         $httpClient = $this->createHttpClient();
 
-        $response = $httpClient->sendRequest($req);
+        $response = $httpClient->sendRequest($request);
 
         return $response;
     }
@@ -179,11 +179,20 @@ class Inferno
         return $pluginClient;
     }
 
+    /**
+     * Set client is used for setting client in
+     * test cases
+     */
+    public function setClient($client = null)
+    {
+        $this->client = $client;
+    }
+
     public function getClient()
     {
         if ($this->client === null)
         {
-            $this->client = HttpClientDiscovery::find();
+            $this->client = app()->make('httplug.default');
         }
 
         return $this->client;
