@@ -359,10 +359,10 @@ class SubscriptionAuthTransactionTest extends TestCase
         {
             $recurringPayment = $this->doAuthPayment($paymentRequest);
         }
-        catch (LogicException $ex)
+        catch (BadRequestException $ex)
         {
             $this->assertEquals(
-                'Subscription is neither in created state nor has ever been authenticated.',
+                'The subscription has been expired or cancelled.',
                 $ex->getMessage());
 
             return;
@@ -389,7 +389,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('The subscription has been expired.', $ex->getMessage());
+            $this->assertEquals('The subscription has been expired or cancelled.', $ex->getMessage());
 
             return;
         }
