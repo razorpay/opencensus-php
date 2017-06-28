@@ -4,6 +4,7 @@ namespace RZP\Models\Emi\Banks\Kotak;
 
 use Carbon\Carbon;
 use RZP\Models\Emi;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
@@ -13,6 +14,10 @@ class EmiFile extends Base\EmiFile
     protected $emailIdsToSendTo = ['kotakcards.emi@razorpay.com'];
 
     protected $bankName  = 'Kotak';
+
+    const EXTENSION = FileStore\Format::XLSX;
+
+    const TYPE = FileStore\Type::KOTAK_EMI_FILE;
 
     protected static $headers = [
         'EMI ID',
@@ -33,15 +38,6 @@ class EmiFile extends Base\EmiFile
         'Discount / Cashback %',
         'Discount / Cashback Amount',
     ];
-
-    protected function writeEmiFile($emiData)
-    {
-        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
-
-        $path = $this->getExcelFullFilePath();
-
-        return compact('url', 'path');
-    }
 
     protected function getEmiData($input)
     {

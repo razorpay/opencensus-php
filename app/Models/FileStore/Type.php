@@ -46,6 +46,10 @@ class Type
 
     const BENEFICIARY_FILE                  = 'beneficiary_file';
     const EMI_FILE                          = 'emi_file';
+    const AXIS_EMI_FILE                     = 'axis_emi_file';
+    const INDUSIND_EMI_FILE                 = 'indusind_emi_file';
+    const KOTAK_EMI_FILE                    = 'kotak_emi_file';
+    const RBL_EMI_FILE                      = 'rbl_emi_file';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -82,6 +86,10 @@ class Type
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
+            self::AXIS_EMI_FILE,
+            self::INDUSIND_EMI_FILE,
+            self::KOTAK_EMI_FILE,
+            self::RBL_EMI_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -115,6 +123,10 @@ class Type
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
+        self::AXIS_EMI_FILE,
+        self::INDUSIND_EMI_FILE,
+        self::KOTAK_EMI_FILE,
+        self::RBL_EMI_FILE,
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
@@ -147,6 +159,10 @@ class Type
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
+            self::AXIS_EMI_FILE,
+            self::INDUSIND_EMI_FILE,
+            self::KOTAK_EMI_FILE,
+            self::RBL_EMI_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
         ],

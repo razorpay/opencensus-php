@@ -47,12 +47,12 @@ class EmiFile extends Base\Core
     {
         $creator = new FileStore\Creator;
 
-        $creator->extension(self::EXTENSION)
+        $creator->extension(static::EXTENSION)
                 ->password($this->emiFilePassword)
                 ->content($emiData)
-                ->name(self::$fileToWriteName)
+                ->name(static::$fileToWriteName)
                 ->store($store)
-                ->type(self::TYPE)
+                ->type(static::TYPE)
                 ->compress()
                 ->save();
 
