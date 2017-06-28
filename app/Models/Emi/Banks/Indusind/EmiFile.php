@@ -15,8 +15,6 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'IndusInd';
 
-    const EXTENSION = FileStore\Format::XLSX;
-
     const TYPE = FileStore\Type::INDUSIND_EMI_FILE;
 
     protected static $headers = [

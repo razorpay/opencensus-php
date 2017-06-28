@@ -21,7 +21,9 @@ class EmiFile extends Base\Core
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
-    const SIGNED_URL_DURATION = '1440';
+    const EXTENSION = FileStore\Format::XLSX;
+
+    const SIGNED_URL_DURATION = '15';
 
     public function generate(array $input, $email = null)
     {

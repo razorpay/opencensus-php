@@ -15,8 +15,6 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Kotak';
 
-    const EXTENSION = FileStore\Format::XLSX;
-
     const TYPE = FileStore\Type::KOTAK_EMI_FILE;
 
     protected static $headers = [

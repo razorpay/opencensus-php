@@ -16,8 +16,6 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Rbl';
 
-    const EXTENSION = FileStore\Format::XLSX;
-
     const TYPE = FileStore\Type::RBL_EMI_FILE;
 
     protected static $headers = [
