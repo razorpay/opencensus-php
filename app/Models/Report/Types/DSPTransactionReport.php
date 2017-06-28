@@ -376,7 +376,8 @@ class DSPTransactionReport extends BasicEntityReport
         if ((isset($input['day']) === true) and
             ($input['day'] === 'today'))
         {
-            $tdateTime = Carbon::now('Asia/Kolkata')->format('Y-m-d H:i');
+            // $from and $to would be 00:00 to 23:59. So we are subtracting 11 hours from $to to make it 12:59
+            $tdateTime = Carbon::createFromTimestamp($to - 11 * 60 * 60 , 'Asia/Kolkata')->format('Y-m-d H:i');
         }
 
         $data = [
