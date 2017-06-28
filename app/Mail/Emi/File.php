@@ -8,13 +8,13 @@ use RZP\Mail\Base\Constants;
 
 class File extends Base
 {
-    protected $filePath;
+    protected $fileData;
 
-    public function __construct(string $bankName, string $filePath, array $emails)
+    public function __construct(string $bankName, array $fileData, array $emails)
     {
         parent::__construct($bankName, $emails);
 
-        $this->filePath = $filePath;
+        $this->fileData = $fileData;
     }
 
     protected function addSender()
@@ -52,7 +52,11 @@ class File extends Base
 
     protected function addAttachments()
     {
-        $this->attach($this->filePath);
+        $this->attach(
+            $this->fileData['signed_url'],
+            [
+                'as' => $this->fileData['file_name']
+            ]);
 
         return $this;
     }
