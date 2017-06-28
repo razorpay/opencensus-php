@@ -107,19 +107,6 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('closed', $response['status']);
     }
 
-    public function testDeleteVirtualAccount()
-    {
-        $virtualAccount = $this->createVirtualAccount();
-
-        $response = $this->deleteVirtualAccount($virtualAccount['id']);
-
-        $this->assertEquals(true, $response['deleted']);
-
-        $response = $this->fetchVirtualAccounts();
-
-        $this->assertEquals(0, $response['count']);
-    }
-
     public function testVirtualAccountPay()
     {
         $virtualAccount = $this->createVirtualAccount();
