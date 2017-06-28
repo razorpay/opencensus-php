@@ -20,11 +20,12 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $guarded = ['*'];
-
-    // protected $fillable = [
-    //     self::ID,
-    // ];
+    protected $fillable = [
+        self::REFERENCE,
+        self::RECURRING,
+        self::ACCESS_TOKEN,
+        self::REFRESH_TOKEN,
+    ];
 
     protected $visible = [
         self::ID,
