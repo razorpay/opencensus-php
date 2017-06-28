@@ -32,6 +32,8 @@ class EsRepository extends \Razorpay\Spine\Repository
     // Some common query params while searching in ES
     const SKIP             = 'skip';
     const COUNT            = 'count';
+    const FROM             = 'from';
+    const TO               = 'to';
 
     /**
      * A fetch param which holds the query string which gets searched in ES.
@@ -283,18 +285,14 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     public function buildQueryAndGetEsRequestParams(array $params): array
     {
-        // Extracts from, size and source value from params and unset them.
-        $from   = ($params[self::SKIP]) ?? 0;
-        $size   = ($params[self::COUNT]) ?? 10;
-        $source = boolval(($params[self::SEARCH_HITS]) ?? false);
-
-        unset($params[self::SKIP]);
-        unset($params[self::COUNT]);
-        unset($params[self::SEARCH_HITS]);
-
         // Initializes query to empty array, which follows formation of the same
         // using methods defined in QueryBuilder.
+
         $query = [];
+
+        list($from, $size, $source) = $this->extractQueryMetaFromParams($params);
+
+        $this->buildQueryForFromAndToIfApplies($query, $params);
 
         foreach ($params as $field => $value)
         {
@@ -310,6 +308,8 @@ class EsRepository extends \Razorpay\Spine\Repository
             }
         }
 
+        $sort = $this->getSortParameter();
+
         return [
             'index' => $this->indexName,
             'type'  => $this->indexName,
@@ -318,6 +318,7 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'from'    => $from,
                 'size'    => $size,
                 'query'   => $query,
+                'sort'    => $sort,
             ],
         ];
     }

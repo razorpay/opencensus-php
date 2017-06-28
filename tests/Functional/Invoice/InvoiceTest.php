@@ -1215,6 +1215,24 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleInvoicesByEsFeildAndFrom()
+    {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByEsFeildFromAndTo()
+    {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
     public function testGetMultipleInvoicesOnlyMysqlFields()
     {
         $this->ba->proxyAuth();
