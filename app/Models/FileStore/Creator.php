@@ -107,6 +107,8 @@ class Creator extends Base\Core
     const DEFAULT_STORE    = 's3';
     const DEFAULT_METADATA = [];
 
+    const ZIP_COMMAND = 'zip --junk-paths --move';
+
     public function __construct()
     {
         parent::__construct();
@@ -227,11 +229,11 @@ class Creator extends Base\Core
         switch ($this->zipFormat)
         {
             case 'zip':
-                $this->zipCommand = "zip --junk-paths --move";
+                $this->zipCommand = self::ZIP_COMMAND;
                 break;
 
             default:
-                throw new Exception\LogicException('Not A Valid Zippping Format');
+                throw new Exception\LogicException('Not A Valid Zippping Format ' . $this->zipFormat);
         }
 
         return $this;
@@ -577,10 +579,7 @@ class Creator extends Base\Core
             $this->zipFile();
         }
 
-        //TODO : hacky way fix it
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
-
-        $this->createUploadedFile($this->getZipFullFilePath(), $fileName);
+        $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
     }
 
     protected function zipFile()
@@ -680,6 +679,11 @@ class Creator extends Base\Core
         }
 
         $this->file->merchant()->associate($merchant);
+    }
+
+    protected function getFullFileName()
+    {
+        return $this->file->getName() . '.' . $this->file->getExtension();
     }
 
     public function getFullFilePath()
