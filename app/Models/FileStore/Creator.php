@@ -596,7 +596,7 @@ class Creator extends Base\Core
 
         if (empty($this->file->getPassword()) === false)
         {
-            $compressionCommand .= " --password " . $password;
+            $compressionCommand .= " --password " . $this->file->getPassword();
         }
 
         exec(
