@@ -154,7 +154,7 @@ class Reconciliate
 
     public function getStartRow($fileDetails)
     {
-        self::DEFAULT_START_ROW;
+        return self::DEFAULT_START_ROW;
     }
 
     /**
