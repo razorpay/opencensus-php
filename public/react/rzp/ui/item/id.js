@@ -45,3 +45,5 @@ export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
 
 export const virtualAccount = makeIdLink('virtual_account');
+export const subscription = makeIdLink('subscription');
+export const plan = makeIdLink('plan');

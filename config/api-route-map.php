@@ -343,6 +343,50 @@ return [
             'url'       => 'virtual_accounts/{id}/payments',
             'routeName' => 'virtual_accounts_read'
         ],
+
+        // Subscriptions
+        'subscription_fetch_multiple'    => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_account_fetch'             => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_create'            => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_update'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_delete'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+
+        // Plans
+        'plan_fetch_multiple'    => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_account_fetch'             => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_create'            => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_update'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_delete'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
     ],
 
     // auth

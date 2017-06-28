@@ -66,3 +66,35 @@ export const amountPaid = {
   columnClass: textRightClass,
   value: items.getAmount('amount_paid'),
 };
+
+// Subscriptions
+export const subscriptionId = {
+  title: 'Subscription ID',
+  value: id.subscription,
+};
+
+export const nextDueOn = {
+  title: 'Next Due on',
+  value: items.getTime('next_at', 'MMM DD YYYY'),
+};
+
+// Plans
+export const planId = {
+  title: 'Plan ID',
+  value: id.plan,
+};
+
+export const planName = {
+  title: 'Plan Name',
+  value: item => item.item.name,
+};
+
+export const planAmount = {
+  title: 'Amount/Unit (INR)',
+  value: items.getAmount('item.amount'),
+};
+
+export const planBillingCycle = {
+  title: 'Billing Cycle',
+  value: item => item.billingCycle,
+};

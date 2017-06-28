@@ -10,6 +10,7 @@ const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
+const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans)/;
 
 @withRouter
 export default class Sidebar extends Component {
@@ -22,6 +23,7 @@ export default class Sidebar extends Component {
     invoices: '/invoices',
     marketplace: '/route/payments',
     paymentlinks: '/paymentlinks',
+    subscriptions: '/subscriptions',
   };
 
   componentWillReceiveProps(nextProps) {
@@ -48,6 +50,8 @@ export default class Sidebar extends Component {
       routes.marketplace = pathname.match(MARKETPLACE_ROUTES_REGEX)[0];
     } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
+    } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
+      routes.subscriptions = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
     }
   }
 
@@ -106,6 +110,11 @@ export default class Sidebar extends Component {
                     label="Payment Links"
                     icon="icon icon-link"
                     to={routes.paymentlinks}
+                  />
+                  <MainNavLink
+                    label="Subscriptions"
+                    icon="icon icon-link"
+                    to={routes.subscriptions}
                   />
 
                   <MainNavLink

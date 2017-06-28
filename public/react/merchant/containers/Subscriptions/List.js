@@ -1,52 +1,35 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
 
-import { fetchSubscriptions } from 'rzp/modules/collection';
-import { fetchPlans } from 'merchant/modules/plans';
-import SubscriptionsList
-  from 'merchant/components/Subscriptions/SubscriptionsList';
+import SubscriptionsListFilter
+  from 'merchant/components/Subscriptions/ListFilter';
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
 
-@connect(
-  state => {
-    let plansState = state.plans;
-    let subscriptionsState = state.subscriptions;
+import { subscriptionId, nextDueOn, status } from 'rzp/ui/item/pair';
 
-    return {
-      items: subscriptionsState.items,
-      plans: plansState.plans,
-      loading: subscriptionsState.loading && plansState.loading,
-    };
-  },
-  { fetchSubscriptions, fetchPlans }
-)
-export default class SubscriptionsListContainer extends Component {
-  componentWillMount() {
-    this.props.fetchSubscriptions();
-    this.props.fetchPlans();
-  }
-
+@connect(state => state.subscriptions, { fetchAll })
+export default class SubscriptionsListContainer extends ListContainer {
   render() {
-    let { loading, items, plans } = this.props;
+    let { loading, items, error } = this.props;
 
     return (
-      <div>
-        <Header title="Subscriptions">
-          <a href="#/app/subscriptions/new" class="pull-right btn btn-primary">
-            <i className="icon icon-plus" />
-            <span>New Subscription</span>
-          </a>
-        </Header>
+      <div class="content-wrapper">
+        <SubscriptionsListFilter
+          form="subscriptionsListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <SubscriptionsList
-              subscriptions={items}
-              plans={plans}
-              isLoading={loading}
-            />
-          </div>
-        </div>
+        <DataTable
+          title="Subscriptions"
+          columns={[subscriptionId, nextDueOn, status]}
+          count={this.state.count}
+          skip={this.state.skip}
+          paginate={this.paginate}
+          {...this.props}
+        />
       </div>
     );
   }

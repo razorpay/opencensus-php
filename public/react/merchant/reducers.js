@@ -8,7 +8,6 @@ import appReducer from 'merchant/modules/app';
 import homeReducer from 'merchant/modules/home';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
-import plansReducer from 'merchant/modules/plans';
 import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
 import itemsReducer from 'merchant/modules/items';
@@ -42,8 +41,10 @@ import {
   mpPaymentsReducer,
   refundsReducer,
   settlementsReducer,
-  subscriptionsReducer,
 } from 'rzp/modules/collection';
+
+import { subscriptionsReducer } from 'merchant/modules/subscriptions';
+import { plansReducer } from 'merchant/modules/plans';
 
 export default combineReducers({
   modal: modalReducer,
