@@ -205,6 +205,15 @@ class Service extends Base\Service
         return $summary;
     }
 
+    public function cancelSubscription(string $subscriptionId)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        $subscription = $this->core->cancel($subscription);
+
+        return $subscription->toArrayPublic();
+    }
+
     public function chargeSubscriptionInvoiceManually(string $invoiceId)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $this->merchant);
@@ -220,8 +229,7 @@ class Service extends Base\Service
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if (($subscription->isActive() === false) and
-            ($subscription->isHalted() === false))
+        if (in_array($subscription->getStatus(), Status::$invoiceManualChargeableStatuses, true) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,
@@ -250,11 +258,11 @@ class Service extends Base\Service
 
         if ($capture === true)
         {
-            $this->core->retryCapture($subscription, $invoice, true);
+            return $this->core->retryCapture($subscription, $invoice, true);
         }
         else
         {
-            $this->core->charge($subscription, $invoice, true);
+            return $this->core->charge($subscription, $invoice, true);
         }
     }
 

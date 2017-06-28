@@ -236,6 +236,27 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShrdHdfcEmiTrm', $payment['terminal_id']);
     }
 
+    public function testHDFCTerminalNotUsedForIin()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = 500000;
+        $payment['method'] = 'card';
+        $payment['card']['number'] = '4573920000000008';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through shared emi terminl
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+    }
+
     public function testHDFCEmiTerminalNotUsedForCard()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');

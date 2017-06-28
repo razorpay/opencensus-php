@@ -12,12 +12,12 @@ return [
         // 'amount_expected' => 10000,
         'status'          => 'active',
         'description'     => 'VA for tests',
-        'receiver_types'  => [
-            'bank_account'
-        ],
-        'bank_account'    => [
-            'entity' => 'bank_account',
-            'ifsc'   => 'RAZR0000001',
+        'receivers'  => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
         ],
     ],
 
@@ -27,10 +27,12 @@ return [
         // 'amount_expected' => 10000,
         'status'          => 'active',
         'description'     => 'VA for tests',
-        'receiver_types'  => ['bank_account'],
-        'bank_account'    => [
-            'entity' => 'bank_account',
-            'ifsc'   => 'RAZR0000001',
+        'receivers'  => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
         ],
     ],
 

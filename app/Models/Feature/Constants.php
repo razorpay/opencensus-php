@@ -21,6 +21,7 @@ class Constants
     const NOZEROPRICING            = 'nozeropricing';
     const REVERSE                  = 'reverse';
     const BROKING_REPORT           = 'broking_report';
+    const DSP_REPORT               = 'dsp_report';
     const PAYMENT_EMAIL_FETCH      = 'payment_email_fetch';
     const CREATED_FLOW             = 'created_flow';
     const PAYOUT                   = 'payout';
@@ -52,6 +53,7 @@ class Constants
         self::NOZEROPRICING            => false,
         self::REVERSE                  => true,
         self::BROKING_REPORT           => true,
+        self::DSP_REPORT               => true,
         self::PAYMENT_EMAIL_FETCH      => true,
         self::CREATED_FLOW             => true,
         self::PAYOUT                   => true,
