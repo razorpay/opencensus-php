@@ -126,7 +126,7 @@ export default class ReportsContainer extends Component {
                     <option value="dsp_report">DSP Transaction Report</option>}
                   <option value="invoice">Monthly Invoice</option>
                   {user.tags.indexOf('Marketplace') === -1 ||
-                    <optgroup label="Marketplace">
+                    <optgroup label="Route">
                       <option value="transfer">Transfer</option>
                       <option value="reversal">Reversal</option>
                     </optgroup>}
