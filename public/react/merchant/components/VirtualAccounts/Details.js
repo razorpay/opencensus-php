@@ -16,7 +16,6 @@ export default props => {
     isLoading,
     statusMsg,
     onClose,
-    onDelete,
     onMakeTestPaymentClick,
   } = props;
 
@@ -69,22 +68,14 @@ export default props => {
                   />
                 </div>
 
-                <div class="btn-toolbar">
-                  {virtualaccount.status !== 'closed'
-                    ? <button
-                        class="btn btn-default"
-                        onClick={() => onClose(virtualaccount)}
-                      >
-                        Close Account
-                      </button>
-                    : null}
-                  <button
-                    class="btn btn-link"
-                    onClick={() => onDelete(virtualaccount)}
-                  >
-                    Delete Account
-                  </button>
-                </div>
+                {virtualaccount.status !== 'closed'
+                  ? <button
+                      class="btn btn-default"
+                      onClick={() => onClose(virtualaccount)}
+                    >
+                      Close Account
+                    </button>
+                  : null}
 
                 <hr />
 
