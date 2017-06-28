@@ -55,6 +55,8 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringSecondPaymentCreatePublicAuth()
     {
+        $this->markTestSkipped('We now allow second recurring on public auth');
+
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures(['recurring']);

@@ -229,6 +229,14 @@ return [
                         ]
                     ],
                     [
+                        'token'         => '10000cardtoken',
+                        'method'        => 'card',
+                        'card'          =>  [
+                            'last4'         => '1111',
+                            'network'       => 'Visa',
+                        ]
+                    ],
+                    [
                         'token'         => '10000banktoken',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
