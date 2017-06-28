@@ -2,44 +2,73 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
-use Carbon\Carbon;
+use Str;
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Card;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Constants\MailTags;
-use Str;
 
 class EmiFile extends Base\Core
 {
-    use FileHandlerTrait;
-
     // Regenerated every time the EMI file is created
     protected $emiFilePassword;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
+    const EXTENSION = FileStore\Format::XLSX;
+
+    // Signed Url Duration in Minutes
+    const SIGNED_URL_DURATION = '15';
+
     public function generate($input, $email = null)
     {
         $emiData = $this->getEmiData($input);
 
-        $emiFile = $this->writeEmiFile($emiData);
-
-        // Reset email if required
         $this->resetEmail($email);
 
-        $this->sendEmiFile($emiFile['path']);
+        $this->fetchAndSendPassword();
+
+        $fileData = $this->generateEmiFile($emiData);
+
+        $this->sendEmiFile($fileData);
 
         $this->trace->info(
             TraceCode::EMI_FILE_SENT,
             ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
         );
 
-        return $emiFile['url'];
+        return $fileData['signed_url'];
+    }
+
+    protected function generateEmiFile(array $emiData, $store = 's3')
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension(static::EXTENSION)
+                ->password($this->emiFilePassword)
+                ->content($emiData)
+                ->name(static::$fileToWriteName)
+                ->store($store)
+                ->type(static::TYPE)
+                ->compress()
+                ->save();
+
+        $file = $creator->get();
+
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
+        $fileData = [
+            'signed_url' => $signedFileUrl,
+            'file_name'  => basename($file['local_file_path']),
+        ];
+
+        return $fileData;
     }
 
     protected function resetEmail($email)
@@ -97,15 +126,6 @@ class EmiFile extends Base\Core
         return Str::random(self::EMI_FILE_PASSWORD_LENGTH);
     }
 
-    protected function getZippedFile($fullPath)
-    {
-        $fileArray = array($fullPath);
-
-        $zipPath = $this->makeZipFile($fileArray, $this->emiFilePassword);
-
-        return $zipPath;
-    }
-
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
         // $annualRate is a
@@ -124,20 +144,22 @@ class EmiFile extends Base\Core
         return floor($num / $den);
     }
 
-    protected function sendEmiFile($fullPath)
+    protected function sendEmiFile(array $fileData)
     {
-        $this->fetchAndSendPassword();
-
-        $zipFile = $this->getZippedFile($fullPath);
-
-        $emiFileMail = new EmiMail\File($this->bankName, $zipFile, $this->emailIdsToSendTo);
+        $emiFileMail = new EmiMail\File(
+            $this->bankName,
+            $fileData,
+            $this->emailIdsToSendTo);
 
         Mail::queue($emiFileMail);
     }
 
     protected function sendEmiPassword()
     {
-        $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword, $this->emailIdsToSendTo);
+        $emiPasswordMail = new EmiMail\Password(
+            $this->bankName,
+            $this->emiFilePassword,
+            $this->emailIdsToSendTo);
 
         Mail::queue($emiPasswordMail);
     }
