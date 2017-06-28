@@ -23,6 +23,7 @@ class Index extends Command
     protected $signature = 'rzp:index
                             {--slave=0   : Whether to use slave or master db connection? (0|1)}
                             {--mode=test : Database mode the command will run in (test|live)}
+                            {--index=    : ES index name (eg. beta_api_invoice_test) }
                             {--entity=   : Entity name (eg. item|merchant) }
                             {--take=5000 : Take count (eg. 1000 at a time) }
                             {--start_at= : Start value(epoch) for time range query }
@@ -32,6 +33,7 @@ class Index extends Command
 
     protected $slave;
     protected $mode;
+    protected $index;
     protected $entity;
     protected $take;
     protected $startAt;
@@ -54,6 +56,7 @@ class Index extends Command
     {
         $this->slave   = (int) $this->option('slave');
         $this->mode    = $this->option('mode');
+        $this->index   = $this->option('index');
         $this->entity  = $this->option('entity');
         $this->take    = (int) $this->option('take');
         $this->startAt = $this->option('start_at');
@@ -95,13 +98,14 @@ class Index extends Command
             throw new LogicException('EsSync: Es repo not found.');
         }
 
-        // 3. Set index name in esRepo. This can be removed in next pr (Now for BC).
+        // 3. If index name is passed in option, will use that. Useful in
+        //    cases of first time indexing with mapping changes. We create the
+        //    new index do indexing and then switch and then again do delta indexing.
 
-        $prefix = $app['config']->get('database.es_entity_index_prefix');
-
-        $indexName = $prefix . $this->entity . '_' . $app['rzp.mode'];
-
-        $this->esRepo->setIndexNameByValue($indexName);
+        if ($this->index !== null)
+        {
+            $this->esRepo->setIndexNameByValue($this->index);
+        }
     }
 
     /**
