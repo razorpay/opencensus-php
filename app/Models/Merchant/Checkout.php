@@ -36,7 +36,7 @@ class Checkout
     protected $trace;
     protected $repo;
 
-    const DOWNTIME_FILTER_REGEX = '/[a-z]$/';
+    const DOWNTIME_FILTER_REGEX = '/[a-zA-J]$/';
 
     public function __construct()
     {
