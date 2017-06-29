@@ -25,6 +25,12 @@ export const saveApplication = params => {
   };
 };
 
+let initialState = {
+  loading: true,
+  items: [],
+  count: 0,
+};
+
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_APPLICATIONS}::PENDING`:
@@ -35,17 +41,16 @@ export default function(state = initialState, action) {
       });
 
     case `${FETCH_APPLICATIONS}::SUCCESS`:
-      console.log(action.payload)
       return merge(state, {
         loading: false,
-        applications: action.payload.data.items,
+        items: action.payload.data.items,
         count: action.payload.data.count,
       });
 
     case `${CREATE_APPLICATION}::SUCCESS`:
       return merge(state, {
         loading: false,
-        applications: [action.payload],
+        items: [action.payload],
       });
 
     default:

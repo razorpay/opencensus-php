@@ -30,6 +30,7 @@ import paymentsReducer from 'merchant/modules/payments/list';
 import paymentReducer from 'merchant/modules/payments/details';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
+import applicationsReducer from 'merchant/modules/applications';
 
 export default combineReducers({
   modal: modalReducer,
@@ -60,6 +61,7 @@ export default combineReducers({
   activation: activationReducer,
   refunds: refundsReducer,
   refund: refundReducer,
+  applications: applicationsReducer,
   referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
