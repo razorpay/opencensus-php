@@ -11,6 +11,8 @@ class EsRepository extends Base\EsRepository
 
     protected $fields = [
         Entity::ID,
+        Entity::MERCHANT_ID,
         Entity::NOTES,
+        Entity::CREATED_AT,
     ];
 }
