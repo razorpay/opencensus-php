@@ -16,6 +16,7 @@ class Repository extends Base\Repository
 
     protected $proxyFetchParamRules = [
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+        Entity::NOTES           => 'sometimes|string|max:255',
     ];
 
     protected $appFetchParamRules = [
