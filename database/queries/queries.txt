@@ -2199,3 +2199,7 @@ ALTER TABLE pricing
 
 ALTER TABLE virtual_accounts
     ADD COLUMN description TEXT AFTER notes;
+
+ALTER TABLE customers
+    ADD global_customer_id VARCHAR(14) AFTER id,
+    ADD CONSTRAINT customers_global_customer_id_foreign FOREIGN KEY (global_customer_id) REFERENCES customers(id);

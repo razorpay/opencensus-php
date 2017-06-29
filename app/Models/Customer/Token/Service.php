@@ -143,14 +143,21 @@ class Service extends Base\Service
         $failureCount = $total = $successCount = 0;
         $failures = [];
 
-        //
-        // Hardcoding these for now here, just to ensure
-        // we don't migrate wrong stuff by mistake.
-        //
-        $input[Entity::METHOD] = 'card';
-        $input[Entity::RECURRING] = true;
+        if (empty($input['token_ids']) === false)
+        {
+            $tokens = $this->repo->token->findMany($input['token_ids']);
+        }
+        else
+        {
+            //
+            // Hardcoding these for now here, just to ensure
+            // we don't migrate wrong stuff by mistake.
+            //
+            $input[Entity::METHOD] = 'card';
+            $input[Entity::RECURRING] = true;
 
-        $tokens = $this->repo->token->fetch($input);
+            $tokens = $this->repo->token->fetch($input);
+        }
 
         $total = $tokens->count();
 
@@ -164,6 +171,16 @@ class Service extends Base\Service
         foreach ($tokens as $token)
         {
             $this->trace->info(TraceCode::TOKEN_BEING_MIGRATED, $token->toArrayPublic());
+
+            if (($token->isRecurring() === false) or ($token->getMethod() !== 'card'))
+            {
+                throw new Exception\LogicException(
+                    'Only card and recurring tokens can be migrated',
+                    null,
+                    [
+                        $token->toArrayPublic()
+                    ]);
+            }
 
             try
             {

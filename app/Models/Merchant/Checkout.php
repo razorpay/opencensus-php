@@ -209,7 +209,7 @@ class Checkout
         catch (\Exception $ex)
         {
             $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+                $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
 
         return $custData;
@@ -249,6 +249,23 @@ class Checkout
         if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
         {
             $this->doCustomerProcessingForSubscription($input, $data, $merchant);
+        }
+
+        //
+        // To recognize the flow as local, the only way is, to check
+        // if `customer_id` is present in the input.
+        // If it's not, we consider it as global by default.
+        //
+        // In case of subscriptions, the customer_id is added to the input
+        // if subscription has a customer associated with it and the customer
+        // associated does not have any global customer associated.
+        //
+
+        $data['global'] = true;
+
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $data['global'] = false;
         }
 
         try
@@ -307,7 +324,7 @@ class Checkout
         catch (\Exception $ex)
         {
             $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+                $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
     }
 
@@ -541,7 +558,7 @@ class Checkout
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
+            $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
         }
     }
 
