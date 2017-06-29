@@ -55,12 +55,14 @@ function batchActions({ mode, viewAll, issueAll, onDownloadClick }) {
 })
 export default class BatchList extends Component {
   dowload = id => {
+    let windowRef = window.open('', '_blank');
     this.props
       .batchDownload(id)
       .then(response => {
-        window.open(response.data.url, '_blank');
+        windowRef.location.href = response.data.url;
       })
       .catch(({ errors }) => {
+        windowRef.close();
         this.props.showNotification({
           type: 'error',
           message: errors,
