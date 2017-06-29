@@ -141,9 +141,7 @@ class DSPTransactionReport extends BasicEntityReport
                 self::TRANSACTION_DATE      => $this->getTxnDate($txn),
                 self::AMOUNT                => $txn->getAmount(),
                 self::STATUS                => 'SUCCESS',
-                self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn),
-                self::SETTLED               => $txn->isSettled() ? 'True' : 'False'
-
+                self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn)
             ];
 
             $data[] = $row;
@@ -357,8 +355,7 @@ class DSPTransactionReport extends BasicEntityReport
             self::TRANSACTION_DATE      => '',
             self::AMOUNT                => '',
             self::STATUS                => '',
-            self::CREDIT_ACCOUNT_NUMBER => '',
-            self::SETTLED               => '',
+            self::CREDIT_ACCOUNT_NUMBER => ''
         ];
     }
     protected function createMailData($filename, $signedUrl, $input)
