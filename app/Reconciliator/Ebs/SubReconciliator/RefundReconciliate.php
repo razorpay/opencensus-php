@@ -49,7 +49,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $columnRefundAmount = null;
 
-        foreach ($self::COLUMN_REFUND_AMOUNT as $cra)
+        foreach (self::COLUMN_REFUND_AMOUNT as $cra)
         {
             if (isset($row[$cra]) === true)
             {
@@ -81,7 +81,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * raises alert in case of mismatch
      *
      * @param array $row
-     * @return void
+     * @return bool
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {

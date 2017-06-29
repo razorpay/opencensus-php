@@ -102,9 +102,9 @@ class RefundReconciliate extends Base\RefundReconciliate
         // The broad assumption here is that these ids will not collide
         // The mathematical probability is very low (not zero though)!
         //
-        $payment = $this->app['repo']->first_data
-                                     ->findByCapsPaymentIdAndAction(
-                                       $capsPaymentId, Action::REFUND, $gatewayTxnId);
+        $payment = $this->repo->first_data
+                              ->findPaymentForGatewayRefund(
+                                    $capsPaymentId, Action::REFUND, $gatewayTxnId);
 
         return $payment;
     }

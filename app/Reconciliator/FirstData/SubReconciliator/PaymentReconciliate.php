@@ -44,11 +44,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $capsPaymentId = strtoupper($capsPaymentId);
 
         // The broad assumption here is that these ids will not collide
-        // The mathematical probility is very low (not zero though)!
-        $paymentId = $this->app['repo']->first_data
-                                       ->findByCapsPaymentIdAndAction(
-                                         $capsPaymentId, Action::PURCHASE)
-                                       -> getPaymentId();
+        // The mathematical probability is very low (not zero though)!
+        $paymentId = $this->repo->first_data
+                                ->findPaymentForGatewayPurchase(
+                                    $capsPaymentId, Action::PURCHASE)
+                                ->getPaymentId();
 
         return $paymentId;
     }
@@ -107,7 +107,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * raises alert in case of mismatch
      *
      * @param array $row
-     *
      * @return bool
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -154,7 +153,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_CARD_CATEGORY]) === true)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'message'           => 'Unable to get the card locale. This is unexpected.',
@@ -195,7 +194,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_CARD_TRIVIA]) === true)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
@@ -226,7 +225,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_CARD_CATEGORY]) === true)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'message'           => 'Unable to get the card issuer.',

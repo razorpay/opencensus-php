@@ -16,7 +16,7 @@ class Reconciliate extends Base\Reconciliate
      * and not the excel file name.
      *
      * @param string $fileName
-     * @return null|string
+     * @return string
      */
     protected function getTypeName($fileName)
     {

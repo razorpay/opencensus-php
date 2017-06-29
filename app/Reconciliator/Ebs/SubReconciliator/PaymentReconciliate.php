@@ -159,7 +159,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * raises alert in case of mismatch
      *
      * @param array $row
-     * @return void
+     * @return bool
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
