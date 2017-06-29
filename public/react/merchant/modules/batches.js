@@ -56,17 +56,21 @@ export const fetchPaymentLinkBatches = params => {
   };
 };
 
-const uploadBatch = (actionType, batchType) => file => {
+const uploadBatch = (actionType, batchType) => (file, mode) => {
   let formData = new FormData();
   formData.append('file', file);
-  formData.append('type', batchType);
+  formData.append('file_name', 'file');
+  formData.append('route_name', 'batch_create');
+  formData.append('body[type]', batchType);
+  formData.append('mode', mode);
 
   return {
     type: actionType,
     payload: ajax({
-      url: '/batches',
+      url: '/user/generic',
       method: 'post',
       data: formData,
+      appendModeInURL: false,
       processData: false,
       contentType: false,
     }),

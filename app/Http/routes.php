@@ -62,11 +62,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::any('/user/generic', 'GenericController@handle');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
-
-        // Batch Refund Routes
-        Route::group(['prefix' => '{mode}/batches'], function () {
-            Route::post('/', 'MerchantController@uploadBatchFile')->name('batch_upload');
-        });
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 

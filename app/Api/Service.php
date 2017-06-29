@@ -425,24 +425,4 @@ class Service extends Base\Service
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
         return $merchantId . '/' . $startDate->addMonth()->format('m/y');
     }
-
-    public function uploadBatchFile($mode, $input)
-    {
-        $error = $batchRefund = null;
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $batchRefund = $this->api
-                                ->batch
-                                ->uploadFile($mode, $this->merchantId, $input);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $batchRefund];
-    }
 }

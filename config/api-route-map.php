@@ -210,6 +210,10 @@ return [
             'url'       => 'batches/{id}/download',
             'routeName' => 'batch_download'
         ],
+        'batch_create'                      => [
+            'url'       => 'batches',
+            'routeName' => 'batch_upload'
+        ],
 
         // Invoices
         'invoice_fetch_multiple'            => [

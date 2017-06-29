@@ -262,22 +262,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /**
-     * Upload Batch File
-     * @param  string $mode Live/Test Mode
-     * @return Array       Array of error and response
-     */
-    public function uploadBatchFile($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $response) = (new Api\Service)->uploadBatchFile($mode, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function postSignup()
     {
         $id = Auth::user()->currentMerchant()->id;
