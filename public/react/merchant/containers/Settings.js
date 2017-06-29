@@ -36,7 +36,8 @@ export default class Settings extends Component {
         <Route path="/keys" component={ApiKeys} />
         <Switch>
           <Route exact path="/applications" component={Applications} />
-          <Route path="/applications/new" component={ApplicationsNew} />
+          <Route exact path="/applications/new" component={ApplicationsNew} />
+          <Route path="/applications/:id" component={ApplicationsNew} />
         </Switch>
       </tabbed-container>
     );

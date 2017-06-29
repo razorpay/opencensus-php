@@ -27,26 +27,20 @@ export default class Key extends GenericEntity {
     });
   }
 
-  save() {
+  save(params = {}) {
     const Klass = this.constructor;
-    let params = this.serialize();
+    // let params = this.serialize();
     let url = this.resourceUrl;
     let method = this.getResourceMethod();
+    console.log('save from entity', params)
 
     let data = {
       route_name: this.getRouteName(),
     };
-    if (this.isNew) {
-      data.url_params = JSON.stringify({
-        '{id}': this.merchantId,
-      });
-    } else {
-      data.url_params = JSON.stringify({
-        '{keyId}': params.id,
-        '{merchantId}': this.merchantId,
-      });
-      data.body = params;
-    }
+    // if (this.isNew) {
+    // } else {
+    // }
+    data.body = params;
 
     return this.makeGenericAjaxCall({
       method,

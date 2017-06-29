@@ -15,6 +15,16 @@ export const fetchApplications = params => {
   };
 };
 
+export const saveApplication = params => {
+  console.log('save from module', params)
+  let application = new Application();
+
+  return {
+    type: CREATE_APPLICATION,
+    payload: application.save(params),
+  };
+};
+
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_APPLICATIONS}::PENDING`:
@@ -25,6 +35,7 @@ export default function(state = initialState, action) {
       });
 
     case `${FETCH_APPLICATIONS}::SUCCESS`:
+      console.log(action.payload)
       return merge(state, {
         loading: false,
         applications: action.payload.data.items,

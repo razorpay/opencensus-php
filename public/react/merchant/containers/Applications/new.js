@@ -11,7 +11,7 @@ import { required } from 'rzp/utils/validators';
 import { NavLink } from 'react-router-dom';
 import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
-import * as ApplicationActions from 'merchant/modules/config';
+import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
 
 const INFO = {
@@ -21,33 +21,48 @@ const INFO = {
 }
 
 const selector = formValueSelector('newApplicationForm');
-// @connect(state => {
-//   return {
-//     name: selector(state, 'name'),
-//     website: selector(state, 'website'),
-//   };
-// }, null)
+
+@connect(null, {
+  ...ApplicationActions,
+  ...NotificationActions,
+})
 @reduxForm({
-  name: 'newApplicationForm',
+  form: 'newApplicationForm',
 })
 class NewApplicationForm extends Component {
   componentWillMount() {
-    // this.props.fetchApplications
+
   }
 
+  // save handler
+
+  save = props => {
+    return this.props.saveApplication(props)
+      .then(application => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Application created successfully',
+        });
+      })
+      .catch(err => {
+        // this.setState({
+        //   errors: err.errors,
+        // });
+      });
+  };
+
   render() {
-    // let { config, features, loading } = this.props.configState;
+    const { handleSubmit } = this.props;
 
     return (
-
-      <div class="content-wrapper">
+      <div class="content-wrapper new-application-form">
         <div class="text-center content-wrapper">
           <div class="row">
             <div class="col-md-offset-2 col-md-10">
-              <h4 class="form-header">Create Application</h4>
+              <h4 class="form-header text-left">Create Application</h4>
             </div>
           </div>
-          <form class="form-horizontal" onSubmit={() => {}}>
+          <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
             <Fieldset>
 
               <div class="form-group">
@@ -93,32 +108,30 @@ class NewApplicationForm extends Component {
               </div>
 
               <div class="col-md-offset-2 col-md-10">
-                <h5 class="form-header">Development</h5>
+                <h5 class="form-header text-left">Development</h5>
               </div>
 
               <div class="form-group">
-                <label class="col-md-2 control-label label-required">
+                <label class="col-md-2 control-label">
                   client_id
                 </label>
                 <div class="col-md-4">
                   <Field
-                    name="website"
+                    name="client_id_dev"
                     component={InputField}
                     class="form-control"
                     placeholder="http://test-app.com/"
-                    validate={[required()]}
                   />
                 </div>
-                <label class="col-md-2 control-label label-required">
+                <label class="col-md-2 control-label">
                   client_secret
                 </label>
                 <div class="col-md-4">
                   <Field
-                    name="website"
+                    name="client_secret_dev"
                     component={InputField}
                     class="form-control"
                     placeholder="http://test-app.com/"
-                    validate={[required()]}
                   />
                 </div>
               </div>
@@ -129,11 +142,10 @@ class NewApplicationForm extends Component {
                 </label>
                 <div class="col-md-10">
                   <Field
-                    name="website"
+                    name="redirect_url_dev"
                     component={InputField}
                     class="form-control"
                     placeholder="http://test-app.com/"
-                    validate={[required()]}
                   />
                 </div>
                 <div class="clearfix"></div>
@@ -146,7 +158,7 @@ class NewApplicationForm extends Component {
               </div>
 
               <div class="col-md-offset-2 col-md-10">
-                <h5 class="form-header">Production</h5>
+                <h5 class="form-header text-left">Production</h5>
               </div>
 
               <div class="form-group">
@@ -155,11 +167,10 @@ class NewApplicationForm extends Component {
                 </label>
                 <div class="col-md-4">
                   <Field
-                    name="website"
+                    name="client_id_prod"
                     component={InputField}
                     class="form-control"
                     placeholder="http://test-app.com/"
-                    validate={[required()]}
                   />
                 </div>
                 <label class="col-md-2 control-label label-required">
@@ -167,11 +178,10 @@ class NewApplicationForm extends Component {
                 </label>
                 <div class="col-md-4">
                   <Field
-                    name="website"
+                    name="client_secret_prod"
                     component={InputField}
                     class="form-control"
                     placeholder="http://test-app.com/"
-                    validate={[required()]}
                   />
                 </div>
               </div>
@@ -182,11 +192,10 @@ class NewApplicationForm extends Component {
                 </label>
                 <div class="col-md-10">
                   <Field
-                    name="website"
+                    name="redirect_url_prod"
                     component={InputField}
                     class="form-control"
                     placeholder="http://test-app.com/"
-                    validate={[required()]}
                   />
                 </div>
                 <div class="clearfix"></div>
@@ -205,7 +214,7 @@ class NewApplicationForm extends Component {
                       class="btn btn-primary pull-right"
                       text="Save"
                       pendingText="Saving..."
-                      onClick={() => {}}
+                      onClick={handleSubmit(this.save)}
                     />
 
                     <AsyncButton
