@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
-import * as ApplicationActions from 'merchant/modules/config';
+import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
 
 @connect(
@@ -16,28 +16,50 @@ import * as NotificationActions from 'rzp/modules/notifications';
 )
 export default class ApplicationContainer extends Component {
   componentWillMount() {
-    // this.props.fetchApplications
+    this.props.fetchApplications()
   }
 
   render() {
     // let { config, features, loading } = this.props.configState;
-
     return (
-
-      <div class="content-wrapper">
-        <div class="pull-right">
-          <NavLink to="/applications/new">Create Application</NavLink>
+      <div class="application-index-page">
+        <div class="content-box">
+          <div class="content-header">
+            <strong>Connected Applications</strong>
+          </div>
+          <div class="text-center content-body">
+            <img src="img/Illustration-noconnectedapp.svg" alt=""/>
+            <div class="panel-body text-muted">No connected apps</div>
+          </div>
         </div>
-        <div className="clearfix"></div>
-        <div class="text-center content-wrapper">
-          <img src="img/Illustration-noconnectedapp.svg" alt=""/>
-          <div className="panel-body text-muted">No connected apps</div>
-          <button
-            class="btn btn-primary"
-            onClick={() => {}}
-          >
-            <span>Browse available apps</span>
-          </button>
+        <div class="content-box">
+          <div class="content-header">
+            <strong>Created Applications</strong>
+          </div>
+          <div class="text-center content-body">
+            <div class=" application-details-container col-lg-6">
+            <div className="application-details"></div>
+            </div>
+            <div class=" application-details-container col-lg-6">
+              <div class="new-application application-details">
+                <div className="app-icon-container">
+                </div>
+                <div className="app-details-container">
+                  <div className="app-name"><strong>App Name</strong></div>
+                  <div className="app-id">App ID: 0000000000001</div>
+                  <div className="app-created-on">Created on: 00, 0000</div>
+                </div>
+                <NavLink to="/applications/new" class="pull-right">
+                  <button
+                    class="btn btn-primary"
+                  >
+                    <span>Create Application</span>
+                  </button>
+                </NavLink>
+              </div>
+            </div>
+            <div class="clearfix"></div>
+          </div>
         </div>
       </div>
     );
