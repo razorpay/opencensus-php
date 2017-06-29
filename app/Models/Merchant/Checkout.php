@@ -4,23 +4,24 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
-use RZP\Error\ErrorCode;
 use Session;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
-use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Offer;
-use RZP\Models\Payment;
+use RZP\Models\Gateway\Downtime;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Offer;
+use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Plan\Subscription;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Gateway\Downtime;
 
 class Checkout
 {
