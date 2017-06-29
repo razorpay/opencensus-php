@@ -5,7 +5,6 @@ namespace RZP\Reconciliator\FirstData;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\FirstData;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -103,8 +102,8 @@ class RefundReconciliate extends Base\RefundReconciliate
         // The mathematical probability is very low (not zero though)!
         //
         $payment = $this->repo->first_data
-                              ->findPaymentForGatewayRefund(
-                                    $capsPaymentId, Action::REFUND, $gatewayTxnId);
+                              ->findRefundForGateway(
+                                    $capsPaymentId, $gatewayTxnId);
 
         return $payment;
     }

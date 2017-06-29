@@ -5,7 +5,6 @@ namespace RZP\Reconciliator\FirstData;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -46,8 +45,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // The broad assumption here is that these ids will not collide
         // The mathematical probability is very low (not zero though)!
         $paymentId = $this->repo->first_data
-                                ->findPaymentForGatewayPurchase(
-                                    $capsPaymentId, Action::PURCHASE)
+                                ->findPaymentForGateway($capsPaymentId)
                                 ->getPaymentId();
 
         return $paymentId;

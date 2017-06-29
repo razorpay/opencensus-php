@@ -26,11 +26,9 @@ class Repository extends Base\Repository
      * 'purchase' & 'capture' & pick the first entry.
      *
      * @param string $capsPaymentId
-     * @param string $action
      * @return Entity
      */
-    public function findPaymentForGatewayPurchase(
-        string $capsPaymentId, string $action)
+    public function findPaymentForGateway(string $capsPaymentId)
     {
         $actions = [Base\Action::PURCHASE, Base\Action::CAPTURE];
 
@@ -46,12 +44,11 @@ class Repository extends Base\Repository
      * & gateway_transaction_id
      *
      * @param string $capsPaymentId
-     * @param string $action
      * @param string $gatewayTxnId [to determine partial refunds]
      * @return Entity
      */
-    public function findPaymentForGatewayRefund(
-        string $capsPaymentId, string $action, string $gatewayTxnId)
+    public function findRefundForGateway(
+        string $capsPaymentId, string $gatewayTxnId)
     {
         return $this->newQuery()
                     ->where(Entity::CAPS_PAYMENT_ID, '=', $capsPaymentId)
