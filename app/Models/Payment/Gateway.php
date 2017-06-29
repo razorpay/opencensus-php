@@ -369,7 +369,6 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
-        self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
@@ -386,7 +385,8 @@ class Gateway
 
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
-        self::WALLET_MPESA
+        self::WALLET_MPESA,
+        self::NETBANKING_RBL,
     ];
 
     /**

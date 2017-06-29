@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         'notes.merchant_order_id' => 'required_with:signature',
         'callback_url'            => 'sometimes|url',
         'order_id'                => 'sometimes|filled',
-        'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
+        'customer_id'             => 'sometimes|public_id|filled',
         'subscription_id'         => 'sometimes|public_id',
         'app_token'               => 'sometimes',
         'token'                   => 'sometimes',
@@ -101,6 +101,7 @@ class Validator extends Base\Validator
         'contact',
         'email',
         'hold_parameters',
+        'customer_id',
     ];
 
     protected function validateEmail(array $input)
@@ -318,6 +319,44 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
             }
+        }
+    }
+
+    protected function validateCustomerId($input)
+    {
+        if (isset($input[Entity::CUSTOMER_ID]) === false)
+        {
+            //
+            // customer_id should always be sent in case of openwallet.
+            // It's okay to not send otherwise. Gets handled in the main flow.
+            //
+            if ((isset($input[Entity::WALLET]) === true) and
+                ($input[Entity::WALLET] === Merchant\Methods\Entity::OPENWALLET))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The customer id field is required when wallet is openwallet.',
+                    'customer_id',
+                    [
+                        'wallet' => $input[Entity::WALLET]
+                    ]);
+            }
+
+            return;
+        }
+
+        //
+        // Should not send customer_id for a subscription payment,
+        // since subscription already has a customer associated.
+        //
+        if (isset($input[Entity::SUBSCRIPTION_ID]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'customer_id is not required and should not be sent',
+                'customer_id',
+                [
+                    'customer_id'       => $input[Entity::CUSTOMER_ID],
+                    'subscription_id'   => $input[Entity::SUBSCRIPTION_ID],
+                ]);
         }
     }
 

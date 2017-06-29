@@ -7,6 +7,7 @@
 !environment/.env.production
 !environment/.env.beta
 !environment/.env.alpha
+!environment/*.j2
 
 # ignore generated docker conf
 environment/.env.dev_docker
