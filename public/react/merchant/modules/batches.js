@@ -3,6 +3,7 @@ import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
 
 const REFUND = 'REFUND_BATCHES';
 const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
+const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 
 const fetchBatchAjax = id => {
   return ajax({
@@ -91,6 +92,22 @@ export const issuePaymentLinkBatch = (batchId, body) => {
           '{batchId}': batchId,
         }),
         body,
+      },
+    }),
+  };
+};
+
+export const batchDownload = batchId => {
+  return {
+    type: BATCH_DOWNLOAD,
+    payload: ajax({
+      url: '/user/generic',
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'batch_download_file',
+        url_params: JSON.stringify({
+          '{id}': batchId,
+        }),
       },
     }),
   };
