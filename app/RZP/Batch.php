@@ -32,20 +32,6 @@ class Batch extends Entity
         return $response;
     }
 
-    public function downloadFile($id)
-    {
-        $relativeUrl = $this->getEntityUrl()."$id/download";
-
-        return $this->request('GET', $relativeUrl);
-    }
-
-    public function retryFile($id)
-    {
-        $relativeUrl = $this->getEntityUrl()."$id/retry";
-
-        return $this->request('POST', $relativeUrl);
-    }
-
     protected function makeGuzzleFileRequest($mode, $merchantId, $input)
     {
         // Creates a new Guzzle client

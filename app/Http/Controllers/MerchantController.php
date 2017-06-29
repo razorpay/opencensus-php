@@ -278,43 +278,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    /**
-     * Download Batch file
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function downloadBatchFile($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->downloadBatchFile($mode, $id);
-
-        if (empty($response) !== true)
-        {
-            return redirect($response['url']);
-        }
-        else
-        {
-            return AppResponse::jsonResponse($error, $response);
-        }
-    }
-
-    /**
-     * Retry given batch
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function retryBatchFile($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->retryBatchFile($mode, $id);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function postSignup()
     {
         $id = Auth::user()->currentMerchant()->id;
