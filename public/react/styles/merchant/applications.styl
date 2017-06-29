@@ -23,17 +23,36 @@
       border-radius: 4px;
       padding: 12px;
       padding-right: 20px;
+      color: #58666e;
       text-align: left;
+      cursor pointer;
+      &:hover {
+        background-color: #F0F3F4;
+      }
       &.new-application {
         border-style: dashed;
         .app-details-container {
           color: #e2e8ea;
         }
+        &:hover {
+          border-style: solid;
+          .app-details-container {
+            color: #58666e;
+          }
+          .btn {
+            background-color: #564aa3;
+            border-color: #4a3e8a;
+          }
+        }
       }
-      .btn {
-        width: 144px;
-        margin-top: 24px;
-      }
+    }
+    .btn {
+      width: 144px;
+      margin-top: 24px;
+    }
+    .btn-container {
+      margin-top: 12px;
+      margin-right: 20px;
     }
   }
   .app-icon-container {
@@ -42,6 +61,12 @@
     border: 1px solid #e2e8ea;
     border-radius: 4px;
     display inline-block;
+    background-color: white;
+  }
+  .app-icon {
+    height: 100%
+    width: 100%
+    display block
   }
   .app-details-container {
     padding-top: 10px;

@@ -40,28 +40,10 @@ export default class ApplicationContainer extends Component {
             <strong>Created Applications</strong>
           </div>
           <div class="text-center content-body">
+            <NewAppLink />
             {createdApps.map((app) => 
-              <AppDetails data={app} />
+              <AppDetails data={app} key={app.id}/>
             )}
-            
-            <div class=" application-details-container col-lg-6">
-              <div class="new-application application-details">
-                <div className="app-icon-container">
-                </div>
-                <div className="app-details-container">
-                  <div className="app-name"><strong>App Name</strong></div>
-                  <div className="app-id">App ID: 0000000000001</div>
-                  <div className="app-created-on">Created on: 00, 0000</div>
-                </div>
-                <NavLink to="/applications/new" class="pull-right">
-                  <button
-                    class="btn btn-primary"
-                  >
-                    <span>Create Application</span>
-                  </button>
-                </NavLink>
-              </div>
-            </div>
             <div class="clearfix"></div>
           </div>
         </div>
@@ -73,21 +55,48 @@ export default class ApplicationContainer extends Component {
 function AppDetails (props) {
   let app = props.data;
   return (<div class=" application-details-container col-lg-6">
-            <div className="application-details">
-              <div className="app-icon-container">
-              </div>
-              <div className="app-details-container">
-                <div className="app-name"><strong>{app.name}</strong></div>
-                <div className="app-id">App ID: {app.id}</div>
-                <div className="app-created-on">Created on: <Time value={app.created_on} format="DD MMM YYYY" /></div>
-              </div>
-              <NavLink to="/applications/new" class="pull-right">
+            <NavLink to={`/applications/${app.id}`}>
+              <div className="btn-container pull-right">
                 <button
                   class="btn btn-default"
                 >
                   <span>Delete Application</span>
                 </button>
-              </NavLink>
-            </div>
+              </div>
+              <div className="application-details">
+                <div className="app-icon-container">
+                  <img class="app-icon" src={app.logo_url || 'img/default-app-logo.svg'} alt=""/>
+                </div>
+                <div className="app-details-container">
+                  <div className="app-name"><strong>{app.name}</strong></div>
+                  <div className="app-id">App ID: {app.id}</div>
+                  <div className="app-created-on">Created on: <Time value={app.created_at} format="DD MMM YYYY" /></div>
+                </div>
+              </div>
+            </NavLink>
+          </div>)
+}
+
+function NewAppLink (props) {
+  return (<div class=" application-details-container col-lg-6">
+            <NavLink to="/applications/new" >
+              <div class="new-application application-details">
+                <div className="app-icon-container">
+                  <img class="app-icon" src={'img/default-app-logo.svg'} alt=""/>
+                </div>
+                <div className="app-details-container">
+                  <div className="app-name"><strong>Application Name</strong></div>
+                  <div className="app-id">App ID: 0000000000001</div>
+                  <div className="app-created-on">Created on: 00, 0000</div>
+                </div>
+                <div className="pull-right">
+                  <button
+                    class="btn btn-primary"
+                  >
+                    <span>Create Application</span>
+                  </button>
+                </div>
+              </div>
+            </NavLink>
           </div>)
 }
