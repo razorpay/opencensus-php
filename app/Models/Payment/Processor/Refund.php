@@ -839,7 +839,7 @@ trait Refund
             'payment'   => $payment->toArrayGateway(),
             'refund'    => $refund->toArrayGateway(),
             'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency()
+            'currency'  => $refund->getCurrency(),
         ];
 
         if ($payment->getConvertCurrency())
