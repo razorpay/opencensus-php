@@ -1,5 +1,10 @@
 import Item from 'merchant/models/Item';
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import {
+  makeActionCollectionReducer,
+  listFetchPendingState,
+  listFetchSuccessState,
+  listFetchErrorState,
+} from 'rzp/modules/collection';
 
 const ITEMS_FETCH = 'ITEMS_FETCH';
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';
@@ -44,47 +49,8 @@ export const deleteItem = params => {
   };
 };
 
-let initialState = {
-  loading: true,
-  items: [],
-  count: 0,
-};
-
-export default function(state = initialState, action) {
-  switch (action.type) {
-    case `${ITEMS_FETCH}::PENDING`:
-    case `${ITEMS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return set(state, 'loading', true);
-
-    case `${ITEMS_FETCH}::SUCCESS`:
-    case `${ITEMS_AUTOCOMPLETE_FETCH}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        items: action.payload.data.items,
-        count: action.payload.data.count,
-      });
-
-    case `${ITEMS_FETCH}::ERROR`:
-    case `${ITEMS_AUTOCOMPLETE_FETCH}::ERROR`:
-      return merge(state, {
-        loading: false,
-        error: action.error,
-      });
-
-    case `${ITEM_CREATE}::SUCCESS`:
-      return set(state, 'items', unshift(state.items, action.payload));
-
-    case `${ITEM_EDIT}::SUCCESS`:
-      let itemIndex = state.items.findIndex(
-        item => item.id === action.payload.id
-      );
-      return set(state, `items.${itemIndex}`, action.payload);
-
-    case `${ITEM_DELETE}::SUCCESS`:
-      var itemsList = remove(state.items, item => item.id === action.id);
-      return set(state, 'items', itemsList);
-
-    default:
-      return state;
-  }
-}
+export default makeActionCollectionReducer('ITEMS', {
+  [`${ITEMS_AUTOCOMPLETE_FETCH}::PENDING`]: listFetchPendingState,
+  [`${ITEMS_AUTOCOMPLETE_FETCH}::SUCCESS`]: listFetchSuccessState,
+  [`${ITEMS_AUTOCOMPLETE_FETCH}::ERROR`]: listFetchErrorState,
+});

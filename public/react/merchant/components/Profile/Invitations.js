@@ -12,7 +12,7 @@ export default ({ invitations, onAcceptClick, onRejectClick }) => {
             key={index}
             label={() => (
               <span>
-                Invitation to join <strong>{invite.merchant.name}</strong>
+                Invitation to join <strong>{invite.merchant_name}</strong>
               </span>
             )}
             value={() => (
@@ -21,13 +21,13 @@ export default ({ invitations, onAcceptClick, onRejectClick }) => {
                   text="Accept"
                   pendingText="Accepting..."
                   class="btn btn-xs btn-success"
-                  onClick={() => onAcceptClick('accept', invite)}
+                  onClick={() => onAcceptClick(invite)}
                 />
                 <AsyncButton
                   text="Reject"
                   pendingText="Rejecting..."
                   class="btn btn-xs btn-danger"
-                  onClick={() => onRejectClick('reject', invite)}
+                  onClick={() => onRejectClick(invite)}
                 />
               </div>
             )}

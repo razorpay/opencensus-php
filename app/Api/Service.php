@@ -8,6 +8,7 @@ use App\Base;
 use Carbon\Carbon;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
+use App\Generic;
 
 class Service extends Base\Service
 {
@@ -33,37 +34,6 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function fetchEntity($id, $mode, $entity)
-    {
-        $error = (new Validator)->validateInput('fetch', array('id' => $id))->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $collection = [];
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->$entity->fetch($id)->toArray();
-
-            $collection = array(
-                'count' => 1,
-                'entity' => 'collection',
-                'items' => array($data));
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $collection);
-    }
-
     public function fetchCollection(array $input, $mode, $entity)
     {
         $method = 'fetchCollection' . $entity;
@@ -85,14 +55,32 @@ class Service extends Base\Service
             'items'  => [],
         ];
 
+        if ($entity === 'customer')
+        {
+            $routeName = 'customer_fetch_multiple';
+        }
+        else if ($entity === 'item')
+        {
+            $routeName = 'item_fetch_multiple';
+        }
+
         for ($i = 0; $i < 5; $i++)
         {
-            $input = [
-                'skip' => $i * $count,
-                'count' => $count
+            // Using generic
+
+            $customerInput = [
+                'route_name' => $routeName,
+                'mode' => $mode,
+                'query_params' => [
+                    'skip' => $i * $count,
+                    'count' => $count
+                ]
             ];
 
-            list($error, $list) = $this->fetchEntityCollection($input, $mode, $entity);
+            $genericService = new Generic\Service;
+
+            list($error, $list) = $genericService->call('GET', $customerInput);
+
             $collection['count'] = $collection['count'] + $list['count'];
             $collection['items'] = array_merge($collection['items'], $list['items']);
 

@@ -18,15 +18,12 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    let id = this.props.id || this.props.match.params.id;
-    this.props.fetchPayment(id);
+    this.props.fetchItem(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
-    let oldId = this.props.id || this.props.match.params.id;
-    let newId = nextProps.id || nextProps.match.params.id;
-    if (oldId !== newId) {
-      this.props.fetchPayment(newId);
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchItem(nextProps.id);
     }
   }
 

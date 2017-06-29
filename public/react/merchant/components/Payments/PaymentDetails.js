@@ -12,6 +12,7 @@ import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
 import { Link } from 'react-router-dom';
+import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 const ListItem = ({ item, value }) => {
   return (
@@ -213,26 +214,8 @@ export default props => {
                         value={payment.error_description}
                       />
                     : null}
-                  {Object.keys(payment.notes).length > 0
-                    ? <ListGroupToggler label="Notes" show={true}>
-                        <div class="table-responsive">
-                          <table class="table table-hover">
-                            <TableBody
-                              colSpan={2}
-                              rows={Object.keys(payment.notes)}
-                            >
-                              {Object.keys(payment.notes).map(note => (
-                                <ListItem
-                                  key={note}
-                                  item={note}
-                                  value={payment.notes[note]}
-                                />
-                              ))}
-                            </TableBody>
-                          </table>
-                        </div>
-                      </ListGroupToggler>
-                    : <DetailRow label="Notes" value="No Notes" />}
+
+                  <NestedDetailRow label="Notes" value={payment.notes} />
 
                   <DetailRow
                     label="Created At"

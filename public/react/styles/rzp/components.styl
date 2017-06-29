@@ -284,7 +284,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-.rzpChecbox {
+.rzpCheckbox {
   margin-bottom: 5px;
 
   [type='checkbox']:not(:checked), [type='checkbox']:checked {
@@ -325,6 +325,10 @@ a.breadcrumb__backNav--link {
 
   [type='checkbox']:checked + label::after {
     opacity: 1
+  }
+
+  [type='checkbox']:disabled + label {
+    cursor: not-allowed;
   }
 }
 
@@ -369,4 +373,36 @@ a.breadcrumb__backNav--link {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%)
+}
+
+.block-radio-group {
+  .list-group-item {
+    padding: 0;
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]:checked + label {
+      background-color: #fffaea;
+
+      .fa-check {
+        color: #0b5;
+      }
+    }
+
+    > label {
+      display: block;
+      margin: 0;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .fa-check {
+      color: #f1f1f1;
+      line-height: 22px;
+      tranistion: 0.3s;
+    }
+  }
 }

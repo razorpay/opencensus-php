@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import ModalDialog from 'rzp/ui/ModalDialog';
-import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -16,6 +15,9 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
+import User from 'merchant/models/User';
+import MerchantTour from 'merchant/containers/MerchantTour';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
 @connect(state => state.session, {
@@ -32,21 +34,22 @@ export default class App extends Component {
   componentWillMount() {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
-    if (currentMode) {
-      this.props.updateSession({ mode: currentMode });
-    }
     Promise.all([
-      this.props.fetchUser().then(({ data }) => {
-        let role = data.userRole;
+      this.fetchUser().then(({ data }) => {
+        let user = data;
+        let role = user.userRole;
 
         if (!currentMode) {
-          currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
-          this.props.updateSession({ mode: currentMode });
+          currentMode = user.isActivated ? 'live' : 'test';
+        } else if (!user.isActivated) {
+          currentMode = 'test';
         }
+
+        this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(data);
+        this.initSmooch(user);
       }),
-      this.props.fetchOrg().then(({ data }) => {
+      this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
@@ -64,6 +67,28 @@ export default class App extends Component {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);
+    }
+  }
+
+  fetchUser() {
+    let user = new User(window.rzp_user);
+    if (user) {
+      delete window.rzp_user;
+      this.props.updateSession({ user });
+      return Promise.resolve({ data: user });
+    } else {
+      return this.props.fetchUser();
+    }
+  }
+
+  fetchOrg() {
+    let org = window.rzp_org;
+    if (org) {
+      delete window.rzp_org;
+      this.props.updateSession({ org });
+      return Promise.resolve({ data: org });
+    } else {
+      return this.props.fetchOrg();
     }
   }
 
@@ -158,7 +183,7 @@ export default class App extends Component {
   };
 
   lock = () => {
-    let email = this.props.user.contact_email;
+    let email = this.props.user.user.email;
     return this.props.logout().then(() => {
       location.hash = `/access/lockme/${email}`;
       location.reload();
@@ -200,6 +225,10 @@ export default class App extends Component {
         <Sidebar user={user} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
+
+        <ShowWhen myRole="owner">
+          <MerchantTour user={user} />
+        </ShowWhen>
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
-import Header from 'rzp/ui/Header';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/components/Webhooks/List';

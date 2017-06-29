@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header/Header';
 // import Role from 'merchant/components/Role'
 import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';

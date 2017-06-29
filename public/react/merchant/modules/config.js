@@ -1,6 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
 
+const CONFIG_FETCH = 'CONFIG_FETCH';
 const CONFIG_AND_FEATURES_FETCH = 'CONFIG_AND_FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
@@ -32,7 +33,10 @@ export const fetchFeatures = currentUserId => {
 };
 
 export const fetchConfig = () => {
-  return () => fetchConfigAjax();
+  return {
+    type: CONFIG_FETCH,
+    payload: fetchConfigAjax(),
+  };
 };
 
 /*
@@ -152,6 +156,7 @@ export default function(state = initialState, action) {
         ...initialState,
       });
 
+    case `${CONFIG_FETCH}::SUCCESS`:
     case `${CONFIG_SAVE}::SUCCESS`:
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));

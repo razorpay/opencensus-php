@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -15,6 +16,7 @@ import App from './containers/App';
 
 window.React = React;
 window.ReactDOM = ReactDOM;
+window.$ = $;
 
 Tabs.setUseDefaultStyles(false);
 

@@ -9,6 +9,7 @@ import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import DetailRow from 'merchant/components/DetailRow';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -33,7 +34,9 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Payment Link ID: <strong>{invoice.id}</strong>
+              <i class="icon icon-link text-primary" />
+              {' '}
+              <strong>{invoice.id}</strong>
 
               <ShowWhen notMyRole="support finance">
                 <div class="btn-toolbar pull-right">
@@ -68,6 +71,17 @@ export default props => {
                     label="Invoice Date"
                     value={() => <Time value={invoice.date} />}
                   />
+
+                  <DetailRow
+                    label={isExpired ? 'Expired on' : 'Expires on'}
+                    value={() => (
+                      <Time
+                        value={invoice.expire_by}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
+                  />
+
                   <DetailRow label="Receipt" value={invoice.receipt} />
                   <DetailRow label="Payment Link" value={invoice.short_url} />
                   <DetailRow
@@ -97,17 +111,7 @@ export default props => {
                     )}
                   />
                   <DetailRow label="Terms & Conditions" value={invoice.terms} />
-                  {Object.keys(invoice.notes).length > 0
-                    ? <ListGroupToggler label="Notes" show={true}>
-                        {Object.keys(invoice.notes).map(note => (
-                          <DetailRow
-                            key={note}
-                            label={note}
-                            value={invoice.notes[note]}
-                          />
-                        ))}
-                      </ListGroupToggler>
-                    : <DetailRow label="Notes" value="No Notes" />}
+                  <NestedDetailRow label="Notes" value={invoice.notes} />
                 </div>
 
                 <div class="panel panel-default">

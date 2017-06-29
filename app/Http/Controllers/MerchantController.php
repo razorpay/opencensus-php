@@ -38,19 +38,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Get the user list for the currently logged in merchant
-     * Only accessible to owners
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getUsersListWithInvites()
-    {
-        $data = (new Merchant\Service)->getUsersListWithInvites();
-
-        return AppResponse::jsonResponse(null, $data);
-    }
-
-    /**
      * Remove the team member on the given merchant.
      *
      * @param  string  $userId
@@ -271,13 +258,6 @@ class MerchantController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getBankAccount()
-    {
-        list($error, $data) = (new Merchant\Service)->fetchBankAccount();
 
         return AppResponse::jsonResponse($error, $data);
     }

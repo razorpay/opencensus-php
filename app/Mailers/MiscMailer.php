@@ -39,6 +39,7 @@ class MiscMailer extends Mailer
         $this->email = $email;
 
         $this->subject = 'Razorpay - Password Reset Request';
+        $this->mailTag = MailTags::PASSWORD_RESET_REQUEST;
 
         return $this;
     }

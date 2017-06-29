@@ -34,6 +34,11 @@ export default class Customer extends GenericEntity {
     let displayName = `${displayParts
       .join(' / ')
       .replace('\/ ', '(')}${displayParts.length > 1 ? ')' : ''}`;
+
+    // This is used as option display value in the autocomplete
     this.displayName = displayName;
+
+    // This is used as selected display value in the autocomplete
+    this.selectedDisplayName = this.name || this.contact || this.email;
   }
 }

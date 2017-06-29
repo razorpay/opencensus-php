@@ -185,7 +185,7 @@
       </div>
 
       <!-- Network -->
-      <div class="form-group" ng-if="current.method === 'card'">
+      <div class="form-group" ng-if="['card', 'emi'].indexOf(current.method) !== -1">
         <label class="col-lg-2 control-label">Network:</label>
         <div class="col-lg-10" >
           <select name="network"

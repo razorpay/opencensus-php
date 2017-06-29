@@ -32,6 +32,12 @@ class Service extends Base\Service
      */
     public function process(array $input, $mode)
     {
+        if ((isset($input['method']) === true) and
+            ($input['method'] === 'bank_transfer'))
+        {
+            return [];
+        }
+
         $error = (new Transaction\Validator)->validateInput('process', $input)->messages();
 
         if (empty($error) === false)

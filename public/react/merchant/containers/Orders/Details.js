@@ -6,15 +6,12 @@ import * as OrderActions from 'merchant/modules/orders/details';
 @connect(state => state.order, OrderActions)
 export default class OrderDetailsContainer extends Component {
   componentWillMount() {
-    let id = this.props.id || this.props.match.params.id;
-    this.props.fetchOrder(id);
+    this.props.fetchItem(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
-    let oldId = this.props.id || this.props.match.params.id;
-    let newId = nextProps.id || nextProps.match.params.id;
-    if (oldId !== newId) {
-      this.props.fetchOrder(newId);
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchItem(nextProps.id);
     }
   }
 

@@ -1,37 +1,51 @@
 import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
-const INVITATIONS_FETCH = 'INVITATIONS_FETCH';
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
-
-export const fetchAjax = url => {
-  return ajax({
-    url,
-    appendModeInURL: false,
-  });
-};
-
-export const fetchPendingInvitations = () => {
-  return {
-    type: INVITATIONS_FETCH,
-    payload: fetchAjax('/settings/invitations'),
-  };
-};
+const GST_FETCH = 'GST_FETCH';
+const GST_SAVE = 'GST_SAVE';
 
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
-    payload: fetchAjax('/bank_account'),
+    payload: ajax({
+      url: '/user/generic',
+      data: {
+        route_name: 'bank_account_fetch',
+      },
+      appendModeInURL: false,
+    }),
   };
 };
 
-// To accept-reject invitation
-export const updateInvitation = (type, inviteId) => {
+// To accept invitation
+export const acceptInvitation = inviteId => {
   return () => {
     return ajax({
-      url: `/settings/invitations/${inviteId}/${type}`,
-      method: type === 'reject' ? 'delete' : 'post',
+      url: `/settings/invitations/${inviteId}/accept`,
+      method: 'post',
       appendModeInURL: false,
+    });
+  };
+};
+
+// To reject invitation
+export const rejectInvitation = (inviteId, userId) => {
+  return () => {
+    return ajax({
+      url: '/user/generic',
+      method: 'post',
+      appendModeInURL: false,
+      data: {
+        route_name: 'invitation_action',
+        url_params: JSON.stringify({
+          '{id}': inviteId,
+          '{action}': 'reject',
+        }),
+        body: {
+          user_id: userId,
+        },
+      },
     });
   };
 };
@@ -58,8 +72,42 @@ export const updatePassword = data => {
   };
 };
 
+export const fetchGST = () => {
+  return {
+    type: GST_FETCH,
+    payload: ajax({
+      url: '/user/generic',
+      data: {
+        route_name: 'merchant_gst_fetch',
+      },
+      appendModeInURL: false,
+    }),
+  };
+};
+
+export const saveGST = data => {
+  let body = {
+    route_name: 'merchant_gst_edit',
+    body: data,
+  };
+
+  return {
+    type: GST_SAVE,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'PATCH',
+      appendModeInURL: false,
+      data: body,
+    }),
+  };
+};
+
 let initialState = {
   invitations: [],
+  rzp_gst: {
+    p_gstin: '08AAGCR4375J1ZY',
+  },
+  merchant_gst: {},
 };
 
 export default function(state = initialState, action) {
@@ -67,9 +115,9 @@ export default function(state = initialState, action) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
 
-    case `${INVITATIONS_FETCH}::SUCCESS`:
-      return set(state, 'invitations', action.payload.data);
-
+    case `${GST_FETCH}::SUCCESS`:
+    case `${GST_SAVE}::SUCCESS`:
+      return set(state, 'merchant_gst', action.payload.data);
     default:
       return state;
   }

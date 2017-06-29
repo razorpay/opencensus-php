@@ -23,7 +23,7 @@ const StatusLabel = ({ status, entity, children, ...otherProps }) => {
 };
 
 export default ({ entity, data, loading }) => {
-  let items = data[`${entity}s`];
+  let items = data.items;
   return (
     <div class="col-md-4 col-sm-6 col-xs-12">
       <div class="WidgetContainer">
@@ -42,7 +42,7 @@ export default ({ entity, data, loading }) => {
               do {
                 if (loading) {
                   <div class="centered"><LoaderDots /></div>;
-                } else if (data.count) {
+                } else if (items.length) {
                   <div class="table-responsive EntityTable">
                     <table class="table table-hover table-noborder">
                       <tbody>
