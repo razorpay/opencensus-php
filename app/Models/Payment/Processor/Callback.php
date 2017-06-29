@@ -115,6 +115,9 @@ trait Callback
     {
         $payment = $this->retrieve($id);
 
+        // For redirect flow
+        $this->checkForMerchantCallbackUrl($payment);
+
         if ($payment->isCreated() === false)
         {
             return $this->processPaymentCallbackSecondTime($payment);

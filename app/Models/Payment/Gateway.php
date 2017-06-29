@@ -127,6 +127,7 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_AIRTELMONEY,
     ];
 
     public static $channels = [

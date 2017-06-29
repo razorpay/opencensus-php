@@ -293,6 +293,40 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        $processedRefund = [
+            '7nrkdwUCa5QaZJ',
+            '7nrjJeQ0JV2DQO',
+            '7ntGB12qJWUUtG'
+        ];
+
+        $unprocessedRefund = [
+            '80gr3AA3pfHiaP',
+            '7zwdFzXDz1U1BC',
+            '81EZukEQk9Aaf4',
+            '7mvsRH7Vg0gSuD',
+            '87w1VBQsDf2reN',
+            '7zCqB1tKFeqI7k',
+            '81E2wpeQbguWdd',
+            '7zxv98X8y42R41',
+            '81LPR1MUay15ZL'
+        ];
+
+        if (in_array($input['refund']['id'], $processedRefund, true) === true)
+        {
+            return true;
+        }
+
+        if (in_array($input['refund']['id'], $unprocessedRefund, true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Airtelmoney verify refund not implemented.');
+    }
+
     protected function verifyStatusOnGatewayFailure($verify, $gatewayPayment, $input)
     {
         $verify->gatewaySuccess = false;

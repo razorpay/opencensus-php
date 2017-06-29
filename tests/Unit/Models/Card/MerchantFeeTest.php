@@ -690,18 +690,18 @@ class MerchantFeeTest extends TestCase
         }
     }
 
-    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $fee, $serviceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $expectedFee, $expectedServiceTax, $feeComponents)
     {
         list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
 
-        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $fee, $serviceTax, $feeComponents);
+        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $expectedFee, $expectedServiceTax, $feeComponents);
     }
 
-    protected function runFeeTestWithMaxFeeForWallet($amount, $fee, $serviceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForWallet($amount, $expectedFee, $expectedServiceTax, $feeComponents)
     {
         list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
 
-        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $fee, $serviceTax, $feeComponents);
+        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $expectedFee, $expectedServiceTax, $feeComponents);
     }
 
     protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)

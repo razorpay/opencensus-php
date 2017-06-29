@@ -279,7 +279,7 @@ class Checkout
             // Otherwise, we don't send any tokens. (Refer the checkout flow to
             // find out what happens at checkout when we don't send any tokens).
             //
-            else if (isset($input['contact']))
+            else if (empty($input['contact']) === false)
             {
                 $response = (new Customer\Service)->fetchGlobalCustomerStatus(
                     $input['contact'],
