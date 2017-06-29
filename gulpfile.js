@@ -144,10 +144,7 @@ gulp.task('js:prod', () => {
 
 gulp.task('tmpl', () => {
   gulp
-    .src([
-      'resources/views/**/*.blade.php.tmpl',
-      'resources/views/**/tmpgetIndex.blade.php',
-    ])
+    .src('resources/views/**/*.blade.php.tmpl')
     .pipe(
       through(function(file, enc, cb) {
         file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');

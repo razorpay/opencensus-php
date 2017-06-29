@@ -9,18 +9,16 @@ import { required } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(null, { saveWebhook, ...ModalActions, ...NotificationsActions })
 @reduxForm({
   form: 'newWebhook',
 })
 export default class AddWebhook extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      errors: null,
-    };
-  }
+  state = {
+    errors: null,
+  };
 
   componentWillMount() {
     if (this.props.webhook) {
@@ -166,6 +164,51 @@ export default class AddWebhook extends Component {
                     order.paid
                   </label>
                 </div>
+
+                <ShowWhen featureEnabled="subscriptions">
+                  <div>
+                    <div class="checkbox">
+                      <label>
+                        <Field
+                          name="events['subscription.activated']"
+                          component="input"
+                          type="checkbox"
+                        />
+                        order.paid
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <Field
+                          name="events['subscription.charged']"
+                          component="input"
+                          type="checkbox"
+                        />
+                        order.paid
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <Field
+                          name="events['subscription.overdue']"
+                          component="input"
+                          type="checkbox"
+                        />
+                        order.paid
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <Field
+                          name="events['subscription.halted']"
+                          component="input"
+                          type="checkbox"
+                        />
+                        order.paid
+                      </label>
+                    </div>
+                  </div>
+                </ShowWhen>
               </div>
             </div>
           </div>
