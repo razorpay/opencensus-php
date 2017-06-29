@@ -22,19 +22,43 @@ class Repository extends Base\Repository
     /**
      * Used in Payment & Refund Reconciliate for fetching
      * payment by given gateway caps_payment_id & its respective action
+     * For 'purchase', we consider entities where action is
+     * 'authorize' & 'capture' & pick the first entry.
      *
      * @param string $capsPaymentId
      * @param string $action
-     *
+     * @param string $gatewayTxnId [to be sent only in case of refunds
+     *                              to determine partial refunds]
      * @return Entity
      */
     public function findByCapsPaymentIdAndAction(
-        string $capsPaymentId, string $action)
+        string $capsPaymentId, string $action, string $gatewayTxnId = null)
     {
-        return $this->newQuery()
-                    ->where(Entity::CAPS_PAYMENT_ID, '=', $capsPaymentId)
-                    ->where(Entity::ACTION, '=', $action)
-                    ->firstOrFail();
+        switch ($action)
+        {
+            case Base\Action::PURCHASE :
+
+                $actions = [Base\Action::AUTHORIZE, Base\Action::CAPTURE];
+
+                $result = $this->newQuery()
+                               ->where(Entity::CAPS_PAYMENT_ID, '=', $capsPaymentId)
+                               ->whereIn(Entity::ACTION, $actions)
+                               ->firstOrFail();
+
+                break;
+
+            case Base\Action::REFUND :
+
+                $result = $this->newQuery()
+                               ->where(Entity::CAPS_PAYMENT_ID, '=', $capsPaymentId)
+                               ->where(Entity::GATEWAY_TRANSACTION_ID, '=', $gatewayTxnId)
+                               ->whereIn(Entity::ACTION, '=', Base\Action::REFUND)
+                               ->firstOrFail();
+
+                break;
+        }
+
+        return $result;
     }
 
     public function findSuccessfulRefundByRefundId(string $refundId)

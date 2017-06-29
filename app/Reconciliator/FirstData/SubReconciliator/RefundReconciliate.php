@@ -15,6 +15,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      ******************/
 
     // session_id_aspd maps to caps_payment_id
+    const GATEWAY_TRANSACTION_ID = 'ft_no';
     const COLUMN_CAPS_PAYMENT_ID = 'session_id_aspd';
     const COLUMN_REFUND_AMOUNT   = 'transaction_amt';
     const COLUMN_ARN             = 'arn_no';
@@ -95,13 +96,15 @@ class RefundReconciliate extends Base\RefundReconciliate
         //
         $capsPaymentId = strtoupper($capsPaymentId);
 
+        $gatewayTxnId = $row[self::GATEWAY_TRANSACTION_ID];
+
         //
         // The broad assumption here is that these ids will not collide
         // The mathematical probability is very low (not zero though)!
         //
         $payment = $this->app['repo']->first_data
                                      ->findByCapsPaymentIdAndAction(
-                                       $capsPaymentId, Action::REFUND);
+                                       $capsPaymentId, Action::REFUND, $gatewayTxnId);
 
         return $payment;
     }

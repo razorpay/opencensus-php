@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -19,7 +20,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_GATEWAY_FEE     = 'comm_amount';
     const COLUMN_PAYMENT_AMOUNT  = 'transaction_amt';
     const COLUMN_CARD_CATEGORY   = 'card_category';
-    const COLUMN_CARD_TYPE       = 'card_type';
+    const COLUMN_CARD_TRIVIA     = 'card_type';
 
     const INTERNATIONAL          = 'international';
     const ONUS                   = 'onus';
@@ -35,7 +36,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentId($row)
     {
-        $capsPaymentId = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+        $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 
         // doing this because sometimes the ids are all caps, sometimes not
         // the caps_payment_id in database is however all caps! :D
@@ -44,10 +45,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         // The broad assumption here is that these ids will not collide
         // The mathematical probility is very low (not zero though)!
-        $payment = $this->app['repo']->first_data
-                                     ->findByCapsPaymentIdAndAction(
-                                       $capsPaymentId, Action::PURCHASE)
-                                     -> getPaymentId();
+        $paymentId = $this->app['repo']->first_data
+                                       ->findByCapsPaymentIdAndAction(
+                                         $capsPaymentId, Action::PURCHASE)
+                                       -> getPaymentId();
 
         return $paymentId;
     }
@@ -153,13 +154,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_CARD_CATEGORY]) === true)
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to figure out the card locale (domestic/international).',
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
+                    'message'           => 'Unable to get the card locale. This is unexpected.',
+                    'info_code'         => 'CARD_LOCALE_ABSENT',
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
 
             // there is an anomaly if no card category is present in row
             return null;
@@ -173,31 +176,40 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return BaseReconciliate::INTERNATIONAL;
         }
 
-        return BaseReconciliate::DOMESTIC;
+        //
+        // In case some card is actually international,
+        // but they haven't mentioned in the card_category column,
+        // but it's already marked as international in our DB,
+        // we don't want to override it with domestic
+        //
+        return null;
     }
 
     /**
      * Sets value of column 'card_type' as card trivia
      *
+     * @param  array  $row
      * @return string $cardType
      */
-    protected function getCardTrivia()
+    protected function getCardTrivia($row)
     {
-        if (empty($row[self::COLUMN_CARD_TYPE]) === true)
+        if (empty($row[self::COLUMN_CARD_TRIVIA]) === true)
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to get the card trivia. This is unexpected.',
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
+                    'message'           => 'Unable to get the card trivia. This is unexpected.',
+                    'info_code'         => 'CARD_TRIVIA_ABSENT',
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
 
-            // there is an anomaly if no card category is present in row
+            // there is an anomaly if no card type is present in row
             return null;
         }
 
-        $cardType = $row[self::COLUMN_CARD_TYPE];
+        $cardType = $row[self::COLUMN_CARD_TRIVIA];
 
         return $cardType;
     }
@@ -214,13 +226,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_CARD_CATEGORY]) === true)
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to get the card issuer.',
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
+                    'message'           => 'Unable to get the card issuer.',
+                    'info_code'         => 'CARD_ISSUER_ABSENT',
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
 
             // there is an anomaly if no card category is present in row
             return null;
