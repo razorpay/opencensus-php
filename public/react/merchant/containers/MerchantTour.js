@@ -6,7 +6,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 
-@connect(null, ModalActions)
+@connect(null, { fetchGST, ...ModalActions })
 export default class MerchantTour extends Component {
   state = {
     isTourActive: false,

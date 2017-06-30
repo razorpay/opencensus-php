@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import { PowerSelect } from 'react-power-select';
 import ShowWhen from 'merchant/components/ShowWhen';
+import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
 
 const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
@@ -54,43 +55,12 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   );
 };
 
-const ProfileDropdown = ({ user, onLogoutClick }) => {
-  return (
-    <Dropdown>
-      <DropdownTrigger class="dropdown-toggle">
-        {user.name || user.user.name} <span class="caret" />
-      </DropdownTrigger>
-      <DropdownContent>
-        <ul class="dropdown-menu">
-          {user.current &&
-            <ShowWhen myRole="owner manager admin">
-              <li>
-                <Link to="/activation">
-                  Activation
-                  {' '}
-                  {!user.isActivated &&
-                    <span class="badge bg-danger pull-right">
-                      {user.activation_progress}%
-                    </span>}
-                </Link>
-              </li>
-            </ShowWhen>}
-          <li><Link to="/profile">Profile</Link></li>
-          <li class="divider" />
-          <li><a onClick={onLogoutClick}>Logout</a></li>
-        </ul>
-      </DropdownContent>
-    </Dropdown>
-  );
-};
-
 export default ({
   user,
   mode,
   modeFormatted,
   onSwitchMode,
   onSwitchMerchant,
-  onLogout,
   toggleMobileNav,
   showMobileNav,
 }) => {
@@ -136,7 +106,7 @@ export default ({
               </a>
             </li>
             <li id="profile-dropdown">
-              <ProfileDropdown user={user} onLogoutClick={onLogout} />
+              <ProfileDropdown />
             </li>
           </ul>
         </div>

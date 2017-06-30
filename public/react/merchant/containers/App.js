@@ -176,12 +176,6 @@ export default class App extends Component {
       });
   };
 
-  logout = () => {
-    return this.props.logout().then(() => {
-      location.reload();
-    });
-  };
-
   lock = () => {
     let email = this.props.user.user.email;
     return this.props.logout().then(() => {
@@ -218,7 +212,6 @@ export default class App extends Component {
           modeFormatted={modeFormatted}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
-          onLogout={this.logout}
           toggleMobileNav={this.toggleMobileNav}
           showMobileNav={this.state.showMobileNav}
         />
