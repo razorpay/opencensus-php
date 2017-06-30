@@ -42,6 +42,8 @@ class Processor extends Base\Core
      */
     protected $allEntities = [];
 
+    protected $summary = [];
+
     /**
      * Array of ids for which entity couldn't be found in database
      */
@@ -89,11 +91,9 @@ class Processor extends Base\Core
 
         $data = $this->parseTextFile($reconcileFile);
 
-        $response = null;
-
         if (empty($data) === true)
         {
-            $response = ['message' => 'no records to reconcile'];
+            return ['message' => 'no records to reconcile'];
         }
         else
         {
@@ -102,17 +102,17 @@ class Processor extends Base\Core
             // update the format so that recon mail is appended to settlement mail
             $this->date = $date->format('d-m-Y');
 
-            $response = $this->startReconciliation($data);
+            $this->startReconciliation($data);
 
             $this->storeReconciledFile($reconcileFile);
 
-            $this->sendReconciliationSummaryMail($response);
-        }
+            $this->notifyCompletion();
 
-        return $response;
+            return $this->summary;
+        }
     }
 
-    protected function startReconciliation($data): array
+    protected function startReconciliation($data)
     {
         $this->repo->beginTransaction();
 
@@ -128,7 +128,9 @@ class Processor extends Base\Core
                 }
                 else
                 {
-                    $this->allEntities[] = $entity;
+                    $entityId = $entity->getId();
+
+                    $this->allEntities[$entityId] = $entity;
 
                     $this->updateBatchFundTransferStats($entity);
                 }
@@ -153,12 +155,6 @@ class Processor extends Base\Core
 
             throw $e;
         }
-
-        $summary = $this->getSummary();
-
-        (new SlackNotification)->success('setl_reconciliation', $summary);
-
-        return $summary;
     }
 
     protected function reconcileEntity($row)
@@ -229,16 +225,56 @@ class Processor extends Base\Core
         return $version;
     }
 
-    protected function getSummary(): array
+    protected function notifyCompletion()
     {
-        $failureEntityIds = $successEntityIds = $allEntityIds = [];
+        $this->setSummary();
 
-        foreach ($this->allEntities as $entity)
+        $this->sendEmail();
+
+        $this->sendSlackNotification();
+    }
+
+    protected function sendSlackNotification()
+    {
+        $slackSummary = $this->summary;
+
+        $failureIds = $slackSummary['failure_ids'];
+        $failureCount = $slackSummary['failures_count'];
+
+        $msg = '';
+
+        if ($failureCount === $slackSummary['total_count'])
         {
-            $entityId = $entity->getId();
+            $msg = 'All settlements failed. ';
+        }
 
-            $allEntityIds[] = $entityId;
+        if ($failureCount > 5)
+        {
+            $failureIds = array_splice($this->summary['failure_ids'], 0, 5, true);
+        }
 
+        // If the failure ID list was truncated in †he above if block
+        if (count($failureCount) < $failureCount)
+        {
+            $msg .= 'A few such IDs: ';
+        }
+
+        $slackSummary['failure_ids'] = $msg . implode(', ', $failureIds);
+
+        $slackSummary['uprocessed_ids'] = implode(', ', $this->summary['uprocessed_ids']);
+
+        (new SlackNotification)->success('setl_reconciliation', $slackSummary);
+    }
+
+    protected function setSummary()
+    {
+        $failureEntityIds = [];
+        $successEntityIds = [];
+
+        $totalCount = 0;
+
+        foreach ($this->allEntities as $entityId => $entity)
+        {
             if ($entity->isStatusFailed())
             {
                 $failureEntityIds[] = $entityId;
@@ -247,12 +283,13 @@ class Processor extends Base\Core
             {
                 $successEntityIds[] = $entityId;
             }
+
+            $totalCount++;
         }
 
         // Get distinct entity ids in all array.
         // There will be duplicates in case of same day retry
         // Ideally there shouldn't be duplicates in success, but we do a defensive unique
-        $allEntityIds = array_unique($allEntityIds);
         $successEntityIds = array_unique($successEntityIds);
         $failureEntityIds = array_unique($failureEntityIds);
 
@@ -263,21 +300,34 @@ class Processor extends Base\Core
         // settlement, we do this
         $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
 
-        return [
-            'total_count'               => count($allEntityIds),
-            'failures_count'            => count($failureEntityIds),
-            'failure ids'               => implode(',', $failureEntityIds),
-            'processing failed ids'     => implode(',', $this->unprocessedIds),
+        $failureAmount = 0;
+        $failureCount = 0;
+
+        foreach ($failureEntityIds as $failureEntityId)
+        {
+            $failureAmount += $this->allEntities[$failureEntityId]->getAmount();
+
+            $failureCount++;
+        }
+
+        $this->summary = [
+            'total_count'       => $totalCount,
+            'failure_ids'       => $failureEntityIds,
+            'failures_count'    => $failureCount,
+            'failure_amount'    => $failureAmount,
+            'uprocessed_ids'    => $this->unprocessedIds,
         ];
     }
 
-    protected function sendReconciliationSummaryMail($response)
+    protected function sendEmail()
     {
         if (($this->mode === Mode::TEST) and
             ($this->app->environment('dev', 'testing') === false))
         {
             return;
         }
+
+        $response = $this->summary;
 
         $msg = 'UTR File reconciled.' . PHP_EOL;
 
@@ -287,7 +337,13 @@ class Processor extends Base\Core
 
         if ($failureCount !== 0)
         {
-            $msg .= 'Failed settlement ids: ' . $response['failure ids'];
+            if ($failureCount === $response['total_count'])
+            {
+                $msg .= 'All settlements failed.' . PHP_EOL;
+            }
+
+            $msg .= 'Failed settlement ids: ' . implode(', ', $response['failure_ids']) . PHP_EOL;
+            $msg .= 'Failed to settle amount: ' . $response['failure_amount'];
         }
 
         $data['date'] = $this->date;
