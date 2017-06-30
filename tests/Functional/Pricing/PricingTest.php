@@ -326,6 +326,11 @@ class PricingTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testDeletePricingPlanRuleForce()
+    {
+        $content = $this->startTest();
+    }
+
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
         $content = $this->startTest();

@@ -140,7 +140,7 @@ class Repository extends Base\Repository
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
 
-        $rule->setAuditLogAction(Action::DELETE_PRICING_PLAN_RULE);
+        $rule->setAuditAction(Action::DELETE_PRICING_PLAN_RULE);
 
         $count = $rule->feesBreakup->count();
 
