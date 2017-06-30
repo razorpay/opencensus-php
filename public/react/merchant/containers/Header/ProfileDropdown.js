@@ -3,8 +3,10 @@ import { connect } from 'react-redux';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import ShowWhen from 'merchant/components/ShowWhen';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import { openModal } from 'rzp/modules/modals';
 import { logout } from 'merchant/modules/session';
 import { fetchConfig } from 'merchant/modules/config';
+import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 
 @connect(
   state => {
@@ -13,7 +15,7 @@ import { fetchConfig } from 'merchant/modules/config';
       ...state.config.config,
     };
   },
-  { logout, fetchConfig }
+  { logout, fetchConfig, openModal }
 )
 export default class ProfileDropdown extends Component {
   componentWillMount() {
@@ -23,6 +25,13 @@ export default class ProfileDropdown extends Component {
   logout = () => {
     return this.props.logout().then(() => {
       window.location.reload();
+    });
+  };
+
+  submitFeedback = ({ revert = false }) => {
+    this.props.openModal({
+      size: 'small',
+      component: <SubmitFeedback revertToOldDesign={revert} />,
     });
   };
 
@@ -79,7 +88,7 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            <div class="media media-action">
+            <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">
                 <div class="media-object">
                   <i class="icon icon-help" />
@@ -90,7 +99,10 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            <div class="media media-action">
+            <div
+              class="media media-action"
+              onClick={() => this.submitFeedback({ revert: true })}
+            >
               <div class="media-left">
                 <div class="media-object">
                   <i class="icon icon-undo" />
