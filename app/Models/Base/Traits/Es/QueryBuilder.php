@@ -137,20 +137,10 @@ trait QueryBuilder
      */
     public function buildQueryForFromAndToIfApplies(array & $query, array & $params)
     {
-        $from = $params[self::FROM] ?? null;
-        $to   = $params[self::TO] ?? null;
+        $clause['gte'] = $params[self::FROM] ?? null;
+        $clause['lte'] = $params[self::TO] ?? null;
 
-        $clause = [];
-
-        if ($from !== null)
-        {
-            $clause['gte'] = $from;
-        }
-
-        if ($to !== null)
-        {
-            $clause['lte'] = $to;
-        }
+        $clause = array_filter($clause);
 
         if (empty($clause))
         {
