@@ -82,7 +82,9 @@ class DSPTransactionReport extends BasicEntityReport
 
         if ($shouldSendMail === true)
         {
-            $data = $this->createMailData($filename, $signedUrl, $input);
+            $filenameWithExtension = $filename . '.csv';
+
+            $data = $this->createMailData($filenameWithExtension, $signedUrl, $input);
 
             $reportingMail = new DSPMail($data);
 
