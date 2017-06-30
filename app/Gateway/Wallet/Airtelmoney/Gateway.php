@@ -679,7 +679,7 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_ID  => $wallet['gateway_payment_id'],
             RequestFields::AMT     => ($input['amount'] / 100),
             RequestFields::DATE    => $date,
-            RequestFields::REMARKS => 'Razorpay Refund',
+            RequestFields::REMARKS => $input['refund']['id']
         ];
 
         $request = $this->getStandardRequestArray($content);
