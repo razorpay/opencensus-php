@@ -69,6 +69,9 @@ class ValidationFields
     /**
      * Additional fields required when the Marketplace merchant is restricted
      *
+     * Restricted merchants have flag `linked_account_kyc = 1`, and we require
+     * the following fields to allow the linked account activation to be submitted
+     *
      * @var array
      */
     const MARKETPLACE_ACCOUNT_KYC_FIELDS = [

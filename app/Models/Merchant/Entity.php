@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
+    const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
@@ -250,15 +251,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant a linked-account under Marketplace
-    public function isLinkedAccount()
+    /**
+     * Is the merchant a linked-account under Marketplace?
+     */
+    public function isLinkedAccount(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
     }
 
-    public function isMarketplace()
+    public function isMarketplace(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+
+    public function linkedAccountsRequireKyc(): bool
+    {
+        return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
     }
 
     public function isEducationCategory()
