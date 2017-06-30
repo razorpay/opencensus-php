@@ -86,7 +86,7 @@ class InvoiceReport extends BaseReport
         }
 
 
-        if ($this->isGstApplicable($from) === true)
+        if (FeeCalculator::isGstApplicable($from) === true)
         {
             $taxInfo = $this->getGstTaxes($fees);
         }
@@ -113,11 +113,9 @@ class InvoiceReport extends BaseReport
      */
     protected function getNonGstTaxes(array $f): array
     {
-        $serviceTax = empty($f[FeeName::SERVICE_TAX]) ? 0 : intval($f[FeeName::SERVICE_TAX]['sum']);
-
-        $swachBharatCess = empty($f[FeeName::SWACHH_BHARAT_CESS]) ? 0 : intval($f[FeeName::SWACHH_BHARAT_CESS]['sum']);
-
-        $krishiKalyanCess = empty($f[FeeName::KRISHI_KALYAN_CESS]) ? 0 : intval($f[FeeName::KRISHI_KALYAN_CESS]['sum']);
+        $serviceTax = intval($f[FeeName::SERVICE_TAX]['sum'] ?? 0);
+        $swachBharatCess = intval($f[FeeName::SWACHH_BHARAT_CESS]['sum'] ?? 0);
+        $krishiKalyanCess = intval($f[FeeName::KRISHI_KALYAN_CESS]['sum'] ?? 0);
 
         $nonGstTaxes = $serviceTax + $swachBharatCess + $krishiKalyanCess;
 
@@ -142,9 +140,9 @@ class InvoiceReport extends BaseReport
      */
     protected function getGstTaxes(array $fees): array
     {
-        $igst = empty($fees[FeeName::IGST]) ? 0 : intval($fees[FeeName::IGST]['sum']);
-        $cgst = empty($fees[FeeName::CGST]) ? 0 : intval($fees[FeeName::CGST]['sum']);
-        $sgst = empty($fees[FeeName::SGST]) ? 0 : intval($fees[FeeName::SGST]['sum']);
+        $igst = intval($fees[FeeName::IGST]['sum'] ?? 0);
+        $cgst = intval($fees[FeeName::CGST]['sum'] ?? 0);
+        $sgst = intval($fees[FeeName::SGST]['sum'] ?? 0);
 
         if (($cgst > 0) or ($sgst > 0))
         {
@@ -212,11 +210,6 @@ class InvoiceReport extends BaseReport
         }
 
         return $data;
-    }
-
-    protected function isGstApplicable($fromTimestamp): bool
-    {
-        return ($fromTimestamp >= FeeCalculator::GST_TIMESTAMP);
     }
 
     protected function sumInvoiceData($beforeSBCCutoff, $afterSBCCutoff)

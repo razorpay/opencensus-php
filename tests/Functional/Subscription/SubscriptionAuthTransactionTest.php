@@ -76,6 +76,8 @@ class SubscriptionAuthTransactionTest extends TestCase
 
     public function testSubscriptionAuthTxnNormalWithoutStartAt()
     {
+        $this->markTestSkipped();
+
         $subscription = $this->createSubscription(false);
 
         $oldScheduleTask = $this->getLastEntity('schedule_task', true);
@@ -205,6 +207,8 @@ class SubscriptionAuthTransactionTest extends TestCase
 
     public function testSubscriptionAuthTxnAutoCaptureAddonWithoutStartAt()
     {
+        $this->markTestSkipped();
+
         $subscription = $this->createSubscription(false, [], [], true);
 
         $oldScheduleTask = $this->getLastEntity('schedule_task', true);
