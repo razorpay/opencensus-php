@@ -47,7 +47,9 @@ export default class App extends Component {
 
         this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(user);
+        setTimeout(() => {
+          this.initSmooch(user);
+        });
       }),
       this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
@@ -111,6 +113,7 @@ export default class App extends Component {
   }
 
   initSmooch(data) {
+    debugger;
     let role = data.userRole;
     if (window.smoochScript) {
       smoochScript.then(function() {
