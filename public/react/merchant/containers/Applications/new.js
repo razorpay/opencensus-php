@@ -22,18 +22,46 @@ const INFO = {
 
 const selector = formValueSelector('newApplicationForm');
 
-@connect(null, {
-  ...ApplicationActions,
-  ...NotificationActions,
-})
+@connect(
+  state => {
+    return {
+      user: state.session.user,
+      applications: state.applications.items
+    };
+  },
+  { ...ApplicationActions, ...NotificationActions}
+)
 @reduxForm({
   form: 'newApplicationForm',
 })
 class NewApplicationForm extends Component {
+  constructor() {
+    super();
+  }
+  state = {
+    edit: false
+    // data: this.props.applications.items.filter
+  }
   componentWillMount() {
-
+    let id = this.props.match.params.id
+    if (!id) return;
+    // fetch from state (or api)
+    this.setState({edit: true})
+    var appDetails = this.props.applications.filter(app => app.id === id)
+    if (appDetails.length) {
+      this.state.details = appDetails[0]
+      this.props.initialize(this.state.details);
+      return
+    }
+    this.props.fetchApplication(id).then((data)=>{
+      this.state.details = data
+      this.props.initialize(this.state.details);
+    }).catch(()=>{})
   }
 
+  componentWillUnmount () {
+    // remove details from state
+  }
   // save handler
 
   save = props => {
@@ -59,10 +87,13 @@ class NewApplicationForm extends Component {
         <div class="text-center content-wrapper">
           <div class="row">
             <div class="col-md-offset-2 col-md-10">
-              <h4 class="form-header text-left">Create Application</h4>
+              <h4 class="form-header text-left">{this.state.edit ? 'Edit' : 'Create'} Application</h4>
             </div>
           </div>
-          <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
+          <form 
+            class="form-horizontal" 
+            onSubmit={handleSubmit(this.save)} 
+          >
             <Fieldset>
 
               <div class="form-group">

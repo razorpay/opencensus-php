@@ -6,6 +6,8 @@ const newFields = ['name', 'website'];
 
 export default class Key extends GenericEntity {
   listRouteName = 'oauth_application_fetch_multiple';
+  deleteRouteName = 'oauth_application_delete';
+  detailsRouteName = 'oauth_application_fetch';
 
   fetchAll(params = {}) {
     const Klass = this.constructor;
