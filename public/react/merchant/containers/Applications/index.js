@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import Header from 'rzp/ui/Header';
@@ -6,6 +6,8 @@ import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
+import * as ModalActions from 'rzp/modules/modals';
+
 
 @connect(
   state => {
@@ -14,12 +16,49 @@ import * as NotificationActions from 'rzp/modules/notifications';
       applications: state.applications
     };
   },
-  { ...ApplicationActions, ...NotificationActions }
+  { ...ApplicationActions, ...NotificationActions, ...ModalActions}
 )
 export default class ApplicationContainer extends Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   componentWillMount() {
     this.props.fetchApplications()
   }
+
+  deleteApp(application) {
+    this.context.confirm({
+      message: `Are you sure to delete the application? ${application.name}`,
+      affirmativeLabel: 'Delete',
+      affirmativePendingLabel: 'Deleting...',
+      action: () =>
+        this.props
+          .deleteApplication(application.id)
+          .then(response => {
+            let apps = this.props.applications.items
+            for (var i = 0; i < apps.length; i++) {
+              let app = apps[i]
+              if (app.id = application.id) {
+                apps.splice(i, 1);
+                this.props.applications.count--
+                break;
+              }
+            }
+            this.props.showNotification({
+              type: 'success',
+              message: 'Application deleted successfully',
+            });
+            
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          }),
+    });
+  };
 
   render() {
     // let { config, features, loading } = this.props.configState;
@@ -42,7 +81,7 @@ export default class ApplicationContainer extends Component {
           <div class="text-center content-body">
             <NewAppLink />
             {createdApps.map((app) => 
-              <AppDetails data={app} key={app.id}/>
+              <AppDetails data={app} key={app.id} deleteApp={this.deleteApp.bind(this)}/>
             )}
             <div class="clearfix"></div>
           </div>
@@ -56,21 +95,26 @@ function AppDetails (props) {
   let app = props.data;
   return (<div class=" application-details-container col-lg-6">
             <NavLink to={`/applications/${app.id}`}>
-              <div className="btn-container pull-right">
+              <div class="btn-container pull-right">
                 <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    props.deleteApp(app)}
+                  }
                   class="btn btn-default"
                 >
                   <span>Delete Application</span>
                 </button>
               </div>
-              <div className="application-details">
-                <div className="app-icon-container">
+              <div class="application-details">
+                <div class="app-icon-container">
                   <img class="app-icon" src={app.logo_url || 'img/default-app-logo.svg'} alt=""/>
                 </div>
-                <div className="app-details-container">
-                  <div className="app-name"><strong>{app.name}</strong></div>
-                  <div className="app-id">App ID: {app.id}</div>
-                  <div className="app-created-on">Created on: <Time value={app.created_at} format="DD MMM YYYY" /></div>
+                <div class="app-details-container">
+                  <div class="app-name"><strong>{app.name}</strong></div>
+                  <div class="app-id">App ID: {app.id}</div>
+                  <div class="app-created-on">Created on: <Time value={app.created_at} format="DD MMM YYYY" /></div>
                 </div>
               </div>
             </NavLink>
@@ -81,15 +125,15 @@ function NewAppLink (props) {
   return (<div class=" application-details-container col-lg-6">
             <NavLink to="/applications/new" >
               <div class="new-application application-details">
-                <div className="app-icon-container">
+                <div class="app-icon-container">
                   <img class="app-icon" src={'img/default-app-logo.svg'} alt=""/>
                 </div>
-                <div className="app-details-container">
-                  <div className="app-name"><strong>Application Name</strong></div>
-                  <div className="app-id">App ID: 0000000000001</div>
-                  <div className="app-created-on">Created on: 00, 0000</div>
+                <div class="app-details-container">
+                  <div class="app-name"><strong>Application Name</strong></div>
+                  <div class="app-id">App ID: 0000000000001</div>
+                  <div class="app-created-on">Created on: 00, 0000</div>
                 </div>
-                <div className="pull-right">
+                <div class="pull-right">
                   <button
                     class="btn btn-primary"
                   >
