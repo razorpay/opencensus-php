@@ -517,9 +517,11 @@ class TraceCode
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
+    const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';

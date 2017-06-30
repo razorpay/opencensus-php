@@ -4,15 +4,17 @@ namespace RZP\Models\Merchant;
 
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use Config;
 use Trace;
 use AWS;
 
-class Logo
+class Logo extends Base\Core
 {
     const ORIGINAL_SIZE  = 'original';
     const SMALL_SIZE     = 'small';
@@ -51,8 +53,22 @@ class Logo
             'file_path'  => $destinationPath . '/' . $fileName,
         ];
 
+        $this->trace->info(
+            TraceCode::LOGO_IMAGE_DETAILS,
+            $imageDetails
+        );
+
         // Moves locally.
         $logoImage->move($destinationPath, $fileName);
+
+        //
+        // If this permission is not given, rsync cannot delete it, in case delete
+        // in the normal flow fails.
+        //
+        // if (substr(sprintf('%o', fileperms($imageDetails['file_path'])), -3) !== '777')
+        // {
+        //     (new Utility)->callFileOperation('chmod', [$imageDetails['file_path'], 0777]);
+        // }
 
         // Performs validation checks on the logo.
         $merchantValidator->validateLogo($imageDetails);
@@ -145,7 +161,7 @@ class Logo
         }
     }
 
-    protected function getLogoDimensionsArray($width=null, $height=null)
+    protected function getLogoDimensionsArray($width = null, $height = null)
     {
         return array(
                 self::ORIGINAL_SIZE => [$width, $height],
@@ -206,7 +222,9 @@ class Logo
         // Since all the file names have sizes appended to them.
         $url = '/' . $awsFileName;
 
-        Trace::info(TraceCode::AWS_S3_LOGO_UPLOAD);
+        $this->trace->info(
+            TraceCode::AWS_S3_LOGO_UPLOAD,
+            $imageDetails);
 
         foreach ($logoDimensions as $size => $_)
         {
@@ -241,7 +259,10 @@ class Logo
                     ErrorCode::SERVER_ERROR_AWS_FAILURE, null, $e);
             }
 
-            Trace::info(TraceCode::AWS_S3_LOGO_UPLOAD, ['File Uploaded']);
+            $this->trace->info(
+                TraceCode::AWS_S3_LOGO_UPLOADED,
+                $imageDetails);
+
             //$s3Url = $result['ObjectURL'];
         }
 
