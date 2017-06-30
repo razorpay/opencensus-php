@@ -7,10 +7,12 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import { required } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import { enableOrDisableNewui } from 'merchant/modules/session';
 
-@connect(null, {
+@connect(state => state.session, {
   closeModal,
   showNotification,
+  enableOrDisableNewui,
 })
 @reduxForm({
   form: 'submitFeedback',
@@ -40,19 +42,22 @@ export default class SubmitFeedback extends Component {
   };
 
   submit = props => {
-    debugger;
-    return this._submit(props)
-      .then(() => {
-        debugger;
-        this.props.closeModal();
-      })
-      .catch(err => {
-        debugger;
-      });
+    return this._submit(props).then(() => {
+      this.props.closeModal();
+    });
   };
 
   revert = () => {
-    // Disable dashboard tag
+    let user = this.props.user;
+    let tags = user.tags;
+    let filteredTags = tags.filter(tag => tag.toLowerCase() !== 'newui');
+    return this.props
+      .enableOrDisableNewui(user.current, {
+        tags: filteredTags.join(',') || '',
+      })
+      .then(() => {
+        window.location.reload();
+      });
   };
 
   submitAndRevert = props => {

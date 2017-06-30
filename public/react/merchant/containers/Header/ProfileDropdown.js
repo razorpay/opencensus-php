@@ -49,7 +49,7 @@ export default class ProfileDropdown extends Component {
               <div class="media">
                 <div class="media-left">
                   <div class="media-object">
-                    {this.props.logo_urzl
+                    {this.props.logo_url
                       ? <img
                           class="media-responsive"
                           src={this.props.logo_url}

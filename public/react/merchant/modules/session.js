@@ -53,6 +53,17 @@ export const logout = () => {
   };
 };
 
+export const enableOrDisableNewui = (id, data) => {
+  return () => {
+    return ajax({
+      url: `/merchant/${id}/tags`,
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    });
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},
