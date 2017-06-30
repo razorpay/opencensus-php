@@ -285,7 +285,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        if (UniqueIdEntity::verifyUniqueId($refundId) === false)
+        if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
             $this->trace->info(
                 [
