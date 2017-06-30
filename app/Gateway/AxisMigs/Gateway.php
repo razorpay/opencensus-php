@@ -318,6 +318,8 @@ class Gateway extends Base\Gateway
             'action' => $this->action,
             'payment' => $input['payment'],
             'refund' => $input['refund']]);
+
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function forceAuthorizeFailed($input)
