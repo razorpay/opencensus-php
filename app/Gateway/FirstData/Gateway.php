@@ -1040,6 +1040,15 @@ class Gateway extends Base\Gateway
             ApiRequestFields::V1_TDATE    => $tdate,
         ];
 
+        // Test merchant
+        //
+        // Passing reference id to see if reversals can
+        // be verified using inquiryTransaction API
+        if ($input['merchant']['id'] === '5ubLZpACTmD8D4')
+        {
+            $body[ApiRequestFields::V1_MERCHANT_TXN_ID] = $input['refund']['id'];
+        }
+
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
