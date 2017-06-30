@@ -15,8 +15,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'pricing';
 
+    const WITH_TRASHED = 'deleted';
+
     protected $appFetchParamRules = array(
         Entity::PLAN_ID         => 'sometimes|string',
+        self::WITH_TRASHED      => 'sometimes|in:0,1',
     );
 
     public function getPricingPlanById($id, $fail = false, $public = false)
@@ -148,6 +151,14 @@ class Repository extends Base\Repository
         else
         {
             return $this->delete($rule);
+        }
+    }
+
+    protected function addQueryParamDeleted($query, $params)
+    {
+        if ($params[self::WITH_TRASHED] === '1')
+        {
+            $query->withTrashed();
         }
     }
 }

@@ -2203,3 +2203,7 @@ ALTER TABLE virtual_accounts
 ALTER TABLE customers
     ADD global_customer_id VARCHAR(14) AFTER id,
     ADD CONSTRAINT customers_global_customer_id_foreign FOREIGN KEY (global_customer_id) REFERENCES customers(id);
+
+ALTER TABLE pricing
+    ADD COLUMN deleted_at INTEGER AFTER updated_at,
+    ADD INDEX pricing_deleted_at_index (deleted_at);
