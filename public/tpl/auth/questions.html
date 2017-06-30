@@ -19,7 +19,7 @@
       {{signup.details.transaction_volume[signup.merchantData.transaction_volume]}}
     </strong> -->
     <i class="fa fa-angle-left question-back-arrow" ng-click="goToSignupStep(1, 1)"></i>
-    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 1)">Back to Expected Monthly Transaction Volume (INR)</span>
+    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 1)">Back to Estimated Monthly Revenue (INR)</span>
   </div>
   <div class="auth-text" ng-if="signup.currentSubStep == 3">
     <!-- Your Role
@@ -70,11 +70,11 @@
         <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="auth-substep">
         <div class="auth-subheading">
-          Expected Monthly Transaction Volume (INR)
+          Estimated Monthly Revenue (INR)
         </div>
 
         <div class="select-one">
@@ -89,7 +89,7 @@
         <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="auth-substep">
         <div class="auth-subheading">
@@ -108,7 +108,7 @@
         <button override-tab ng-disabled="!signup.merchantData.role" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="auth-substep">
         <div class="auth-subheading">
@@ -127,10 +127,10 @@
         <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="auth-substep name-substep">
-        <form class="" name="forms.detailsForm" > 
+        <form class="" name="forms.detailsForm" >
           <label class="form-label details-label" for="contact_name">Your Name</label>
           <input type="text" name="contact_name" id="contact_name" ng-model="signup.merchantData.contact_name"
             class="form-control auth-form-input" placeholder="Full Name" required ng-minlength="4" >
@@ -144,7 +144,7 @@
             Finish
           </button>
         </form>
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
     </div>
     <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
