@@ -1046,7 +1046,11 @@ class Gateway extends Base\Gateway
         // be verified using inquiryTransaction API
         if ($input['merchant']['id'] === '5ubLZpACTmD8D4')
         {
-            $body[ApiRequestFields::V1_MERCHANT_TXN_ID] = $input['refund']['id'];
+            $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+                ApiRequestFields::V1_ORDER_ID        => $input['payment']['id'],
+                ApiRequestFields::V1_MERCHANT_TXN_ID => $input['refund']['id'],
+                ApiRequestFields::V1_TDATE           => $tdate,
+            ];
         }
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
