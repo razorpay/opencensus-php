@@ -290,9 +290,22 @@ class Service extends Base\Service
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
-        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        $merchant = $merchantDetails->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
         {
             $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+
+            //
+            // If the linked account's parent was flagged by admins
+            // linked accounts need to add additional KYC details and documents
+            //
+            if ($merchant->parent->linkedAccountRequiresKyc() === true)
+            {
+                $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
+
+                $validationFields = array_merge($validationFields, $kycValidationFields);
+            }
         }
 
         $totalFields = count($validationFields);
@@ -331,7 +344,7 @@ class Service extends Base\Service
             $response['can_submit'] = true;
         }
 
-        $response['activated'] = (int) $merchantDetails->merchant->isActivated();
+        $response['activated'] = (int) $merchant->isActivated();
 
         return $response;
     }
