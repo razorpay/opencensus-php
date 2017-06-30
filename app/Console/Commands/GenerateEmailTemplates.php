@@ -91,7 +91,7 @@ class GenerateEmailTemplates extends Command
 
             $convertor = new CssToInlineStyles;
 
-            $msg = $convert->convert($emailTemplate, $cssContent);
+            $msg = $convertor->convert($emailTemplate, $cssContent);
 
             // We run decode because some entities '{' get converted by cssInliner
             // TODO: Find a better solution to this
