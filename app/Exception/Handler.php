@@ -185,7 +185,7 @@ class Handler extends ExceptionHandler
             $code = TraceCode::ERROR_EXCEPTION;
         }
 
-        $this->trace->addRecord($level, $code, $this->getExceptionDetails($exception));
+        $this->traceException($exception, $level, $code);
 
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
