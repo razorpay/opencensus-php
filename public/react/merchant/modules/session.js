@@ -53,13 +53,25 @@ export const logout = () => {
   };
 };
 
-export const enableOrDisableNewui = (id, data) => {
+export const enableOrDisableNewui = ({ user, disable = false }) => {
+  let tags = user.tags;
+  let filteredTags = tags.slice();
+  if (disable) {
+    filteredTags = tags.filter(tag => tag.toLowerCase() !== 'newui');
+  } else {
+    filteredTags.push('newui');
+  }
+
   return () => {
     return ajax({
-      url: `/merchant/${id}/tags`,
+      url: `/merchant/${user.current}/tags`,
       method: 'post',
       appendModeInURL: false,
-      data,
+      data: {
+        tags: filteredTags.join(','),
+      },
+    }).then(() => {
+      window.location.reload();
     });
   };
 };

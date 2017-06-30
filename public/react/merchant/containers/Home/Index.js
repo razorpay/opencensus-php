@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import Header from 'rzp/ui/Header';
 import { connect } from 'react-redux';
+import AsyncButton from 'react-async-button';
+import moment from 'moment';
 import * as HomeActions from 'merchant/modules/home';
 import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
-import moment from 'moment';
+import { enableOrDisableNewui } from 'merchant/modules/session';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
@@ -15,6 +17,7 @@ import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
 import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import { defaults } from 'react-chartjs-2';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
@@ -34,6 +37,7 @@ defaults.global.layout = {
 @connect(
   state => {
     return {
+      user: state.session.user,
       mode: state.session.mode,
       analytics: state.home.analytics,
       entity_totals: state.home.entity_totals,
@@ -49,6 +53,7 @@ defaults.global.layout = {
     fetchPayments,
     fetchRefunds,
     fetchSettlements,
+    enableOrDisableNewui,
   }
 )
 export default class HomeContainer extends Component {
@@ -60,6 +65,12 @@ export default class HomeContainer extends Component {
     this.props.fetchRefunds({ count: 5 });
     this.props.fetchSettlements({ count: 5 });
   }
+
+  switchToNewUI = () => {
+    return this.props.enableOrDisableNewui({
+      user: this.props.user,
+    });
+  };
 
   render() {
     let {
@@ -94,6 +105,34 @@ export default class HomeContainer extends Component {
           }}
         >
           <div class="row">
+            <ShowWhen myRole="owner manager admin">
+              {!this.props.user.isNewUIEnabled
+                ? <div class="col-md-12">
+                    <div class="panel new-nav-banner">
+                      <div class="panel-body">
+                        <div class="media">
+                          <div class="media-left" />
+                          <div class="media-body">
+                            <AsyncButton
+                              class="btn btn-large btn-default pull-right"
+                              text="Switch to the new Navigation"
+                              pendingText="Switching..."
+                              onClick={this.switchToNewUI}
+                            />
+                            <div>
+                              <b>Try out the new dashboard navigation!</b>
+                              <div>
+                                We are simplifying the dashboard experience. If you switch, you can come back too if you want to.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                : null}
+            </ShowWhen>
+
             <div class="col-md-12">
               <NewUserOnboardingCard payments={payments.items} />
             </div>

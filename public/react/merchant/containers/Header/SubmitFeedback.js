@@ -48,16 +48,10 @@ export default class SubmitFeedback extends Component {
   };
 
   revert = () => {
-    let user = this.props.user;
-    let tags = user.tags;
-    let filteredTags = tags.filter(tag => tag.toLowerCase() !== 'newui');
-    return this.props
-      .enableOrDisableNewui(user.current, {
-        tags: filteredTags.join(',') || '',
-      })
-      .then(() => {
-        window.location.reload();
-      });
+    return this.props.enableOrDisableNewui({
+      user: this.props.user,
+      disable: true,
+    });
   };
 
   submitAndRevert = props => {
