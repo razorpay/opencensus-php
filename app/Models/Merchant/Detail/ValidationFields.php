@@ -52,7 +52,7 @@ class ValidationFields
     ];
 
     /**
-     * Fields required by all types of marketplace linked accounts
+     * Fields required for all types of marketplace linked accounts
      * for submitting the activation form
      *
      * @var array

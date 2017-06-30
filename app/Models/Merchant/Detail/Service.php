@@ -76,6 +76,12 @@ class Service extends Base\Service
             $this->markSubmitted($merchantDetails);
         }
 
+        if (($this->merchant->isLinkedAccount() === true) and
+            ($merchantDetails->isSubmitted() === true))
+        {
+            (new Merchant\Service)->activate($this->merchant->getId());
+        }
+
         $response = $this->createResponse($merchantDetails);
 
         $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
