@@ -746,6 +746,8 @@ class Service extends Base\Service
         $data = $error = [];
         $this->setApiCredentials();
 
+        $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
+
         try
         {
             $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
