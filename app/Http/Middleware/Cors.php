@@ -19,6 +19,7 @@ class Cors
             'Access-Control-Allow-Origin'       => env('AUTH_SERVICE_URL'),
             'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS',
             'Access-Control-Allow-Credentials'  => 'true',
+            'Access-Control-Allow-Headers'      => 'X-Requested-With'
         ];
 
         //
