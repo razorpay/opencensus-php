@@ -58,28 +58,30 @@ class Logo extends Base\Core
             $imageDetails
         );
 
-        // Moves locally.
-        $logoImage->move($destinationPath, $fileName);
-
-        //
-        // If this permission is not given, rsync cannot delete it, in case delete
-        // in the normal flow fails.
-        //
-        // if (substr(sprintf('%o', fileperms($imageDetails['file_path'])), -3) !== '777')
-        // {
-        //     (new Utility)->callFileOperation('chmod', [$imageDetails['file_path'], 0777]);
-        // }
-
         // Performs validation checks on the logo.
         $merchantValidator->validateLogo($imageDetails);
 
-        // Create local copies of different sizes of the logo.
-        $this->resizeImage($imageDetails);
+        // Moves locally.
+        $logoImage->move($destinationPath, $fileName);
 
-        // Store the logos in AWS
-        $logoUrl = $this->saveToAws($imageDetails);
+        try
+        {
+            // Create local copies of different sizes of the logo.
+            $this->resizeImage($imageDetails);
 
-        $this->deleteLogosLocally($imageDetails);
+            // Store the logos in AWS
+            $logoUrl = $this->saveToAws($imageDetails);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $e->setData($imageDetails);
+
+            throw $e;
+        }
+        finally
+        {
+            $this->deleteLogosLocally($imageDetails);
+        }
 
         return $logoUrl;
     }
