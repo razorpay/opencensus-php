@@ -84,7 +84,6 @@ export default ({
           id="headerNav"
         >
           <ul class="nav navbar-nav navbar-right">
-            <li><a data-tip="Merchant ID" data-place="bottom">{user.id}</a></li>
             <li>
               <ModesDropdown
                 mode={mode}
