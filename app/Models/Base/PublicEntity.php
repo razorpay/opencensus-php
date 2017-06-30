@@ -375,6 +375,14 @@ class PublicEntity extends UniqueIdEntity
         return static::$delimiter;
     }
 
+    public static function stripDefaultSign($id)
+    {
+        //created this function to strip of default public sign's
+        $delimiter = static::$delimiter;
+
+        return last(explode($delimiter, $id));
+    }
+
     /**
      * Returns id with the sign prefix attached.
      */
