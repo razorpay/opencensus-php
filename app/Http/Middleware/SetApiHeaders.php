@@ -5,7 +5,6 @@ use Closure;
 use Gate;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
-use App\Admin\Service as AdminService;
 
 class SetApiHeaders {
 
@@ -37,10 +36,6 @@ class SetApiHeaders {
 	public function handle($request, Closure $next)
 	{
         $domain = \Request::server('SERVER_NAME');
-
-        list($error, $org) = (new AdminService)->getOrg($domain);
-
-        ApiRequest::addHeader('X-Org-Id', $org['id']);
 
         ApiRequest::addHeader('X-Org-Hostname',$domain);
 
