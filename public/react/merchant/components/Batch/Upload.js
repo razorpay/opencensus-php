@@ -1,8 +1,10 @@
 import { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
+@connect(state => state.session)
 export default class BatchUpload extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -23,7 +25,7 @@ export default class BatchUpload extends Component {
       affirmativePendingLabel: 'Submitting...',
       action: () =>
         this.props
-          .uploadBatch(this.state.file)
+          .uploadBatch(this.state.file, this.props.mode)
           .then(() => {
             this.props.showNotification({
               type: 'success',
