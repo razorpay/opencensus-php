@@ -174,7 +174,7 @@ export default class AddWebhook extends Component {
                           component="input"
                           type="checkbox"
                         />
-                        order.paid
+                        subscription.activated
                       </label>
                     </div>
                     <div class="checkbox">
@@ -184,7 +184,7 @@ export default class AddWebhook extends Component {
                           component="input"
                           type="checkbox"
                         />
-                        order.paid
+                        subscription.charged
                       </label>
                     </div>
                     <div class="checkbox">
@@ -194,7 +194,7 @@ export default class AddWebhook extends Component {
                           component="input"
                           type="checkbox"
                         />
-                        order.paid
+                        subscription.overdue
                       </label>
                     </div>
                     <div class="checkbox">
@@ -204,7 +204,7 @@ export default class AddWebhook extends Component {
                           component="input"
                           type="checkbox"
                         />
-                        order.paid
+                        subscription.halted
                       </label>
                     </div>
                   </div>
