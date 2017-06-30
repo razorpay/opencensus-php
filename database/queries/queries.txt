@@ -2155,6 +2155,11 @@ ALTER TABLE payment_analytics
     ADD COLUMN risk_score DECIMAL(11,4) NULL AFTER checkout_id,
     ADD COLUMN risk_engine TINYINT(1) NULL AFTER risk_score;
 
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE subscriptions
+    MODIFY COLUMN customer_id VARCHAR(14) NULL;
+SET FOREIGN_KEY_CHECKS=1;
+
 # Query to add enabled column in IIN
 ALTER TABLE iins
     ADD COLUMN enabled TINYINT(1) DEFAULT 1 AFTER trivia;
@@ -2194,3 +2199,7 @@ ALTER TABLE pricing
 
 ALTER TABLE virtual_accounts
     ADD COLUMN description TEXT AFTER notes;
+
+ALTER TABLE customers
+    ADD global_customer_id VARCHAR(14) AFTER id,
+    ADD CONSTRAINT customers_global_customer_id_foreign FOREIGN KEY (global_customer_id) REFERENCES customers(id);

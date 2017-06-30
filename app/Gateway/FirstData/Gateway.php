@@ -904,6 +904,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::CURRENCY                  => $currencyCode,
             ConnectRequestFields::ORDER_ID                  => $input['payment'][Payment\Entity::ID],
             ConnectRequestFields::INVOICE_NUMBER            => $input['payment'][Payment\Entity::ID],
+            ConnectRequestFields::MERCHANT_TXN_ID           => $input['payment'][Payment\Entity::ID],
             // Card Entity type field is not reliable, and not mandatory
             // ConnectRequestFields::CARD_FUNCTION             => $input['card'][Card\Entity::TYPE],
             ConnectRequestFields::COMMENTS                  => '',
@@ -1017,8 +1018,8 @@ class Gateway extends Base\Gateway
         $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
 
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
-            ApiRequestFields::V1_ORDER_ID     => $input['payment']['id'],
-            ApiRequestFields::V1_REFERENCE_ID => $input['refund']['id'],
+            ApiRequestFields::V1_ORDER_ID        => $input['payment']['id'],
+            ApiRequestFields::V1_MERCHANT_TXN_ID => $input['refund']['id'],
         ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
@@ -1057,7 +1058,7 @@ class Gateway extends Base\Gateway
         {
             $body[ApiRequestFields::V1_PAYMENT] = [
                 ApiRequestFields::V1_HOSTED_DATA_ID  => $input['token']->getId(),
-                ApiRequestFields::V1_HOSTED_STORE_ID => $input['token']->terminal->getGatewayMerchantId(),
+                ApiRequestFields::V1_HOSTED_STORE_ID => $input['gateway_token']->terminal->getGatewayMerchantId(),
             ];
         }
 

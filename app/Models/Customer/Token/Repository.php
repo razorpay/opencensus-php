@@ -20,6 +20,7 @@ class Repository extends Base\Repository
         Entity::CARD_ID         => 'sometimes|alpha_num',
         Entity::BANK            => 'sometimes|alpha',
         Entity::WALLET          => 'sometimes|alpha',
+        Entity::RECURRING       => 'sometimes|in:0,1'
     );
 
     public function getByCustomer($customer)

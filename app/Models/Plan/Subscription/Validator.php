@@ -5,8 +5,10 @@ namespace RZP\Models\Plan\Subscription;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -26,7 +28,7 @@ class Validator extends Base\Validator
     const SECONDS_IN_ONE_YEAR = 31536000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID     => 'required|string|size:19|public_id',
+        Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
         Entity::QUANTITY        => 'required|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
@@ -82,12 +84,20 @@ class Validator extends Base\Validator
 
     public function validateInputBeforeBuild(array $input)
     {
-        if (empty($input[Entity::CUSTOMER_ID]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'customer_id should be sent in the request to create a subscription.',
-                'customer_id');
-        }
+        //
+        // Keeping it commented for now. Will remove this later, once confident.
+        //
+        // If customer_id is not sent in the input, we get the customer and associate
+        // during the auth transaction. We create a global customer.
+        //
+        //
+
+        // if (empty($input[Entity::CUSTOMER_ID]) === true)
+        // {
+        //     throw new Exception\BadRequestValidationFailureException(
+        //         'customer_id should be sent in the request to create a subscription.',
+        //         'customer_id');
+        // }
 
         if (empty($input[Entity::PLAN_ID]) === true)
         {
@@ -95,6 +105,70 @@ class Validator extends Base\Validator
                 'plan_id should be sent in the request to create a subscription.',
                 'plan_id');
         }
+    }
+
+    public function validateSubscriptionCancellable()
+    {
+        $subscription = $this->entity;
+
+        $currentStatus = $subscription->getStatus();
+
+        if (in_array($currentStatus, Status::$nonCancellableStatuses, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Subscription is not cancellable in ' . $currentStatus . ' status.',
+                'status',
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status'          => $currentStatus,
+                ]);
+        }
+    }
+
+    public function validateSubscriptionChargeable(Invoice\Entity $invoice, bool $manual)
+    {
+        $subscription = $this->entity;
+        $valid = true;
+
+        //
+        // This will be empty only when valid is true,
+        // in which case, we don't care about it's value.
+        //
+        $traceCode = '';
+
+        if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
+
+            $valid = false;
+        }
+        //
+        // This happens when two crons picked up the same invoice
+        // and queued the charge on them.
+        // If one of the queue picks it up first, it would have marked the
+        // invoice as paid and now this queue gets executed.
+        //
+        else if ($invoice->isPaid() === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
+
+            $valid = false;
+        }
+        //
+        // When a different cron picked up the invoice for a charge
+        // and got queued, the status could have gone into
+        // halted. If this happened, we should not attempt
+        // to charge the subscription now.
+        //
+        else if (($invoice->getSubscriptionStatus() === Invoice\Status::HALTED) and
+                 ($manual === false))
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_HALTED;
+
+            $valid = false;
+        }
+
+        return [$valid, $traceCode];
     }
 
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)

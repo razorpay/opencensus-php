@@ -93,6 +93,8 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreateSubscriptionWithoutCustomerId()
     {
+        $this->fixtures->plan->create();
+
         $this->startTest();
     }
 

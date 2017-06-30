@@ -401,6 +401,13 @@ final class FactoryData
             'merchant_id'  => '10000000000000'
         ]);
 
+        $factory(\RZP\Models\Customer\GatewayToken\Entity::class, [
+            'id' => '10gatewaytoken',
+            'token_id' => '10000custgcard',
+            'terminal_id' => '1RecurringTerm',
+            'merchant_id' => '10000000000000'
+        ]);
+
         $factory(\RZP\Models\Merchant\Credits\Entity::class, [
             'id'            => $faker->uniqueid,
             'merchant_id'   => '10000000000000',

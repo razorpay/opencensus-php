@@ -44,6 +44,43 @@ class Core extends Base\Core
         return $this->create($input, $this->getSharedAccount(), $failOnDuplicate);
     }
 
+    /**
+     * @param Entity          $globalCustomer
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function createLocalCustomerFromGlobal(Entity $globalCustomer, Merchant\Entity $merchant)
+    {
+        if ($globalCustomer->isGlobal() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_DUPLICATE_NOT_GLOBAL,
+                null,
+                $globalCustomer->toArray()
+            );
+        }
+
+        $createInput = [
+            Entity::NAME    => $globalCustomer->getName(),
+            Entity::EMAIL   => $globalCustomer->getEmail(),
+            Entity::CONTACT => $globalCustomer->getContact(),
+        ];
+
+        return $this->create($createInput, $merchant, false);
+    }
+
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param bool            $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
     protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         $customer = (new Customer\Entity)->build($input);
@@ -283,6 +320,14 @@ class Core extends Base\Core
         $customer = null;
         $appToken = null;
 
+        //
+        // If customer_id is present, it means it's a local customer.
+        //
+        // If app_token is present, it would always be a global customer.
+        //
+        // If both are present, we always give preference to the local customer.
+        //
+
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
@@ -292,8 +337,6 @@ class Core extends Base\Core
         else if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
             $appTokenId = $input[Payment\Entity::APP_TOKEN];
-
-            Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
             $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
@@ -308,6 +351,11 @@ class Core extends Base\Core
         if ($customerId !== null)
         {
             $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
+
+            if ($customer->hasGlobalCustomer() === true)
+            {
+                list($customer, $appToken) = $this->getCustomerAndAppForGlobal($customer, $merchant, $input);
+            }
         }
 
         $this->trace->info(
@@ -318,6 +366,70 @@ class Core extends Base\Core
             ]);
 
         return array($customer, $appToken);
+    }
+
+    protected function getCustomerAndAppForGlobal(Customer\Entity $customer, Merchant\Entity $merchant, array $input)
+    {
+        //
+        // Even in case of global customer flow, we
+        // would be passing local customer only to
+        // this function. But, we need to finally return
+        // back the global customer for further processing.
+        //
+        // For global flow, we would need to get both app_token and
+        // global_customer which is associated with the local_customer.
+        //
+
+        $customer = $customer->globalCustomer;
+
+        $ba = $this->app['basicauth'];
+
+        if ($ba->isPrivilegeAuth() === true)
+        {
+            // In case of internal auth/ crons,
+            // there will not be any app_token.
+            return [$customer, null];
+        }
+
+        if (empty($input[Payment\Entity::APP_TOKEN]) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                null,
+                [
+                    'customer_id' => $customer->getId()
+                ]);
+        }
+
+        $appToken = (new AppToken\Core)->getAppByAppTokenId(
+            $input[Payment\Entity::APP_TOKEN], $merchant);
+
+        if ($appToken === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_APP_TOKEN_NOT_GLOBAL,
+                null,
+                [
+                    'customer_id' => $customer->getId(),
+                    'app_token_merchant_id' => $appToken->getMerchantId()
+                ]);
+        }
+
+        $appTokenCustomerId = $appToken->getCustomerId();
+        $customerId = $customer->getId();
+
+        if ($appTokenCustomerId !== $customerId)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH,
+                null,
+                [
+                    'app_token_customer_id' => $appTokenCustomerId,
+                    'expected_customer_id' => $customerId()
+                ]);
+        }
+
+        return [$customer, $appToken];
     }
 
     public function putAppTokenInSession($appToken)

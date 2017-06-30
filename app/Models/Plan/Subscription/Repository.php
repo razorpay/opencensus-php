@@ -15,7 +15,7 @@ class Repository extends Base\Repository
     public function getSubscriptionsToCharge()
     {
         $subscriptions = $this->getBaseSubscriptionsQuery()
-                              ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED, Status::HALTED])
+                              ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
                               ->whereNull(Entity::ENDED_AT)
                               ->where(function($query)
                               {

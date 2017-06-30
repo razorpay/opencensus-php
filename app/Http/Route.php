@@ -172,7 +172,6 @@ final class Route
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
-        'virtual_account_delete'                  => ['delete',   'virtual_accounts/{id}',                          'VirtualAccountController@delete'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'          => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
@@ -378,6 +377,7 @@ final class Route
         'subscriptions_retry'                     => ['post',     'subscriptions/retry',                            'SubscriptionController@postRetrySubscriptions'                     ],
         'subscriptions_expire'                    => ['post',     'subscriptions/expire',                           'SubscriptionController@postExpireSubscriptions'                    ],
         'subscription_manual_retry'               => ['post',     'invoices/{invoice_id}/charge',                   'SubscriptionController@postChargeSubscriptionInvoiceManually'      ],
+        'subscription_cancel'                     => ['post',     'subscriptions/{subscription_id}/cancel',         'SubscriptionController@postCancelSubscription'                     ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
@@ -566,6 +566,7 @@ final class Route
         'invitation_edit'                         => ['patch',    'invitations/{id}',                               'InvitationController@edit'                                         ],
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
+        'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
     ];
 
     public static $public = [
@@ -719,6 +720,7 @@ final class Route
         'subscription_create',
         'subscription_fetch',
         'subscription_fetch_multiple',
+        'subscription_cancel',
         'p2p_fetch_private',
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
@@ -744,7 +746,6 @@ final class Route
         'tax_group_delete',
         'virtual_account_create',
         'virtual_account_edit',
-        'virtual_account_delete',
         'virtual_account_fetch',
         'virtual_account_fetch_multiple',
         'payment_bank_transfer_fetch',
@@ -948,9 +949,9 @@ final class Route
         'refund_verify_failed',
         'merchants_update_bank_account',
         'merchant_fetch_users',
-        'reports_transaction_dsp',
         'invitation_fetch_by_token',
         'invitation_action',
+        'migrate_tokens_to_gateway_tokens',
     ];
 
     public static $proxy = [
@@ -967,6 +968,7 @@ final class Route
         'webhook_fetch_multiple',
         'balance_fetch',
         'reports_transaction_broking',
+        'reports_transaction_dsp',
         'reports_monthly_invoice',
         'reports_public_entity',
         'reports_public_entity_file',
@@ -1343,6 +1345,7 @@ final class Route
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
+        'reports_transaction_dsp'           => [Feature::DSP_REPORT],
         'payment_payout'                    => [Feature::PAYOUT],
         'payout_create'                     => [Feature::PAYOUT],
         'payout_fetch_by_id'                => [Feature::PAYOUT],
@@ -1364,7 +1367,6 @@ final class Route
         'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
         'virtual_account_create'            => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'              => [Feature::VIRTUAL_ACCOUNTS],
-        'virtual_account_delete'            => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'    => [Feature::VIRTUAL_ACCOUNTS],

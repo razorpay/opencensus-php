@@ -127,6 +127,7 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_AIRTELMONEY,
     ];
 
     public static $channels = [
@@ -369,7 +370,6 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
-        self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
@@ -379,12 +379,14 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [
-        self::WALLET_OPENWALLET
+        self::WALLET_OPENWALLET,
+        self::NETBANKING_RBL,
     ];
 
     /**

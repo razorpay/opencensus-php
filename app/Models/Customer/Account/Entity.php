@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const EMAIL                 = 'email';
     const MERCHANT_ID           = 'merchant_id';
+    const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const ACTIVE                = 'active';
     const NOTES                 = 'notes';
     const CREATED_AT            = 'created_at';
@@ -58,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::SHIPPING_ADDRESS,
         self::MERCHANT_ID,
+        self::GLOBAL_CUSTOMER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -79,8 +81,9 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::ACTIVE    => true,
-        self::NOTES     => [],
+        self::ACTIVE                => true,
+        self::NOTES                 => [],
+        self::GLOBAL_CUSTOMER_ID    => null,
     );
 
     protected $appends = array(
@@ -96,6 +99,11 @@ class Entity extends Base\PublicEntity
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+    }
+
+    public function isGlobal()
+    {
+        return ($this->getMerchantId() === Account::SHARED_ACCOUNT);
     }
 
     public function invoices()
@@ -123,9 +131,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
-    public function transfers()
+    public function hasGlobalCustomer(): bool
     {
-        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
+        return $this->isAttributeNotNull(self::GLOBAL_CUSTOMER_ID);
     }
 
     // ----------------------------------- END GETTERS -----------------------------------
@@ -197,6 +205,16 @@ class Entity extends Base\PublicEntity
     public function bank_accounts()
     {
         return $this->hasMany('RZP\Models\BankAccount\Entity', 'entity_id');
+    }
+
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
+    }
+
+    public function globalCustomer()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID, self::ID);
     }
 
     // ----------------------------------- END RELATIONS -----------------------------------

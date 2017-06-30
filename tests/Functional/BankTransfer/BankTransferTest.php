@@ -234,7 +234,9 @@ class BankTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        return $response['bank_account'];
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
     }
 
     protected function processBankTransfer($accountNumber, $ifsc, $utr = null)

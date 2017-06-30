@@ -3,6 +3,8 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
@@ -663,6 +665,77 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
     }
 
+    public function testIntrastateGstForCard()
+    {
+        $setDate = Carbon::parse('2 July 2017', 'Asia/Kolkata');
+
+        Carbon::setTestNow($setDate);
+
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
+
+        // create merchant
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantDetails = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'gstin' => '29kjsngjk2139',
+            ]);
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            // create payment
+            $amount = $data['amount'];
+
+            $paymentArray = $this->getDefaultPaymentEntityArray();
+
+            $paymentArray['merchant_id'] = $merchant->getId();
+
+            $paymentArray['amount'] = $amount;
+
+            $paymentArray[Payment\Entity::METHOD] = Payment\Method::CARD;
+
+            $payment = new Payment\Entity($paymentArray);
+
+            $payment->card = (new Card\Entity)->build($this->card);
+
+            $payment->card->setNetwork('Visa');
+
+            $payment->card->setType($data['card_type']);
+
+            $payment->setBaseAmount($amount);
+
+            list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+            $this->assertFeesAndServiceTax(
+                $fee, $serviceTax, $feesSplit->toArray(),
+                $data['fee'], $data['service_tax'], $data['fee_components']);
+        }
+
+        Carbon::setTestNow();
+    }
+
+    public function testGstFeeWithMaxFeeForCard()
+    {
+        $setDate = Carbon::parse('2 July 2017', 'Asia/Kolkata');
+
+        Carbon::setTestNow($setDate);
+
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            $this->runFeeTestWithMaxFeeForCard($data['amount'],
+                                                $data['card_type'],
+                                                $data['fee'],
+                                                $data['service_tax'],
+                                                $data['fee_components']);
+        }
+
+        Carbon::setTestNow();
+    }
+
     public function testFeeWithMaxFeeForCard()
     {
         $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
@@ -690,18 +763,18 @@ class MerchantFeeTest extends TestCase
         }
     }
 
-    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $fee, $serviceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $expectedFee, $expectedServiceTax, $feeComponents)
     {
         list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
 
-        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $fee, $serviceTax, $feeComponents);
+        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $expectedFee, $expectedServiceTax, $feeComponents);
     }
 
-    protected function runFeeTestWithMaxFeeForWallet($amount, $fee, $serviceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForWallet($amount, $expectedFee, $expectedServiceTax, $feeComponents)
     {
         list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
 
-        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $fee, $serviceTax, $feeComponents);
+        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $expectedFee, $expectedServiceTax, $feeComponents);
     }
 
     protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
@@ -846,9 +919,9 @@ class MerchantFeeTest extends TestCase
 
     protected function assertFeesAndServiceTax($fee, $serviceTax, $feeSplit, $expectedFee, $expectedServiceTax, $expectedFeeSplit)
     {
-        $this->assertEquals($fee, $expectedFee);
+        $this->assertEquals($expectedFee, $fee);
 
-        $this->assertEquals($serviceTax, $expectedServiceTax);
+        $this->assertEquals($expectedServiceTax, $serviceTax);
 
         foreach ($feeSplit as $feeSplitComponent)
         {

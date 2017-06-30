@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Base\RepositoryFetch;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
@@ -89,20 +90,26 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->esDao = new Base\EsDao;
 
-        // If entity name is set as part of constructor arg, get corresponding
-        // index name from config and assign it to instance var and also set the
-        // same for es dao object.
-        if ($entity !== null)
-        {
-            $this->indexName = $app['config']->get(
-                sprintf('database.es_%s.%s', $entity, $app['rzp.mode']));
+        // If entity name is set as part of constructor argument,
+        // get corresponding index name from configuration and assign
+        // it to instance var and also set the same for ES DAO object.
 
-            // TODO: Condition can be remove later, handles old flow.
-            if ($this->indexName !== null)
-            {
-                $this->esDao->setIndexNameByValue($this->indexName);
-            }
+        if (($entity !== null) and
+            (RepositoryFetch::isEntityInOldEsFlow($entity) === false))
+        {
+            $prefix = $app['config']->get('database.es_entity_index_prefix');
+
+            $indexName = $prefix . $entity . '_' . $app['rzp.mode'];
+
+            $this->setIndexNameByValue($indexName);
         }
+    }
+
+    public function setIndexNameByValue(string $indexName)
+    {
+        $this->indexName = $indexName;
+
+        $this->esDao->setIndexNameByValue($indexName);
     }
 
     public function getFields(): array
@@ -345,7 +352,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         if ($error === true)
         {
-            $this->trace->debug(
+            $this->trace->error(
                 TraceCode::ES_BULK_UPDATE_FAILED,
                 [
                     'params' => $params,

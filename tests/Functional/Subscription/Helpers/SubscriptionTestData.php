@@ -253,7 +253,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => null,
                 'start_at' => null,
@@ -288,7 +288,7 @@ return [
                 'current_end'     => null,
                 'ended_at'        => null,
                 'quantity'        => 1,
-                'token_id'        => null,
+                // 'token_id'        => null,
                 'notes'           => [],
                 'charge_at'       => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at'        => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -309,20 +309,11 @@ return [
                 'plan_id'       => 'plan_1000000000plan',
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
             ],
         ],
         'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'customer_id should be sent in the request to create a subscription.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'content' => []
         ],
     ],
 
@@ -372,7 +363,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => null,
                 'start_at' => null,
@@ -407,7 +398,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -442,7 +433,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -484,7 +475,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => null,
                 'start_at' => null,
@@ -527,7 +518,7 @@ return [
                 'current_end' => null,
                 'ended_at' => null,
                 'quantity' => 1,
-                'token_id' => null,
+                // 'token_id' => null,
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -617,7 +608,7 @@ return [
                 'current_end'   => null,
                 'ended_at'      => null,
                 'quantity'      => 1,
-                'token_id'      => null,
+                // 'token_id'      => null,
                 'notes'         => [],
                 'charge_at'     => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -649,7 +640,7 @@ return [
                 'current_end'   => null,
                 'ended_at'      => null,
                 'quantity'      => 1,
-                'token_id'      => null,
+                // 'token_id'      => null,
                 'notes'         => [],
                 'charge_at'     => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
@@ -789,7 +780,7 @@ return [
                 // 'id'               => 'sub_7oKmlxFlg8HlDN',
                 'plan_id'          => 'plan_1000000000plan',
                 'customer_id'      => 'cust_100000customer',
-                'token_id'         => null,
+                // 'token_id'         => null,
                 'status'           => 'created',
                 'quantity'         => 1,
                 'total_count'      => 6,
@@ -829,6 +820,36 @@ return [
                 'subscription' => [
                 ],
             ],
+        ],
+    ],
+
+    'makePreferencesCall' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testSubscriptionCancel' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'subscription',
+                'plan_id' => 'plan_1000000000plan',
+                'customer_id' => 'cust_100000customer',
+                'status' => 'cancelled',
+                'total_count' => 6,
+                'paid_count' => 1,
+            ]
         ],
     ],
 
