@@ -197,6 +197,24 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Batches [Used for Refunds, Payment Links]
+        'batch_fetch_multiple'              => [
+            'url'       => 'batches',
+            'routeName' => 'batch_fetch_multiple'
+        ],
+        'batch_fetch_by_id'                 => [
+            'url'       => 'batches/{id}',
+            'routeName' => 'batch_fetch_single'
+        ],
+        'batch_download_file'               => [
+            'url'       => 'batches/{id}/download',
+            'routeName' => 'batch_download'
+        ],
+        'batch_create'                      => [
+            'url'       => 'batches',
+            'routeName' => 'batch_upload'
+        ],
+
         // Invoices
         'invoice_fetch_multiple'            => [
             'url'       => 'invoices',
