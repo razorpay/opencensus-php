@@ -113,7 +113,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $orderId = $row[self::COLUMN_ORDER_ID];
 
-            $gatewayPayment = $this->repo->cybersouce->findSuccessfulTxnByActionAndRef(
+            $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
                                                             Cybersource\Action::CAPTURE, $orderId);
 
             if ($gatewayPayment !== null)

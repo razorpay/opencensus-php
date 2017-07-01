@@ -76,7 +76,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         {
             $orderId = $row[self::COLUMN_ORDER_ID];
 
-            $gatewayRefund = $this->repo->cybersouce->findSuccessfulTxnByActionAndRef(
+            $gatewayRefund = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
                                                             Cybersource\Action::REFUND, $orderId);
 
             if ($gatewayRefund !== null)
@@ -146,7 +146,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             // the authorize row in the Cybersource entity, as opposed to the
             // captured row for order_ids in payment MIS file.
             //
-            $gatewayPayment = $this->repo->cybersouce->findSuccessfulTxnByActionAndRef(
+            $gatewayPayment = $this->repo->cybersource->findsSuccessfulTxnByActionAndRef(
                                                             Cybersource\Action::AUTHORIZE, $merchantRef);
 
             if ($gatewayPayment !== null)

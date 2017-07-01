@@ -73,7 +73,7 @@ class Reconciliate
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
-        $this->messenger = new Messenger();
+        $this->messenger = new Messenger;
     }
 
     /**
