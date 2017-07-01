@@ -81,9 +81,15 @@ class OrderTest extends TestCase
         $createdOrders = $this->fixtures->times(2)->create('order');
         $createdOrders = array_reverse($createdOrders);
         $collection = new \RZP\Models\Base\PublicCollection($createdOrders);
-        $array = $collection->toArrayPublic();
 
-        $this->testData[__FUNCTION__]['response']['content'] = $array;
+        $orders = $collection->toArrayPublic();
+
+        foreach ($orders['items'] as $key => $order)
+        {
+            $orders['items'][$key]['notes'] = $order['notes']->toArray();
+        }
+
+        $this->testData[__FUNCTION__]['response']['content'] = $orders;
 
         $this->startTest();
     }

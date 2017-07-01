@@ -402,6 +402,8 @@ class InvoiceTest extends TestCase
                     $this->callback(
                         function ($actual) use ($expected)
                         {
+                            $actual['body'][1]['notes'] = (array) $actual['body'][1]['notes'];
+
                             $this->assertArraySelectiveEquals($expected, $actual);
 
                             $this->assertNotEmpty($actual['body'][0]['index']['_id']);
@@ -577,6 +579,8 @@ class InvoiceTest extends TestCase
                     $this->callback(
                         function ($actual) use ($expected)
                         {
+                            $actual['body'][1]['notes'] = (array) $actual['body'][1]['notes'];
+
                             $this->assertArraySelectiveEquals($expected, $actual);
 
                             return true;
