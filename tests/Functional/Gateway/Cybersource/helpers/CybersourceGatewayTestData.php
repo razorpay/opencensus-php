@@ -282,7 +282,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class' => RZP\Exception\ServerErrorException::class,
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         ],
     ],

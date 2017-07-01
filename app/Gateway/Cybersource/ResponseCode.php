@@ -166,15 +166,4 @@ class ResponseCode
 
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
-
-    public static function isFatalError($code)
-    {
-        if ((isset(self::$errorCodeMap[$code]) === true) and
-            (self::$errorCodeMap[$code] === ErrorCode::SERVER_ERROR_INVALID_ARGUMENT))
-        {
-            return true;
-        }
-
-        return false;
-    }
 }
