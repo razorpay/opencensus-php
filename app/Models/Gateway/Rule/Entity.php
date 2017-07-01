@@ -24,7 +24,6 @@ class Entity extends Base\PublicEntity
     const GATEWAY_ACQUIRER = 'gateway_acquirer';
     const NETWORK_CATEGORY = 'network_category';
     const TERMINAL_TYPE    = 'terminal_type';
-    const INTERNATIONAL    = 'international';
 
     // Payment properties
     const METHOD           = 'method';
@@ -34,7 +33,11 @@ class Entity extends Base\PublicEntity
     const MIN_AMOUNT       = 'min_amount';
     const MAX_AMOUNT       = 'max_amount';
     const IINS             = 'iins';
+
+    // Terminal and payment properties both
     const EMI_DURATION     = 'emi_duration';
+    const INTERNATIONAL    = 'international';
+    const CURRENCY         = 'currency';
 
     // Merchant properties
     const CATEGORY2        = 'category2';
@@ -59,7 +62,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::NETWORK_CATEGORY,
-        self::TERMINAL_TYPE
+        self::TERMINAL_TYPE,
+        self::EMI_DURATION,
+        self::CURRENCY,
     ];
 
     /**
@@ -79,6 +84,8 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_TYPE,
         self::INTERNATIONAL,
         self::IINS,
+        self::EMI_DURATION,
+        self::CURRENCY,
     ];
 
     protected $entity = 'gateway_rule';
@@ -113,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::IINS,
         self::EMI_DURATION,
+        self::CURRENCY,
     ];
 
     protected $visible = [
@@ -136,6 +144,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::IINS,
         self::EMI_DURATION,
+        self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
@@ -216,6 +225,16 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::TYPE) === self::SORTER);
     }
 
+    public function shouldSelectTerminal(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
+    }
+
+    public function shouldRejectTerminal(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
+    }
+
     public function isMethodCardOrEmi(): bool
     {
         return (in_array($this->getMethod(), [Method::CARD, Method::EMI], true) === true);
@@ -224,6 +243,16 @@ class Entity extends Base\PublicEntity
     public function getIins()
     {
         return $this->getAttribute(self::IINS);
+    }
+
+    public function getEmiDuration()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     //----------------- Public Setters------------------------------------------

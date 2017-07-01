@@ -18,6 +18,7 @@ class Repository extends Base\Repository
         Entity::METHOD_TYPE,
         Entity::NETWORK,
         Entity::ISSUER,
+        Entity::CURRENCY,
         Entity::MIN_AMOUNT,
         Entity::MAX_AMOUNT,
         Entity::EMI_DURATION,
@@ -62,6 +63,7 @@ class Repository extends Base\Repository
         Entity::MIN_AMOUNT       => 'sometimes|integer',
         Entity::MAX_AMOUNT       => 'sometimes|integer',
         Entity::EMI_DURATION     => 'sometimes|integer',
+        Entity::CURRENCY         => 'sometimes|string',
         Entity::CATEGORY2        => 'sometimes|string',
     ];
 

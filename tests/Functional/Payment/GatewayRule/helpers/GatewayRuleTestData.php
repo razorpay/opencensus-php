@@ -17,6 +17,7 @@ return [
                     'method'           => 'card',
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
+                    'currency'         => 'INR',
                     'international'    => 0,
                     'gateway_acquirer' => 'axis',
                     'load'             => 50
@@ -32,6 +33,7 @@ return [
                     'method'           => 'card',
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
+                    'currency'         => 'INR',
                     'international'    => false,
                     'gateway_acquirer' => 'axis',
                     'min_amount'       => 0,

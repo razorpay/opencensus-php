@@ -72,6 +72,9 @@ class CreateGatewayRules extends Migration
             $table->text(Rule::IINS)
                   ->nullable();
 
+            $table->string(Rule::CURRENCY, 3)
+                  ->nullable();
+
             $table->tinyInteger(Rule::EMI_DURATION)
                   ->nullable();
 

@@ -191,6 +191,7 @@ class Core extends Base\Core
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
             Entity::CATEGORY2     => $merchant->getCategory2(),
+            Entity::CURRENCY      => $payment->getCurrency(),
             // Here min_amount and max_amount are both set to payment_amount
             // as the final query will be min_amount <= payment_amount <= max_amount
             Entity::MIN_AMOUNT    => $payment->getAmount(),

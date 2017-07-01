@@ -35,6 +35,7 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
         Entity::EMI_DURATION     => 'sometimes_if:method,emi|integer|in:3,6,9,12,18,24',
         Entity::IINS             => 'sometimes|filled|array',
+        Entity::CURRENCY         => 'sometimes|filled|in:INR,USD'
     ];
 
     protected static $editRules = [
