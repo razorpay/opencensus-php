@@ -109,7 +109,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(0, $subscription['auth_attempts']);
         $this->assertEquals($subscription['start_at'], $subscription['current_start']);
         $expectedEndAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-                               ->addMonths(2)
+                               ->addMonthsNoOverflow(2)
                                ->startOfDay()
                                ->timestamp;
         $this->assertEquals($expectedEndAt, $subscription['current_end']);
@@ -316,7 +316,9 @@ class SubscriptionChargeTest extends TestCase
         $task = $this->getLastEntity('schedule_task', true);
         // First success, then fail
         $expectedNextRun = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-                                 ->addMonths(2)->addDays(1)->timestamp;
+                                 ->addMonthsNoOverflow(2)
+                                 ->addDays(1)
+                                 ->timestamp;
         $this->assertEquals($expectedNextRun, $task['next_run_at']);
 
         $this->clearMock();
@@ -489,7 +491,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('active', $subscription['status']);
         $this->assertNull($subscription['error_status']);
         $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-                                  ->addMonths(2)
+                                  ->addMonthsNoOverflow(2)
                                   ->startOfDay()
                                   ->timestamp;
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
@@ -556,7 +558,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
         $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-                                  ->addMonths(2)
+                                  ->addMonthsNoOverflow(2)
                                   ->startOfDay()
                                   ->timestamp;
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);

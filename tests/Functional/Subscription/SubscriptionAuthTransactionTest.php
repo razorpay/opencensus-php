@@ -76,8 +76,6 @@ class SubscriptionAuthTransactionTest extends TestCase
 
     public function testSubscriptionAuthTxnNormalWithoutStartAt()
     {
-        $this->markTestSkipped();
-
         $subscription = $this->createSubscription(false);
 
         $oldScheduleTask = $this->getLastEntity('schedule_task', true);
@@ -110,7 +108,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
         $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-                                 ->addMonths(2)
+                                 ->addMonthsNoOverflow(2)
                                  ->startOfDay()
                                  ->timestamp;
         $this->assertEquals($expectedStartAt, $subscription['charge_at']);
@@ -207,8 +205,6 @@ class SubscriptionAuthTransactionTest extends TestCase
 
     public function testSubscriptionAuthTxnAutoCaptureAddonWithoutStartAt()
     {
-        $this->markTestSkipped();
-
         $subscription = $this->createSubscription(false, [], [], true);
 
         $oldScheduleTask = $this->getLastEntity('schedule_task', true);
@@ -252,9 +248,9 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
         $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-            ->addMonths(2)
-            ->startOfDay()
-            ->timestamp;
+                                ->addMonthsNoOverflow(2)
+                                ->startOfDay()
+                                ->timestamp;
         $this->assertEquals($expectedStartAt, $subscription['charge_at']);
         $this->assertEquals($payment['created_at'], $subscription['current_start']);
         $this->assertNotNull($subscription['current_end']);
