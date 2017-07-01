@@ -19,6 +19,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Subscription;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Entity extends Base\PublicEntity
 {
@@ -820,13 +821,7 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
-        if (empty($acquirerData) === true)
-        {
-            // Show the field as an empty object on json_encoded response
-            $acquirerData = new \stdClass;
-        }
-
-        return $acquirerData;
+        return (new Dictionary($acquirerData));
     }
 
     protected function getOtpAttemptsAttribute()

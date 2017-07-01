@@ -5,6 +5,7 @@ namespace RZP\Models\Base\Traits;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Notes;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 trait NotesTrait
 {
@@ -19,13 +20,9 @@ trait NotesTrait
             throw new Exception\BadRequestException($code, self::NOTES);
         }
 
-        if ($notes === null)
-        {
-            $notes = [];
-        }
+        $notes = $notes ?: [];
 
-        $notesObj = new Notes($notes);
-        $this->attributes[self::NOTES] = $notesObj->toJson();
+        $this->attributes[self::NOTES] = (new Dictionary($notes))->toJson();
     }
 
     public function setNotes(array $notes)
@@ -46,10 +43,10 @@ trait NotesTrait
 
         if ($notesArray === '')
         {
-            return new Notes();
+            $notesArray = [];
         }
 
-        return new Notes($notesArray);
+        return new Dictionary($notesArray);
     }
 
     /**
