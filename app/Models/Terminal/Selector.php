@@ -72,7 +72,7 @@ class Selector extends Base\Core
 
         if (empty($sortedTerminals) === true)
         {
-            if ($this->isTestMode() === true)
+            if (($this->isTestMode() === true) or ($this->app->environment('testing') === true))
             {
                 // The current list of terminals which were retrieved earlier does
                 // not contain the sharp terminal and hence, making a call to DB.
@@ -97,7 +97,7 @@ class Selector extends Base\Core
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant(
-                                        $this->merchant->getId());
+                                        $this->input['merchant']->getId());
 
         return $merchantTerminals->all();
     }
@@ -181,7 +181,7 @@ class Selector extends Base\Core
 
         $merchantSpecificRules = $rules->filter(function ($rule)
         {
-            return ($rule->getMerchantId() === $this->merchant->getId());
+            return ($rule->getMerchantId() === $this->input['merchant']->getId());
         });
 
         if ($merchantSpecificRules->isNotEmpty() === true)

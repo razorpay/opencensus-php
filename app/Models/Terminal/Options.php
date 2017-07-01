@@ -18,15 +18,11 @@ class Options
 
     protected $skippedFilters = [];
 
-    protected static $skippedFiltersForTest = [];
-
     public function __construct()
     {
         $this->setChance();
 
         $this->setMultiple();
-
-        $this->setSkippedFilters();
     }
 
     public function setMultiple($multiple = true)
@@ -62,12 +58,9 @@ class Options
         return $this->skippedFilters;
     }
 
-    public function setSkippedFilters()
+    public function setSkippedFilters(array $filters)
     {
-        if (empty(self::$skippedFiltersForTest) === false)
-        {
-            $this->skippedFilters = self::$skippedFiltersForTest;
-        }
+        $this->skippedFilters = $filters;
     }
 
     public function setFailedTerminals(array $exclude)
@@ -83,11 +76,6 @@ class Options
     public static function setTestChance($testChance = 0)
     {
         static::$testChance = $testChance;
-    }
-
-    public static function setSkippedFiltersForTest(array $skippedFiltersForTest = [])
-    {
-        static::$skippedFiltersForTest = $skippedFiltersForTest;
     }
 
     public static function getTestChance()

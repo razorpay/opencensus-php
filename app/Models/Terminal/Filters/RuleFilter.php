@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use RZP\Models\Base;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Terminal;
@@ -12,7 +13,8 @@ class RuleFilter extends Terminal\Filter
     {
         $merchant = $this->input['merchant'];
 
-        if ($merchant->isFeatureEnabled(Feature::RULE_FILTER) === false)
+        if (($this->rules->isEmpty() === true) or
+            ($merchant->isFeatureEnabled(Feature::RULE_FILTER) === false))
         {
             return $terminals;
         }
@@ -29,7 +31,9 @@ class RuleFilter extends Terminal\Filter
 
     protected function filterTerminalsForGroup(array & $terminals, Base\PublicCollection $rules)
     {
-        $filteredTerminals = [];
+        $selectedTerminals = [];
+
+        $rejectedTerminals = [];
 
         foreach ($terminals as $terminal)
         {
@@ -37,17 +41,37 @@ class RuleFilter extends Terminal\Filter
             {
                 $match = $rule->matches($terminal);
 
-                if (($rule->isSelectFilter() === true) and ($match === true))
+                if ($match === true)
                 {
-                    $filteredTerminals[] = $terminal;
-                }
-                else if (($rule->isRejectFilter() === true) and ($match === false))
-                {
-                    $filteredTerminals[] = $terminal;
+                    if ($rule->shouldSelectTerminal() === true)
+                    {
+                        $selectedTerminals[] = $terminal;
+                    }
+                    else if ($rule->shouldRejectTerminal() === true)
+                    {
+                        $rejectedTerminals[] = $terminal;
+                    }
                 }
             }
         }
 
-        $terminals = $filteredTerminals;
+        $isSelectRulePresent = $this->isSelectRulePresent($rules);
+
+        $filteredTerminals = $selectedTerminals;
+
+        if ($isSelectRulePresent === false)
+        {
+            $filteredTerminals = array_diff($terminals, $rejectedTerminals);
+        }
+
+        $terminals = array_values(array_unique($filteredTerminals));
+    }
+
+    protected function isSelectRulePresent(Base\PublicCollection $rules)
+    {
+        return $rules->contains(function ($rule)
+        {
+            return ($rule->getAttribute(Rule\Entity::FILTER_TYPE) === Rule\Entity::SELECT);
+        });
     }
 }

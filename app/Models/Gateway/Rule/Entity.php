@@ -85,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::SHARED_TERMINAL,
         self::INTERNATIONAL,
+        self::EMI_DURATION,
         self::IINS,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -247,7 +248,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
     }
 
-    public function isRejectFilter(): bool
+    public function shouldRejectTerminal(): bool
     {
         return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
     }
