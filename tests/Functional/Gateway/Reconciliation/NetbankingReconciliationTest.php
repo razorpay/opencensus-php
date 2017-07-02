@@ -84,6 +84,27 @@ class NetbankingReconcilationTest extends TestCase
             });
     }
 
+    public function testRblFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_rbl';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'RATN');
+
+        $fileContents = $this->generateFile('rbl', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingRbl', $uploadedFile);
+
+        $paymentEnttiy = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEnttiy['status'], 'authorized');
+    }
+
     protected function reconcile($gateway, $uploadedFile)
     {
         $input = [

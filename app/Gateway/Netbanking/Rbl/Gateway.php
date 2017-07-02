@@ -90,6 +90,12 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function forceAuthorizeFailed($input)
+    {
+        //As it is coming from recon we always return it as true
+        return true;
+    }
+
     /**
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.

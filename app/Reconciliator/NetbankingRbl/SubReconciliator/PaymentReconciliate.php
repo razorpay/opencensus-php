@@ -6,6 +6,8 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
+use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\Service as PaymentService;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -16,6 +18,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         parent::__construct();
 
         $this->netbankingRepo = $this->repo->netbanking;
+    }
+
+
+    protected function tryAuthorizeFailedPayment($row)
+    {
+        if ((empty($row[ClaimFields::PGI_STATUS]) === true) ||
+            ($row[ClaimFields::PGI_STATUS] !== 'Success'))
+        {
+            return false;
+        }
+
+        return $this->handleVerifySuccess($row);
     }
 
     protected function getPaymentId($row)
@@ -40,11 +54,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        $status = [Status::SUCCESS];
-
-        return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
-                                                                     Action::AUTHORIZE,
-                                                                     $status);
+        return $this->netbankingRepo->findByPaymentIdAndActionOrFail($paymentId,
+                                                                     Action::AUTHORIZE);
     }
 
     protected function getNbCustomerDetails($row)
@@ -90,5 +101,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function shouldAttemptForceAuthorizeFailed()
+    {
+        return true;
     }
 }

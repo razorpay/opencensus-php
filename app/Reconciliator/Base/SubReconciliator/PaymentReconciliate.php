@@ -248,7 +248,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function handleVerifySuccess($row)
     {
-        $authorizeSuccess = $this->forceAuthorizeFailed($row);
+        $authorizeSuccess = false;
+
+        if ($this->shouldAttemptForceAuthorizeFailed() === true)
+        {
+            $authorizeSuccess = $this->forceAuthorizeFailed($row);
+        }
 
         if ($authorizeSuccess === true)
         {
@@ -277,14 +282,68 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
 
     /**
-     * This should be implemented in the child class if the gateway requires
+     * This function will be called if the gateway requires force authorization
      * a force authorization from failed state. If no force authorization,
      * it means that the payment is still in failed state and hence
      * should return back false.
      *
      * @return bool
      */
-    protected function forceAuthorizeFailed($row)
+    protected function forceAuthorizeFailed($row, $input = [])
+    {
+        $paymentService = new PaymentService();
+
+        $paymentId = $this->payment->getPublicId();
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'message'         => 'Payment status is failed. Doing force authorize',
+                'payment_id'      => $this->payment->getId(),
+                'gateway'         => get_called_class()
+            ]);
+
+        $input = $this->getInputForForceAuthorize($row);
+
+        // If there's any issue during authorize, the function throws an exception.
+        $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
+                'message'   => 'Response received from force authorization',
+                'response'  => $response
+            ]
+        );
+
+        if ((empty($response['status']) === false) and
+            ($response['status'] === PaymentStatus::AUTHORIZED))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This function should be implement in the child class
+     * It will fetch the input for particular gateway
+     *
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [];
+    }
+
+    /**
+     * This function should be implement in the child class
+     * It will tell whether force authorize is deifned for gateway
+     *
+     * @return bool
+     */
+    protected function shouldAttemptForceAuthorizeFailed()
     {
         return false;
     }
