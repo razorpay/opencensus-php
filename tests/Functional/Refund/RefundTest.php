@@ -568,6 +568,7 @@ class RefundTest extends TestCase
 
         $actual = $rfnd->toArrayPublic();
         $actual['notes'] = $actual['notes']->toArray();
+        $actual['acquirer_data'] = $actual['acquirer_data']->toArray();
 
         $refund = $this->getEntityById('refund', $rfnd['public_id']);
         $this->assertArraySelectiveEquals($actual, $refund);
