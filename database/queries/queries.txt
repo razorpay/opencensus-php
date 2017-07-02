@@ -2207,3 +2207,6 @@ ALTER TABLE customers
 ALTER TABLE pricing
     ADD COLUMN deleted_at INTEGER AFTER updated_at,
     ADD INDEX pricing_deleted_at_index (deleted_at);
+
+ALTER TABLE netbanking
+    ADD COLUMN credit_account_number varchar(255) DEFAULT NULL AFTER account_number;
