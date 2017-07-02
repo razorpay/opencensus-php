@@ -27,10 +27,16 @@ class Service extends Base\Service
     {
         (new Validator)->validateInputBeforeBuild($input);
 
-        $customerId = $input[Entity::CUSTOMER_ID];
         $planId = $input[Entity::PLAN_ID];
 
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $customer = null;
+
+        if (empty($input[Entity::CUSTOMER_ID]) === false)
+        {
+            $customerId = $input[Entity::CUSTOMER_ID];
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        }
+
         $plan = $this->repo->plan->findByPublicIdAndMerchant($planId, $this->merchant);
 
         $subscription = $this->core->create($input, $plan, $customer);
@@ -205,6 +211,15 @@ class Service extends Base\Service
         return $summary;
     }
 
+    public function cancelSubscription(string $subscriptionId)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        $subscription = $this->core->cancel($subscription);
+
+        return $subscription->toArrayPublic();
+    }
+
     public function chargeSubscriptionInvoiceManually(string $invoiceId)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $this->merchant);
@@ -220,8 +235,7 @@ class Service extends Base\Service
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if (($subscription->isActive() === false) and
-            ($subscription->isHalted() === false))
+        if (in_array($subscription->getStatus(), Status::$invoiceManualChargeableStatuses, true) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,
@@ -250,11 +264,11 @@ class Service extends Base\Service
 
         if ($capture === true)
         {
-            $this->core->retryCapture($subscription, $invoice, true);
+            return $this->core->retryCapture($subscription, $invoice, true);
         }
         else
         {
-            $this->core->charge($subscription, $invoice, true);
+            return $this->core->charge($subscription, $invoice, true);
         }
     }
 

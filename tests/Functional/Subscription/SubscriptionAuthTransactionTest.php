@@ -64,7 +64,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertNull($order);
 
         $this->assertEquals('authenticated', $subscription['status']);
-        $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
         $this->assertEquals('refunded', $payment['status']);
@@ -103,12 +103,12 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertNotNull($token);
 
         $this->assertEquals('active', $subscription['status']);
-        $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
         $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-                                 ->addMonths(2)
+                                 ->addMonthsNoOverflow(2)
                                  ->startOfDay()
                                  ->timestamp;
         $this->assertEquals($expectedStartAt, $subscription['charge_at']);
@@ -172,7 +172,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals(300, $order['amount']);
 
         $this->assertEquals('authenticated', $subscription['status']);
-        $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
         $this->assertEquals(0, $subscription['paid_count']);
         $this->assertNotNull($subscription['charge_at']);
         $this->assertEquals($subscription['start_at'], $subscription['charge_at']);
@@ -243,14 +243,14 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertNotNull($token);
 
         $this->assertEquals('active', $subscription['status']);
-        $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
         $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
-            ->addMonths(2)
-            ->startOfDay()
-            ->timestamp;
+                                ->addMonthsNoOverflow(2)
+                                ->startOfDay()
+                                ->timestamp;
         $this->assertEquals($expectedStartAt, $subscription['charge_at']);
         $this->assertEquals($payment['created_at'], $subscription['current_start']);
         $this->assertNotNull($subscription['current_end']);
@@ -289,7 +289,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('Recurring is not set for the subscription payment', $ex->getMessage());
+            $this->assertEquals('Subscription payment cannot be made without saving the card', $ex->getMessage());
 
             return;
         }
@@ -359,10 +359,10 @@ class SubscriptionAuthTransactionTest extends TestCase
         {
             $recurringPayment = $this->doAuthPayment($paymentRequest);
         }
-        catch (LogicException $ex)
+        catch (BadRequestException $ex)
         {
             $this->assertEquals(
-                'Subscription is neither in created state nor has ever been authenticated.',
+                'The subscription has been expired or cancelled.',
                 $ex->getMessage());
 
             return;
@@ -389,7 +389,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('The subscription has been expired.', $ex->getMessage());
+            $this->assertEquals('The subscription has been expired or cancelled.', $ex->getMessage());
 
             return;
         }

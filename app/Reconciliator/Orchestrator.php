@@ -169,6 +169,25 @@ class Orchestrator extends Base\Core
     }
 
     /**
+     * @param $needle
+     * @param array $haystack An associative array with array values.
+     *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
+     * @return int|string|null
+     */
+    public static function getKeyFromSubArrayMatch($needle, array $haystack)
+    {
+        foreach ($haystack as $key => $subArray)
+        {
+            if (in_array($needle, $subArray, true) === true)
+            {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Determines whether the reconciliation request is manual or
      * via MailGun and gets the files details accordingly.
      *
@@ -764,6 +783,8 @@ class Orchestrator extends Base\Core
         //
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
+        $startRow = $this->gatewayReconciliator->getStartRow($fileDetails);
+
         // this flag enables us to check if spout lib has been used
         $spoutLib = false;
 
@@ -776,7 +797,7 @@ class Orchestrator extends Base\Core
         }
         else
         {
-            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
         }
 
         foreach ($sheetsContents as $sheetName => $rows)
@@ -883,8 +904,10 @@ class Orchestrator extends Base\Core
 
         $zipPassword = $this->gatewayReconciliator->getReconPassword($zipFileDetails);
 
+        $use7z = $this->gatewayReconciliator->shouldUse7z($zipFileDetails);
+
         // unzipFile unzips the file and stores it in a location.
-        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword);
+        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword, $use7z);
 
         $unzippedFiles = new DirectoryIterator($unzippedFolderPath);
 
@@ -899,25 +922,6 @@ class Orchestrator extends Base\Core
         }
 
         return $allExtractedFilesDetails;
-    }
-
-    /**
-     * @param $needle
-     * @param array $haystack An associative array with array values.
-     *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
-     * @return int|string|null
-     */
-    public static function getKeyFromSubArrayMatch($needle, array $haystack)
-    {
-        foreach ($haystack as $key => $subArray)
-        {
-            if (in_array($needle, $subArray, true) === true)
-            {
-                return $key;
-            }
-        }
-
-        return null;
     }
 
     protected function fetchAndStoreLinkDocuments(array & $input)

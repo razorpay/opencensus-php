@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
-        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
     );
 

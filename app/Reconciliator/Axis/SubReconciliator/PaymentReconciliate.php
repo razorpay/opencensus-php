@@ -6,12 +6,14 @@ use Carbon\Carbon;
 
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Gateway\Cybersource;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -20,14 +22,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID    = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE     = 'card_type';
-    const COLUMN_SERVICE_TAX   = ['service_taxat145', 'service_taxat1450', 'service_taxat135',
-                                  'service_taxat1350', 'service_taxat1500'];
+    const COLUMN_SERVICE_TAX   = ['service_tax', 'service_taxat145', 'service_taxat1450',
+                                  'service_taxat135', 'service_taxat1350', 'service_taxat1500'];
     const COLUMN_FEE           = 'commission';
     const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
     const COLUMN_ORDER_ID      = 'order_id';
     const COLUMN_CARD_LOCALE   = 'lofo';
     const COLUMN_ISSUER        = 'transaction_category';
     const COLUMN_SETTLED_AT    = 'settlement_date';
+    const COLUMN_MSG_TYPE      = 'msg_type';
+    const COLUMN_MID           = 'mid';
+
+    const PREAUTH              = 'PREAUTH';
+    const CYBS                 = 'CYBS';
 
     const POSSIBLE_DATE_FORMATS = [
         'd-M-y',
@@ -45,15 +52,77 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
+        $paymentId = $this->getPaymentIdForMigs($row);
+
+        //
+        // Calling the Cybersource one after Migs one because
+        // Cybersource one involves a repo call.
+        //
+        if ($paymentId === null)
+        {
+            $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForMigs(array $row)
+    {
+        $paymentId = null;
+
         foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
             if (empty($row[$cpi]) === false)
             {
-                return $row[$cpi];
+                $paymentId = $row[$cpi];
+
+                break;
             }
         }
 
-        return null;
+        //
+        // For Cybersource payments via Axis, we don't get a payment ID
+        // in the self::COLUMN_PAYMENT_ID. We get some reference number.
+        // This usually means that it's a Cybersource payment and we have
+        // to get payment_id in a different way.
+        //
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            return null;
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForCybersource(array $row)
+    {
+        $paymentId = $msgType = $mid = null;
+
+        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        {
+            $msgType = $row[self::COLUMN_MSG_TYPE];
+        }
+
+        if (isset($row[self::COLUMN_MID]) === true)
+        {
+            $mid = $row[self::COLUMN_MID];
+        }
+
+        if ((stripos($msgType, self::PREAUTH) === true) or
+            (ends_with($mid, self::CYBS) === true))
+        {
+            $orderId = $row[self::COLUMN_ORDER_ID];
+
+            $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                                                            Cybersource\Action::CAPTURE, $orderId);
+
+            if ($gatewayPayment !== null)
+            {
+                $paymentId = $gatewayPayment->getPaymentId();
+            }
+        }
+
+        return $paymentId;
     }
 
     protected function getGatewayServiceTax($row)

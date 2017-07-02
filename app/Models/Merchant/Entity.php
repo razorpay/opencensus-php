@@ -884,6 +884,20 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getBusinessStateCode()
+    {
+        $businessStateCode = null;
+
+        $merchantDetail = $this->merchantDetail;
+
+        if ($merchantDetail !== null)
+        {
+            $businessStateCode = $merchantDetail->getBusinessStateCode();
+        }
+
+        return $businessStateCode;
+    }
+
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);

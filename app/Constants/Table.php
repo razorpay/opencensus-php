@@ -50,6 +50,7 @@ class Table
     const SUBSCRIPTION          = 'subscriptions';
     const METHODS               = 'merchant_banks';
     const BANK_TRANSFER         = 'bank_transfers';
+    const GATEWAY_TOKEN         = 'gateway_tokens';
     const SCHEDULE_TASK         = 'schedule_tasks';
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';

@@ -767,6 +767,18 @@ return [
         ],
     ],
 
+    'testDeletePricingPlanRuleForce' => [
+        'request' => [
+            'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB/force',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
     'testDeleteUsedPricingPlanRule' => [
         'request' => [
             'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',

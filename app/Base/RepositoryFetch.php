@@ -31,7 +31,7 @@ trait RepositoryFetch
      *
      * @var array
      */
-    protected $esEntitiesInOldFlow = [
+    public static $esEntitiesInOldFlow = [
         Constants\Entity::ORDER,
         Constants\Entity::PAYMENT,
         Constants\Entity::REFUND,
@@ -191,7 +191,7 @@ trait RepositoryFetch
         $entity = $this->entity;
 
         // If entity in old flow, forward to the old method
-        if ($this->isEntityInOldEsFlow($entity) === true)
+        if (self::isEntityInOldEsFlow($entity) === true)
         {
             return $this->esRepo->fetch($params, $merchantId);
         }
@@ -229,9 +229,9 @@ trait RepositoryFetch
         return $entities;
     }
 
-    protected function isEntityInOldEsFlow(string $entity): bool
+    public static function isEntityInOldEsFlow(string $entity): bool
     {
-        return in_array($entity, $this->esEntitiesInOldFlow, true);
+        return in_array($entity, self::$esEntitiesInOldFlow, true);
     }
 
     protected function buildFetchQuery($query, $params)

@@ -41,6 +41,9 @@ class CreateCustomers extends Migration {
             $table->tinyInteger(Customer::ACTIVE)
                   ->default(1);
 
+            $table->string(Customer::GLOBAL_CUSTOMER_ID, Customer::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Customer::CREATED_AT);
             $table->integer(Customer::UPDATED_AT);
             $table->integer(Customer::DELETED_AT)
@@ -81,22 +84,21 @@ class CreateCustomers extends Migration {
     {
         Schema::table(Table::ORDER, function($table)
         {
-            $table->dropForeign(Table::ORDER.'_'.Order::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::ORDER . '_' . Order::CUSTOMER_ID . '_foreign');
 
         });
 
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT . '_' . Payment::CUSTOMER_ID . '_foreign');
 
         });
 
         Schema::table(Table::CUSTOMER, function($table)
         {
-            $table->dropForeign(Table::CUSTOMER.'_'.Customer::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::CUSTOMER . '_' . Customer::MERCHANT_ID . '_foreign');
         });
 
         Schema::drop(Table::CUSTOMER);
     }
-
 }

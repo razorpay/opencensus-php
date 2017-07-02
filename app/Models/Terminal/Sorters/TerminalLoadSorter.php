@@ -110,12 +110,12 @@ class TerminalLoadSorter extends Terminal\Sorter
         // Not all rules will apply, a terminal may already have
         // been rejected in the previous sorting/filtering steps.
         $applicableRules = $this->getApplicableRules($terminals);
-        $cumulativeProbabity = 0;
+        $combinedProbability = 0;
 
         foreach ($applicableRules as $rule)
         {
-            $cumulativeProbabity += $rule['load'];
-            $valid = $this->validateRules($cumulativeProbabity, $applicableRules);
+            $combinedProbability += $rule['load'];
+            $valid = $this->validateRules($combinedProbability, $applicableRules);
 
             if ($valid === false)
             {
@@ -126,7 +126,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             // Checking > 100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected behaviour.
-            if ($chancePercent > (10000 - $cumulativeProbabity))
+            if ($chancePercent > (10000 - $combinedProbability))
             {
                 return $rule['ids'];
             }
@@ -175,17 +175,17 @@ class TerminalLoadSorter extends Terminal\Sorter
         return (count(array_diff_assoc($attributes, $termAttributes)) === 0);
     }
 
-    protected function validateRules($cumulativeProbability, $applicableRules)
+    protected function validateRules($combinedProbability, $applicableRules)
     {
-        // Cumulative probability for all applicable rules
+        // Combined probability for all applicable rules
         // can't possibly be above 100. In this case, don't
         // boost any terminal.
-        if ($cumulativeProbability > 10000)
+        if ($combinedProbability > 10000)
         {
             $this->trace->error(
                 TraceCode::TERMINAL_BOOST_INVALID,
                 [
-                    'cumulative_probabity' => $cumulativeProbability,
+                    'combined_probability' => $combinedProbability,
                     'applicable_rules'     => $applicableRules,
                 ]
             );

@@ -511,6 +511,21 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        $refundIds = [
+            '82NPrjC1TwVNb1'
+        ];
+
+        if (in_array($input['refund']['id'], $refundIds, true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'UPI ICICI verify refund is not implemented');
+    }
+
     /**
      * subMerchantId is limited to 10 characters
      * so we send the first 10 characters

@@ -5,6 +5,7 @@ namespace RZP\Models\Emi\Banks\Rbl;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
 
 class EmiFile extends Base\EmiFile
@@ -14,6 +15,8 @@ class EmiFile extends Base\EmiFile
     protected $emailIdsToSendTo = ['Rblcards.emi@razorpay.com'];
 
     protected $bankName  = 'Rbl';
+
+    const TYPE = FileStore\Type::RBL_EMI_FILE;
 
     protected static $headers = [
         'EMI ID',
@@ -56,15 +59,6 @@ class EmiFile extends Base\EmiFile
         'Bonus Reward Points',
         'EMI Model',
     ];
-
-    protected function writeEmiFile($emiData)
-    {
-        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
-
-        $path = $this->getExcelFullFilePath();
-
-        return compact('url', 'path');
-    }
 
     protected function getEmiData($input)
     {

@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME            => 'sometimes|filled|string|max:40',
-        Entity::DESCRIPTOR      => 'sometimes|filled|alpha_num|between:5,10',
+        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num|max:10',
         Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',

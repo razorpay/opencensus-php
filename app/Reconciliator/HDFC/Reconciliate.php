@@ -47,6 +47,15 @@ class Reconciliate extends Base\Reconciliate
 
     public function getReconPassword($fileDetails)
     {
+        $fileName = $fileDetails[FileProcessor::FILE_NAME];
+
+        $corpFileRegex = "1413-(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}";
+
+        if (preg_match($corpFileRegex, $fileName) === 1)
+        {
+            return $this->getReconPasswordForCorpFile();
+        }
+
         $terminalId = explode('-', $fileDetails['file_name'])[0];
         $gateway = Entity::HDFC;
 
@@ -56,7 +65,7 @@ class Reconciliate extends Base\Reconciliate
             $gateway = Entity::CYBERSOURCE;
         }
 
-        $terminalRepo = App::getFacadeRoot()['repo']->terminal;
+        $terminalRepo = $this->repo->terminal;
 
         $gatewayTerminal = $terminalRepo->getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($terminalId, $gateway);
 
@@ -70,6 +79,11 @@ class Reconciliate extends Base\Reconciliate
         $reconPassword = $gatewayTerminal->getGatewayReconPassword();
 
         return $reconPassword;
+    }
+
+    public function getReconPasswordForCorpFile()
+    {
+        return 'G27471';
     }
 
     public function getDelimiter()

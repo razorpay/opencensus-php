@@ -34,7 +34,8 @@ class Customer extends Base
         array(
             'customer_id'   => '10000gcustomer',
             'id'            => '1000000custapp',
-            'device_token'  => '1000custdevice'
+            'device_token'  => '1000custdevice',
+            'merchant_id'   => '100000Razorpay',
         ),
     );
 
@@ -65,6 +66,15 @@ class Customer extends Base
             'bank'          => null,
             'wallet'        => null,
             'card_id'       => '100000000lcard',
+        ),
+        array(
+            'id'            => '100001custcard',
+            'token'         => '10001cardtoken',
+            'customer_id'   => '100000customer',
+            'method'        => 'card',
+            'bank'          => null,
+            'wallet'        => null,
+            'card_id'       => '100000001lcard',
         ),
         array(
             'id'            => '10000custgcard',

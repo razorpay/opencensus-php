@@ -5,6 +5,7 @@ namespace RZP\Models\Plan\Subscription;
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Schedule\Library;
 use RZP\Trace\Trace;
@@ -32,12 +33,23 @@ class Charge extends Base\Core
      */
     protected $processor;
 
+    protected $mutex;
+
     /**
      * Maximum authorization attempts allowed for subscription charge.
      *
      * TODO: Make this merchant configurable.
      */
     const MAX_AUTH_ATTEMPTS = 3;
+
+    const MUTEX_LOCK_TIMEOUT = 120;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
      * This is called via the queue to initiate the actual
@@ -76,10 +88,18 @@ class Charge extends Base\Core
         //
         $manual = $data['manual'];
 
-        $valid = $this->validateInvoiceStatusBeforeCharging($invoice, $subscription, $manual);
+        list($valid, $traceCode) = $subscription->getValidator()->validateSubscriptionChargeable($invoice, $manual);
 
         if ($valid === false)
         {
+            $this->trace->critical(
+                $traceCode,
+                [
+                    'invoice_id'            => $invoice->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+
             return false;
         }
 
@@ -106,7 +126,7 @@ class Charge extends Base\Core
 
             if ($manual === false)
             {
-                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice);
+                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment);
             }
 
             return false;
@@ -120,7 +140,7 @@ class Charge extends Base\Core
         if (($payment->isCaptured() === false) and
             ($manual === false))
         {
-            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
+            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, true);
 
             return false;
         }
@@ -207,10 +227,14 @@ class Charge extends Base\Core
                 'task_details' => $task->toArray()
             ]);
 
+        $core = (new Core);
+
         if ($oldStatus !== Status::ACTIVE)
         {
-            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
         }
+
+        $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
         //
         // This must be sent after saving the invoice and subscription
@@ -223,6 +247,7 @@ class Charge extends Base\Core
     public function handleAuthorizationOrCaptureFailure(
         Entity $subscription,
         Invoice\Entity $invoice,
+        Payment\Entity $payment = null,
         bool $captureFailure = false)
     {
         $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
@@ -275,7 +300,19 @@ class Charge extends Base\Core
             $this->repo->saveOrFail($subscription->task);
         });
 
-        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
+        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus(), $payment);
+    }
+
+    public function updateNextRunAtForSubscription(Entity $subscription)
+    {
+        $this->updateScheduleTask($subscription->task);
+        $subscription->setChargeAt($subscription->task->getNextRunAt());
+
+        $this->repo->transaction(function() use ($subscription)
+        {
+            $this->repo->saveOrFail($subscription);
+            $this->repo->saveOrFail($subscription->task);
+        });
     }
 
     protected function validateInvoiceStatusBeforeCharging(

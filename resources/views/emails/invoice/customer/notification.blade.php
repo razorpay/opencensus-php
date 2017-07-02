@@ -1,22 +1,43 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-<html style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><body style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><div style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
+<html style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+
+  @extends('emails.invoice.notification')
+
   @php
-      $status = $invoice['status'];
+      $status    = $invoice['status'];
+      $isInvoice = ($invoice['type'] === 'invoice');
+
+      $amountPaid = ($invoice['amount_paid']);
+
+      if (isset($payment))
+      {
+          $amountPaid += $payment['adjusted_amount'];
+      }
+
       $headerLabel = '';
       $ctaLabel = '';
       $ctaHref = '';
 
       if (isset($payment))
       {
-          $ctaLabel = 'DOWNLOAD PDF';
+          if ($amountPaid >= $invoice['amount'])
+          {
+            $ctaLabel = $isInvoice ? 'DOWNLOAD PDF' : '';
+          }
+          else
+          {
+            $ctaLabel = 'PROCEED TO PAY';
+          }
+
           $ctaHref = $invoice['short_url'];
-          $headerLabel = 'PAYMENT SUCCESSFUL';
+
+          $headerLabel = 'You have made a payment of ' . $payment['amount'];
       }
       elseif ($status === 'issued')
       {
           $ctaLabel = 'PROCEED TO PAY';
           $ctaHref = $invoice['short_url'];
-          $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+          $headerLabel = $merchant['name'] . ' has sent you an ' . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
       }
       elseif ($status === 'expired')
       {
@@ -24,24 +45,27 @@
       }
   @endphp
 
-
-  @extends('emails.invoice.notification')
-
   @section('header')
-      <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; width: 100%;"><tbody style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><td class="text-center" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center;">
-              <div style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
+      <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; width: 100%;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+<tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+<td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
+              <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                 @if ($merchant['image'])
-                  <img class="merchant__logo" src="{{ $merchant['image'] }}" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; height: 48px; margin-bottom: 8px; width: 48px;">
+                  <img class="merchant__logo" src="{{ $merchant['image'] }}" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; width: 48px; height: 48px; margin-bottom: 8px;">
                 @endif
               </div>
             </td>
-          </tr><tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><td class="text-center" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center;">
-              <h2 style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 24px; font-size: 20px; margin: 0;">
+          </tr>
+<tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+<td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
+              <h2 style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; margin: 0; font-size: 20px; line-height: 24px; color: {{ $merchant['brand_text_color'] }};">
                   {{ $invoice['type_label'] }} from {{$merchant['name']}}
               </h2>
             </td>
-          </tr><tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><td class="text-center" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center;">
-              <div style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
+          </tr>
+<tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+<td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
+              <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
                   @if ($invoice['receipt'])
                       {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
                   @else
@@ -49,19 +73,22 @@
                   @endif
               </div>
             </td>
-          </tr><tr style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;"><td class="text-center" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center;">
-              <div style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; margin-top: 12px;">
-                <div style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
+          </tr>
+<tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+<td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
+              <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; margin-top: 12px; color: {{ $merchant['brand_text_color'] }};">
+                <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
                     {{ $headerLabel }}
                 </div>
               </div>
             </td>
-          </tr></tbody></table>
+          </tr>
+</tbody></table>
   @endsection
 
   @section('footerCTA')
       @if ($ctaLabel)
-          <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; border-radius: 5px; cursor: pointer; display: inline-block; padding: 10px 15px; text-decoration: none; white-space: nowrap; background-color: {{ $merchant['brand_color'] }}; border: 1px solid {{ $merchant['brand_color'] }};">
+          <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; padding: 10px 15px; display: inline-block; border-radius: 5px; white-space: nowrap; cursor: pointer; color: {{ $merchant['brand_text_color'] }}; background-color: {{ $merchant['brand_color'] }}; border: 1px solid {{ $merchant['brand_color'] }};">
             {{ $ctaLabel }}
           </a>
       @endif

@@ -24,6 +24,12 @@ class Reconciliate
 
     const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
 
+    //
+    // Used to define start_row for the MIS files.
+    // Some of them have some random crap at the start of the file.
+    //
+    const DEFAULT_START_ROW = 1;
+
     /*************************
      * Internal Header Names
      *************************/
@@ -70,7 +76,7 @@ class Reconciliate
     {
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
-        $this->messenger = new Messenger();
+        $this->messenger = new Messenger;
     }
 
     /**
@@ -142,6 +148,16 @@ class Reconciliate
     public function getReconPassword($fileDetails)
     {
         return null;
+    }
+
+    public function shouldUse7z($zipFileDetails)
+    {
+        return false;
+    }
+
+    public function getStartRow($fileDetails)
+    {
+        return self::DEFAULT_START_ROW;
     }
 
     /**
