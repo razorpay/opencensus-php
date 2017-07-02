@@ -628,6 +628,8 @@ class Orchestrator extends Base\Core
             // Else, get the file details of the attachment.
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
+                $zipFileDetails = [];
+
                 try
                 {
                     // Gets the actual zip file's details first.
@@ -672,6 +674,8 @@ class Orchestrator extends Base\Core
                             'gateway'      => $this->gateway,
                         ]);
 
+                    $this->deleteFileLocallyIfPresent($zipFileDetails);
+
                     continue;
                 }
             }
@@ -684,6 +688,16 @@ class Orchestrator extends Base\Core
         }
 
         return $allFilesDetails;
+    }
+
+    protected function deleteFileLocallyIfPresent(array $fileDetails)
+    {
+        if (isset($fileDetails[FileProcessor::FILE_PATH]) === false)
+        {
+            return;
+        }
+
+        $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
     }
 
     protected function getFileDetailsFromAllZipFiles($zipFilesDetails)
@@ -917,7 +931,7 @@ class Orchestrator extends Base\Core
             if ($unzippedFile->isFile() === true)
             {
                 $allExtractedFilesDetails[] = $this->fileProcessor
-                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+                                                   ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
             }
         }
 
