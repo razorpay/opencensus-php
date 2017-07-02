@@ -92,7 +92,7 @@ class NetbankingReconcilationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $netbanking = $this->createNetbanking($payment['id'], 'RATN');
+        $netbanking = $this->createNetbanking($payment['id'], 'RATN', 'FAL');
 
         $fileContents = $this->generateFile('rbl', []);
 
@@ -157,14 +157,25 @@ class NetbankingReconcilationTest extends TestCase
         return $payment;
     }
 
-    protected function createNetbanking($paymentId, $bank)
+    protected function createFailedPayment($gateway)
+    {
+        $paymentAttributes = [
+            'gateway' => $gateway
+        ];
+
+        $payment = $this->fixtures->create('payment:netbanking_failed', $paymentAttributes);
+
+        return $payment;
+    }
+
+    protected function createNetbanking($paymentId, $bank, $status = 'SUC')
     {
         $netbankingAttributes = [
             'payment_id'      => $paymentId,
             'bank'            => $bank,
             'caps_payment_id' => strtoupper($paymentId),
             'bank_payment_id' => 99999,
-            'status'          => 'SUC'
+            'status'          => $status,
         ];
 
         $netbanking = $this->fixtures->create('netbanking', $netbankingAttributes);
@@ -200,5 +211,12 @@ class NetbankingReconcilationTest extends TestCase
         $this->app['gateway']->setRecon($this->gateway, $recon);
 
         return $recon;
+    }
+
+    protected function setMockGatewayTrue()
+    {
+        $var = 'gateway.mock_'.$this->gateway;
+
+        $this->config[$var] = true;
     }
 }
