@@ -157,7 +157,7 @@ class Orchestrator extends Base\Core
             }
 
             $this->trace->traceException(
-                $e, Trace::INFO, TraceCode::RECON_ALERT,
+                $e, Trace::ERROR, TraceCode::RECON_ALERT,
                 (array) json_decode($e->getMessage()));
 
             // We do not throw an exception as route is hit via Mailgun,
@@ -401,8 +401,7 @@ class Orchestrator extends Base\Core
                 'File contents are empty.',
                 [
                     'all_files_details' => $this->allFilesDetails,
-                ]
-            );
+                ]);
         }
 
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
