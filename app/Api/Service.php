@@ -2,6 +2,7 @@
 
 namespace App\Api;
 
+use App\Admin\RawApiRequest;
 use Auth;
 use Trace;
 use App\Base;
@@ -269,13 +270,18 @@ class Service extends Base\Service
         {
             $merchantId = $this->merchantId;
 
-            if (isset($params['merchant_id']))
+            if (isset($params['merchant_id']) === true)
             {
                 $merchantId = $params['merchant_id'];
                 unset($params['merchant_id']);
             }
 
             $this->setApiCredentials($merchantId, $mode);
+
+            if (isset($params['account_id']) === true)
+            {
+                $this->setAccountCredentials($params['account_id']);
+            }
 
             $data = $this->api
                          ->transaction
