@@ -9,8 +9,6 @@ import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import ShowWhen from 'merchant/components/ShowWhen';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 
 let now = moment();
 let currentMonth = now.month();
@@ -28,6 +26,7 @@ const selector = formValueSelector('generateReports');
     return {
       mode: state.session.mode,
       user: state.session.user,
+      account: state.accounts,
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
       month: selector(state, 'month'),
@@ -48,10 +47,10 @@ const selector = formValueSelector('generateReports');
 })
 export default class ReportsContainer extends Component {
   componentWillMount() {
-    this.props.fetchAccounts().then(data => {});
+    this.props.fetchAccounts();
   }
   prepareGenerateReport = values => {
-    let { entity, type, month, year, day } = values;
+    let { entity, type, month, year, day, account_id } = values;
 
     let data = {
       month,
@@ -75,6 +74,10 @@ export default class ReportsContainer extends Component {
       url: '/reports/' + entity,
       data: data,
     };
+
+    if (account_id !== this.props.user.id) {
+      data.account_id = account_id;
+    }
 
     if (entity === 'broking') {
       ajaxParams.headers = {
@@ -111,7 +114,6 @@ export default class ReportsContainer extends Component {
     let { entity, type, mode, month, year, user, handleSubmit } = this.props;
     let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    console.log(user);
     return (
       <tabbed-container>
         <header>
@@ -252,18 +254,23 @@ export default class ReportsContainer extends Component {
                           {' '}
                           {user.email || user.user.email}
                         </div>
-                      : <Dropdown>
-                          <DropdownTrigger class="dropdown-toggle">
-                            {user.name || user.user.name} <span class="caret" />
-                          </DropdownTrigger>
-                          <DropdownContent>
-                            <ul class="dropdown-menu">
-                              <li><a href="#">Test</a></li>
-                              <li class="divider" />
-                              <li><a href="#">Logout</a></li>
-                            </ul>
-                          </DropdownContent>
-                        </Dropdown>}
+                      : <Field
+                          component="select"
+                          class="form-control"
+                          name="account_id"
+                        >
+                          <option
+                            value={user.id || user.user.id}
+                            disabled
+                            selected
+                          >
+                            Current Account
+                          </option>
+                          <option class="divider" disabled />
+                          <option value="acc_89wltQH83y3z7s">
+                            89wltQH83y3z7s
+                          </option>
+                        </Field>}
                   </div>
                 </div>
               </div>}

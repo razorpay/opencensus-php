@@ -281,6 +281,8 @@ class Service extends Base\Service
             if (isset($params['account_id']) === true)
             {
                 $this->setAccountCredentials($params['account_id']);
+
+                unset ($params['account_id']);
             }
 
             $data = $this->api
