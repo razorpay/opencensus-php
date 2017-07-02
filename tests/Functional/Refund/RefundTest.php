@@ -566,11 +566,15 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
+        $actual = $rfnd->toArrayPublic();
+        $actual['notes'] = $actual['notes']->toArray();
+        $actual['acquirer_data'] = $actual['acquirer_data']->toArray();
+
         $refund = $this->getEntityById('refund', $rfnd['public_id']);
-        $this->assertArraySelectiveEquals($rfnd->toArrayPublic(), $refund);
+        $this->assertArraySelectiveEquals($actual, $refund);
 
         $refunds = $this->getEntities('refund');
-        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$rfnd->toArrayPublic()]];
+        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$actual]];
         $this->assertArraySelectiveEquals($rfnds, $refunds);
     }
 

@@ -7,6 +7,7 @@ use RZP\Models\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Batch;
 use RZP\Models\Base\Traits\NotesTrait;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Entity extends Base\PublicEntity
 {
@@ -254,13 +255,7 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
-        if (empty($acquirerData) === true)
-        {
-            // Show the field as an empty object on json_encoded response
-            $acquirerData = new \stdClass;
-        }
-
-        return $acquirerData;
+        return (new Dictionary($acquirerData));
     }
 
     public function setGatewayRefunded($gatewayRefunded)
