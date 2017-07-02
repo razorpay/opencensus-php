@@ -14,6 +14,10 @@ class Reconciliate extends Base\Reconciliate
         '89050055'
     ];
 
+    const CORP_FILE_REGEX = "/1413-(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/";
+
+    const CORP_FILE_BOTTOM_LINES_SKIP = 3;
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -49,9 +53,7 @@ class Reconciliate extends Base\Reconciliate
     {
         $fileName = $fileDetails[FileProcessor::FILE_NAME];
 
-        $corpFileRegex = "/1413-(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/";
-
-        if (preg_match($corpFileRegex, $fileName) === 1)
+        if (preg_match(self::CORP_FILE_REGEX, $fileName) === 1)
         {
             return $this->getReconPasswordForCorpFile();
         }
@@ -89,5 +91,22 @@ class Reconciliate extends Base\Reconciliate
     public function getDelimiter()
     {
         return "\t";
+    }
+
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        $linesFromTop = $linesFromBottom = 0;
+
+        $fileName = $fileDetails[FileProcessor::FILE_NAME];
+
+        if (preg_match(self::CORP_FILE_REGEX, $fileName) === 1)
+        {
+            $linesFromBottom = self::CORP_FILE_BOTTOM_LINES_SKIP;
+        }
+
+        return [
+            FileProcessor::LINES_FROM_TOP    => $linesFromTop,
+            FileProcessor::LINES_FROM_BOTTOM => $linesFromBottom
+        ];
     }
 }

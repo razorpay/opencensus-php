@@ -257,9 +257,11 @@ class Reconciliate
      * beginning while reading csv files. Should be overriden by any gateway
      * specific child classes.
      *
-     * @return  int number of lines to skip from end
+     * @param array $fileDetails
+     *
+     * @return int number of lines to skip from end
      */
-    public function getNumLinesToSkip()
+    public function getNumLinesToSkip(array $fileDetails)
     {
         return [
             FileProcessor::LINES_FROM_TOP    => 0,

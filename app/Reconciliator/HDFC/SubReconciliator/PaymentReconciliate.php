@@ -21,6 +21,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE         = ['msf', 'MSF'];
     const COLUMN_CARD_TRIVIA = ['card_type', 'CARD TYPE'];
     const COLUMN_ISSUER      = ['arn_no', 'ARN NO'];
+    const COLUMN_CGST        = ['cgst_amt', 'CGST AMT'];
+    const COLUMN_IGST        = ['igst_amt', 'IGST AMT'];
+    const COLUMN_SGST        = ['sgst_amt', 'SGST AMT'];
+    const COLUMN_UTGST       = ['utgst_amt', 'UTGST_AMT'];
 
     protected function getPaymentId($row)
     {
@@ -82,7 +86,102 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $serviceTax += $sbCess + $kkCess;
 
+        $igst = $this->getIgst();
+        $sgst = $this->getSgst();
+        $cgst = $this->getCgst();
+        $utgst = $this->getUtgst();
+
+        $serviceTax += $igst + $sgst + $cgst + $utgst;
+
         return round($serviceTax);
+    }
+
+    protected function getIgst()
+    {
+        $columnIgst = null;
+
+        foreach(self::COLUMN_IGST as $cigst)
+        {
+            //
+            // This should be isset only and not empty
+            // because igst can be 0 also.
+            //
+            if (isset($row[$cigst]) === true)
+            {
+                $columnIgst = $row[$cigst];
+                break;
+            }
+        }
+
+        $igst = floatval($columnIgst) * 100;
+
+        return $igst;
+    }
+
+    protected function getCgst()
+    {
+        $columnCgst = null;
+
+        foreach(self::COLUMN_CGST as $ccgst)
+        {
+            //
+            // This should be isset only and not empty
+            // because cgst can be 0 also.
+            //
+            if (isset($row[$ccgst]) === true)
+            {
+                $columnCgst = $row[$ccgst];
+                break;
+            }
+        }
+
+        $cgst = floatval($columnCgst) * 100;
+
+        return $cgst;
+    }
+
+    protected function getSgst()
+    {
+        $columnSgst = null;
+
+        foreach(self::COLUMN_SGST as $csgst)
+        {
+            //
+            // This should be isset only and not empty
+            // because sgst can be 0 also.
+            //
+            if (isset($row[$csgst]) === true)
+            {
+                $columnSgst = $row[$csgst];
+                break;
+            }
+        }
+
+        $sgst = floatval($columnSgst) * 100;
+
+        return $sgst;
+    }
+
+    protected function getUtgst()
+    {
+        $columnUtgst = null;
+
+        foreach(self::COLUMN_UTGST as $cutgst)
+        {
+            //
+            // This should be isset only and not empty
+            // because utgst can be 0 also.
+            //
+            if (isset($row[$cutgst]) === true)
+            {
+                $columnUtgst = $row[$cutgst];
+                break;
+            }
+        }
+
+        $utgst = floatval($columnUtgst) * 100;
+
+        return $utgst;
     }
 
     protected function getSbCess()

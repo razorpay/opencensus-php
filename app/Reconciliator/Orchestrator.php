@@ -867,7 +867,7 @@ class Orchestrator extends Base\Core
     {
         $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
 
-        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
+        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip($fileDetails);
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
