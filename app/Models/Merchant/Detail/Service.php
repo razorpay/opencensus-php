@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -55,7 +56,7 @@ class Service extends Base\Service
         return $signedUrls[$fileStoreId];
     }
 
-    public function saveMerchantDetails(array $input)
+    public function saveMerchantDetails(array $input): array
     {
         $this->trace->info(
                 TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
@@ -63,39 +64,38 @@ class Service extends Base\Service
 
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
-        $merchantDetails->getValidator()->validateIsNotLocked();
-
-        $merchantDetails->edit($input);
-
-        $this->repo->saveOrFail($merchantDetails);
-
-        $response = $this->createResponse($merchantDetails);
-
-        if ($this->canSubmit($input, $response) === true)
+        return $this->repo->transaction(function() use ($input, $merchantDetails)
         {
-            $this->markSubmitted($merchantDetails);
-        }
+            $merchantDetails->getValidator()->validateIsNotLocked();
 
-        if (($this->merchant->isLinkedAccount() === true) and
-            ($merchantDetails->isSubmitted() === true))
-        {
-            (new Merchant\Activate())->autoActivate($this->merchant);
-        }
+            $merchantDetails->edit($input);
 
-        $response = $this->createResponse($merchantDetails);
+            $this->repo->saveOrFail($merchantDetails);
 
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+            $response = $this->createResponse($merchantDetails);
 
-        $this->repo->saveOrFail($merchantDetails);
+            if ($this->canSubmit($input, $response) === true)
+            {
+                $this->markSubmitted($merchantDetails);
+            }
 
-        if ((isset($input['submit'])) and (intval($input['submit']) === 1))
-        {
-            (new Detail\Core)->fireActivationTrigger($merchantDetails);
-        }
+            $response = $this->createResponse($merchantDetails);
 
-        return $response;
+            $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
+
+            if ((isset($input['submit'])) and (intval($input['submit']) === 1))
+            {
+                (new Detail\Core)->fireActivationTrigger($merchantDetails);
+            }
+            $response['auto_activated'] = $autoActivated;
+
+            return $response;
+        });
     }
-
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
     {
@@ -356,5 +356,25 @@ class Service extends Base\Service
         $response['activated'] = (int) $merchant->isActivated();
 
         return $response;
+    }
+
+    protected function autoActivateMerchantIfApplicable(Entity $merchantDetails): bool
+    {
+        if (($merchantDetails->isSubmitted() === true) and
+            ($this->merchant->isLinkedAccount() === true) and
+            ($this->merchant->linkedAccountsRequireKyc() === false))
+        {
+            $bankCore = (new BankAccount\Core);
+
+            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetails($merchantDetails->toArray(), true);
+
+            $bankCore->createOrChangeBankAccount($bankData, $this->merchant);
+
+            (new Merchant\Activate)->autoActivate($this->merchant);
+
+            return true;
+        }
+
+        return false;
     }
 }
