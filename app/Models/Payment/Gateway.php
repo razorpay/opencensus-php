@@ -128,6 +128,7 @@ class Gateway
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::WALLET_AIRTELMONEY,
+        Payment\Gateway::FIRST_DATA,
     ];
 
     public static $channels = [

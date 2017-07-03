@@ -236,6 +236,42 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($soapContent);
     }
 
+    public function verifyRefund($input)
+    {
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
+
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $inquiryTransaction = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_TRANSACTION];
+
+        $merchantTxnId = $inquiryTransaction[FirstData\ApiRequestFields::MERCHANT_TXN_ID];
+
+        $soapContent = FirstData\SoapWrapper::verifyRefundResponseWrapper($merchantTxnId);
+
+        $this->content($soapContent, 'verify_refund');
+
+        return $this->prepareResponse($soapContent);
+    }
+
+    public function verifyReverse($input)
+    {
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
+
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $inquiryTransaction = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_TRANSACTION];
+
+        $merchantTxnId = $inquiryTransaction[FirstData\ApiRequestFields::MERCHANT_TXN_ID];
+
+        $soapContent = FirstData\SoapWrapper::verifyReverseResponseWrapper($merchantTxnId);
+
+        return $this->prepareResponse($soapContent);
+    }
+
     protected function setResponseHash($input, & $content)
     {
         $approvalCode = $content[FirstData\ConnectResponseFields::APPROVAL_CODE];
