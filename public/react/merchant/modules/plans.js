@@ -2,11 +2,11 @@ import Plan from 'merchant/models/Plan';
 import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
-const PLANS_FETCH = 'PLANS_FETCH';
-const PLAN_CREATE = 'PLAN_CREATE';
-const PLAN_EDIT = 'PLAN_EDIT';
-const PLAN_DELETE = 'PLAN_DELETE';
-const PLAN_FETCH = 'PLAN_FETCH';
+export const PLANS_FETCH = 'PLANS_FETCH';
+export const PLAN_CREATE = 'PLAN_CREATE';
+export const PLAN_EDIT = 'PLAN_EDIT';
+export const PLAN_DELETE = 'PLAN_DELETE';
+export const PLAN_FETCH = 'PLAN_FETCH';
 
 export const fetchPlans = params => fetchAll(params, Plan, 'PLANS');
 
@@ -40,15 +40,4 @@ export const deletePlan = params => {
 export const plansReducer = makeActionCollectionReducer('PLANS');
 
 // Details Reducer
-let defaultInitialState = {
-  loading: true,
-  entity: {
-    item: {},
-  },
-  error: null,
-};
-export const planReducer = makeEntityReducer(
-  PLAN_FETCH,
-  {},
-  defaultInitialState
-);
+export const planReducer = makeEntityReducer(PLAN_FETCH);

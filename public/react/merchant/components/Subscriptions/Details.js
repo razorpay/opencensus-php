@@ -5,11 +5,10 @@ import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedDetailRow from 'merchant/components/NestedDetailRow';
-import { getIntervalCycle } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, getIntervalCycle } from 'rzp/utils/rzp-utils';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 
-export default ({ subscription, isLoading, statusMsg }) => {
-  debugger;
+export default ({ subscription, plan, customer, isLoading, statusMsg }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -27,11 +26,21 @@ export default ({ subscription, isLoading, statusMsg }) => {
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
                 <EntityDetailRow
+                  label="Customer"
+                  value={customer.displayName}
+                />
+
+                <EntityDetailRow
                   label="Plan"
                   value={() => (
-                    <Link to={`/plans/${subscription.plan_id}`}>
-                      {subscription.plan_id}
-                    </Link>
+                    <div>
+                      <Link to={`/plans/${subscription.plan_id}`}>
+                        {plan.item.name}
+                      </Link>
+                      <div class="text-muted">
+                        <small>{plan.item.description}</small>
+                      </div>
+                    </div>
                   )}
                 />
 
@@ -39,7 +48,24 @@ export default ({ subscription, isLoading, statusMsg }) => {
                   label="Recurring Billing"
                   value={() => (
                     <div>
-                      <small class="text-muted">{subscription.quantity}</small>
+                      <div>
+                        <Amount
+                          currency={plan.item.currency}
+                          value={subscription.quantity * plan.item.unit_amount}
+                        />
+                      </div>
+                      <small class="text-muted">
+                        {subscription.quantity}
+                        {' '}
+                        x
+                        {' '}
+                        <Amount
+                          currency={plan.item.currency}
+                          value={plan.item.unit_amount}
+                        />
+                        {' '}
+                        per unit
+                      </small>
                     </div>
                   )}
                 />

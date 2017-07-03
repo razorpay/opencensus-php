@@ -254,6 +254,10 @@ return [
             'url'       => 'customers',
             'routeName' => 'customer_fetch_all'
         ],
+        'customer_fetch_by_id'           => [
+            'url'       => 'customers/{id}',
+            'routeName' => 'customer_fetch'
+        ],
         'customer_create'                   => [
             'url'       => 'customers',
             'routeName' => 'customer_create'

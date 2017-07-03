@@ -2,11 +2,15 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import { fetchSubscription as fetchItem } from 'merchant/modules/subscriptions';
+import { fetchPlan } from 'merchant/modules/plans';
+import { fetchCustomer } from 'merchant/modules/customers';
 
-@connect(state => state.subscription, { fetchItem })
+@connect(state => state.subscription, { fetchItem, fetchPlan, fetchCustomer })
 export default class SubscriptionDetailsContainer extends Component {
+  state = {};
+
   componentWillMount() {
-    this.props.fetchItem(this.props.id);
+    this.fetchSubscriptionDetails(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -15,10 +19,25 @@ export default class SubscriptionDetailsContainer extends Component {
     }
   }
 
+  fetchSubscriptionDetails(id) {
+    this.setState({ isLoading: true });
+    this.props
+      .fetchItem(id)
+      .then(subscription => {
+        return Promise.all([
+          this.props.fetchPlan(subscription.plan_id),
+          this.props.fetchCustomer(subscription.customer_id),
+        ]);
+      })
+      .then(() => {
+        this.setState({ isLoading: false });
+      });
+  }
+
   render() {
-    let { loading, error, entity } = this.props;
+    let { error, entity, plan, customer } = this.props;
+    let isLoading = this.state.isLoading;
     let statusMsg = {};
-    debugger;
 
     if (error) {
       statusMsg = {
@@ -30,7 +49,9 @@ export default class SubscriptionDetailsContainer extends Component {
     return (
       <SubscriptionDetails
         subscription={entity}
-        isLoading={loading}
+        plan={plan}
+        customer={customer}
+        isLoading={isLoading}
         statusMsg={statusMsg}
       />
     );

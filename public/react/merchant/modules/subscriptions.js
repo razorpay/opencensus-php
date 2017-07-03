@@ -1,6 +1,10 @@
+import { set } from 'rzp/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
 import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
+
+import { PLAN_FETCH } from 'merchant/modules/plans';
+import { CUSTOMER_FETCH } from 'merchant/modules/customers';
 
 const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH';
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
@@ -43,18 +47,23 @@ export const subscriptionsReducer = makeActionCollectionReducer(
 );
 
 // Details Reducer
-let defaultInitialState = {
+let entityInitialState = {
   loading: true,
-  entity: {
-    customer: {},
-    plan: {
-      item: {},
-    },
-  },
+  entity: {},
+  plan: {},
+  customer: {},
   error: null,
 };
+
 export const subscriptionReducer = makeEntityReducer(
   SUBSCRIPTION_FETCH,
-  {},
-  defaultInitialState
+  {
+    [`${PLAN_FETCH}::SUCCESS`]: (state, action) => {
+      return set(state, 'plan', action.payload);
+    },
+    [`${CUSTOMER_FETCH}::SUCCESS`]: (state, action) => {
+      return set(state, 'customer', action.payload);
+    },
+  },
+  entityInitialState
 );
