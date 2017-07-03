@@ -27,8 +27,7 @@ class CreateGatewayRules extends Migration
 
             $table->string(Rule::GATEWAY, 50);
 
-            $table->string(Rule::TYPE, 10)
-                   ->nullable();
+            $table->string(Rule::TYPE, 10);
 
             $table->string(Rule::GROUP, 50)
                   ->nullable();
@@ -45,7 +44,7 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::NETWORK_CATEGORY)
                   ->nullable();
 
-            $table->string(Rule::TERMINAL_TYPE)
+            $table->string(Rule::TERMINAL_TYPE, 20)
                   ->nullable();
 
             $table->tinyInteger(Rule::INTERNATIONAL)
@@ -88,9 +87,19 @@ class CreateGatewayRules extends Migration
             $table->integer(Rule::DELETED_AT)
                   ->nullable();
 
+            $table->index(Rule::TYPE);
+            $table->index(Rule::FILTER_TYPE);
+            $table->index(Rule::GROUP);
+            $table->index(Rule::CURRENCY);
+            $table->index(Rule::MIN_AMOUNT);
+            $table->index(Rule::MAX_AMOUNT);
+            $table->index(Rule::EMI_DURATION);
             $table->index(Rule::GATEWAY);
             $table->index(Rule::GATEWAY_ACQUIRER);
             $table->index(Rule::INTERNATIONAL);
+            $table->index(Rule::TERMINAL_TYPE);
+            $table->index(Rule::NETWORK_CATEGORY);
+            $table->index(Rule::CATEGORY2);
             $table->index(Rule::NETWORK);
             $table->index(Rule::METHOD);
             $table->index(Rule::METHOD_TYPE);

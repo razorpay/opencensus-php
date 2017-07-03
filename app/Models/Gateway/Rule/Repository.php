@@ -26,16 +26,16 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * Attributes to be used while querying for sorter rules apart from
-     * defaultQueryAttributes
+     * Attributes to be used while checking for sorter rules matching given criteria
+     * apart from defaultQueryAttributes
      */
     protected $sorterQueryAttributes = [
         Entity::MERCHANT_ID,
     ];
 
     /**
-     * Attributes to be used while querying for filter rules apart from the
-     * defaultQueryAttributes
+     * Attributes to be used while querying for filter rules matching given criteria
+     * apart from defaultQueryAttributes
      */
     protected $filterQueryAttributes = [
         Entity::GATEWAY,
@@ -67,6 +67,19 @@ class Repository extends Base\Repository
         Entity::CATEGORY2        => 'sometimes|string',
     ];
 
+    /**
+     * Fetches rules with criteria matching given rule's criteria
+     * Example - If we have rule R1 for gateway A with network null, and we are
+     * defining new rule R2 for gateway B with network VISA. For a VISA payment
+     * both rules R1 and R2 will be applicable, i.e rule R1's criteria satisfies
+     * R2's criteria.
+     *
+     * This method computes the total load across all such rules which match the
+     * new rule's criteria
+     *
+     * @param  Entity $rule New rule entity
+     * @return int          Total load across matching rules
+    */
     public function getRulesWithMatchingCriteria(Entity $rule)
     {
         $input = $rule->toArray();
@@ -108,14 +121,14 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Adds where clauses to the select query depending on the type of keys
-     * - If the key has a custom function defined use that
+     * Adds where clauses to the select query depending on the type of values
+     * - If the key has a custom function defined use that for getting the clause
      * - If the key is an array builds query like WHERE IN (<val1>, <val2>)
      * - If the key belongs to NULLABLE_ATTRIBUTES builds query like WHERE (key = val OR key IS NULL)
      *   This is required to handle cases where some rules can have null value for thse attributes
      *   signifying any/all hence we need to include these rules also
      * - Sample query below
-     *   SELECT * FROM load_rules WHERE merchant_id IN (?, ?) AND gateway IN (?, ?, ?)
+     *   SELECT * FROM gateway_rules WHERE merchant_id IN (?, ?) AND gateway IN (?, ?, ?)
      *   AND method = ? AND (method_type = ? OR method_type IS NULL) AND (issuer = ? OR issuer IS NULL)
      *   AND (network = ? OR network IS NULL) AND (gateway_acquirer = ? OR gateway_acquirer IS NULL)
      *   AND international = false AND deleted_at IS NOT NULL
@@ -205,16 +218,16 @@ class Repository extends Base\Repository
      */
     protected function getQueryParams(Entity $rule): array
     {
-        $input = $rule->toArray();
+        $params = $rule->toArray();
 
         $queryAttributes = $this->getQueryAttributes($rule);
 
-        $input = array_filter($input, function ($value, $key) use ($queryAttributes)
+        $params = array_filter($params, function ($value, $key) use ($queryAttributes)
         {
             return ((in_array($key, $queryAttributes, true) === true) and
                     ($value !== null));
         }, ARRAY_FILTER_USE_BOTH);
 
-        return $input;
+        return $params;
     }
 }

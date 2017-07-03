@@ -101,6 +101,8 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
+        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
+
         //
         // Sorting is done on the final list of filtered terminals.
         // The sorting is run for each of the sorting classes.
@@ -162,16 +164,9 @@ class Selector
     {
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalIds = [];
+            $terminalData = array_pluck($terminals, 'id', 'gateway');
 
-            // foreach ($terminals as $terminal)
-            // {
-            //     $terminalIds[] = $terminal->getId();
-            // }
-
-            $terminalIds = array_pluck($terminals, 'id', 'gateway');
-
-            $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
+            $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
@@ -208,7 +203,7 @@ class Selector
             $options->setFailedTerminals([]);
         }
 
-        $terminalsSelected = $this->select($options, true);
+        $terminalsSelected = $this->select($options);
 
         if ($options->getMultiple() === false)
         {

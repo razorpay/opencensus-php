@@ -146,7 +146,7 @@ class Category
         return in_array($category, self::CATEGORIES_ALL, true);
     }
 
-    public static function isNetworkCategoryValid(string $networkCategory, string $method, string $gateway)
+    public static function isNetworkCategoryValid(string $networkCategory, string $method, string $gateway): bool
     {
         if ($networkCategory === self::INVALID)
         {

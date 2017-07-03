@@ -42,8 +42,6 @@ class Core extends Base\Core
 
         $rule->edit($input);
 
-        // Checks if the edited load value will cause total load across similar
-        // rules to exceed max load value of 100
         $validatorMethod = $this->getValidatorMethod($rule);
 
         $this->$validatorMethod($rule);
@@ -57,7 +55,7 @@ class Core extends Base\Core
      * Fetches rules from db as per payment criteria during terminal selection
      *
      * @param  array        $terminals Set of all terminals
-     * @param  array        $input     Array containing payment, merchant enttties
+     * @param  array        $input     Array containing payment, merchant entities
      * @param  bool         $verbose
      * @return PublicCollection collection of applicable rules
      */
@@ -122,9 +120,10 @@ class Core extends Base\Core
     }
 
     /**
-     * Checks if theere is arule of opposite filter_type inn the group in which we
-     * are creating the new rule as such a combination is invalid
-     *
+     * For filter rules checks if there is any rule which satisfies same criteria
+     * as new rule, and same gateway but opposite filter type in the same group
+     * Ror e.g select rule for gateway A and reject rule for gateway A cannot be
+     * present in same group
      * @param  Entity $rule Rule entity being created
      */
     protected function validateFilterRule(Entity $rule)
@@ -139,11 +138,11 @@ class Core extends Base\Core
     }
 
     /**
-     * Checks if the total load across all existing rules matching the criteria
-     * defined by current rule is less than the max load value of 100. This is
-     * required so that we don't end up having rules during terminal sorting whose
-     * total load exceeds the distribution space of 100 as we are treating load
-     * values as percentages
+     * For sorter rules checks if the total load across all existing rules
+     * matching the criteria defined by current rule is less than the max load value of 100,
+     * This is required so that we don't end up having rules during
+     * terminal sorting whose total load exceeds the distribution space of 100
+     * as we are treating load values as percentages
      *
      * @param  Entity $rule  New rule
      * @param  array  $input Request data
@@ -233,6 +232,13 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Fetches rules whose applicability criteria for a particular payment, overlaps
+     * with the applicablity criteria for the rule being compared against
+     *
+     * @param  Entity $rule             Rule entity against which we need to check overlap
+     * @return Base\PublicCollection    rules which have matching criteria
+     */
     protected function getRulesWithMatchingCriteria(Entity $rule): Base\PublicCollection
     {
         $matchingRules = $this->repo
@@ -248,7 +254,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns rules which have iins overlapping with current rules iins.
+     * Returns rules which have iins overlapping with given iins.
      * If any existing rule has null iin, that is also considered overlapping
      * with current rule
      *

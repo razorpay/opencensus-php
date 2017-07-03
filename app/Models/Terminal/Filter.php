@@ -60,7 +60,7 @@ class Filter
         return camel_case($filterProperty) . 'Filter';
     }
 
-    protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId=null)
+    protected function traceTerminals($terminals, $msg, $verbose = false, $merchantId = null)
     {
         if ($merchantId === '4izmfM9TFCAgFN')
         {
@@ -69,16 +69,9 @@ class Filter
 
         if (($verbose === true) and (empty($terminals) === false))
         {
-            // $terminalIds = [];
+            $terminalData = array_pluck($terminals, 'id', 'gateway');
 
-            // foreach ($terminals as $terminal)
-            // {
-            //     $terminalIds[] = $terminal->getId();
-            // }
-
-            $terminalIds = array_pluck($terminals, 'id', 'gateway');
-
-            $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
+            $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
             $trace = Trace::getFacadeRoot();
 
