@@ -241,6 +241,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    public function getEmiInterestBearer()
+    {
+        return $this->getAttribute(self::EMI_INTEREST_BEARER);
+    }
+
     protected function getSubMerchants()
     {
         $subMerchants = $this->merchants()->get();

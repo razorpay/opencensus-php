@@ -109,6 +109,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
+    public function getInterestBearer()
+    {
+        return $this->getAttribute(self::INTEREST_BEARER);
+    }
+
+    public function getMerchantPayoff()
+    {
+        return $this->getAttribute(self::MERCHANT_PAYOFF);
+    }
+
     /**
      * Issuer is either a bank or a network
      */

@@ -604,6 +604,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AUTO_CAPTURE_LATE_AUTH);
     }
 
+    public function getEmiInterestBearer()
+    {
+        return $this->getAttribute(self::EMI_INTEREST_BEARER);
+    }
+
     /**
      * Returns all transaction emails associated with the merchant
      * @return array array of email addresses
