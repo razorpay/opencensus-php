@@ -15,7 +15,7 @@ export default ({ plan, isLoading, statusMsg }) => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-account-balance text-success" />
+              <i class="icon icon-plan text-info" />
               {' '}
               <strong>{plan.id}</strong>
             </div>

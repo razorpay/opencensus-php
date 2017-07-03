@@ -113,7 +113,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Subscriptions"
-                    icon="icon icon-link"
+                    icon="icon icon-refresh"
                     to={routes.subscriptions}
                   />
 

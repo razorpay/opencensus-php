@@ -17,7 +17,7 @@ export default ({ subscription, plan, customer, isLoading, statusMsg }) => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-account-balance text-success" />
+              <i class="icon icon-refresh text-info" />
               {' '}
               <strong>{subscription.id}</strong>
             </div>
