@@ -38,3 +38,17 @@ export const deletePlan = params => {
 
 // List Reducer
 export const plansReducer = makeActionCollectionReducer('PLANS');
+
+// Details Reducer
+let defaultInitialState = {
+  loading: true,
+  entity: {
+    item: {},
+  },
+  error: null,
+};
+export const planReducer = makeEntityReducer(
+  PLAN_FETCH,
+  {},
+  defaultInitialState
+);

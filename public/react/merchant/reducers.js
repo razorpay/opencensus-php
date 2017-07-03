@@ -44,7 +44,7 @@ import {
 } from 'rzp/modules/collection';
 
 import { subscriptionsReducer } from 'merchant/modules/subscriptions';
-import { plansReducer } from 'merchant/modules/plans';
+import { plansReducer, planReducer } from 'merchant/modules/plans';
 
 export default combineReducers({
   modal: modalReducer,
@@ -60,6 +60,7 @@ export default combineReducers({
   refundbatches: refundBatchesReducer,
   subscriptions: subscriptionsReducer,
   plans: plansReducer,
+  plan: planReducer,
   profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,

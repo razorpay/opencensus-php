@@ -5,6 +5,7 @@ const baseUrl = {
   rfnd: '/refunds/',
   order: '/orders/',
   va: '/virtualaccounts/',
+  plan: '/plans/',
   // trf: '/marketplace/transfers/',
   // acc: '/marketplace/accounts/',
   // rvrsl: '/marketplace/reversals/',
