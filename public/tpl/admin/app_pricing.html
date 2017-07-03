@@ -5,6 +5,9 @@
   </h1>
 </div>
 <div class="wrapper-md" ng-controller="PricingsCtrl">
+  <div class="text-center">
+    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  </div>
   <div class="panel panel-default" >
     <div class="panel-heading">
       List of all Plans
@@ -56,8 +59,5 @@
         </tfoot>
       </table>
     </div>
-  </div>
-  <div class="text-center m-t">
-    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
   </div>
 </div>
