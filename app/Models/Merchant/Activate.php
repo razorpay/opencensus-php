@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Mail;
 
 use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Mail\Merchant\Activation as ActivationMail;
@@ -101,9 +102,44 @@ class Activate extends Base\Core
     }
 
     /**
+     * Handles the logic for auto-activation of accounts
+     *
+     * @param Entity $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function autoActivate(Entity $merchant): array
+    {
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
+
+        $merchant->activate();
+
+        (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
+            [
+                'type' => 'auto_activate',
+                'merchant_id' => $merchant->getId()
+            ]);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
      * Sends activation email to the merchant, cc's notifications
      * Includes pricing details in the email (properly formatted)
-     * @param  RZP\Models\Merchant\Entity $merchant merchant entity
+     *
+     * @param  Entity $merchant
      * @return null
      */
     public function sendActivationEmail($merchant)
