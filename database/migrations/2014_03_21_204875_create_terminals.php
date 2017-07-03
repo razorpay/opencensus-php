@@ -98,7 +98,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::TPV)
                   ->default(0);
 
-            $table->string(Merchant::EMI_INTEREST_BEARER)
+            $table->string(Terminal::EMI_INTEREST_BEARER)
                   ->default(EmiInterestBearer::CUSTOMER);
 
             $table->tinyInteger(Terminal::TYPE)

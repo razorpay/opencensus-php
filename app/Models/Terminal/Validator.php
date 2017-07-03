@@ -70,6 +70,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+        Entity::EMI_INTEREST_BEARER         => 'sometimes|in:customer,merchant',
     ];
 
     protected static $aepsIciciTerminalRules = [

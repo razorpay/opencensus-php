@@ -217,7 +217,8 @@ return [
                 'category' => '1111',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
+                ],
+                'emi_interest_bearer' => 'merchant'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -236,7 +237,8 @@ return [
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
+                ],
+                'emi_interest_bearer' => 'merchant',
             ]
         ]
     ],
