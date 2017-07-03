@@ -32,8 +32,6 @@ class CoreTest extends TestCase
 
         $actual = $this->core->getFormattedInvoiceData($invoice->getPublicId(), $merchant);
 
-        $actual['customer']['notes'] = (array) $actual['customer']['notes'];
-
         $expected = [
             'invoice'  => [
                 'order_id' => 'order_100000000order',
