@@ -28,7 +28,7 @@ class Gateway extends Base\Gateway
         {
             case Base\Action::REFUND:
 
-                $entity->setPaymentId($this->input['payment']['id']);
+                $entity->setRefundId($this->input['refund']['id']);
 
                 $entity->setAmount($this->input['refund']['amount']);
 
