@@ -264,14 +264,14 @@ class Core extends Base\Core
      */
     protected function getRulesWithOverLappingIins(array $iins, Base\PublicCollection $rules): Base\PublicCollection
     {
-        $rules = $rules->filter(function ($r) use ($iins)
+        $rules = $rules->filter(function ($rule) use ($iins)
         {
-            if ((empty($iins) === true) or (empty($r->getIins()) === true))
+            if ((empty($iins) === true) or (empty($rule->getIins()) === true))
             {
                 return true;
             }
 
-            return count(array_intersect($iins, $r->getIins())) > 0;
+            return count(array_intersect($iins, $rule->getIins())) > 0;
         });
 
         return $rules;

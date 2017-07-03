@@ -7,7 +7,7 @@ use RZP\Models\Merchant;
 
 return [
     'testCreateGatewayRule' => [
-        // Create gsorter ateway rule for card
+        // Create sorter gateway rule for card
         [
             'request' => [
                 'content' => [
@@ -78,7 +78,7 @@ return [
                 ],
             ],
         ],
-        // Create rule with invalid gateway
+        // Create sorter rule with invalid gateway
         [
             'request' => [
                 'content' => [
@@ -140,7 +140,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create rule with invalid payment method
+        // Create sorter rule with invalid payment method
         [
             'request' => [
                 'content' => [
@@ -171,7 +171,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create rule with invalid network
+        // Create sorter rule with invalid network
         [
             'request' => [
                 'content' => [
@@ -202,7 +202,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create rule with unsupported network for gateway
+        // Create sorter rule with unsupported network for gateway
         [
             'request' => [
                 'content' => [
@@ -233,7 +233,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create rule with invalid bank issuer code
+        // Create sorter rule with invalid bank issuer code
         [
             'request' => [
                 'content' => [
@@ -264,7 +264,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create rule with invalid method_type
+        // Create sorter rule with invalid method_type
         [
             'request' => [
                 'content' => [
@@ -296,7 +296,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create rule with invalid acquirer for gateway
+        // Create sorter rule with invalid acquirer for gateway
         [
             'request' => [
                 'content' => [
@@ -399,6 +399,35 @@ return [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                         'description' => 'ALLA is not a supported bank for gateway ebs',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create rulw with min_amount > max_amount
+        [
+            'request' => [
+                'content' => [
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 500,
+                    'max_amount'  => 100,
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'min_amount should be lesser than max_amount',
                     ],
                 ],
                 'status_code' => 400,

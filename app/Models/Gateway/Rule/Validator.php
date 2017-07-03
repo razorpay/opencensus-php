@@ -107,7 +107,8 @@ class Validator extends Base\Validator
         }
 
         // If it is a reject filter type  don't check if gateway supports method
-        if (($input[Entity::TYPE] === Entity::FILTER) and ($input[Entity::FILTER_TYPE] === Entity::REJECT))
+        if (($input[Entity::TYPE] === Entity::FILTER) and
+            ($input[Entity::FILTER_TYPE] === Entity::REJECT))
         {
             return;
         }
@@ -185,7 +186,8 @@ class Validator extends Base\Validator
     protected function validateNetbankingIssuer(array $input)
     {
         // If it is a reject filter type skip validation
-        if (($input[Entity::TYPE] === Entity::FILTER) and ($input[Entity::FILTER_TYPE] === Entity::REJECT))
+        if (($input[Entity::TYPE] === Entity::FILTER) and
+            ($input[Entity::FILTER_TYPE] === Entity::REJECT))
         {
             return;
         }
@@ -236,7 +238,8 @@ class Validator extends Base\Validator
         }
 
         // If it is a reject filter type don't check if gateway supports network
-        if (($input[Entity::TYPE] === Entity::FILTER) and ($input[Entity::FILTER_TYPE] === Entity::REJECT))
+        if (($input[Entity::TYPE] === Entity::FILTER) and
+            ($input[Entity::FILTER_TYPE] === Entity::REJECT))
         {
             return;
         }

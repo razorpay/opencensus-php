@@ -60,6 +60,7 @@ return [
                     'load'    => 70,
                 ],
                 [
+                    'type'    => 'sorter',
                     'gateway' => 'hdfc',
                     'network' => 'VISA',
                     'load'    => 20,
@@ -73,7 +74,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
-                    'type'    => 'sorter',
+                    'type'             => 'sorter',
                     'gateway'          => 'cybersource',
                     'method_type'      => 'credit',
                     'network'          => 'VISA',
@@ -90,7 +91,7 @@ return [
             'method' => 'card',
             'rules' => [
                 [
-                    'type'    => 'sorter',
+                    'type'        => 'sorter',
                     'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
                     'gateway'     => 'axis_migs',
                     'network'     => 'VISA',

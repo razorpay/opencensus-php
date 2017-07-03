@@ -184,7 +184,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * min_amount and max_amount are handled like below as they reporesent a range
+     * min_amount and max_amount are handled like below as they represent a range
      * and we want to find rules which overlap this range
      */
     protected function addQueryForMinAmount($query, $params)
