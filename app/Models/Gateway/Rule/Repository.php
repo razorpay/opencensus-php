@@ -28,6 +28,10 @@ class Repository extends Base\Repository
         Entity::INTERNATIONAL,
     ];
 
+    /**
+     * Attributes to be used while checking for sorter rules matching given criteria
+     * apart from defaultQueryAttributes
+     */
     protected $sorterQueryAttributes = [
         Entity::MERCHANT_ID,
     ];

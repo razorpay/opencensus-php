@@ -2217,6 +2217,7 @@ ALTER TABLE `upi`
     ADD COLUMN `npci_reference_id` VARCHAR(20) NULL DEFAULT NULL AFTER `gateway_payment_id`,
     ADD INDEX `upi_npci_reference_id_index` (`npci_reference_id`);
 
+<<<<<<< HEAD
 ALTER TABLE emi_plans
     ADD COLUMN subvention VARCHAR(255) DEFAULT  'customer' AFTER issuer_plan_id,
     ADD COLUMN merchant_payback INTEGER UNSIGNED DEFAULT 0  AFTER subvention;
@@ -2330,6 +2331,29 @@ ALTER TABLE gateway_rules
     ADD COLUMN emi_duration TINYINT(4) NULL AFTER currency,
     ADD COLUMN emi_subvention VARCHAR(20) NULL AFTER emi_duration,
     ADD COLUMN category2 VARCHAR(255) NULL AFTER emi_subvention,
+=======
+# query for adding columns required for rule filtering
+ALTER TABLE gateway_rules
+    ADD COLUMN type VARCHAR(10) NOT NULL AFTER gateway,
+    ADD COLUMN `group` VARCHAR(50) NULL AFTER type;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN filter_type VARCHAR(10) NULL AFTER `group`,
+    MODIFY COLUMN `load` INT(11);
+
+ALTER TABLE gateway_rules
+    ADD COLUMN network_category VARCHAR(255) NULL AFTER gateway_acquirer;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN terminal_type VARCHAR(20) NULL AFTER network_category;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN min_amount INT(11) UNSIGNED NOT NULL DEFAULT 0 AFTER issuer,
+    ADD COLUMN max_amount INT(11) UNSIGNED NULL,
+    ADD COLUMN iins TEXT NULL,
+    ADD COLUMN currency VARCHAR(3) NULL,
+    ADD COLUMN emi_duration TINYINT(4) NULL,
+    ADD COLUMN category2 VARCHAR(255) NULL,
     ADD INDEX gateway_rules_type_index (type),
     ADD INDEX gateway_rules_filter_type_index (filter_type),
     ADD INDEX gateway_rules_group_index (`group`),

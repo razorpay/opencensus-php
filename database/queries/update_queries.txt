@@ -517,6 +517,7 @@ UPDATE terminals
 # Set delay in hours for hourly schedules
 UPDATE schedules SET delay=1 WHERE period='hourly' AND DELAY=0;
 
+<<<<<<< HEAD
 UPDATE refunds SET reference1='NA' WHERE reference1 = '(Onus transaction)';
 
 UPDATE billdesk SET RefundId = 'IICI53376607981' WHERE id = 1714166;
