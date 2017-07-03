@@ -107,6 +107,14 @@ return [
                     ],
                 ],
             ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
         ],
     ],
 
@@ -173,6 +181,14 @@ return [
                             ],
                         ],
                     ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
                 ],
             ],
         ],
