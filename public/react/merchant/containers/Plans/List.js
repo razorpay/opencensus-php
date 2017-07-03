@@ -11,7 +11,7 @@ import {
   planName,
   planAmount,
   planBillingCycle,
-  status,
+  createdAt,
 } from 'rzp/ui/item/pair';
 
 @connect(state => state.plans, { fetchAll })
@@ -29,7 +29,7 @@ export default class PlansListContainer extends ListContainer {
 
         <DataTable
           title="Plans"
-          columns={[planId, planName]}
+          columns={[planId, planName, planAmount, planBillingCycle, createdAt]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

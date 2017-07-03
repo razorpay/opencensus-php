@@ -1,5 +1,6 @@
 import * as items from './index';
 import * as id from './id';
+import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -92,9 +93,10 @@ export const planName = {
 export const planAmount = {
   title: 'Amount/Unit (INR)',
   value: items.getAmount('item.amount'),
+  columnClass: textRightClass,
 };
 
 export const planBillingCycle = {
   title: 'Billing Cycle',
-  value: item => item.billingCycle,
+  value: item => getIntervalCycle(item.interval, item.period),
 };
