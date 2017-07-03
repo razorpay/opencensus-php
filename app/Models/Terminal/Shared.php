@@ -108,7 +108,7 @@ class Shared
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL  => Gateway::FIRST_DATA,
         self::AEPS_ICICI_RAZORPAY_TERMINAL  => Gateway::AEPS_ICICI,
-        self::UPI_MINDGATE_RAZORPAY_TERMINAL    => Gateway::UPI_MINDGATE,
+        self::UPI_MINDGATE_RAZORPAY_TERMINAL=> Gateway::UPI_MINDGATE,
         self::UPI_ICICI_RAZORPAY_TERMINAL   => Gateway::UPI_ICICI,
         self::OPENWALLET_RAZORPAY_TERMINAL  => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL       => Gateway::WALLET_MPESA,
