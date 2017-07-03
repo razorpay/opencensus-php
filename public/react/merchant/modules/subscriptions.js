@@ -42,21 +42,19 @@ export const subscriptionsReducer = makeActionCollectionReducer(
   'SUBSCRIPTIONS'
 );
 
-// // Virtual Accounts Details Reducer
-// let detailsInitialState = {
-//   loading: true,
-//   entity: {},
-//   error: null,
-//   va_payments: [],
-// };
-// export const virtualAccountReducer = makeEntityReducer(
-//   VIRTUAL_ACCOUNT_FETCH,
-//   {
-//     [`${VIRTUAL_ACCOUNT_EDIT}::SUCCESS`]: updateEntity,
-
-//     [`${VIRTUAL_ACCOUNT_PAYMENTS_FETCH}::SUCCESS`]: (state, action) => {
-//       return set(state, 'va_payments', action.payload.data.items);
-//     },
-//   },
-//   detailsInitialState
-// );
+// Details Reducer
+let defaultInitialState = {
+  loading: true,
+  entity: {
+    customer: {},
+    plan: {
+      item: {},
+    },
+  },
+  error: null,
+};
+export const subscriptionReducer = makeEntityReducer(
+  SUBSCRIPTION_FETCH,
+  {},
+  defaultInitialState
+);

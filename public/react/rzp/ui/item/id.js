@@ -6,6 +6,7 @@ const baseUrl = {
   order: '/orders/',
   va: '/virtualaccounts/',
   plan: '/plans/',
+  sub: '/subscriptions/',
   // trf: '/marketplace/transfers/',
   // acc: '/marketplace/accounts/',
   // rvrsl: '/marketplace/reversals/',
@@ -19,6 +20,7 @@ const sources = {
 };
 
 export const idItem = id => <code>{id}</code>;
+
 export const idLink = id => {
   var url = baseUrl[id.split('_')[0]];
   var item = idItem(id);
@@ -30,7 +32,8 @@ export const idLink = id => {
 };
 
 const makePropLink = prop => item => idLink(item[prop]);
-const makeIdLink = type => item => {
+
+export const makeIdLink = type => item => {
   return idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
 };
 
@@ -44,7 +47,3 @@ export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
-
-export const virtualAccount = makeIdLink('virtual_account');
-export const subscription = makeIdLink('subscription');
-export const plan = makeIdLink('plan');

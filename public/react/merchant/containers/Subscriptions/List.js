@@ -1,13 +1,18 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-
 import SubscriptionsListFilter
   from 'merchant/components/Subscriptions/ListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
-
-import { subscriptionId, nextDueOn, status } from 'rzp/ui/item/pair';
+import {
+  subscriptionId,
+  planId,
+  customerId,
+  nextDueOn,
+  createdAt,
+  status,
+} from 'rzp/ui/item/pair';
 
 @connect(state => state.subscriptions, { fetchAll })
 export default class SubscriptionsListContainer extends ListContainer {
@@ -24,7 +29,14 @@ export default class SubscriptionsListContainer extends ListContainer {
 
         <DataTable
           title="Subscriptions"
-          columns={[subscriptionId, nextDueOn, status]}
+          columns={[
+            subscriptionId,
+            planId,
+            customerId,
+            nextDueOn,
+            createdAt,
+            status,
+          ]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

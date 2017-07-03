@@ -1,5 +1,7 @@
 import * as items from './index';
 import * as id from './id';
+import { getAmount, getTime } from 'rzp/ui/item';
+import { makeIdLink } from 'rzp/ui/item/id';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
 export const withClick = onClick => ({ value, ...rest }) => {
@@ -56,7 +58,7 @@ export const paymentOrder = orders => mapValues(orders)(orderId.title);
 // Virtual Accounts
 export const virtualAccountId = {
   title: 'Virtual Account ID',
-  value: id.virtualAccount,
+  value: makeIdLink('virtual_account'),
 };
 export const accountDescription = {
   title: 'Account Description',
@@ -65,24 +67,29 @@ export const accountDescription = {
 export const amountPaid = {
   title: 'Amount Paid',
   columnClass: textRightClass,
-  value: items.getAmount('amount_paid'),
+  value: getAmount('amount_paid'),
 };
 
 // Subscriptions
 export const subscriptionId = {
   title: 'Subscription ID',
-  value: id.subscription,
+  value: makeIdLink('subscription'),
+};
+
+export const customerId = {
+  title: 'Customer ID',
+  value: item => item.customer_id,
 };
 
 export const nextDueOn = {
   title: 'Next Due on',
-  value: items.getTime('next_at', 'MMM DD YYYY'),
+  value: getTime('next_at', 'MMM DD YYYY'),
 };
 
 // Plans
 export const planId = {
   title: 'Plan ID',
-  value: id.plan,
+  value: makeIdLink('plan'),
 };
 
 export const planName = {
@@ -92,7 +99,7 @@ export const planName = {
 
 export const planAmount = {
   title: 'Amount/Unit (INR)',
-  value: items.getAmount('item.amount'),
+  value: getAmount('item.amount'),
   columnClass: textRightClass,
 };
 
