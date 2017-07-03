@@ -23,14 +23,14 @@ class Repository extends Base\Repository
      * Used in Payment Reconciliate for fetching
      * payment by given gateway caps_payment_id & its respective action
      * For 'purchase', we consider entities where action is
-     * 'purchase' & 'capture' & pick the first entry.
+     * 'purchase' & 'authorize' & pick the first entry.
      *
      * @param string $capsPaymentId
      * @return Entity
      */
     public function findPaymentForGateway(string $capsPaymentId)
     {
-        $actions = [Base\Action::PURCHASE, Base\Action::CAPTURE];
+        $actions = [Base\Action::PURCHASE, Base\Action::AUTHORIZE];
 
         return $this->newQuery()
                     ->where(Entity::CAPS_PAYMENT_ID, '=', $capsPaymentId)

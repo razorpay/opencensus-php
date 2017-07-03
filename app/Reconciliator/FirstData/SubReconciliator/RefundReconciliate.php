@@ -28,7 +28,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId($row)
     {
-        $refundId = $this->getGatewayPayment($row)->getRefundId();
+        $refundId = $this->getGatewayRefund($row)->getRefundId();
 
         return $refundId;
     }
@@ -42,7 +42,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getPaymentId($row)
     {
-        $paymentId = $this->getGatewayPayment($row)->getPaymentId();
+        $paymentId = $this->getGatewayRefund($row)->getPaymentId();
 
         return $paymentId;
     }
@@ -83,7 +83,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * @param array             $row
      * @return FirstData\Entity $payment
      */
-    protected function getGatewayPayment($row)
+    protected function getGatewayRefund($row)
     {
         $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 
@@ -101,11 +101,11 @@ class RefundReconciliate extends Base\RefundReconciliate
         // The broad assumption here is that these ids will not collide
         // The mathematical probability is very low (not zero though)!
         //
-        $payment = $this->repo->first_data
-                              ->findRefundForGateway(
+        $refund = $this->repo->first_data
+                             ->findRefundForGateway(
                                     $capsPaymentId, $gatewayTxnId);
 
-        return $payment;
+        return $refund;
     }
 
     /**
