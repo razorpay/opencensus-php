@@ -270,7 +270,13 @@ app.controller('PricingsCtrl', [
 
       request.success(function(data) {
         if (data.success) {
-          $scope.create_plan = false;
+          if (data.data.length === 0) {
+            $scope.alerts.addAlert(
+              'danger',
+              'No plan exists with the given id',
+              true
+            );
+          }
           $scope.show_plan = data.data;
         }
       });
