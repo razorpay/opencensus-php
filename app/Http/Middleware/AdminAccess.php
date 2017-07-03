@@ -139,8 +139,8 @@ class AdminAccess
             if (!empty($orgHostname))
             {
                 $org = $this->repo->org->findOrFailByHostname($orgHostname);
-                $orgPublic = $org->toArrayPublic();
-                $orgId = $orgPublic['id'];
+
+                $orgId = $org->getPublicId();
             }
         }
 
