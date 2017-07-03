@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
      * Attributes used for comparing terminal to rule
      */
     const COMPARISON_ATTRIBUTES = [
+        self::METHOD,
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
@@ -395,10 +396,54 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 
+    protected function compareMethod(Terminal\Entity $terminal): bool
+    {
+        $method = $this->getMethod();
+
+        switch ($method)
+        {
+            case Method::CARD:
+                return (($terminal->isCardEnabled() === true) and ($terminal->isEmiEnabled() === false));
+
+            case Method::NETBANKING:
+                return ($terminal->isNetbankingEnabled() === true);
+
+            case Method::EMI:
+                return ($this->isValidEmiTerminal($terminal) === true);
+
+            case Method::WALLET:
+                return ($this->getGateway() === $terminal->getGateway());
+
+            case Method::UPI:
+                return ($terminal->isUpiEnabled() === true);
+
+            case Method::AEPS:
+                return ($terminal->isAepsEnabled() === true);
+        }
+    }
+
     protected function compareTerminalType(Terminal\Entity $terminal): bool
     {
         $terminalType = $this->getAttribute(self::TERMINAL_TYPE);
 
         return ($terminalType === 'shared') ? $terminal->isShared() : !$terminal->isShared();
+    }
+
+    protected function isValidEmiTerminal(Terminal\Entity $terminal): bool
+    {
+        $issuer = $this->getIssuer();
+
+        //@note: There are some banks for whom emi payments needs to be processed
+        //through card terminals only. We will also need to create rules with issuer
+        //values set for these banks
+        //@todo: Check if we can create terminals with emi method for all correspodning
+        //card terminals. We can remove this check then
+        if ((empty($issuer) === false) and
+            (in_array($issuer, Gateway::$emiBanksUsingCardTerminals, true) === true))
+        {
+            return (($terminal->isCardEnabled() === true) and ($terminal->isEmiEnabled() === false));
+        }
+
+        return ($terminal->isEmiEnabled() === true);
     }
 }

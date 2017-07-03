@@ -359,7 +359,6 @@ return [
             ],
             'expected_terminal_ids' => [
                 '1000HdfcShared',
-                'ShrdHdfcEmiTrm',
             ]
         ],
         [
@@ -431,9 +430,51 @@ return [
                     'emi_duration' => '9',
                     'issuer'       => 'ICIC',
                 ],
+                [
+                    'method'       => 'emi',
+                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'      => 'hdfc',
+                    'type'         => 'filter',
+                    'filter_type'  => 'select',
+                    'group'        => 'method_filter',
+                ],
             ],
             'expected_terminal_ids' => [
                 'ShrdHdfcEmiTrm',
+            ]
+        ],
+        [
+            'payment_options' => [
+                'method' => Method::EMI,
+                'amount' => '300000',
+                'emi' => [
+                    'duration' => '9',
+                    'bank' => 'KKBK',
+                ],
+                'card' => [
+                    'number'       => '41476700000006',
+                    'name'         => 'Harshil',
+                    'expiry_month' => '12',
+                    'expiry_year'  => '2017',
+                    'cvv'          => '566',
+                    'network'      => 'Visa',
+                    'issuer'       => 'KKBK',
+                ],
+                'bank' => 'KKBK',
+            ],
+            'fixtures' => [
+                [
+                    'method'       => 'emi',
+                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'      => 'hdfc',
+                    'type'         => 'filter',
+                    'filter_type'  => 'select',
+                    'group'        => 'method_filter',
+                    'issuer'       => 'KKBK',
+                ],
+            ],
+            'expected_terminal_ids' => [
+                '1000HdfcShared',
             ]
         ],
         [
