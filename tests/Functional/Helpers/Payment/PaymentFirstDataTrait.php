@@ -118,7 +118,11 @@ trait PaymentFirstDataTrait
         {
             if ($action === 'verify_refund')
             {
-                $content = SoapWrapper::ERROR_ACTION_RESPONSE;
+                // Simulating a random error from FirstData
+                // Can't use ERROR_ACTION_RESPONSE, because VerifyRefund
+                // interprets that as a refund failed, and retries.
+                // We just want to throw an error somehow.
+                $content = SoapWrapper::ERROR_SOAP_SKELETON;
             }
         });
     }
