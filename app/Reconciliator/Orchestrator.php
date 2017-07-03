@@ -45,6 +45,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_RBL     = 'NetbankingRbl';
     const JIOMONEY           = 'Jiomoney';
     const EBS                = 'Ebs';
+    const FIRST_DATA         = 'FirstData';
     const ADMIN              = 'admin';
 
     /**
@@ -68,6 +69,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_RBL     => [],
         self::JIOMONEY           => [],
         self::EBS                => [],
+        self::FIRST_DATA         => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN              => ['prashanth.yv@razorpay.com'],
