@@ -1497,18 +1497,23 @@ return [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'patch',
             'content'   => [
-                'receipt'      => 'inv_receipt_0001',
-                'terms'        => 'Updated terms & conditions',
+                'receipt' => 'inv_receipt_0001',
+                'terms'   => 'Updated terms & conditions',
+                'notes'   => [
+                    'key' => 'new value',
+                ],
             ],
         ],
         'response' => [
             'content' => [
-                'id'                   => 'inv_1000000invoice',
-                'entity'               => 'invoice',
-                'receipt'              => 'inv_receipt_0001',
-                'status'               => 'draft',
-                'terms'                => 'Updated terms & conditions',
-                'notes'                => [],
+                'id'      => 'inv_1000000invoice',
+                'entity'  => 'invoice',
+                'receipt' => 'inv_receipt_0001',
+                'status'  => 'draft',
+                'terms'   => 'Updated terms & conditions',
+                'notes'   => [
+                    'key' => 'new value',
+                ],
             ]
         ]
     ],
@@ -3194,7 +3199,6 @@ return [
                 'customer_contact' => '1234567890',
                 'description'      => null,
                 'terms'            => null,
-                'notes'            => [],
             ],
         ],
     ],
