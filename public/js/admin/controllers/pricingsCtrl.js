@@ -6,12 +6,14 @@ app.controller('PricingsCtrl', [
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
+  '$state',
   function(
     $scope,
     $stateParams,
     $http,
     alertsFactory,
-    transformRequestAsFormPost
+    transformRequestAsFormPost,
+    $state
   ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.pricing_plans = {};
@@ -108,7 +110,7 @@ app.controller('PricingsCtrl', [
         });
     };
 
-    $scope.savePlan = function() {
+    $scope.savePlan = function(redirectToDetailsPage) {
       var data = getPayload($scope.new_plan);
 
       var params = {
@@ -130,6 +132,15 @@ app.controller('PricingsCtrl', [
               'Plan created successfully',
               true
             );
+            /**
+             * If this function is triggered from the new flow,
+             * then we need to redirect to the details page to add more rules
+            */
+            if (redirectToDetailsPage === true) {
+              $state.go('app.pricingdetail', {
+                id: data.data.id,
+              });
+            }
             $scope.create_plan = false;
             $scope.pricing_plans.push(data.data);
             $scope.showPlan(data.data.id);
