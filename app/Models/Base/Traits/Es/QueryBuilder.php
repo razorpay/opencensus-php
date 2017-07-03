@@ -25,9 +25,7 @@ trait QueryBuilder
         $size   = ($params[self::COUNT]) ?? 10;
         $source = boolval(($params[self::SEARCH_HITS]) ?? false);
 
-        unset($params[self::SKIP]);
-        unset($params[self::COUNT]);
-        unset($params[self::SEARCH_HITS]);
+        unset($params[self::SKIP], $params[self::COUNT], $params[self::SEARCH_HITS]);
 
         return [$from, $size, $source];
     }
@@ -151,8 +149,7 @@ trait QueryBuilder
 
         $this->addFilter($query, $filter);
 
-        unset($params[self::FROM]);
-        unset($params[self::TO]);
+        unset($params[self::FROM], $params[self::TO]);
     }
 
     /**
