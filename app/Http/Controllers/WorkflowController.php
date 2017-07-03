@@ -190,7 +190,7 @@ class WorkflowController extends Controller
 
         $org = (new Org\Service)->fetchByHostname($orgHostname);
 
-        $data = (new Workflow\Service)->fetch($org->getId(), $id);
+        $data = (new Workflow\Service)->fetch($org['id'], $id);
 
         return ApiResponse::json($data);
     }
