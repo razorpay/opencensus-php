@@ -18,7 +18,6 @@ app.controller('PricingsCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.pricing_plans = {};
     $scope.show_plan = {};
-    $scope.create_plan = false;
     $scope.itemList = [];
     $scope.networks = null;
     generateTable();
@@ -52,12 +51,6 @@ app.controller('PricingsCtrl', [
     }
 
     $scope.new_plan = $scope.new_rule = getDefaultRule();
-
-    $scope.createPlan = function() {
-      $scope.new_plan = getDefaultRule();
-      $scope.show_plan = {};
-      $scope.create_plan = true;
-    };
 
     var getNetworkList = function(method) {
       if ($scope.networks === null) {
@@ -110,7 +103,7 @@ app.controller('PricingsCtrl', [
         });
     };
 
-    $scope.savePlan = function(redirectToDetailsPage) {
+    $scope.savePlan = function() {
       var data = getPayload($scope.new_plan);
 
       var params = {
@@ -132,18 +125,9 @@ app.controller('PricingsCtrl', [
               'Plan created successfully',
               true
             );
-            /**
-             * If this function is triggered from the new flow,
-             * then we need to redirect to the details page to add more rules
-            */
-            if (redirectToDetailsPage === true) {
-              $state.go('app.pricingdetail', {
-                id: data.data.id,
-              });
-            }
-            $scope.create_plan = false;
-            $scope.pricing_plans.push(data.data);
-            $scope.showPlan(data.data.id);
+            $state.go('app.pricingdetail', {
+              id: data.data.id,
+            });
           } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {
