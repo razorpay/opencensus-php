@@ -1,5 +1,11 @@
 import { Component } from 'react';
 
+const NOTIFICATION_TYPES = {
+  success: 'Notification--success',
+  error: 'Notification--error',
+  info: 'Notification--info',
+};
+
 class Notification extends Component {
   constructor() {
     super(...arguments);
@@ -53,7 +59,7 @@ class Notification extends Component {
         ref={notificationEle => {
           this.notificationEle = notificationEle;
         }}
-        class={`Notification ${type === 'success' ? 'Notification--success' : 'Notification--error'}`}
+        class={`Notification ${NOTIFICATION_TYPES[type]}`}
       >
         {typeof message === 'function'
           ? message()
@@ -62,7 +68,7 @@ class Notification extends Component {
                   {message.map((msg, idx) => <li key={idx}>{msg}</li>)}
                 </ul>
               : message}
-        {showClose && <i class="fa fa-close" onClick={this.close} />}
+        {showClose && <i class="icon icon-close" onClick={this.close} />}
       </div>
     );
   }

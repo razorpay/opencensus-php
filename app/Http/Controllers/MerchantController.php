@@ -1,15 +1,15 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\AppResponse;
+use App;
+use Auth;
+use Input;
+use App\Api;
 use App\Merchant;
 use App\MerchantDetails;
+use App\Http\AppResponse;
+use Illuminate\Http\Request;
 use App\Mailers\ContactFormMailer;
-use App\Api;
-use Input;
-use Auth;
-use App;
 
 class MerchantController extends Controller
 {
@@ -35,19 +35,6 @@ class MerchantController extends Controller
         list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $input);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Get the user list for the currently logged in merchant
-     * Only accessible to owners
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getUsersListWithInvites()
-    {
-        $data = (new Merchant\Service)->getUsersListWithInvites();
-
-        return AppResponse::jsonResponse(null, $data);
     }
 
     /**
@@ -89,7 +76,7 @@ class MerchantController extends Controller
 
     public function getKeys($mode)
     {
-        $merchant = Auth::user()->currentMerchant;
+        $merchant = Auth::user()->currentMerchant();
 
         list($error, $keys) = (new Merchant\Service)->fetchKeysFromApi($merchant->id, $mode);
 
@@ -98,7 +85,7 @@ class MerchantController extends Controller
 
     public function postNewKey($mode)
     {
-        $merchant = Auth::user()->currentMerchant;
+        $merchant = Auth::user()->currentMerchant();
 
         list($error, $data) = (new Merchant\Service)->createKey($merchant->id, $mode);
 
@@ -155,7 +142,6 @@ class MerchantController extends Controller
         else
         {
             $error = $service->checkUploads();
-
         }
 
         return AppResponse::jsonResponse($error);
@@ -180,6 +166,7 @@ class MerchantController extends Controller
     public function optionsContact()
     {
         $response = AppResponse::jsonResponse([]);
+
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
 
         return $response;
@@ -203,6 +190,7 @@ class MerchantController extends Controller
         (new ContactFormMailer)->with($input)->contact()->queue()->deliver();
 
         $response = AppResponse::jsonResponse([]);
+
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
 
         return $response;
@@ -240,7 +228,7 @@ class MerchantController extends Controller
      */
     public function getReferredMerchants()
     {
-        $id = Auth::user()->getCurrentMerchantId();
+        $id = Auth::user()->currentMerchant()->id;
 
         $data = (new Merchant\Service)->fetchReferredMerchants($id);
 
@@ -256,8 +244,7 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)
-            ->registerSubMerchant($input);
+        list($error, $data) = (new Merchant\Service)->registerSubMerchant($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -270,120 +257,14 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)
-            ->registerSubMerchantUser($input);
+        list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getBankAccount()
-    {
-        list($error, $data) = (new Merchant\Service)
-            ->fetchBankAccount();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Upload Batch File
-     * @param  string $mode Live/Test Mode
-     * @return Array       Array of error and response
-     */
-    public function uploadBatchFile($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $response) = (new Api\Service)->uploadBatchFile($mode, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Fetch Multiple Batches
-     * @param  string $mode Live/Test Mode
-     * @return Array       Array of error and response
-     */
-    public function fetchMultipleBatches($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $response) = (new Api\Service)->fetchMultipleBatches($mode, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Fetch batch by id
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function fetchBatchById($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->fetchBatchById($mode, $id);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Download Batch file
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function downloadBatchFile($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->downloadBatchFile($mode, $id);
-
-        if (empty($response) !== true)
-        {
-            return redirect($response['url']);
-        }
-        else
-        {
-            return AppResponse::jsonResponse($error, $response);
-        }
-    }
-
-    /**
-     * Retry given batch
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function retryBatchFile($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->retryBatchFile($mode, $id);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /*
-        This piece of code is weird cuz api-route-map is not
-        auth aware. We need to make that happen before we can
-        remove this. This route is accessible without any session
-        guard.
-    */
-    public function getInvitationDetails()
-    {
-        $genericController = App::make(GenericController::class);
-
-        return App::call([$genericController, 'handle']);
     }
 
     public function postSignup()
     {
-        $id = Auth::user()->getCurrentMerchantId();
+        $id = Auth::user()->currentMerchant()->id;
 
         $input = Input::all();
 
@@ -394,7 +275,7 @@ class MerchantController extends Controller
 
     public function getSignup()
     {
-        $id = Auth::user()->getCurrentMerchantId();
+        $id = Auth::user()->currentMerchant()->id;
 
         $error = $data = [];
 

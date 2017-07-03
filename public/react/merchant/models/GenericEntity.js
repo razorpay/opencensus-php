@@ -79,12 +79,18 @@ export default class GenericEntity extends Entity {
     });
   }
 
-  makeGenericAjaxCall({ data, method = 'get' }) {
+  makeGenericAjaxCall({
+    data,
+    method = 'get',
+    appendModeInURL = false,
+    appendModeInQueryParam = true,
+  }) {
     return ajax({
       url: this.resourceUrl,
       method,
       data,
-      appendModeInQueryParam: true,
+      appendModeInQueryParam,
+      appendModeInURL,
     });
   }
 }

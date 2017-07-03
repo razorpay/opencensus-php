@@ -62,7 +62,7 @@ class HdfcTidExcel
             // Minimum Ticket Size
             ->setCellValue('C78', '1')
             // Maximum Ticket Size
-            ->setCellValue('C79', '50000');
+            ->setCellValue('C79', '500000');
 
         $excelWriter = PHPExcel_IOFactory::createWriter($excel, $inputFileType);
 

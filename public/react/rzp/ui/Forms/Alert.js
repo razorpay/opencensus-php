@@ -16,6 +16,7 @@ class Alert extends Component {
       this.setState({
         close: false,
       });
+      window.scrollTo(0, 0);
     }
   }
 
@@ -36,17 +37,27 @@ class Alert extends Component {
     return (
       <div
         class={cx(
-          'alert alert-dismissable text-center',
+          'alert alert-dismissable',
           props.type === 'error' ? 'alert-danger' : 'alert-success'
         )}
         style={{ borderRadius: 0 }}
       >
-        <button type="button" class="close" onClick={this.close}>
-          <span>×</span>
-        </button>
+        {props.showDismiss &&
+          <button type="button" class="close" onClick={this.close}>
+            <span>×</span>
+          </button>}
 
-        <ul class="list-unstyled">
-          {msgs.map((msg, index) => <li key={index}>{JSON.stringify(msg)}</li>)}
+        <ul
+          class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
+          style={{ paddingLeft: '15px' }}
+        >
+          {msgs.map((msg, index) => (
+            <li key={index}>
+              {msg.stack
+                ? msg.stack
+                : typeof msg === 'object' ? JSON.stringify(msg) : msg}
+            </li>
+          ))}
         </ul>
       </div>
     );
@@ -55,8 +66,13 @@ class Alert extends Component {
 
 Alert.displayName = 'FormAlert';
 
+Alert.defaultProps = {
+  showDismiss: true,
+};
+
 Alert.propTypes = {
   type: PropTypes.string,
+  showDismiss: PropTypes.bool,
 };
 
 export default Alert;

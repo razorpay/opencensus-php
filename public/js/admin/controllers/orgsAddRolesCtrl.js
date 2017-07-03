@@ -7,6 +7,7 @@ app.controller('OrgsAddRolesCtrl', [
   'organization',
   '$stateParams',
   '$state',
+  'utils',
   function(
     $scope,
     $http,
@@ -15,7 +16,8 @@ app.controller('OrgsAddRolesCtrl', [
     $modal,
     organization,
     $stateParams,
-    $state
+    $state,
+    utils
   ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.permissions = organization.fetchPermissions();
@@ -125,7 +127,14 @@ app.controller('OrgsAddRolesCtrl', [
         .success(function(data) {
           if (data.success) {
             $scope.alerts.addAlert('success', 'Role saved', true);
-            $state.go('app.roles.edit', { id: data.data.id });
+
+            if (utils.isWorkflow(data.data)) {
+              $state.go('app.workflows.actions.detail', {
+                action_id: data.data.id,
+              });
+            } else {
+              $state.go('app.roles.edit', { id: data.data.id });
+            }
           } else {
             $scope.alerts.resetAlerts();
 

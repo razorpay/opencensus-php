@@ -9,6 +9,7 @@ const StatusLabel = statusMap => ({ status }) => (
 export const invoiceStatusMap = {
   draft: 'label-muted',
   issued: 'label-info',
+  partially_paid: 'label-partially-paid',
   paid: 'label-success',
   cancelled: 'label-danger',
   expired: 'label-danger',
@@ -16,29 +17,44 @@ export const invoiceStatusMap = {
 
 export const orderStatusMap = {
   created: 'bg-light',
-  attempted: 'bg-info',
-  paid: 'bg-success',
+  attempted: 'label-info',
+  paid: 'label-success',
 };
 
 export const paymentStatusMap = {
   created: 'bg-light',
-  authorized: 'bg-info',
-  captured: 'bg-success',
-  failed: 'bg-danger',
+  authorized: 'label-info',
+  captured: 'label-success',
+  failed: 'label-danger',
   refunded: 'bg-primary',
 };
 
 export const settlementStatusMap = {
   created: 'bg-light',
-  processed: 'bg-success',
-  failed: 'bg-danger',
+  processed: 'label-success',
+  failed: 'label-danger',
 };
 
 export const batchUploadStatusMap = {
   created: 'bg-light',
-  processing: 'bg-info',
-  processed: 'bg-success',
-  failure: 'bg-danger',
+  processing: 'label-info',
+  processed: 'label-success',
+  failure: 'label-danger',
+};
+
+export const virtualAccountStatusMap = {
+  active: 'label-info',
+  closed: 'label-danger',
+  paid: 'label-success',
+};
+
+const entityMap = {
+  payment: paymentStatusMap,
+  settlement: settlementStatusMap,
+  invoice: invoiceStatusMap,
+  order: orderStatusMap,
+  batch: batchUploadStatusMap,
+  virtual_account: virtualAccountStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -46,3 +62,6 @@ export const OrderStatusLabel = StatusLabel(orderStatusMap);
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
+export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
+
+export default item => StatusLabel(entityMap[item.entity])(item);

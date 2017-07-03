@@ -18,6 +18,7 @@ app.controller('AddOrgCtrl', [
     $state
   ) {
     $scope.selected_permissions = {};
+    $scope.workflow_permissions = {}; // Workflow enabled/disabled field corresponding to each permission
     $scope.select_all = false;
 
     var getAllPermissions = function() {
@@ -42,6 +43,7 @@ app.controller('AddOrgCtrl', [
       $scope.selected_permissions = {};
 
       if (!$scope.select_all) {
+        $scope.workflow_permissions = {}; // Empty workflow_permissions if 'select all' checkbox is turned off
         return;
       }
 
@@ -68,6 +70,11 @@ app.controller('AddOrgCtrl', [
 
           organization.permissions.forEach(function(perm) {
             $scope.selected_permissions[perm.id] = true;
+          });
+
+          // Auto select workflow_permissions checkbox according to data
+          organization.workflow_permissions.forEach(function(perm) {
+            $scope.workflow_permissions[perm.id] = true;
           });
         }
       });
@@ -148,6 +155,13 @@ app.controller('AddOrgCtrl', [
         });
     };
 
+    $scope.updateIfPermChanged = function(id) {
+      // Auto unselect workflow enable tag for corresponding permission if this permission is (un)selected
+      if ($scope.workflow_permissions[id]) {
+        $scope.workflow_permissions[id] = false;
+      }
+    };
+
     $scope.save = function(organization) {
       var data = {};
 
@@ -156,6 +170,7 @@ app.controller('AddOrgCtrl', [
 
       // unset the array first
       organization.permissions = [];
+      organization.workflow_permissions = [];
 
       for (var key in $scope.selected_permissions) {
         if ($scope.selected_permissions.hasOwnProperty(key)) {
@@ -164,6 +179,13 @@ app.controller('AddOrgCtrl', [
           }
         }
       }
+
+      // Safe check way to include only those workflow_permissions which have corresponding org id in selected permissions.
+      organization.workflow_permissions = organization.permissions.filter(
+        function(id) {
+          return $scope.workflow_permissions[id];
+        }
+      );
 
       // edit
       if (organization.id) {
@@ -176,11 +198,11 @@ app.controller('AddOrgCtrl', [
         var request = $http.put('/admin/generic', data, {
           params: {
             route_name: 'org_edit',
+            content_type: 'application/json',
             url_params: {
               '{id}': $scope.organization.id,
             },
           },
-          transformRequest: transformRequestAsFormPost,
         });
       } else {
         // add

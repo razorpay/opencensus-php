@@ -1,5 +1,4 @@
 .Modal {
-  width: 625px;
   margin: 65px auto;
   padding: 0;
   border: 0;
@@ -26,8 +25,28 @@
   }
 }
 
+.Modal--regular {
+  max-width: 625px;
+  @media (max-width: 625px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
 .Modal--small {
-  width: 328px;
+  max-width: 328px;
+  @media (max-width: 328px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--large {
+  max-width: 756px;
+  @media (max-width: 756px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
 }
 
 .Modal--confirm {

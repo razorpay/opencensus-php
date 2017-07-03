@@ -22,6 +22,8 @@ angular
 
       organization.fetchCurrentOrg().then(function(data) {
         if (data.custom_code) {
+          $('body').addClass(data.custom_code);
+
           switch (data.custom_code) {
             case 'hdfc':
               theme.apply(
@@ -43,6 +45,7 @@ angular
             case 'bob':
               theme.apply(
                 angular.extend(baseTheme, {
+                  navBg: '#FF5D27',
                   primary: '#F04E00',
                 })
               );

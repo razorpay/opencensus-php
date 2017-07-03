@@ -7,7 +7,7 @@
     <form name="reset" ng-submit="submit(reset.$valid)" class="form-validation" novalidate>
       <div class="list-group list-group-sm">
         <div class="list-group-item">
-          <input type="email" ng-model="data.email" placeholder="Email" class="form-control no-border" required>
+          <input type="email" ng-readonly='true' value="{{data.email}}" placeholder="Email" class="form-control no-border" required>
         </div>
         <div class="list-group-item">
           <input type="password" placeholder="Password" name="password" ng-model="data.password" class="form-control no-border" required>

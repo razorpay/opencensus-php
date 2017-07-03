@@ -49,7 +49,7 @@ angular
             .success(function(data) {
               try {
                 dataLayer.push({
-                  merchant_id: data.data.merchants[0].pivot.merchant_id,
+                  merchant_id: data.data.merchants[0].id,
                 });
               } catch (e) {}
               _identity = data.data;
@@ -62,19 +62,7 @@ angular
               ) {
                 _isPreSignupDone = true;
               } else {
-                // if any of the fields is missing, isPreSignupDone will be false
-                _isPreSignupDone =
-                  _identity.pre_signup &&
-                  (_identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
-                    !!Object.keys(_identity.pre_signup)
-                      // get all values
-                      .map(function(key) {
-                        return _identity.pre_signup[key];
-                      })
-                      // reduce all values using '&&'
-                      .reduce(function(x, y) {
-                        return x && y;
-                      }));
+                _isPreSignupDone = _identity.pre_signup_complete;
               }
 
               _isVerified = _identity.user.confirmed;
@@ -525,11 +513,11 @@ angular
           if (this.users) {
             return this.users;
           }
-
+          var deferred = $q.defer();
           var users = [];
+
           $http
             .get('/admin/generic', {
-              ignoreErrors: true,
               params: {
                 route_name: 'admin_get_multiple',
               },
@@ -541,13 +529,18 @@ angular
                     users.push(user);
                   });
                 }
+
+                deferred.resolve(users);
               } else {
-                users = {};
+                users = [];
               }
             })
-            .error(function() {});
+            .error(function(data) {
+              return data.errors;
+            });
+
           this.users = users;
-          return this.users;
+          return deferred.promise;
         },
       };
     },
@@ -861,7 +854,8 @@ angular
           // includes base_amount and base_amount_refunded
           return 'amount_inr';
         } else if (
-          key.substr(-6) === 'amount' || key.substr(0, 7) === 'amount_'
+          key.substr(-6) === 'amount' ||
+          key.substr(0, 7) === 'amount_'
         ) {
           return 'amount';
         } else if (isId(key)) {
@@ -915,56 +909,205 @@ angular
       };
     },
   ])
-  .factory('utils', function() {
-    return {
-      humanize: function(str) {
-        var frags = str.split('_');
+  .factory('utils', [
+    '$state',
+    function($state) {
+      return {
+        humanize: function(str) {
+          var frags = str.split('_');
 
-        for (var i = 0; i < frags.length; i++) {
-          frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
-        }
+          for (var i = 0; i < frags.length; i++) {
+            frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+          }
 
-        return frags.join(' ');
-      },
-      mergeUnique: function(arr, isCaseSensitive) {
-        isCaseSensitive = isCaseSensitive || false;
-        var auxArr = arr.concat();
+          return frags.join(' ');
+        },
+        mergeUnique: function(arr, isCaseSensitive) {
+          isCaseSensitive = isCaseSensitive || false;
+          var auxArr = arr.concat();
 
-        for (var i = 0; i < auxArr.length; i++) {
-          for (var j = i + 1; j < auxArr.length; j++) {
-            if (
-              (isCaseSensitive &&
-                auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
-              auxArr[i] === auxArr[j]
-            ) {
-              auxArr.splice(j--, 1);
+          for (var i = 0; i < auxArr.length; i++) {
+            for (var j = i + 1; j < auxArr.length; j++) {
+              if (
+                (isCaseSensitive &&
+                  auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
+                auxArr[i] === auxArr[j]
+              ) {
+                auxArr.splice(j--, 1);
+              }
             }
           }
-        }
 
-        return auxArr;
-      },
-      isArray: function(val) {
-        if (!val) {
+          return auxArr;
+        },
+        isArray: function(val) {
+          if (!val) {
+            return false;
+          }
+
+          return val instanceof Array;
+        },
+
+        isIndexedArray: function(val) {
+          if (this.isArray(val) === false) {
+            return false;
+          }
+
+          return ['object', 'undefined'].indexOf(typeof val[0]) === -1;
+        },
+
+        // rightmost obj gets preference for same keys
+        concatObj: function() {
+          var result = {};
+          var len = arguments.length;
+          for (var i = 0; i < len; i++) {
+            for (var p in arguments[i]) {
+              if (arguments[i].hasOwnProperty(p)) {
+                result[p] = arguments[i][p];
+              }
+            }
+          }
+
+          return result;
+        },
+        isWorkflow: function(data) {
+          if (
+            typeof data.id !== 'undefined' &&
+            data.id.indexOf('w_action') === 0 &&
+            typeof data.workflow_id !== 'undefined'
+          ) {
+            return true;
+          }
+
           return false;
-        }
+        },
 
-        return val instanceof Array;
-      },
+        resolveEntityLinkAndGo: function(entityId, entityName) {
+          var entityMap = {
+            merchant: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            credits: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            role: {
+              route: 'app.roles.edit',
+              idParam: 'id',
+              sign: 'role_',
+            },
+            methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            adjustment: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            schedule_task: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+          };
 
-      // rightmost obj gets preference for same keys
-      concatObj: function() {
-        var result = {};
-        var len = arguments.length;
-        for (var i = 0; i < len; i++) {
-          for (var p in arguments[i]) {
-            if (arguments[i].hasOwnProperty(p)) {
-              result[p] = arguments[i][p];
-            }
+          if (typeof entityMap[entityName] !== 'undefined') {
+            var entityDetails = entityMap[entityName];
+
+            var params = {};
+            params[entityDetails.idParam] = entityDetails.sign + entityId;
+
+            $state.go(entityDetails.route, params);
           }
-        }
+        },
+      };
+    },
+  ])
+  .factory('utilMapping', [
+    '$state',
+    function($state) {
+      // mapping used in multiple files
+      var map = {
+        networkMap: {
+          AMEX: 'American Express',
+          DICL: 'Diners Club',
+          DISC: 'Discover',
+          JCB: 'JCB',
+          MAES: 'Maestro',
+          MC: 'MasterCard',
+          RUPAY: 'RuPay',
+          VISA: 'Visa',
+          UNP: 'Union Pay',
+        },
+        methodMap: {
+          card: 'Card',
+          wallet: 'Wallet',
+          netbanking: 'Netbanking',
+          upi: 'UPI',
+          emi: 'EMI',
+        },
+        gatewayAcquirerMap: {
+          axis: 'Axis',
+          hdfc: 'HDFC',
+          amex: 'Amex',
+          icic: 'ICICI',
+        },
+        gatewayCardMap: {
+          first_data: 'First Data',
+          hdfc: 'FSS',
+          axis_migs: 'Axis Migs',
+          cybersource: 'Cybersource',
+          amex: 'Amex',
+        },
+        gatewayEmiMap: {
+          amex: 'Amex',
+          hdfc: 'FSS',
+          first_data: 'First Data',
+        },
+        gatewayNBMap: {
+          netbanking_hdfc: 'HDFC Netbanking',
+          netbanking_kotak: 'Kotak Netbanking',
+          netbanking_icici: 'ICICI Netbanking',
+          netbanking_axis: 'Axis Netbanking',
+          netbanking_federal: 'Federal Netbanking',
+          netbanking_airtel: 'Airtel Netbanking',
+          billdesk: 'Billdesk',
+          ebs: 'Ebs',
+        },
+        gatewayWalletMap: {
+          wallet_airtelmoney: 'Airtelmoney',
+          wallet_freecharge: 'Freecharge',
+          wallet_jiomoney: 'Jiomoney',
+          wallet_olamoney: 'Olamoney',
+          wallet_payumoney: 'Payumoney',
+          wallet_payzapp: 'Payzapp',
+        },
+        gatewayUpiMap: {
+          upi_idfc: 'IDFC UPI',
+          upi_icici: 'ICICI UPI',
+        },
+        walletMap: {
+          payzapp: 'Payzapp',
+          mobikwik: 'Mobikwik',
+          payumoney: 'Payumone',
+          olamoney: 'Olamoney',
+          airtelmoney: 'Airtelmoney',
+          freecharge: 'Freecharge',
+          jiomoney: 'Jiomoney',
+          openwallet: 'Openwallet',
+          mpesa: 'Mpesa',
+        },
+      };
 
-        return result;
-      },
-    };
-  });
+      return {
+        getMap: function(key) {
+          return map[key];
+        },
+      };
+    },
+  ]);

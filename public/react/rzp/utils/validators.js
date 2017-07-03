@@ -14,6 +14,14 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+export const length = (length, message = '') => {
+  message = message || `Must be ${length} characters`;
+
+  return (value = '') => {
+    return value.trim().length !== length ? message : '';
+  };
+};
+
 const makeValidator = (truthyFn, defaultMessage) => (
   message = defaultMessage
 ) => value => (truthyFn(value) ? undefined : message);

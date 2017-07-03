@@ -17,6 +17,9 @@ class TraceCode
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
 
+    // Request made to API has failed
+    const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

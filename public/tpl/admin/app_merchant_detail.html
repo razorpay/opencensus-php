@@ -5,162 +5,241 @@
   </h1>
 </div>
 <div class="wrapper-md merchant-wrapper" ng-controller="MerchantDetailCtrl">
-  <div class="panel panel-default col-sm-2 col-sm-offset-2" >
+  <div class="panel panel-default col-sm-3 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Actions
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item">
+        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
           Login as Merchant
         </a>
-        <a ui-sref="app.merchants.activation({id:merchant.details.id})" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
+        <a ui-sref="app.merchants.activation({id:merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Activation Form Details
         </a>
-        <a href class="list-group-item lock-form" ng-show="(merchant.details.locked==0) && (admin.permissions.indexOf('edit_merchant_lock_activation') !== -1)" ng-click="lockForm()">
+        <a href class="list-group-item lock-form" dynamic-tooltip="edit_merchant_lock_activation" ng-show="(merchant.details.locked==0) && (admin.permissions.indexOf('edit_merchant_lock_activation') !== -1)" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
-        <a href class="list-group-item unlock-form" ng-show="(merchant.details.locked==1) && (admin.permissions.indexOf('edit_merchant_unlock_activation') !== -1)" ng-click="unlockForm()">
+        <a href class="list-group-item unlock-form" dynamic-tooltip="edit_merchant_unlock_activation" ng-show="(merchant.details.locked==1) && (admin.permissions.indexOf('edit_merchant_unlock_activation') !== -1)" ng-click="unlockForm()">
           Unlock Activation Form <i class="pull-right fa fa-unlock"></i>
         </a>
         <a href class="list-group-item activate-merchant"
-        ng-show="(merchant.details.activated==0) && (admin.permissions.indexOf('edit_activate_merchant') !== -1)"
-        ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
-        ng-click="activateMerchant()"
+           dynamic-tooltip="edit_activate_merchant" ng-show="(merchant.details.activated==0) && (admin.permissions.indexOf('edit_activate_merchant') !== -1)"
+           ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
+           ng-click="activateMerchant()"
         >
           Activate Merchant <i class="pull-right fa fa-check-square"></i>
         </a>
         <a href class="list-group-item"
-          ng-show="merchant.details.activated_dashboard==0 && merchant.details.activated==1 && (admin.permissions.indexOf('edit_activate_merchant') !== -1)"
-          ng-confirm-click="This will activate the merchant only on the dashboard side. Use with caution"
-          ng-click="activateMerchant(true)"
+           dynamic-tooltip="edit_activate_merchant" ng-show="merchant.details.activated_dashboard==0 && merchant.details.activated==1 && (admin.permissions.indexOf('edit_activate_merchant') !== -1)"
+           ng-confirm-click="This will activate the merchant only on the dashboard side. Use with caution"
+           ng-click="activateMerchant(true)"
         >
           Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
-        <a href class="list-group-item btn-enable-international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
+        <a href class="list-group-item btn-enable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_enable_international') !== -1" ng-click="setInternational(1)">
           Enable International <i class="pull-right fa fa-globe"></i>
         </a>
-        <a href class="list-group-item btn-disable-international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
+        <a href class="list-group-item btn-disable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_disable_international') !== -1" ng-click="setInternational(0)">
           Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
-        ng-confirm-click="Are you sure you want to hold funds for this merchant?"
-        ng-click="holdMerchantFunds()"
+           dynamic-tooltip="edit_merchant_hold_funds" ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
+           ng-confirm-click="Are you sure you want to hold funds for this merchant?"
+           ng-click="holdMerchantFunds()"
         >
           Hold Merchant Funds <i class="pull-right fa fa-hand-stop-o"></i>
         </a>
         <a href class="list-group-item"
-          ng-show="merchant.details.hold_funds==1 && admin.permissions.indexOf('edit_merchant_release_funds') !== -1"
-          ng-confirm-click="Are you sure you want to release this merchant's funds?"
-          ng-click="releaseMerchantFunds()"
+           dynamic-tooltip="edit_merchant_release_funds" ng-show="merchant.details.hold_funds==1 && admin.permissions.indexOf('edit_merchant_release_funds') !== -1"
+           ng-confirm-click="Are you sure you want to release this merchant's funds?"
+           ng-click="releaseMerchantFunds()"
         >
           Release Merchant Funds <i class="pull-right fa fa-thumbs-up"></i>
         </a>
-        <a href class="list-group-item enable-live-transactions" ng-show="merchant.details.activated==1 && merchant.details.live==0 && admin.permissions.indexOf('edit_merchant_enable_live') !== -1" ng-click="enableLive()">
+        <a href class="list-group-item enable-live-transactions" dynamic-tooltip="edit_merchant_enable_live" ng-show="merchant.details.activated==1 && merchant.details.live==0 && admin.permissions.indexOf('edit_merchant_enable_live') !== -1" ng-click="enableLive()">
           Enable Live Transactions <i class="pull-right fa fa-check"></i>
         </a>
-        <a href class="list-group-item disable-live-transactions" ng-show="merchant.details.live==1 && admin.permissions.indexOf('edit_merchant_disable_live') !== -1"ng-click="disableLive()"
-        ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
+        <a href class="list-group-item disable-live-transactions" dynamic-tooltip="edit_merchant_disable_live" ng-show="merchant.details.live==1 && admin.permissions.indexOf('edit_merchant_disable_live') !== -1"ng-click="disableLive()"
+           ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
-        <a href class="list-group-item" ng-click="openEditMethods()" ng-show="admin.permissions.indexOf('edit_merchant_methods') !== -1">
+        <a href class="list-group-item" ng-click="openEditMethods()" dynamic-tooltip="edit_merchant_methods" ng-show="admin.permissions.indexOf('edit_merchant_methods') !== -1">
           Edit Methods
           <i class="pull-right fa fa-money"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == false && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="enableMethod('card')">
-          Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="disableMethod('card')">
-          Disable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0 && admin.permissions.indexOf('edit_merchant_enable_receipt') !== -1" ng-click="setReceiptEmail(1)">
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_enable_receipt" ng-show="merchant.details.receipt_email_enabled == 0 && admin.permissions.indexOf('edit_merchant_enable_receipt') !== -1" ng-click="setReceiptEmail(1)">
           Enable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1 && admin.permissions.indexOf('edit_merchant_disable_receipt') !== -1" ng-click="setReceiptEmail(0)">
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_disable_receipt" ng-show="merchant.details.receipt_email_enabled == 1 && admin.permissions.indexOf('edit_merchant_disable_receipt') !== -1" ng-click="setReceiptEmail(0)">
           Disable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
-        <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()" ng-show="admin.permissions.indexOf('edit_merchant_pricing') !== -1">
+        <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()" dynamic-tooltip="edit_merchant_pricing" ng-show="admin.permissions.indexOf('edit_merchant_pricing') !== -1">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
-        <a href class="list-group-item assign-schedule" ng-show="admin.permissions.indexOf('schedule_assign') !== -1" ng-click="openAssignSchedule()">
+        <a href class="list-group-item assign-schedule" dynamic-tooltip="schedule_assign" ng-show="admin.permissions.indexOf('schedule_assign') !== -1" ng-click="openAssignSchedule()">
           Assign Schedule <i class="pull-right fa fa-clock-o"></i>
         </a>
-        <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()" ng-show="admin.permissions.indexOf('assign_merchant_terminal') !== -1">
+        <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()" dynamic-tooltip="assign_merchant_terminal" ng-show="admin.permissions.indexOf('assign_merchant_terminal') !== -1">
           Assign Terminal <i class="pull-right fa fa-terminal"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAssignBanks()" ng-show="admin.permissions.indexOf('assign_merchant_banks') !== -1">
+        <a href class="list-group-item" ng-click="openAssignBanks()" dynamic-tooltip="assign_merchant_banks" ng-show="admin.permissions.indexOf('assign_merchant_banks') !== -1">
           Assign Banks <i class="pull-right fa fa-university"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAddAdjustment()" ng-show="admin.permissions.indexOf('add_merchant_adjustment') !== -1">
+        <a href class="list-group-item" ng-click="openAssignMerchantHandle()" dynamic-tooltip="assign_merchant_handle" ng-show="admin.permissions.indexOf('assign_merchant_handle') !== -1">
+          Assign Merchant Handle
+          <i class="pull-right fa fa-at"></i>
+        </a>
+
+        <a href class="list-group-item" ng-click="openAddAdjustment()" dynamic-tooltip="add_merchant_adjustment" ng-show="admin.permissions.indexOf('add_merchant_adjustment') !== -1">
           Add Adjustment <i class="pull-right fa fa-adjust"></i>
         </a>
-        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openEditMerchant()" ng-show="admin.permissions.indexOf('edit_merchant') !== -1">
+        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openCreateOffer()" dynamic-tooltip="create_merchant_offer" ng-show="admin.permissions.indexOf('create_merchant_offer') !== -1">
+          Create Offer <i class="pull-right fa fa-money"></i>
+        </a>
+        <a tooltip="Click me!" href class="list-group-item edit-merchant" ng-click="openEditMerchant()" dynamic-tooltip="edit_merchant" ng-show="admin.permissions.indexOf('edit_merchant') !== -1">
           Edit Merchant <i class="pull-right fa fa-pencil-square"></i>
         </a>
-        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()" ng-show="admin.permissions.indexOf('edit_merchant_email') !== -1">
+        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()" dynamic-tooltip="edit_merchant_email" ng-show="admin.permissions.indexOf('edit_merchant_email') !== -1">
           Edit Merchant Email <i class="pull-right fa fa-envelope"></i>
         </a>
-         <a tooltip="Only superadmins have access to this" href class="list-group-item"
-          ng-click="openChangeBankAccountDetails()"
-          ng-show="merchant.details.activated == 1 && admin.permissions.indexOf('edit_merchant_banks') !== -1"
+        <a tooltip="Only superadmins have access to this" href class="list-group-item"
+           ng-click="openChangeBankAccountDetails()"
+           dynamic-tooltip="edit_merchant_bank_detail" ng-show="merchant.details.activated == 1 && admin.permissions.indexOf('edit_merchant_bank_detail') !== -1"
         >
           Edit Bank Account Details <i class="pull-right fa fa-university"></i>
         </a>
-        <a href class="list-group-item" ng-click="openAutofillForms()" ng-show="admin.permissions.indexOf('merchant_autofill_form') !== -1">
+        <a href class="list-group-item" ng-click="openAutofillForms()" dynamic-tooltip="merchant_autofill_form" ng-show="admin.permissions.indexOf('merchant_autofill_form') !== -1">
           Autofill Activation Form <i class="pull-right fa fa-magic"></i>
         </a>
-        <a href class="list-group-item" ng-click="openEditComment()" ng-show="admin.permissions.indexOf('edit_merchant_comments') !== -1">
+        <a href class="list-group-item" ng-click="openEditComment()" dynamic-tooltip="edit_merchant_comments" ng-show="admin.permissions.indexOf('edit_merchant_comments') !== -1">
           Edit Comment <i class="pull-right fa fa-commenting"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.archived_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unarchiveMerchant()"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_unarchive" ng-show="merchant.details.archived_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unarchiveMerchant()"
         >
           Unarchive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.archived_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_archive" ng-show="merchant.details.archived_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unsuspendMerchant()"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_unsuspend" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unsuspend') !== -1" ng-click="unsuspendMerchant()"
         >
           Unsuspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_suspend" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_suspend') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
           Suspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()" ng-show="admin.permissions.indexOf('edit_merchant_mark_referred') !== -1">
+        <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()" dynamic-tooltip="edit_merchant_mark_referred" ng-show="admin.permissions.indexOf('edit_merchant_mark_referred') !== -1">
           Mark as Referred <i class="pull-right fa fa-gift"></i>
         </a>
-        <a href class="list-group-item tag-merchant" id="btn-tagMerchant" ng-click="openTagMerchant()" ng-show="admin.permissions.indexOf('edit_merchant_tags') !== -1">
+        <a href class="list-group-item tag-merchant" id="btn-tagMerchant" ng-click="openTagMerchant()" dynamic-tooltip="edit_merchant_tags" ng-show="admin.permissions.indexOf('edit_merchant_tags') !== -1">
           Tag Merchant <i class="pull-right fa fa-tag"></i>
         </a>
-        <a href class="list-group-item" id="btn-featureMerchant" ng-click="openFeatureMerchant()" ng-show="admin.permissions.indexOf('edit_merchant_features') !== -1">
+        <a href class="list-group-item" id="btn-featureMerchant" ng-click="openFeatureMerchant()" dynamic-tooltip="edit_merchant_features" ng-show="admin.permissions.indexOf('edit_merchant_features') !== -1">
           Feature Merchant <i class="pull-right fa fa-tag"></i>
         </a>
-        <a href class="list-group-item" ng-click="openUploadScreenshot()" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
+        <a href class="list-group-item" ng-click="openUploadScreenshot()" dynamic-tooltip="edit_merchant_screenshot" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
           Upload screenshots <i class="pull-right fa fa-upload"></i>
         </a>
-        <a href class="list-group-item" ng-click="captureScreenshot()" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
+        <a href class="list-group-item" ng-click="captureScreenshot()" dynamic-tooltip="edit_merchant_screenshot" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
           Capture Screenshots <i class="pull-right fa fa-camera"></i>
         </a>
-        <a href class="list-group-item" ng-click="openCredits()" ng-show="admin.permissions.indexOf('add_merchant_credits') !== -1">
+        <a href class="list-group-item" ng-click="openCredits()" dynamic-tooltip="add_merchant_credits" ng-show="admin.permissions.indexOf('add_merchant_credits') !== -1">
           Add Credits
+        </a>
+        <a href class="btn btn-primary" ng-click="openDownloadReport()"
+           style="width: 100%;"
+           dynamic-tooltip="view_merchant_report"
+           ng-show="admin.permissions.indexOf('view_merchant_report') !== -1">
+          Download Report
         </a>
       </div>
     </div>
   </div>
   <div class="panel panel-default col-sm-6" >
-    <div class="panel-heading m-t m-b" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">
-      Merchant: <strong>{{merchant.details.id}}</strong> (<a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})">View as Entity</a>)
+    <div class="panel-heading m-t m-b">
+      Merchant: <strong>{{merchant.details.id}}</strong>
+      <a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">(View as Entity)</a>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a class="list-group-item" ng-click="openTagMerchant()">
-          <span class="pull-right">{{merchant.details.tags.join()}}</span>
+
+        <!--Group Details-->
+        <a href class="list-group-item" ng-init="isGroupDetailsCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isGroupDetailsCollapsed = !isGroupDetailsCollapsed"
+                      ng-show="merchant.details.groups && merchant.details.groups.length != 0">Show/Hide</button>
+              <span ng-if="merchant.details.groups && merchant.details.groups.length === 0">
+                No Group details found
+              </span>
+            </span>
+          Group Details
+        </a>
+
+        <div collapse="isGroupDetailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="merchant.details.groups.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light">
+                <thead>
+                <tr>
+                  <th>Group</th>
+                  <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="(key, row) in merchant.details.groups">
+                  {{row.id}}
+                  <td>{{row.name}}</td>
+                  <td>{{row.description}}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!--Admin Details-->
+        <a href class="list-group-item" ng-init="isAdminDetailsCollapsed = true" style="background-color: rgba(255, 255, 0, 0.20)">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isAdminDetailsCollapsed = !isAdminDetailsCollapsed"
+                      ng-show="selected_admins && selected_admins.length != 0">Show/Hide</button>
+              <span ng-if="selected_admins && selected_admins.length === 0">
+                No Admins found
+              </span>
+            </span>
+          Admins
+        </a>
+
+        <div collapse="isAdminDetailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="selected_admins.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light">
+                <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="adminId in selected_admins track by $index" class="merchants-table-body">
+                  <td>{{adminMap[adminId].role}}</td>
+                  <td>{{adminMap[adminId].name}}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!--Tags-->
+        <a class="list-group-item clearfix" ng-click="openTagMerchant()">
+          <span class="pull-right col-md-11">{{merchant.details.tags.join(', ')}}</span>
           Tags
         </a>
         <a href class="list-group-item" ng-init="isFeaturesCollapsed = true">
@@ -265,7 +344,10 @@
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
         </div>
-
+        <div class="list-group-item">
+          <span class="pull-right">{{merchant.details.handle}}</span>
+          Merchant Handle
+        </div>
         <!--
           If we have only one email, show it as such, but if there are more than one,
           use a show/hide menu to list all the emails nicely
@@ -444,6 +526,10 @@
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.emi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.emi == true, 'fa-times text-danger': merchant.details.methods.emi == false}"></i></span>
+            EMI
+          </div>
         </div>
         <!-- <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
@@ -543,6 +629,7 @@
                     <th>Network Category</th>
                     <th>Merchant Id</th>
                     <th>Merchant Id 2</th>
+                    <th>Acquirer</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
                     <th>Netbanking</th>
@@ -550,6 +637,7 @@
                     <th>Emi Duration (Months)</th>
                     <th>Shared</th>
                     <th>Tpv</th>
+                    <th>Currency</th>
                     <th>Created At</th>
                   </thead>
                   <tbody ng-repeat="filteredKey in ['undeleted_enabled', 'undeleted_disabled', 'deleted']">
@@ -567,6 +655,7 @@
                     <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
                     <td>{{terminal.gateway_merchant_id2}}</td>
+                    <td>{{terminal.gateway_acquirer}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
                     <td>{{terminal.netbanking}}</td>
@@ -574,6 +663,7 @@
                     <td>{{terminal.emi_duration}}</td>
                     <td>{{terminal.shared}}</td>
                     <td>{{terminal.tpv}}</td>
+                    <td>{{terminal.currency}}</td>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
                   </tr>
                   <tr>
@@ -586,7 +676,95 @@
             </div>
           </div>
 
-          <!-- Credits -->
+
+        <!--Merchant Gateway Rules-->
+        <a href class="list-group-item" ng-init="isGatewayRulesCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isGatewayRulesCollapsed = !isGatewayRulesCollapsed"
+                      ng-show="gatewayRules && gatewayRules.length != 0">Show/Hide</button>
+              <span ng-if="gatewayRules && gatewayRules.length === 0">
+                No Gateway rules found
+              </span>
+            </span>
+          Gateway Rules
+        </a>
+        <div collapse="isGatewayRulesCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="gatewayRules.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <tr>
+                    <th>Rule ID</th>
+                    <th>Gateway</th>
+                    <th>Gateway Acquirer</th>
+                    <th>Method</th>
+                    <th>Method Type</th>
+                    <th>Network</th>
+                    <th>Issuer</th>
+                    <th>International</th>
+                    <th>Load</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
+                    <td>{{row.id}}</td>
+                    <td>{{getGatewayLabel(row.method, row.gateway)}}</td>
+                    <td>{{row.gateway_acquirer || 'ALL'}}</td>
+                    <td>{{methodMap[row.method]}}</td>
+                    <td>{{row.method_type || 'ALL'}}</td>
+                    <td>{{networkMap[row.network] || 'ALL'}}</td>
+                    <td>{{row.issuer || 'ALL'}}</td>
+                    <td>{{row.international || 'BOTH'}}</td>
+                    <td>{{row.load}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!--Merchant Offers-->
+        <a href class="list-group-item" ng-init="isOffersCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isOffersCollapsed = !isOffersCollapsed"
+                      ng-show="merchantOffers && merchantOffers.length !== 0">Show/Hide</button>
+              <span ng-if="merchantOffers && merchantOffers.length === 0">
+                No offers found
+              </span>
+            </span>
+          Offers
+        </a>
+        <div collapse="isOffersCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="merchantOffers.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <tr>
+                    <th>Offer Id</th>
+                    <th>Name</th>
+                    <th>Starts At</th>
+                    <th>Display Text</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr ng-repeat="row in merchantOffers" class="merchants-table-body">
+                    <td>
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'offer', id: row['id'], mode: 'live'})">
+                        <code>{{row['id']}}</code>
+                      </a>
+                    </td>
+                    <td>{{row['name']}}</td>
+                    <td>{{row['starts_at']*1000 | date: 'd MMM, y h:mm a'}}</td>
+                    <td>{{row['display_text']}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credits -->
           <div class="list-group-item" ng-init="isCreditsLogCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
@@ -671,6 +849,26 @@
   </div>
 </script>
 
+<script type="text/ng-template" id="assignMerchantHandle.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Merchant Handle</h3>
+  </div>
+  <form>
+    <div class="modal-body">
+      <div class="form-group row">
+        <label class="col-lg-12">Merchant Handle</label>
+        <div class="col-lg-6">
+          <input class="form-control" name="handle" ng-model="handle" placeholder="XXXX" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(handle)">Save</button>
+    </div>
+  </form>
+</script>
+
 <script type="text/ng-template" id="assignScheduleModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Assign Schedule Plan</h3>
@@ -695,7 +893,9 @@
         </div>
       </div>
       <h5 ng-if="loading">Loading Schedules....</h5>
-      <!-- <h4 ng-if="loading === false && pricingPlansLength() == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4> -->
+      <h4 ng-if="loading === false" style="color: red; font-size: 11px">
+        {{scheduleFetchError ? scheduleFetchError : scheduleListLength() == 0 ? 'Schedule list is empty' : ''}}
+      </h4>
     </form>
   </div>
   <div class="modal-footer">
@@ -761,7 +961,9 @@
              <option value="wallet_payzapp">Payzapp</option>
              <option value="wallet_payumoney">Payumoney</option>
              <option value="wallet_olamoney">Olamoney</option>
+             <option value="wallet_mpesa">Vodafone Mpesa</option>
              <option value="upi_icici">UPI/ICICI</option>
+             <option value="aeps_icici">AEPS/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
              <option value="wallet_jiomoney">Jiomoney</option>
@@ -777,6 +979,7 @@
              <option value="netbanking_icici">Netbanking ICICI</option>
              <option value="netbanking_federal">Netbanking Federal</option>
              <option value="netbanking_indusind">Netbanking Indusind</option>
+             <option value="netbanking_rbl">Netbanking RBL</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
@@ -788,6 +991,7 @@
           <select class="form-control m-b" ng-model="terminal.gateway_acquirer">
              <option value="hdfc" selected>HDFC</option>
              <option value="axis">Axis</option>
+             <option value="icic">ICICI</option>
           </select>
         </div>
       </div>
@@ -882,6 +1086,15 @@
           <select class="form-control m-b" name="tpv" ng-model="terminal.tpv">
              <option value="1">Yes</option>
              <option value="0" selected>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="currency" class="col-lg-3 control-label">Currency</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" name="currency" ng-model="terminal.currency">
+             <option value="INR" selected>INR</option>
+             <option value="USD">USD</option>
           </select>
         </div>
       </div>
@@ -1017,6 +1230,7 @@
       <button class="btn btn-primary modal-ok" ng-confirm-click="Adjustment once assigned can not be changed, ensure you have checked all values" ng-click="ok(adjustment)">OK</button>
   </div>
 </script>
+
 <script type="text/ng-template" id="editMerchantModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Edit Merchant</h3>
@@ -1112,29 +1326,48 @@
         </div>
       </div>
       <div class="form-group">
-          <div class="col-lg-2 text-right">Groups</div>
-          <div class="col-lg-10 scrollable-table">
-            <table ui-jq="footable" data-page-size="100000000" class="table table-striped b-t b-light">
-              <thead>
-                <tr>
-                  <th data-sort-ignore="true">
-                    <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
-                    <label for="select_all" class="select-all-label">Select all</label>
-                  </th>
-                  <th>Group</th>
-                  <th>Group description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="(key, row) in groups">
-                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
-                  <td>{{row.name}}</td>
-                  <td>{{row.description}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="col-lg-2 text-right">Groups</div>
+        <div class="col-lg-10 scrollable-table">
+          <table ui-jq="footable" data-page-size="100000000" class="table table-striped b-t b-light">
+            <thead>
+              <tr>
+                <th data-sort-ignore="true">
+                  <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
+                  <label for="select_all" class="select-all-label">Select all</label>
+                </th>
+                <th>Group</th>
+                <th>Group description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="(key, row) in groups">
+                <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
+                <td>{{row.name}}</td>
+                <td>{{row.description}}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
+      <!-- Select Admins -->
+      <div class="form-group">
+        <div class="col-lg-2 text-right">Admins</div>
+        <div class="col-lg-10">
+          <!-- Selected Roles-->
+          <div class="pills-container-users">
+            <span class="pills-label assignee-label" ng-repeat="adminId in selected_admins track by $index">
+              {{adminMap[adminId]}}
+              <i class="delete-btn fa fa-times m-l" ng-click="removeUser(adminId)" />
+            </span>
+          </div>
+          <!-- Dropdown -->
+          <select class="select2 role-select2" multiple="multiple" style="width: 100%" ng-model="roleSelect" role-select="Select users">
+            <option  ng-repeat="admin in admins| filter:filterAdmins" value="{{admin.id}}">
+              {{admin.name}} : <{{admin.email}}>
+            </option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
@@ -1165,6 +1398,291 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(email)">OK</button>
+  </div>
+</script>
+
+
+<!--Create merchant offer form-->
+<script type="text/ng-template" id="createMerchantOfferContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title col-lg-8">Create Merchant Offer</h3>
+    <div class="col-lg-4">
+      Mode:
+      <select class="form-control input-sm w-xs inline" ng-model="mode.value">
+        <option value="live">Live</option>
+        <option value="test">Test</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal">
+
+      <div class="row">
+        <div class="form-group col-lg-12">
+          <label for="name" class="col-lg-3 control-label">Name<span style="color:red">*</span>:</label>
+          <div class="col-lg-9" >
+            <input type="text" class="form-control m-b" name="name" ng-model="offer.name" />
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group col-lg-6">
+          <label for="payment_method" class="col-lg-6 control-label">Payment Method<span style="color:red">*</span>:</label>
+          <div class="col-lg-6" >
+            <select class="form-control m-b"
+                    name="payment_method"
+                    ng-change="updatePaymentNetworkMap()"
+                    ng-model="offer.payment_method" required>
+              <option value="card">Card</option>
+              <option value="netbanking">Netbanking</option>
+              <option value="emi">EMI</option>
+              <option value="upi">UPI</option>
+              <option value="wallet">Wallet</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group col-lg-6" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
+          <label for="payment_method_type" class="col-lg-5 control-label">Payment Method Type:</label>
+          <div class="col-lg-7">
+            <select class="form-control m-b"
+                    name="payment_method_type"
+                    ng-model="offer.payment_method_type">
+              <option value="">All</option>
+              <option value="credit">Credit</option>
+              <option value="dedit">Dedit</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" ng-if="offer.payment_method && offer.payment_method !== 'upi'">
+        <label for="payment_network" class="col-lg-3 control-label">Payment Network:</label>
+        <div class="col-lg-9" >
+          <select name="merchant-features"  class="form-control m-b" ng-model="payment_network"
+                  ng-if="['card', 'emi', 'wallet'].indexOf(offer.payment_method) !== -1">
+            {{paymentNetworkMap}}
+            <option ng-repeat="(value, network) in paymentNetworkMap" ng-value="value">{{network}}</option>
+          </select>
+
+          <input type="text" class="form-control m-b"
+                 name="payment_network"
+                 ng-if="offer.payment_method === 'netbanking'"
+                 placeholder="Enter bank code for netbanking"
+                 ng-model="offer.payment_network" />
+        </div>
+      </div>
+
+      <!--Issuer-->
+      <div class="form-group" ng-if="offer.payment_method === 'card'">
+        <label for="issuer" class="col-lg-3 control-label">Issuer:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="issuer" ng-model="offer.issuer" />
+        </div>
+      </div>
+
+      <!--IINS-->
+      <div class="form-group" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
+        <label for="iins" class="col-lg-3 control-label">iins:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="iins" ng-model="offer.iins" placeholder="Enter comma(,) separated values" required/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="percent_rate" class="col-lg-3 control-label">Percent Rate:</label>
+        <div class="col-lg-9" >
+          <input type="number" class="form-control m-b" name="percent_rate"
+                 ng-model="offer.percent_rate"
+                 ng-min="0"
+                 ng-max="100"
+                 placeholder="Eg: 45.25"/>
+        </div>
+      </div>
+
+      <!--Max Cashback-->
+      <div class="form-group">
+        <label for="max_cashback" class="col-lg-3 control-label">Max Cashback:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="max_cashback" ng-model="offer.max_cashback" />
+        </div>
+      </div>
+
+      <!--Flat Cashback-->
+      <div class="form-group">
+        <label for="flat_cashback" class="col-lg-3 control-label">Flat Cashback:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="flat_cashback" ng-model="offer.flat_cashback" />
+        </div>
+      </div>
+
+      <!--Min Amount-->
+      <div class="form-group">
+        <label for="min_amount" class="col-lg-3 control-label">min Amount:</label>
+        <div class="col-lg-9" >
+          <input type="decimal" class="form-control m-b" name="min_amount" ng-model="offer.min_amount" />
+        </div>
+      </div>
+
+      <!--Max Payment Count-->
+      <div class="form-group" ng-if="offer.payment_method === 'card'">
+        <label for="max_payment_count" class="col-lg-3 control-label">max Payment Count:</label>
+        <div class="col-lg-9" >
+          <input type="decimal" class="form-control m-b" name="max_payment_count" ng-model="offer.max_payment_count" required/>
+        </div>
+      </div>
+
+      <!--Linked offer ids-->
+      <div class="form-group">
+        <label for="linked_offer_ids" class="col-lg-3 control-label">Linked Offer ids:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="linked_offer_ids"
+                 ng-model="offer.linked_offer_ids" placeholder="Enter comma(,) separated values"/>
+        </div>
+      </div>
+
+      <!-- Start date-->
+      <div class="form-group">
+        <label for="starts_at" class="col-lg-3 control-label"
+               style="display:table-cell; vertical-align: middle">
+          Starts at:
+        </label>
+        <div class="col-lg-9" style="display:table;">
+          <!--Date picker-->
+          <div style="display: table-cell; vertical-align: middle">
+            <div class="input-group input-date col-lg-3" name="starts_at"
+                 ng-click="date.open($event, 0)">
+
+              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
+                     ng-model="offer.starts_at"
+                     is-open="date.opened.0"
+                     datepicker-options="date.dateOptions"
+                     close-text="Close" />
+              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+            </div>
+          </div>
+          <!--Time picker-->
+          <div class="col-lg-6" style="display:table-cell; vertical-align: middle">
+            <div class="dropdown time-picker">
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                {{offer_time.starts | date: "h:mm a" }} <i class="glyphicon glyphicon-time" style="margin-left:5px;"></i>
+              </button>
+              <ul class="dropdown-menu" style="list-style:none" ui-time-dropdown>
+                <li>
+                  <timepicker ng-model="offer_time.starts"
+                              hour-step="1" minute-step="5" show-meridian="true">
+                  </timepicker>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--End Date-->
+      <div class="form-group">
+        <label for="ends_at" class="col-lg-3 control-label"
+               style="display:table-cell; vertical-align: middle">
+          Ends at<span style="color:red">*</span>:
+        </label>
+        <div class="col-lg-9" style="display:table;">
+          <!--Date picker-->
+          <div style="display: table-cell; vertical-align: middle">
+            <div class="input-group input-date col-lg-3" name="starts_at"
+                 ng-click="date.open($event, 1)">
+              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
+                     ng-model="offer.ends_at"
+                     is-open="date.opened.1"
+
+                     datepicker-options="date.dateOptions"
+                     close-text="Close" />
+              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+            </div>
+          </div>
+          <!--Time picker-->
+          <div class="col-lg-6" style="display:table-cell; vertical-align: middle">
+            <div class="dropdown time-picker">
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                {{offer_time.ends | date: "h:mm a" }} <i class="glyphicon glyphicon-time" style="margin-left:5px;"></i>
+              </button>
+              <ul class="dropdown-menu" style="list-style:none" ui-time-dropdown>
+                 <li>
+                    <timepicker ng-model="offer_time.ends"
+                                hour-step="1" minute-step="5" show-meridian="true">
+                    </timepicker>
+                 </li>
+              </ul>
+            </div>
+        </div>
+       </div>
+      </div>
+
+      <div class="form-group">
+        <label for="type" class="col-lg-3 control-label">Type:</label>
+        <div class="col-lg-9" ng-init="offer.type='deferred'">
+          <label class="col-lg-4">
+            <input type="radio"
+                   name="type"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.type"
+                   value="instant">
+            Instant
+          </label>
+          <label class="col-lg-3">
+            <input type="radio"
+                   name="type"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.type"
+                   value="deferred">
+            Deffered
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="type" class="col-lg-3 control-label">Display on Checkout:</label>
+        <div class="col-lg-9" ng-init="offer.checkout_display=false">
+          <label class="col-lg-4">
+            <input type="radio"
+                   name="checkout_display"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.checkout_display"
+                   data-ng-value="true">
+            True
+          </label>
+          <label class="col-lg-3">
+            <input type="radio"
+                   name="checkout_display"
+                   class="form-control m-b col-lg-6"
+                   ng-model="offer.checkout_display"
+                   data-ng-value="false">
+            False
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="display_text" class="col-lg-3 control-label">Display Text:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="display_text" ng-model="offer.display_text"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="error_message" class="col-lg-3 control-label">Error Message:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="error_message" ng-model="offer.error_message"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="terms" class="col-lg-3 control-label">Terms<span style="color:red">*</span>:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="terms" ng-model="offer.terms" required/>
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(offer)">OK</button>
   </div>
 </script>
 
@@ -1507,5 +2025,75 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(credits)">OK</button>
+  </div>
+</script>
+
+<!--Options to download report-->
+<script type="text/ng-template" id="downloadReportModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Download Reports</h3>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal">
+      <!--TODO: Set it to current YEAR and MONTH instead of hard code-->
+      <div class="form-group">
+        <div class="col-lg-6" >
+          <select class="form-control m-b" name="entity" ng-model="reportForm.entity" ng-change="checkValue()">
+            <option value="payment">Payment</option>
+            <option value="refund">Refund</option>
+            <option value="order">Order</option>
+            <option value="settlement">Settlement</option>
+            <option value="transaction">Combined</option>
+            <option value="broking" ng-if="merchant.tags.indexOf('Broking_Report') !== -1">Broking Report</option>
+            <!-- DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants -->
+            <option value="dsp_report" ng-if="merchant.tags.indexOf('Dsp_Report') !== -1">DSP Transaction Report</option>
+
+            <option value="invoice">Monthly Invoice</option>
+
+            <optgroup label="Marketplace" ng-if="merchant.tags.indexOf('Marketplace') !== -1">
+              <option value="transfer">Transfer</option>
+              <option value="reversal">Reversal</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="col-lg-6" ng-if="reportForm.entity !== 'invoice'">
+          <select class="form-control m-b" name="type" ng-model="reportForm.type"
+                  ng-change="reportForm.month && updateDates(reportForm.month, reportForm.year)">
+            <option value="daily">Daily</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="col-lg-6">
+          <select class="form-control m-b" name="year" ng-model="reportForm.year"
+                  ng-change="reportForm.month && updateDates(reportForm.month, reportForm.year)">
+            <option value="2017">2017</option>
+            <option value="2016">2016</option>
+            <option value="2015">2015</option>
+          </select>
+        </div>
+        <div class="col-lg-3">
+          <select class="form-control m-b" name="month" ng-model="reportForm.month"
+                  ng-change="reportForm.type === 'daily' && updateDates(reportForm.month, reportForm.year)">
+            <option ng-repeat="(index, month) in monthFields" value={{month.value}}>{{month.name}}</option>
+          </select>
+        </div>
+        <div class="col-lg-3" ng-show="reportForm.type === 'daily'">
+          <select class="form-control m-b" name="date" ng-model="reportForm.date">
+            <option ng-repeat="date in range(1, daysInSelectedMonth)" value={{date}}>{{date}}</option>
+          </select>
+        </div>
+      </div>
+    </form>
+
+    <div>
+      Combined reports will include transactions on the given date, as well as payments settled on that given date.
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Close</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok()">Download</button>
   </div>
 </script>

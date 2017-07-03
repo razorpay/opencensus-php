@@ -1,5 +1,6 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import { Field, reduxForm } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
@@ -97,7 +98,7 @@ export default class NewKey extends Component {
           <div class="modal-footer">
             <button
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               onClick={handleSubmit(this.save)}
             >
               OK

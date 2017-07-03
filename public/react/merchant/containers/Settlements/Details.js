@@ -1,13 +1,18 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
 import SettlementDetails from 'merchant/components/Settlements/Details';
 import * as SettlementActions from 'merchant/modules/settlements/details';
 
 @connect(state => state.settlement, SettlementActions)
 export default class SettlementDetailsContainer extends Component {
   componentWillMount() {
-    this.props.fetchSettlement(this.props.id);
+    this.props.fetchItem(this.props.id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchItem(nextProps.id);
+    }
   }
 
   fetchBreakupDetails = settlement => {
@@ -26,19 +31,13 @@ export default class SettlementDetailsContainer extends Component {
     }
 
     return (
-      <div class="react-root">
-        <Header title="Settlement Detail" />
-
-        <div class="content-wrapper">
-          <SettlementDetails
-            settlement={settlement}
-            isLoading={loading}
-            statusMsg={statusMsg}
-            onToggleBreakupDetails={this.fetchBreakupDetails}
-            breakupDetails={breakupDetails}
-          />
-        </div>
-      </div>
+      <SettlementDetails
+        settlement={settlement}
+        isLoading={loading}
+        statusMsg={statusMsg}
+        onToggleBreakupDetails={this.fetchBreakupDetails}
+        breakupDetails={breakupDetails}
+      />
     );
   }
 }

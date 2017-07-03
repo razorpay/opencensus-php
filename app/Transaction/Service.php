@@ -32,6 +32,12 @@ class Service extends Base\Service
      */
     public function process(array $input, $mode)
     {
+        if ((isset($input['method']) === true) and
+            ($input['method'] === 'bank_transfer'))
+        {
+            return [];
+        }
+
         $error = (new Transaction\Validator)->validateInput('process', $input)->messages();
 
         if (empty($error) === false)
@@ -139,11 +145,6 @@ class Service extends Base\Service
         }
 
         return $response;
-    }
-
-    public function getAllAggregations($mode, $resource, $sort)
-    {
-        return Merchant\Entity::getAllAggregations($mode, $resource, $sort);
     }
 
     public function getPaymentAggregations($merchantId, $mode)

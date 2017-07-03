@@ -1,45 +1,49 @@
 <?php
 
+// We use {orgId} when frontend is not supposed to pass it
+// and resolve (on the backend) automagically.
+
 return [
     // auth
     'admin' => [
         'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
+        // this should not be {orgId}
         'org_get'                           => 'orgs/{id}',
         'org_edit'                          => 'orgs/{id}',
         'org_delete'                        => 'orgs/{id}',
 
         // Roles
-        'role_get_multiple'                 => 'orgs/{id}/roles',
-        'role_get'                          => 'orgs/{id}/roles/{roleId}',
-        'role_create'                       => 'orgs/{id}/roles',
-        'role_delete'                       => 'orgs/{id}/roles/{roleId}',
-        'role_edit'                         => 'orgs/{id}/roles/{roleId}',
+        'role_get_multiple'                 => 'orgs/{orgId}/roles',
+        'role_get'                          => 'orgs/{orgId}/roles/{roleId}',
+        'role_create'                       => 'orgs/{orgId}/roles',
+        'role_delete'                       => 'orgs/{orgId}/roles/{roleId}',
+        'role_edit'                         => 'orgs/{orgId}/roles/{roleId}',
 
         // Groups
-        'group_get_multiple'                => 'orgs/{id}/groups',
-        'group_create'                      => 'orgs/{id}/groups',
-        'group_get'                         => 'orgs/{id}/groups/{groupId}',
-        'group_admins_create'               => 'orgs/{id}/groups/{groupId}/admins',
-        'group_delete'                      => 'orgs/{id}/groups/{groupId}',
-        'edit_group'                        => 'orgs/{id}/groups/{groupId}',
-        'group_get_allowed_groups'          => 'orgs/{id}/groups/{groupId}/allowed_groups',
+        'group_get_multiple'                => 'orgs/{orgId}/groups',
+        'group_create'                      => 'orgs/{orgId}/groups',
+        'group_get'                         => 'orgs/{orgId}/groups/{groupId}',
+        'group_admins_create'               => 'orgs/{orgId}/groups/{groupId}/admins',
+        'group_delete'                      => 'orgs/{orgId}/groups/{groupId}',
+        'edit_group'                        => 'orgs/{orgId}/groups/{groupId}',
+        'group_get_allowed_groups'          => 'orgs/{orgId}/groups/{groupId}/allowed_groups',
 
         // Admins
-        'admin_get'                         => 'orgs/{id}/admins/{adminId}',
-        'admin_get_multiple'                => 'orgs/{id}/admins',
-        'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
-        'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
-        'admin_create'                      => 'orgs/{id}/admins',
-        'admin_get_app_auth'                => 'orgs/{id}/current_admin',
+        'admin_get'                         => 'orgs/{orgId}/admins/{adminId}',
+        'admin_get_multiple'                => 'orgs/{orgId}/admins',
+        'admin_edit'                        => 'orgs/{orgId}/admins/{adminId}',
+        'admin_delete'                      => 'orgs/{orgId}/admins/{adminId}',
+        'admin_create'                      => 'orgs/{orgId}/admins',
+        'admin_get_app_auth'                => 'orgs/{orgId}/current_admin',
 
         // AuditLog
-        'auditlog_search'                    => 'orgs/{id}/auditlog/search',
+        'auditlog_search'                    => 'orgs/{orgId}/auditlog/search',
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',
         'permission_get_roles'              => 'permissions/{id}/roles',
-        'permission_get_multiple'           => 'orgs/{id}/permissions',
+        'permission_get_multiple'           => 'orgs/{orgId}/permissions',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
         'permission_edit'                   => 'permissions/{id}',
@@ -53,15 +57,15 @@ return [
         'org_fieldmap_create'               => 'orgs/{orgId}/field-map',
         'org_fieldmap_edit'                 => 'orgs/{orgId}/field-map/{id}',
         'org_fieldmap_delete'               => 'orgs/{orgId}/field-map/{id}',
-        'org_fieldmap_get_by_entity'        => 'orgs/{id}/field-map/entity/{entity}',
+        'org_fieldmap_get_by_entity'        => 'orgs/{orgId}/field-map/entity/{entity}',
 
-        'admin_lead_create'                 => 'orgs/{id}/admin-lead',
-        'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
+        'admin_lead_create'                 => 'orgs/{orgId}/admin-lead',
+        'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
 
         // Workflows
 
-        'workflow_get_multiple'             => 'orgs/{id}/workflows',
+        'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
         'workflow_update'                   => 'workflows/{id}',
@@ -80,6 +84,11 @@ return [
         // Admin Actions
         // Create Schedule
         'schedule_create'                   => 'schedules',
+        'schedule_assign'                   => 'merchants/{id}/schedules',
+        'schedule_fetch_multiple'           => 'schedules',
+
+        // Add Adjustment
+        'adj_add'                           => 'adjustments',
     ],
 
     // auth
@@ -127,6 +136,10 @@ return [
         ],
 
         // Refunds
+        'refund_fetch_multiple'             => [
+            'url'       => 'refunds',
+            'routeName' => 'get_refunds'
+        ],
         'refund_fetch'                      => [
             'url'       => 'refunds',
             'routeName' => 'get_refunds'
@@ -150,12 +163,6 @@ return [
             'routeName' => 'settlements_get_detail'
         ],
 
-        // Balance
-        'balance_fetch'                     => [
-            'url'       => 'balance',
-            'routeName' => 'balance_get'
-        ],
-
         // Webhooks
         'webhook_fetch_multiple'            => [
             'url'       => 'webhooks',
@@ -175,18 +182,38 @@ return [
             'url'       => 'account/config',
             'routeName' => 'get_config'
         ],
-        'merchant_edit_config'              => [
-            'url'       => 'account/config',
-            'routeName' => 'put_config'
-        ],
         'merchant_edit_config_logo'         => [
             'url'       => 'account/config/logo',
             'routeName' => 'post_config_logo'
         ],
 
+        // Bank Account Fetch
+        'bank_account_fetch'                => [
+            'url'       => 'account/bank_account',
+            'routeName' => 'bank_account_fetch'
+        ],
+
         // Features
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
+
+        // Batches [Used for Refunds, Payment Links]
+        'batch_fetch_multiple'              => [
+            'url'       => 'batches',
+            'routeName' => 'batch_fetch_multiple'
+        ],
+        'batch_fetch_by_id'                 => [
+            'url'       => 'batches/{id}',
+            'routeName' => 'batch_fetch_single'
+        ],
+        'batch_download_file'               => [
+            'url'       => 'batches/{id}/download',
+            'routeName' => 'batch_download'
+        ],
+        'batch_create'                      => [
+            'url'       => 'batches',
+            'routeName' => 'batch_upload'
+        ],
 
         // Invoices
         'invoice_fetch_multiple'            => [
@@ -216,6 +243,10 @@ return [
         'invoice_cancel'                    => [
             'url'       => 'invoices/{id}/cancel',
             'routeName' => 'invoice_cancel'
+        ],
+        'invoice_issue_by_batch'            => [
+            'url'       => 'invoices/batch/{batchId}/issue',
+            'routeName' => 'invoice_issue_by_batch',
         ],
 
         // Customers
@@ -253,12 +284,110 @@ return [
             'url'       => 'items/{id}',
             'routeName' => 'item_delete'
         ],
+
+        // Transfers
+        'transfer_fetch_multiple'           => [
+            'url'       => 'transfers',
+            'routeName' => 'marketplace_read'
+        ],
+        'transfer_fetch'           => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_read'
+        ],
+
+        // Reversals
+        'reversal_fetch_multiple'           => [
+            'url'       => 'reversals',
+            'routeName' => 'marketplace_read'
+        ],
+        'reversal_fetch'           => [
+            'url'       => 'reversals/{id}',
+            'routeName' => 'marketplace_read'
+        ],
+
+        // GST
+        'merchant_gst_fetch'    =>  [
+            'url'         => 'merchant/gst',
+            'routeName'   => 'merchant_gst_fetch'
+        ],
+
+        'merchant_gst_edit'     => [
+            'url'       => 'merchant/gst',
+            'routeName' => 'merchant_gst_edit'
+        ],
+
+         // Invitations
+        'invitation_create'                 => [
+            'url'       => 'invitations',
+            'routeName' => 'invitations_send'
+         ],
+
+        'invitation_resend'                 => [
+            'url'       => 'invitations/{id}/resend',
+            'routeName' => 'invitation_resend'
+        ],
+        'invitation_edit'                   => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_edit'
+        ],
+        'invitation_delete'                 => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_delete'
+        ],
+        'invitation_fetch'                  => 'invitations',
+
+        // Virtual Accounts
+        'virtual_account_fetch_multiple'    => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_fetch'             => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_create'            => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_update'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_fetch_payments'    => [
+            'url'       => 'virtual_accounts/{id}/payments',
+            'routeName' => 'virtual_accounts_read'
+        ],
     ],
 
     // auth
     'admin_proxy' => [
         // Credits
         'credits_fetch_multiple'            => 'credits',
+
+        // Balance
+        'balance_fetch'                     => [
+            'url'       => 'balance',
+            'routeName' => 'balance_get'
+        ],
+
+        // Edit Merchant config
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
+        ],
+
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        // Refund Payment
+        'payment_refund'                    => 'payments/{id}/refund',
+        // Capture Payment
+        'payment_capture'                   => 'payments/{id}/capture',
+        // View Payment Refunds
+        'payment_fetch_refunds'             => 'payments/{id}/refunds',
+        // Offer create / update
+        'offer_create'                      => 'offers',
+        'offer_update'                      => 'offers/{id}',
     ],
 
     // auth
@@ -302,6 +431,18 @@ return [
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
+
+        // Get Org details by hostname (for heimdall specifics)
+        'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
+
+        // Get Merchant Users
+        'merchant_fetch_users'              => 'merchants/{id}/users',
+
+        // Accept/Reject Invitation
+        'invitation_action'                 => 'invitations/{id}/{action}',
+
+        // Make test payment for Virtual Account
+        'bank_transfer_process'             => 'ecollect/validate',
     ],
 
     // auth
@@ -309,5 +450,55 @@ return [
         // Credits
         'credits_create'                    => 'merchants/{id}/credits_log',
         'credits_delete'                    => 'merchants/{mid}/credits/{id}',
+
+        'merchant_put_payment_methods'      => 'merchants/{mid}/methods',
+
+        'feature_get_multiple'              => 'features/{entityId}',
+
+        'merchant_activation_update'        => 'merchant/activation/{id}/update',
+
+        'merchant_assign_pricing'           => 'merchants/{id}/pricing',
+
+        // Banks
+        'merchant_get_banks'                => 'merchants/{id}/banks',
+        'merchant_set_banks'                => 'merchants/{id}/banks',
+
+        'merchant_fetch_bank_account'       => 'merchants/{id}/bank_account',
+        'merchant_add_bank_account'         => 'merchants/{id}/bank_account',
+
+        'merchant_edit'                     => 'merchants/{id}',
+
+        'merchant_action'                   => 'merchants/{id}/action',
+        'merchant_live_enable'              => 'merchants/{id}/live/enable',
+        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
+        // Entities
+        'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
+        'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
+        'admin_fetch_entity_multiple'       => 'admin/{type}',
+
+        // Toggle Terminal
+        'terminal_toggle'                   => 'terminals/{id}/toggle',
+        // Delete Terminal
+        'terminal_delete'                   => 'terminals/{id}',
+        // Edit Terminal
+        'terminal_edit'                     => 'terminals/{id}',
+        // Terminal Change Primary Merchant
+        'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
+        // Terminal Assign Sub Merchants
+        'terminal_add_merchant'             => 'terminals/{id}/merchants/{mid}',
+        // Terminal Remove Sub Merchant
+        'terminal_remove_merchant'          => 'terminals/{id}/merchants/{mid}',
+
+        // Delete EMI Plan
+        'emi_plan_delete'                   => 'emi/{id}',
+
+        // Edit IIN
+        'iin_edit'                          => 'iins/{id}',
+
+        // Gateway Rules
+        'gateway_create_rule'               => 'gateway/rules',
+        'gateway_update_rule'               => 'gateway/rules/{id}',
+        'gateway_delete_rule'               => 'gateway/rules/{id}',
     ],
 ];

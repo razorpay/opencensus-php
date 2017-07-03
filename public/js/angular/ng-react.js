@@ -104,7 +104,8 @@
    */
   function watchProps(watchDepth, scope, watchExpressions, listener) {
     if (
-      watchDepth === 'collection' && angular.isFunction(scope.$watchCollection)
+      watchDepth === 'collection' &&
+      angular.isFunction(scope.$watchCollection)
     ) {
       watchExpressions.forEach(function(expr) {
         scope.$watchCollection(expr, listener);

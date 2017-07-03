@@ -1,40 +1,71 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
-import sessionReducer from 'merchant/modules/session';
 import modalReducer from 'rzp/modules/modals';
+import sliderReducer from 'rzp/modules/slider';
 import notificationsReducer from 'rzp/modules/notifications';
+import sessionReducer from 'merchant/modules/session';
+import appReducer from 'merchant/modules/app';
+import homeReducer from 'merchant/modules/home';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
-import subscriptionsReducer from 'merchant/modules/subscriptions';
 import plansReducer from 'merchant/modules/plans';
+import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
 import itemsReducer from 'merchant/modules/items';
-import ordersReducer from 'merchant/modules/orders/list';
 import orderReducer from 'merchant/modules/orders/details';
-import settlementsReducer from 'merchant/modules/settlements/list';
 import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
 import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
-import refundsReducer from 'merchant/modules/refunds/list';
+import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
-import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
+import paymentReducer from 'merchant/modules/payments/details';
+import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
+import referralsReducer from 'merchant/modules/referrals';
+import {
+  virtualAccountsReducer,
+  virtualAccountReducer,
+} from 'merchant/modules/virtualaccounts';
+
+import {
+  refundBatchesReducer,
+  paymentLinkBatchesReducer,
+} from 'merchant/modules/batches';
+
+import {
+  paymentsReducer,
+  ordersReducer,
+  transfersReducer,
+  reversalsReducer,
+  mpPaymentsReducer,
+  refundsReducer,
+  settlementsReducer,
+  subscriptionsReducer,
+} from 'rzp/modules/collection';
 
 export default combineReducers({
+  modal: modalReducer,
+  slider: sliderReducer,
+  notifications: notificationsReducer,
   form: formReducer,
   session: sessionReducer,
-  modal: modalReducer,
-  notifications: notificationsReducer,
+  app: appReducer,
+  home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
+  paymentlinkbatches: paymentLinkBatchesReducer,
+  refundbatches: refundBatchesReducer,
   subscriptions: subscriptionsReducer,
   plans: plansReducer,
+  profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,
   orders: ordersReducer,
   order: orderReducer,
+  payments: paymentsReducer,
+  payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
@@ -42,8 +73,14 @@ export default combineReducers({
   credits: creditsReducer,
   team: teamReducer,
   config: configReducer,
-  credits: creditsReducer,
+  activation: activationReducer,
   refunds: refundsReducer,
   refund: refundReducer,
-  batchuploads: batchuploadsReducer,
+  referrals: referralsReducer,
+  accounts: mpAccountsReducer,
+  mpPayments: mpPaymentsReducer,
+  transfers: transfersReducer,
+  reversals: reversalsReducer,
+  virtualaccounts: virtualAccountsReducer,
+  virtualaccount: virtualAccountReducer,
 });

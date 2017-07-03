@@ -2,16 +2,21 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\Http\AppResponse;
-use App\User;
-use App\MerchantDetails;
-use App\Merchant;
-use App\Lead;
-
 use Input;
+use App\Lead;
+use App\User;
+use App\Admin;
+use App\Merchant;
+use App\MerchantDetails;
+use App\Http\AppResponse;
+use App\User\Helper as UserHelper;
 
 class UserController extends Controller
 {
+    // Users who signed up before this date
+    // are not exposed to the pre signup flow
+
+    const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
     protected $guard = 'users';
     /**
@@ -21,7 +26,43 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        return view('merchant.tmpgetIndex');
+        $domain = \Request::server('SERVER_NAME');
+        list($orgError, $org) = (new Admin\Service)->getOrg($domain);
+        list($userError, $details) = (new User\Service)->getUserDetails();
+
+        $data = [
+            'isAuthenticated'       => false,
+            'isConfirmed'           => false,
+            'preSignupData'         => [],
+            'isPreSignupComplete'   => false,
+        ];
+
+        if (empty($userError) and empty($orgError))
+        {
+            $data = [
+                'isAuthenticated'       => (bool) $details['user'],
+                'isConfirmed'           => $details['user']['confirmed'],
+                'preSignupData'         => $details['pre_signup'],
+                'isPreSignupComplete'   => $details['pre_signup_complete'],
+                'user'                  => json_encode($details),
+                'org'                   => json_encode($org),
+            ];
+        }
+
+        // $data is used to run diferent pieces of JS
+        return view('merchant.tmpgetIndex', $data);
+    }
+
+    private function getPreSignupData($user)
+    {
+        $merchant = (new UserHelper)->getCurrentMerchant($user);
+
+        if ($merchant)
+        {
+            return (new Merchant\Service)->getPreSignupDetails($merchant->id);
+        }
+
+        return [];
     }
 
     /**
@@ -37,7 +78,9 @@ class UserController extends Controller
     public function postRegister()
     {
         $input = Input::all();
+
         $data = null;
+
         $error = [];
 
         try
@@ -138,50 +181,12 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    /**
-     * This is the one true method for all information
-     * @return [type] [description]
-     */
-    public function getUserDetails()
+    public function getUserDetailsV2()
     {
-        $data = [
-            // Current merchant
-            'current'   =>  null
-        ];
-        $user = Auth::user();
+        list($error, $data) = (new User\Service)->getUserDetails();
 
-        $merchants = $user->merchants->toArray();
-
-        $currentMerchantId = $user->getCurrentMerchantId();
-
-        // If the user is logged in as someone
-        if ($currentMerchantId)
-        {
-            // Fetch merchant details for current merchant
-            $data = $data + (new MerchantDetails\Service)->fetchDetails();
-
-            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
-
-            foreach ($merchants as $merchant) {
-                $data['merchants'][$merchant['id']] = $merchant;
-
-                if ($merchant['id'] === $currentMerchantId)
-                {
-                    $data['current'] = $currentMerchantId;
-                }
-            }
-
-            // And finally, for backwards compatibility
-            $merchant = (new Merchant\Service)->fetchCurrentMerchantForUser($user);
-
-            $data = $data + $merchant;
-        }
-
-        $data['user'] = $user->toArray();
-
-        return AppResponse::jsonResponse(null, $data);
+        return AppResponse::jsonResponse($error, $data);
     }
-
 
     public function postUpgradeUserToMerchant()
     {

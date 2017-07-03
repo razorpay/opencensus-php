@@ -2,22 +2,43 @@ import { merge } from 'rzp/utils/immutable';
 
 const MODAL_OPEN = 'MODAL_OPEN';
 const MODAL_CLOSE = 'MODAL_CLOSE';
+const SLIDER_OPEN = 'SLIDER_OPEN';
+const SLIDER_CLOSE = 'SLIDER_CLOSE';
 
 export const openModal = payload => {
-  return dispatch => {
-    return dispatch({
-      type: MODAL_OPEN,
-      payload,
-    });
+  return {
+    type: MODAL_OPEN,
+    payload,
   };
 };
 
 export const closeModal = payload => {
-  return dispatch => {
-    return dispatch({
-      type: MODAL_CLOSE,
-      payload,
-    });
+  return {
+    type: MODAL_CLOSE,
+    payload,
+  };
+};
+
+export const openSlider = payload => {
+  if (payload.openURL) {
+    location.hash = payload.openURL;
+  }
+
+  return {
+    type: SLIDER_OPEN,
+    payload: {
+      ...payload,
+      slider: true,
+    },
+  };
+};
+
+export const closeSlider = payload => {
+  if (payload && payload.closeURL) {
+    location.hash = payload.closeURL;
+  }
+  return {
+    type: SLIDER_CLOSE,
   };
 };
 

@@ -50,7 +50,7 @@ export default class AutoResizeTextarea extends Component {
         value={input.value}
         {...otherProps}
         style={style}
-        ref={input => this.textarea = input}
+        ref={input => (this.textarea = input)}
         onChange={event => {
           this.measureHeight(event);
           input.onChange(event, event.target.value);

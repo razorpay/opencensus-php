@@ -3,18 +3,18 @@
 namespace App\MerchantDetails;
 
 use Auth;
-use Aws\Laravel\AwsFacade as AWS;
-use Aws\Sdk;
-use Illuminate\Support\Facades\App as App;
-use Carbon\Carbon;
-use Config;
 use Mail;
+use Queue;
+use Trace;
+use Config;
+use Aws\Sdk;
+use Requests;
 use App\Base;
 use App\Merchant;
-use Queue;
+use Carbon\Carbon;
 use App\Mailers\MerchantMailer;
-use Requests;
-use Trace;
+use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
@@ -42,6 +42,8 @@ class Service extends Base\Service
             'business_doe'                => 2,
             'transaction_volume'          => 2,
             'transaction_value'           => 2,
+            'gstin'                       => 2,
+            'p_gstin'                     => 2,
             'promoter_pan'                => 2,
             'promoter_pan_name'           => 2,
 
@@ -138,7 +140,7 @@ class Service extends Base\Service
 
         if ($user)
         {
-            $this->merchant = $user->currentMerchant;
+            $this->merchant = $user->currentMerchant();
 
             $this->user = $user;
         }
@@ -156,9 +158,7 @@ class Service extends Base\Service
         {
             if ($merchantDetails['can_submit'] === true)
             {
-                $merchantDetails['steps_finished'] = json_encode($steps);
-
-                $merchantDetails['activation_progress'] = 100;
+                $merchantDetails['steps_finished'] = $steps;
             }
             else
             {
@@ -170,9 +170,7 @@ class Service extends Base\Service
 
                     $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
 
-                    $merchantDetails['steps_finished'] = json_encode($finishedSteps);
-
-                    $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+                    $merchantDetails['steps_finished'] = $finishedSteps;
                 }
             }
         }
@@ -219,7 +217,8 @@ class Service extends Base\Service
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
         //
-        if (($this->merchant->isActive()) and ($step === $bankStep))
+
+        if (($this->merchant->activated === true) and ($step === $bankStep))
         {
             return ["Bank account updation not allowed after account is updated"];
         }
@@ -355,7 +354,7 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        $mailer = new MerchantMailer($user->currentMerchant, $merchantDetails);
+        $mailer = new MerchantMailer($user->currentMerchant(), $merchantDetails);
 
         // For marketplace linked accounts - skip sending this email
         if ($this->isLinkedAccount() === false)
@@ -493,11 +492,11 @@ class Service extends Base\Service
 
     protected function uploadFileToAPI(array $input)
     {
-        $this->setApiCredentials($this->merchant['id']);
+        $this->setApiCredentials($this->merchant->id);
 
         $response = $this->api
                          ->merchantDetail
-                         ->uploadActivationFile($this->merchant['id'], $input);
+                         ->uploadActivationFile($this->merchant->id, $input);
     }
 
     protected function unsetExtraValues(array $input)
@@ -585,7 +584,8 @@ class Service extends Base\Service
     {
         $stepsList = array_values($this->getFieldsToStepMap());
 
-        return array_unique($stepsList);
+
+        return array_values(array_unique($stepsList));
     }
 
     /**
@@ -668,7 +668,7 @@ class Service extends Base\Service
         }
 
         // Switch $this->merchant to the linked-account entity
-        $this->merchant = Merchant\Entity::findorfail($account->id);
+        $this->merchant = Merchant\Entity::findOrFail($account->id);
 
         $this->linked_account = true;
     }
@@ -680,6 +680,6 @@ class Service extends Base\Service
 
     public function getUrlKeys()
     {
-        return self::$WEBSITE_URLS;
+        return self::WEBSITE_URLS;
     }
 }

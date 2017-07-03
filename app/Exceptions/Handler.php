@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Trace\Trace;
 use Exception;
 use Response;
+use UnexpectedValueException;
 use App\Exceptions\EntityNotFoundException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -27,6 +28,8 @@ class Handler extends ExceptionHandler
         ]
     ];
 
+    const RESPONSE_403 = 'Invalid Host Detected';
+
     /**
      * A list of the exception types that should not be reported.
      *
@@ -38,6 +41,7 @@ class Handler extends ExceptionHandler
         ModelNotFoundException::class,
         NotFoundHttpException::class,
         TokenMismatchException::class,
+        \UnexpectedValueException::class,
     ];
 
     /**
@@ -105,6 +109,11 @@ class Handler extends ExceptionHandler
         else if ($e instanceof EntityNotFoundException)
         {
             $response = Response::json(self::RESPONSE_404, 404);
+        }
+        else if ($e instanceof UnexpectedValueException and preg_match('/Untrusted Host/', $e->getMessage()))
+        {
+            $response = response(self::RESPONSE_403, 403)
+                ->header('Content-Type', 'text/plain');
         }
         else
         {

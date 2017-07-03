@@ -1,20 +1,19 @@
 import ajax from 'merchant/utils/ajax';
+import { set, merge, unshift } from 'rzp/utils/immutable';
 
 const PLANS_FETCH = 'PLANS_FETCH';
 const PLAN_ADDED = 'PLAN_ADDED';
 const PLAN_EDITED = 'PLAN_EDITED';
 
 export const fetchPlans = () => {
-  return dispatch => {
-    return dispatch({
-      type: PLANS_FETCH,
-      payload: ajax('/plans'),
-    });
+  return {
+    type: PLANS_FETCH,
+    payload: ajax('/plans'),
   };
 };
 
 export const createPlan = data => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: '/plan',
       method: 'post',
@@ -24,7 +23,7 @@ export const createPlan = data => {
 };
 
 export const editPlan = (id, data) => {
-  return dispatch => {
+  return () => {
     return ajax({
       url: `/plan/${id}`,
       method: 'put',
@@ -56,27 +55,28 @@ let initialState = {
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${PLANS_FETCH}::PENDING`:
-      return state.set('loading', true);
+      return set(state, 'loading', true);
 
     case `${PLANS_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         plans: action.payload.data.items,
         count: action.payload.data.count,
       });
 
     case `${PLANS_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         error: action.error,
       });
 
     case PLAN_ADDED:
-      return state.set('plans', state.get('plans').unshift(action.payload));
+      return set(state, 'plans', unshift(state.plans, action.payload));
 
     case PLAN_EDITED:
       let plans = state.get('plans');
-      return state.set(
+      return set(
+        state,
         'plans',
         plans.update(
           plans.findIndex(item => item.get('id') === action.payload.id),

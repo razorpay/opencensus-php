@@ -19,7 +19,9 @@ app.controller('OrgsAddUsersCtrl', [
     $state
   ) {
     $scope.alerts = alertsFactory.getHandler();
-    $scope.obBug = {};
+    $scope.selected_roles = [];
+    $scope.roles = [];
+    $scope.roleNames = {}; // Used only as mapping between role id to names (used for selected_roles)
 
     // Get dynamic user fields
     var request = $http({
@@ -58,13 +60,16 @@ app.controller('OrgsAddUsersCtrl', [
         if (data.success) {
           var user = data.data;
           var userGroups = user.groups || [];
-          var userRole = user.roles && user.roles[0] && user.roles[0].id;
+          var userRole = user.roles || [];
 
           userGroups.map(function(group) {
             $scope.selected_groups[group.id] = true;
           });
 
-          $scope.obBug.role = userRole;
+          userRole.map(function(role) {
+            $scope.selected_roles.push(role.id);
+          });
+
           $scope.user = user;
         }
       });
@@ -73,13 +78,15 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.user = {};
     $scope.selected_groups = [];
     $scope.select_all = false;
-    $scope.obBug.role = '';
 
     organization.fetchRoles().then(function(roles) {
-      $scope.roles = {};
-
       angular.forEach(roles, function(role) {
-        $scope.roles[role.id] = role.name;
+        $scope.roles.push({
+          id: role.id,
+          name: role.name,
+        });
+
+        $scope.roleNames[role.id] = role.name; // Create mapping id vs name
       });
     });
 
@@ -91,7 +98,8 @@ app.controller('OrgsAddUsersCtrl', [
       $scope.fetchUser($stateParams.id);
     }
 
-    $scope.selectAll = function() {
+    $scope.toggleSelAll = function() {
+      $scope.select_all = !$scope.select_all;
       $scope.selected_groups = {};
 
       if (!$scope.select_all) {
@@ -101,6 +109,14 @@ app.controller('OrgsAddUsersCtrl', [
       $scope.groups.map(function(group) {
         $scope.selected_groups[group.id] = true;
       });
+    };
+
+    // If an org is (un)selected, perform actions
+    $scope.updateIfGroupsChanged = function(id) {
+      // If group id is removed from selected_groups then set select_all tag to false
+      if (!$scope.selected_groups[id]) {
+        $scope.select_all = false;
+      }
     };
 
     $scope.editUser = function(user) {
@@ -114,7 +130,7 @@ app.controller('OrgsAddUsersCtrl', [
         location_code: user.location_code,
         supervisor_code: user.supervisor_code,
         disabled: user.disabled + 0,
-        roles: getSelectedRoles(),
+        roles: $scope.selected_roles,
         groups: getSelectedGroups(),
         allow_all_merchants: user.allow_all_merchants ? '1' : '0',
       };
@@ -133,7 +149,7 @@ app.controller('OrgsAddUsersCtrl', [
       var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'admin_edit',
-
+          content_type: 'application/json',
           url_params: {
             '{adminId}': user.id,
           },
@@ -172,16 +188,40 @@ app.controller('OrgsAddUsersCtrl', [
       return groups;
     }
 
-    function getSelectedRoles() {
-      var roles = [];
+    // Attach event listener for selection on custom select tag
+    // Called from directive - roleSelect
+    $scope.initRoleSelector = function(element) {
+      element.on('select2:select', function(e) {
+        var data = e.params.data;
+        var elem = e.params.data.element;
+        var roleId = elem.value;
 
-      if ($scope.obBug.role) {
-        roles.push($scope.obBug.role);
+        // Add role in selected_roles if not already added
+        if ($scope.selected_roles.indexOf(roleId) === -1) {
+          $scope.selected_roles.push(roleId);
+        }
+
+        element.val(null).trigger('change');
+      });
+    };
+
+    // Remove (in view) already selected role from select dropdown
+    $scope.filterRoles = function(role) {
+      if ($scope.selected_roles.indexOf(role.id) > -1) {
+        return false;
       }
+      return true;
+    };
 
-      return roles;
-    }
+    // Remove role which is already selected
+    $scope.removeRole = function(roleId) {
+      var index = $scope.selected_roles.indexOf(roleId);
+      if (index > -1) {
+        $scope.selected_roles.splice(index, 1);
+      }
+    };
 
+    // Create new user if user is not present otherwise call edit request
     $scope.save = function(user) {
       if (user.id) {
         return $scope.editUser(user);
@@ -189,7 +229,7 @@ app.controller('OrgsAddUsersCtrl', [
 
       var body = user;
       body.groups = getSelectedGroups();
-      body.roles = getSelectedRoles();
+      body.roles = $scope.selected_roles;
 
       var request = $http({
         url: '/admin/generic',

@@ -2,12 +2,16 @@ import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import moment from 'moment';
+import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email } from 'rzp/utils/validators';
+import { showNotification } from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 function validate(values) {
   let errors = {};
@@ -40,7 +44,7 @@ function validate(values) {
   return errors;
 }
 
-@connect(state => state.session, { saveInvoice })
+@connect(state => state.session, { saveInvoice, showNotification })
 @reduxForm({
   form: 'newPaymentLink',
   initialValues: {
@@ -72,6 +76,10 @@ export default class CreatePaymentLink extends Component {
       .then(invoice => {
         this.props.onSave(invoice);
         this.props.closeModal();
+        this.props.showNotification({
+          type: 'success',
+          message: 'Payment link saved successfully',
+        });
       })
       .catch(({ errors }) => {
         this.setState({
@@ -85,6 +93,11 @@ export default class CreatePaymentLink extends Component {
     let isTestMode = this.props.mode === 'test';
     let isNewForm = !(invoice && !isBlank(invoice.line_items));
     let isEdit = !!invoice;
+    let status = invoice && invoice.status;
+    let isPaid = status === 'paid';
+    let isCancelled = status === 'cancelled';
+    let isExpired = status === 'expired';
+    let locked = isPaid || isExpired || isCancelled;
 
     return (
       <div>
@@ -93,13 +106,12 @@ export default class CreatePaymentLink extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <Alert type="error" message={this.state.errors} />
-
         <form
           class="form-horizontal payment-link-form"
           onSubmit={handleSubmit(this.save)}
         >
           <div class="modal-body">
+            <Alert type="error" message={this.state.errors} />
             {isNewForm &&
               <div>
                 <div class="form-group">
@@ -136,6 +148,25 @@ export default class CreatePaymentLink extends Component {
                   </div>
                 </div>
 
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <div class="form-group">
+                    <div class="col-md-8 col-md-offset-3">
+                      <div class="rzpCheckbox rzpCheckbox-sm">
+                        <Field
+                          name="partial_payment"
+                          id="partial_payment"
+                          component="input"
+                          type="checkbox"
+                          disabled={locked}
+                        />
+                        <label for="partial_payment">
+                          Enable Partial Payments
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </ShowWhen>
+
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">
                     Receipt No.
@@ -145,6 +176,24 @@ export default class CreatePaymentLink extends Component {
                       name="receipt"
                       component="input"
                       class="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label help-label">
+                    Expire By
+                  </label>
+                  <div class="col-md-4">
+                    <Field
+                      name="expire_by"
+                      component={DatePickerField}
+                      endOfDayTimeStamp={true}
+                      showClearDate={true}
+                      isOutsideRange={day => {
+                        let diff = moment().diff(day, 'hours') / 24;
+                        return Math.floor(diff) > 0;
+                      }}
                     />
                   </div>
                 </div>
@@ -263,7 +312,7 @@ export default class CreatePaymentLink extends Component {
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-default btn-rounded"
+              class="btn btn-default"
               onClick={this.props.closeModal}
             >
               Cancel
@@ -271,7 +320,7 @@ export default class CreatePaymentLink extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               text="Save"
               pendingText="Saving..."
               onClick={handleSubmit(this.save)}

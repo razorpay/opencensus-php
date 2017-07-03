@@ -24,4 +24,23 @@ class MiscMailer extends Mailer
 
         return $this;
     }
+
+    public function sendForgetPasswordEmail($email, $org, $token, $expiryTime)
+    {
+        $this->view = 'emails.auth.reminder';
+
+        $this->data = [
+                        'token'      => $token,
+                        'org'        => $org,
+                        'expiryTime' => $expiryTime,
+                        'email'      => urlencode($email),
+                    ];
+
+        $this->email = $email;
+
+        $this->subject = 'Razorpay - Password Reset Request';
+        $this->mailTag = MailTags::PASSWORD_RESET_REQUEST;
+
+        return $this;
+    }
 }

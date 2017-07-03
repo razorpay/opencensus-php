@@ -39,10 +39,11 @@
 
             <!-- Description -->
             <div class="form-group">
-              <label for="description" class="col-lg-3 control-label">Description</label>
+              <label for="description" class="col-lg-3 control-label">
+                Description
+              </label>
               <div class="col-lg-8" >
-                <input class="form-control m-b" name="description"
-                  ng-model="permission.description">
+                <input class="form-control m-b" name="description" ng-model="permission.description" ng-minlength="5" ng-maxlength="255" required>
               </div>
             </div>
 
@@ -66,6 +67,7 @@
                       </th>
                       <th>Business Name</th>
                       <th>Display Name</th>
+                      <th>Workflow Enable</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -74,10 +76,16 @@
                         <input type="checkbox" name='organizations[]'
                                ng-model="selected_organizations[org.id]"
                                ng-checked="selected_organizations[org.id]"
-                               ng-change="updateSelAllTag(org.id)">
+                               ng-change="updateIfOrgsChanged(org.id)">
                       </td>
                       <td>{{org.business_name}}</td>
                       <td>{{org.display_name}}</td>
+                      <td style="text-align: center;">
+                        <input type="checkbox" class="form-control m-b"
+                               ng-model="workflow_orgs[org.id]"
+                               ng-checked="workflow_orgs[org.id]"
+                               ng-disabled="!selected_organizations[org.id]"/>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -86,7 +94,7 @@
 
             <!-- Permission Roles -->
             <div class="form-group" ng-if="roles">
-              <div class="col-lg-3 control-label">Permission Roles</div>
+              <div class="col-lg-3 control-label">Assigned Roles (In this Org)</div>
               <div class="col-lg-8 scrollable-table" ng-if="roles">
                 <table class="table table-striped b-t b-light">
                   <thead>

@@ -35,7 +35,9 @@ export default class ConfirmModalProvider extends Component {
       };
     }
 
-    options.message = options.message || 'Are you sure to continue ?';
+    options.message = typeof options.message === 'undefined'
+      ? 'Are you sure to continue ?'
+      : options.message;
     options.affirmativeLabel = options.affirmativeLabel || 'OK';
     options.abortLabel = options.abortLabel || 'Cancel';
 
