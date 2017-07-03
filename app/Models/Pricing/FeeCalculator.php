@@ -641,9 +641,12 @@ class FeeCalculator
 
         $taxComponents = $this->taxComponents;
 
+        // Check if GST needs to be levied
+        $eligibleForGst = $this->isEligibleForGst($fee);
+
         foreach ($taxComponents as $name => $percentage)
         {
-            $taxValue = (int) round(($percentage * $fee) / 10000);
+            $taxValue = ($eligibleForGst === true) ? ((int) round(($percentage * $fee) / 10000)) : 0;
 
             $taxBreakup = $this->createFeeBreakup(
                                             $name,
@@ -656,6 +659,30 @@ class FeeCalculator
         }
 
         return $totalTaxes;
+    }
+
+    protected function isEligibleForGst($fee): bool
+    {
+        if ($this->entity->getEntity() === Constants\Entity::PAYMENT)
+        {
+            $payment = $this->entity;
+
+            $amount = $this->amount;
+
+            if ($payment->merchant->isFeeBearerCustomer() === true)
+            {
+                $amount = $amount + $fee;
+            }
+
+            // No tax is levied on card payments of 2000 Rs. or less
+            if (($payment->isMethodCardOrEmi() === true) and
+                ($amount <= 200000))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function calculateServiceTaxesFromFees($fee)

@@ -169,10 +169,10 @@ class EntityReportTest extends TestCase
 
         $invoice = $this->fetchInvoice($input);
 
-        $this->assertEquals(2360, $invoice['total_fee']);
-        $this->assertEquals(360, $invoice['tax']);
+        $this->assertEquals(2000, $invoice['total_fee']);
+        $this->assertEquals(0, $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
-        $this->assertEquals(360, $invoice['taxes']['IGST']);
+        $this->assertEquals(0, $invoice['taxes']['IGST']);
     }
 
     public function testPaymentReportWithoutAcquirerData()

@@ -7,15 +7,14 @@ return [
         [
             'amount' => '1000',
             'card_type' => Card\Type::CREDIT,
-            'fee' => 24,
-            'service_tax' => 4,
+            'fee' => 20,
+            'service_tax' => 0,
             'fee_components' => [
                 'payment' => 20,
-                'igst' => 4
-            ],
+                'igst' => 0            ],
         ],
         [
-            'amount' => '100000',
+            'amount' => '300000',
             'card_type' => Card\Type::CREDIT,
             'fee' => 1180,
             'service_tax' => 180,
@@ -30,23 +29,23 @@ return [
         [
             'amount' => '1000',
             'card_type' => Card\Type::CREDIT,
-            'fee' => 24,
-            'service_tax' => 4,
+            'fee' => 20,
+            'service_tax' => 0,
             'fee_components' => [
                 'payment' => 20,
-                'cgst' => 2,
-                'sgst' => 2,
+                'cgst' => 0,
+                'sgst' => 0,
             ],
         ],
         [
-            'amount' => '1250',
+            'amount' => '225100',
             'card_type' => Card\Type::CREDIT,
-            'fee' => 29,
-            'service_tax' => 4,
+            'fee' => 1180,
+            'service_tax' => 180,
             'fee_components' => [
-                'payment' => 25,
-                'cgst' => 2,
-                'sgst' => 2,
+                'payment' => 1000,
+                'cgst' => 90,
+                'sgst' => 90,
             ]
         ]
     ],
