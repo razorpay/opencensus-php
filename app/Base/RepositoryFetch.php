@@ -26,18 +26,6 @@ trait RepositoryFetch
     protected $originalFetchParamRules;
 
     /**
-     * TODO: This is temporary. Will be removed once old notes index is migrated
-     * to new flow. Many more cleanup will happen once we do above.
-     *
-     * @var array
-     */
-    public static $esEntitiesInOldFlow = [
-        Constants\Entity::ORDER,
-        Constants\Entity::PAYMENT,
-        Constants\Entity::REFUND,
-    ];
-
-    /**
      * Ids which have signed prefix.
      * We will need to remove the prefix before
      * they can be fetched.
@@ -190,12 +178,6 @@ trait RepositoryFetch
     {
         $entity = $this->entity;
 
-        // If entity in old flow, forward to the old method
-        if (self::isEntityInOldEsFlow($entity) === true)
-        {
-            return $this->esRepo->fetch($params, $merchantId);
-        }
-
         // Build query and get es response
         $result = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
@@ -227,11 +209,6 @@ trait RepositoryFetch
         }
 
         return $entities;
-    }
-
-    public static function isEntityInOldEsFlow(string $entity): bool
-    {
-        return in_array($entity, self::$esEntitiesInOldFlow, true);
     }
 
     protected function buildFetchQuery($query, $params)
@@ -542,17 +519,5 @@ trait RepositoryFetch
         {
             $params['count'] = $count;
         }
-    }
-
-    public function fetchAllNotesFromCreatedAt($skip, $createdAt, $count)
-    {
-        // Using created_at and not updated_at because updated_at is not indexed.
-        return $this->newQuery()
-                    ->select(Common::ID, 'notes', Common::MERCHANT_ID, Common::CREATED_AT)
-                    ->where(Common::CREATED_AT, '>=', $createdAt)
-                    ->orderBy(Common::ID, 'desc')
-                    ->skip($skip)
-                    ->take($count)
-                    ->get();
     }
 }

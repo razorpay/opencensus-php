@@ -84,7 +84,6 @@ class EsClient
 
     public function update($params)
     {
-        // If ES mock is set to true.
         if ($this->esMock === true)
         {
             return null;
@@ -125,31 +124,6 @@ class EsClient
         return $this->client->indices()->exists($params);
     }
 
-    public function searchNotes($params)
-    {
-        // If ES mock is set to true.
-        if ($this->esMock === true)
-        {
-            return null;
-        }
-
-        $searchResponse = $this->client->search($params);
-
-        if ($searchResponse['hits']['total'] === 0)
-        {
-            return null;
-        }
-
-        $entityResults = $searchResponse['hits']['hits'];
-        $entityIds = [];
-        foreach ($entityResults as $_ => $entityData)
-        {
-            $entityIds[] = $entityData['_id'];
-        }
-
-        return $entityIds;
-    }
-
     public function get($params)
     {
         return $this->client->get($params);
@@ -180,16 +154,6 @@ class EsClient
         return $this->client->indices()->create($params);
     }
 
-    public function deleteIndex($params)
-    {
-        return $this->client->indices()->delete($params);
-    }
-
-    public function changeIndexSettings($params)
-    {
-        $this->client->indices()->putSettings($params);
-    }
-
     public function getClient()
     {
         return $this->client;
@@ -202,7 +166,6 @@ class EsClient
 
     public function searchHeimdall($params)
     {
-        // If ES mock is set to true.
         if ($this->esHeimdallMock === true)
         {
             return null;
