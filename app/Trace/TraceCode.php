@@ -771,6 +771,7 @@ class TraceCode
     const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
     const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_FILTER_RULES                          = 'GATEWAY_FILTER_RULES';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';

@@ -294,7 +294,6 @@ class MerchantFilter extends Terminal\Filter
      * network is Visa or Master
      *
      * @param Terminal\Entity $terminal
-     * @param array           $this->input Combined input
      *
      * @return bool Whether a terminal is to be chosen or not
      */
@@ -338,7 +337,6 @@ class MerchantFilter extends Terminal\Filter
      * netbanking terminals for HDFC or ICIC
      *
      * @param Terminal\Entity $terminal
-     * @param Array $this->input Combined input
      * @return bool Whether a terminal is to be chosen or not
      * */
     public function cryptocurrencyFilter(Terminal\Entity $terminal) : bool

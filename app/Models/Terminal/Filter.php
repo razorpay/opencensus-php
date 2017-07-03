@@ -41,7 +41,6 @@ class Filter extends Base\Core
      *
      * @param array $applicableTerminals       The list of terminals after removing the not-applicable
      *                                         terminals from the full list of terminals.
-     * @param array $input
      * @param bool  $verbose                   For tracing
      * @return array                           List of terminals after removing the not-applicable terminals
      *                                         from the received collection of terminals

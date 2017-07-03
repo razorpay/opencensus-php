@@ -199,6 +199,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getFilterType()
+    {
+        return $this->getAttribute(self::FILTER_TYPE);
+    }
+
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
