@@ -17,7 +17,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\HashAlgo;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 
@@ -36,10 +35,10 @@ class Gateway extends Base\Gateway
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
-        Base\Action::PURCHASE  => TraceCode::GATEWAY_PURCHASE_RESPONSE,
-        Base\Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
-        Base\Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
-        Base\Action::REVERSE   => TraceCode::GATEWAY_REVERSE_RESPONSE,
+        Action::PURCHASE  => TraceCode::GATEWAY_PURCHASE_RESPONSE,
+        Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
+        Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
+        Action::REVERSE   => TraceCode::GATEWAY_REVERSE_RESPONSE,
     ];
 
     public function authorize(array $input)
@@ -66,7 +65,7 @@ class Gateway extends Base\Gateway
 
     protected function secondRecurring(array $input)
     {
-        parent::action($input, Base\Action::PURCHASE);
+        parent::action($input, Action::PURCHASE);
 
         $requestContent = $this->getPurchaseRequestArray($input);
 
@@ -108,7 +107,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID],
-            Base\Action::AUTHORIZE);
+            Action::AUTHORIZE);
 
         $this->verifySecureHash($input['gateway']);
 
@@ -242,6 +241,129 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) ($refundEntity->getAmount() * 100);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::action($input, Action::VERIFY_REFUND);
+
+        if ($input['refund']['reverse'] === true)
+        {
+            parent::action($input, Action::VERIFY_REVERSE);
+        }
+
+        $this->validateVerifyRefundIsPossible($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $this->sendVerifyRequest($verify);
+
+        $verifyRefundResponse = $verify->verifyResponseContent;
+
+        if ($verifyRefundResponse === null)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
+
+        $xmlResponse  = $verifyRefundResponse->children('a1', true)
+                                             ->TransactionValues
+                                             ->children('ipgapi', true)
+                                             ->IPGApiOrderResponse
+                                             ->children('ipgapi', true);
+
+        $refundResponse = json_decode(json_encode($xmlResponse), true);
+
+        $refundFields = $this->getRefundFields($refundResponse, $input['refund']);
+
+        $this->updateOrCreateRefundEntity($refundFields, $input);
+
+        $refundGatewayStatus  = $verifyRefundResponse->children('a1', true)
+                                                     ->TransactionState
+                                                     ->__toString();
+
+        return in_array($refundGatewayStatus, Status::VALID_REFUND_STATES, true);
+    }
+
+    protected function updateOrCreateRefundEntity(array $refundFields, array $input)
+    {
+        $gatewayRefundEntity = $this->repo->findByRefundId($refundFields['refund_id']);
+
+        if ($gatewayRefundEntity === null)
+        {
+            $gatewayRefundEntity = $this->getNewGatewayPaymentEntity();
+
+            $gatewayRefundEntity->setPaymentId($input['payment'][Payment\Entity::ID]);
+
+            $gatewayRefundEntity->setAction(Action::REFUND);
+        }
+
+        $gatewayRefundEntity->fill($refundFields);
+
+        $this->repo->saveOrFail($gatewayRefundEntity);
+    }
+
+    protected function validateVerifyRefundIsPossible(array $input)
+    {
+        // Refunds can be verified if a reference id was sent in the refund request
+        // (or the preauth request for verify reverse)
+
+        // Reference Id was added to refund request in 77fa69f, and deployed in
+        // https://app.wercker.com/Razorpay/api/runs/prod-api/5948f98afe92eb00017640f4
+        // Tue Jun 20 16:10:00 IST 2017
+        if (($this->action === Action::VERIFY_REFUND) and
+            ($input['refund']['created_at'] > 1497955200))
+        {
+            return;
+        }
+
+        // Reference Id was added to preauth request in 35c92d4, and deployed in
+        // https://app.wercker.com/Razorpay/api/runs/prod-api/59536df68752360001422e03
+        // Wed Jun 28 14:25:00 IST 2017
+        if (($this->action === Action::VERIFY_REVERSE) and
+            ($input['refund']['created_at'] > 1498640100))
+        {
+            return;
+        }
+
+        // For refunds older than this, verification is not possible.
+        throw new Exception\LogicException(
+                'Verification is not possible for older refunds.');
     }
 
     // First Data is not returning approval code in some cases.
@@ -522,7 +644,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function sendPaymentVerifyRequest(Base\Verify $verify)
+    protected function sendVerifyRequest(Base\Verify $verify)
     {
         $input = $verify->input;
 
@@ -532,9 +654,14 @@ class Gateway extends Base\Gateway
 
         $response = $this->postSoapRequest($requestContent, ApiRequestFields::ACTION_REQUEST);
 
-        $ipgApiActionResponse = $this->parseVerifyResponse($input['payment'], $response);
+        $ipgApiActionResponse = $this->parseVerifyResponse($input, $response);
 
         $verify->setVerifyResponseContent($ipgApiActionResponse);
+    }
+
+    protected function sendPaymentVerifyRequest(Base\Verify $verify)
+    {
+        $this->sendVerifyRequest($verify);
     }
 
     protected function verifyPayment(Base\Verify $verify)
@@ -759,7 +886,7 @@ class Gateway extends Base\Gateway
      * @param  $xml Response received
      * @return $ipgApiActionResponse
      */
-    protected function parseVerifyResponse(array $payment, SimpleXMLElement $xml)
+    protected function parseVerifyResponse(array $input, SimpleXMLElement $xml)
     {
         $ipgApiActionResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
 
@@ -770,8 +897,8 @@ class Gateway extends Base\Gateway
             $this->trace->warning(
                 TraceCode::PAYMENT_VERIFY_FAILED,
                 [
-                    'payment_id' => $payment['id'],
-                    'message'    => 'Payment verification failed.',
+                    'payment_id' => $input['payment']['id'],
+                    'message'    => 'Verification failed.',
                     'gateway'    => $this->gateway,
                 ]
             );
@@ -968,11 +1095,34 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContentArray(array $input)
     {
-        $request[ApiRequestFields::A1_ACTION]
-                    [ApiRequestFields::A1_INQUIRY_ORDER] = [
-            ApiRequestFields::A1_ORDER_ID => $input['payment']['id'],
-            ApiRequestFields::A1_STORE_ID => $this->getStoreId(),
-        ];
+        switch ($this->action)
+        {
+            case Action::VERIFY:
+                $reference = [
+                    ApiRequestFields::A1_INQUIRY_ORDER => [
+                        ApiRequestFields::A1_ORDER_ID => $input['payment']['id'],
+                        ApiRequestFields::A1_STORE_ID => $this->getStoreId(),
+                    ],
+                ];
+                break;
+            case Action::VERIFY_REVERSE:
+                $reference = [
+                    ApiRequestFields::A1_INQUIRY_TRANSACTION => [
+                        ApiRequestFields::A1_STORE_ID        => $this->getStoreId(),
+                        ApiRequestFields::A1_MERCHANT_TXN_ID => $input['payment']['id'],
+                    ],
+                ];
+                break;
+            case Action::VERIFY_REFUND:
+                $reference = [
+                    ApiRequestFields::A1_INQUIRY_TRANSACTION => [
+                        ApiRequestFields::A1_STORE_ID        => $this->getStoreId(),
+                        ApiRequestFields::A1_MERCHANT_TXN_ID => $input['refund']['id'],
+                    ],
+                ];
+        }
+
+        $request[ApiRequestFields::A1_ACTION] = $reference;
 
         return $request;
     }
@@ -987,7 +1137,14 @@ class Gateway extends Base\Gateway
 
         $this->setPaymentRequestArray($body, $input, TxnType::SALE);
 
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID        => $input['payment']['id'],
+            //
+            // Not strictly necessary, as we use order id for refund and
+            // verification of purchase/sale payments. Merchant transaction
+            // id is not required. However, keeping it here for future use.
+            ApiRequestFields::V1_MERCHANT_TXN_ID => $input['payment']['id'],
+        ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
@@ -1078,11 +1235,11 @@ class Gateway extends Base\Gateway
      */
     protected function getTdateForGatewayPaymentToBeReversed(array $input)
     {
-        $requiredAction = Base\Action::AUTHORIZE;
+        $requiredAction = Action::AUTHORIZE;
 
         if ($this->isSecondRecurringPayment($input) === true)
         {
-            $requiredAction = Base\Action::PURCHASE;
+            $requiredAction = Action::PURCHASE;
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(

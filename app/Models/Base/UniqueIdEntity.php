@@ -197,11 +197,12 @@ class UniqueIdEntity extends Entity
         // preg_match() returns int 0 when the pattern does not match
         // and int 1 if a match is found. false (boolean) is returned
         // whenever any error happens.
-        if ((in_array($res, [0, false], true) === true) and
-            ($throw === true))
+        $res = (bool) $res;
+
+        if (($res === false) and ($throw === true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                        $id . ' is not a valid id');
+                $id . ' is not a valid id');
         }
 
         return $res;

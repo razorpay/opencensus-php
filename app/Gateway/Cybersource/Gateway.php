@@ -707,9 +707,7 @@ class Gateway extends Base\Gateway
                 $gatewayPayment->fill($gatewayAttributes);
                 $gatewayPayment->save();
 
-                $desc = $payerAuthValidateReply[F::AUTHENTICATION_STATUS_MESSAGE] ?? null;
-
-                $this->checkErrorsAndThrowException($response, null, $desc);
+                $this->checkErrorsAndThrowException($response);
             }
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeEnrolledResponse($input, $response);
@@ -1597,12 +1595,6 @@ class Gateway extends Base\Gateway
 
         $code = $code ?: ResponseCode::getMappedCode($reasonCode);
         $desc = $desc ?: ResponseCode::getDescription($reasonCode);
-
-        if (ResponseCode::isFatalError($reasonCode) === true)
-        {
-            throw new Exception\ServerErrorException(
-                'Server error occured. Please contact admin.', $code);
-        }
 
         throw new Exception\GatewayErrorException(
                 $code, $reasonCode, $desc);

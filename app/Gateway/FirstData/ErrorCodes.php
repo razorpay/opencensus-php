@@ -103,6 +103,7 @@ class ErrorCodes
         'N:05'     => 'Do not honour',
         'N:39'     => 'No credit account',
         'N:42'     => 'No universal account',
+        'N:999'    => 'Transaction Cancelled',
         'N:tmout'  => 'Gateway timed out',
     ];
 
@@ -203,6 +204,7 @@ class ErrorCodes
         'N:42'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         'N:-100'   => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:-43232' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,
+        'N:999'    => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
         'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 

@@ -496,7 +496,20 @@ class Repository extends \Razorpay\Spine\Repository
         // toArray. The result from toArray is directly passed to es client for
         // indexing.
 
-        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
+        $fields = $this->esRepo->getFields();
+
+        $serialized = $entity->setVisible($fields)->toArray();
+
+        // There is issue around Notes and NotesTrait which needs to be handled
+        // there. For now following is the quickest solution to handle it.
+        // Ref: https://github.com/razorpay/api/issues/1678
+
+        if (array_key_exists(Common::NOTES, $serialized) === true)
+        {
+            $serialized[Common::NOTES] = (object) $serialized[Common::NOTES];
+        }
+
+        return $serialized;
     }
 
     /**

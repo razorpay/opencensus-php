@@ -502,3 +502,14 @@ source dash_invitations.sql;
 # mapping payment id to caps_payment_id
 UPDATE first_data
     SET caps_payment_id = UPPER(payment_id);
+
+# Before capturing
+UPDATE payments
+    SET status='authorized', gateway_captured = 0 WHERE id='89AjRuhzkb4L0Z';
+# After capturing
+UPDATE payments
+    SET refund_status=null, amount_refunded=0 WHERE id='89AjRuhzkb4L0Z';
+DELETE FROM refunds WHERE payment_id='89AjRuhzkb4L0Z';
+# Fix stupid terminal
+UPDATE terminals
+    SET mode=3 WHERE id='7s0PjmEoOelWFZ';

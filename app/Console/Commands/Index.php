@@ -127,6 +127,13 @@ class Index extends Command
                                     $this->startAt,
                                     $this->endAt);
 
+            $skip += $this->take;
+
+            if (count($documents) === 0)
+            {
+                break;
+            }
+
             $documents = array_filter(
                             $documents,
                             function (& $doc)
@@ -137,7 +144,7 @@ class Index extends Command
 
             if (count($documents) === 0)
             {
-                break;
+                continue;
             }
 
             try
@@ -159,8 +166,6 @@ class Index extends Command
                         'options' => $this->option(),
                     ]);
             }
-
-            $skip += $this->take;
         }
     }
 

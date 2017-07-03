@@ -32,7 +32,7 @@ class Reconciliate extends Base\Reconciliate
         return self::COMBINED;
     }
 
-    public function getNumLinesToSkip()
+    public function getNumLinesToSkip(array $fileDetails)
     {
         return [
             FileProcessor::LINES_FROM_TOP    => 0,

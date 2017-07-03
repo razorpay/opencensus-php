@@ -65,8 +65,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingRuleCredit = new Pricing\Entity([
@@ -84,8 +84,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingRuleTwo = new Pricing\Entity([
@@ -98,8 +98,8 @@ class MerchantFeeTest extends TestCase
                 'payment_network'     => null,
                 'payment_issuer'      => null,
                 'international'       => false,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
                 'amount_range_active' => true,
                 'amount_range_min'    => 0,
                 'amount_range_max'    => 200000,
@@ -117,8 +117,8 @@ class MerchantFeeTest extends TestCase
                 'payment_network'     => null,
                 'payment_issuer'      => null,
                 'international'       => false,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
                 'amount_range_active' => true,
                 'amount_range_min'    => 200000,
                 'amount_range_max'    => 1000000000,
@@ -141,8 +141,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanDicl = new Pricing\Entity([
@@ -160,8 +160,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanNetB = new Pricing\Entity([
@@ -179,8 +179,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanNetB1 = new Pricing\Entity([
@@ -198,8 +198,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 0,
                 'fixed_rate'          => 50,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanNetB2 = new Pricing\Entity([
@@ -217,8 +217,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanNetB3 = new Pricing\Entity([
@@ -236,8 +236,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanWallet = new Pricing\Entity([
@@ -255,8 +255,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanWallet1 = new Pricing\Entity([
@@ -274,8 +274,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanWallet2 = new Pricing\Entity([
@@ -293,8 +293,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanWallet3 = new Pricing\Entity([
@@ -312,8 +312,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanEmi = new Pricing\Entity([
@@ -331,8 +331,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingPlanEmiAmex = new Pricing\Entity([
@@ -350,8 +350,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
          $pricingRuleCardRecurring = new Pricing\Entity([
@@ -369,8 +369,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ]);
 
         $pricingRules = [
@@ -465,8 +465,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => 1000,
+                'min_fee'             => 0,
+                'max_fee'             => 1000,
             ]);
 
             $maxRateRuleForWallet = new Pricing\Entity([
@@ -484,8 +484,8 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-                'min_fee'            => 0,
-                'max_fee'            => 2000,
+                'min_fee'             => 0,
+                'max_fee'             => 2000,
             ]);
 
         $pricingRules = [
@@ -667,10 +667,6 @@ class MerchantFeeTest extends TestCase
 
     public function testIntrastateGstForCard()
     {
-        $setDate = Carbon::parse('2 July 2017', 'Asia/Kolkata');
-
-        Carbon::setTestNow($setDate);
-
         $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
 
         // create merchant
@@ -712,28 +708,6 @@ class MerchantFeeTest extends TestCase
                 $fee, $serviceTax, $feesSplit->toArray(),
                 $data['fee'], $data['service_tax'], $data['fee_components']);
         }
-
-        Carbon::setTestNow();
-    }
-
-    public function testGstFeeWithMaxFeeForCard()
-    {
-        $setDate = Carbon::parse('2 July 2017', 'Asia/Kolkata');
-
-        Carbon::setTestNow($setDate);
-
-        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
-
-        foreach ($this->testData[__FUNCTION__] as $data)
-        {
-            $this->runFeeTestWithMaxFeeForCard($data['amount'],
-                                                $data['card_type'],
-                                                $data['fee'],
-                                                $data['service_tax'],
-                                                $data['fee_components']);
-        }
-
-        Carbon::setTestNow();
     }
 
     public function testFeeWithMaxFeeForCard()

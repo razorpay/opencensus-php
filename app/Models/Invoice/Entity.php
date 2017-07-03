@@ -7,13 +7,13 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Customer;
 use RZP\Models\Order;
-use RZP\Models\Plan\Subscription;
+use RZP\Models\Customer;
 use RZP\Models\Address;
-use RZP\Models\FileStore;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
+use RZP\Models\Plan\Subscription;
+use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
@@ -596,16 +596,15 @@ class Entity extends Base\PublicEntity
 
     public function getPdfDisplayName(): string
     {
-        //
         // Expected format:
         // Invoice <Reciept/Invoice ID> from <Company> (<Paid/Unpaid>).pdf
-        //
 
         $receipt = $this->getReceiptElsePublicId();
         $from    = $this->merchant->getBillingLabel();
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
+        $ext     = FileStore\Format::PDF;
 
-        return sanitizeFilename("Invoice $receipt from $from ($status)");
+        return sanitizeFilename("Invoice $receipt from $from ($status).$ext");
     }
 
     // -------------------------------------- End Getters ------------

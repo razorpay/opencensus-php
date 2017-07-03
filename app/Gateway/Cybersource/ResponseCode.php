@@ -90,7 +90,7 @@ class ResponseCode
         201 => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
         202 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         203 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        204 => ErrorCode::GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT,
+        204 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         205 => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
         207 => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
         208 => ErrorCode::BAD_REQUEST_CARD_INACTIVE,
@@ -165,16 +165,5 @@ class ResponseCode
         }
 
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-    }
-
-    public static function isFatalError($code)
-    {
-        if ((isset(self::$errorCodeMap[$code]) === true) and
-            (self::$errorCodeMap[$code] === ErrorCode::SERVER_ERROR_INVALID_ARGUMENT))
-        {
-            return true;
-        }
-
-        return false;
     }
 }
