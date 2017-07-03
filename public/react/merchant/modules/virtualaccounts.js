@@ -36,16 +36,6 @@ export const saveVirtualAccount = params => {
   };
 };
 
-export const deleteVirtualAccount = params => {
-  const virtualAccount = new VirtualAccount(params);
-
-  return {
-    type: VIRTUAL_ACCOUNT_DELETE,
-    payload: virtualAccount.delete(),
-    id: virtualAccount.id,
-  };
-};
-
 export const createTestPayment = params => {
   const virtualAccount = new VirtualAccount();
   return () => {
