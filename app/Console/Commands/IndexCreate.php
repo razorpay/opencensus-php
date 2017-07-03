@@ -13,9 +13,11 @@ use Elasticsearch\ClientBuilder;
 class IndexCreate extends Command
 {
     protected $signature = 'rzp:index_create
-                            {--dry=0 : Whether to run the command in dry mode (0|1)?}
-                            {entity  : Entity name (e.g. item|merchant) }
-                            {index   : ES index name (e.g. beta_api_invoice_test) }';
+
+                            {entity    : Entity name (e.g. item|merchant) }
+                            {index     : ES index name (e.g. beta_api_invoice_test) }
+
+                            {--pretend : Whether to run the command in pretend mode?}';
 
     protected $description = 'Creates index with set mappings for the entity';
 
@@ -28,7 +30,7 @@ class IndexCreate extends Command
 
         $params = $this->getEsCreateRequestParams();
 
-        if ($this->dry === 1)
+        if ($this->pretend === true)
         {
             $this->info("Index will be created with following parameters:\n");
             $this->info(json_encode($params, JSON_PRETTY_PRINT));
@@ -43,8 +45,7 @@ class IndexCreate extends Command
 
     protected function setOptions()
     {
-        $this->dry     = (int) $this->option('dry');
-
+        $this->pretend = $this->option('pretend');
         $this->index   = $this->argument('index');
         $this->entity  = $this->argument('entity');
     }
