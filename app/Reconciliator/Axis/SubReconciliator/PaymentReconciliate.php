@@ -52,15 +52,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $this->getPaymentIdForMigs($row);
-
-        //
-        // Calling the Cybersource one after Migs one because
-        // Cybersource one involves a repo call.
-        //
-        if ($paymentId === null)
+        if ($this->isCybersource($row) === true)
         {
             $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else
+        {
+            $paymentId = $this->getPaymentIdForMigs($row);
         }
 
         return $paymentId;
@@ -96,30 +94,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentIdForCybersource(array $row)
     {
-        $paymentId = $msgType = $mid = null;
+        $paymentId = null;
 
-        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        $orderId = $row[self::COLUMN_ORDER_ID];
+
+        $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                                                        Cybersource\Action::CAPTURE, $orderId);
+
+        if ($gatewayPayment !== null)
         {
-            $msgType = $row[self::COLUMN_MSG_TYPE];
-        }
-
-        if (isset($row[self::COLUMN_MID]) === true)
-        {
-            $mid = $row[self::COLUMN_MID];
-        }
-
-        if ((stripos($msgType, self::PREAUTH) === true) or
-            (ends_with($mid, self::CYBS) === true))
-        {
-            $orderId = $row[self::COLUMN_ORDER_ID];
-
-            $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
-                                                            Cybersource\Action::CAPTURE, $orderId);
-
-            if ($gatewayPayment !== null)
-            {
-                $paymentId = $gatewayPayment->getPaymentId();
-            }
+            $paymentId = $gatewayPayment->getPaymentId();
         }
 
         return $paymentId;
@@ -408,5 +392,28 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return $gatewaySettledAt;
+    }
+
+    protected function isCybersource(array $row)
+    {
+        $msgType = $mid = null;
+
+        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        {
+            $msgType = $row[self::COLUMN_MSG_TYPE];
+        }
+
+        if (isset($row[self::COLUMN_MID]) === true)
+        {
+            $mid = $row[self::COLUMN_MID];
+        }
+
+        if ((stripos($msgType, self::PREAUTH) === true) or
+            (ends_with($mid, self::CYBS) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

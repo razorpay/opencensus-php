@@ -3,30 +3,81 @@
 namespace RZP\Reconciliator\HDFC;
 
 use RZP\Exception\ReconciliationException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Models\Bank\IFSC;
+use RZP\Gateway\Cybersource;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = ['merchant_trackid', 'MERCHANT_TRACKID'];
-    const COLUMN_CARD_TYPE   = ['debitcredit_type', 'DEBITCREDIT_TYPE'];
-    const COLUMN_SERVICE_TAX = ['serv_tax', 'service_tax', 'st_sbces', 'SERV TAX'];
-    const COLUMN_SB_CESS     = ['sb_cess', 'SB Cess'];
-    const COLUMN_KK_CESS     = ['kk_cess', 'KK Cess'];
-    const COLUMN_FEE         = ['msf', 'MSF'];
-    const COLUMN_CARD_TRIVIA = ['card_type', 'CARD TYPE'];
-    const COLUMN_ISSUER      = ['arn_no', 'ARN NO'];
-    const COLUMN_CGST        = ['cgst_amt', 'CGST AMT'];
-    const COLUMN_IGST        = ['igst_amt', 'IGST AMT'];
-    const COLUMN_SGST        = ['sgst_amt', 'SGST AMT'];
-    const COLUMN_UTGST       = ['utgst_amt', 'UTGST_AMT'];
+    const COLUMN_PAYMENT_ID         = ['merchant_trackid', 'MERCHANT_TRACKID'];
+    const COLUMN_CARD_TYPE          = ['debitcredit_type', 'DEBITCREDIT_TYPE'];
+    const COLUMN_SERVICE_TAX        = ['serv_tax', 'service_tax', 'st_sbces', 'SERV TAX'];
+    const COLUMN_SB_CESS            = ['sb_cess', 'SB Cess'];
+    const COLUMN_KK_CESS            = ['kk_cess', 'KK Cess'];
+    const COLUMN_FEE                = ['msf', 'MSF'];
+    const COLUMN_CARD_TRIVIA        = ['card_type', 'CARD TYPE'];
+    const COLUMN_ISSUER             = ['arn_no', 'ARN NO'];
+    const COLUMN_CGST               = ['cgst_amt', 'CGST AMT'];
+    const COLUMN_IGST               = ['igst_amt', 'IGST AMT'];
+    const COLUMN_SGST               = ['sgst_amt', 'SGST AMT'];
+    const COLUMN_UTGST              = ['utgst_amt', 'UTGST_AMT'];
+
+    const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
     protected function getPaymentId($row)
+    {
+        if ($this->isCybersource($row) === true)
+        {
+            $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else
+        {
+            $paymentId = $this->getPaymentIdForFss($row);
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForFss(array $row)
+    {
+        $paymentId = $this->getColumnPaymentId($row);
+
+        //
+        // For Cybersource payments via FSS, we get some ref number
+        // instead of our payment ID.
+        //
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            return null;
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForCybersource(array $row)
+    {
+        $paymentId = null;
+
+        $ref = $this->getColumnPaymentId($row);
+
+        $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                                                        Cybersource\Action::AUTHORIZE, $ref);
+
+        if ($gatewayPayment !== null)
+        {
+            $paymentId = $gatewayPayment->getPaymentId();
+        }
+
+        return $paymentId;
+    }
+
+    protected function getColumnPaymentId(array $row)
     {
         $paymentId = null;
 
@@ -408,5 +459,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function isCybersource(array $row)
+    {
+        $terminalId = null;
+
+        foreach (self::COLUMN_TERMINAL_NUMBER as $ctn)
+        {
+            if (empty($row[$ctn]) === false)
+            {
+                $terminalId = $row[$ctn];
+
+                $terminalId = trim(str_replace("'", '', $terminalId));
+
+                break;
+            }
+        }
+
+        $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
+
+        return $isCybersource;
     }
 }

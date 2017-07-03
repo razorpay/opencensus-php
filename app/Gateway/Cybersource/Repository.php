@@ -37,7 +37,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findSuccessfulTxnByActionAndRef(string $action, string $ref)
+    public function findSuccessfulTxnByActionAndRef(string $action, $ref)
     {
         return $this->newQuery()
                     ->where(Entity::REF, '=', $ref)

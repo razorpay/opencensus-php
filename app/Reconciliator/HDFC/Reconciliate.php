@@ -58,13 +58,13 @@ class Reconciliate extends Base\Reconciliate
             return $this->getReconPasswordForCorpFile();
         }
 
-        $terminalId = explode('-', $fileDetails['file_name'])[0];
         $gateway = Entity::HDFC;
+        $terminalId = explode('-', $fileDetails['file_name'])[0];
 
-        if (in_array($terminalId, self::CYBERSOURCE_HDFC_TERMINAL_IDS, true))
+        if ($this->isCybersource($fileDetails) === true)
         {
-            $terminalId = 'hdfc_' . $terminalId;
             $gateway = Entity::CYBERSOURCE;
+            $terminalId = 'hdfc_' . $terminalId;
         }
 
         $terminalRepo = $this->repo->terminal;
@@ -108,5 +108,17 @@ class Reconciliate extends Base\Reconciliate
             FileProcessor::LINES_FROM_TOP    => $linesFromTop,
             FileProcessor::LINES_FROM_BOTTOM => $linesFromBottom
         ];
+    }
+
+    protected function isCybersource(array $fileDetails)
+    {
+        $terminalId = explode('-', $fileDetails[FileProcessor::FILE_NAME])[0];
+
+        if (in_array($terminalId, self::CYBERSOURCE_HDFC_TERMINAL_IDS, true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -26,11 +26,13 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
-        $refundId = $this->getRefundIdForMigs($row);
-
-        if ($refundId === null)
+        if ($this->isCybersource($row) === true)
         {
             $refundId = $this->getRefundIdForCybersource($row);
+        }
+        else
+        {
+            $refundId = $this->getRefundIdForMigs($row);
         }
 
         return $refundId;
@@ -59,30 +61,16 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundIdForCybersource(array $row)
     {
-        $refundId = $msgType = $mid = null;
+        $refundId = null;
 
-        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
-        {
-            $msgType = $row[self::COLUMN_MSG_TYPE];
-        }
+        $orderId = $row[self::COLUMN_ORDER_ID];
 
-        if (isset($row[self::COLUMN_MID]) === true)
-        {
-            $mid = $row[self::COLUMN_MID];
-        }
-
-        if ((stripos($msgType, self::PREAUTH) === true) or
-            (ends_with($mid, self::CYBS) === true))
-        {
-            $orderId = $row[self::COLUMN_ORDER_ID];
-
-            $gatewayRefund = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+        $gatewayRefund = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
                                                             Cybersource\Action::REFUND, $orderId);
 
-            if ($gatewayRefund !== null)
-            {
-                $refundId = $gatewayRefund->getRefundId();
-            }
+        if ($gatewayRefund !== null)
+        {
+            $refundId = $gatewayRefund->getRefundId();
         }
 
         return $refundId;
@@ -90,15 +78,13 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $paymentId = $this->getPaymentIdForMigs($row);
-
-        //
-        // Calling the Cybersource one after Migs one because
-        // Cybersource one involves a repo call.
-        //
-        if ($paymentId === null)
+        if ($this->isCybersource($row) === true)
         {
             $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else
+        {
+            $paymentId = $this->getPaymentIdForMigs($row);
         }
 
         return $paymentId;
@@ -124,35 +110,21 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getPaymentIdForCybersource(array $row)
     {
-        $paymentId = $msgType = $mid = null;
+        $paymentId = null;
 
-        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        $merchantRef = $this->getColumnPaymentId($row);
+
+        //
+        // In the refund MIS file, all the merchant_trans_refs correspond to
+        // the authorize row in the Cybersource entity, as opposed to the
+        // captured row for order_ids in payment MIS file.
+        //
+        $gatewayPayment = $this->repo->cybersource->findsSuccessfulTxnByActionAndRef(
+                                                        Cybersource\Action::AUTHORIZE, $merchantRef);
+
+        if ($gatewayPayment !== null)
         {
-            $msgType = $row[self::COLUMN_MSG_TYPE];
-        }
-
-        if (isset($row[self::COLUMN_MID]) === true)
-        {
-            $mid = $row[self::COLUMN_MID];
-        }
-
-        if ((stripos($msgType, self::PREAUTH) === true) or
-            (ends_with($mid, self::CYBS) === true))
-        {
-            $merchantRef = $this->getColumnPaymentId($row);
-
-            //
-            // In the refund MIS file, all the merchant_trans_refs correspond to
-            // the authorize row in the Cybersource entity, as opposed to the
-            // captured row for order_ids in payment MIS file.
-            //
-            $gatewayPayment = $this->repo->cybersource->findsSuccessfulTxnByActionAndRef(
-                                                            Cybersource\Action::AUTHORIZE, $merchantRef);
-
-            if ($gatewayPayment !== null)
-            {
-                $paymentId = $gatewayPayment->getPaymentId();
-            }
+            $paymentId = $gatewayPayment->getPaymentId();
         }
 
         return $paymentId;
@@ -186,5 +158,28 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
         $gatewayRefund->setArn($arn);
+    }
+
+    protected function isCybersource(array $row)
+    {
+        $msgType = $mid = null;
+
+        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        {
+            $msgType = $row[self::COLUMN_MSG_TYPE];
+        }
+
+        if (isset($row[self::COLUMN_MID]) === true)
+        {
+            $mid = $row[self::COLUMN_MID];
+        }
+
+        if ((stripos($msgType, self::PREAUTH) === true) or
+            (ends_with($mid, self::CYBS) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
