@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Base\Traits\Es;
 
+use RZP\Base\Common;
+
 /**
  * Trait used in Es/Repository class for forming es queries.
  * New methods(or overriding existing one's) can be done in the corresponding
@@ -11,14 +13,35 @@ namespace RZP\Models\Base\Traits\Es;
 trait QueryBuilder
 {
     /**
-     * Default query construct for given field and value. We use match query with
-     * a boost of 2 as we're matching against a particular field.
+     * Extracts ES query meta attributes from passed parameters.
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    public function extractQueryMetaFromParams(array & $params)
+    {
+        $from   = ($params[self::SKIP]) ?? 0;
+        $size   = ($params[self::COUNT]) ?? 10;
+        $source = boolval(($params[self::SEARCH_HITS]) ?? false);
+
+        unset($params[self::SKIP], $params[self::COUNT], $params[self::SEARCH_HITS]);
+
+        return [$from, $size, $source];
+    }
+
+    /**
+     * Default query construct for given field and value. We use match query
+     * with a boost of 2 as we're matching against a particular field.
      *
      * @param array  $query
      * @param string $field
      * @param string $value
      */
-    public function buildQueryForFieldDefaultImpl(array & $query, string $field, string $value)
+    public function buildQueryForFieldDefaultImpl(
+        array & $query,
+        string $field,
+        string $value)
     {
         $clause = [
             'match' => [
@@ -98,6 +121,53 @@ trait QueryBuilder
         ];
 
         $this->addFilter($query, $filter);
+    }
+
+    /**
+     * Builds query for 'to' and 'from'. Handling these both in same instead of
+     * buildQueryForTo() and buildQueryForFrom() like methods. Reason for that
+     * is this way there is one range clause with lte and gte both in it.
+     * Otherwise there would have been two different range queries and it's not
+     * optimal.
+     *
+     * @param array $query
+     * @param array $params
+     */
+    public function buildQueryForFromAndToIfApplies(array & $query, array & $params)
+    {
+        $clause['gte'] = $params[self::FROM] ?? null;
+        $clause['lte'] = $params[self::TO] ?? null;
+
+        $clause = array_filter($clause);
+
+        if (empty($clause))
+        {
+            return;
+        }
+
+        $filter = ['range' => [Common::CREATED_AT => $clause]];
+
+        $this->addFilter($query, $filter);
+
+        unset($params[self::FROM], $params[self::TO]);
+    }
+
+    /**
+     * Returns sort parameter value for ES request.
+     * By default the sorting is on score followed by created_at of the document.
+     *
+     * @return array
+     */
+    public function getSortParameter()
+    {
+        return [
+            '_score' => [
+                'order' => 'desc',
+            ],
+            Common::CREATED_AT => [
+                'order' => 'desc',
+            ],
+        ];
     }
 
     // Helper methods
