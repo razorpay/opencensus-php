@@ -131,17 +131,16 @@ class AdminAccess
             $orgId = $request->headers->get(self::ORG_HEADER_KEY);
         }
 
+        //resolving OrgId from hostname.
         if ($orgId == null)
         {
             $orgHostname = $request->headers->get(self::ORG_HOSTNAME_HEADER_KEY);
+
             if (!empty($orgHostname))
             {
                 $org = $this->repo->org->findOrFailByHostname($orgHostname);
                 $orgPublic = $org->toArrayPublic();
-                if (isset($orgPublic['id']))
-                {
-                    $orgId = $orgPublic['id'];
-                }
+                $orgId = $orgPublic['id'];
             }
         }
 
