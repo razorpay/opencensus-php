@@ -129,6 +129,7 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::UPI_ICICI,
     ];
 
     public static $channels = [
