@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         Commands\IinImport::class,
         Commands\UidCheckDigitVerify::class,
         Commands\Index::class,
+        Commands\IndexCreate::class,
         Commands\VerifyUpiProviders::class,
         \Laravel\Tinker\Console\TinkerCommand::class,
     ];

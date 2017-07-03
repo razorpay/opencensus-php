@@ -448,21 +448,25 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $query = $this->newQuery();
 
-        $createdAtColumn = $this->dbColumn(Common::CREATED_AT);
+        $idCol        = $this->dbColumn(Common::ID);
+        $createdAtCol = $this->dbColumn(Common::CREATED_AT);
 
         if ($createdAtStart !== null)
         {
-            $query->where($createdAtColumn, '>=', $createdAtStart);
+            $query->where($createdAtCol, '>=', $createdAtStart);
         }
 
         if ($createdAtEnd !== null)
         {
-            $query->where($createdAtColumn, '<=', $createdAtEnd);
+            $query->where($createdAtCol, '<=', $createdAtEnd);
         }
 
         $this->modifyQueryForIndexing($query);
 
-        $collection = $query->skip($skip)->take($take)->get();
+        $collection = $query->skip($skip)
+                            ->take($take)
+                            ->orderBy($idCol, 'desc')
+                            ->get();
 
         return array_map(
             function ($v)
