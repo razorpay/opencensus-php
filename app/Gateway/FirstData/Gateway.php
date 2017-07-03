@@ -277,7 +277,7 @@ class Gateway extends Base\Gateway
 
         return true;
     }
-  
+
     public function verifyRefund(array $input)
     {
         parent::action($input, Action::VERIFY_REFUND);
@@ -1078,6 +1078,7 @@ class Gateway extends Base\Gateway
             case Action::VERIFY_REVERSE:
                 $reference = [
                     ApiRequestFields::A1_INQUIRY_TRANSACTION => [
+                        ApiRequestFields::A1_STORE_ID        => $this->getStoreId(),
                         ApiRequestFields::A1_MERCHANT_TXN_ID => $input['payment']['id'],
                     ],
                 ];
@@ -1085,6 +1086,7 @@ class Gateway extends Base\Gateway
             case Action::VERIFY_REFUND:
                 $reference = [
                     ApiRequestFields::A1_INQUIRY_TRANSACTION => [
+                        ApiRequestFields::A1_STORE_ID        => $this->getStoreId(),
                         ApiRequestFields::A1_MERCHANT_TXN_ID => $input['refund']['id'],
                     ],
                 ];
