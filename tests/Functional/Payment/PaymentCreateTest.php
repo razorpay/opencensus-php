@@ -135,15 +135,23 @@ class PaymentCreateTest extends TestCase
         $esMock = $this->createEsMock(['bulkUpdate']);
 
         $expected = $this->testData[__FUNCTION__];
-        // $expected = $testData['body'];
+
+        // Ref to InvoiceTest.testCreateInvoiceAndAssertEsSync() test on why
+        // this is being asserted differently.
+
+        $expectedNotes = [
+            'merchant_order_id' => 'random order id',
+        ];
 
         $esMock->expects($this->once())
                ->method('bulkUpdate')
                ->with(
                     $this->callback(
-                        function ($actual) use ($expected)
+                        function ($actual) use ($expected, $expectedNotes)
                         {
                             $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
                             $this->assertNotEmpty($actual['body'][0]['index']['_id']);
                             $this->assertNotEmpty($actual['body'][1]['id']);

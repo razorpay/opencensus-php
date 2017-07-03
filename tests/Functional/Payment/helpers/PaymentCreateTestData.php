@@ -79,10 +79,7 @@ return [
                 ],
             ],
             [
-                'merchant_id'      => '10000000000000',
-                'notes' => [
-                    'merchant_order_id' => 'random order id'
-                ],
+                'merchant_id' => '10000000000000',
             ],
         ],
    ],
