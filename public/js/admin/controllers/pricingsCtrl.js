@@ -2,10 +2,17 @@
 //Pricing List controller
 app.controller('PricingsCtrl', [
   '$scope',
+  '$stateParams',
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
+  function(
+    $scope,
+    $stateParams,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost
+  ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.pricing_plans = {};
     $scope.show_plan = {};
@@ -273,6 +280,11 @@ app.controller('PricingsCtrl', [
         }
       });
     };
+
+    var pricing_plan_id = $stateParams.id;
+    if (pricing_plan_id) {
+      $scope.showPlan(pricing_plan_id);
+    }
 
     function generateTable() {
       var params = {
