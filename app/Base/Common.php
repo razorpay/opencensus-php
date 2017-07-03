@@ -9,4 +9,6 @@ class Common
     const CREATED_AT    = 'created_at';
 
     const ID            = 'id';
+
+    const NOTES         = 'notes';
 }
