@@ -113,7 +113,6 @@ export default class App extends Component {
   }
 
   initSmooch(data) {
-    debugger;
     let role = data.userRole;
     if (window.smoochScript) {
       smoochScript.then(function() {

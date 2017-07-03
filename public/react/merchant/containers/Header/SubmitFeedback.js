@@ -48,10 +48,7 @@ export default class SubmitFeedback extends Component {
   };
 
   revert = () => {
-    return this.props.enableOrDisableNewui({
-      user: this.props.user,
-      disable: true,
-    });
+    return this.props.enableOrDisableNewui(false);
   };
 
   submitAndRevert = props => {

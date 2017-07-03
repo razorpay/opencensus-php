@@ -53,22 +53,14 @@ export const logout = () => {
   };
 };
 
-export const enableOrDisableNewui = ({ user, disable = false }) => {
-  let tags = user.tags;
-  let filteredTags = tags.slice();
-  if (disable) {
-    filteredTags = tags.filter(tag => tag.toLowerCase() !== 'newui');
-  } else {
-    filteredTags.push('newui');
-  }
-
+export const enableOrDisableNewui = enableOrDisable => {
   return () => {
     return ajax({
-      url: `/merchant/${user.current}/tags`,
+      url: `/tags`,
       method: 'post',
       appendModeInURL: false,
       data: {
-        tags: filteredTags.join(','),
+        newui: enableOrDisable,
       },
     }).then(() => {
       window.location.reload();
