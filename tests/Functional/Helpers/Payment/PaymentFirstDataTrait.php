@@ -105,6 +105,24 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function clearMockFunction()
+    {
+        $this->mockServerContentFunction(function(& $input)
+        {
+        });
+    }
+
+    protected function getErrorInVerifyRefund()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content = SoapWrapper::ERROR_ACTION_RESPONSE;
+            }
+        });
+    }
+
     protected function setInvalidAuthField($field)
     {
         $server = $this->mockServer()

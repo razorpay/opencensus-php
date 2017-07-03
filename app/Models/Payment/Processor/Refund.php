@@ -856,6 +856,17 @@ trait Refund
             $data['card'] = $card->toArray();
         }
 
+        // refund/reverse on gateway
+        if (($payment->getTransactionId() !== null) or
+            ($payment->isGatewayCaptured() === true))
+        {
+            $data['refund']['reverse'] = false;
+        }
+        else if ($this->gatewaySupportsReversal($payment) === true)
+        {
+            $data['refund']['reverse'] = true;
+        }
+
         return $data;
     }
 
