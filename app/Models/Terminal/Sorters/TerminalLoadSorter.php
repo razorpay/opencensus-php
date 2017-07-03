@@ -40,10 +40,6 @@ class TerminalLoadSorter extends Terminal\Sorter
             // sorting using rules
             $verbose = true;
 
-            $ruleCore = new Rule\Core;
-
-            $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input);
-
             if ($verbose === true)
             {
                 $this->trace->info(
@@ -58,7 +54,6 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             $boostedTerminals = $this->getBoostedTerminals(
                                             $terminals,
-                                            $applicableRules,
                                             $chancePercent,
                                             $verbose);
 
@@ -96,13 +91,12 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     protected function getBoostedTerminals(
                             array $terminals,
-                            Base\PublicCollection $rules,
                             int $chancePercent,
                             bool $verbose = false)
     {
        $totalLoad = 0;
 
-       foreach ($rules as $rule)
+       foreach ($this->rules as $rule)
        {
             $totalLoad += $rule->getLoad();
 
@@ -117,8 +111,8 @@ class TerminalLoadSorter extends Terminal\Sorter
             }
 
             // We iterate through the rules and keep adding the rule load to the
-            // total load  value.  If the total  load is greater than chance
-            // percentage, that rule  is selected.  For  e.g  if we have
+            // cumulative total load  value.  If the total  load is greater than
+            // chance  percentage, that rule  is selected.  For  e.g  if we have
             // rules R1 - load 30, and R2 load 50. If chance percentage is 40 in
             // the second iteration totalLoad becomes 80  > 40 and we select R2.
             // However if say the chance percentage was 90, then even  after all
