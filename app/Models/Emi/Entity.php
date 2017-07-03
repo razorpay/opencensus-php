@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
     const ISSUER_PLAN_ID        = 'issuer_plan_id';
+    const INTEREST_BEARER       = 'interest_bearer';
+    const MERCHANT_PAYOFF       = 'merchant_payoff';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
@@ -33,7 +35,9 @@ class Entity extends Base\PublicEntity
         self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID);
+        self::ISSUER_PLAN_ID,
+        self::INTEREST_BEARER,
+        self::MERCHANT_PAYOFF);
 
     protected $visible = array(
         self::ID,
@@ -43,7 +47,9 @@ class Entity extends Base\PublicEntity
         self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID);
+        self::ISSUER_PLAN_ID,
+        self::INTEREST_BEARER,
+        self::MERCHANT_PAYOFF);
 
     protected $public = array(
         self::BANK,
@@ -51,19 +57,24 @@ class Entity extends Base\PublicEntity
         self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID);
+        self::ISSUER_PLAN_ID,
+        self::INTEREST_BEARER,
+        self::MERCHANT_PAYOFF);
 
     protected $defaults = array(
-        self::MIN_AMOUNT     => 300000,
-        self::BANK           => null,
-        self::NETWORK        => null,
-        self::ISSUER_PLAN_ID => null,
+        self::MIN_AMOUNT      => 300000,
+        self::BANK            => null,
+        self::NETWORK         => null,
+        self::ISSUER_PLAN_ID  => null,
+        self::INTEREST_BEARER => InterestBearer::CUSTOMER,
+        self::MERCHANT_PAYOFF => null,
     );
 
     protected $casts = array(
-        self::RATE          => 'int',
-        self::MIN_AMOUNT    => 'int',
-        self::DURATION      => 'int',
+        self::RATE            => 'int',
+        self::MIN_AMOUNT      => 'int',
+        self::DURATION        => 'int',
+        self::MERCHANT_PAYOFF => 'int',
     );
 
     protected $guarded = array(self::ID);

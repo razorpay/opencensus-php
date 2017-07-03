@@ -45,6 +45,12 @@ class CreateEmiPlansTable extends Migration {
             $table->string(Emi\Entity::ISSUER_PLAN_ID)
                   ->nullable();
 
+            $table->string(Emi\Entity::INTEREST_BEARER)
+                  ->default(Emi\InterestBearer::CUSTOMER);
+
+            $table->integer(Emi\Entity::MERCHANT_PAYOFF)
+                  ->nullable();
+
             $table->integer(Emi\Entity::CREATED_AT);
 
             $table->integer(Emi\Entity::UPDATED_AT);

@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Exception\LogicException;
+use RZP\Models\Emi\InterestBearer as EmiInterestBearer;
 
 class Entity extends Base\PublicEntity
 {
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
+    const EMI_INTEREST_BEARER       = 'emi_interest_bearer';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
@@ -100,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
+        self::EMI_INTEREST_BEARER,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
@@ -133,6 +136,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::BILLING_LABEL,
+        self::EMI_INTEREST_BEARER,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
@@ -176,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
+        self::EMI_INTEREST_BEARER    => EmiInterestBearer::CUSTOMER,
     ];
 
     protected $publicSetters = [

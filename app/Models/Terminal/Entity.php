@@ -4,10 +4,12 @@ namespace RZP\Models\Terminal;
 
 use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Emi\InterestBearer as EmiInterestBearer;
 
 class Entity extends Base\PublicEntity
 {
@@ -38,6 +40,7 @@ class Entity extends Base\PublicEntity
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
+    const EMI_INTEREST_BEARER           = 'emi_interest_bearer';
     const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
     const ENABLED                       = 'enabled';
@@ -75,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CURRENCY,
+        self::EMI_INTEREST_BEARER,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -102,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
+        self::EMI_INTEREST_BEARER,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -154,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
+        self::EMI_INTEREST_BEARER       => EmiInterestBearer::CUSTOMER,
     ];
 
     protected $casts = [

@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|integer|max:7',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::EMI_INTEREST_BEARER         => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::CURRENCY                    => 'sometimes|alpha|size:3',
