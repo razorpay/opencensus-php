@@ -224,7 +224,7 @@ class Validator extends Base\Validator
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
-        // Dont validate these attributes for Marketplace accounts
+        // Don't validate these attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
         {
             return;

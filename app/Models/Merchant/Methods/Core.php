@@ -175,7 +175,7 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
-        // No default methods are enabled for Marketplace accounts
+        // No default methods are enabled for linked accounts
         if ($merchant->isLinkedAccount() === false)
         {
             $methods->setCreditCard(true);
@@ -188,6 +188,17 @@ class Core extends Base\Core
             $methods->setAirtelmoney(true);
 
             $this->setAllPaymentBanks($methods);
+        }
+        else
+        {
+            //
+            // The following methods are enabled true by default
+            // and we're disabling for linked accounts
+            //
+            $methods->setNetbanking(false);
+            $methods->setCreditCard(false);
+            $methods->setCreditCard(false);
+            $methods->setUpi(false);
         }
 
         $this->repo->saveOrFail($methods);

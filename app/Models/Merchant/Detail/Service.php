@@ -79,7 +79,7 @@ class Service extends Base\Service
         if (($this->merchant->isLinkedAccount() === true) and
             ($merchantDetails->isSubmitted() === true))
         {
-            (new Merchant\Service)->activate($this->merchant->getId());
+            (new Merchant\Activate())->autoActivate($this->merchant);
         }
 
         $response = $this->createResponse($merchantDetails);
@@ -112,10 +112,13 @@ class Service extends Base\Service
 
     /**
      * Upload the file passed in $input for $merchant
-     * @param  Merchant\Entity      $merchant     Merchant Entity
-     * @param  array   $input       Input with the file
-     * @param  boolean $validateLock If true, blocks edits if the form is locked. Can be set to false
-     *                               to bypass locked forms
+     *
+     * @param  Merchant\Entity $merchant     Merchant Entity
+     * @param  array           $input        Input with the file
+     * @param  boolean         $validateLock If true, blocks edits if the form is locked. Can be set to false
+     *                                       to bypass locked forms
+     *
+     * @return array
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
@@ -306,7 +309,7 @@ class Service extends Base\Service
             // If the linked account's parent was flagged by admins
             // linked accounts need to add additional KYC details and documents
             //
-            if ($merchant->parent->linkedAccountRequiresKyc() === true)
+            if ($merchant->parent->linkedAccountsRequireKyc() === true)
             {
                 $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
