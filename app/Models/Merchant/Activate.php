@@ -126,7 +126,7 @@ class Activate extends Base\Core
         $this->repo->saveOrFail($merchant);
 
         $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
+            TraceCode::MERCHANT_LINKED_ACCOUNT_ACTIVATED,
             [
                 'type' => 'auto_activate',
                 'merchant_id' => $merchant->getId()
