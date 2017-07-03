@@ -287,6 +287,8 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::VERIFY_REVERSE);
         }
 
+        $this->validateVerifyRefundIsPossible($input);
+
         $verify = new Base\Verify($this->gateway, $input);
 
         $this->sendVerifyRequest($verify);
@@ -334,6 +336,34 @@ class Gateway extends Base\Gateway
         $gatewayRefundEntity->fill($refundFields);
 
         $this->repo->saveOrFail($gatewayRefundEntity);
+    }
+
+    protected function validateVerifyRefundIsPossible(array $input)
+    {
+        // Refunds can be verified if a reference id was sent in the refund request
+        // (or the preauth request for verify reverse)
+
+        // Reference Id was added to refund request in 77fa69f, and deployed in
+        // https://app.wercker.com/Razorpay/api/runs/prod-api/5948f98afe92eb00017640f4
+        // Tue Jun 20 16:10:00 IST 2017
+        if (($this->action === Action::VERIFY_REFUND) and
+            ($input['refund']['created_at'] > 1497955200))
+        {
+            return;
+        }
+
+        // Reference Id was added to preauth request in 35c92d4, and deployed in
+        // https://app.wercker.com/Razorpay/api/runs/prod-api/59536df68752360001422e03
+        // Wed Jun 28 14:25:00 IST 2017
+        if (($this->action === Action::VERIFY_REVERSE) and
+            ($input['refund']['created_at'] > 1498640100))
+        {
+            return;
+        }
+
+        // For refunds older than this, verification is not possible.
+        throw new Exception\LogicException(
+                'Verification is not possible for older refunds.');
     }
 
     // First Data is not returning approval code in some cases.
@@ -1107,7 +1137,14 @@ class Gateway extends Base\Gateway
 
         $this->setPaymentRequestArray($body, $input, TxnType::SALE);
 
-        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID        => $input['payment']['id'],
+            //
+            // Not strictly necessary, as we use order id for refund and
+            // verification of purchase/sale payments. Merchant transaction
+            // id is not required. However, keeping it here for future use.
+            ApiRequestFields::V1_MERCHANT_TXN_ID => $input['payment']['id'],
+        ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
