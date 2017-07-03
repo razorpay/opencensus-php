@@ -83,7 +83,7 @@ export const customerId = {
 
 export const nextDueOn = {
   title: 'Next Due on',
-  value: getTime('next_at', 'MMM DD YYYY'),
+  value: getTime('charge_at', 'MMM DD YYYY'),
 };
 
 // Plans

@@ -1,6 +1,10 @@
 import { set } from 'rzp/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
-import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
+import {
+  makeActionCollectionReducer,
+  fetchAll,
+  updateEntityInList,
+} from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
 import { PLAN_FETCH } from 'merchant/modules/plans';
@@ -10,6 +14,7 @@ const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH';
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
 const SUBSCRIPTION_EDIT = 'SUBSCRIPTION_EDIT';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
+const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
 
 export const fetchSubscriptions = params =>
@@ -41,9 +46,21 @@ export const deleteSubscription = params => {
   };
 };
 
+export const cancelSubscription = id => {
+  const subscription = new Subscription({ id });
+
+  return {
+    type: SUBSCRIPTION_CANCEL,
+    payload: subscription.cancel(),
+  };
+};
+
 // List Reducer
 export const subscriptionsReducer = makeActionCollectionReducer(
-  'SUBSCRIPTIONS'
+  'SUBSCRIPTIONS',
+  {
+    [`${SUBSCRIPTION_CANCEL}::SUCCESS`]: updateEntityInList,
+  }
 );
 
 // Details Reducer
@@ -58,6 +75,7 @@ let entityInitialState = {
 export const subscriptionReducer = makeEntityReducer(
   SUBSCRIPTION_FETCH,
   {
+    [`${SUBSCRIPTION_CANCEL}::SUCCESS`]: updateEntity,
     [`${PLAN_FETCH}::SUCCESS`]: (state, action) => {
       return set(state, 'plan', action.payload);
     },

@@ -10,4 +10,18 @@ export default class Subscription extends GenericEntity {
   getRouteName() {
     return this.isNew ? 'subscription_create' : 'subscription_update';
   }
+
+  cancel() {
+    return this.makeGenericAjaxCall({
+      method: 'post',
+      data: {
+        route_name: 'subscription_cancel',
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        }),
+      },
+    }).then(response => {
+      return new Subscription(response.data);
+    });
+  }
 }

@@ -1,12 +1,26 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
-import { fetchSubscription as fetchItem } from 'merchant/modules/subscriptions';
+import {
+  fetchSubscription as fetchItem,
+  cancelSubscription,
+} from 'merchant/modules/subscriptions';
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
+import { showNotification } from 'rzp/modules/notifications';
 
-@connect(state => state.subscription, { fetchItem, fetchPlan, fetchCustomer })
+@connect(state => state.subscription, {
+  fetchItem,
+  fetchPlan,
+  fetchCustomer,
+  cancelSubscription,
+  showNotification,
+})
 export default class SubscriptionDetailsContainer extends Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   state = {};
 
   componentWillMount() {
@@ -34,6 +48,30 @@ export default class SubscriptionDetailsContainer extends Component {
       });
   }
 
+  cancelSubscription = () => {
+    this.context.confirm({
+      header: 'Cancel Subscription?',
+      message: "The subscription will be terminated and the customer's card will not be charged.",
+      affirmativeLabel: 'Yes',
+      abortLabel: 'No',
+      action: () =>
+        this.props
+          .cancelSubscription(this.props.entity.id)
+          .then(response => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Subscription cancelled successfully',
+            });
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          }),
+    });
+  };
+
   render() {
     let { error, entity, plan, customer } = this.props;
     let isLoading = this.state.isLoading;
@@ -53,6 +91,7 @@ export default class SubscriptionDetailsContainer extends Component {
         customer={customer}
         isLoading={isLoading}
         statusMsg={statusMsg}
+        onCancelClick={this.cancelSubscription}
       />
     );
   }

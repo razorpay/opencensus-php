@@ -383,6 +383,10 @@ return [
             'url'       => 'subscriptions/{id}',
             'routeName' => 'subscriptions_write'
         ],
+        'subscription_cancel'            => [
+            'url'       => 'subscriptions/{id}/cancel',
+            'routeName' => 'subscriptions_write'
+        ],
 
         // Plans
         'plan_fetch_multiple'    => [

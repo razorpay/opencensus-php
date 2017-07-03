@@ -8,7 +8,14 @@ import NestedDetailRow from 'merchant/components/NestedDetailRow';
 import { getFixedINRAmount, getIntervalCycle } from 'rzp/utils/rzp-utils';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 
-export default ({ subscription, plan, customer, isLoading, statusMsg }) => {
+export default ({
+  subscription,
+  plan,
+  customer,
+  isLoading,
+  statusMsg,
+  onCancelClick,
+}) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -71,6 +78,11 @@ export default ({ subscription, plan, customer, isLoading, statusMsg }) => {
                 />
 
                 <EntityDetailRow
+                  label="Next Due on"
+                  value={() => <Time value={subscription.charge_at} />}
+                />
+
+                <EntityDetailRow
                   label="Status"
                   value={() => (
                     <SubscriptionStatusLabel status={subscription.status} />
@@ -88,6 +100,15 @@ export default ({ subscription, plan, customer, isLoading, statusMsg }) => {
                 />
 
                 <NestedDetailRow label="Notes" value={subscription.notes} />
+
+                {['cancelled', 'completed', 'expired'].indexOf(
+                  subscription.status
+                ) === -1
+                  ? <button class="btn btn-default" onClick={onCancelClick}>
+                      Cancel Subscription
+                    </button>
+                  : null}
+
               </div>
             </div>
           </div>}
