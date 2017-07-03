@@ -224,6 +224,12 @@ class Validator extends Base\Validator
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
         // Don't validate these attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
         {

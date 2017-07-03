@@ -25,11 +25,7 @@ class Activate extends Base\Core
 {
     public function activate($merchant)
     {
-        if ($merchant->isActivated())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
 
         //
         // Ensure that all payment methods enabled for the merchant
@@ -52,8 +48,6 @@ class Activate extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
-
-        (new Merchant\Validator)->validateBeforeActivate($merchant);
 
         $oldMerchant = clone $merchant;
 
@@ -111,16 +105,11 @@ class Activate extends Base\Core
      */
     public function autoActivate(Entity $merchant): array
     {
-        if ($merchant->isActivated() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
-
         (new Merchant\Validator)->validateBeforeActivate($merchant);
 
         $merchant->activate();
 
+        // Create the live mode balance entity for the merchant
         (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
 
         $this->repo->saveOrFail($merchant);
@@ -128,7 +117,7 @@ class Activate extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_LINKED_ACCOUNT_ACTIVATED,
             [
-                'type' => 'auto_activate',
+                'type'        => 'auto_activate',
                 'merchant_id' => $merchant->getId()
             ]);
 

@@ -292,9 +292,6 @@ class Service extends Base\Service
 
         $response = $merchantDetails->toArrayPublic();
 
-        // List of all the required fields which are not set
-        $detailsKeys = array_keys($merchantDetailsArr);
-
         $requiredFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
@@ -305,16 +302,20 @@ class Service extends Base\Service
         {
             $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
 
+            $parentMerchant = $merchant->parent;
+
             //
             // If the linked account's parent was flagged by admins
             // linked accounts need to add additional KYC details and documents
             //
-            if ($merchant->parent->linkedAccountsRequireKyc() === true)
+            if ($parentMerchant->linkedAccountsRequireKyc() === true)
             {
                 $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
+
+            $response['linked_account_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
 
         $totalFields = count($validationFields);
@@ -358,14 +359,25 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * Checks and auto activates the merchant if possible, after form submission
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
     protected function autoActivateMerchantIfApplicable(Entity $merchantDetails): bool
     {
+        //
+        // Auto-activation is attempted if the following conditions are met
+        //
         if (($merchantDetails->isSubmitted() === true) and
             ($this->merchant->isLinkedAccount() === true) and
             ($this->merchant->linkedAccountsRequireKyc() === false))
         {
             $bankCore = (new BankAccount\Core);
 
+            // Build the input array for the merchant's bank account creation
             $bankData = $bankCore->buildBankAccountArrayFromMerchantDetails($merchantDetails->toArray(), true);
 
             $bankCore->createOrChangeBankAccount($bankData, $this->merchant);
