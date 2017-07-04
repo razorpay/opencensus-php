@@ -70,6 +70,7 @@ app.controller('PricingsCtrl', [
 
         default:
           networks = $scope.networks[method];
+          networks = networks !== undefined ? networks : {};
       }
 
       networks[''] = 'All';
