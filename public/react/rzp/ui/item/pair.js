@@ -37,6 +37,7 @@ export const totalCount = { title: 'Count', value: item => item.total_count };
 
 export const paymentId = { title: 'Payment ID', value: id.payment };
 export const orderId = { title: 'Order ID', value: id.order };
+export const rzpOrderId = { title: 'Razorpay Order ID', value: id.rzpOrder };
 export const refundId = { title: 'Refund ID', value: id.refund };
 export const settlementId = { title: 'Settlemt ID', value: id.settlement };
 export const transferId = { title: 'Transfer ID', value: id.transfer };
@@ -49,8 +50,11 @@ export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
 };
 
-// this is notes + order_id mixed
+// this is notes order_id mixed
 export const paymentOrder = orders => mapValues(orders)(orderId.title);
+
+// Razorpay order_id
+export const rzpPaymentOrder = orders => mapValues(orders)(rzpOrderId.title);
 
 // Virtual Accounts
 export const virtualAccountId = {
