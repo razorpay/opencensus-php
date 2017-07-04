@@ -932,7 +932,14 @@ class Service extends Base\Service
 
         $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
-        $allTags = explode(', ', strtolower($currentMerchant->tagNames));
+        $merchantTags = $currentMerchant->tagNames;
+
+        $allTags = [];
+
+        if (empty($merchantTags) === false)
+        {
+            $allTags = explode(', ', strtolower($merchantTags));
+        }
 
         $newAllTags = array_diff($allTags, ['newui']);
 
