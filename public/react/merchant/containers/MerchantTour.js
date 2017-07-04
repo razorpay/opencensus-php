@@ -17,16 +17,22 @@ export default class MerchantTour extends Component {
 
   componentWillMount() {
     let isNewUIEnabled = this.props.user.isNewUIEnabled;
-    let isNewUITourShown = LocalStorageService.getItem('newui_tour_shown');
+    let showNewUITour = LocalStorageService.getItem('show_newui_tour');
 
-    if (isNewUIEnabled && !isNewUITourShown) {
+    if (isNewUIEnabled && showNewUITour) {
       this.setState({
         showOnboardingTour: true,
       });
+
       window.setTimeout(() => {
         this.props.openModal({
           size: 'small',
-          component: <NewUIOnboardingDialog onShowChanges={this.showTour} />,
+          component: (
+            <NewUIOnboardingDialog
+              onShowChanges={this.showTour}
+              onCancelClick={this.closeTour}
+            />
+          ),
         });
       }, 1500);
     }
@@ -51,7 +57,9 @@ export default class MerchantTour extends Component {
 
   closeTour = () => {
     LocalStorageService.setItem('gst_tour_shown', true);
+    LocalStorageService.removeItem('show_newui_tour');
     this.setState({ isTourActive: false });
+    this.props.closeModal();
   };
 
   gotoNextTourStep = () => {
@@ -139,17 +147,15 @@ export default class MerchantTour extends Component {
                     are moved to Settings.
                   </p>
                   <div class="btn-toolbar">
+                    <button class="btn btn-link" onClick={this.closeTour}>
+                      Skip
+                    </button>
+
                     <button
                       class="btn btn-link pull-right"
-                      onClick={() => {
-                        if (showOnboardingTour) {
-                          this.gotoNextTourStep();
-                        } else {
-                          this.closeTour();
-                        }
-                      }}
+                      onClick={this.gotoNextTourStep}
                     >
-                      {showOnboardingTour ? 'Next >' : 'Done!'}
+                      Next &gt;
                     </button>
                   </div>
                 </TourStep>,
@@ -177,31 +183,36 @@ export default class MerchantTour extends Component {
                 class="btn btn-link pull-right"
                 onClick={this.gotoNextTourStep}
               >
-                Next &gt;
+                {showOnboardingTour ? 'Next >' : 'Okay, Got it!'}
               </button>
             </div>
           </TourStep>
 
-          <TourStep
-            to="#profile-dropdown"
-            attachment="top center"
-            targetAttachment="bottom left"
-            offset="-15px 12px"
-            arrowLeftPos="75%"
-          >
-            <p>
-              Your
-              {' '}
-              <b>Merchant ID</b>
-              {' '}
-              is here. Also, to revert to old design or to give feedback, click here.
-            </p>
-            <div class="btn-toolbar">
-              <button class="btn btn-link pull-right" onClick={this.closeTour}>
-                Okay, Got it!
-              </button>
-            </div>
-          </TourStep>
+          {showOnboardingTour
+            ? <TourStep
+                to="#profile-dropdown"
+                attachment="top center"
+                targetAttachment="bottom left"
+                offset="-15px 12px"
+                arrowLeftPos="75%"
+              >
+                <p>
+                  Your
+                  {' '}
+                  <b>Merchant ID</b>
+                  {' '}
+                  is here. Also, to revert to old design or to give feedback, click here.
+                </p>
+                <div class="btn-toolbar">
+                  <button
+                    class="btn btn-link pull-right"
+                    onClick={this.closeTour}
+                  >
+                    Okay, Got it!
+                  </button>
+                </div>
+              </TourStep>
+            : null}
         </Tour>
       </div>
     );

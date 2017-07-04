@@ -37,6 +37,7 @@ export default class ProfileDropdown extends Component {
 
   render() {
     let user = this.props.user;
+    debugger;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
@@ -99,19 +100,21 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            <div
-              class="media media-action"
-              onClick={() => this.submitFeedback({ revert: true })}
-            >
-              <div class="media-left">
-                <div class="media-object">
-                  <i class="icon icon-undo" />
+            {user.isNewUIEnabled
+              ? <div
+                  class="media media-action"
+                  onClick={() => this.submitFeedback({ revert: true })}
+                >
+                  <div class="media-left">
+                    <div class="media-object">
+                      <i class="icon icon-undo" />
+                    </div>
+                  </div>
+                  <div class="media-body">
+                    Revert to old design
+                  </div>
                 </div>
-              </div>
-              <div class="media-body">
-                Revert to old design
-              </div>
-            </div>
+              : null}
           </div>
         </DropdownContent>
       </Dropdown>
