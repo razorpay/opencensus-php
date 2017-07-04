@@ -8,7 +8,7 @@ import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
 import * as ApplicationActions from 'merchant/modules/applications';
@@ -22,6 +22,7 @@ const INFO = {
 
 const selector = formValueSelector('newApplicationForm');
 
+@withRouter
 @connect(
   state => {
     return {
@@ -34,13 +35,14 @@ const selector = formValueSelector('newApplicationForm');
 @reduxForm({
   form: 'newApplicationForm',
 })
+
 class NewApplicationForm extends Component {
   constructor() {
     super();
   }
   state = {
-    edit: false
-    // data: this.props.applications.items.filter
+    edit: false,
+    details: {}
   }
   componentWillMount() {
     let id = this.props.match.params.id
@@ -49,35 +51,77 @@ class NewApplicationForm extends Component {
     this.setState({edit: true})
     var appDetails = this.props.applications.filter(app => app.id === id)
     if (appDetails.length) {
-      this.state.details = appDetails[0]
-      this.props.initialize(this.state.details);
+      const data = appDetails[0]
+      this.initForm(data)
       return
     }
     this.props.fetchApplication(id).then((data)=>{
-      this.state.details = data
-      this.props.initialize(this.state.details);
-    }).catch(()=>{})
+      this.initForm(data)
+    }).catch((err)=>{
+      this.props.showNotification({
+        type: 'error',
+        message: `Application id '${id}' not found`,
+      });
+      this.props.history.replace('/applications')
+    })
   }
 
+  initForm(data) {
+    this.state.details = data
+    this.props.initialize(this.state.details)
+  }
   componentWillUnmount () {
     // remove details from state
   }
-  // save handler
 
+  openPreviewPage() {
+    // open in a popup
+    // authorize?response_type=code&client_id=86KC3q506ytUPA&redirect_uri=http://localhost&scope=read_only
+  }
+
+  // save handler
   save = props => {
-    return this.props.saveApplication(props)
-      .then(application => {
+    if (!this.state.edit){
+      return this.props.createApplication(props).then(application => {
+        this.state.edit = true;
+        this.initForm(application)
+        this.props.history.replace(`/applications/${application.id}`)
         this.props.showNotification({
           type: 'success',
           message: 'Application created successfully',
         });
-      })
-      .catch(err => {
-        // this.setState({
-        //   errors: err.errors,
-        // });
+      }).catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Couldn\'t create application',
+        });
       });
-  };
+    }
+    const payload = {
+      name: props.name,
+      website: props.website,
+      clients: [{
+        id: props.clients.dev.id,
+        redirect_url: props.clients.dev.redirect_url
+      }, {
+        id: props.clients.prod.id,
+        redirect_url: props.clients.prod.redirect_url
+      }]
+    }
+    return this.props.updateApplication(payload).then(application => {
+      this.props.showNotification({
+        type: 'success',
+        message: 'Application saved successfully',
+      });
+    }).catch(err => {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Couldn\'t save application',
+      });
+    });
+  }
+
+
 
   render() {
     const { handleSubmit } = this.props;
@@ -138,105 +182,107 @@ class NewApplicationForm extends Component {
                 </small>
               </div>
 
-              <div class="col-md-offset-2 col-md-10">
-                <h5 class="form-header text-left">Development</h5>
-              </div>
+              {this.state.edit && <div className="edit-details">
+                <div class="col-md-offset-2 col-md-10">
+                  <h5 class="form-header text-left">Development</h5>
+                </div>
 
-              <div class="form-group">
-                <label class="col-md-2 control-label">
-                  client_id
-                </label>
-                <div class="col-md-4">
-                  <Field
-                    name="client_id_dev"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="http://test-app.com/"
-                  />
+                <div class="form-group">
+                  <label class="col-md-2 control-label">
+                    client_id
+                  </label>
+                  <div class="col-md-4">
+                    <Field
+                      name="clients.dev.id"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="http://test-app.com/"
+                    />
+                  </div>
+                  <label class="col-md-2 control-label">
+                    client_secret
+                  </label>
+                  <div class="col-md-4">
+                    <Field
+                      name="clients.dev.secret"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="http://test-app.com/"
+                    />
+                  </div>
                 </div>
-                <label class="col-md-2 control-label">
-                  client_secret
-                </label>
-                <div class="col-md-4">
-                  <Field
-                    name="client_secret_dev"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="http://test-app.com/"
-                  />
-                </div>
-              </div>
 
-              <div class="form-group">
-                <label class="col-md-2 control-label label-required">
-                  Redirect URIs
-                </label>
-                <div class="col-md-10">
-                  <Field
-                    name="redirect_url_dev"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="http://test-app.com/"
-                  />
+                <div class="form-group">
+                  <label class="col-md-2 control-label label-required">
+                    Redirect URIs
+                  </label>
+                  <div class="col-md-10">
+                    <Field
+                      name="clients.dev.redirect_url"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="http://test-app.com/"
+                    />
+                  </div>
+                  <div class="clearfix"></div>
+                  <small class="col-md-offset-2 col-md-10 help-block">
+                    <i class="icon icon-info-circle" />
+                    <span>
+                      {INFO.dev}
+                    </span>
+                  </small>
                 </div>
-                <div class="clearfix"></div>
-                <small class="col-md-offset-2 col-md-10 help-block">
-                  <i class="icon icon-info-circle" />
-                  <span>
-                    {INFO.dev}
-                  </span>
-                </small>
-              </div>
 
-              <div class="col-md-offset-2 col-md-10">
-                <h5 class="form-header text-left">Production</h5>
-              </div>
+                <div class="col-md-offset-2 col-md-10">
+                  <h5 class="form-header text-left">Production</h5>
+                </div>
 
-              <div class="form-group">
-                <label class="col-md-2 control-label label-required">
-                  client_id
-                </label>
-                <div class="col-md-4">
-                  <Field
-                    name="client_id_prod"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="http://test-app.com/"
-                  />
+                <div class="form-group">
+                  <label class="col-md-2 control-label label-required">
+                    client_id
+                  </label>
+                  <div class="col-md-4">
+                    <Field
+                      name="clients.prod.id"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="client_id"
+                    />
+                  </div>
+                  <label class="col-md-2 control-label label-required">
+                    client_secret
+                  </label>
+                  <div class="col-md-4">
+                    <Field
+                      name="clients.prod.secret"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="client_secret"
+                    />
+                  </div>
                 </div>
-                <label class="col-md-2 control-label label-required">
-                  client_secret
-                </label>
-                <div class="col-md-4">
-                  <Field
-                    name="client_secret_prod"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="http://test-app.com/"
-                  />
-                </div>
-              </div>
 
-              <div class="form-group">
-                <label class="col-md-2 control-label label-required">
-                  Redirect URIs
-                </label>
-                <div class="col-md-10">
-                  <Field
-                    name="redirect_url_prod"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="http://test-app.com/"
-                  />
+                <div class="form-group">
+                  <label class="col-md-2 control-label label-required">
+                    Redirect URIs
+                  </label>
+                  <div class="col-md-10">
+                    <Field
+                      name="clients.prod.redirect_url"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="http://test-app.com/"
+                    />
+                  </div>
+                  <div class="clearfix"></div>
+                  <small class="col-md-offset-2 col-md-10 help-block">
+                    <i class="icon icon-info-circle" />
+                    <span>
+                      {INFO.prod}
+                    </span>
+                  </small>
                 </div>
-                <div class="clearfix"></div>
-                <small class="col-md-offset-2 col-md-10 help-block">
-                  <i class="icon icon-info-circle" />
-                  <span>
-                    {INFO.prod}
-                  </span>
-                </small>
-              </div>
+              </div>}
 
               <div class="form-group">
                 <div class="col-md-offset-3 col-md-9">
@@ -252,7 +298,7 @@ class NewApplicationForm extends Component {
                       type="button"
                       class="btn btn-default pull-right"
                       text="Preview OAuth Page"
-                      onClick={() => {}}
+                      onClick={this.openPreviewPage}
                     />
                   </div>
                 </div>

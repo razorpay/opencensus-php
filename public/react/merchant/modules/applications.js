@@ -35,13 +35,22 @@ export const deleteApplication = id => {
   };
 };
 
-export const saveApplication = params => {
+export const createApplication = params => {
   console.log('save from module', params)
   let application = new Application();
 
   return {
     type: CREATE_APPLICATION,
-    payload: application.save(params),
+    payload: application.create(params),
+  };
+};
+export const updateApplication = params => {
+  console.log('save from module', params)
+  let application = new Application();
+
+  return {
+    type: UPDATE_APPLICATION,
+    payload: application.update(params),
   };
 };
 
@@ -83,6 +92,11 @@ export default function(state = initialState, action) {
       })
 
     case `${FETCH_APPLICATION_DETAILS}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+      });
+
+    case `${UPDATE_APPLICATION}::SUCCESS`:
       return merge(state, {
         loading: false,
       });

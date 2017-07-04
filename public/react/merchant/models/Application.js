@@ -29,42 +29,36 @@ export default class Key extends GenericEntity {
     });
   }
 
-  save(params = {}) {
+  create(params = {}) {
     const Klass = this.constructor;
-    // let params = this.serialize();
     let url = this.resourceUrl;
-    let method = this.getResourceMethod();
-    console.log('save from entity', params)
+    let method = 'post'
 
     let data = {
-      route_name: this.getRouteName(),
+      route_name: 'oauth_application_create'
     };
-    // if (this.isNew) {
-    // } else {
-    // }
     data.body = params;
-
     return this.makeGenericAjaxCall({
       method,
       data,
     }).then(response => {
-      if (this.isNew) {
-        return new Klass().deserialize(response.data);
-      } else {
-        return {
-          new: new Klass().deserialize(response.data.new),
-          old: new Klass().deserialize(response.data.old),
-        };
-      }
+      return new Klass().deserialize(response.data);
     });
   }
 
-  getRouteName() {
-    return this.isNew ? 'oauth_application_create' : 'oauth_application_update';
-  }
-
-  getResourceMethod() {
-    return this.isNew ? 'post' : 'put';
+  update(params={}) {
+    let url = this.resourceUrl;
+    let method = 'patch'
+    let data = {
+      route_name: 'oauth_application_update',
+      body: params
+    };
+    return this.makeGenericAjaxCall({
+      method,
+      data,
+    }).then(response => {
+      return new Klass().deserialize(response.data);
+    });
   }
 
   resourceFields() {
