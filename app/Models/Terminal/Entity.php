@@ -9,7 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Emi\InterestBearer as EmiInterestBearer;
+use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
 {
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
-    const EMI_INTEREST_BEARER           = 'emi_interest_bearer';
+    const EMI_SUBVENTION                = 'emi_subvention';
     const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
     const ENABLED                       = 'enabled';
@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CURRENCY,
-        self::EMI_INTEREST_BEARER,
+        self::EMI_SUBVENTION,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -106,7 +106,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
-        self::EMI_INTEREST_BEARER,
+        self::EMI_SUBVENTION,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -159,7 +159,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
-        self::EMI_INTEREST_BEARER       => EmiInterestBearer::CUSTOMER,
+        self::EMI_SUBVENTION            => EmiSubvention::CUSTOMER,
     ];
 
     protected $casts = [
@@ -241,9 +241,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getEmiInterestBearer()
+    public function getEmiSubvention()
     {
-        return $this->getAttribute(self::EMI_INTEREST_BEARER);
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     protected function getSubMerchants()

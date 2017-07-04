@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
-        Entity::EMI_INTEREST_BEARER         => 'sometimes|in:customer,merchant',
+        Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',

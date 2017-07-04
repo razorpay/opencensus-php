@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Emi;
 
-class InterestBearer
+class Subvention
 {
     const MERCHANT = 'merchant';
     const CUSTOMER = 'customer';

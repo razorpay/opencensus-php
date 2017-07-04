@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         Entity::METHODS                 => 'sometimes|in:card,wallet,netbanking',
         Entity::MIN_AMOUNT              => 'sometimes|integer',
         Entity::ISSUER_PLAN_ID          => 'sometimes',
-        Entity::INTEREST_BEARER         => 'sometimes|in:customer,merchant',
+        Entity::SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::MERCHANT_PAYOFF         => 'sometimes|integer',
     );
 

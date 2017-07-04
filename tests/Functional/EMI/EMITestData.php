@@ -14,7 +14,7 @@ return [
                 'rate' => 1045,
                 'methods' => 'card',
                 'min_amount' => 400000,
-                'interest_bearer' => 'merchant'
+                'subvention' => 'merchant'
             ],
             'method' => 'POST',
             'url' => '/emi',

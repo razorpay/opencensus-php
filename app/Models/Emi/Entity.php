@@ -17,7 +17,7 @@ class Entity extends Base\PublicEntity
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
     const ISSUER_PLAN_ID        = 'issuer_plan_id';
-    const INTEREST_BEARER       = 'interest_bearer';
+    const SUBVENTION            = 'subvention';
     const MERCHANT_PAYOFF       = 'merchant_payoff';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
         self::METHODS,
         self::MIN_AMOUNT,
         self::ISSUER_PLAN_ID,
-        self::INTEREST_BEARER,
+        self::SUBVENTION,
         self::MERCHANT_PAYOFF);
 
     protected $visible = array(
@@ -48,7 +48,7 @@ class Entity extends Base\PublicEntity
         self::METHODS,
         self::MIN_AMOUNT,
         self::ISSUER_PLAN_ID,
-        self::INTEREST_BEARER,
+        self::SUBVENTION,
         self::MERCHANT_PAYOFF);
 
     protected $public = array(
@@ -58,7 +58,7 @@ class Entity extends Base\PublicEntity
         self::METHODS,
         self::MIN_AMOUNT,
         self::ISSUER_PLAN_ID,
-        self::INTEREST_BEARER,
+        self::SUBVENTION,
         self::MERCHANT_PAYOFF);
 
     protected $defaults = array(
@@ -66,7 +66,7 @@ class Entity extends Base\PublicEntity
         self::BANK            => null,
         self::NETWORK         => null,
         self::ISSUER_PLAN_ID  => null,
-        self::INTEREST_BEARER => InterestBearer::CUSTOMER,
+        self::SUBVENTION      => Subvention::CUSTOMER,
         self::MERCHANT_PAYOFF => null,
     );
 
@@ -109,9 +109,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    public function getInterestBearer()
+    public function getSubvention()
     {
-        return $this->getAttribute(self::INTEREST_BEARER);
+        return $this->getAttribute(self::SUBVENTION);
     }
 
     public function getMerchantPayoff()

@@ -218,7 +218,7 @@ return [
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
-                'emi_interest_bearer' => 'merchant'
+                'emi_subvention' => 'merchant'
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -238,7 +238,7 @@ return [
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
-                'emi_interest_bearer' => 'merchant',
+                'emi_subvention' => 'merchant',
             ]
         ]
     ],
