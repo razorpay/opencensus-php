@@ -8,56 +8,49 @@ class Gateway extends Base\Gateway
 {
     const ACQUIRER = null;
 
+    /**
+     * Used in Mock\GatewayTrait, but defined here because
+     * traits can't define constants
+     */
+    const MOCK_ROUTE    = 'mock_upi_payment';
+
     protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $payment = $this->getNewGatewayPaymentEntity();
+        $entity = $this->getNewGatewayPaymentEntity();
 
-        $action = $action ? $action : $this->action;
+        $action = $action ?? $this->action;
 
-        $payment->setPaymentId($this->input['payment']['id']);
+        $entity->setPaymentId($this->input['payment']['id']);
 
-        $payment->setAmount($this->input['payment']['amount']);
+        switch ($action)
+        {
+            case Base\Action::REFUND:
 
-        $payment->setAction($action);
+                $entity->setRefundId($this->input['refund']['id']);
 
-        $payment->setAcquirer(static::ACQUIRER);
+                $entity->setAmount($this->input['refund']['amount']);
 
-        $payment->generate($attr);
+                break;
 
-        $payment->fill($attr);
+            case Base\Action::AUTHORIZE:
+            default:
 
-        $this->repo->saveOrFail($payment);
+                $entity->setAmount($this->input['payment']['amount']);
+        }
 
-        return $payment;
-    }
+        $entity->setAction($action);
 
-    protected function createGatewayRefundEntity($attributes)
-    {
-        $attr = $this->getMappedAttributes($attributes);
+        $entity->setAcquirer(static::ACQUIRER);
 
-        $refund = $this->getNewGatewayPaymentEntity();
+        $entity->generate($attr);
 
-        $action = $this->action;
+        $entity->fill($attr);
 
-        $refund->setPaymentId($this->input['payment']['id']);
+        $this->repo->saveOrFail($entity);
 
-        $refund->setRefundId($this->input['refund']['id']);
-
-        $refund->setAmount($this->input['refund']['amount']);
-
-        $refund->setAction($action);
-
-        $refund->setAcquirer(static::ACQUIRER);
-
-        $refund->generate($attr);
-
-        $refund->fill($attr);
-
-        $this->repo->saveOrFail($refund);
-
-        return $refund;
+        return $entity;
     }
 
     protected function getNewGatewayPaymentEntity()

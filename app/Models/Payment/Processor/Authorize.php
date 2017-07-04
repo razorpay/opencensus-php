@@ -1759,6 +1759,7 @@ trait Authorize
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
+            'data'          => $request['data'],
             'request'       => [
                 'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
