@@ -197,25 +197,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $paymentService = new Payment\Service;
 
-        try
+        if ($this->shouldAttemptVerification() === false)
         {
-            // Try to make it authorized
-            $verifyResponse = $paymentService->verifyPayment($this->payment);
+            return $this->handleVerifySuccess($row);
         }
-        catch(\Exception $ex)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                    'message'    => 'Verification/Authorization threw an exception. -> ' . $ex->getMessage(),
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]);
 
-            $this->trace->traceException($ex);
-
-            return false;
-        }
+        $verifyResponse = $this->verifyPayment();
 
         if ($verifyResponse === VerifyResult::AUTHORIZED)
         {
@@ -246,6 +233,42 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             ]);
 
         return false;
+    }
+
+    /**
+     * This function should be implemented in the child class
+     * It will attempt verification if payment is failed
+     *
+     * @return bool
+     */
+    protected function shouldAttemptVerification()
+    {
+        return true;
+    }
+
+    protected function verifyPayment()
+    {
+        try
+        {
+            // Try to make it authorized
+            $verifyResponse = $paymentService->verifyPayment($this->payment);
+        }
+        catch(\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Verification/Authorization threw an exception. -> ' . $ex->getMessage(),
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            $this->trace->traceException($ex);
+
+            return false;
+        }
+
+        return $verifyResponse;
     }
 
     protected function handleVerifySuccess($row)

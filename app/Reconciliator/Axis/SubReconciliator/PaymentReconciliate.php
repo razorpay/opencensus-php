@@ -384,4 +384,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         return true;
     }
+
+    protected function shouldAttemptVerification()
+    {
+        return false;
+    }
 }

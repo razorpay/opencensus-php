@@ -20,18 +20,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $this->netbankingRepo = $this->repo->netbanking;
     }
 
-
-    protected function tryAuthorizeFailedPayment($row)
-    {
-        if ((empty($row[ClaimFields::PGI_STATUS]) === true) ||
-            ($row[ClaimFields::PGI_STATUS] !== 'Success'))
-        {
-            return false;
-        }
-
-        return $this->handleVerifySuccess($row);
-    }
-
     protected function getPaymentId($row)
     {
         if (empty($row[ClaimFields::BANK_REFERENCE]) === false)
@@ -106,5 +94,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function shouldAttemptForceAuthorizeFailed()
     {
         return true;
+    }
+
+    protected function shouldAttemptVerification()
+    {
+        return false;
     }
 }
