@@ -20,7 +20,6 @@ app.controller('PricingsCtrl', [
     $scope.show_plan = {};
     $scope.itemList = [];
     $scope.networks = null;
-    generateTable();
 
     var getDefaultRule = function() {
       return {
@@ -287,7 +286,7 @@ app.controller('PricingsCtrl', [
       $scope.showPlan(pricing_plan_id);
     }
 
-    function generateTable() {
+    $scope.generateTable = function() {
       var params = {
         route_name: 'pricing_get_merchant_plans',
       };
@@ -301,7 +300,7 @@ app.controller('PricingsCtrl', [
           $scope.pricing_plans = data.data.items;
         }
       });
-    }
+    };
 
     /**
      * Sets defaults ranges for now
