@@ -66,6 +66,19 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateInterval($input)
+    {
+        if ((isset($input[Entity::PERIOD]) === true) and
+            ($input[Entity::PERIOD] === Period::HOURLY))
+        {
+            if (isset($input[Entity::INTERVAL]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL);
+            }
+        }
+    }
+
     protected function validateAnchor($input)
     {
         if (isset($input[Entity::PERIOD]) === true)
