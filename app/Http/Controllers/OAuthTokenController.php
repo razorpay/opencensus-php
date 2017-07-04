@@ -23,8 +23,6 @@ class OAuthTokenController extends Controller
     {
         parent::__construct();
 
-        $this->merchant = $this->app['basicauth']->getMerchant();
-
         $this->tokenService = new TokenService;
     }
 
@@ -37,7 +35,9 @@ class OAuthTokenController extends Controller
         // This is to allow for simple .proto definitions
         // when we move the OAuth module to a gRPC implementation
         //
-        $input['merchant_id'] = $this->merchant->getId();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $input['merchant_id'] = $merchant->getId();
 
         $result = $this->tokenService->getAllTokens($input);
 
@@ -50,7 +50,9 @@ class OAuthTokenController extends Controller
 
         $input['id'] = $id;
 
-        $input['merchant_id'] = $this->merchant->getId();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $input['merchant_id'] = $merchant->getId();
 
         $result = $this->tokenService->getToken($input);
 
@@ -63,7 +65,9 @@ class OAuthTokenController extends Controller
 
         $input['id'] = $id;
 
-        $input['merchant_id'] = $this->merchant->getId();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $input['merchant_id'] = $merchant->getId();
 
         $result = $this->tokenService->editToken($input);
 
@@ -76,7 +80,9 @@ class OAuthTokenController extends Controller
 
         $input['id'] = $id;
 
-        $input['merchant_id'] = $this->merchant->getId();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $input['merchant_id'] = $merchant->getId();
 
         $result = $this->tokenService->revokeToken($input);
 

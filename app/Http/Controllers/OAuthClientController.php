@@ -24,14 +24,14 @@ class OAuthClientController extends Controller
     {
         parent::__construct();
 
-        $this->merchant = $this->app['basicauth']->getMerchant();
-
         $this->clientService = new Client\Service;
     }
 
     public function getClient(string $id)
     {
-        $client = $this->clientService->fetch($id, $this->merchant->getId());
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $client = $this->clientService->fetch($id, $merchant->getId());
 
         return ApiResponse::json($client);
     }
@@ -40,7 +40,9 @@ class OAuthClientController extends Controller
     {
         $input = Request::all();
 
-        $merchantId = $this->merchant->getId();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $merchantId = $merchant->getId();
 
         $client = $this->clientService->create($input, $merchantId);
 
@@ -51,7 +53,9 @@ class OAuthClientController extends Controller
     {
         $input = Request::all();
 
-        $merchantId = $this->merchant->getId();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $merchantId = $merchant->getId();
 
         $client = $this->clientService->update($id, $merchantId, $input);
 
@@ -60,7 +64,9 @@ class OAuthClientController extends Controller
 
     public function deleteClient(string $id)
     {
-        $data = $this->clientService->delete($id, $this->merchant->getId());
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $data = $this->clientService->delete($id, $merchant->getId());
 
         return ApiResponse::json($data);
     }
