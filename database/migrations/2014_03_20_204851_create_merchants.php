@@ -8,7 +8,6 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\FeeModel;
-use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class CreateMerchants extends Migration
 {
@@ -81,9 +80,6 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
-
-            $table->string(Merchant::EMI_SUBVENTION)
-                  ->default(EmiSubvention::CUSTOMER);
 
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
