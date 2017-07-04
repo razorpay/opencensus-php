@@ -96,6 +96,12 @@ return [
 
     'invoice_mapping' => [
         'properties' => [
+            'type' => [
+                'type'            => 'keyword',
+            ],
+            'status' => [
+                'type'            => 'keyword',
+            ],
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
