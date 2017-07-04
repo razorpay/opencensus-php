@@ -186,11 +186,9 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $orgHostname = Request::header('X-Org-Hostname');
+        $admin = $this->ba->getAdmin();
 
-        $org = (new Org\Service)->fetchByHostname($orgHostname);
-
-        $data = (new Workflow\Service)->fetch($org['id'], $id);
+        $data = (new Workflow\Service)->fetch($admin->getPublicOrgId(), $id);
 
         return ApiResponse::json($data);
     }
