@@ -30,11 +30,13 @@ class Validator extends Base\Validator
         'period',
         'anchor',
         'hour',
+        'interval',
     );
 
     protected static $editValidators = array(
         'anchor',
         'hour',
+        'interval',
     );
 
     protected function validatePeriod($input)
