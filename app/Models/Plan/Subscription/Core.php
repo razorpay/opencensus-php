@@ -447,7 +447,7 @@ class Core extends Base\Core
             {
                 $subscription->setStatus(Status::CANCELLED);
 
-                // TODO: We should also reset all error fields.
+                $this->setFieldsOnCancel($subscription);
 
                 $this->repo->saveOrFail($subscription);
 
@@ -456,6 +456,15 @@ class Core extends Base\Core
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
         );
+    }
+
+    protected function setFieldsOnCancel(Entity $subscription)
+    {
+        $subscription->setChargeAt(null);
+
+        $subscription->resetAuthAttempts();
+
+        $subscription->setEndedAt($subscription->getCancelledAt());
     }
 
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int
