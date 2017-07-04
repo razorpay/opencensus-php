@@ -67,9 +67,7 @@ export default class HomeContainer extends Component {
   }
 
   switchToNewUI = () => {
-    return this.props.enableOrDisableNewui({
-      user: this.props.user,
-    });
+    return this.props.enableOrDisableNewui(true);
   };
 
   render() {

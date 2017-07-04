@@ -83,7 +83,7 @@ export default class OnboardingCard extends Component {
                 Your Razorpay account is created. Now, you can browse through the dashboard or do the following:
               </p>
               <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-6" style={{ paddingRight: 0 }}>
                   <ActivationStep user={user} />
                 </div>
 
