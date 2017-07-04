@@ -49,8 +49,23 @@ class TerminalRuleFilterTest extends TestCase
     }
 
     /**
-     * Tests different permuations and combinations of rule filters
-     * @return [type] [description]
+     * Tests different permuations and combinations of rule filters within a group
+     * and between groups. Within a group let's assume there are 2 rules
+     * Rsel - A select filter rule
+     * Rrej - A reject filter rule
+     * We also have 2 terminals T1 and T2 representing the available terminals in a group
+     * Below table represents the tests and expected outcomes for within a group
+     * +---------------------------+---------------------------+-------------------+----------------------------------------------------------+
+     * |           Rsel            |           Rrej            |      Output       |                         Comments                         |
+     * +---------------------------+---------------------------+-------------------+----------------------------------------------------------+
+     * | T1                        |                           | T1                | Only 1 terminal matches a select rule                    |
+     * |                           | T1                        | T2                | Only 1 terminal matches a reject rule                    |
+     * | T1 T2                     |                           | T1 T2             | Both terminals match select rules                        |
+     * |                           | T1 T2                     | No terminal found | Both terminals match reject rules                        |
+     * | T1                        | T2                        | T1                | 1 terminal matches select rule and 1 matches reject rule |
+     * | T1 != Rsel and T2 != Rsel |                           | No terminal found | No terminals match the select rule defined in a group    |
+     * |                           | T1 != Rrej and T2 != Rrej | T1 T2             | No terminals match the reject rules defined              |
+     * +---------------------------+---------------------------+-------------------+----------------------------------------------------------+
      */
     public function testRuleFilterCombinations()
     {

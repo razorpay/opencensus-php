@@ -18,6 +18,43 @@ return [
                     'filter_type' => 'select',
                     'group'       => 'A',
                 ],
+            ],
+            'expected_terminal_ids' => [
+                '1000HdfcShared',
+            ],
+        ],
+        [
+            'payment_options' => [
+                'method' => Method::CARD
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'hdfc',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'A',
+                ],
+            ],
+            'expected_terminal_ids' => [
+                '1000AxisMigsTl',
+                '1000SharpTrmnl',
+            ],
+        ],
+        [
+            'payment_options' => [
+                'method' => Method::CARD
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'hdfc',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'A',
+                ],
                 [
                     'method'      => 'card',
                     'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
@@ -139,7 +176,7 @@ return [
             ],
         ],
 
-        // rules across groups
+        // Test rule filter combinations across different groups
         // one of the terminals selected by one group is rejected by other group
         [
             'payment_options' => [
@@ -304,6 +341,7 @@ return [
                 '1000SharpTrmnl',
             ],
         ],
+        // Terminals selected by 1 group don't match rejection rules defined by other group
         [
             'payment_options' => [
                 'method' => Method::CARD
