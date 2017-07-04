@@ -133,6 +133,10 @@ var app = angular
           url: '/pricing',
           templateUrl: 'tpl/admin/app_pricing.html',
         })
+        .state('app.pricingplan', {
+          url: '/pricing/new',
+          templateUrl: 'tpl/admin/app_add_pricing.html',
+        })
         .state('app.pricingdetail', {
           url: '/pricing/:id',
           templateUrl: 'tpl/admin/app_pricing_detail.html',
