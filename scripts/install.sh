@@ -24,4 +24,9 @@ echo  "DB Migrate"
 cd "$API_INSTALL_DIR" && php artisan migrate --force && php artisan migrate --database=test --force
 
 # Restart all queue worker processes
+echo "Queue Restart"
 cd "$API_INSTALL_DIR" && php artisan queue:restart
+
+# Clear and Re-cache Routes
+echo "Route Cache"
+cd "$API_INSTALL_DIR" && php artisan route:cache

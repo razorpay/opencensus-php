@@ -10,6 +10,11 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 class RouteServiceProvider extends ServiceProvider
 {
     /**
+     * @var Route
+     */
+    protected $route;
+
+    /**
      * This namespace is applied to your controller routes.
      *
      * In addition, it is set as the URL generator's root namespace.
@@ -62,7 +67,7 @@ class RouteServiceProvider extends ServiceProvider
         /**
          * Following params are as explained:
          * - prefix: v1 - All the routes defined have prefix v1
-         * - namepsace - All the routes defined have a controller and action.
+         * - namespace - All the routes defined have a controller and action.
          *     We only define the class name of the controller, the namespace
          *     is derived from this parameter.
          * - middleware:auth - All routes have Authenticate middleware applied
