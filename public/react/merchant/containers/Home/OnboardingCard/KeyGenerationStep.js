@@ -79,9 +79,7 @@ export default class KeyGenerationStep extends Component {
       <div class="Onboarding__Step">
         <div class="media">
           <div class="media-left">
-            <a href="#">
-              <img class="media-object" />
-            </a>
+            <img class="media-object" src="styles/assets/integration.svg" />
           </div>
           {isLoading
             ? <div class="media-body">

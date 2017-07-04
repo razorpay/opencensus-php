@@ -5,9 +5,7 @@ export default ({ user }) => {
     <div class="Onboarding__Step">
       <div class="media">
         <div class="media-left">
-          <a href="#">
-            <img class="media-object" />
-          </a>
+          <img class="media-object" src="styles/assets/first-payment.svg" />
         </div>
         <div class="media-body">
           <div class="media-heading">

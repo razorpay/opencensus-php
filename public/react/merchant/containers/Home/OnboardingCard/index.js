@@ -42,9 +42,10 @@ export default class OnboardingCard extends Component {
     return (
       <div class="media onboarding-card">
         <div class="media-left">
-          <a href="#">
-            <img class="media-object" />
-          </a>
+          <img
+            class="media-object"
+            src="styles/assets/onboarding-illustration.png"
+          />
         </div>
 
         {this.state.isFirstStep
