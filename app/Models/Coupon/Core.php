@@ -4,11 +4,8 @@ namespace RZP\Models\Coupon;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Promotion;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core

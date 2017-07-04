@@ -3,7 +3,6 @@
 namespace RZP\Models\Coupon;
 
 use RZP\Models\Base;
-use RZP\Base\JitValidator;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository

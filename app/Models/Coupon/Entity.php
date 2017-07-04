@@ -5,7 +5,6 @@ namespace RZP\Models\Coupon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
-use RZP\Constants\Entity as PublicEntity;
 
 class Entity extends Base\PublicEntity
 {

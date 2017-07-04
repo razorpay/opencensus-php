@@ -3,7 +3,6 @@
 namespace RZP\Models\Coupon;
 
 use RZP\Exception;
-use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
