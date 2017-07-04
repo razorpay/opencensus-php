@@ -252,23 +252,23 @@ return [
         // Customers
         'customer_fetch_multiple'           => [
             'url'       => 'customers',
-            'routeName' => 'customer_fetch_all'
+            'routeName' => 'customer_read'
         ],
         'customer_fetch_by_id'           => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_fetch'
+            'routeName' => 'customer_read'
         ],
         'customer_create'                   => [
             'url'       => 'customers',
-            'routeName' => 'customer_create'
+            'routeName' => 'customer_write'
         ],
         'customer_update'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_edit'
+            'routeName' => 'customer_write'
         ],
         'customer_delete'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_delete'
+            'routeName' => 'customer_write'
         ],
 
         // Items
