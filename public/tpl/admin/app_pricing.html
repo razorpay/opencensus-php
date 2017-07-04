@@ -4,7 +4,7 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md" ng-controller="PricingsCtrl">
+<div class="wrapper-md" ng-controller="PricingsCtrl" ng-init="generateTable()">
   <div class="text-center">
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
   </div>
