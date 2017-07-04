@@ -297,8 +297,9 @@ class Gateway extends Base\Gateway
 
         if ($verifyRefundResponse === null)
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            // FirstData is returning an an invalid response, i.e. success flag
+            // set to false, implying that the id does not exist on their end
+            return false;
         }
 
         $xmlResponse  = $verifyRefundResponse->children('a1', true)
