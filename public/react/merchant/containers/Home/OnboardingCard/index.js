@@ -103,7 +103,7 @@ export default class OnboardingCard extends Component {
                 ? <div style={{ marginTop: '12px' }}>
                     You may now
                     {' '}
-                    <a>close this card</a>
+                    <a onClick={this.closeOnboarding}>close this card</a>
                     . You can access the
                     {' '}
                     <a>documentation</a>
