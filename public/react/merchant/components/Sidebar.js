@@ -114,6 +114,8 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Subscriptions"
                     icon="icon icon-refresh"
+                    notMyRole="sellerapp support"
+                    featureEnabled="subscriptions"
                     to={routes.subscriptions}
                   />
 
@@ -221,6 +223,14 @@ export default class Sidebar extends Component {
                     label="Invoices"
                     icon="fa fa-money text-primary"
                     to={routes.invoices}
+                  />
+
+                  <MainNavLink
+                    label="Subscriptions"
+                    icon="icon icon-refresh"
+                    notMyRole="sellerapp support"
+                    featureEnabled="subscriptions"
+                    to={routes.subscriptions}
                   />
 
                   <MainNavLink
