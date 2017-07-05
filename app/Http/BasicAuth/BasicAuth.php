@@ -1013,11 +1013,19 @@ class BasicAuth
 
     public function getAccessTokenId()
     {
+        if (isset($this->accessTokenId) === false)
+        {
+            return null;
+        }
         return $this->accessTokenId;
     }
 
     public function getClientId()
     {
+        if (isset($this->clientId) === false)
+        {
+            return null;
+        }
         return $this->clientId;
     }
 
