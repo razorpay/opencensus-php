@@ -64,6 +64,10 @@ class BasicAuth
      */
     protected $app;
 
+    protected $oauthClientId;
+
+    protected $accessTokenId;
+
     /**
      * Key and secret sent by client for
      * basic auth.
@@ -1013,20 +1017,12 @@ class BasicAuth
 
     public function getAccessTokenId()
     {
-        if (isset($this->accessTokenId) === false)
-        {
-            return null;
-        }
         return $this->accessTokenId;
     }
 
-    public function getClientId()
+    public function getOAuthClientId()
     {
-        if (isset($this->clientId) === false)
-        {
-            return null;
-        }
-        return $this->clientId;
+        return $this->oauthClientId;
     }
 
     public function getMerchantIdOfKey()
@@ -1088,9 +1084,9 @@ class BasicAuth
         $this->accessTokenId = $tokenId;
     }
 
-    public function setClientId(string $clientId)
+    public function setOAuthClientId(string $oauthClientId)
     {
-        $this->clientId = $clientId;
+        $this->oauthClientId = $oauthClientId;
     }
 
     public function setMerchant($merchant)

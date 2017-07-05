@@ -64,7 +64,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->serverData['access_token_id'] = $this->app['basicauth']->getAccessTokenId();
 
-        $this->serverData['client_id'] = $this->app['basicauth']->getClientId();
+        $this->serverData['oauth_client_id'] = $this->app['basicauth']->getOAuthClientId();
 
         $this->serverData += $this->app['basicauth']->getDashboardHeaders();
     }

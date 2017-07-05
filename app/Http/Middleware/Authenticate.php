@@ -180,7 +180,7 @@ class Authenticate
 
         $this->ba->setAccessTokenId($tokenId);
 
-        $this->ba->setClientId($clientId);
+        $this->ba->setOAuthClientId($clientId);
     }
 
     protected function checkScopes(array $routeScopes) : bool
