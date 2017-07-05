@@ -44,7 +44,7 @@ trait NotesTrait
     {
         $notesArray = json_decode($notes, true);
 
-        if ($notesArray === '')
+        if (empty($notesArray) === true)
         {
             return new Notes();
         }

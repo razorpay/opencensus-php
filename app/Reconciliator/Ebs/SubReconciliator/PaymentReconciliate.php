@@ -153,4 +153,29 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return $referenceNumber;
         }
     }
+
+    /**
+     * Checks if payment amount is equal to amount from row
+     * raises alert in case of mismatch
+     *
+     * @param array $row
+     * @return bool
+     */
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Payment amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
 }

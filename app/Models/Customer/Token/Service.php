@@ -6,7 +6,10 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
+use RZP\Models\Customer\GatewayToken;
 use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -20,8 +23,11 @@ class Service extends Base\Service
     /**
      * Note that this is on internal auth and not private auth
      * Adds token for a customer
-     * @param string customerId
-     * @param array customer token params
+     *
+     * @param string $id customer ID
+     * @param array  $input token params
+     *
+     * @return array
      */
     public function add($id, $input)
     {
@@ -34,9 +40,10 @@ class Service extends Base\Service
 
     /**
      * Edit an existing token for local customer
-     * @param  string customer_id
-     * @param  entity token
-     * @param  array  token edit params
+     * @param  string $id customer_id
+     * @param  entity $tokenId token
+     * @param  array  $input token edit params
+     *
      * @return array  edited token
      */
     public function edit($id, $tokenId, $input)
@@ -53,8 +60,8 @@ class Service extends Base\Service
     /**
      * fetch token for local customer
      *
-     * @param  string customer_id
-     * @param  string token id
+     * @param  string $id customer_id
+     * @param  string $tokenId token id
      * @return entity token
      */
     public function fetch($id, $tokenId)
@@ -68,7 +75,9 @@ class Service extends Base\Service
 
     /**
      * fetch tokens for local customer
-     * @param  string $customerId
+     *
+     * @param string $id customer ID
+     *
      * @return entity tokens
      */
     public function fetchMultiple($id)
@@ -83,6 +92,7 @@ class Service extends Base\Service
 
     /**
      * fetch tokens for an app_token (global customer)
+     *
      * @return entity tokens
      */
     public function fetchTokensForGlobalCustomer()
@@ -93,8 +103,6 @@ class Service extends Base\Service
 
         if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appTokenId);
-
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
             $tokens = $this->core->fetchTokensByCustomer($app->customer);
@@ -118,18 +126,107 @@ class Service extends Base\Service
      */
     public function deleteTokenForGlobalCustomer($token)
     {
-        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
-        if ($appToken !== null)
+        if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appToken);
-
-            $app = (new AppToken\Core)->getAppByAppTokenId($appToken, $this->merchant);
+            $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
             return $this->deleteTokenForCustomer($token, $app->customer);
         }
 
         return null;
+    }
+
+    public function migrateToGatewayTokens(array $input = [])
+    {
+        $failureCount = $total = $successCount = 0;
+        $failures = [];
+
+        if (empty($input['token_ids']) === false)
+        {
+            $tokens = $this->repo->token->findMany($input['token_ids']);
+        }
+        else
+        {
+            //
+            // Hardcoding these for now here, just to ensure
+            // we don't migrate wrong stuff by mistake.
+            //
+            $input[Entity::METHOD] = 'card';
+            $input[Entity::RECURRING] = true;
+
+            $tokens = $this->repo->token->fetch($input);
+        }
+
+        $total = $tokens->count();
+
+        $this->trace->info(
+            TraceCode::TOKENS_FETCHED_COUNT_FOR_MIGRATE,
+            [
+                'input' => $input,
+                'count' => $total,
+            ]);
+
+        foreach ($tokens as $token)
+        {
+            $this->trace->info(TraceCode::TOKEN_BEING_MIGRATED, $token->toArrayPublic());
+
+            if (($token->isRecurring() === false) or ($token->getMethod() !== 'card'))
+            {
+                throw new Exception\LogicException(
+                    'Only card and recurring tokens can be migrated',
+                    null,
+                    [
+                        $token->toArrayPublic()
+                    ]);
+            }
+
+            try
+            {
+                $gatewayTokenInput = [
+                    GatewayToken\Entity::RECURRING      => $token->isRecurring(),
+                    GatewayToken\Entity::ACCESS_TOKEN   => $token->getGatewayToken(),
+                    GatewayToken\Entity::REFRESH_TOKEN  => $token->getGatewayToken2(),
+                ];
+
+                $gatewayToken = (new GatewayToken\Entity)->build($gatewayTokenInput);
+
+                $gatewayToken->token()->associate($token);
+                $gatewayToken->merchant()->associate($token->merchant);
+                $gatewayToken->terminal()->associate($token->terminal);
+
+                $this->repo->saveOrFail($gatewayToken);
+
+                $this->trace->info(TraceCode::GATEWAY_TOKEN_MIGRATED, $gatewayToken->toArray());
+
+                $successCount += 1;
+            }
+            catch(\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::DEBUG,
+                    TraceCode::TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED,
+                    [
+                        'token' => $token->toArrayPublic(),
+                    ]);
+
+                $failureCount += 1;
+                $failures[] = $token->getId();
+
+                continue;
+            }
+        }
+
+        $summary = [
+            'total'         => $total,
+            'success_count' => $successCount,
+            'failure_count' => $failureCount,
+            'failures'      => $failures,
+        ];
+
+        return $summary;
     }
 
     protected function deleteTokenForCustomer($tokenId, $customer)

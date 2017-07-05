@@ -19,8 +19,7 @@ class Authenticate
     /**
      * Create a new filter instance.
      *
-     * @param  Guard  $auth
-     * @return void
+     * @param Application $app
      */
     public function __construct(Application $app)
     {

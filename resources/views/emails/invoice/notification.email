@@ -4,10 +4,23 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width"/>
     @php
-        $themeBgColor = $merchant['brand_color'];
+        $themeBgColor   = $merchant['brand_color'];
         $themeFontColor = $merchant['brand_text_color'];
-        $themed = 'background-color: ' . $themeBgColor . '; color: ' . $merchant['brand_text_color'] . ';';
+        $themed         = 'background-color: ' . $themeBgColor . '; color: ' . $merchant['brand_text_color'] . ';';
+
         $is_test_mode = $is_test_mode ?? false;
+
+        $amountPaid = ($invoice['amount_paid']);
+
+        if (isset($payment))
+        {
+            $amountPaid += $payment['adjusted_amount'];
+        }
+
+        $amountDue = $invoice['amount'] - $amountPaid;
+
+        $amountPaidFormatted = number_format($amountPaid / 100, 2);
+        $amountDueFormatted  = number_format($amountDue / 100, 2);
     @endphp
   </head>
   <body>
@@ -51,7 +64,7 @@
                     padding-bottom: 12px;
                     font-size: 12px;
                 ">
-                    This {{$invoice['type_label']}} is created in <b style="color: #8a6d3b;">Test Mode</b>. Only test payments can be made for this invoice.
+                    This {{$invoice['type_label']}} is created in <b style="color: #8a6d3b;">Test Mode</b>. Only test payments can be made for this {{$invoice['type_label']}}.
                 </td>
                 <td class="last" style="
                     background-color: {{ $merchant['brand_color'] }};
@@ -188,17 +201,32 @@
                         <tbody>
                             <tr>
                                 <td style="background-color: #fff;">
-                                    <label>AMOUNT</label>
+                                    <label>AMOUNT PAID</label>
                                     <div style="font-weight: bold; font-size: 18px;">
-                                        {{$invoice['currency']}} {{$invoice['amount_formatted']}}
+                                        {{$invoice['currency']}} {{$amountPaidFormatted}}
                                     </div>
                                 </td>
-                                <td class="text-right" style="
+                                <td rowspan="2" class="text-right" style="
                                     background-color: #fff;
                                 ">
                                     @yield("footerCTA")
                                 </td>
                             </tr>
+                            @if ($invoice['partial_payment'])
+                            <tr>
+                                <td style="background-color: #fff;">
+                                    <label>AMOUNT DUE</label>
+                                    <div style="font-weight: bold; font-size: 18px;">
+                                        {{$invoice['currency']}} {{$amountDueFormatted}}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <span>Partial Payments are enabled for this {{ strtolower($invoice['type_label']) }} </span>
+                                </td>
+                            </tr>
+                            @endif
                         </tbody>
                     </table>
                 </td>

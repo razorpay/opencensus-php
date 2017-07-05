@@ -105,6 +105,28 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function clearMockFunction()
+    {
+        $this->mockServerContentFunction(function(& $input)
+        {
+        });
+    }
+
+    protected function getErrorInVerifyRefund()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                // Simulating a random error from FirstData
+                // Can't use ERROR_ACTION_RESPONSE, because VerifyRefund
+                // interprets that as a refund failed, and retries.
+                // We just want to throw an error somehow.
+                $content = SoapWrapper::ERROR_SOAP_SKELETON;
+            }
+        });
+    }
+
     protected function setInvalidAuthField($field)
     {
         $server = $this->mockServer()

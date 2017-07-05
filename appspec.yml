@@ -2,12 +2,12 @@ version: 0.0
 os: linux
 
 hooks:
-  BeforeInstall:
-    - location: scripts/install.sh
-      timeout: 300
-      runas: ubuntu
   ApplicationStop:
     - location: scripts/deregister_from_elb.sh
+      timeout: 300
+      runas: ubuntu
+  BeforeInstall:
+    - location: scripts/install.sh
       timeout: 300
       runas: ubuntu
   ApplicationStart:

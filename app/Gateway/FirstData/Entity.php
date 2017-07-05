@@ -69,6 +69,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ENDPOINT_TRANSACTION_ID);
     }
 
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
     // ----------------------- Setters ---------------------------------------------
 
     public function setTdate($tdate)

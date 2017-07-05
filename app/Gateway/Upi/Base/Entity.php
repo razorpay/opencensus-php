@@ -17,6 +17,7 @@ class Entity extends Base\Entity
     const CONTACT               = 'contact';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
+    const NPCI_REFERENCE_ID     = 'npci_reference_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
     const RECEIVED              = 'received';
@@ -27,7 +28,7 @@ class Entity extends Base\Entity
 
     protected $entity = 'upi';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
         self::ACTION,
         self::AMOUNT,
@@ -39,14 +40,15 @@ class Entity extends Base\Entity
         self::NAME,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
-        self::PAYMENT_ID,
+        self::NPCI_REFERENCE_ID,
         self::REFUND_ID,
+        self::PAYMENT_ID,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ACTION,
         self::AMOUNT,
         self::ACQUIRER,
@@ -57,16 +59,17 @@ class Entity extends Base\Entity
         self::NAME,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
+        self::NPCI_REFERENCE_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
-    );
+    ];
 
-    protected $casts = array(
-        'amount'  =>  'int',
-    );
+    protected $casts = [
+        'amount' => 'int'
+    ];
 
     protected static $generators = [
         self::PROVIDER,
@@ -103,6 +106,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
+    public function getNpciReferenceId()
+    {
+        return $this->getAttribute(self::NPCI_REFERENCE_ID);
+    }
+
+    public function getRefundId()
+    {
+        return $this->getAttribute(self::REFUND_ID);
+    }
+
     public function extractProviderFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
@@ -117,7 +130,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
-    protected function generateProvider(& $input)
+    protected function generateProvider(array &$input)
     {
         $vpa = $input[self::VPA];
 

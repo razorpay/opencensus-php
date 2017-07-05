@@ -555,7 +555,10 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        if (isset($content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]) === true)
+        $data = $content[ResponseFields::RESPONSE];
+
+        if ((isset($data[ResponseFields::CHECKPAYMENTSTATUS]) === true) and
+            ($data[ResponseFields::RESPONSE_HEADER][ResponseFields::STATUS] === ResponseCode::SUCCESS))
         {
             $this->verifiedUsingCheckPaymentStatus = true;
         }

@@ -49,7 +49,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $columnRefundAmount = null;
 
-        foreach ($self::COLUMN_REFUND_AMOUNT as $cra)
+        foreach (self::COLUMN_REFUND_AMOUNT as $cra)
         {
             if (isset($row[$cra]) === true)
             {
@@ -74,5 +74,30 @@ class RefundReconciliate extends Base\RefundReconciliate
         $paymentAmount = floatval($row[$columnRefundAmount]) * 100;
 
         return abs($paymentAmount);
+    }
+
+    /**
+     * Checks if refund amount is equal to amount from row
+     * raises alert in case of mismatch
+     *
+     * @param array $row
+     * @return bool
+     */
+    protected function validateRefundAmountEqualsReconAmount(array $row)
+    {
+        if ($this->refund->getAmount() !== $this->getRefundAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Refund amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

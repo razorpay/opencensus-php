@@ -31,6 +31,8 @@ class EsRepository extends \Razorpay\Spine\Repository
     // Some common query params while searching in ES
     const SKIP             = 'skip';
     const COUNT            = 'count';
+    const FROM             = 'from';
+    const TO               = 'to';
 
     /**
      * A fetch param which holds the query string which gets searched in ES.
@@ -42,13 +44,6 @@ class EsRepository extends \Razorpay\Spine\Repository
      * (auto-complete use case) or full model serialization by MySQL db call is required.
      */
     const SEARCH_HITS      = 'search_hits';
-
-    /**
-     * @deprecated - Will not be required later and will be removed.
-     *
-     * @var string
-     */
-    protected static $table;
 
     protected $esDao;
     protected $trace;
@@ -77,9 +72,9 @@ class EsRepository extends \Razorpay\Spine\Repository
     /**
      * Constructor
      *
-     * @param string|null $entity
+     * @param string $entity
      */
-    public function __construct(string $entity = null)
+    public function __construct(string $entity)
     {
         parent::__construct();
 
@@ -89,20 +84,21 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->esDao = new Base\EsDao;
 
-        // If entity name is set as part of constructor arg, get corresponding
-        // index name from config and assign it to instance var and also set the
-        // same for es dao object.
-        if ($entity !== null)
-        {
-            $this->indexName = $app['config']->get(
-                sprintf('database.es_%s.%s', $entity, $app['rzp.mode']));
+        $esEntityIndexPrefix = $app['config']->get('database.es_entity_index_prefix');
 
-            // TODO: Condition can be remove later, handles old flow.
-            if ($this->indexName !== null)
-            {
-                $this->esDao->setIndexNameByValue($this->indexName);
-            }
-        }
+        // Index name is of following format:
+        // <prefix><entity>_<mode>, Eg. 'delta_api_invoice_live'.
+
+        $indexName = $esEntityIndexPrefix . $entity . '_' . $app['rzp.mode'];
+
+        $this->setIndexNameByValue($indexName);
+    }
+
+    public function setIndexNameByValue(string $indexName)
+    {
+        $this->indexName = $indexName;
+
+        $this->esDao->setIndexNameByValue($indexName);
     }
 
     public function getFields(): array
@@ -121,105 +117,6 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
         return array_merge($this->fields, [self::QUERY, self::SEARCH_HITS]);
     }
-
-    // DEPRECATED METHODS STARTS ----------------------------------------------
-    // TODO: Needs to be cleaned once old entities are migrated to new generic flow.
-
-    public function fetch($params, $merchantId)
-    {
-        $entities = new Base\PublicCollection;
-
-        if (isset($params['notes']) === true)
-        {
-            $entities = $this->fetchNotes(static::$table, $params, $merchantId);
-        }
-
-        return $entities;
-    }
-
-    public function fetchNotes($typeName, $params, $merchantId)
-    {
-        $params['merchant_id'] = $merchantId;
-
-        $entities = new Base\PublicCollection;
-
-        // Returns all the entity IDs matching the notes search.
-        $entityIds = $this->esDao->getNotes($typeName, $params);
-
-       if (empty($entityIds) === false)
-        {
-            // Get the entity data from MySQL.
-            $entities = $this->newQuery()->findOrFailPublic($entityIds);
-
-            // MySQL should contain all entities present in ES.
-            if ($entities->count() !== count($entityIds))
-            {
-                throw new Exception\ServerErrorException(
-                    'Did not find corresponding entity data in MySQL' ,
-                    ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
-                    ['es_entity_ids' => $entityIds]);
-            }
-        }
-
-        return $entities;
-    }
-
-    // Currently storing only notes and merchant ID.
-    public function storeEntity($typeName, $entityArray, $esDao = null)
-    {
-        $params['notes'] = $entityArray['notes'];
-        $params['merchant_id'] = $entityArray['merchant_id'];
-        $params['entity_id'] = $entityArray['id'];
-
-        $esDao->storeNotes($typeName, $params);
-    }
-
-    // Called through queue
-    // Called through the entity repository
-    public function fireStoreEntity($job, $data)
-    {
-        $esType = $data['es_type'];
-        $entityArray = $data['entity'];
-        $mode = $data['mode'];
-
-        try
-        {
-            $this->trace->info(TraceCode::ES_SAVE_REQUEST, $data);
-
-            // Because EsDao is being instantiated in queue, app's rzp.mode
-            // won't be set and so explicitly passing $mode as argument.
-
-            $esDao = new Base\EsDao($mode);
-
-            $this->storeEntity($esType, $entityArray, $esDao);
-
-            $job->delete();
-        }
-        catch (\Exception $ex)
-        {
-            $data['job_attempts'] = $job->attempts();
-
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::ES_SAVE_FAILED,
-                [
-                    $data
-                ]
-            );
-
-            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
-            {
-                $job->delete();
-            }
-            else
-            {
-                $job->release(self::JOB_RELEASE_WAIT);
-            }
-        }
-    }
-
-    // DEPRECATED METHODS ENDS ------------------------------------------------
 
     /**
      * Makes search in ES on this model with given params.
@@ -276,18 +173,14 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     public function buildQueryAndGetEsRequestParams(array $params): array
     {
-        // Extracts from, size and source value from params and unset them.
-        $from   = ($params[self::SKIP]) ?? 0;
-        $size   = ($params[self::COUNT]) ?? 10;
-        $source = boolval(($params[self::SEARCH_HITS]) ?? false);
-
-        unset($params[self::SKIP]);
-        unset($params[self::COUNT]);
-        unset($params[self::SEARCH_HITS]);
-
         // Initializes query to empty array, which follows formation of the same
         // using methods defined in QueryBuilder.
+
         $query = [];
+
+        list($from, $size, $source) = $this->extractQueryMetaFromParams($params);
+
+        $this->buildQueryForFromAndToIfApplies($query, $params);
 
         foreach ($params as $field => $value)
         {
@@ -303,6 +196,8 @@ class EsRepository extends \Razorpay\Spine\Repository
             }
         }
 
+        $sort = $this->getSortParameter();
+
         return [
             'index' => $this->indexName,
             'type'  => $this->indexName,
@@ -311,6 +206,7 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'from'    => $from,
                 'size'    => $size,
                 'query'   => $query,
+                'sort'    => $sort,
             ],
         ];
     }
@@ -345,7 +241,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         if ($error === true)
         {
-            $this->trace->debug(
+            $this->trace->error(
                 TraceCode::ES_BULK_UPDATE_FAILED,
                 [
                     'params' => $params,

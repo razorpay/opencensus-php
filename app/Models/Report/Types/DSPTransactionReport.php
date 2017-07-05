@@ -4,11 +4,7 @@ namespace RZP\Models\Report\Types;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Base\JitValidator;
-use RZP\Models\Transaction;
+use RZP\Models\FileStore;
 use RZP\Constants\Entity as E;
 use RZP\Mail\Report\DSPReport as DSPMail;
 
@@ -57,22 +53,13 @@ class DSPTransactionReport extends BasicEntityReport
 
     const BILLDESK = 'billdesk';
 
-    /**
-     * Report for DSP Blackrock Merchant
-     * @param  array  $input ['day'         => 'yesterday/today',
-     *                        'merchant_id' => 'Merchant Id'
-     *                        'email'       => <for testing purpose only>]
-     * @return [type]        [description]
-     */
+    protected $transactionCount = 0;
+
     public function getReport(array $input)
     {
-        $merchantId = $input['merchant_id'];
+        $email = $input['email'] ?? $this->merchant->getEmail();
 
         $this->setDefaults();
-
-        $this->setMerchant($merchantId);
-
-        $email = $input['email'] ?? $this->merchant->getEmail();
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -80,15 +67,31 @@ class DSPTransactionReport extends BasicEntityReport
 
         $fullpath = $this->writeDataToCsv($input, $filename);
 
-        $reportingMail = new DSPMail($email, $fullpath);
+        $s3File = $this->createFileAndSave($fullpath, $filename);
 
-        Mail::queue($reportingMail);
+        $this->unlinkFile($fullpath);
 
-        return [
-            'merchantId' => $merchantId,
-            'email'      => $email,
-            'file'       => $fullpath
-        ];
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+
+        $shouldSendMail = false;
+
+        if (isset($input['mail']) === true)
+        {
+            $shouldSendMail = ($input['mail'] === '1');
+        }
+
+        if ($shouldSendMail === true)
+        {
+            $filenameWithExtension = $filename . '.csv';
+
+            $data = $this->createMailData($filenameWithExtension, $signedUrl, $input);
+
+            $reportingMail = new DSPMail($data);
+
+            Mail::queue($reportingMail);
+        }
+
+        return [ 'url' => $signedUrl ];
     }
 
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
@@ -140,12 +143,19 @@ class DSPTransactionReport extends BasicEntityReport
                 self::TRANSACTION_DATE      => $this->getTxnDate($txn),
                 self::AMOUNT                => $txn->getAmount(),
                 self::STATUS                => 'SUCCESS',
-                self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn),
-                self::SETTLED               => $txn->isSettled() ? 'True' : 'False'
-
+                self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn)
             ];
 
             $data[] = $row;
+        }
+
+        if (count($data) === 0)
+        {
+            $data[] = $this->createDefaultFile();
+        }
+        else
+        {
+            $this->transactionCount = count($data);
         }
 
         return $data;
@@ -257,37 +267,62 @@ class DSPTransactionReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $from = $to = null;
 
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
-
+        // If day is set, `from` and `to` are of that day start and end only.
+        // If day is not set, month should be set. `from` and `to` will be
+        // the first day and the last day of the month.
         if (isset($input['day']) === true)
         {
-            $day = $input['day'];
-
-            if ($day === 'today')
+            // this is needed for cron input as we can't pass the exact day from
+            // cron
+            if ($input['day'] === 'today')
             {
-                $from = Carbon::now('Asia/Kolkata')
-                              ->startOfDay()
-                              ->timestamp;
-
-                $to = Carbon::now('Asia/Kolkata')
-                            ->timestamp;
+                $date = Carbon::today('Asia/Kolkata')->startOfDay();
             }
-            else if ($day === 'yesterday')
+            else if ($input['day'] === 'yesterday')
             {
-                $from = Carbon::now('Asia/Kolkata')
-                               ->startOfDay()
-                               ->subDay()
-                               ->timestamp;
-
-                $to = Carbon::now('Asia/Kolkata')
-                            ->startOfDay()
-                            ->timestamp - 1;
+                $date = Carbon::yesterday('Asia/Kolkata')->startOfDay();
             }
+            else
+            {
+                $this->validateInput($input);
+
+                $day = (int) $input['day'];
+                $month = (int) $input['month'];
+                $year = (int) $input['year'];
+
+                $date = Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata')
+                              ->startOfDay();
+            }
+
+            $from = $date->timestamp;
+            $to = $date->addDay()->timestamp - 1;
+        }
+        else if (isset($input['month']) === true)
+        {
+            $this->validateInput($input);
+
+            $month = (int) $input['month'];
+            $year = (int) $input['year'];
+
+            assertTrue($month > 0);
+            assertTrue($month <= 12);
+
+            $from = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                          ->startOfDay()
+                          ->timestamp;
+
+            $to = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                        ->endOfMonth()
+                        ->timestamp;
         }
         else
         {
+            $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+
+            $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+
             if (isset($input['from']) === true)
             {
                 $from = $input['from'];
@@ -300,5 +335,58 @@ class DSPTransactionReport extends BasicEntityReport
         }
 
         return [$from, $to];
+    }
+
+    protected function createDefaultFile()
+    {
+        return [
+            self::BILLER_ID             => '',
+            self::BANK_ID               => '',
+            self::BANK_REF_NUMBER       => '',
+            self::PGI_REF_NUMBER        => '',
+            self::REF_1                 => '',
+            self::REF_2                 => '',
+            self::REF_3                 => '',
+            self::REF_4                 => '',
+            self::REF_5                 => '',
+            self::REF_6                 => '',
+            self::REF_7                 => '',
+            self::REF_8                 => '',
+            self::ACCOUNT_NUMBER        => '',
+            self::ACCOUNT_TYPES         => '',
+            self::TRANSACTION_DATE      => '',
+            self::AMOUNT                => '',
+            self::STATUS                => '',
+            self::CREDIT_ACCOUNT_NUMBER => ''
+        ];
+    }
+    protected function createMailData($filename, $signedUrl, $input)
+    {
+        list($from, $to) = $this->getTimestamps($input);
+
+        $fdate = Carbon::createFromTimestamp($from, 'Asia/Kolkata')->format('Y-m-d');
+
+        $tdate = Carbon::createFromTimestamp($to, 'Asia/Kolkata')->format('Y-m-d');
+
+        $fdateTime = Carbon::createFromTimestamp($from, 'Asia/Kolkata')->format('Y-m-d H:i');
+
+        $tdateTime = Carbon::createFromTimestamp($to, 'Asia/Kolkata')->format('Y-m-d H:i');
+
+        if ((isset($input['day']) === true) and
+            ($input['day'] === 'today'))
+        {
+            // $from and $to would be 00:00 to 23:59. In the message body we need to send time as 12:59
+            $tdateTime = Carbon::create(null, null, null, 12, 59, 59, 'Asia/Kolkata')->format('Y-m-d H:i');
+        }
+
+        $data = [
+            'subject'    => 'Razorpay recon report - ' . $fdate .' to ' . $tdate,
+            'body'       => 'Razorpay recon report (Mode: ' . strtoupper($this->mode) .') From ' . $fdateTime .' To ' . $tdateTime . '<br>Total Transaction Count = ' .$this->transactionCount,
+            'signed_url' => $signedUrl,
+            'filename'   => $filename,
+            'emails'     => $input['email']
+        ];
+
+        return $data;
     }
 }

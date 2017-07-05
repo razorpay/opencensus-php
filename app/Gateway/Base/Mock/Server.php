@@ -18,6 +18,8 @@ class Server extends Base\Core
 
     protected $mockRequest;
 
+    protected $action;
+
     /**
      * Api Route instance
      *

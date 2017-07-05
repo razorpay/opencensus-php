@@ -89,6 +89,16 @@ class Terminal extends Base
         return $term;
     }
 
+    public function disableTerminal($id = '1RecurringTerm')
+    {
+        return $this->fixtures->edit('terminal', $id, ['enabled' => false]);
+    }
+
+    public function enableTerminal($id = '1RecurringTerm')
+    {
+        return $this->fixtures->edit('terminal', $id, ['enabled' => true]);
+    }
+
     public function createEbsTerminal(array $attributes = [])
     {
         $attributes = [
@@ -421,6 +431,11 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
+        $attributes['type'] = 3;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes['id'] = '3RecurringTerm';
         $attributes['type'] = 3;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
@@ -978,7 +993,7 @@ class Terminal extends Base
         $this->createSharedAmexTerminal($attributes);
     }
 
-    public function createSharedUpiTerminal(array $attributes)
+    public function createSharedUpiIciciTerminal(array $attributes)
     {
         $termId = Shared::UPI_ICICI_RAZORPAY_TERMINAL;
 
@@ -1007,6 +1022,27 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_openwallet',
             'shared'                    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiMindgateTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_MINDGATE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

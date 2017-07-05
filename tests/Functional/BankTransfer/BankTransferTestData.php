@@ -58,17 +58,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The payer ifsc field is required.',
-                    'field'       => 'payer_ifsc',
-                ],
+                'valid'          => false,
+                'message'        => null,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'status_code' => 200,
         ],
     ],
 

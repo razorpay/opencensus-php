@@ -2,8 +2,10 @@
 
 namespace RZP\Reconciliator\Axis;
 
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Cybersource;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -15,15 +17,35 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_RRN            = 'rrn_no';
     const COLUMN_ARN            = 'arn';
     const COLUMN_REFUND_AMOUNT  = 'txn_amount';
+    const COLUMN_ORDER_ID       = 'order_id';
+    const COLUMN_MSG_TYPE       = 'msg_type';
+    const COLUMN_MID            = 'mid';
+
+    const PREAUTH               = 'PREAUTH';
+    const CYBS                  = 'CYBS';
+
+    protected function getRefundId(array $row)
+    {
+        if ($this->isCybersource($row) === true)
+        {
+            $refundId = $this->getRefundIdForCybersource($row);
+        }
+        else
+        {
+            $refundId = $this->getRefundIdForMigs($row);
+        }
+
+        return $refundId;
+    }
 
     /**
      * Axis reconciliation files only send us the rrn which is mapped
      * to api's refund id in axis migs gateway db.
      *
      * @param array $row
-     * @return string Refund ID
+     * @return string|null Refund ID
      */
-    protected function getRefundId(array $row)
+    protected function getRefundIdForMigs(array $row)
     {
         $rrn = $row[self::COLUMN_RRN];
 
@@ -32,14 +54,83 @@ class RefundReconciliate extends Base\RefundReconciliate
             return null;
         }
 
-        $axisMigsRepo = $this->app['repo']->axis_migs;
+        $refundId = $this->repo->axis_migs->findByRrn($rrn)->getRefundId();
 
-        $refundId = $axisMigsRepo->findByRrn($rrn)->getRefundId();
+        return $refundId;
+    }
+
+    protected function getRefundIdForCybersource(array $row)
+    {
+        $refundId = null;
+
+        $orderId = $row[self::COLUMN_ORDER_ID];
+
+        $gatewayRefund = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                                                            Cybersource\Action::REFUND, $orderId);
+
+        if ($gatewayRefund !== null)
+        {
+            $refundId = $gatewayRefund->getRefundId();
+        }
 
         return $refundId;
     }
 
     protected function getPaymentId(array $row)
+    {
+        if ($this->isCybersource($row) === true)
+        {
+            $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else
+        {
+            $paymentId = $this->getPaymentIdForMigs($row);
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForMigs(array $row)
+    {
+        $paymentId = $this->getColumnPaymentId($row);
+
+        //
+        // For Cybersource payments via Axis, we don't get a payment ID
+        // in the self::COLUMN_PAYMENT_ID. We get some reference number.
+        // This usually means that it's a Cybersource payment and we have
+        // to get payment_id in a different way.
+        //
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            return null;
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForCybersource(array $row)
+    {
+        $paymentId = null;
+
+        $merchantRef = $this->getColumnPaymentId($row);
+
+        //
+        // In the refund MIS file, all the merchant_trans_refs correspond to
+        // the authorize row in the Cybersource entity, as opposed to the
+        // captured row for order_ids in payment MIS file.
+        //
+        $gatewayPayment = $this->repo->cybersource->findsSuccessfulTxnByActionAndRef(
+                                                        Cybersource\Action::AUTHORIZE, $merchantRef);
+
+        if ($gatewayPayment !== null)
+        {
+            $paymentId = $gatewayPayment->getPaymentId();
+        }
+
+        return $paymentId;
+    }
+
+    protected function getColumnPaymentId(array $row)
     {
         foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
@@ -67,5 +158,28 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
         $gatewayRefund->setArn($arn);
+    }
+
+    protected function isCybersource(array $row)
+    {
+        $msgType = $mid = null;
+
+        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        {
+            $msgType = $row[self::COLUMN_MSG_TYPE];
+        }
+
+        if (isset($row[self::COLUMN_MID]) === true)
+        {
+            $mid = $row[self::COLUMN_MID];
+        }
+
+        if ((stripos($msgType, self::PREAUTH) === true) or
+            (ends_with($mid, self::CYBS) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -70,6 +70,12 @@ class Handler extends ExceptionHandler
 
         switch (true)
         {
+            // Order should not be changed,
+            // GatewayErrorException extends RecoverableException
+            case $e instanceof GatewayErrorException:
+                $response = $this->gatewayExceptionHandler($e);
+                break;
+
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
@@ -164,6 +170,22 @@ class Handler extends ExceptionHandler
         $this->trace->info(
             TraceCode::RECOVERABLE_EXCEPTION,
             $this->getExceptionDetails($exception));
+
+        return $this->recoverableErrorResponse($this->isDebug(), $exception);
+    }
+
+    protected function gatewayExceptionHandler(GatewayErrorException $exception)
+    {
+        $level = Trace::INFO;
+        $code = TraceCode::RECOVERABLE_EXCEPTION;
+
+        if ($exception->isCritical() === true)
+        {
+            $level = Trace::CRITICAL;
+            $code = TraceCode::ERROR_EXCEPTION;
+        }
+
+        $this->traceException($exception, $level, $code);
 
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }

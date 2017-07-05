@@ -162,6 +162,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
     public function isRecurring()
     {
         return $this->getAttribute(self::RECURRING);
