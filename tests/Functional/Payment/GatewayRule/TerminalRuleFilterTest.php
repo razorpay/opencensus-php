@@ -74,7 +74,7 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
         $this->fixtures->create('terminal:shared_sharp_terminal');
-        $this->fixtures->create('terminal:shared_upi_terminal');
+        $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
         $this->fixtures->merchant->addFeatures('rule_filter');
@@ -93,7 +93,7 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_olamoney_terminal');
         $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
-        $this->fixtures->create('terminal:shared_upi_terminal');
+        $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
         $this->fixtures->merchant->addFeatures('rule_filter');

@@ -194,6 +194,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getGroup()
+    {
+        return $this->getAttribute(self::GROUP);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);

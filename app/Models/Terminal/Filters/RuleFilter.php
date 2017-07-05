@@ -60,11 +60,15 @@ class RuleFilter extends Terminal\Filter
 
         $rejectedTerminals = [];
 
+        $group = $rules->first()->getGroup();
+
         foreach ($terminals as $terminal)
         {
             foreach ($rules as $rule)
             {
                 $match = $rule->matches($terminal);
+
+                $this->traceRuleMatch($rule, $terminal, $match, $verbose);
 
                 if ($match === true)
                 {
@@ -88,6 +92,9 @@ class RuleFilter extends Terminal\Filter
 
         $filteredTerminals = $selectedTerminals;
 
+        // If any select rules are present we only proceed with the set of
+        // selected_terminals. If no select rules are present we take the diff
+        // of all terminals and rejected terminals
         if ($isSelectRulePresent === false)
         {
             $filteredTerminals = array_diff($terminals, $rejectedTerminals);
@@ -97,11 +104,16 @@ class RuleFilter extends Terminal\Filter
         // we can have duplicate entries. Hence running a final unique check
         $terminals = array_values(array_unique($filteredTerminals));
 
-        $this->traceTerminals($terminals, 'filtered_terminals', $verbose);
+        $data = [
+            'selected' => $selectedTerminals,
+            'rejected' => $rejectedTerminals,
+            'final'    => $terminals,
+        ];
 
+        $this->traceTerminalsForGroup($data, $group, $verbose);
     }
 
-    protected function isSelectRulePresent(Base\PublicCollection $rules)
+    protected function isSelectRulePresent(Base\PublicCollection $rules): bool
     {
         return $rules->contains(function ($rule)
         {
@@ -130,6 +142,40 @@ class RuleFilter extends Terminal\Filter
             }
 
             $this->trace->info(TraceCode::GATEWAY_FILTER_RULES, $traceData);
+        }
+    }
+
+    protected function traceRuleMatch(Rule\Entity $rule, Terminal\Entity $terminal, bool $match, bool $verbose)
+    {
+        if ($verbose === true)
+        {
+            $this->trace->info(TraceCode::TERMINAL_FILTER_RULE_MATCH, [
+                    'rule'     => [
+                        'id'      => $rule->getId(),
+                        'group'   => $rule->getGroup(),
+                        'gateway' => $rule->getGateway(),
+                    ],
+                    'terminal' => [
+                        'id'      => $terminal->getId(),
+                        'gateway' => $terminal->getGateway()
+                    ],
+                    'match'    => $match,
+                ]);
+        }
+    }
+
+    protected function traceTerminalsForGroup(array $data, string $group, bool $verbose)
+    {
+        if ($verbose === true)
+        {
+            $traceData = array_map(function (array $terminals)
+            {
+                return array_pluck($terminals, 'id', 'gateway');
+            }, $data);
+
+            $traceData['group'] = $group;
+
+            $this->trace->info(TraceCode::TERMINAL_SELECTION_FOR_RULE_GROUP, $traceData);
         }
     }
 }
