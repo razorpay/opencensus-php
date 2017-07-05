@@ -10,7 +10,6 @@ const validEntities = [
   'axis_migs',
   'balance',
   'bank_account',
-  'bank_account',
   'batch_fund_transfer',
   'billdesk',
   'card',

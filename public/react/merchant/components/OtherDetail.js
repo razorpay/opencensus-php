@@ -5,6 +5,17 @@ import Time from 'rzp/ui/Time';
 import DetailRow from './DetailRow';
 import { NavLink } from 'react-router-dom';
 
+const entityWithViews = [
+  // 'bank_account',
+  // 'customer',
+  'invoice',
+  'payment',
+  'refund',
+  'settlement',
+  'order',
+  // 'offer'
+];
+
 export default ({ label, value, entity = {} }) => {
   let type = getType(label, value);
   let currency = entity.currency || 'INR';
@@ -32,11 +43,17 @@ export default ({ label, value, entity = {} }) => {
         url += '/details';
       }
 
-      val = () => (
-        <NavLink to={url}>
-          {value}
-        </NavLink>
-      );
+      val = () => {
+        if (entityWithViews.indexOf(entityName) > -1) {
+          return (
+            <NavLink to={url}>
+              {value}
+            </NavLink>
+          );
+        }
+
+        return value;
+      };
   }
 
   label = typeof label === 'function' ? label : humanize(label);
