@@ -69,6 +69,12 @@ class Core extends Base\Core
         $coupon->getValidator()->validateApplyCoupon($merchant);
     }
 
+    /**
+     * Apply a promotion (identified by the coupon) to a merchant.
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $coupon
+     */
     protected function applyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
         $promotion = $this->getPromotionEntity($coupon);

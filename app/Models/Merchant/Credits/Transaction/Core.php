@@ -12,25 +12,25 @@ class Core extends Base\Core
     {
         $timestamp = time();
 
-        //Credits which will expire first will be used first
+        // Credits which will expire first will be used first
         $credits = $this->repo->credits->getCreditsSortedWithExpiry(
                         $timestamp, $txn->merchant->getId(), $creditType);
 
-
-        //The amount of credits to be deducted will be reflected in the credit log
-        //specifying how many credits are used from what log.
-
+        //
+        // The amount of credits to be deducted will be reflected in the credit log
+        // specifying how many credits are used from what log.
+        //
         $this->repo->transaction(function() use ($credits, $creditAmount, $txn)
         {
             foreach ($credits as $credit)
             {
-                //when all the credit logs are updated with used amount
+                // When all the credit logs are updated with used amount
                 if ($creditAmount === 0)
                 {
                     break;
                 }
 
-                //get number of credits used from particular credit entry
+                // Get number of credits used from particular credit entry
                 $creditsUsed = $this->getCreditsUsed($credit, $creditAmount);
 
                 $creditTxn = new Entity;
