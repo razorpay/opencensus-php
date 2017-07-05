@@ -80,7 +80,17 @@
 }
 
 .report-wrapper {
-    margin: 0 !important;
+    border: 1px solid #e2e8ea;
+    background-color: #fff;
+    padding: 0;
+    float: none;
+    margin: 0 auto;
+
+    &:after {
+      clear: both;
+      content: '';
+      display: table;
+    }
 
     .report-list-panel {
         border-right: 1px solid #DEE5E7;
@@ -138,7 +148,6 @@
         }
     }
 }
-
 
 // Onboarding Card
 

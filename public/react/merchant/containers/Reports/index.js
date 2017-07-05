@@ -9,14 +9,22 @@ import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import Datetime from 'react-datetime';
 
+// TODO: Use them to set initial values in date-picker
 let now = moment();
 let currentMonth = now.month();
 let currentYear = now.year();
 let currentDate = now.date();
 
+/*
 function numberOfDays(month, year) {
   return moment(year + ' ' + month, 'YYYY M').daysInMonth();
+}
+*/
+
+function validYear(current) {
+  return current.year() >= 2015 && current.year() <= 2017;
 }
 
 const selector = formValueSelector('generateReports');
@@ -112,182 +120,179 @@ export default class ReportsContainer extends Component {
 
   render() {
     let { entity, type, mode, month, year, user, handleSubmit } = this.props;
-    let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
+    user.tags.push('Marketplace');
 
+    let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
+    isMarketplace = true;
+
+    // console.log('USER', user);
     return (
       <tabbed-container>
         <header>
           <NavLink to="/reports">Download Reports</NavLink>
         </header>
-        <div class="content-wrapper">
-          {user.tags.indexOf('New_Report_UI') === -1
-            ? // OLD UI
-              <div class="row">
-                <div class="col-sm-3">
-                  <div class="form-group">
-                    <Field
-                      name="entity"
-                      component="select"
-                      class="form-control"
-                    >
-                      <option value="payment">Payment</option>
-                      <option value="refund">Refund</option>
-                      <option value="order">Order</option>
-                      <option value="settlement">Settlement</option>
-                      <option value="transaction">Combined</option>
-                      {user.tags.indexOf('Broking_Report') === -1 ||
-                        <option value="broking">Broking Report</option>}
-                      // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
-                      {user.tags.indexOf('Dsp_Report') === -1 ||
-                        <option value="dsp_report">
-                          DSP Transaction Report
-                        </option>}
-                      <option value="invoice">Monthly Invoice</option>
-                      {user.tags.indexOf('Marketplace') === -1 ||
-                        <optgroup label="Route">
-                          <option value="transfer">Transfer</option>
-                          <option value="reversal">Reversal</option>
-                        </optgroup>}
-                    </Field>
-                  </div>
+        <div class="report-wrapper col-lg-8 col-sm-10 col-xs-11">
+          {/*Report Type Selection*/}
+          <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel">
+            <div class="title">SELECT REPORT TYPE</div>
+            <Field
+              id="combined"
+              name="entity"
+              value="combined"
+              component="input"
+              type="radio"
+              class="report-type form-control"
+            />
+            <label for="combined">Combined Report</label>
+            <Field
+              id="payment"
+              name="entity"
+              value="payment"
+              component="input"
+              type="radio"
+              class="report-type form-control"
+            />
+            <label for="payment">Payment</label>
+            <Field
+              id="refund"
+              name="entity"
+              value="refund"
+              component="input"
+              type="radio"
+              class="report-type form-control"
+            />
+            <label for="refund">Refund</label>
+          </div>
+
+          {/*Report Generate Panel*/}
+          <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 report-generate-panel">
+
+            <div class="title">
+              {isMarketplace ? 'SELECT ' : ''}ACCOUNT
+            </div>
+
+            {isMarketplace === false
+              ? <div class="account">
+                  <strong>{user.name || user.user.name}</strong>
+                  {' '}
+                  -
+                  {' '}
+                  {user.email || user.user.email}
                 </div>
+              : <Field
+                  component="select"
+                  class="form-control"
+                  name="account_id"
+                >
+                  <option value={user.id || user.user.id} disabled selected>
+                    Current Account
+                  </option>
+                  <option class="divider" disabled />
+                  <option value="acc_89wltQH83y3z7s">
+                    89wltQH83y3z7s
+                  </option>
+                </Field>}
 
-                {entity === 'invoice' ||
-                  <div class="col-sm-2">
-                    <div class="form-group">
-                      <Field
-                        name="type"
-                        class="form-control"
-                        component="select"
-                      >
-                        <option value="daily">Daily</option>
-                        <option value="monthly">Monthly</option>
-                      </Field>
-                    </div>
-                  </div>}
-
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <Field name="year" class="form-control" component="select">
-                      <option value="2017">2017</option>
-                      <option value="2016">2016</option>
-                      <option value="2015">2015</option>
-                    </Field>
-                  </div>
-                </div>
-
-                <div class="col-sm-3">
-                  <div class="form-group">
-                    <Field name="month" class="form-control" component="select">
-                      {moment.months().map((name, index) => {
-                        return (
-                          <option value={index + 1} key={index}>
-                            {name}
-                          </option>
-                        );
-                      })}
-                    </Field>
-                  </div>
-                </div>
-
-                {type === 'daily' &&
-                  <div class="col-sm-2">
-                    <div class="form-group">
-                      <Field name="day" class="form-control" component="select">
-                        {Array.from(
-                          Array(numberOfDays(month, year)),
-                          (undef, index) => {
-                            return (
-                              <option value={index + 1} key={index}>
-                                {index + 1}
-                              </option>
-                            );
-                          }
-                        )}
-                      </Field>
-                    </div>
-                  </div>}
-              </div>
-            : // NEW UI
-              <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
-                <div class="row report-wrapper">
-                  <div class="col-md-4 report-list-panel">
-                    <div class="title">SELECT REPORT TYPE</div>
-                    <Field
-                      id="combined"
-                      name="entity"
-                      value="combined"
-                      component="input"
-                      type="radio"
-                      class="report-type form-control"
-                    />
-                    <label for="combined">Combined Report</label>
-                    <Field
-                      id="payment"
-                      name="entity"
-                      value="payment"
-                      component="input"
-                      type="radio"
-                      class="report-type form-control"
-                    />
-                    <label for="payment">Payment</label>
-                    <Field
-                      id="refund"
-                      name="entity"
-                      value="refund"
-                      component="input"
-                      type="radio"
-                      class="report-type form-control"
-                    />
-                    <label for="refund">Refund</label>
-                  </div>
-                  <div class="col-md-8 report-generate-panel">
-                    <div class="title">
-                      {isMarketplace ? 'SELECT ' : ''}ACCOUNT
-                    </div>
-
-                    {isMarketplace === false
-                      ? <div class="account">
-                          <strong>{user.name || user.user.name}</strong>
-                          {' '}
-                          -
-                          {' '}
-                          {user.email || user.user.email}
-                        </div>
-                      : <Field
-                          component="select"
-                          class="form-control"
-                          name="account_id"
-                        >
-                          <option
-                            value={user.id || user.user.id}
-                            disabled
-                            selected
-                          >
-                            Current Account
-                          </option>
-                          <option class="divider" disabled />
-                          <option value="acc_89wltQH83y3z7s">
-                            89wltQH83y3z7s
-                          </option>
-                        </Field>}
-                  </div>
+            <div class="title">
+              DATE RANGE
+            </div>
+            {entity === 'invoice' ||
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <Field name="type" class="form-control" component="select">
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                  </Field>
                 </div>
               </div>}
 
-          <hr />
+            {type === 'monthly' &&
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <Field
+                    name="date"
+                    component={() => (
+                      <Datetime
+                        dateFormat="MMM, YYYY"
+                        inputProps={{
+                          placeholder: 'Select Year-Month',
+                        }}
+                        isValidDate={validYear}
+                        timeFormat={false}
+                      />
+                    )}
+                    class="form-control"
+                  />
+                </div>
+              </div>}
 
-          <AsyncButton
-            class="btn btn-primary"
-            onClick={handleSubmit(this.prepareGenerateReport)}
-            text="Download Report"
-            pendingText="Generating..."
-          />
+            {type === 'daily' &&
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <Field
+                    name="date"
+                    component={() => (
+                      <Datetime
+                        dateFormat="DD MMM, YYYY"
+                        inputProps={{
+                          placeholder: 'Select Year-Month-Date',
+                        }}
+                        isValidDate={validYear}
+                        timeFormat={false}
+                      />
+                    )}
+                    class="form-control"
+                  />
+                </div>
+              </div>}
 
-          <footer>
-            Combined reports will include transactions on the given date, as well as payments
-            settled on that given date.
-          </footer>
+            {/*           <div class="col-sm-4">
+              <div class="form-group">
+                <Field name="year" class="form-control" component="select">
+                  <option value="2017">2017</option>
+                  <option value="2016">2016</option>
+                  <option value="2015">2015</option>
+                </Field>
+              </div>
+            </div>
+*/}
+
+            {/*
+            <div class="col-sm-4">
+              <div class="form-group">
+                <Field name="month" class="form-control" component="select">
+                  {moment.months().map((name, index) => {
+                    return (
+                      <option value={index + 1} key={index}>
+                        {name}
+                      </option>
+                    );
+                  })}
+                </Field>
+              </div>
+            </div>
+*/}
+
+            {/*
+            {type === 'daily' &&
+            <div class="col-sm-4">
+              <div class="form-group">
+                <Field name="day" class="form-control" component="select">
+                  {Array.from(
+                    Array(numberOfDays(month, year)),
+                    (undef, index) => {
+                      return (
+                        <option value={index + 1} key={index}>
+                          {index + 1}
+                        </option>
+                      );
+                    }
+                  )}
+                </Field>
+              </div>
+            </div>}
+*/}
+          </div>
         </div>
       </tabbed-container>
     );
