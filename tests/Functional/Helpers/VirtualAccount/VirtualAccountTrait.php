@@ -105,8 +105,10 @@ trait VirtualAccountTrait
 
         $response = $this->fetchVirtualAccount($virtualAccountId);
 
-        $paymentArray['payee_account'] = $response['bank_account']['account_number'];
-        $paymentArray['payee_ifsc']    = $response['bank_account']['ifsc'];
+        $bankAccount = $response['receivers'][0];
+
+        $paymentArray['payee_account'] = $bankAccount['account_number'];
+        $paymentArray['payee_ifsc']    = $bankAccount['ifsc'];
 
         $request = [
             'method'  => 'POST',

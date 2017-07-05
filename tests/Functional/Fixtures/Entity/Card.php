@@ -12,7 +12,7 @@ class Card extends Base
             'expiry_month'      =>  '12',
             'expiry_year'       =>  '2100',
             'iin'               =>  '411111',
-            'last4'             =>  '1111'
+            'last4'             =>  '1111',
         ),
         array(
             'id'                =>  '100000000gcard',
@@ -21,8 +21,17 @@ class Card extends Base
             'expiry_month'      =>  '12',
             'expiry_year'       =>  '2100',
             'iin'               =>  '411111',
-            'last4'             =>  '1111'
+            'last4'             =>  '1111',
         ),
+        array(
+            'id'                =>  '100000001lcard',
+            'merchant_id'       =>  '10000000000000',
+            'name'              =>  'test',
+            'expiry_month'      =>  '12',
+            'expiry_year'       =>  '2100',
+            'iin'               =>  '411111',
+            'last4'             =>  '1111',
+        )
     );
 
     public function createDefaultCards()

@@ -127,6 +127,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NAME, $name);
     }
 
+    public function setPassword($password)
+    {
+        $this->setAttribute(self::PASSWORD, $password);
+    }
+
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
@@ -253,6 +258,11 @@ class Entity extends Base\PublicEntity
     public function getLocation()
     {
         return $this->getAttribute(self::LOCATION);
+    }
+
+    public function getPassword()
+    {
+        return $this->getAttribute(self::PASSWORD);
     }
 
     // ----------------------- Getters Ends----------------------------------------

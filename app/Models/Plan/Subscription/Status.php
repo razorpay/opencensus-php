@@ -89,6 +89,29 @@ class Status
         self::HALTED,
     ];
 
+    public static $nonCancellableStatuses = [
+        self::EXPIRED,
+        self::COMPLETED,
+        self::CANCELLED
+    ];
+
+    public static $nonChargeableStatuses = [
+        self::EXPIRED,
+        self::CANCELLED,
+        self::COMPLETED,
+    ];
+
+    public static $cronChargeableStatuses = [
+        self::ACTIVE,
+        self::AUTHENTICATED,
+        self::HALTED
+    ];
+
+    public static $invoiceManualChargeableStatuses = [
+        self::ACTIVE,
+        self::HALTED,
+    ];
+
     public static function isStatusValid($status) : bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));

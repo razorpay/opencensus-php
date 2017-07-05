@@ -14,7 +14,7 @@ class Utility extends Base\Core
      * @param string $method File Operation
      * @param array  $params Array of Params to be passed to File Operation fn call
      *
-     * @return void
+     * @throws \Exception
      */
     public function callFileOperation(string $method, array $params)
     {

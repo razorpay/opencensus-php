@@ -83,4 +83,9 @@ class RefundFile extends Base\Core
 
         return $txt;
     }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
+    }
 }

@@ -21,6 +21,7 @@ class Constants
     const NOZEROPRICING            = 'nozeropricing';
     const REVERSE                  = 'reverse';
     const BROKING_REPORT           = 'broking_report';
+    const DSP_REPORT               = 'dsp_report';
     const PAYMENT_EMAIL_FETCH      = 'payment_email_fetch';
     const CREATED_FLOW             = 'created_flow';
     const PAYOUT                   = 'payout';
@@ -34,6 +35,7 @@ class Constants
     const PAYMENT_FAILURE_EMAIL    = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS         = 'virtual_accounts';
     const INVOICE_PARTIAL_PAYMENTS = 'invoice_partial_payments';
+    const HIDE_DOWNTIMES           = 'hide_downtimes';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -52,6 +54,7 @@ class Constants
         self::NOZEROPRICING            => false,
         self::REVERSE                  => true,
         self::BROKING_REPORT           => true,
+        self::DSP_REPORT               => true,
         self::PAYMENT_EMAIL_FETCH      => true,
         self::CREATED_FLOW             => true,
         self::PAYOUT                   => true,
@@ -65,6 +68,7 @@ class Constants
         self::PAYMENT_FAILURE_EMAIL    => true,
         self::VIRTUAL_ACCOUNTS         => true,
         self::INVOICE_PARTIAL_PAYMENTS => true,
+        self::HIDE_DOWNTIMES           => true,
     ];
 
     public static $visibleFeaturesMap = [

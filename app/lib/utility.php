@@ -93,14 +93,9 @@ if (! function_exists('random_integer'))
 {
     function random_integer($length = 1)
     {
-        $integer = '' . mt_rand(1, 9);
-
-        for($i = 1; $i < $length; $i++)
-        {
-            $integer .= mt_rand(0, 9);
-        }
-
-        return (int) $integer;
+        $min = 10**($length - 1);
+        $max = 10**($length) - 1;
+        return random_int($min, $max);
     }
 }
 
@@ -316,6 +311,11 @@ if (! function_exists('isJson'))
 {
     function isJson($string)
     {
+        if (is_string($string) === false)
+        {
+            return false;
+        }
+
         json_decode($string);
 
         return (json_last_error() == JSON_ERROR_NONE);

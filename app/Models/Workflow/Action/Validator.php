@@ -7,6 +7,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicEntity;
 
 class Validator extends Base\Validator
 {
@@ -28,6 +29,8 @@ class Validator extends Base\Validator
 
     public function validateLiveActionsOnEntity(string $entityId, string $entity, string $permissionName)
     {
+        $entityId = PublicEntity::stripDefaultSign($entityId);
+
         $actions = (new Core)->fetchOpenActionOnEntityOperation(
             $entityId, $entity, $permissionName);
 

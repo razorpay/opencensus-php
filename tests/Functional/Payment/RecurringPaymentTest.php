@@ -55,6 +55,8 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringSecondPaymentCreatePublicAuth()
     {
+        $this->markTestSkipped('We now allow second recurring on public auth');
+
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures(['recurring']);
@@ -237,6 +239,12 @@ class RecurringPaymentTest extends TestCase
             [
                 'recurring'   => true,
                 'terminal_id' => '1000CybrsTrmnl',
+            ]);
+
+        $this->fixtures->create('gateway_token',
+            [
+                'token_id' => '100000custcard',
+                'terminal_id' => '1000CybrsTrmnl'
             ]);
 
         $content = $this->doS2sRecurringPayment($payment);

@@ -155,7 +155,21 @@ return array(
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
-        /*
+        /**
+         * Third party providers
+         * We can use an external service provider in one of our service providers because
+         * of which we are initialising the external service providers before the
+         * application service providers.
+         */
+        Aws\Laravel\AwsServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
+        Razorpay\Slack\Laravel\ServiceProvider::class,
+        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
+        Http\Httplug\HttplugServiceProvider::class,
+        Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
+
+        /**
          * Application Service Providers...
          */
         // RZP\Providers\AppServiceProvider::class,
@@ -168,17 +182,6 @@ return array(
         RZP\Services\DashboardServiceProvider::class,
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
-
-        /*
-         * Third party providers
-         */
-        Aws\Laravel\AwsServiceProvider::class,
-        Jenssegers\Agent\AgentServiceProvider::class,
-        Razorpay\Slack\Laravel\ServiceProvider::class,
-        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-        Http\Httplug\HttplugServiceProvider::class,
-        Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
 
     ),
 

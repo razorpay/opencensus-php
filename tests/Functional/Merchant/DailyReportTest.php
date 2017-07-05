@@ -47,7 +47,7 @@ class DailyReportTest extends TestCase
             'captured'    => ['count' => '4', 'sum' => '4000000'],
             'authorized'  => ['count' => '4', 'sum' => '4000000'],
             'refunds'     => ['count' => '2', 'sum' => '200000'],
-            'settlements' => ['count' => '1', 'sum' => '3708000'],
+            'settlements' => ['count' => '1', 'sum' => '3705600'],
         ];
 
         $this->generateDailyReport();

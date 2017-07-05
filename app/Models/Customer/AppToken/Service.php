@@ -13,8 +13,6 @@ class Service extends Base\Service
 
         if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appTokenId);
-
             $appCore = new AppToken\Core;
 
             $appToken = $appCore->getAppByAppTokenId($appTokenId, $this->merchant);
