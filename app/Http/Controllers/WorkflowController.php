@@ -186,9 +186,11 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $admin = $this->ba->getAdmin();
+        $orgId = $this->ba
+                      ->getAdmin()
+                      ->getPublicOrgId();
 
-        $data = (new Workflow\Service)->fetch($admin->getPublicOrgId(), $id);
+        $data = (new Workflow\Service)->fetch($orgId, $id);
 
         return ApiResponse::json($data);
     }
