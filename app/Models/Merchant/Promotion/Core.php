@@ -22,7 +22,7 @@ class Core extends Base\Core
         $this->creditCore = (new Credits\Core);
     }
 
-    public function create(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    public function create(Merchant\Entity $merchant, Promotion\Entity $promotion): Entity
     {
         $input = [
             Entity::REMAINING_RUNS => $promotion->getIterations(),

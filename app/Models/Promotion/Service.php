@@ -13,7 +13,7 @@ class Service extends Base\Service
         parent::__construct();
     }
 
-    public function create(array $input)
+    public function create(array $input): array
     {
         $this->trace->info(TraceCode::PROMOTION_CREATE_REQUEST, $input);
 
@@ -22,7 +22,7 @@ class Service extends Base\Service
         return $promotion->toArrayAdmin();
     }
 
-    public function update(string $id, array $input)
+    public function update(string $id, array $input): array
     {
         $this->trace->info(TraceCode::PROMOTION_UPDATE_REQUEST, $input);
 
