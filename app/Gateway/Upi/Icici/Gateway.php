@@ -329,10 +329,13 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
-            Fields::NOTE             => preg_replace('/\s+/', '-', $this->getPaymentRemark($input)),
+            // Do not change this.
+            // Note and Submerchant name fields only support alphanumeric hence replacing all
+            // the spaces to empty string here.
+            Fields::NOTE             => preg_replace('/\s+/', '', $this->getPaymentRemark($input)),
+            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
-            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '-', $input['merchant']->getFilteredDba()),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
 
