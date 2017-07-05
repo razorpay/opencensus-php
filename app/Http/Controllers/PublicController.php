@@ -15,7 +15,7 @@ class PublicController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getCatchAllRoute(string $uri)
+    public function getCatchAllRoute(string $uri = null)
     {
         return ApiResponse::routeNotFound();
     }
