@@ -1011,6 +1011,16 @@ class BasicAuth
         return $this->merchant->getKey();
     }
 
+    public function getAccessTokenId()
+    {
+        return $this->accessTokenId;
+    }
+
+    public function getClientId()
+    {
+        return $this->clientId;
+    }
+
     public function getMerchantIdOfKey()
     {
         if ($this->key === null)
@@ -1063,6 +1073,16 @@ class BasicAuth
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $this->merchant = $merchant;
+    }
+
+    public function setAccessTokenId(string $tokenId)
+    {
+        $this->accessTokenId = $tokenId;
+    }
+
+    public function setClientId(string $clientId)
+    {
+        $this->clientId = $clientId;
     }
 
     public function setMerchant($merchant)

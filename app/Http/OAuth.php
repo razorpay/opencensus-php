@@ -50,7 +50,11 @@ class OAuth
 
         $merchantId = $response['merchant_id'];
 
-        return $merchantId;
+        $tokenId = $response['id'];
+
+        $clientId = $response['client_id'];
+
+        return [$merchantId, $tokenId, $clientId];
     }
 
     protected function resolveScopes(array $tokenScopes)
