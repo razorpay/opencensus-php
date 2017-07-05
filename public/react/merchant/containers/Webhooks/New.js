@@ -9,18 +9,31 @@ import { required } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
+
+const WebhookEventCheckbox = ({ eventName }) => {
+  return (
+    <div class="checkbox">
+      <label>
+        <Field
+          name={`events['${eventName}']`}
+          component="input"
+          type="checkbox"
+        />
+        {eventName}
+      </label>
+    </div>
+  );
+};
 
 @connect(null, { saveWebhook, ...ModalActions, ...NotificationsActions })
 @reduxForm({
   form: 'newWebhook',
 })
 export default class AddWebhook extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      errors: null,
-    };
-  }
+  state = {
+    errors: null,
+  };
 
   componentWillMount() {
     if (this.props.webhook) {
@@ -112,49 +125,20 @@ export default class AddWebhook extends Component {
             <div class="form-group">
               <label class="col-md-3 control-label">Active Events</label>
               <div class="col-md-9">
-                <div class="checkbox">
-                  <label>
-                    <Field
-                      name="events['payment.authorized']"
-                      component="input"
-                      type="checkbox"
-                    />
-                    payment.authorized
-                  </label>
-                </div>
+                <WebhookEventCheckbox eventName="payment.authorized" />
+                <WebhookEventCheckbox eventName="payment.captured" />
+                <WebhookEventCheckbox eventName="payment.failed" />
+                <WebhookEventCheckbox eventName="invoice.paid" />
+                <WebhookEventCheckbox eventName="order.paid" />
 
-                <div class="checkbox">
-                  <label>
-                    <Field
-                      name="events['payment.failed']"
-                      component="input"
-                      type="checkbox"
-                    />
-                    payment.failed
-                  </label>
-                </div>
-
-                <div class="checkbox">
-                  <label>
-                    <Field
-                      name="events['invoice.paid']"
-                      component="input"
-                      type="checkbox"
-                    />
-                    invoice.paid
-                  </label>
-                </div>
-
-                <div class="checkbox">
-                  <label>
-                    <Field
-                      name="events['order.paid']"
-                      component="input"
-                      type="checkbox"
-                    />
-                    order.paid
-                  </label>
-                </div>
+                <ShowWhen featureEnabled="subscriptions">
+                  <div>
+                    <WebhookEventCheckbox eventName="subscription.activated" />
+                    <WebhookEventCheckbox eventName="subscription.charged" />
+                    <WebhookEventCheckbox eventName="subscription.overdue" />
+                    <WebhookEventCheckbox eventName="subscription.halted" />
+                  </div>
+                </ShowWhen>
               </div>
             </div>
           </div>

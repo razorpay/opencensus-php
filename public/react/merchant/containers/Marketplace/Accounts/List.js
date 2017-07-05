@@ -97,10 +97,10 @@ export default class AccountsListContainer extends ListContainer {
           <div class="btn-toolbar pull-right">
             <a
               class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/marketplace"
+              href="https://docs.razorpay.com/v1/page/route"
               target="_blank"
             >
-              Marketplace APIs Documentation &nbsp;
+              Route APIs Documentation &nbsp;
               <i class="icon icon-external-link" />
             </a>
 

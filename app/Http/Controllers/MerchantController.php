@@ -38,19 +38,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Get the user list for the currently logged in merchant
-     * Only accessible to owners
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getUsersListWithInvites()
-    {
-        $data = (new Merchant\Service)->getUsersListWithInvites();
-
-        return AppResponse::jsonResponse(null, $data);
-    }
-
-    /**
      * Remove the team member on the given merchant.
      *
      * @param  string  $userId
@@ -273,90 +260,6 @@ class MerchantController extends Controller
         list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Upload Batch File
-     * @param  string $mode Live/Test Mode
-     * @return Array       Array of error and response
-     */
-    public function uploadBatchFile($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $response) = (new Api\Service)->uploadBatchFile($mode, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Fetch Multiple Batches
-     * @param  string $mode Live/Test Mode
-     * @return Array       Array of error and response
-     */
-    public function fetchMultipleBatches($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $response) = (new Api\Service)->fetchMultipleBatches($mode, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Fetch batch by id
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function fetchBatchById($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->fetchBatchById($mode, $id);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Download Batch file
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function downloadBatchFile($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->downloadBatchFile($mode, $id);
-
-        if (empty($response) !== true)
-        {
-            return redirect($response['url']);
-        }
-        else
-        {
-            return AppResponse::jsonResponse($error, $response);
-        }
-    }
-
-    /**
-     * Retry given batch
-     * @param  string $mode Live/Test Mode
-     * @param  string $id   Batch Id
-     * @return Array       Array of error and response
-     */
-    public function retryBatchFile($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $response) = (new Api\Service)->retryBatchFile($mode, $id);
-
-        return AppResponse::jsonResponse($error, $response);
     }
 
     public function postSignup()

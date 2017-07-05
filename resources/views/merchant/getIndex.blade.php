@@ -1,9 +1,11 @@
 @include('partials/head')
 
-<link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
+<link rel='shortcut icon' href='/img/logo.png'>
 
 @if ($isConfirmed and $isPreSignupComplete)
-  <link rel='stylesheet' href="/dist/{{asset('merchant_react.css')}}">
+  <% for (var css in htmlWebpackPlugin.files.css) { %>
+    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+  <% } %>
 @else
   <link rel='stylesheet' href='css/generated{{asset('style.css')}}' type='text/css' />
 @endif
@@ -15,8 +17,9 @@
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
   </script>
-  <script src="/js/jquery/jquery-2.1.4.min.js"></script>
-  <script src="/dist/{{asset('merchant_react.js')}}"></script>
+  <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+  <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
+  <% } %>
 @else
   <!-- jQuery & angular -->
   <script src='{{asset('js/generated/pre.js')}}'></script>

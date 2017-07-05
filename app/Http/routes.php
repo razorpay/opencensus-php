@@ -62,24 +62,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::any('/user/generic', 'GenericController@handle');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
-
-        // Batch Refund Routes
-        Route::group(['prefix' => '{mode}/batches'], function () {
-            Route::get('/', 'MerchantController@fetchMultipleBatches')->name('batch_fetch_multiple');
-            Route::get('{id}', 'MerchantController@fetchBatchById')->name('batch_fetch_single');
-            Route::get('{id}/download', 'MerchantController@downloadBatchFile')->name('batch_download');
-
-            Route::post('/', 'MerchantController@uploadBatchFile')->name('batch_upload');
-            Route::post('{id}/retry', 'MerchantController@retryBatchFile')->name('batch_retry');
-        });
-
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
-
-        // Support role does not have access to this
-
-        Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
-        Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
 
         Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
@@ -94,9 +78,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/apihost', 'MerchantController@getApihost');
 
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
-
-        // Invitation and Team Support
-        Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
 
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
@@ -165,10 +146,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('admin/{mode}/merchants/aggregations', 'AdminController@getMerchantAggregations');
         Route::get('admin/{mode}/merchants/{merchant_id}/aggregations', 'AdminController@getSingleMerchantAggregations');
 
-        // Might delete this route later if its not used
-        Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
-        Route::get('/admin/triggererror', 'AdminController@undefinedMethod');
-
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
         Route::put('/admin/{id}/edit', 'AdminController@putEdit');
@@ -215,9 +192,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
-
-        Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
-        Route::get('admin/get_current');
 
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
         Route::get('/admin/emailbounces/{email}', 'AdminController@getEmailBounce')->name('email_bounce_get');

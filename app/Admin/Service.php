@@ -73,9 +73,7 @@ class Service extends Base\Service
         $org = $this->getOrgFromCache($domain);
 
         // `/access/resetpwd` is a hard-coded angular route
-        $resetPasswordUrl = 'https://' . $org['hostname'] . '/admin#/access/resetpwd';
-
-        $input['reset_password_url'] = $resetPasswordUrl;
+        $input['reset_password_url'] = url('/admin#/access/resetpwd');
 
         try
         {
@@ -745,6 +743,8 @@ class Service extends Base\Service
     {
         $data = $error = [];
         $this->setApiCredentials();
+
+        $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
         try
         {
@@ -1471,13 +1471,6 @@ class Service extends Base\Service
         }, $features);
 
         return $featureNames;
-    }
-
-    public function getMerchantTags($merchantId)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        return [null, $merchant->tagNames()];
     }
 
     public function confirmUser($email)

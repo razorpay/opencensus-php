@@ -1,4 +1,5 @@
 import { getCookie } from './cookies';
+import $ from 'jquery';
 
 /*
  * jQuery deferred promises doesn't align with the Promises/A+ spec.

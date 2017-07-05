@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const gulp = require('gulp');
 const webpack = require('webpack');
+const BabiliPlugin = require('babili-webpack-plugin');
 const through = require('through2').obj;
 const plumber = require('gulp-plumber');
 const run = require('run-sequence');
@@ -143,7 +144,10 @@ gulp.task('js:prod', () => {
 
 gulp.task('tmpl', () => {
   gulp
-    .src('resources/views/**/*.blade.php.tmpl')
+    .src([
+      'resources/views/**/tmpgetIndex.blade.php',
+      'resources/views/**/*.blade.php.tmpl',
+    ])
     .pipe(
       through(function(file, enc, cb) {
         file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');
@@ -157,21 +161,6 @@ gulp.task('tmpl', () => {
 
 gulp.task('dev', () => {
   run('compileThemes', ['css', 'js'], 'tmpl');
-});
-
-gulp.task('reactRevReplace', () => {
-  return gulp
-    .src(`public/${revMap['js/generated/merchant.js']}`)
-    .pipe(
-      through(function(file, enc, cb) {
-        file.contents = new Buffer(
-          interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g)
-        );
-        this.push(file);
-        cb();
-      })
-    )
-    .pipe(gulp.dest('public/js/generated'));
 });
 
 const runWebpack = (webpackConfig, cb) => {
@@ -216,6 +205,9 @@ gulp.task('webpack:prod', cb => {
         NODE_ENV: JSON.stringify('production'),
       },
     }),
+    new BabiliPlugin({
+      mangle: { topLevel: true },
+    }),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false,
@@ -229,47 +221,13 @@ gulp.task('webpack:prod', cb => {
   runWebpack(config, cb);
 });
 
-var rmOrig = function() {
-  return through(function(file, enc, cb) {
-    this.push(file); // We'll just pass this file along
-
-    if (!file.revOrigPath) {
-      return cb(); // Nothing to remove :)
-    }
-
-    fs.unlink(file.revOrigPath, function(err) {
-      // TODO: emit an error if err
-      cb();
-    });
-  });
-};
-
-//TODO: Need to offload this work to webpack especially when doing code splitting
-gulp.task('webpack:rev', cb => {
-  return gulp
-    .src(['public/dist/merchant_react.js', 'public/dist/merchant_react.css'])
-    .pipe(rev())
-    .pipe(gulp.dest('public/dist'))
-    .pipe(rmOrig())
-    .pipe(rev.manifest())
-    .pipe(through(revReference));
-});
-
 gulp.task('dev:setENV', cb => {
   isDevelopment = true;
   cb();
 });
 
 gulp.task('default', cb => {
-  run(
-    'webpack:prod',
-    'webpack:rev',
-    'compileThemes',
-    ['css:prod', 'js:prod'],
-    'tmpl',
-    'reactRevReplace',
-    cb
-  );
+  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', cb);
 });
 
 gulp.task('dev', cb => {

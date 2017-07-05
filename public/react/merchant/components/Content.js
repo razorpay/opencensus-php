@@ -132,7 +132,7 @@ export default class Content extends Component {
                   )}
                 />
 
-                <Route path="/marketplace" component={Marketplace} />
+                <Route path="/route" component={Marketplace} />
                 <Route path="/virtualaccounts" component={VirtualAccounts} />
 
                 <Route path="/reports" component={Reports} />
@@ -187,7 +187,7 @@ export default class Content extends Component {
                 <Route path="/items" component={InvoicingContainer} />
                 <Route path="/customers" component={InvoicingContainer} />
 
-                <Route path="/marketplace" component={Marketplace} />
+                <Route path="/route" component={Marketplace} />
                 <Route path="/virtualaccounts" component={VirtualAccounts} />
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />

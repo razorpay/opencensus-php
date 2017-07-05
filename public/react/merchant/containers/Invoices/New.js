@@ -644,20 +644,6 @@ export default class InvoicesNewContainer extends Component {
                           <div class="col-md-12">
                             <InlineField
                               formName="newInvoice"
-                              name="comment"
-                              component={AutoResizeTextarea}
-                              class="form-control input-xs"
-                              rows={2}
-                              placeholder="Customer Notes"
-                              disabled={locked}
-                            />
-                          </div>
-                        </div>
-
-                        <div class="row">
-                          <div class="col-md-12">
-                            <InlineField
-                              formName="newInvoice"
                               name="terms"
                               component={AutoResizeTextarea}
                               class="form-control input-xs"

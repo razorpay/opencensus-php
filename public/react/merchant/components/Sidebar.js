@@ -8,7 +8,7 @@ const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
-const MARKETPLACE_ROUTES_REGEX = /^\/marketplace\/(payments|transfers|reversals|accounts)/;
+const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
 
 @withRouter
@@ -20,7 +20,7 @@ export default class Sidebar extends Component {
     account: '/profile',
     settings: '/config',
     invoices: '/invoices',
-    marketplace: '/marketplace/payments',
+    marketplace: '/route/payments',
     paymentlinks: '/paymentlinks',
   };
 
@@ -124,7 +124,7 @@ export default class Sidebar extends Component {
                   </ShowWhen>
 
                   <MainNavLink
-                    label="Marketplace"
+                    label="Route"
                     icon="icon icon-store"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
@@ -215,7 +215,7 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
-                    label="Marketplace"
+                    label="Route"
                     icon="icon icon-store text-primary"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
