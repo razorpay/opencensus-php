@@ -17,9 +17,11 @@ class Repository extends Base\Repository
 
     public function fetchByCode(array $input)
     {
+        $allowedMerchantIds = [Merchant\Account::SHARED_ACCOUNT, $input[Entity::MERCHANT_ID]];
+
         return $this->newQuery()
-                    ->where(Entity::CODE, '=', $input['code'])
-                    ->whereIn(Entity::MERCHANT_ID, [Merchant\Account::SHARED_ACCOUNT, $input['merchant_id']])
+                    ->where(Entity::CODE, '=', $input[Entity::CODE])
+                    ->whereIn(Entity::MERCHANT_ID, $allowedMerchantIds)
                     ->first();
     }
 }

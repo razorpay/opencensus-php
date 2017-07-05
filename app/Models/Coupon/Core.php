@@ -54,6 +54,8 @@ class Core extends Base\Core
      *
      * @param Merchant\Entity $merchant
      * @param Entity          $coupon
+     *
+     * @throws Exception\BadRequestException
      */
     protected function validateMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
