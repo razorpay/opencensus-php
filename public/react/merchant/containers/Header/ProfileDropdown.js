@@ -37,7 +37,6 @@ export default class ProfileDropdown extends Component {
 
   render() {
     let user = this.props.user;
-    debugger;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
