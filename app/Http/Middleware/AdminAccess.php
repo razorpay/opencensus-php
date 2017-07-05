@@ -132,7 +132,7 @@ class AdminAccess
         }
 
         // Resolving OrgId from hostname.
-        if ($orgId == null)
+        if ($orgId === null)
         {
             $orgHostname = $request->headers->get(self::ORG_HOSTNAME_HEADER_KEY);
 
