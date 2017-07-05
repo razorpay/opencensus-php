@@ -56,16 +56,16 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT => 'int',
     ];
 
-    /**
-     * Creates a polymorphic relation with entities
-     * implementing a morphMany association on the
-     * 'entity' key
-     */
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    /**
+     * Defines a polymorphic relation with entities
+     * implementing a morphMany association on the
+     * 'source' key
+     */
     public function source()
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);

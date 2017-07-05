@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function create(array $input)
+    public function create(array $input): array
     {
         $this->trace->info(TraceCode::COUPON_CREATE_REQUEST, $input);
 
@@ -18,11 +18,11 @@ class Service extends Base\Service
         return $coupon->toArrayAdmin();
     }
 
-    public function delete(string $id)
+    public function delete(string $id): array
     {
         $this->trace->info(TraceCode::COUPON_DELETE_REQUEST, ['coupon_id' => $id]);
 
-        //TODO discuss
+        // TODO discuss
         $coupon = $this->repo->coupon->findOrFailPublic($id);
 
         if ($coupon->getUsedCount() > 0)
@@ -36,7 +36,7 @@ class Service extends Base\Service
         return $coupon->toArrayDeleted();
     }
 
-    public function apply(array $input)
+    public function apply(array $input): array
     {
         (new Validator)->validateInput('apply', $input);
 

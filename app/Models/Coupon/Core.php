@@ -12,7 +12,7 @@ class Core extends Base\Core
 {
     const SUCCESS_MESSAGE = 'Coupon Applied Successfully';
 
-    public function create(array $input)
+    public function create(array $input): Entity
     {
         $coupon = (new Entity)->build($input);
 
@@ -38,7 +38,7 @@ class Core extends Base\Core
         return $coupon;
     }
 
-    public function apply(Merchant\Entity $merchant, Entity $coupon)
+    public function apply(Merchant\Entity $merchant, Entity $coupon): array
     {
         $this->validateMerchantPromotion($merchant, $coupon);
 
@@ -53,11 +53,12 @@ class Core extends Base\Core
     {
         $promotion = $this->getPromotionEntity($coupon);
 
-        $merchantPromotion = $this->repo->merchant_promotion
-                                        ->findByMerchantAndPromotionId(
-                                            $merchant->getId(),
-                                            $promotion->getId()
-                                        );
+        $merchantPromotion = $this->repo
+                                  ->merchant_promotion
+                                  ->findByMerchantAndPromotionId(
+                                      $merchant->getId(),
+                                      $promotion->getId()
+                                  );
 
         if ($merchantPromotion !== null)
         {
@@ -72,32 +73,32 @@ class Core extends Base\Core
     {
         $promotion = $this->getPromotionEntity($coupon);
 
+        //
         // This need to be in transaction, as credits are applied here,
         // And Schedule for next run is also created via Merchant Promotion
         // Coupon Usage is also updated
-        // If either of these fail data need to be rollbacked
-        $this->repo->transaction(
-            function() use (
-                $merchant,
-                $promotion,
-                $coupon)
-            {
-                $merchantPromotionCore = (new MerchantPromotion\Core);
+        // If either of these fail data need to be rolled back
+        //
+        $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
+        {
+            $merchantPromotionCore = (new MerchantPromotion\Core);
 
-                $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
+            $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
 
-                // Initial apply of Credit is done instantly
-                // Subsequent run and expiry will be handled by cron
-                $merchantPromotionCore->applyCredits($merchant, $promotion);
+            //
+            // Initial apply of Credit is done instantly
+            // Subsequent run and expiry will be handled by cron
+            //
+            $merchantPromotionCore->applyCredits($merchant, $promotion);
 
-                $coupon->incrementUsedCount();
+            $coupon->incrementUsedCount();
 
-                $merchantPromotion->decrementRemainingRuns();
+            $merchantPromotion->decrementRemainingRuns();
 
-                $this->repo->saveOrFail($coupon);
+            $this->repo->saveOrFail($coupon);
 
-                $this->repo->saveOrFail($merchantPromotion);
-            });
+            $this->repo->saveOrFail($merchantPromotion);
+        });
     }
 
     protected function getPromotionEntity(Entity $coupon)
