@@ -2,9 +2,6 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
-use ApiResponse;
-
 class PromotionController extends Controller
 {
     use Traits\HasCrudMethods;

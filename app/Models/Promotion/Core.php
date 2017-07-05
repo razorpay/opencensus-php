@@ -13,18 +13,22 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $promotion = (new Entity)->build($input);
-
-        if ($promotion->areCreditsExpirable() === true)
+        $this->repo->transaction(
+            function() use ($input)
         {
-            $schedule = $this->createSchedule($input);
+            $promotion = (new Entity)->build($input);
 
-            $promotion->schedule()->associate($schedule);
-        }
+            if ($promotion->areCreditsExpirable() === true)
+            {
+                $schedule = $this->createSchedule($input);
 
-        $this->repo->saveOrFail($promotion);
+                $promotion->schedule()->associate($schedule);
+            }
 
-        return $promotion;
+            $this->repo->saveOrFail($promotion);
+
+            return $promotion;
+        });
     }
 
     public function update(Entity $promotion, array $input)
@@ -35,21 +39,24 @@ class Core extends Base\Core
                 'Editing a used promotion is not allowed');
         }
 
-        $promotion->edit($input);
-
-        if ($promotion->areCreditsExpirable() === true)
+        $this->repo->transaction(
+            function() use ($promotion, $input)
         {
-            $schedule = $this->createSchedule($input);
+            $promotion->edit($input);
 
-            $promotion->schedule()->associate($schedule);
-        }
+            if ($promotion->areCreditsExpirable() === true)
+            {
+                $schedule = $this->createSchedule($input);
 
-        $this->repo->saveOrFail($promotion);
+                $promotion->schedule()->associate($schedule);
+            }
 
-        return $promotion;
+            $this->repo->saveOrFail($promotion);
+
+            return $promotion;
+        });
     }
 
-    //TODO
     public function processTasks($tasks)
     {
         return (new MerchantPromotion\Core)->processTasks($tasks);
@@ -57,8 +64,9 @@ class Core extends Base\Core
 
     public function isUsed(Entity $promotion): bool
     {
-        $usedCount = $this->repo->merchant_promotion
-                                        ->findUsedCountByPromotionId($promotion->getId());
+        $usedCount = $this->repo
+                          ->merchant_promotion
+                          ->getCountByPromotionId($promotion->getId());
 
         if ($usedCount === 0)
         {

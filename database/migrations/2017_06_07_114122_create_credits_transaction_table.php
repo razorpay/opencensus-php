@@ -18,16 +18,16 @@ class CreateCreditsTransactionTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::CREDITS_TRANSACTION, function (Blueprint $table)
+        Schema::create(Table::CREDIT_TRANSACTION, function (Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(CreditTransaction::ID, CreditTransaction::ID_LENGTH)
                   ->primary();
 
-            $table->char(CreditTransaction::TRANSACTION_ID, CreditTransaction::ID_LENGTH);
+            $table->char(CreditTransaction::TRANSACTION_ID, Transaction::ID_LENGTH);
 
-            $table->char(CreditTransaction::CREDITS_ID, CreditTransaction::ID_LENGTH);
+            $table->char(CreditTransaction::CREDITS_ID, Credits\Entity::ID_LENGTH);
 
             $table->integer(CreditTransaction::CREDITS_USED)
                   ->default(0);
@@ -58,18 +58,18 @@ class CreateCreditsTransactionTable extends Migration
      */
     public function down()
     {
-        Schema::table(Table::CREDITS_TRANSACTION, function (Blueprint $table)
+        Schema::table(Table::CREDIT_TRANSACTION, function (Blueprint $table)
         {
             $table->dropForeign(
-                Table::CREDITS_TRANSACTION.'_'.CreditTransaction::CREDITS_ID.'_foreign');
+                Table::CREDIT_TRANSACTION.'_'.CreditTransaction::CREDITS_ID.'_foreign');
 
             /*$table->dropForeign(
-                Table::CREDITS_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');*/
+                Table::CREDIT_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');*/
 
             $table->dropUnique(
                 [CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);
         });
 
-        Schema::drop(Table::CREDITS_TRANSACTION);
+        Schema::drop(Table::CREDIT_TRANSACTION);
     }
 }

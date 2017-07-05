@@ -300,9 +300,9 @@ class Core extends Base\Core
     {
         $merchantId = $merchantBalance->merchant->getId();
 
-        $amountCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'amount');
+        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::AMOUNT);
 
-        $feeCredits = $this->repo->credits->getMerchantCredits($merchantId, 'fee');
+        $feeCredits = $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::FEE);
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -338,9 +338,9 @@ class Core extends Base\Core
     {
         $merchantId = $merchantBalance->merchant->getId();
 
-        $amountCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'amount');
+        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, 'amount');
 
-        $feeCredits = $this->repo->credits->getMerchantCredits($merchantId, 'fee');
+        $feeCredits = $this->repo->credits->getMerchantCreditsOfType($merchantId, 'fee');
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -829,7 +829,7 @@ class Core extends Base\Core
 
         $merchantId = $merchantBalance->merchant->getId();
 
-        $amountCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'amount');
+        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, 'amount');
 
         // Removing Assert for now, as there is a race condition. if 2 payments
         // are authorized at the same time where we create txn on auth with. both
@@ -876,7 +876,7 @@ class Core extends Base\Core
 
         $merchantId = $merchantBalance->merchant->getId();
 
-        $feeCredits =  $this->repo->credits->getMerchantCredits($merchantId, 'fee');
+        $feeCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::FEE);
 
         if ($feeCredits < $fee)
         {

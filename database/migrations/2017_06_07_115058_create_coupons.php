@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Coupon\Entity as Coupon;
 use RZP\Models\Payment\Entity as Payment;
 
@@ -24,7 +24,7 @@ class CreateCoupons extends Migration
             $table->char(Coupon::ID, Coupon::ID_LENGTH)
                   ->primary();
 
-            $table->char(Payment::MERCHANT_ID, Payment::ID_LENGTH);
+            $table->char(Coupon::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->char(Coupon::ENTITY_ID, Coupon::ID_LENGTH);
 
@@ -40,10 +40,12 @@ class CreateCoupons extends Migration
                   ->nullable();
 
             $table->integer(Coupon::USAGE)
-                ->nullable();
+                  ->nullable()
+                  ->unsigned();
 
             $table->integer(Coupon::USED_COUNT)
-                  ->default(0);
+                  ->default(0)
+                  ->unsigned();
 
             $table->integer(Coupon::CREATED_AT);
 
@@ -58,8 +60,8 @@ class CreateCoupons extends Migration
 
             $table->index(Coupon::ENTITY_TYPE);
 
-            $table->foreign(COUPON::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
+            $table->foreign(Coupon::MERCHANT_ID)
+                  ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
@@ -74,7 +76,7 @@ class CreateCoupons extends Migration
     {
         Schema::table(Table::COUPON, function($table)
         {
-            $table->dropForeign(Table::COUPON.'_'.COUPON::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::COUPON.'_'.Coupon::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::COUPON);

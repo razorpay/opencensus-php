@@ -37,10 +37,10 @@ class Repository extends Base\Repository
     public function getScheduleByPeriodIntervalAndAnchor($period, $interval, $anchor)
     {
          return $this->newQuery()
-                    ->where(Entity::PERIOD, '=', $period)
-                    ->where(Entity::MERCHANT_ID, '=', Merchant::SHARED_ACCOUNT)
-                    ->where(Entity::INTERVAL, '=', $interval)
-                    ->where(Entity::ANCHOR, '=', $anchor)
-                    ->first();
+                     ->where(Entity::PERIOD, '=', $period)
+                     ->merchantId(Merchant::SHARED_ACCOUNT)
+                     ->where(Entity::INTERVAL, '=', $interval)
+                     ->where(Entity::ANCHOR, '=', $anchor)
+                     ->first();
     }
 }

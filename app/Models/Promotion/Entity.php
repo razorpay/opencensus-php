@@ -15,6 +15,8 @@ class Entity extends Base\PublicEntity
     const ITERATIONS              = 'iterations';
     const CREDITS_EXPIRABLE       = 'credits_expirable';
 
+    //These two variables are used to create schedule for promotion
+    //in case the credits need to be expired and renewed
     const CREDITS_EXPIRY_PERIOD   = 'credits_expiry_period';
     const CREDITS_EXPIRY_INTERVAL = 'credits_expiry_interval';
 

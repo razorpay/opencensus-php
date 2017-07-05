@@ -2,12 +2,10 @@
 
 namespace RZP\Models\Merchant\Promotion;
 
-use RZP\Exception;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID             = 'id';
     const MERCHANT_ID    = 'merchant_id';
     const PROMOTION_ID   = 'promotion_id';
     const START_TIME     = 'start_time';
@@ -16,7 +14,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant_promotion';
 
-     protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $defaults = [
         self::EXPIRED => false
@@ -24,7 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::EXPIRED        => 'boolean',
-        self::REMAINING_RUNS => 'boolean',
+        self::REMAINING_RUNS => 'int',
     ];
 
     protected $fillable = [
@@ -33,6 +31,10 @@ class Entity extends Base\PublicEntity
         self::START_TIME,
         self::REMAINING_RUNS,
         self::EXPIRED
+    ];
+
+    protected $dates = [
+        self::START_TIME,
     ];
 
     public function merchant()

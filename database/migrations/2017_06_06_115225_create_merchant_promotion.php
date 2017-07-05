@@ -21,17 +21,19 @@ class CreateMerchantPromotion extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(MerchantPromotion::ID, MerchantPromotion::ID_LENGTH);
+            $table->char(MerchantPromotion::ID, MerchantPromotion::ID_LENGTH)
+                  ->primary();
 
-            $table->char(MerchantPromotion::MERCHANT_ID, MerchantPromotion::ID_LENGTH);
+            $table->char(MerchantPromotion::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(MerchantPromotion::PROMOTION_ID, MerchantPromotion::ID_LENGTH);
+            $table->char(MerchantPromotion::PROMOTION_ID, Promotion::ID_LENGTH);
 
             $table->integer(MerchantPromotion::START_TIME);
 
-            $table->integer(MerchantPromotion::REMAINING_RUNS);
+            $table->integer(MerchantPromotion::REMAINING_RUNS)
+                  ->unsigned();
 
-            $table->boolean(MerchantPromotion::EXPIRED);
+            $table->tinyInt(MerchantPromotion::EXPIRED);
 
             $table->integer(Promotion::CREATED_AT);
 
@@ -40,14 +42,14 @@ class CreateMerchantPromotion extends Migration
             $table->foreign(MerchantPromotion::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
-                  ->onDelete('cascade');
+                  ->onDelete('restrict');
 
             $table->unique([MerchantPromotion::MERCHANT_ID, MerchantPromotion::PROMOTION_ID]);
 
             $table->foreign(MerchantPromotion::PROMOTION_ID)
                   ->references(Promotion::ID)
                   ->on(Table::PROMOTION)
-                  ->onDelete('cascade');
+                  ->onDelete('restrict');
         });
     }
 

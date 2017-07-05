@@ -26,7 +26,7 @@ class Core extends Base\Core
         }
         else
         {
-            $merchant = $this->repo->merchant->findByPublicId($input[Entity::MERCHANT_ID]);
+            $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
         }
 
         $coupon->source()->associate($entity);
@@ -49,6 +49,12 @@ class Core extends Base\Core
         ];
     }
 
+    /**
+     * Check if the coupon is valid for given merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $coupon
+     */
     protected function validateMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
         $promotion = $this->getPromotionEntity($coupon);
@@ -109,9 +115,9 @@ class Core extends Base\Core
 
     protected function getPromotionEntity(Entity $coupon)
     {
-        $couponSource = $coupon->source;
+        assert($coupon->getEntityType() === 'promotion');
 
-        assert($couponSource->getEntity() === 'promotion');
+        $couponSource = $coupon->source;
 
         return $couponSource;
     }

@@ -12,18 +12,14 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num|max:14',
         Entity::ENTITY_ID           => 'sometimes|alpha_num|max:14',
-        Entity::ENTITY_TYPE         => 'sometimes|string',
+        Entity::ENTITY_TYPE         => 'sometimes|string|in:promotion',
     ];
 
     public function fetchByCode(array $input)
     {
         return $this->newQuery()
                     ->where(Entity::CODE, '=', $input['code'])
-                    ->where(function ($query) use ($input)
-                    {
-                        $query->where(Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
-                              ->orWhere(Entity::MERCHANT_ID, '=', $input['merchant_id']);
-                    })
+                    ->whereIn(Entity::MERCHANT_ID, [Merchant\Account::SHARED_ACCOUNT, $input['merchant_id']])
                     ->first();
     }
 }

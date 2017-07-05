@@ -31,7 +31,7 @@ class Service extends Base\Service
                 'Deleting a used coupon is not allowed');
         }
 
-        $this->repo->coupon->deleteOrFail($coupon);
+        $this->repo->deleteOrFail($coupon);
 
         return $coupon->toArrayDeleted();
     }

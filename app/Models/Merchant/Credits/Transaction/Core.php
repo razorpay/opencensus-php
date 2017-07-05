@@ -13,7 +13,7 @@ class Core extends Base\Core
         $timestamp = time();
 
         // Credits which will expire first will be used first
-        $credits = $this->repo->credits->getCreditsSortedWithExpiry(
+        $credits = $this->repo->credits->getCreditsSortedByExpiry(
                         $timestamp, $txn->merchant->getId(), $creditType);
 
         //
@@ -31,7 +31,7 @@ class Core extends Base\Core
                 }
 
                 // Get number of credits used from particular credit entry
-                $creditsUsed = $this->getCreditsUsed($credit, $creditAmount);
+                $creditsUsed = $this->getCreditsUsedAndUpdateCreditAmount($credit, $creditAmount);
 
                 $creditTxn = new Entity;
 
@@ -50,7 +50,7 @@ class Core extends Base\Core
         });
     }
 
-    protected function getCreditsUsed(Credits\Entity $credit, int & $creditAmount): int
+    protected function getCreditsUsedAndUpdateCreditAmount(Credits\Entity $credit, int & $creditAmount): int
     {
         $availableCredits = $credit->getUnusedCredits();
 

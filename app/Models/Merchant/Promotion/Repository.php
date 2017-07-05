@@ -11,15 +11,15 @@ class Repository extends Base\Repository
     public function findByMerchantAndPromotionId(string $merchantId, string $promotionId)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                    ->merchantId($merchantId)
+                    ->promotionId($promotionId)
                     ->first();
     }
 
-    public function findUsedCountByPromotionId(string $promotionId)
+    public function getCountByPromotionId(string $promotionId)
     {
         $count = $this->newQuery()
-                      ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                      ->promotionId($promotionId)
                       ->count();
 
         return $count;

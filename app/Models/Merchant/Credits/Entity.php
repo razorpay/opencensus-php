@@ -56,7 +56,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
-        self::TYPE              => 'amount',
+        self::TYPE              => Type::AMOUNT,
         self::USED              => 0,
         self::EXPIRED_AT        => null,
     );
@@ -65,6 +65,10 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::VALUE             => 'integer',
         self::USED              => 'integer',
+    ];
+
+    protected $dates = [
+        self::EXPIRED_AT,
     ];
 
     protected static $sign      = 'credits';

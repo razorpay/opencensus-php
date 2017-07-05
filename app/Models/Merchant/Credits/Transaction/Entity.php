@@ -6,11 +6,11 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const TRANSACTION_ID = "transaction_id";
-    const CREDITS_ID     = "credits_id";
-    const CREDITS_USED   = "credits_used";
+    const TRANSACTION_ID = 'transaction_id';
+    const CREDITS_ID     = 'credits_id';
+    const CREDITS_USED   = 'credits_used';
 
-    protected $entity = "credits_transaction";
+    protected $entity = 'credits_transaction';
 
     protected $generateIdOnCreate = true;
 
@@ -43,6 +43,6 @@ class Entity extends Base\PublicEntity
     {
         $usedCount = $this->getCreditsUsed() + $used;
 
-         $this->setAttribute(self::CREDITS_USED, $used);
+        $this->setAttribute(self::CREDITS_USED, $used);
     }
 }

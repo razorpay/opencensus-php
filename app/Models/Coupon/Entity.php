@@ -10,7 +10,6 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const ID          = 'id';
     const MERCHANT_ID = 'merchant_id';
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
@@ -50,7 +49,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::START_DATE => 'int',
+        self::START_DATE   => 'int',
         self::END_DATE   => 'int',
         self::USAGE      => 'int',
         self::USED_COUNT => 'int',

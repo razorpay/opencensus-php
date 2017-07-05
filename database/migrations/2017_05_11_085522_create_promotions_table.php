@@ -29,9 +29,9 @@ class CreatePromotionsTable extends Migration
             $table->integer(Promotion::AMOUNT)
                   ->unsigned();
 
-            $table->string(Promotion::CREDIT_TYPE, 10);
+            $table->string(Promotion::CREDIT_TYPE, 20);
 
-            $table->char(Promotion::SCHEDULE_ID, Promotion::ID_LENGTH)
+            $table->char(Promotion::SCHEDULE_ID, Schedule\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Promotion::ITERATIONS)
@@ -56,9 +56,9 @@ class CreatePromotionsTable extends Migration
         Schema::table(Table::CREDITS, function(Blueprint $table)
         {
             $table->foreign(Credits::PROMOTION_ID)
-                ->references(Promotion::ID)
-                ->on(Table::PROMOTION)
-                ->on_delete('restrict');
+                  ->references(Promotion::ID)
+                  ->on(Table::PROMOTION)
+                  ->on_delete('restrict');
         });
     }
 

@@ -49,42 +49,6 @@ class Core extends Base\Core
         return $merchantPromotion;
     }
 
-    protected function addAndExpireCredits(
-        Merchant\Entity $merchant,
-        Promotion\Entity $promotion,
-        Entity $merchantPromotion,
-        Task\Entity $scheduleTask)
-    {
-        $this->repo->transaction(
-            function() use (
-                $merchant,
-                $promotion,
-                $merchantPromotion,
-                $scheduleTask)
-            {
-                $this->expireCredits($merchant, $promotion);
-
-                if ($merchantPromotion->getRemainingRuns() > 0)
-                {
-                    $this->applyCredits($merchant, $promotion, $scheduleTask);
-
-                    $merchantPromotion->decrementRemainingRuns();
-
-                    $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
-
-                    $this->repo->saveOrFail($scheduleTask);
-                }
-                else
-                {
-                    $merchantPromotion->setExpired();
-
-                    $this->repo->deleteOrFail($scheduleTask);
-                }
-
-                $this->repo->saveOrFail($merchantPromotion);
-            });
-    }
-
     public function processTasks($scheduleTasks)
     {
         $successIds = [];
@@ -134,6 +98,42 @@ class Core extends Base\Core
         );
 
         return $response;
+    }
+
+    protected function addAndExpireCredits(
+        Merchant\Entity $merchant,
+        Promotion\Entity $promotion,
+        Entity $merchantPromotion,
+        Task\Entity $scheduleTask)
+    {
+        $this->repo->transaction(
+            function() use (
+                $merchant,
+                $promotion,
+                $merchantPromotion,
+                $scheduleTask)
+            {
+                $this->expireCredits($merchant, $promotion);
+
+                if ($merchantPromotion->getRemainingRuns() > 0)
+                {
+                    $this->applyCredits($merchant, $promotion, $scheduleTask);
+
+                    $merchantPromotion->decrementRemainingRuns();
+
+                    $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+
+                    $this->repo->saveOrFail($scheduleTask);
+                }
+                else
+                {
+                    $merchantPromotion->setExpired();
+
+                    $this->repo->deleteOrFail($scheduleTask);
+                }
+
+                $this->repo->saveOrFail($merchantPromotion);
+            });
     }
 
     public function createScheduleTask(Merchant\Entity $merchant, Promotion\Entity $promotion)
