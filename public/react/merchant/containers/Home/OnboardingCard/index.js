@@ -10,10 +10,10 @@ export default class OnboardingCard extends Component {
   state = {};
 
   componentWillMount() {
-    if (LocalStorageService.getItem('new_user_signup')) {
+    if (LocalStorageService.getItem('ngStorage-new_user_signup')) {
       LocalStorageService.setItem('onboarding_first_step', true);
       LocalStorageService.setItem('show_onboarding_card', true);
-      LocalStorageService.removeItem('new_user_signup');
+      LocalStorageService.removeItem('ngStorage-new_user_signup');
     }
 
     this.setState({
@@ -42,9 +42,10 @@ export default class OnboardingCard extends Component {
     return (
       <div class="media onboarding-card">
         <div class="media-left">
-          <a href="#">
-            <img class="media-object" />
-          </a>
+          <img
+            class="media-object"
+            src="styles/assets/onboarding-illustration.png"
+          />
         </div>
 
         {this.state.isFirstStep
@@ -83,7 +84,7 @@ export default class OnboardingCard extends Component {
                 Your Razorpay account is created. Now, you can browse through the dashboard or do the following:
               </p>
               <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-6" style={{ paddingRight: 0 }}>
                   <ActivationStep user={user} />
                 </div>
 
@@ -103,7 +104,7 @@ export default class OnboardingCard extends Component {
                 ? <div style={{ marginTop: '12px' }}>
                     You may now
                     {' '}
-                    <a>close this card</a>
+                    <a onClick={this.closeOnboarding}>close this card</a>
                     . You can access the
                     {' '}
                     <a>documentation</a>

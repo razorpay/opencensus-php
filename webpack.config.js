@@ -61,6 +61,7 @@ webpackConfig.module.rules = [
             'react-html-attrs',
             'transform-runtime',
             'transform-decorators-legacy',
+            'transform-react-jsx-img-import',
           ],
           presets: [
             ['es2015', { loose: true, modules: false }],

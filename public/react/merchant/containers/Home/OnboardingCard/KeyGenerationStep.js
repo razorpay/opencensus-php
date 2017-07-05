@@ -25,6 +25,11 @@ export default class KeyGenerationStep extends Component {
     });
   }
 
+  switchToLiveMode = () => {
+    LocalStorageService.setItem('rzp_mode', 'live');
+    window.location.reload();
+  };
+
   render() {
     let { user, mode, modeFormatted } = this.props;
     let isLoading = this.props.isLoading || this.state.isLoading;
@@ -51,7 +56,9 @@ export default class KeyGenerationStep extends Component {
           header = 'Integrate Razorpay in Live Mode';
           headerDesc = (
             <div>
-              <a>Switch to Live Mode</a> & generate live keys
+              <a onClick={this.switchToLiveMode}>Switch to Live Mode</a>
+              {' '}
+              & generate live keys
             </div>
           );
         }
@@ -79,9 +86,7 @@ export default class KeyGenerationStep extends Component {
       <div class="Onboarding__Step">
         <div class="media">
           <div class="media-left">
-            <a href="#">
-              <img class="media-object" />
-            </a>
+            <img class="media-object" src="styles/assets/integration.svg" />
           </div>
           {isLoading
             ? <div class="media-body">

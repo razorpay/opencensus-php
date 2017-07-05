@@ -230,7 +230,6 @@ app
         request.success(function(data) {
           if (data.success) {
             $localStorage.new_user_signup = true;
-
             $scope.signup.account_type = $scope.signup.data.invitation
               ? 'team_member'
               : 'merchant';

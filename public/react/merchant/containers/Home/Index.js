@@ -18,6 +18,7 @@ import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import { defaults } from 'react-chartjs-2';
 import ShowWhen from 'merchant/components/ShowWhen';
+import LocalStorageService from 'rzp/utils/localStorage';
 
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
@@ -67,7 +68,9 @@ export default class HomeContainer extends Component {
   }
 
   switchToNewUI = () => {
-    return this.props.enableOrDisableNewui(true);
+    return this.props.enableOrDisableNewui(true).then(() => {
+      LocalStorageService.setItem('show_newui_tour', true);
+    });
   };
 
   render() {
