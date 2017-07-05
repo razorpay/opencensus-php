@@ -39,6 +39,7 @@ const selector = formValueSelector('newApplicationForm');
 class NewApplicationForm extends Component {
   constructor() {
     super();
+    this.openPreviewPage = this.openPreviewPage.bind(this)
   }
   state = {
     edit: false,
@@ -76,6 +77,8 @@ class NewApplicationForm extends Component {
 
   openPreviewPage() {
     // open in a popup
+    const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this.state.details.clients.prod.id}&redirect_uri=http://localhost&scope=read_only`
+    window.open(popupUrl, "PopupPreview");
     // authorize?response_type=code&client_id=86KC3q506ytUPA&redirect_uri=http://localhost&scope=read_only
   }
 
