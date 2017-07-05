@@ -827,11 +827,11 @@ class Service extends Base\Service
 
     public function upgradeUserToMerchant($input)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
         $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
 
-        if (empty($error) === true)
+        if (empty($error) === false)
         {
             return [$error, null];
         }
@@ -840,10 +840,12 @@ class Service extends Base\Service
             'business_name' =>  $input['business_name']
         ];
 
+        $user = Entity::findOrFail($authUser->id);
+
         // We don't have a referrer for the upgrade
         list($error, $data) = $this->createMerchantFromUser($user, $data);
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             // $data['id'] is the newly created merchant Id
             // This confirmation creates the Merchant Account on the API Side
@@ -857,6 +859,13 @@ class Service extends Base\Service
             $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
 
             $this->subscribeToMailingList($user);
+
+            list($error, $genericUser) = $this->getUserFromApi($user->id);
+
+            if (empty($error) === true)
+            {
+                Session::put('dashboard_user_payload', $genericUser);
+            }
         }
 
         return [$error, $data];

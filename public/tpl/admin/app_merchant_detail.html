@@ -448,9 +448,10 @@
         </div>
         <div class="list-group-item" ng-init="isScheduleCollapsed = false">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" ng-hide="merchant.schedule_tasks.items.length == 0" >Show/Hide</button>
-            <span ng-show="merchant.schedule_tasks.items.length == 0">
-                No Schedule Assigned
+            <button class="btn btn-default btn-xs pull-right" ng-click="isScheduleCollapsed = !isScheduleCollapsed"
+              ng-hide="hasSettlementSchedule === false">Show/Hide</button>
+            <span ng-show="hasSettlementSchedule === false">
+                No Settlement Schedule Assigned
             </span>
           </span>
           Settlement Schedule
@@ -462,7 +463,7 @@
             </thead>
             <tbody>
               <tr ng-repeat="task in merchant.schedule_tasks.items">
-                <td ng-repeat="key in scheduleKeys">
+                <td ng-if="task['type'] === 'settlement'" ng-repeat="key in scheduleKeys">
                     <a ng-if="key === 'schedule_id'" target="_blank" ui-sref="app.entitiesdetail({type:'schedule', id: task[key], mode: 'live'})">{{displayValue(key, task[key])}}</a>
                     <span ng-if="key !== 'schedule_id'">{{displayValue(key, task[key])}}</span>
                 </td>
@@ -840,7 +841,7 @@
         </div>
       </div>
       <h5 ng-if="loading">Loading Plans....</h5>
-      <h4 ng-if="loading === false && pricingPlansLength() == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4>
+      <h4 ng-if="loading === false && pricingPlansLength() == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing">here</a></h4>
     </form>
   </div>
   <div class="modal-footer">
@@ -1276,6 +1277,7 @@
           <option value="travel_agency">Travel Agency</option>
           <option value="pharma">Pharma</option>
           <option value="cryptocurrency">Cryptocurrency</option>
+          <option value="forex">Forex</option>
           </select>
         </div>
       </div>

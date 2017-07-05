@@ -1911,6 +1911,19 @@ app
               fetchBalance();
               getMerchantFeatures();
 
+              $scope.hasSettlementSchedule = false;
+              if ($scope.merchant.schedule_tasks) {
+                for (var key in $scope.merchant.schedule_tasks.items) {
+                  if (
+                    $scope.merchant.schedule_tasks.items[key]['type'] ===
+                    'settlement'
+                  ) {
+                    $scope.hasSettlementSchedule = true;
+                    break;
+                  }
+                }
+              }
+
               $scope.merchant.creditsLogMode = 'live';
               getCreditsLog($scope.merchant.creditsLogMode);
 
