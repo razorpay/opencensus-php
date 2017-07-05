@@ -6,5 +6,5 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'credits_transaction';
+    protected $entity = 'credit_transaction';
 }

@@ -10,7 +10,7 @@ class Entity extends Base\PublicEntity
     const CREDITS_ID     = 'credits_id';
     const CREDITS_USED   = 'credits_used';
 
-    protected $entity = 'credits_transaction';
+    protected $entity = 'credit_transaction';
 
     protected $generateIdOnCreate = true;
 
