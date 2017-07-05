@@ -300,9 +300,11 @@ class Core extends Base\Core
     {
         $merchantId = $merchantBalance->merchant->getId();
 
-        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::AMOUNT);
+        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
 
-        $feeCredits = $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::FEE);
+        $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+
+        $feeCredits = $credits[Credits\Type::FEE] ?? 0;
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -338,9 +340,11 @@ class Core extends Base\Core
     {
         $merchantId = $merchantBalance->merchant->getId();
 
-        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, 'amount');
+        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
 
-        $feeCredits = $this->repo->credits->getMerchantCreditsOfType($merchantId, 'fee');
+        $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+
+        $feeCredits = $credits[Credits\Type::FEE] ?? 0;
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 

@@ -109,4 +109,42 @@ class Repository extends Base\Repository
 
         return $query->getAttribute('sum');
     }
+
+    /**
+     * Returns the sum of unused, non-expired credits for a merchant, for each credit type
+     *
+     * Sample return array:
+     * [
+     *  'amount' => 1000
+     *  'fee'    => 550
+     * ]
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getTypeAggregatedMerchantCredits(string $merchantId): array
+    {
+        $query = $this->newQuery()
+                      ->selectRaw(
+                          Entity::TYPE . ', ' .
+                          'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+                      ->merchantId($merchantId)
+                      ->where(function ($query)
+                          {
+                              $query->where(Entity::EXPIRED_AT, '>', time())
+                                    ->orWhereNull(Entity::EXPIRED_AT);
+                          })
+                      ->groupBy(Entity::TYPE)
+                      ->get();
+
+        $data = [];
+
+        foreach ($query as $record)
+        {
+            $data[$record[Entity::TYPE]] = $record['sum'];
+        }
+
+        return $data;
+    }
 }
