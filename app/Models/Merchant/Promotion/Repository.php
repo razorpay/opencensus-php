@@ -12,14 +12,14 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
-                    ->promotionId($promotionId)
+                    ->where(Entity::PROMOTION_ID, $promotionId)
                     ->first();
     }
 
     public function getCountByPromotionId(string $promotionId)
     {
         $count = $this->newQuery()
-                      ->promotionId($promotionId)
+                      ->where(Entity::PROMOTION_ID, $promotionId)
                       ->count();
 
         return $count;
