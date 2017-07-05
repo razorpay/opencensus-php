@@ -11,10 +11,9 @@ use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input): Entity
     {
-        $this->repo->transaction(
-            function() use ($input)
+        return $this->repo->transaction(function() use ($input)
         {
             $promotion = (new Entity)->build($input);
 
@@ -31,7 +30,7 @@ class Core extends Base\Core
         });
     }
 
-    public function update(Entity $promotion, array $input)
+    public function update(Entity $promotion, array $input): Entity
     {
         if ($this->isUsed($promotion) === true)
         {
@@ -39,7 +38,7 @@ class Core extends Base\Core
                 'Editing a used promotion is not allowed');
         }
 
-        $this->repo->transaction(
+        return $this->repo->transaction(
             function() use ($promotion, $input)
         {
             $promotion->edit($input);

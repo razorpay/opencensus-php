@@ -105,7 +105,7 @@ class CouponsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
 
-        $this->assertEquals($response['fee_credits'], 100);
+        $this->assertEquals(100, $response['fee_credits']);
     }
 
     public function testMerchantSignUpWithInValidCoupon()
@@ -116,7 +116,7 @@ class CouponsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response['apply_coupon']['message'], 'Coupon Code Not Found');
+        $this->assertEquals('Coupon code not found', $response['apply_coupon']['message']);
 
         $balanceRequest = [
             'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
