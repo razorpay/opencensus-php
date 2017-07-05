@@ -52,6 +52,9 @@ return [
         'order',
         'payment',
         'refund',
+        'reversal',
+        'transfer',
+        'virtual_account',
     ],
 
     // Any entity having 'notes' field will have followings common.
@@ -141,9 +144,15 @@ return [
         ],
     ],
 
-    'order_mapping'   => [],
+    'order_mapping'           => [],
 
-    'payment_mapping' => [],
+    'payment_mapping'         => [],
 
-    'refund_mapping'  => [],
+    'refund_mapping'          => [],
+
+    'reversal_mapping'        => [],
+
+    'transfer_mapping'        => [],
+
+    'virtual_account_mapping' => [],
 ];
