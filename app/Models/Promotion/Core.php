@@ -13,8 +13,7 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $this->repo->transaction(
-            function() use ($input)
+        return $this->repo->transaction(function() use ($input)
         {
             $promotion = (new Entity)->build($input);
 
