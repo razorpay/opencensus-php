@@ -181,6 +181,7 @@ return array(
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
+        RZP\Services\NodalServiceProvider::class,
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
     ],
