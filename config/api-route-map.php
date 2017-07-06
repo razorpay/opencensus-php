@@ -424,8 +424,8 @@ return [
         'payment_verify'                    => 'payments/{id}/verify',
         // Authorize Failed Payment
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
-        // Generate Refunds Excel (Netbanking)
-        'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
+        // Generate Refunds Excel
+        'refund_generate_excel'             => 'refunds/excel',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 
