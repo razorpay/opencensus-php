@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Trace\Trace;
+use App\Trace\TraceCode;
 use Exception;
 use Response;
 use UnexpectedValueException;
@@ -43,6 +44,14 @@ class Handler extends ExceptionHandler
         NotFoundHttpException::class,
         TokenMismatchException::class,
         \UnexpectedValueException::class,
+    ];
+
+    /**
+     * A list of exception types that will be reported as INFO.
+     *
+     * @var  array
+     */
+    protected $infoReport = [
         BadRequestError::class,
     ];
 
@@ -58,9 +67,17 @@ class Handler extends ExceptionHandler
     {
         parent::report($e);
 
+        $level = Trace::CRITICAL;
+        $code = TraceCode::ERROR_EXCEPTION;
+
         if (!$this->isCritical($e))
         {
             return;
+        }
+        else if ($this->isInfo($e))
+        {
+            // Change Level to INFO
+            $level = Trace::INFO;
         }
 
         $context = $this->getExceptionDetails($e);
@@ -72,7 +89,7 @@ class Handler extends ExceptionHandler
 
         // TODO: Imrpve so that not everything is critical
         // Use the same checks as in render
-        return $trace->addRecord(Trace::CRITICAL, 'ERROR_EXCEPTION', $context);
+        return $trace->addRecord($level, $code, $context);
     }
 
     /**
@@ -250,5 +267,23 @@ class Handler extends ExceptionHandler
         }
 
         return true;
+    }
+
+    /**
+     * isInfo will classify weather a exception should be traced as info/not
+     * @param  Exception $e 
+     * @return boolean      true/false
+     */
+    protected function isInfo(Exception $e)
+    {
+        foreach ($this->infoReport as $exceptionClass)
+        {
+            if ($e instanceof $exceptionClass)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
