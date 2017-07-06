@@ -100,7 +100,7 @@ class Handler extends ExceptionHandler
         }
         else if ($e instanceof MethodNotFoundException)
         {
-            $response = Response::json(array('success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]));
+            $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]]);
         }
         else if (($e instanceof TokenMismatchException) or
                  ($e instanceof DecryptException))
@@ -118,7 +118,7 @@ class Handler extends ExceptionHandler
         }
         else if ($e instanceof BadRequestError)
         {
-            $response = Response::json(array('success' => false, 'errors' => [$e->getMessage()]));
+            $response = Response::json(['success' => false, 'errors' => [$e->getMessage()]]);
         }
         else
         {
