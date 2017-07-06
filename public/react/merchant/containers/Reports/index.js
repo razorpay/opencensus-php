@@ -167,131 +167,100 @@ export default class ReportsContainer extends Component {
           {/*Report Generate Panel*/}
           <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 report-generate-panel">
 
-            <div class="title">
-              {isMarketplace ? 'SELECT ' : ''}ACCOUNT
-            </div>
-
-            {isMarketplace === false
-              ? <div class="account">
-                  <strong>{user.name || user.user.name}</strong>
-                  {' '}
-                  -
-                  {' '}
-                  {user.email || user.user.email}
-                </div>
-              : <Field
-                  component="select"
-                  class="form-control"
-                  name="account_id"
-                >
-                  <option value={user.id || user.user.id} disabled selected>
-                    Current Account
-                  </option>
-                  <option class="divider" disabled />
-                  <option value="acc_89wltQH83y3z7s">
-                    89wltQH83y3z7s
-                  </option>
-                </Field>}
-
-            <div class="title">
-              DATE RANGE
-            </div>
-            {entity === 'invoice' ||
-              <div class="col-sm-4">
-                <div class="form-group">
-                  <Field name="type" class="form-control" component="select">
-                    <option value="daily">Daily</option>
-                    <option value="monthly">Monthly</option>
-                  </Field>
-                </div>
-              </div>}
-
-            {type === 'monthly' &&
-              <div class="col-sm-6">
-                <div class="form-group">
-                  <Field
-                    name="date"
-                    component={() => (
-                      <Datetime
-                        dateFormat="MMM, YYYY"
-                        inputProps={{
-                          placeholder: 'Select Year-Month',
-                        }}
-                        isValidDate={validYear}
-                        timeFormat={false}
-                      />
-                    )}
+            <div class="form-element">
+              <div class="title">
+                {isMarketplace ? 'SELECT ' : ''}ACCOUNT
+              </div>
+              {isMarketplace === false
+                ? <div class="account">
+                    <strong>{user.name || user.user.name}</strong>
+                    {' '}
+                    -
+                    {' '}
+                    {user.email || user.user.email}
+                  </div>
+                : <Field
+                    component="select"
                     class="form-control"
-                  />
-                </div>
-              </div>}
-
-            {type === 'daily' &&
-              <div class="col-sm-6">
-                <div class="form-group">
-                  <Field
-                    name="date"
-                    component={() => (
-                      <Datetime
-                        dateFormat="DD MMM, YYYY"
-                        inputProps={{
-                          placeholder: 'Select Year-Month-Date',
-                        }}
-                        isValidDate={validYear}
-                        timeFormat={false}
-                      />
-                    )}
-                    class="form-control"
-                  />
-                </div>
-              </div>}
-
-            {/*           <div class="col-sm-4">
-              <div class="form-group">
-                <Field name="year" class="form-control" component="select">
-                  <option value="2017">2017</option>
-                  <option value="2016">2016</option>
-                  <option value="2015">2015</option>
-                </Field>
-              </div>
+                    name="account_id"
+                  >
+                    <option value={user.id || user.user.id} disabled selected>
+                      Current Account
+                    </option>
+                    <option class="divider" disabled />
+                    <option value="acc_89wltQH83y3z7s">
+                      89wltQH83y3z7s
+                    </option>
+                  </Field>}
             </div>
-*/}
-
-            {/*
-            <div class="col-sm-4">
-              <div class="form-group">
-                <Field name="month" class="form-control" component="select">
-                  {moment.months().map((name, index) => {
-                    return (
-                      <option value={index + 1} key={index}>
-                        {name}
-                      </option>
-                    );
-                  })}
-                </Field>
+            <div class="form-element">
+              <div class="title">
+                DATE RANGE
               </div>
+              {entity === 'invoice' ||
+                <div class="col-sm-3">
+                  <div class="form-group">
+                    <Field name="type" class="form-control" component="select">
+                      <option value="daily">Daily</option>
+                      <option value="monthly">Monthly</option>
+                    </Field>
+                  </div>
+                </div>}
+
+              {type === 'monthly' &&
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <Field
+                      name="date"
+                      component={() => (
+                        <Datetime
+                          dateFormat="MMM, YYYY"
+                          inputProps={{
+                            placeholder: 'Select Year-Month',
+                          }}
+                          isValidDate={validYear}
+                          timeFormat={false}
+                        />
+                      )}
+                      class="form-control"
+                    />
+                  </div>
+                </div>}
+
+              {type === 'daily' &&
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <Field
+                      name="date"
+                      component={() => (
+                        <Datetime
+                          dateFormat="DD MMM, YYYY"
+                          inputProps={{
+                            placeholder: 'Select Date-Month-Year',
+                          }}
+                          isValidDate={validYear}
+                          timeFormat={false}
+                        />
+                      )}
+                      class="form-control"
+                    />
+                  </div>
+                </div>}
             </div>
-*/}
 
-            {/*
-            {type === 'daily' &&
-            <div class="col-sm-4">
-              <div class="form-group">
-                <Field name="day" class="form-control" component="select">
-                  {Array.from(
-                    Array(numberOfDays(month, year)),
-                    (undef, index) => {
-                      return (
-                        <option value={index + 1} key={index}>
-                          {index + 1}
-                        </option>
-                      );
-                    }
-                  )}
-                </Field>
-              </div>
-            </div>}
-*/}
+            <div class="form-element">
+              <AsyncButton
+                class="btn btn-primary"
+                onClick={handleSubmit(this.prepareGenerateReport)}
+                text="Generate and Download Report"
+                pendingText="Generating..."
+              />
+
+              <footer>
+                Combined reports will include transactions on the given date, as well as payments
+                settled on that given date.
+              </footer>
+            </div>
           </div>
         </div>
       </tabbed-container>
