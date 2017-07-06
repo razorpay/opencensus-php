@@ -296,7 +296,7 @@ class Service extends Base\Service
 
     public function getNonDraftInvoiceCountByBatchIds(array $input): array
     {
-        // (new Validator)->validateInput(Validator::ISSUE_BATCH_ACTION, $input);
+        (new Validator)->validateInput('invoiceStatsByBatches', $input);
 
         $batchIds = $input[Entity::BATCH_IDS];
 

@@ -199,6 +199,13 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * Temp solution: Used by dashboard to show 'Issue all links'
+     * against list of batch ids. This endpoint returns batch_id and counts
+     * of non draft invoices per batch_id.
+     *
+     * @return ApiResponse
+     */
     public function getNonDraftInvoiceCountByBatchIds()
     {
         $input = Request::all();

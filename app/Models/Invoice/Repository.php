@@ -271,6 +271,15 @@ class Repository extends Base\Repository
                            ->groupBy(Entity::BATCH_ID)
                            ->get();
 
+        //  Converts collection results to needed format:
+        //  [
+        //      {
+        //          'batch_id': 'batch_xyz',
+        //          'count':     10
+        //      },
+        //      ..
+        //  ]
+
         return $collection->map(
                 function ($entity, $key)
                 {

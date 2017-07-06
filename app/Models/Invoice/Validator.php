@@ -159,6 +159,11 @@ class Validator extends Base\Validator
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
     ];
 
+    protected static $invoiceStatsByBatchesRules = [
+        Entity::BATCH_IDS           => 'required|array|min:1|max:100',
+        Entity::BATCH_IDS . '.*'    => 'required|public_id|size:20',
+    ];
+
     //
     // Custom validators.
     //
