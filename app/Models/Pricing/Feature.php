@@ -23,6 +23,10 @@ class Feature
      * If rules are not defined for these features, 0 pricing
      * is applied.
      *
+     * IMPORTANT: If you're adding a feature here, ensure to get a
+     * rule added for the every method of feature on
+     * the zero-pricing plan
+     *
      * @var array
      */
     const OPTIONAL_PRICING = [

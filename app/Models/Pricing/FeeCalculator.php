@@ -61,7 +61,7 @@ class FeeCalculator
         $this->taxComponents = $this->getTaxComponents();
     }
 
-    public function calculate(Pricing\Plan $pricing)
+    public function calculate(Pricing\Plan $pricing): array
     {
         $entity = $this->entity;
 
@@ -76,7 +76,6 @@ class FeeCalculator
         }
 
         $this->amount = $amount;
-
 
         $this->getRelevantPricingRule($pricing);
 

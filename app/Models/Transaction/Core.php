@@ -638,10 +638,10 @@ class Core extends Base\Core
 
         $settledAt = time();
 
-        $transferAmount = abs($amount + $fee);
+        $amountPlusFees = abs($amount + $fee);
 
         $values = [
-            Transaction\Entity::DEBIT         => $transferAmount,
+            Transaction\Entity::DEBIT         => $amountPlusFees,
             Transaction\Entity::CREDIT        => 0,
             Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
             Transaction\Entity::GATEWAY_FEE   => 0,

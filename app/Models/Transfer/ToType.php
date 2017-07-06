@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
-use Rzp\Exception;
+use RZP\Exception;
 
 class ToType
 {
