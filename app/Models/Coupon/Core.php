@@ -107,7 +107,7 @@ class Core extends Base\Core
 
             $coupon->incrementUsedCount();
 
-            $merchantPromotion->decrementRemainingRuns();
+            $merchantPromotion->decrementRemainingIterations();
 
             $this->repo->saveOrFail($coupon);
 

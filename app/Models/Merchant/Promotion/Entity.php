@@ -57,8 +57,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRED, true);
     }
 
-    public function decrementRemainingRuns()
+    public function decrementRemainingIterations()
     {
-        $this->decrement(self::REMAINING_ITERATIONS);
+        $remainingIterations =  $this->getAttribute(self::REMAINING_ITERATIONS);
+
+        $remainingIterations = $remainingIterations - 1;
+
+        $this->setAttribute(self::REMAINING_ITERATIONS, $remainingIterations);
     }
 }

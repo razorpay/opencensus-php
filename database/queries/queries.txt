@@ -2198,9 +2198,10 @@ ALTER TABLE virtual_accounts
 DROP TABLE coupons;
 
 ALTER TABLE credits
-    ADD COLUMN promotion_id varchar(14) after merchant_id,
+    ADD COLUMN promotion_id varchar(14) DEFAULT NULL after merchant_id,
     ADD COLUMN used INTEGER DEFAULT 0 AFTER type,
-    ADD COLUMN expiring_at INTEGER UNSIGNED AFTER used;
+    ADD COLUMN expired_at INTEGER UNSIGNED DEFAULT NULL AFTER used
+    ADD INDEX credits_expired_at_index (expired_at);
 
 ALTER TABLE schedule_tasks
-    ADD COLUMN expiring_at INT(11) DEFAULT NULL AFTER updated_at;
+    ADD COLUMN deleted_at INT(11) DEFAULT NULL AFTER updated_at;
