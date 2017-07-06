@@ -81,8 +81,9 @@ app
             });
         };
         $scope.generateNetBankingRefunds = function(params) {
+          params.method = 'netbanking';
           var data = {
-            route_name: 'refund_netbanking_generate_excel',
+            route_name: 'refund_generate_excel',
             body: params,
             mode: params.mode,
           };
