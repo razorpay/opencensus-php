@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Pricing\Entity as Pricing;
+use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class CreatePricing extends Migration
 {
@@ -61,6 +62,13 @@ class CreatePricing extends Migration
                   ->default(0);
 
             $table->integer(Pricing::FIXED_RATE)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->string(Pricing::EMI_SUBVENTION)
+                  ->default(EmiSubvention::CUSTOMER);
+
+            $table->integer(Pricing::MERCHANT_PAYBACK)
                   ->unsigned()
                   ->default(0);
 

@@ -5,6 +5,8 @@ namespace RZP\Models\Pricing;
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Emi\Subvention as EmiSubvention;
+
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -31,6 +33,10 @@ class Entity extends Base\PublicEntity
     const PERCENT_RATE         = 'percent_rate';
     const FIXED_RATE           = 'fixed_rate';
 
+     //for emi merchant subvention
+     const EMI_SUBVENTION       = 'emi_subvention';
+     const MERCHANT_PAYBACK     = 'merchant_payback';
+
     // Min And Max Rate
     const MIN_FEE              = 'min_fee';
     const MAX_FEE              = 'max_fee';
@@ -53,6 +59,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
         self::INTERNATIONAL,
+        self::EMI_SUBVENTION,
+        self::MERCHANT_PAYBACK,
         self::AMOUNT_RANGE_ACTIVE,
         self::AMOUNT_RANGE_MIN,
         self::AMOUNT_RANGE_MAX,
@@ -86,7 +94,9 @@ class Entity extends Base\PublicEntity
         self::FIXED_RATE          => 0,
         self::MIN_FEE             => 0,
         self::MAX_FEE             => null,
-        self::AMOUNT_RANGE_ACTIVE => '0'
+        self::AMOUNT_RANGE_ACTIVE => '0',
+        self::MERCHANT_PAYBACK    => 0,
+        self::EMI_SUBVENTION      => EmiSubvention::CUSTOMER,
     ];
 
     /**
@@ -100,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE        => 'int',
         self::FIXED_RATE          => 'int',
         self::MIN_FEE             => 'int',
+        self::MERCHANT_PAYBACK    => 'int',
     ];
 
     const ZERO_PRICING = '10ZeroPricingP';
@@ -270,6 +281,16 @@ class Entity extends Base\PublicEntity
     public function getMaxFee()
     {
         return $this->getAttribute(self::MAX_FEE);
+    }
+
+    public function getMerchantPayback()
+    {
+        return $this->getAttribute(self::MERCHANT_PAYBACK);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     protected function getAmountRangeMinAttribute()

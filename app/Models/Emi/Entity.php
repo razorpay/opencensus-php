@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const MIN_AMOUNT            = 'min_amount';
     const ISSUER_PLAN_ID        = 'issuer_plan_id';
     const SUBVENTION            = 'subvention';
-    const MERCHANT_PAYOFF       = 'merchant_payoff';
+    const MERCHANT_PAYBACK      = 'merchant_payback';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::ISSUER_PLAN_ID,
         self::SUBVENTION,
-        self::MERCHANT_PAYOFF);
+        self::MERCHANT_PAYBACK);
 
     protected $visible = array(
         self::ID,
@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::ISSUER_PLAN_ID,
         self::SUBVENTION,
-        self::MERCHANT_PAYOFF);
+        self::MERCHANT_PAYBACK);
 
     protected $public = array(
         self::BANK,
@@ -59,7 +59,8 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::ISSUER_PLAN_ID,
         self::SUBVENTION,
-        self::MERCHANT_PAYOFF);
+        self::MERCHANT_PAYBACK,
+    );
 
     protected $defaults = array(
         self::MIN_AMOUNT      => 300000,
@@ -67,7 +68,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK         => null,
         self::ISSUER_PLAN_ID  => null,
         self::SUBVENTION      => Subvention::CUSTOMER,
-        self::MERCHANT_PAYOFF => null,
+        self::MERCHANT_PAYOFF => 0,
     );
 
     protected $casts = array(

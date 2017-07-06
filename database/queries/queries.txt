@@ -2210,3 +2210,17 @@ ALTER TABLE pricing
 
 ALTER TABLE netbanking
     ADD COLUMN credit_account_number varchar(255) DEFAULT NULL AFTER account_number;
+
+ALTER TABLE emi_plans
+    ADD COLUMN subvention VARCHAR(255) DEFAULT  'customer' AFTER issuer_plan_id,
+    ADD COLUMN merchant_payback INTEGER UNSIGNED DEFAULT 0  AFTER subvention;
+
+ALTER TABLE pricing
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT  'customer' AFTER fixed_rate,
+    ADD COLUMN merchant_payback INTEGER UNSIGNED DEFAULT 0  AFTER subvention;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT  'customer' AFTER aeps;
+
+ALTER TABLE terminals
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT  'customer' AFTER tpv;
