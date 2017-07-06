@@ -23,9 +23,7 @@ class Promotion extends Base
 
     public function createRecurring(array $attributes = [])
     {
-        // Tomorrow because we want to expire the credits 12
-        // of next day not the same day as promotion was applied
-        $day = Carbon::tomorrow('Asia/Kolkata');
+        $day = Carbon::now('Asia/Kolkata');
 
         $anchor = $day->{Anchor::CHECKS['monthly']};
 
