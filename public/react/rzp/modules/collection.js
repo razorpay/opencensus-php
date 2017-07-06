@@ -129,11 +129,3 @@ export const linkBatchesReducer = makeCollectionReducer('BATCHLINKS');
 export const fetchSettlements = params =>
   fetchAll(params, Settlement, 'SETTLEMENTS');
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
-
-export const fetchSubscriptions = () => {
-  return {
-    type: getActionName('SUBSCRIPTIONS'),
-    payload: ajax('/subscriptions'),
-  };
-};
-export const subscriptionsReducer = makeCollectionReducer('SUBSCRIPTIONS');

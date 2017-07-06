@@ -161,3 +161,22 @@ export const intervals = [
     label: 'Yearly',
   },
 ];
+
+const periods = {
+  weekly: 'Week',
+  monthly: 'Month',
+  yearly: 'Year',
+};
+
+export const getIntervalCycle = (interval, period) => {
+  switch (interval) {
+    case 1:
+      return `Every ${periods[period]}`;
+
+    case 2:
+      return `Bi-${titleCase(period)}`;
+
+    default:
+      return `Once in ${interval} ${periods[period]}s`;
+  }
+};

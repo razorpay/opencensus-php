@@ -48,6 +48,22 @@ export const virtualAccountStatusMap = {
   paid: 'label-success',
 };
 
+export const subscriptionStatusMap = {
+  created: 'bg-light',
+  authenticated: 'label-info',
+  active: 'label-success',
+  overdue: 'label-warning',
+  cancelled: 'label-danger',
+  halted: 'label-danger',
+  expired: 'label-danger',
+  completed: 'label-muted',
+};
+
+export const planStatusMap = {
+  active: 'label-success',
+  inactive: 'label-muted',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   settlement: settlementStatusMap,
@@ -55,6 +71,8 @@ const entityMap = {
   order: orderStatusMap,
   batch: batchUploadStatusMap,
   virtual_account: virtualAccountStatusMap,
+  subscription: subscriptionStatusMap,
+  plan: planStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -63,5 +81,7 @@ export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
 export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
+export const SubscriptionStatusLabel = StatusLabel(subscriptionStatusMap);
+export const PlanStatusLabel = StatusLabel(planStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

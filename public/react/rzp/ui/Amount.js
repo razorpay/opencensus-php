@@ -1,5 +1,4 @@
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
-import { getFormattedAmount } from 'rzp/utils/rzp-utils';
 
 const currencies = {
   INR: '₹',

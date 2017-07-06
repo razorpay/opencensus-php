@@ -1,6 +1,6 @@
 // Blame @aseem for suggesting this name
 
-import DetailRow from 'merchant/components/DetailRow';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import TableBody from 'rzp/ui/TableBody';
 
@@ -12,7 +12,11 @@ export default ({ label, value = {} }) => {
           <table class="table table-hover">
             <TableBody colSpan={2} rows={Object.keys(value)}>
               {Object.keys(value).map(key => (
-                <DetailRow key={key} label={key} value={value[key]} />
+                <tr key={key}>
+                  <td colSpan="2">
+                    <EntityDetailRow label={key} value={value[key]} />
+                  </td>
+                </tr>
               ))}
             </TableBody>
           </table>
@@ -20,5 +24,5 @@ export default ({ label, value = {} }) => {
       </ListGroupToggler>
     );
   }
-  return <DetailRow label={label} value="--" />;
+  return <EntityDetailRow label={label} value="--" />;
 };
