@@ -4,6 +4,8 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import ActivationStep from './ActivationStep';
 import KeyGenerationStep from './KeyGenerationStep';
 import PaymentsReceivedStep from './PaymentsReceivedStep';
+import OnboardingIllustrationPNG
+  from 'styles/assets/onboarding-illustration.svg';
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
@@ -42,10 +44,7 @@ export default class OnboardingCard extends Component {
     return (
       <div class="media onboarding-card">
         <div class="media-left">
-          <img
-            class="media-object"
-            src="styles/assets/onboarding-illustration.svg"
-          />
+          <img class="media-object" src={OnboardingIllustrationPNG} />
         </div>
 
         {this.state.isFirstStep

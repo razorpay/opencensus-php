@@ -112,7 +112,16 @@ export default class HomeContainer extends Component {
                     <div class="panel new-nav-banner">
                       <div class="panel-body">
                         <div class="media">
-                          <div class="media-left" />
+                          <div
+                            class="media-left"
+                            style={{ paddingRight: '16px' }}
+                          >
+                            <img
+                              style={{ width: '40px' }}
+                              class="media-object"
+                              src="styles/assets/tada.png"
+                            />
+                          </div>
                           <div class="media-body">
                             <AsyncButton
                               class="btn btn-large btn-default pull-right"

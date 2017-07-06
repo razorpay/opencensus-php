@@ -4,6 +4,7 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
+import LocalStorageService from 'rzp/utils/localStorage';
 import { required } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
@@ -48,6 +49,8 @@ export default class SubmitFeedback extends Component {
   };
 
   revert = () => {
+    // Remove onboarding card
+    LocalStorageService.removeItem('show_onboarding_card');
     return this.props.enableOrDisableNewui(false);
   };
 
