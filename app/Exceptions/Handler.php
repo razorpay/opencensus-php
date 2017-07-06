@@ -43,6 +43,7 @@ class Handler extends ExceptionHandler
         NotFoundHttpException::class,
         TokenMismatchException::class,
         \UnexpectedValueException::class,
+        BadRequestError::class,
     ];
 
     /**
