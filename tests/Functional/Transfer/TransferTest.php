@@ -98,10 +98,11 @@ class TransferTest extends TestCase
 
         $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
 
-        $serviceTax = 3;
+        $serviceTax = 4;
         $expectedFee = 20 + $serviceTax;
 
         $txnData = [
+            'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
             'service_tax' => $serviceTax,
             'debit'       => $transfer['amount'] + $expectedFee
@@ -118,11 +119,6 @@ class TransferTest extends TestCase
         {
             $this->createTransfer('account', [], 'live');
         });
-    }
-
-    public function testTransferToWallet()
-    {
-        // @todo: not implemented for wallet yet
     }
 
     public function testTransferInvalidType()
