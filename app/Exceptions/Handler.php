@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Razorpay\Api\Errors\BadRequestError;
 
 class Handler extends ExceptionHandler
 {
@@ -114,6 +115,10 @@ class Handler extends ExceptionHandler
         {
             $response = response(self::RESPONSE_403, 403)
                 ->header('Content-Type', 'text/plain');
+        }
+        else if ($e instanceof BadRequestError)
+        {
+            $response = Response::json(array('success'=>false,'errors' => [$e->getMessage()]));
         }
         else
         {
