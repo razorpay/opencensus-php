@@ -9,7 +9,7 @@ export default ({ onShowChanges, onCancelClick }) => {
         To simplify your experience, we have made some small changes on the dashboard
         <div class="Modal__actions clearfix text-center">
           <button class="btn btn-default pull-left" onClick={onCancelClick}>
-            I'll look around
+            Skip
           </button>
 
           <button class="btn btn-primary pull-right" onClick={onShowChanges}>
