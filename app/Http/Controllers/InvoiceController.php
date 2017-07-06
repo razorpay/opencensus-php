@@ -200,17 +200,18 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Temp solution: Used by dashboard to show 'Issue all links'
-     * against list of batch ids. This endpoint returns batch_id and counts
-     * of non draft invoices per batch_id.
+     * Temporary solution: Used by dashboard to show 'Issue all links'
+     * against list of batch ids. This endpoint returns batch_ids for which
+     * that action should be shown. Filter happens by checking if there is
+     * any non-draft invoice in the batch.
      *
      * @return ApiResponse
      */
-    public function getNonDraftInvoiceCountByBatchIds()
+    public function getIssuableByBatchIds()
     {
         $input = Request::all();
 
-        $response = $this->service('invoice')->getNonDraftInvoiceCountByBatchIds($input);
+        $response = $this->service('invoice')->getIssuableByBatchIds($input);
 
         return ApiResponse::json($response);
     }

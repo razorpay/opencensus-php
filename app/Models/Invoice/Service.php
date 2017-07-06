@@ -294,7 +294,15 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getNonDraftInvoiceCountByBatchIds(array $input): array
+    /**
+     * Returns filtered list of batch ids which should be allowed
+     * 'Issue all links' action.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getIssuableByBatchIds(array $input): array
     {
         (new Validator)->validateInput('invoiceStatsByBatches', $input);
 
@@ -304,10 +312,21 @@ class Service extends Base\Service
 
         $results = $this->repo->invoice->getNonDraftInvoiceCountByBatchIds($batchIds);
 
-        foreach ($results as & $result)
-        {
-            $result[Entity::BATCH_ID] = Batch\Entity::getSignedIdOrNull($result[Entity::BATCH_ID]);
-        }
+        // Following batch ids have non draft invoices and we assume this
+        // whole batch was already issued.
+
+        $results = array_filter($results, function ($result)
+                    {
+                        return ($result['count'] > 0);
+                    });
+
+        $results = array_column($results, Entity::BATCH_ID);
+
+        // Return the list which can be shown 'Issue all links' action
+
+        $results = array_diff($batchIds, $results);
+
+        Batch\Entity::getSignedIdMultiple($results);
 
         return $results;
     }
