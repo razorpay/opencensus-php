@@ -44,7 +44,7 @@ export default class OnboardingCard extends Component {
         <div class="media-left">
           <img
             class="media-object"
-            src="styles/assets/onboarding-illustration.png"
+            src="styles/assets/onboarding-illustration.svg"
           />
         </div>
 

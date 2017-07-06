@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import ProgressBar from 'rzp/ui/ProgressBar';
-import ActivateAccount from 'styles/assets/activate-account.svg';
-import ActivationSubmitted from 'styles/assets/activation-submitted.svg';
+import ActivateAccountSVG from 'styles/assets/activate-account.svg';
+import ActivationSubmittedSVG from 'styles/assets/activation-submitted.svg';
+import AccountActivatedSVG from 'styles/assets/account-activated.svg';
 
 export default ({ user }) => {
-  let svgSrc = ActivateAccount;
+  let svgSrc = ActivateAccountSVG;
   let header = 'Activate account to go live!';
   let headerDesc = (
     <div class="clearfix">
@@ -22,11 +23,11 @@ export default ({ user }) => {
   if (user.isActivated) {
     header = 'Congrats! Account Activated.';
     headerDesc = <div>Now you can accept live payments</div>;
-    svgSrc = ActivationSubmitted;
+    svgSrc = AccountActivatedSVG;
   } else if (user.isSubmitted) {
     header = 'Activation Submitted.';
     headerDesc = <div>Usually takes 1-2 days for activation</div>;
-    svgSrc = ActivationSubmitted;
+    svgSrc = ActivationSubmittedSVG;
   }
 
   return (
