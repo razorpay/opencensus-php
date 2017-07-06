@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { PowerSelect } from 'react-power-select'
 
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -40,10 +41,14 @@ class NewApplicationForm extends Component {
   constructor() {
     super();
     this.openPreviewPage = this.openPreviewPage.bind(this)
+    this.showDevSecret = this.showDevSecret.bind(this)
+    this.showProdSecret = this.showProdSecret.bind(this)
   }
   state = {
     edit: false,
-    details: {}
+    details: {},
+    showDevSecret: false,
+    showProdSecret: false,
   }
   componentWillMount() {
     let id = this.props.match.params.id
@@ -57,6 +62,9 @@ class NewApplicationForm extends Component {
       return
     }
     this.props.fetchApplication(id).then((data)=>{
+      // todo : remove
+      data.clients.dev.secret = 'ajsdhfkajshdfkjashdfkjsadhfkhjsdf'
+      data.clients.prod.secret = 'ajsdhfkajshdfkjashdfkjsadhfkhjsdf'
       this.initForm(data)
     }).catch((err)=>{
       this.props.showNotification({
@@ -124,7 +132,14 @@ class NewApplicationForm extends Component {
     });
   }
 
-
+  showDevSecret = (e) => {
+    e.preventDefault();
+    this.setState({showDevSecret: true});
+  }
+  showProdSecret = (e) => {
+    e.preventDefault();
+    this.setState({showProdSecret: true});
+  }
 
   render() {
     const { handleSubmit } = this.props;
@@ -198,8 +213,9 @@ class NewApplicationForm extends Component {
                     <Field
                       name="clients.dev.id"
                       component={InputField}
-                      class="form-control"
-                      placeholder="http://test-app.com/"
+                      disabled={true}
+                      class="form-control copy-field"
+                      placeholder="client_id"
                     />
                   </div>
                   <label class="col-md-2 control-label">
@@ -208,15 +224,18 @@ class NewApplicationForm extends Component {
                   <div class="col-md-4">
                     <Field
                       name="clients.dev.secret"
+                      disabled={true}
+                      type={this.state.showDevSecret ? 'text' : 'password'}
                       component={InputField}
-                      class="form-control"
-                      placeholder="http://test-app.com/"
+                      class="form-control copy-field"
+                      placeholder="client_secret"
                     />
+                    {!this.state.showDevSecret && <button class="btn btn-default btn-show-secret" onClick={this.showDevSecret}>Show</button>}
                   </div>
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label label-required">
+                  <label class="col-md-2 control-label">
                     Redirect URIs
                   </label>
                   <div class="col-md-10">
@@ -241,32 +260,36 @@ class NewApplicationForm extends Component {
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label label-required">
+                  <label class="col-md-2 control-label">
                     client_id
                   </label>
                   <div class="col-md-4">
                     <Field
                       name="clients.prod.id"
                       component={InputField}
-                      class="form-control"
+                      disabled={true}
+                      class="form-control copy-field"
                       placeholder="client_id"
                     />
                   </div>
-                  <label class="col-md-2 control-label label-required">
+                  <label class="col-md-2 control-label">
                     client_secret
                   </label>
                   <div class="col-md-4">
                     <Field
                       name="clients.prod.secret"
+                      disabled={true}
                       component={InputField}
-                      class="form-control"
+                      type={this.state.showProdSecret ? 'text' : 'password'}
+                      class="form-control copy-field"
                       placeholder="client_secret"
                     />
+                    {!this.state.showProdSecret && <button class="btn btn-default btn-show-secret" onClick={this.showProdSecret}>Show</button>}
                   </div>
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label label-required">
+                  <label class="col-md-2 control-label">
                     Redirect URIs
                   </label>
                   <div class="col-md-10">

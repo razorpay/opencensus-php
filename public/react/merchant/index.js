@@ -17,6 +17,7 @@ import App from './containers/App';
 window.React = React;
 window.ReactDOM = ReactDOM;
 window.$ = $;
+window.s = store.getState.bind(store); // todo remove this
 
 Tabs.setUseDefaultStyles(false);
 
