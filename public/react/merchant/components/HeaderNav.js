@@ -58,6 +58,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
 export default ({
   user,
   mode,
+  showGSTModal,
   modeFormatted,
   onSwitchMode,
   onSwitchMerchant,
@@ -84,6 +85,11 @@ export default ({
           id="headerNav"
         >
           <ul class="nav navbar-nav navbar-right">
+            <ShowWhen myRole="owner">
+              <li>
+                <a onClick={showGSTModal}>GST Details</a>
+              </li>
+            </ShowWhen>
             <li>
               <ModesDropdown
                 mode={mode}

@@ -18,6 +18,7 @@ import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
+import AddGST from 'merchant/containers/Profile/AddGST';
 
 @withRouter
 @connect(state => state.session, {
@@ -199,6 +200,13 @@ export default class App extends Component {
     });
   };
 
+  showGSTModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <AddGST openedFromTopbar={true} />,
+    });
+  };
+
   render() {
     let { user, mode, modeFormatted } = this.props;
 
@@ -212,6 +220,7 @@ export default class App extends Component {
           user={user}
           mode={mode}
           modeFormatted={modeFormatted}
+          showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
           toggleMobileNav={this.toggleMobileNav}

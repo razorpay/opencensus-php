@@ -1,18 +1,16 @@
 import { Component, Children } from 'react';
 import { connect } from 'react-redux';
 import { Tour, TourStep } from 'rzp/ui/Tour';
-import { fetchGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 
-@connect(null, { fetchGST, ...ModalActions })
+@connect(null, ModalActions)
 export default class MerchantTour extends Component {
   state = {
     isTourActive: false,
     activeTourStep: 0,
     showOnboardingTour: false,
-    appendGSTStep: false,
   };
 
   componentWillMount() {
@@ -36,18 +34,6 @@ export default class MerchantTour extends Component {
         });
       }, 1500);
     }
-
-    if (!LocalStorageService.getItem('gst_tour_shown')) {
-      this.props.fetchGST().then(({ data }) => {
-        if (!data.gstin && !data.p_gstin) {
-          if (this.state.showOnboardingTour) {
-            this.setState({ appendGSTStep: true });
-          } else {
-            this.showTour();
-          }
-        }
-      });
-    }
   }
 
   showTour = () => {
@@ -56,7 +42,6 @@ export default class MerchantTour extends Component {
   };
 
   closeTour = () => {
-    LocalStorageService.setItem('gst_tour_shown', true);
     LocalStorageService.removeItem('show_newui_tour');
     this.setState({ isTourActive: false });
     this.props.closeModal();
@@ -77,142 +62,106 @@ export default class MerchantTour extends Component {
           tourStep={this.state.activeTourStep}
           showOverlay={this.state.showOnboardingTour}
         >
-          {showOnboardingTour
-            ? Children.toArray([
-                <TourStep to="#transactions-nav">
-                  <p>
-                    <b>Payments</b>
-                    ,
-                    {' '}
-                    <b>Refunds</b>
-                    {' '}
-                    and
-                    {' '}
-                    <b>Orders</b>
-                    {' '}
-                    are moved to Transactions.
-                  </p>
-                  <div class="btn-toolbar">
-                    <button class="btn btn-link" onClick={this.closeTour}>
-                      Skip
-                    </button>
-                    <button
-                      class="btn btn-link pull-right"
-                      onClick={this.gotoNextTourStep}
-                    >
-                      Next &gt;
-                    </button>
-                  </div>
-                </TourStep>,
-
-                <TourStep to="#myaccount-nav">
-                  <p>
-                    <b>Profile</b>
-                    ,
-                    {' '}
-                    <b>Activation</b>
-                    ,
-                    {' '}
-                    <b>Credits</b>
-                    {' '}
-                    and
-                    {' '}
-                    <b>Add Funds</b>
-                    {' '}
-                    are moved to My Account.
-                  </p>
-                  <div class="btn-toolbar">
-                    <button class="btn btn-link" onClick={this.closeTour}>
-                      Skip
-                    </button>
-                    <button
-                      class="btn btn-link pull-right"
-                      onClick={this.gotoNextTourStep}
-                    >
-                      Next &gt;
-                    </button>
-                  </div>
-                </TourStep>,
-
-                <TourStep to="#settings-nav">
-                  <p>
-                    <b>Configuration</b>
-                    ,
-                    {' '}
-                    <b>API Keys</b>
-                    , and
-                    {' '}
-                    <b>Webhooks</b>
-                    {' '}
-                    are moved to Settings.
-                  </p>
-                  <div class="btn-toolbar">
-                    <button class="btn btn-link" onClick={this.closeTour}>
-                      Skip
-                    </button>
-
-                    <button
-                      class="btn btn-link pull-right"
-                      onClick={this.gotoNextTourStep}
-                    >
-                      Next &gt;
-                    </button>
-                  </div>
-                </TourStep>,
-              ])
-            : null}
-
-          <TourStep to={isNewUIEnabled ? '#myaccount-nav' : '#profile-nav'}>
+          <TourStep to="#transactions-nav">
             <p>
-              Find Razorpay's
+              <b>Payments</b>
+              ,
               {' '}
-              <b>GST</b>
+              <b>Refunds</b>
               {' '}
-              Number and update your
+              and
               {' '}
-              <b>GST</b>
+              <b>Orders</b>
               {' '}
-              details in
-              {' '}
-              {isNewUIEnabled ? 'My Account > Profile' : 'Profile'}
-              {' '}
-              tab.
+              are moved to Transactions.
             </p>
             <div class="btn-toolbar">
+              <button class="btn btn-link" onClick={this.closeTour}>
+                Skip
+              </button>
               <button
                 class="btn btn-link pull-right"
                 onClick={this.gotoNextTourStep}
               >
-                {showOnboardingTour ? 'Next >' : 'Okay, Got it!'}
+                Next &gt;
               </button>
             </div>
           </TourStep>
 
-          {showOnboardingTour
-            ? <TourStep
-                to="#profile-dropdown"
-                attachment="top center"
-                targetAttachment="bottom left"
-                offset="-15px 12px"
-                arrowLeftPos="75%"
+          <TourStep to="#myaccount-nav">
+            <p>
+              <b>Profile</b>
+              ,
+              {' '}
+              <b>Activation</b>
+              ,
+              {' '}
+              <b>Credits</b>
+              {' '}
+              and
+              {' '}
+              <b>Add Funds</b>
+              {' '}
+              are moved to My Account.
+            </p>
+            <div class="btn-toolbar">
+              <button class="btn btn-link" onClick={this.closeTour}>
+                Skip
+              </button>
+              <button
+                class="btn btn-link pull-right"
+                onClick={this.gotoNextTourStep}
               >
-                <p>
-                  Your
-                  {' '}
-                  <b>Merchant ID</b>
-                  {' '}
-                  is here. Also, to revert to old design or to give feedback, click here.
-                </p>
-                <div class="btn-toolbar">
-                  <button
-                    class="btn btn-link pull-right"
-                    onClick={this.closeTour}
-                  >
-                    Okay, Got it!
-                  </button>
-                </div>
-              </TourStep>
-            : null}
+                Next &gt;
+              </button>
+            </div>
+          </TourStep>
+
+          <TourStep to="#settings-nav">
+            <p>
+              <b>Configuration</b>
+              ,
+              {' '}
+              <b>API Keys</b>
+              , and
+              {' '}
+              <b>Webhooks</b>
+              {' '}
+              are moved to Settings.
+            </p>
+            <div class="btn-toolbar">
+              <button class="btn btn-link" onClick={this.closeTour}>
+                Skip
+              </button>
+
+              <button
+                class="btn btn-link pull-right"
+                onClick={this.gotoNextTourStep}
+              >
+                Next &gt;
+              </button>
+            </div>
+          </TourStep>
+          <TourStep
+            to="#profile-dropdown"
+            attachment="top center"
+            targetAttachment="bottom left"
+            offset="-15px 12px"
+            arrowLeftPos="75%"
+          >
+            <p>
+              Your
+              {' '}
+              <b>Merchant ID</b>
+              {' '}
+              is here. Also, to revert to old design or to give feedback, click here.
+            </p>
+            <div class="btn-toolbar">
+              <button class="btn btn-link pull-right" onClick={this.closeTour}>
+                Okay, Got it!
+              </button>
+            </div>
+          </TourStep>
         </Tour>
       </div>
     );

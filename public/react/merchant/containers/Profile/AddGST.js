@@ -1,10 +1,12 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
+import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { saveGST } from 'merchant/modules/profile';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -35,6 +37,8 @@ const selector = formValueSelector('newGST');
   state => {
     return {
       selectedGSTType: selector(state, 'gst_type'),
+      merchant_gst: state.profile.merchant_gst,
+      rzp_gst: state.profile.rzp_gst,
     };
   },
   {
@@ -68,11 +72,17 @@ export default class AddGST extends Component {
     return this.props
       .saveGST(fieldProps)
       .then(item => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'GST saved successfully',
-        });
-        this.props.closeModal();
+        if (this.props.openedFromTopbar) {
+          this.setState({
+            saved: true,
+          });
+        } else {
+          this.props.showNotification({
+            type: 'success',
+            message: 'GST saved successfully',
+          });
+          this.props.closeModal();
+        }
       })
       .catch(err => {
         this.setState({
@@ -82,97 +92,140 @@ export default class AddGST extends Component {
   };
 
   render() {
-    const { handleSubmit, merchant_gst, selectedGSTType } = this.props;
+    const {
+      handleSubmit,
+      merchant_gst,
+      rzp_gst,
+      selectedGSTType,
+      openedFromTopbar,
+    } = this.props;
     let isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
     let isPGST = selectedGSTType === 'p_gstin';
 
     return (
       <div>
-        <ModalHeader
-          title={isNew ? 'Add your GST Details' : 'Edit GST Details'}
-          onCloseClick={this.props.closeModal}
-        />
+        {!openedFromTopbar
+          ? <ModalHeader
+              title={isNew ? 'Add your GST Details' : 'Edit GST Details'}
+              onCloseClick={this.props.closeModal}
+            />
+          : null}
 
         <div class="modal-body">
           <Alert type="error" message={this.state.errors} />
 
-          <form onSubmit={handleSubmit(this.save)}>
-            <div class="help-block">
-              Entered GSTIN will appear on invoices that we send to you
-            </div>
+          {openedFromTopbar
+            ? <div class="rzp-gst">
+                <button
+                  type="button"
+                  class="close"
+                  onClick={this.props.closeModal}
+                >
+                  <i class="icon icon-close" />
+                </button>
 
-            <ul class="block-radio-group list-group">
-              <li class="list-group-item">
-                <Field
-                  name="gst_type"
-                  component="input"
-                  type="radio"
-                  id="p_gstin"
-                  value="p_gstin"
-                />
-                <label for="p_gstin">
-                  Provisional GSTIN
-                  <i class="pull-right fa fa-check" />
-                </label>
-              </li>
-              <li class="list-group-item">
-                <Field
-                  name="gst_type"
-                  component="input"
-                  type="radio"
-                  id="gstin"
-                  value="gstin"
-                />
-                <label for="gstin">
-                  GSTIN
-                  <i class="pull-right fa fa-check" />
-                </label>
-              </li>
-            </ul>
-
-            {isPGST
-              ? <div class="form-group">
-                  <label class="label-required">Provisional GSTIN</label>
-                  <div>
-                    <Field
-                      name="p_gstin"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="19AAAAAA1234YYY"
-                    />
-                  </div>
+                <label>Razorpay's GST number</label>
+                <div>
+                  <span>{rzp_gst.p_gstin}</span>
+                  <CustomClipboard value={rzp_gst.p_gstin}>
+                    <button
+                      class="btn btn-default btn-xs"
+                      style={{ marginLeft: '5px' }}
+                    >
+                      Copy GST
+                    </button>
+                  </CustomClipboard>
                 </div>
-              : <div class="form-group">
-                  <label class="label-required">GSTIN</label>
-                  <div>
+
+                <hr />
+
+                <label>Add your GST number</label>
+              </div>
+            : null}
+
+          {this.state.saved
+            ? <div>
+                Your GST details have been updated. You can access it anytime from the
+                {' '}
+                <Link to="/profile">Profile Section</Link>
+              </div>
+            : <form onSubmit={handleSubmit(this.save)}>
+                <div class="help-block">
+                  Entered GSTIN will appear on invoices that we send to you
+                </div>
+
+                <ul class="block-radio-group list-group">
+                  <li class="list-group-item">
                     <Field
-                      name="gstin"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="19AAAAAA1234YYY"
+                      name="gst_type"
+                      component="input"
+                      type="radio"
+                      id="p_gstin"
+                      value="p_gstin"
                     />
-                  </div>
-                </div>}
+                    <label for="p_gstin">
+                      Provisional GSTIN
+                      <i class="pull-right fa fa-check" />
+                    </label>
+                  </li>
+                  <li class="list-group-item">
+                    <Field
+                      name="gst_type"
+                      component="input"
+                      type="radio"
+                      id="gstin"
+                      value="gstin"
+                    />
+                    <label for="gstin">
+                      GSTIN
+                      <i class="pull-right fa fa-check" />
+                    </label>
+                  </li>
+                </ul>
 
-            <div class="help-block">
-              {isPGST
-                ? 'You can submit your final GSTIN here once you have received it.'
-                : 'final GSTIN once submitted cannot be updated via dashboard.'}
+                {isPGST
+                  ? <div class="form-group">
+                      <label class="label-required">Provisional GSTIN</label>
+                      <div>
+                        <Field
+                          name="p_gstin"
+                          component={InputField}
+                          class="form-control"
+                          autoFocus={true}
+                          placeholder="19AAAAAA1234YYY"
+                        />
+                      </div>
+                    </div>
+                  : <div class="form-group">
+                      <label class="label-required">GSTIN</label>
+                      <div>
+                        <Field
+                          name="gstin"
+                          component={InputField}
+                          class="form-control"
+                          autoFocus={true}
+                          placeholder="19AAAAAA1234YYY"
+                        />
+                      </div>
+                    </div>}
 
-            </div>
+                <div class="help-block">
+                  {isPGST
+                    ? 'You can submit your final GSTIN here once you have received it.'
+                    : 'final GSTIN once submitted cannot be updated via dashboard.'}
 
-            <div class="Modal__actions">
-              <AsyncButton
-                type="submit"
-                class="btn btn-primary btn-block"
-                text="Save my GST Details"
-                pendingText="Saving..."
-                onClick={handleSubmit(this.save)}
-              />
-            </div>
-          </form>
+                </div>
+
+                <div class="Modal__actions">
+                  <AsyncButton
+                    type="submit"
+                    class="btn btn-primary btn-block"
+                    text="Save my GST Details"
+                    pendingText="Saving..."
+                    onClick={handleSubmit(this.save)}
+                  />
+                </div>
+              </form>}
         </div>
       </div>
     );
