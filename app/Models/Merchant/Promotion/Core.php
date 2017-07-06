@@ -25,8 +25,8 @@ class Core extends Base\Core
     public function create(Merchant\Entity $merchant, Promotion\Entity $promotion): Entity
     {
         $input = [
-            Entity::REMAINING_RUNS => $promotion->getIterations(),
-            Entity::START_TIME     => time(),
+            Entity::REMAINING_ITERATIONS => $promotion->getIterations(),
+            Entity::START_TIME           => time(),
         ];
 
         $merchantPromotion = (new Entity)->build($input);
@@ -115,11 +115,11 @@ class Core extends Base\Core
             {
                 $this->expireCredits($merchant, $promotion);
 
-                if ($merchantPromotion->getRemainingRuns() > 0)
+                if ($merchantPromotion->getRemainingIterations() > 0)
                 {
                     $this->applyCredits($merchant, $promotion, $scheduleTask);
 
-                    $merchantPromotion->decrementRemainingRuns();
+                    $merchantPromotion->decrementRemainingIterations();
 
                     $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
 
@@ -151,7 +151,7 @@ class Core extends Base\Core
     {
         $creditInput = [
             Credits\Entity::CAMPAIGN     => $promotion->getName(),
-            Credits\Entity::VALUE        => $promotion->getAmount(),
+            Credits\Entity::VALUE        => $promotion->getCreditAmount(),
             Credits\Entity::TYPE         => $promotion->getCreditType(),
         ];
 

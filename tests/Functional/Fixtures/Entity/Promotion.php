@@ -8,7 +8,7 @@ class Promotion extends Base
     {
         $promotionAttributes = [
             'iterations'        => '1',
-            'credits_expirable' => false,
+            'credits_expire' => false,
         ];
 
         $attributes = array_merge($promotionAttributes, $attributes);
@@ -29,7 +29,7 @@ class Promotion extends Base
 
         $promotionAttributes = [
             'iterations'        => '1',
-            'credits_expirable' => true,
+            'credits_expire' => true,
             'schedule_id'       => $schedule->getId(),
         ];
 

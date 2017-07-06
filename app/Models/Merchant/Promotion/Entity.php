@@ -6,11 +6,11 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const MERCHANT_ID    = 'merchant_id';
-    const PROMOTION_ID   = 'promotion_id';
-    const START_TIME     = 'start_time';
-    const REMAINING_RUNS = 'remaining_runs';
-    const EXPIRED        = 'expired';
+    const MERCHANT_ID          = 'merchant_id';
+    const PROMOTION_ID         = 'promotion_id';
+    const START_TIME           = 'start_time';
+    const REMAINING_ITERATIONS = 'remaining_iterations';
+    const EXPIRED              = 'expired';
 
     protected $entity = 'merchant_promotion';
 
@@ -21,15 +21,15 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::EXPIRED        => 'boolean',
-        self::REMAINING_RUNS => 'int',
+        self::EXPIRED              => 'boolean',
+        self::REMAINING_ITERATIONS => 'int',
     ];
 
     protected $fillable = [
         self::MERCHANT_ID,
         self::PROMOTION_ID,
         self::START_TIME,
-        self::REMAINING_RUNS,
+        self::REMAINING_ITERATIONS,
         self::EXPIRED
     ];
 
@@ -47,9 +47,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Promotion\Entity');
     }
 
-    public function getRemainingRuns()
+    public function getRemainingIterations()
     {
-        return $this->attributes[self::REMAINING_RUNS];
+        return $this->attributes[self::REMAINING_ITERATIONS];
     }
 
     public function setExpired()
@@ -59,6 +59,6 @@ class Entity extends Base\PublicEntity
 
     public function decrementRemainingRuns()
     {
-        $this->decrement(self::REMAINING_RUNS);
+        $this->decrement(self::REMAINING_ITERATIONS);
     }
 }

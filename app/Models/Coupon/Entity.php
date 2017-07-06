@@ -14,9 +14,9 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
     const CODE        = 'code';
-    const START_DATE  = 'start_date';
-    const END_DATE    = 'end_date';
-    const USAGE       = 'usage';
+    const START_AT    = 'start_at';
+    const END_AT      = 'end_at';
+    const MAX_COUNT   = 'max_count';
     const USED_COUNT  = 'used_count';
     const DELETED_AT  = 'deleted_at';
 
@@ -26,9 +26,9 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::CODE,
-        self::START_DATE,
-        self::END_DATE,
-        self::USAGE,
+        self::START_AT,
+        self::END_AT,
+        self::MAX_COUNT,
     ];
 
     protected $visible = [
@@ -37,9 +37,9 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::MERCHANT_ID,
-        self::USAGE,
-        self::START_DATE,
-        self::END_DATE,
+        self::MAX_COUNT,
+        self::START_AT,
+        self::END_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -49,9 +49,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::START_DATE => 'int',
-        self::END_DATE   => 'int',
-        self::USAGE      => 'int',
+        self::START_AT   => 'int',
+        self::END_AT     => 'int',
+        self::MAX_COUNT  => 'int',
         self::USED_COUNT => 'int',
     ];
 
@@ -70,9 +70,9 @@ class Entity extends Base\PublicEntity
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
 
-    public function getUsage()
+    public function getMaxCount()
     {
-        return $this->getAttribute(self::USAGE);
+        return $this->getAttribute(self::MAX_COUNT);
     }
 
     public function getEntityType()
@@ -85,14 +85,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USED_COUNT);
     }
 
-    public function getStartDate()
+    public function getStartAt()
     {
-        return $this->getAttribute(self::START_DATE);
+        return $this->getAttribute(self::START_AT);
     }
 
-    public function getEndDate()
+    public function getEndAt()
     {
-        return $this->getAttribute(self::END_DATE);
+        return $this->getAttribute(self::END_AT);
     }
 
     public function incrementUsedCount()

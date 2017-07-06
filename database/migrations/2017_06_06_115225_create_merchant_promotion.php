@@ -30,7 +30,7 @@ class CreateMerchantPromotion extends Migration
 
             $table->integer(MerchantPromotion::START_TIME);
 
-            $table->integer(MerchantPromotion::REMAINING_RUNS)
+            $table->integer(MerchantPromotion::REMAINING_ITERATIONS)
                   ->unsigned();
 
             $table->tinyInteger(MerchantPromotion::EXPIRED);

@@ -26,7 +26,7 @@ class CreatePromotionsTable extends Migration
 
             $table->string(Promotion::NAME, 50);
 
-            $table->integer(Promotion::AMOUNT)
+            $table->integer(Promotion::CREDIT_AMOUNT)
                   ->unsigned();
 
             $table->string(Promotion::CREDIT_TYPE, 20);
@@ -38,7 +38,7 @@ class CreatePromotionsTable extends Migration
                   ->unsigned()
                   ->default(1);
 
-            $table->tinyInteger(Promotion::CREDITS_EXPIRABLE)
+            $table->tinyInteger(Promotion::CREDITS_EXPIRE)
                   ->default(0);
 
             $table->integer(Promotion::CREATED_AT);

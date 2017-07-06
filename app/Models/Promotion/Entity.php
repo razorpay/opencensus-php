@@ -9,11 +9,11 @@ use RZP\Models\Transaction\CreditType;
 class Entity extends Base\PublicEntity
 {
     const NAME                    = 'name';
-    const AMOUNT                  = 'amount';
+    const CREDIT_AMOUNT           = 'credit_amount';
     const CREDIT_TYPE             = 'credit_type';
     const SCHEDULE_ID             = 'schedule_id';
     const ITERATIONS              = 'iterations';
-    const CREDITS_EXPIRABLE       = 'credits_expirable';
+    const CREDITS_EXPIRE          = 'credits_expire';
 
     //These two variables are used to create schedule for promotion
     //in case the credits need to be expired and renewed
@@ -30,20 +30,20 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::NAME,
-        self::AMOUNT,
+        self::CREDIT_AMOUNT,
         self::CREDIT_TYPE,
         self::ITERATIONS,
-        self::CREDITS_EXPIRABLE,
+        self::CREDITS_EXPIRE,
     ];
 
     protected $visible = [
         self::ID,
         self::NAME,
-        self::AMOUNT,
+        self::CREDIT_AMOUNT,
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
-        self::CREDITS_EXPIRABLE,
+        self::CREDITS_EXPIRE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -54,20 +54,20 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT            => 'int',
-        self::ITERATIONS        => 'int',
-        self::CREDITS_EXPIRABLE => 'bool',
+        self::CREDIT_AMOUNT  => 'int',
+        self::ITERATIONS     => 'int',
+        self::CREDITS_EXPIRE => 'bool',
     ];
 
     protected static $modifiers = [
-        self::CREDITS_EXPIRABLE,
+        self::CREDITS_EXPIRE,
     ];
 
     protected function modifyCreditsExpirable(array & $input)
     {
-        if (empty($input[self::CREDITS_EXPIRABLE]) === true)
+        if (empty($input[self::CREDITS_EXPIRE]) === true)
         {
-            $input[self::CREDITS_EXPIRABLE] = 0;
+            $input[self::CREDITS_EXPIRE] = 0;
         }
     }
 
@@ -88,9 +88,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
-    public function getAmount()
+    public function getCreditAmount()
     {
-        return $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::CREDIT_AMOUNT);
     }
 
     public function getCreditType()
@@ -103,8 +103,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ITERATIONS);
     }
 
-    public function areCreditsExpirable(): bool
+    public function doCreditsExpire(): bool
     {
-        return $this->getAttribute(self::CREDITS_EXPIRABLE);
+        return $this->getAttribute(self::CREDITS_EXPIRE);
     }
 }

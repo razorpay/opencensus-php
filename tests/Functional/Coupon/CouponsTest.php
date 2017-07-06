@@ -77,9 +77,9 @@ class CouponsTest extends TestCase
 
         $tomorrowTimestamp = Carbon::tomorrow()->timestamp;
 
-        $this->testData[__FUNCTION__]['request']['content']['start_date'] = $tomorrowTimestamp;
+        $this->testData[__FUNCTION__]['request']['content']['start_at'] = $tomorrowTimestamp;
 
-        $this->testData[__FUNCTION__]['request']['content']['end_date'] = Carbon::now()->timestamp;
+        $this->testData[__FUNCTION__]['request']['content']['end_at'] = Carbon::now()->timestamp;
 
         $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__ . 'ExceptionData']['response'];
 
@@ -352,7 +352,7 @@ class CouponsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
-            'end_date'    => $yesterdayTimestamp,
+            'end_at'    => $yesterdayTimestamp,
             'merchant_id' => '100000Razorpay',
         ];
 
@@ -382,7 +382,7 @@ class CouponsTest extends TestCase
         $couponAttributes = [
             'entity_id'   => $promotion->getId(),
             'entity_type' => 'promotion',
-            'start_date'  => $tomorrowTimestamp,
+            'start_at'  => $tomorrowTimestamp,
             'merchant_id' => '100000Razorpay',
         ];
 

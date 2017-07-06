@@ -15,9 +15,9 @@ class Validator extends Base\Validator
         Entity::ENTITY_ID   => 'required|string',
         Entity::ENTITY_TYPE => 'required|string|max:20|in:promotion',
         Entity::CODE        => 'required|string|max:10',
-        Entity::START_DATE  => 'sometimes|epoch',
-        Entity::END_DATE    => 'sometimes|epoch',
-        Entity::USAGE       => 'sometimes|integer',
+        Entity::START_AT    => 'sometimes|epoch',
+        Entity::END_AT      => 'sometimes|epoch',
+        Entity::MAX_COUNT   => 'sometimes|integer',
     ];
 
     protected static $createValidators = [
@@ -32,27 +32,27 @@ class Validator extends Base\Validator
 
     public function validateCouponExpiry(array $input)
     {
-        if ((isset($input[Entity::START_DATE]) === true) and
-            ($input[Entity::START_DATE] < time()))
+        if ((isset($input[Entity::START_AT]) === true) and
+            ($input[Entity::START_AT] < time()))
         {
             throw new  Exception\BadRequestValidationFailureException(
                 'Start date can not be in the past');
         }
 
-        if ((isset($input[Entity::END_DATE]) === true) and
-            ($input[Entity::END_DATE] < time()))
+        if ((isset($input[Entity::END_AT]) === true) and
+            ($input[Entity::END_AT] < time()))
         {
             throw new  Exception\BadRequestValidationFailureException(
                 'End date can not be in the past');
         }
 
-        if ((isset($input[Entity::START_DATE]) === false) or
-            (isset($input[Entity::END_DATE]) === false))
+        if ((isset($input[Entity::START_AT]) === false) or
+            (isset($input[Entity::END_AT]) === false))
         {
             return;
         }
 
-        if ($input[Entity::START_DATE] > $input[Entity::END_DATE])
+        if ($input[Entity::START_AT] > $input[Entity::END_AT])
         {
             throw new  Exception\BadRequestValidationFailureException(
                 'Start date can not be greater than end date');
@@ -70,26 +70,26 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT);
         }
 
-        if (($this->entity->getUsage() !== null) and
-            ($this->entity->getUsedCount() === $this->entity->getUsage()))
+        if (($this->entity->getMaxCount() !== null) and
+            ($this->entity->getUsedCount() === $this->entity->getMaxCount()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_LIMIT_REACHED);
         }
 
-        $startDate = $this->entity->getStartDate();
+        $startAt = $this->entity->getStartAt();
 
-        if (($startDate !== null) and
-            ($startDate > time()))
+        if (($startAt !== null) and
+            ($startAt > time()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_NOT_APPLICABLE);
         }
 
-        $endDate = $this->entity->getEndDate();
+        $endAt = $this->entity->getEndAt();
 
-        if (($endDate !== null) and
-            ($endDate < time()))
+        if (($endAt !== null) and
+            ($endAt < time()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_EXPIRED);

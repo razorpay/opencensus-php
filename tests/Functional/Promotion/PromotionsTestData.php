@@ -9,10 +9,10 @@ return [
         'request' => [
             'content' => [
                 'name'              => 'Test-Promotion',
-                'amount'            => 100,
-                'credit_type'       => 'amount',
+                'credit_amount'     => 100,
+                'credit_type'       => 'credit_amount',
                 'iterations'        => 1,
-                'credits_expirable' => false,
+                'credits_expire'    => false,
             ],
             'url'    => '/promotions',
             'method' => 'POST'
@@ -20,8 +20,8 @@ return [
         'response' => [
             'content' => [
                 'name'              => 'Test-Promotion',
-                'amount'            => 100,
-                'credits_expirable' => false,
+                'credit_amount'     => 100,
+                'credits_expire'    => false,
             ]
         ]
     ],
@@ -30,10 +30,10 @@ return [
         'request' => [
             'content' => [
                 'name'                    => 'Test-Promotion',
-                'amount'                  => 100,
-                'credit_type'             => 'amount',
+                'credit_amount'           => 100,
+                'credit_type'             => 'credit_amount',
                 'iterations'              => 2,
-                'credits_expirable'       => true,
+                'credits_expire'          => true,
                 'credits_expiry_period'   => 'monthly',
                 'credits_expiry_interval' => 1,
             ],
@@ -43,8 +43,8 @@ return [
         'response' => [
             'content' => [
                 'name'              => 'Test-Promotion',
-                'amount'            => 100,
-                'credits_expirable' => true,
+                'credit_amount'     => 100,
+                'credits_expire'    => true,
             ]
         ]
     ],
@@ -61,8 +61,8 @@ return [
             'content' => [
                 'id'                => null,
                 'name'              => 'Updated name',
-                'amount'            => 100,
-                'credits_expirable' => false,
+                'credit_amount'     => 100,
+                'credits_expire'    => false,
             ]
         ]
     ],
@@ -72,7 +72,7 @@ return [
             'url'      => '',
             'method'   => 'PATCH',
             'content'  => [
-                'credits_expirable'        => true,
+                'credits_expire'           => true,
                 'credits_expiry_interval'  => '3',
                 'credits_expiry_period'    => 'monthly'
             ]
@@ -81,7 +81,7 @@ return [
             'content' => [
                 'id'                => null,
                 'name'              => 'Test-Promotion',
-                'amount'            => 100,
+                'credit_amount'     => 100,
             ]
         ]
     ],
@@ -118,8 +118,8 @@ return [
             'content' => [
                 'id'                => null,
                 'name'              => 'Test-Promotion',
-                'amount'            => 100,
-                'credits_expirable' => false,
+                'credit_amount'     => 100,
+                'credits_expire'    => false,
             ]
         ]
     ],
@@ -137,8 +137,8 @@ return [
                     [
 
                         'name'              => 'Test-Promotion',
-                        'amount'            => 100,
-                        'credits_expirable' => false,
+                        'credit_amount'     => 100,
+                        'credits_expire'    => false,
                     ]
                 ]
             ]
@@ -149,10 +149,10 @@ return [
         'request' => [
             'content' => [
                 'name'              => 'Test-Promotion',
-                'amount'            => 100,
+                'credit_amount'     => 100,
                 'credit_type'       => 'random',
                 'iterations'        => 1,
-                'credits_expirable' => false,
+                'credits_expire'    => false,
             ],
             'url'    => '/promotions',
             'method' => 'POST'
@@ -176,10 +176,10 @@ return [
         'request' => [
             'content' => [
                 'name'                    => 'Test-Promotion',
-                'amount'                  => 100,
-                'credit_type'             => 'amount',
+                'credit_amount'           => 100,
+                'credit_type'             => 'credit_amount',
                 'iterations'              => 1,
-                'credits_expirable'       => true,
+                'credits_expire'          => true,
                 'credits_expiry_interval' => 'random',
                 'credits_expiry_period'   => 'monthly'
             ],
@@ -205,10 +205,10 @@ return [
         'request' => [
             'content' => [
                 'name'                    => 'Test-Promotion',
-                'amount'                  => 100,
-                'credit_type'             => 'amount',
+                'credit_amount'           => 100,
+                'credit_type'             => 'credit_amount',
                 'iterations'              => 1,
-                'credits_expirable'       => true,
+                'credits_expire'          => true,
                 'credits_expiry_interval' => 2,
                 'credits_expiry_period'   => 'random'
             ],
@@ -234,10 +234,10 @@ return [
         'request' => [
             'content' => [
                 'name'                    => 'Test-Promotion',
-                'amount'                  => 100,
-                'credit_type'             => 'amount',
+                'credit_amount'           => 100,
+                'credit_type'             => 'credit_amount',
                 'iterations'              => 1,
-                'credits_expirable'       => true,
+                'credits_expire'          => true,
                 'credits_expiry_interval' => 2,
             ],
             'url'    => '/promotions',
@@ -262,10 +262,10 @@ return [
         'request' => [
             'content' => [
                 'name'                    => 'Test-Promotion',
-                'amount'                  => 100,
-                'credit_type'             => 'amount',
+                'credit_amount'           => 100,
+                'credit_type'             => 'credit_amount',
                 'iterations'              => 1,
-                'credits_expirable'       => true,
+                'credits_expire'          => true,
                 'credits_expiry_period'   => 'monthly',
             ],
             'url'    => '/promotions',

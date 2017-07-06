@@ -33,13 +33,13 @@ class CreateCoupons extends Migration
             $table->string(Coupon::CODE, 10)
                   ->unique();
 
-            $table->integer(Coupon::START_DATE)
+            $table->integer(Coupon::START_AT)
                   ->nullable();
 
-            $table->integer(Coupon::END_DATE)
+            $table->integer(Coupon::END_AT)
                   ->nullable();
 
-            $table->integer(Coupon::USAGE)
+            $table->integer(Coupon::MAX_COUNT)
                   ->nullable()
                   ->unsigned();
 

@@ -17,7 +17,7 @@ class Core extends Base\Core
         {
             $promotion = (new Entity)->build($input);
 
-            if ($promotion->areCreditsExpirable() === true)
+            if ($promotion->doCreditsExpire() === true)
             {
                 $schedule = $this->createSchedule($input);
 
@@ -43,7 +43,7 @@ class Core extends Base\Core
         {
             $promotion->edit($input);
 
-            if ($promotion->areCreditsExpirable() === true)
+            if ($promotion->doCreditsExpire() === true)
             {
                 $schedule = $this->createSchedule($input);
 
