@@ -684,6 +684,11 @@ class Gateway extends Base\Gateway
             Fields::ONLINE_REFUND                   => 'N',
         ];
 
+        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        {
+            $data[Fields::ONLINE_REFUND] = 'Y';
+        }
+
         $content = $this->transformRequestArrayToContent($data);
 
         $request = $this->getStandardRequestArray($content);
