@@ -66,6 +66,7 @@ class Table
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
+    const NODAL_STATEMENT       = 'nodal_statements';
 
     // organization roles permissions
     const ORG                   = 'orgs';
