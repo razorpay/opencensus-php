@@ -833,7 +833,7 @@ class Core extends Base\Core
 
         $merchantId = $merchantBalance->merchant->getId();
 
-        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, 'amount');
+        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::AMOUNT);
 
         // Removing Assert for now, as there is a race condition. if 2 payments
         // are authorized at the same time where we create txn on auth with. both

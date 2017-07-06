@@ -117,7 +117,12 @@ class Core extends Base\Core
 
     protected function getPromotionEntity(Entity $coupon)
     {
-        assert($coupon->getEntityType() === 'promotion');
+        if ($coupon->getEntityType() !== 'promotion')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Coupon provided is not associated with entity promotion',
+                $coupon->getEntityType());
+        }
 
         $couponSource = $coupon->source;
 

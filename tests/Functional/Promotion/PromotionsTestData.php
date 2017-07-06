@@ -10,7 +10,7 @@ return [
             'content' => [
                 'name'              => 'Test-Promotion',
                 'credit_amount'     => 100,
-                'credit_type'       => 'credit_amount',
+                'credit_type'       => 'amount',
                 'iterations'        => 1,
                 'credits_expire'    => false,
             ],
@@ -31,7 +31,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'credit_amount'           => 100,
-                'credit_type'             => 'credit_amount',
+                'credit_type'             => 'amount',
                 'iterations'              => 2,
                 'credits_expire'          => true,
                 'credits_expiry_period'   => 'monthly',
@@ -177,7 +177,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'credit_amount'           => 100,
-                'credit_type'             => 'credit_amount',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expire'          => true,
                 'credits_expiry_interval' => 'random',
@@ -206,7 +206,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'credit_amount'           => 100,
-                'credit_type'             => 'credit_amount',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expire'          => true,
                 'credits_expiry_interval' => 2,
@@ -235,7 +235,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'credit_amount'           => 100,
-                'credit_type'             => 'credit_amount',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expire'          => true,
                 'credits_expiry_interval' => 2,
@@ -247,7 +247,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The credits expiry period field is required when credits expirable is 1.'
+                    'description' => 'The credits expiry period field is required when credits expire is 1.'
                 ]
             ],
             'status_code' => 400,
@@ -263,7 +263,7 @@ return [
             'content' => [
                 'name'                    => 'Test-Promotion',
                 'credit_amount'           => 100,
-                'credit_type'             => 'credit_amount',
+                'credit_type'             => 'amount',
                 'iterations'              => 1,
                 'credits_expire'          => true,
                 'credits_expiry_period'   => 'monthly',
@@ -275,7 +275,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The credits expiry interval field is required when credits expirable is 1.'
+                    'description' => 'The credits expiry interval field is required when credits expire is 1.'
                 ]
             ],
             'status_code' => 400,

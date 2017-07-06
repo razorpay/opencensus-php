@@ -682,7 +682,10 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee_model'], 'prepaid');
     }
 
-    //This is to make sure that credits are used first which are expiring first
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
     public function testCreditTransactionWithFeeCreditForPrepaid()
     {
         $credit1 = $this->fixtures->create('credits', [

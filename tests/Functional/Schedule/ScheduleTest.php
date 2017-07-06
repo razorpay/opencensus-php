@@ -186,7 +186,7 @@ class ScheduleTest extends TestCase
         $this->ba->appAuth();
 
        $promotionAttributes = [
-            'amount' => '1000',
+            'credit_amount' => '1000',
         ];
 
         $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
@@ -221,8 +221,8 @@ class ScheduleTest extends TestCase
         $this->ba->appAuth();
 
         $promotionAttributes = [
-            'amount'     => '1000',
-            'iterations' => 2,
+            'credit_amount' => '1000',
+            'iterations'    => 2,
         ];
 
         $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
@@ -241,7 +241,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(30);
+        $time->addDay(31);
 
         Carbon::setTestNow($time);
 
@@ -259,7 +259,7 @@ class ScheduleTest extends TestCase
         $this->ba->appAuth();
 
         $promotionAttributes = [
-            'amount' => '1000',
+            'credit_amount' => '1000',
         ];
 
         $promotion1 = $this->fixtures->create('promotion:recurring', $promotionAttributes);

@@ -35,7 +35,7 @@ class Core extends Base\Core
 
         $merchantPromotion->promotion()->associate($promotion);
 
-        if ($promotion->areCreditsExpirable() === true)
+        if ($promotion->doCreditsExpire() === true)
         {
             $scheduleTask = $this->createScheduleTask($merchant, $promotion);
 

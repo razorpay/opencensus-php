@@ -93,11 +93,11 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getMerchantCreditsOfType(string $merchantId, string $type)
+    public function getMerchantCreditsOfType(string $merchantId, string $type): int
     {
         $query = $this->newQuery()
                       ->selectRaw('SUM(value - used) as sum')
-                      ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                      ->merchantId($merchantId)
                       ->where(function ($query)
                             {
                                 $query->where(Entity::EXPIRED_AT, '>', time())

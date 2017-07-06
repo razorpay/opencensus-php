@@ -139,7 +139,7 @@ class CouponsTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
 
-        $this->testData[__FUNCTION__]['request']['content']['usage'] = 1;
+        $this->testData[__FUNCTION__]['request']['content']['max_count'] = 1;
 
         $this->startTest();
 
@@ -161,7 +161,7 @@ class CouponsTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
 
-        $this->testData[__FUNCTION__]['request']['content']['usage'] = 1;
+        $this->testData[__FUNCTION__]['request']['content']['max_count'] = 1;
 
         $this->startTest();
 
