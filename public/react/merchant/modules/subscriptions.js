@@ -67,7 +67,9 @@ export const subscriptionsReducer = makeActionCollectionReducer(
 let entityInitialState = {
   loading: true,
   entity: {},
-  plan: {},
+  plan: {
+    item: {},
+  },
   customer: {},
   error: null,
 };

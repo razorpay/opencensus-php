@@ -22,7 +22,7 @@ export default class PlanDetailsContainer extends Component {
     if (error) {
       statusMsg = {
         type: 'error',
-        message: this.props.error,
+        message: error,
       };
     }
 

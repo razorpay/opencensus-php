@@ -45,6 +45,9 @@ export default class SubscriptionDetailsContainer extends Component {
       })
       .then(() => {
         this.setState({ isLoading: false });
+      })
+      .catch(({ errors }) => {
+        this.setState({ errors, isLoading: false });
       });
   }
 
@@ -73,14 +76,15 @@ export default class SubscriptionDetailsContainer extends Component {
   };
 
   render() {
-    let { error, entity, plan, customer } = this.props;
+    let { entity, plan, customer } = this.props;
+    let errors = this.state.errors;
     let isLoading = this.state.isLoading;
     let statusMsg = {};
 
-    if (error) {
+    if (errors) {
       statusMsg = {
         type: 'error',
-        message: this.props.error,
+        message: errors,
       };
     }
 
