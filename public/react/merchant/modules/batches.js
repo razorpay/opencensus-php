@@ -56,13 +56,19 @@ export const fetchPaymentLinkBatches = params => {
   };
 };
 
-const uploadBatch = (actionType, batchType) => (file, mode) => {
+const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   let formData = new FormData();
   formData.append('file', file);
   formData.append('file_name', 'file');
   formData.append('route_name', 'batch_create');
   formData.append('body[type]', batchType);
   formData.append('mode', mode);
+
+  for (let key in extraFields) {
+    if (extraFields.hasOwnProperty(key)) {
+      formData.append(key, extraFields[key]);
+    }
+  }
 
   return {
     type: actionType,

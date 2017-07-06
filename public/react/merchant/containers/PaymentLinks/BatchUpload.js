@@ -13,6 +13,46 @@ import {
 @connect(state => state.session, { uploadBatch, showNotification })
 export default class BatchUploadContainer extends Component {
   render() {
+    const additionalFieldsComp = (
+      <div class="row">
+        <div class="col-md-4">
+          <span class="form-option">Draft</span>
+          <label>
+            True
+            <input name="draft" value="1" type="radio" />
+          </label>
+          <label>
+            False
+            <input name="draft" value="0" type="radio" />
+          </label>
+        </div>
+
+        <div class="col-md-4">
+          <span class="form-option">Sms Notify</span>
+          <label>
+            True
+            <input name="sms_notify" value="1" type="radio" />
+          </label>
+          <label>
+            False
+            <input name="sms_notify" value="0" type="radio" />
+          </label>
+        </div>
+
+        <div class="col-md-4">
+          <span class="form-option">Email Notify</span>
+          <label>
+            True
+            <input name="email_notify" value="1" type="radio" />
+          </label>
+          <label>
+            False
+            <input name="email_notify" value="0" type="radio" />
+          </label>
+        </div>
+      </div>
+    );
+
     return (
       <BatchUpload
         batchType="payment_link"
@@ -20,6 +60,8 @@ export default class BatchUploadContainer extends Component {
         sampleUrl="https://dashboard.razorpay.com/files/sample_batch_payment_links.xlsx"
         closeUrl="/paymentlinks/batchuploads"
         title="payment links"
+        additionalFields={['draft', 'sms_notify', 'email_notify']}
+        additionalFieldsComp={additionalFieldsComp}
         modeFormatted={this.props.modeFormatted}
         {...this.props}
       />

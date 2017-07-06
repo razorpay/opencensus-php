@@ -19,13 +19,18 @@ export default class BatchUpload extends Component {
   };
 
   save = () => {
+    let additionalFormFields = {};
+    this.props.additionalFields.forEach(key => {
+      additionalFormFields[key] = this.form[key].value;
+    });
+
     this.context.confirm({
       message: 'Please ensure the amounts in your file are in paise.',
       affirmativeLabel: 'Submit',
       affirmativePendingLabel: 'Submitting...',
       action: () =>
         this.props
-          .uploadBatch(this.state.file, this.props.mode)
+          .uploadBatch(this.state.file, this.props.mode, additionalFormFields)
           .then(() => {
             this.props.showNotification({
               type: 'success',
@@ -64,7 +69,11 @@ export default class BatchUpload extends Component {
           </div>
 
           <div class="panel-body">
-            <form>
+            <form
+              ref={form => {
+                this.form = form;
+              }}
+            >
               <div class="help-block">
                 This is a simple way to process
                 {' '}
@@ -89,6 +98,8 @@ export default class BatchUpload extends Component {
                     <FileUploadInputButton onChange={this.handleChange} />
                   </div>
                 </div>
+                {this.props.additionalFieldsComp &&
+                  this.props.additionalFieldsComp}
               </div>
 
               <div class="text-center">
