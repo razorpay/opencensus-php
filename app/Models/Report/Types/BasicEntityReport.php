@@ -271,12 +271,12 @@ class BasicEntityReport extends BaseReport
      * 1. Fetches entities to be added in report
      * 2. Formats data to be shown in report
      *
-     * @param $from , $to, $count, $skip
+     * @param $from
      * @param $to
      * @param $count
      * @param $skip
      *
-     * @return array [$formattedData, $fetchCount]
+     * @return array
      */
     protected function getReportData($from, $to, $count, $skip): array
     {
@@ -355,7 +355,7 @@ class BasicEntityReport extends BaseReport
      * @param $count
      * @param $skip
      *
-     * @return
+     * @return \RZP\Base\PublicCollection
      */
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {

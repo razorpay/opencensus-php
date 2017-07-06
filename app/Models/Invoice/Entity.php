@@ -339,6 +339,13 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
     ];
 
+    /**
+     * Reports currently works for type:link only.
+     *
+     * @todo: Plan and spit link, invoices.
+     *
+     * @var array
+     */
     protected $hiddenInReport = [
         self::INVOICE_NUMBER,
         self::CUSTOMER_DETAILS,
@@ -354,6 +361,15 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+    ];
+
+    protected $reportDates = [
+        self::DATE,
+        self::EXPIRE_BY,
+        self::ISSUED_AT,
+        self::PAID_AT,
+        self::EXPIRED_AT,
+        self::CANCELLED_AT,
     ];
 
     // -------------------------------------- Mutators ---------------
@@ -580,6 +596,11 @@ class Entity extends Base\PublicEntity
     public function hasCustomerBillingAddress(): bool
     {
         return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
+    }
+
+    public function isTypeLink(): bool
+    {
+        return ($this->getType() === Type::LINK);
     }
 
     public function isTypeInvoice(): bool
@@ -1118,12 +1139,23 @@ class Entity extends Base\PublicEntity
 
     public function toArrayReport()
     {
-        if ($this->isTypeInvoice() === true)
+        if ($this->isTypeLink() === false)
         {
-            throw new LogicException('Report not available for invoice type');
+            throw new LogicException('Report not available for types other than link');
         }
 
         $report = parent::toArrayReport();
+
+        // Convert dates
+        // @todo: This needs to be moved to parent method
+
+        foreach ($this->reportDates as $key)
+        {
+            if (isset($report[$key]))
+            {
+                $report[$key] = $this->getDateInFormatDMYHMS($key);
+            }
+        }
 
         // Add flattened customer details in report
 
