@@ -7,7 +7,7 @@ class Promotion extends Base
     public function createOnetime(array $attributes = [])
     {
         $promotionAttributes = [
-            'iterations'        => '1',
+            'iterations'     => '1',
             'credits_expire' => false,
         ];
 
@@ -43,9 +43,9 @@ class Promotion extends Base
     public function create(array $attributes = [])
     {
         $defaultValues = [
-            'name'        => 'Test-Promotion',
-            'amount'      => 100,
-            'credit_type' => 'fee',
+            'name'          => 'Test-Promotion',
+            'credit_amount' => 100,
+            'credit_type'   => 'fee',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

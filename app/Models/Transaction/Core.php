@@ -986,7 +986,7 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::CREDITS_TRANSACTION_FAILED);
         }
     }
 }

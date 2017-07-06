@@ -534,6 +534,7 @@ class TraceCode
     const ERROR_INVALID_ARGUMENT                    = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
+    const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -845,6 +846,7 @@ class TraceCode
         self::IIN_INSERT_FAILED                         => 'Inserting into Iin failed for given Iin',
         self::RECON_INFO                                => 'General recon info',
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
+        self::CREDITS_TRANSACTION_FAILED                => 'Credits transaction failed on payment capture',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
         self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',

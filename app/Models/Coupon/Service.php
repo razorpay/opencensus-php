@@ -38,6 +38,8 @@ class Service extends Base\Service
 
     public function apply(array $input): array
     {
+        $this->trace->info(TraceCode::COUPON_APPLY_REQUEST, $input);
+
         (new Validator)->validateInput('apply', $input);
 
         $coupon = $this->repo->coupon->fetchByCode($input);

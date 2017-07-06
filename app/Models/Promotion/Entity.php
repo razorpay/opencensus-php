@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
 
     public function coupons()
     {
-        return $this->morphMany('RZP\Models\Coupon\Entity', 'entity');
+        return $this->morphMany('RZP\Models\Coupon\Entity', 'source');
     }
 
 // ----------------------- Getters ---------------------------------------------

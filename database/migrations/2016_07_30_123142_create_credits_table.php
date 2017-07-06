@@ -28,7 +28,7 @@ class CreateCreditsTable extends Migration
 
             $table->char(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
 
-            $table->char(Credits::PROMOTION_ID, Merchant\Entity::ID_LENGTH)
+            $table->char(Credits::PROMOTION_ID, Promotion\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Credits::VALUE);
