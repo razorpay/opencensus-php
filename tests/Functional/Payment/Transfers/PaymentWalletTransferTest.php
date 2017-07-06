@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use RZP\Constants\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
@@ -10,6 +11,8 @@ class PaymentWalletTransferTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
+
+    const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     public function setUp()
     {
@@ -132,6 +135,40 @@ class PaymentWalletTransferTest extends TestCase
         $this->checkLastTransferEntity($customerPublicId, 'customer', $amount);
     }
 
+    public function testTransferAndVerifyPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
+
+        $this->fixtures->merchant->addFeatures(['openwallet']);
+
+        $customerPublicId = $customerBalance->customer->getPublicId();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, 50000);
+
+        $transfer = $this->startTest();
+
+        $txn = $this->getTransferTxn($transfer['items'][0]['id']);
+
+        // 2% fee plan defined - standard pricing
+        $expectedTxn = [
+            'amount'      => 51180,
+            'fee'         => 1180,
+            'service_tax' => 180,
+            'debit'       => 51180,
+            'credit'      => 0
+        ];
+
+        $this->assertArraySelectiveEquals($expectedTxn, $txn);
+    }
+
     public function testTransferCustomerUsageFirstTxn()
     {
         $customerValues = [
@@ -163,5 +200,18 @@ class PaymentWalletTransferTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expected, $customerBalance);
+    }
+
+    protected function getTransferTxn(string $entityId)
+    {
+        $entity = Entity::getEntityClass('transfer');
+
+        $entity::verifyIdAndSilentlyStripSign($entityId);
+
+        $txn = $this->getEntities('transaction', ['entity_id' => $entityId], true);
+
+        $this->assertEquals(1, count($txn['items']));
+
+        return $txn['items'][0];
     }
 }
