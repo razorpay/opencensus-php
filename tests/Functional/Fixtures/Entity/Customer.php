@@ -48,6 +48,7 @@ class Customer extends Base
             'wallet'        => 'paytm',
             'bank'          => null,
             'card_id'       => null,
+            'used_at'       => 10
         ),
         array(
             'id'            => '100000custbank',
@@ -57,6 +58,7 @@ class Customer extends Base
             'bank'          => 'HDFC',
             'wallet'        => null,
             'card_id'       => null,
+            'used_at'       => 10
         ),
         array(
             'id'            => '100000custcard',
@@ -66,6 +68,7 @@ class Customer extends Base
             'bank'          => null,
             'wallet'        => null,
             'card_id'       => '100000000lcard',
+            'used_at'       => 10
         ),
         array(
             'id'            => '100001custcard',
@@ -75,6 +78,7 @@ class Customer extends Base
             'bank'          => null,
             'wallet'        => null,
             'card_id'       => '100000001lcard',
+            'used_at'       => 10
         ),
         array(
             'id'            => '10000custgcard',
@@ -85,6 +89,7 @@ class Customer extends Base
             'card_id'       => '100000000gcard',
             'bank'          => null,
             'wallet'        => null,
+            'used_at'       => 10
         ),
     );
 
