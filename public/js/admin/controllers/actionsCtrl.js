@@ -114,60 +114,6 @@ app
               $scope.alerts.addAlert('danger', null, true);
             });
         };
-        $scope.sendTestEmail = function(data) {
-          var request = $http({
-            method: 'post',
-            url: '/admin/newsletter/test',
-            data: data,
-            transformRequest: transformRequestAsFormPost,
-          });
-          request
-            .success(function(data) {
-              if (data.success) {
-                $scope.alerts.addAlert(
-                  'success',
-                  'Test mail sent successfully to ' + data.data.email,
-                  true
-                );
-              } else {
-                $scope.alerts.resetAlerts();
-                $scope.alerts.addAlert('danger', data.errors);
-              }
-            })
-            .error(function() {
-              $scope.alerts.addAlert('danger', null, true);
-            });
-        };
-        $scope.sendNewsletter = function(data) {
-          var request = $http({
-            method: 'post',
-            url: '/admin/newsletter/mail',
-            data: data,
-            transformRequest: transformRequestAsFormPost,
-          });
-          request
-            .success(function(data) {
-              if (data.success) {
-                $scope.alerts.addAlert(
-                  'success',
-                  'Test mail sent successfully to ' +
-                    data.data.count +
-                    ' addresses (' +
-                    data.data.email +
-                    ')',
-                  true
-                );
-              } else {
-                $scope.alerts.resetAlerts();
-                angular.forEach(data.errors, function(value, key) {
-                  $scope.alerts.addAlert('danger', value);
-                });
-              }
-            })
-            .error(function() {
-              $scope.alerts.addAlert('danger', null, true);
-            });
-        };
         $scope.toJson = function(data) {
           return angular.toJson(data, 4);
         };
@@ -406,22 +352,6 @@ app
               $scope.alerts.addAlert('danger', null, true);
             });
         };
-        $scope.openEditNewsletter = function() {
-          var modalInstance = $modal.open({
-            templateUrl: 'sendNewsletter.html',
-            controller: 'sendNewsletterCtrl',
-            size: 'lg',
-          });
-          modalInstance.result.then(function(data) {
-            console.debug(data);
-            if (data.lists) {
-              // Send live email newsletter
-              $scope.sendNewsletter(data);
-            } else {
-              $scope.sendTestEmail(data);
-            }
-          }, $.noop);
-        };
       });
       $scope.openConfirmUser = function() {
         var modalInstance = $modal.open({
@@ -437,22 +367,6 @@ app
         });
         modalInstance.result.then(function(data) {
           $scope.authorizeFailedPayment(data.id, data.mode);
-        }, $.noop);
-      };
-      $scope.openEditNewsletter = function() {
-        var modalInstance = $modal.open({
-          templateUrl: 'sendNewsletter.html',
-          controller: 'sendNewsletterCtrl',
-          size: 'lg',
-        });
-        modalInstance.result.then(function(data) {
-          console.debug(data);
-          if (data.lists) {
-            // Send live email newsletter
-            $scope.sendNewsletter(data);
-          } else {
-            $scope.sendTestEmail(data);
-          }
         }, $.noop);
       };
       $scope.openAddSchedule = function() {
@@ -571,46 +485,6 @@ app
         $modalInstance.close({
           id: id,
           mode: mode,
-        });
-      };
-      $scope.cancel = function() {
-        $modalInstance.dismiss('cancel');
-      };
-    },
-  ])
-  .controller('sendNewsletterCtrl', [
-    '$scope',
-    '$modalInstance',
-    '$http',
-    'admin',
-    function($scope, $modalInstance, $http, admin) {
-      $scope.mailingLists = {
-        all: 'All merchants',
-        live: 'Live Merchants',
-        recent: 'Recently signed up merchants',
-        paytm: 'Paytm enabled merchants',
-        mobikwik: 'Mobikwik enabled merchants',
-      };
-      $scope.message =
-        'Hi %recipient_name%,\n\nThanks for doing business with Razorpay.\n\n# section heading\n\ncontent\ncontent\n\nmore content\n\n---\n\nTeam Razorpay';
-      $scope.template = 'newsletter';
-      $scope.lists = { all: true };
-      admin.identity().then(function(admin) {
-        $scope.adminEmail = admin.email;
-      });
-      $scope.test = function(subject, msg, template) {
-        $modalInstance.close({
-          subject: subject,
-          msg: msg,
-          template: template,
-        });
-      };
-      $scope.ok = function(lists, subject, msg, template) {
-        $modalInstance.close({
-          lists: Object.keys(lists).join(),
-          subject: subject,
-          msg: msg,
-          template: template,
         });
       };
       $scope.cancel = function() {
