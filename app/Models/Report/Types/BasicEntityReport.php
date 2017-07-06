@@ -40,6 +40,7 @@ class BasicEntityReport extends BaseReport
         E::SETTLEMENT   => [],
         E::TRANSFER     => [],
         E::REVERSAL     => [],
+        E::INVOICE      => [E::ORDER],
     ];
 
     // Entities for which report-generation is allowed
@@ -52,6 +53,7 @@ class BasicEntityReport extends BaseReport
         E::MERCHANT,
         E::TRANSFER,
         E::REVERSAL,
+        E::INVOICE,
     ];
 
     public function __construct(string $entity)
@@ -67,6 +69,13 @@ class BasicEntityReport extends BaseReport
         if ($entity === 'account')
         {
             $entity = 'merchant';
+        }
+
+        // @todo: Fix this!
+
+        if ($entity === 'payment_link')
+        {
+            $entity = 'invoice';
         }
 
         $this->entity = $entity;

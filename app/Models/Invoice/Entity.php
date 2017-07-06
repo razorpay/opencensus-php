@@ -13,6 +13,7 @@ use RZP\Models\Address;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Models\Plan\Subscription;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -332,6 +333,29 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS => 'bool',
     ];
 
+    protected $amounts = [
+        self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
+    ];
+
+    protected $hiddenInReport = [
+        self::INVOICE_NUMBER,
+        self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
+        self::LINE_ITEMS,
+        self::PAYMENT_ID,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::COMMENT,
+        self::VIEW_LESS,
+        self::BILLING_START,
+        self::BILLING_END,
+        self::TYPE,
+        self::GROUP_TAXES_DISCOUNTS,
+    ];
+
     // -------------------------------------- Mutators ---------------
 
     // Following 2 mutators are for converting '' (empty strings)
@@ -369,6 +393,11 @@ class Entity extends Base\PublicEntity
     public function getSmsStatus()
     {
         return $this->getAttribute(self::SMS_STATUS);
+    }
+
+    public function getCustomerName()
+    {
+        return $this->getAttribute(self::CUSTOMER_NAME);
     }
 
     public function getCustomerEmail()
@@ -1083,5 +1112,25 @@ class Entity extends Base\PublicEntity
     public function getValidOperations(): array
     {
         return $this->validOperations;
+    }
+
+    // -------------------------------------- Serializations ---------
+
+    public function toArrayReport()
+    {
+        if ($this->isTypeInvoice() === true)
+        {
+            throw new LogicException('Report not available for invoice type');
+        }
+
+        $report = parent::toArrayReport();
+
+        // Add flattened customer details in report
+
+        $report[self::CUSTOMER_NAME]    = $this->getCustomerName();
+        $report[self::CUSTOMER_EMAIL]   = $this->getCustomerEmail();
+        $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
+
+        return $report;
     }
 }
