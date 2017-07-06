@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Carbon\Carbon;
+use RZP\Models\Schedule\Anchor;
+
 class Promotion extends Base
 {
     public function createOnetime(array $attributes = [])
@@ -20,9 +23,15 @@ class Promotion extends Base
 
     public function createRecurring(array $attributes = [])
     {
+        // Tomorrow because we want to expire the credits 12
+        // of next day not the same day as promotion was applied
+        $day = Carbon::tomorrow('Asia/Kolkata');
+
+        $anchor = $day->{Anchor::CHECKS['monthly']};
+
         $scheduleAttributes = [
             'period' => 'monthly',
-            'anchor' => 1,
+            'anchor' => $anchor,
         ];
 
         $schedule = $this->fixtures->create('schedule', $scheduleAttributes);

@@ -252,6 +252,14 @@ class ScheduleTest extends TestCase
         $this->assertEquals($credits['items'][1]['value'], -1000);
 
         $this->assertEquals($credits['items'][2]['value'], 1000);
+
+        $time->addDay(15);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getEntities('credits', array(), true);
     }
 
     public function testExpireUsedCredits()

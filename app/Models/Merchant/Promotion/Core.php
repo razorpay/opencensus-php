@@ -117,13 +117,13 @@ class Core extends Base\Core
 
                 if ($merchantPromotion->getRemainingIterations() > 0)
                 {
-                    $this->applyCredits($merchant, $promotion, $scheduleTask);
-
-                    $merchantPromotion->decrementRemainingIterations();
-
                     $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
 
                     $this->repo->saveOrFail($scheduleTask);
+
+                    $this->applyCredits($merchant, $promotion, $scheduleTask);
+
+                    $merchantPromotion->decrementRemainingIterations();
                 }
                 else
                 {
@@ -171,6 +171,7 @@ class Core extends Base\Core
             [
                 'merchant_id'  => $merchant->getId(),
                 'credit_input' => $creditInput,
+                'promotion_id' => $promotion->getId(),
             ]
         );
 
@@ -181,7 +182,7 @@ class Core extends Base\Core
     {
         $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion);
 
-        if ($creditsToExpire !== 0)
+        if ($creditsToExpire > 0)
         {
             $creditInput = [
                 Credits\Entity::CAMPAIGN     => $promotion->getName() . 'Expired',
@@ -198,6 +199,7 @@ class Core extends Base\Core
                 [
                     'merchant_id'  => $merchant->getId(),
                     'credit_input' => $creditInput,
+                    'promotion_id' => $promotion->getId(),
                 ]
             );
 
@@ -205,7 +207,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function calculateCreditToExpire(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    protected function calculateCreditToExpire(Merchant\Entity $merchant, Promotion\Entity $promotion): int
     {
         $credit = $this->repo->credits->findCreditsToExpire(
                     $merchant->getId(), $promotion->getId(), Carbon::now('Asia/Kolkata')->timestamp);
