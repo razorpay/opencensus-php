@@ -317,8 +317,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             return null;
         }
@@ -341,8 +340,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // It's as good as no card locale present in the row.
             return null;
@@ -405,10 +403,5 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function shouldAttemptForceAuthorizeFailed()
     {
         return true;
-    }
-
-    protected function shouldAttemptVerification()
-    {
-        return false;
     }
 }
