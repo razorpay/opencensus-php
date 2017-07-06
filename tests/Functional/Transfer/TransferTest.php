@@ -79,7 +79,7 @@ class TransferTest extends TestCase
         // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
 
-        $this->checkTransferAndTxnRecords($transfer);
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
     }
@@ -101,6 +101,11 @@ class TransferTest extends TestCase
         $serviceTax = 4;
         $expectedFee = 20 + $serviceTax;
 
+        $transferData = [
+            'fees'        => $expectedFee,
+            'service_tax' => $serviceTax
+        ];
+
         $txnData = [
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
@@ -108,7 +113,7 @@ class TransferTest extends TestCase
             'debit'       => $transfer['amount'] + $expectedFee
         ];
 
-        $this->checkTransferAndTxnRecords($transfer, $txnData);
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()
@@ -470,8 +475,10 @@ class TransferTest extends TestCase
         return $txn['items'][0];
     }
 
-    protected function checkTransferAndTxnRecords($transfer, array $txnData = [])
+    protected function checkTransferAndTxnRecords($transfer, array $transferData = [], array $txnData = [])
     {
+        $this->assertArraySelectiveEquals($transferData, $transfer);
+
         $txn = $this->getSingleTxn('transfer', $transfer['id']);
 
         $expectedTxn = [

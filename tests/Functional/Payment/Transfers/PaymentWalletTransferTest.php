@@ -153,13 +153,21 @@ class PaymentWalletTransferTest extends TestCase
 
         $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, 50000);
 
-        $transfer = $this->startTest();
+        $transfer = $this->startTest()['items'][0];
 
-        $txn = $this->getTransferTxn($transfer['items'][0]['id']);
+        $expectedTransfer = [
+            'amount'      => 50000,
+            'fees'        => 1180,
+            'service_tax' => 180
+        ];
+
+        $this->assertArraySelectiveEquals($expectedTransfer, $transfer);
+
+        $txn = $this->getTransferTxn($transfer['id']);
 
         // 2% fee plan defined - standard pricing
         $expectedTxn = [
-            'amount'      => 51180,
+            'amount'      => 50000,
             'fee'         => 1180,
             'service_tax' => 180,
             'debit'       => 51180,

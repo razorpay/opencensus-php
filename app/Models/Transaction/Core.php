@@ -651,7 +651,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED_AT    => $settledAt,
             Transaction\Entity::FEE           => $fee,
             Transaction\Entity::SERVICE_TAX   => $serviceTax,
-            Transaction\Entity::AMOUNT        => $transferAmount,
+            Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
         ];
