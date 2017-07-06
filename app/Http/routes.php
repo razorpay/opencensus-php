@@ -105,9 +105,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all'); // ePOS
         Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create'); // ePOS
         Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
-
         Route::get('/{mode}/customers/autocomplete', 'MerchantController@getCustomersForAutocomplete')->name('customer_autocomplete');
-
         Route::get('/{mode}/items/autocomplete', 'MerchantController@getItemsForAutocomplete')->name('item_autocomplete');
 
         // Upgrades a standard invited user to a merchant
@@ -162,14 +160,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
-
-        // Newsletter
-        Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
-        Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
-
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
-
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
@@ -180,12 +172,10 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/admin/users', 'AdminController@postAddAdmin');
             Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
             Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
-
             Route::get('/admin/users', 'AdminController@getAdmins');
         });
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
                 ->name('admin_fetch_entity');
