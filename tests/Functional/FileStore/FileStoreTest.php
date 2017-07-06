@@ -81,10 +81,11 @@ class FileStoreTest extends TestCase
         $this->ba->appAuth();
 
         $request = array(
-            'url' => '/refunds/netbanking/excel',
+            'url' => '/refunds/excel',
             'method' => 'post',
             'content' => [
-                'bank'   => 'KKBK'
+                'bank'   => 'KKBK',
+                'method' => 'netbanking',
             ],
         );
 
