@@ -29,13 +29,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl, $options);
     }
 
-    public function sendTestNewsletter($params)
-    {
-        $relativeUrl = $this->getEntityUrl(). 'newsletter/test';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function fetchMerchantIds($orgId, $adminId)
     {
         $relativeUrl = "orgs/$orgId/admins/$adminId/merchant_ids";
@@ -48,13 +41,6 @@ class Admin extends Entity
         $relativeUrl = "orgs/$orgId/admins/$adminId/merchants";
 
         return $this->request('GET', $relativeUrl, $input);
-    }
-
-    public function sendNewsletter($params)
-    {
-        $relativeUrl = $this->getEntityUrl(). 'newsletter/mail';
-
-        return $this->request('POST', $relativeUrl, $params);
     }
 
     public function logout($orgId)
