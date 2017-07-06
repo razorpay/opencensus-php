@@ -91,9 +91,12 @@ class Base extends BaseModel\Core
         $this->merchant = $batch->merchant;
     }
 
-    public function setParams(array $params)
+    public function setParams(array $params = null)
     {
-        $this->params = $params;
+        // To maintain backward compatibility with old queue jobs.
+        // Old queue job will have $params as null in Job\Batch class.
+
+        $this->params = $params ?: [];
 
         return $this;
     }

@@ -97,6 +97,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_NOTIFY             = 'email_notify';
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
+    const BATCH_IDS                = 'batch_ids';
 
     // ---------------------- Input Keys End -------------------------
 

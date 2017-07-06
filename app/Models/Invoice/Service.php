@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\LineItem;
+use RZP\Models\Batch;
 
 class Service extends Base\Service
 {
@@ -291,6 +292,24 @@ class Service extends Base\Service
         $response = $this->core->issueInvoicesOfBatch($batch, $input);
 
         return $response;
+    }
+
+    public function getNonDraftInvoiceCountByBatchIds(array $input): array
+    {
+        // (new Validator)->validateInput(Validator::ISSUE_BATCH_ACTION, $input);
+
+        $batchIds = $input[Entity::BATCH_IDS];
+
+        Batch\Entity::verifyIdAndSilentlyStripSignMultiple($batchIds);
+
+        $results = $this->repo->invoice->getNonDraftInvoiceCountByBatchIds($batchIds);
+
+        foreach ($results as & $result)
+        {
+            $result[Entity::BATCH_ID] = Batch\Entity::getSignedIdOrNull($result[Entity::BATCH_ID]);
+        }
+
+        return $results;
     }
 
     /**

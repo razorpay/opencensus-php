@@ -198,4 +198,13 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getNonDraftInvoiceCountByBatchIds()
+    {
+        $input = Request::all();
+
+        $response = $this->service('invoice')->getNonDraftInvoiceCountByBatchIds($input);
+
+        return ApiResponse::json($response);
+    }
 }
