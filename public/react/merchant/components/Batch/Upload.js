@@ -21,7 +21,11 @@ export default class BatchUpload extends Component {
   save = () => {
     let additionalFormFields = {};
     this.props.additionalFields.forEach(key => {
-      additionalFormFields[key] = this.form[key].value;
+      if (this.form[key].type === 'checkbox') {
+        additionalFormFields[key] = this.form[key].checked ? '1' : '0';
+      } else {
+        additionalFormFields[key] = this.form[key].value;
+      }
     });
 
     this.context.confirm({
@@ -49,7 +53,7 @@ export default class BatchUpload extends Component {
 
   render() {
     return (
-      <div class="content-wrapper content-sm">
+      <div class="content-wrapper content-sm upload-container">
         <div class="panel panel-default">
           <div class="panel-heading">
             {titleCase(this.props.title)}

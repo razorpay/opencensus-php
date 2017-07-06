@@ -16,38 +16,23 @@ export default class BatchUploadContainer extends Component {
     const additionalFieldsComp = (
       <div class="row">
         <div class="col-md-4">
-          <span class="form-option">Draft</span>
-          <label>
-            True
-            <input name="draft" value="1" type="radio" />
-          </label>
-          <label>
-            False
-            <input name="draft" value="0" type="radio" />
+          <label class="form-label">
+            Draft
+            <input name="draft" type="checkbox" />
           </label>
         </div>
 
         <div class="col-md-4">
-          <span class="form-option">Sms Notify</span>
-          <label>
-            True
-            <input name="sms_notify" value="1" type="radio" />
-          </label>
-          <label>
-            False
-            <input name="sms_notify" value="0" type="radio" />
+          <label class="form-label">
+            Sms Notify
+            <input name="sms_notify" type="checkbox" />
           </label>
         </div>
 
         <div class="col-md-4">
-          <span class="form-option">Email Notify</span>
-          <label>
-            True
-            <input name="email_notify" value="1" type="radio" />
-          </label>
-          <label>
-            False
-            <input name="email_notify" value="0" type="radio" />
+          <label class="form-label">
+            Email Notify
+            <input name="email_notify" type="checkbox" />
           </label>
         </div>
       </div>
