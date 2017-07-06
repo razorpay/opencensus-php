@@ -4,6 +4,7 @@ import { isBlank } from 'rzp/utils/rzp-utils';
 
 export default class Customer extends GenericEntity {
   listRouteName = 'customer_fetch_multiple';
+  detailsRouteName = 'customer_fetch_by_id';
   deleteRouteName = 'customer_delete';
 
   resourceFields = ['id', 'name', 'email', 'contact'];

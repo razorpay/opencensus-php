@@ -252,19 +252,23 @@ return [
         // Customers
         'customer_fetch_multiple'           => [
             'url'       => 'customers',
-            'routeName' => 'customer_fetch_all'
+            'routeName' => 'customer_read'
+        ],
+        'customer_fetch_by_id'           => [
+            'url'       => 'customers/{id}',
+            'routeName' => 'customer_read'
         ],
         'customer_create'                   => [
             'url'       => 'customers',
-            'routeName' => 'customer_create'
+            'routeName' => 'customer_write'
         ],
         'customer_update'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_edit'
+            'routeName' => 'customer_write'
         ],
         'customer_delete'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_delete'
+            'routeName' => 'customer_write'
         ],
 
         // Items
@@ -356,6 +360,54 @@ return [
         'virtual_account_fetch_payments'    => [
             'url'       => 'virtual_accounts/{id}/payments',
             'routeName' => 'virtual_accounts_read'
+        ],
+
+        // Subscriptions
+        'subscription_fetch_multiple'    => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_account_fetch'             => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_create'            => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_update'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_delete'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_cancel'            => [
+            'url'       => 'subscriptions/{id}/cancel',
+            'routeName' => 'subscriptions_write'
+        ],
+
+        // Plans
+        'plan_fetch_multiple'    => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_account_fetch'             => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_create'            => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_update'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_delete'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
         ],
     ],
 
