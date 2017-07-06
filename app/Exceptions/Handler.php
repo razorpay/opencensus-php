@@ -118,7 +118,7 @@ class Handler extends ExceptionHandler
         }
         else if ($e instanceof BadRequestError)
         {
-            $response = Response::json(array('success'=>false,'errors' => [$e->getMessage()]));
+            $response = Response::json(array('success' => false, 'errors' => [$e->getMessage()]));
         }
         else
         {
