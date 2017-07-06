@@ -26,14 +26,16 @@ class Header
      * Payment Link Headers
      */
 
-    const INVOICE_NUMBER    = 'Invoice Number';
-    const CUSTOMER_NAME     = 'Customer Name';
-    const CUSTOMER_EMAIL    = 'Customer Email';
-    const CUSTOMER_CONTACT  = 'Customer Contact';
-    const DESCRIPTION       = 'Description';
-    const EXPIRE_BY         = 'Expire By';
-    const PARTIAL_PAYMENT   = 'Partial Payment';
-    const PAYMENT_LINK_ID   = 'Payment Link Id';
+    const INVOICE_NUMBER      = 'Invoice Number';
+    const CUSTOMER_NAME       = 'Customer Name';
+    const CUSTOMER_EMAIL      = 'Customer Email';
+    const CUSTOMER_CONTACT    = 'Customer Contact';
+    const DESCRIPTION         = 'Description';
+    const EXPIRE_BY           = 'Expire By';
+    const PARTIAL_PAYMENT     = 'Partial Payment';
+    const PAYMENT_LINK_ID     = 'Payment Link Id';
+    const SHORT_URL           = 'Payment Link Short URL';
+    const PAYMENT_LINK_STATUS = 'Payment Link Status';
 
     /**
      * Input and output file headers per type.
@@ -80,7 +82,10 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::STATUS,
                 self::PAYMENT_LINK_ID,
+                self::SHORT_URL,
+                self::PAYMENT_LINK_STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

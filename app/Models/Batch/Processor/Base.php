@@ -49,6 +49,13 @@ class Base extends BaseModel\Core
     protected $merchant;
 
     /**
+     * Additional parameters from request or query.
+     *
+     * @var array
+     */
+    protected $params;
+
+    /**
      * Holds local file path of input and output file respectively.
      * They are re-used in the flow.
      * E.g.
@@ -82,6 +89,13 @@ class Base extends BaseModel\Core
         $this->batch = $batch;
 
         $this->merchant = $batch->merchant;
+    }
+
+    public function setParams(array $params)
+    {
+        $this->params = $params;
+
+        return $this;
     }
 
     public function process()
