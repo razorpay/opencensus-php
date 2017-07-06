@@ -198,6 +198,14 @@ class Repository extends Base\Repository
      * OR some refactoring in entity report generation to pass around additional
      * query parameters conditionally or anyhow.
      *
+     * @param       $merchantId
+     * @param       $from
+     * @param       $to
+     * @param       $count
+     * @param       $skip
+     * @param array $relations
+     *
+     * @return
      */
     public function fetchEntitiesForReport(
         $merchantId,
