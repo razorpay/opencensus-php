@@ -1205,6 +1205,8 @@ final class Route
         'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'             => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_fetch'                   => '*',
+        'merchant_get_terminals'           => '*',
+        'merchant_get_pricing'             => '*',
     ];
 
     public static $direct = [
