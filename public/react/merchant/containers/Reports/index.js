@@ -11,18 +11,6 @@ import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import Datetime from 'react-datetime';
 
-// TODO: Use them to set initial values in date-picker
-let now = moment();
-let currentMonth = now.month();
-let currentYear = now.year();
-let currentDate = now.date();
-
-/*
-function numberOfDays(month, year) {
-  return moment(year + ' ' + month, 'YYYY M').daysInMonth();
-}
-*/
-
 function validYear(current) {
   return current.year() >= 2015 && current.year() <= 2017;
 }
@@ -37,8 +25,7 @@ const selector = formValueSelector('generateReports');
       account: state.accounts,
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
-      month: selector(state, 'month'),
-      year: selector(state, 'year'),
+      date: selector(state, 'date'),
     };
   },
   { generateReport, fetchAccounts, ...NotificationsActions }
@@ -47,10 +34,8 @@ const selector = formValueSelector('generateReports');
   form: 'generateReports',
   initialValues: {
     entity: 'payment',
-    type: 'monthly',
-    month: currentMonth,
-    year: currentYear,
-    day: currentDate,
+    type: 'daily',
+    date: moment(),
   },
 })
 export default class ReportsContainer extends Component {
@@ -58,11 +43,11 @@ export default class ReportsContainer extends Component {
     this.props.fetchAccounts();
   }
   prepareGenerateReport = values => {
-    let { entity, type, month, year, day, account_id } = values;
+    let { entity, type, date, account_id } = values;
 
     let data = {
-      month,
-      year,
+      month: date.month() + 1, // Jan is 0 in moment library
+      year: date.year(),
     };
 
     if (entity === 'invoice') {
@@ -75,7 +60,7 @@ export default class ReportsContainer extends Component {
     }
 
     if (type === 'daily') {
-      data.day = day;
+      data.day = date.date();
     }
 
     var ajaxParams = {
@@ -136,32 +121,103 @@ export default class ReportsContainer extends Component {
           <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel">
             <div class="title">SELECT REPORT TYPE</div>
             <Field
-              id="combined"
               name="entity"
-              value="combined"
+              value="transaction"
+              id="combined"
               component="input"
               type="radio"
               class="report-type form-control"
             />
             <label for="combined">Combined Report</label>
+
             <Field
-              id="payment"
               name="entity"
               value="payment"
+              id="payment"
               component="input"
               type="radio"
               class="report-type form-control"
             />
-            <label for="payment">Payment</label>
+            <label for="payment">Payments</label>
+
             <Field
-              id="refund"
               name="entity"
               value="refund"
+              id="refund"
               component="input"
               type="radio"
               class="report-type form-control"
             />
-            <label for="refund">Refund</label>
+            <label for="refund">Refunds</label>
+
+            <Field
+              name="entity"
+              value="settlement"
+              id="settlement"
+              component="input"
+              type="radio"
+              class="report-type form-control"
+            />
+            <label for="settlement">Settlements</label>
+
+            {user.tags.indexOf('Broking_Report') === -1 ||
+              <div>
+                <Field
+                  name="entity"
+                  value="broking"
+                  id="broking"
+                  component="input"
+                  type="radio"
+                  class="report-type form-control"
+                />
+                <label for="broking">Broking Reports</label>
+              </div>}
+
+            {/*DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants*/}
+            {user.tags.indexOf('Dsp_Report') === -1 ||
+              <div>
+                <Field
+                  name="entity"
+                  value="dsp_report"
+                  id="dsp_report"
+                  component="input"
+                  type="radio"
+                  class="report-type form-control"
+                />
+                <label for="dsp_report">DSP Transaction Report</label>
+              </div>}
+            <Field
+              name="entity"
+              value="invoice"
+              id="invoice"
+              component="input"
+              type="radio"
+              class="report-type form-control"
+            />
+            <label for="invoice">Monthly Invoice</label>
+
+            {user.tags.indexOf('Marketplace') === -1 ||
+              <div>
+                <Field
+                  name="entity"
+                  value="transfer"
+                  id="transfer"
+                  component="input"
+                  type="radio"
+                  class="report-type form-control"
+                />
+                <label for="transfer">Transfers</label>
+
+                <Field
+                  name="entity"
+                  value="reversal"
+                  id="reversal"
+                  component="input"
+                  type="radio"
+                  class="report-type form-control"
+                />
+                <label for="reversal">Reversals</label>
+              </div>}
           </div>
 
           {/*Report Generate Panel*/}
@@ -207,14 +263,17 @@ export default class ReportsContainer extends Component {
                   </div>
                 </div>}
 
-              {type === 'monthly' &&
+              {(type === 'monthly' || entity === 'invoice') &&
                 <div class="col-sm-4">
                   <div class="form-group">
                     <Field
                       name="date"
-                      component={() => (
+                      component={props => (
                         <Datetime
                           dateFormat="MMM, YYYY"
+                          defaultValue={props.input.value}
+                          value={props.input.value}
+                          onChange={value => props.input.onChange(value)}
                           inputProps={{
                             placeholder: 'Select Year-Month',
                           }}
@@ -228,13 +287,17 @@ export default class ReportsContainer extends Component {
                 </div>}
 
               {type === 'daily' &&
+                entity !== 'invoice' &&
                 <div class="col-sm-4">
                   <div class="form-group">
                     <Field
                       name="date"
-                      component={() => (
+                      component={props => (
                         <Datetime
                           dateFormat="DD MMM, YYYY"
+                          defaultValue={props.input.value}
+                          value={props.input.value}
+                          onChange={value => props.input.onChange(value)}
                           inputProps={{
                             placeholder: 'Select Date-Month-Year',
                           }}
