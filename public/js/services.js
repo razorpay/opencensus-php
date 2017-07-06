@@ -1090,6 +1090,7 @@ angular
         gatewayUpiMap: {
           upi_idfc: 'IDFC UPI',
           upi_icici: 'ICICI UPI',
+          upi_mindgate: 'Mindgate/HDFC UPI',
         },
         walletMap: {
           payzapp: 'Payzapp',

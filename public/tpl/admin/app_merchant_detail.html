@@ -964,6 +964,7 @@
              <option value="wallet_olamoney">Olamoney</option>
              <option value="wallet_mpesa">Vodafone Mpesa</option>
              <option value="upi_icici">UPI/ICICI</option>
+             <option value="upi_mindgate">UPI/Mindgate</option>
              <option value="aeps_icici">AEPS/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
@@ -993,6 +994,7 @@
              <option value="hdfc" selected>HDFC</option>
              <option value="axis">Axis</option>
              <option value="icic">ICICI</option>
+             <option value="hdfc">HDFC</option>
           </select>
         </div>
       </div>
@@ -1067,6 +1069,15 @@
         <label for="card" class="col-lg-3 control-label">Card Allowed (Always Yes for HDFC):</label>
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.card">
+             <option value="1" selected>Yes</option>
+             <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="card" class="col-lg-3 control-label">UPI:</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.upi">
              <option value="1" selected>Yes</option>
              <option value="0">No</option>
           </select>
