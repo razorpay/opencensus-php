@@ -85,7 +85,6 @@ final class Route
         'refund_create'                           => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
-        'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                       'RefundController@generateNetbankingRefunds'                        ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
         'refund_verify'                           => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerify'                                 ],
         'refund_create_missing_txn'               => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
@@ -260,8 +259,8 @@ final class Route
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
-        'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{bank}',             'MockGatewayController@generateNetbankingReconciliation'            ],
+        'mock_upi_payment'                        => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
@@ -354,7 +353,6 @@ final class Route
         'otp_verify_app'                          => ['post',     'otp/verify/app',                                 'CustomerController@verifyOtpApp'                                   ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
         'es_debug_read'                           => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
-        'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
         'gateway_add_priorities'                  => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
@@ -611,7 +609,7 @@ final class Route
         'mock_sharp_payment_submit',
         'mock_wallet_payment',
         'mock_wallet_payment_get',
-        'mock_upi_icici_payment',
+        'mock_upi_payment',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'emi_plans_fetch_multiple',
@@ -848,7 +846,6 @@ final class Route
         'refund_create_missing_txn',
         'refund_gateway_refunded_txns',
         'refund_gateway_manual',
-        'refund_netbanking_generate_excel',
         'refund_generate_excel',
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
@@ -872,7 +869,6 @@ final class Route
         'refund_verify',
         'payment_capture_verify',
         'es_debug_read',
-        'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
         'credits_create',
@@ -1265,7 +1261,6 @@ final class Route
             'payment_refund_authorized',
             'payment_capture_reminder',
             'emi_generate_excel',
-            'es_migrate_entity',
             'setl_post_details_old',
             'invoice_send_notifications',
             'card_update_saved',
@@ -1318,8 +1313,6 @@ final class Route
     ];
 
     public static $slaveRoutes = [
-        // TODO: Uncomment this when slave variables issue is fixed.
-        //'es_migrate_entity',
         'payment_fetch_transaction',
     ];
 
@@ -1636,20 +1629,23 @@ final class Route
 
     public function defineAllExtraRoutes()
     {
-        $this->router->any('{all}', function ($uri = null)
-        {
-            return ApiResponse::routeNotFound();
-        })->where('all', '.*');
+        $this->router
+             ->any('{all}',
+                   [
+                       'as' => 'api_root',
+                       'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
+                   ])
+             ->where('all', '.*');
     }
 
     public function defineRootApiRoute()
     {
-        $this->router->get('/', function ()
-        {
-            $response['message'] = "Welcome to Razorpay API.";
-
-            return ApiResponse::json($response);
-        });
+        $this->router
+             ->get('/',
+                   [
+                       'as' => 'api_root',
+                       'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                   ]);
     }
 
     public function getApiRouteInCategory($category)

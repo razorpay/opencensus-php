@@ -90,7 +90,9 @@ class Status
     ];
 
     public static $nonCancellableStatuses = [
-        self::EXPIRED
+        self::EXPIRED,
+        self::COMPLETED,
+        self::CANCELLED
     ];
 
     public static $nonChargeableStatuses = [

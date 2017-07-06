@@ -24,6 +24,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_TYPE     = 'card_type';
     const COLUMN_SERVICE_TAX   = ['service_tax', 'service_taxat145', 'service_taxat1450',
                                   'service_taxat135', 'service_taxat1350', 'service_taxat1500'];
+    const COLUMN_GST           = ['gst'];
     const COLUMN_FEE           = 'commission';
     const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
     const COLUMN_ORDER_ID      = 'order_id';
@@ -52,15 +53,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $this->getPaymentIdForMigs($row);
-
-        //
-        // Calling the Cybersource one after Migs one because
-        // Cybersource one involves a repo call.
-        //
-        if ($paymentId === null)
+        if ($this->isCybersource($row) === true)
         {
             $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else
+        {
+            $paymentId = $this->getPaymentIdForMigs($row);
         }
 
         return $paymentId;
@@ -96,30 +95,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentIdForCybersource(array $row)
     {
-        $paymentId = $msgType = $mid = null;
+        $paymentId = null;
 
-        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        $orderId = $row[self::COLUMN_ORDER_ID];
+
+        $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                                                        Cybersource\Action::CAPTURE, $orderId);
+
+        if ($gatewayPayment !== null)
         {
-            $msgType = $row[self::COLUMN_MSG_TYPE];
-        }
-
-        if (isset($row[self::COLUMN_MID]) === true)
-        {
-            $mid = $row[self::COLUMN_MID];
-        }
-
-        if ((stripos($msgType, self::PREAUTH) === true) or
-            (ends_with($mid, self::CYBS) === true))
-        {
-            $orderId = $row[self::COLUMN_ORDER_ID];
-
-            $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
-                                                            Cybersource\Action::CAPTURE, $orderId);
-
-            if ($gatewayPayment !== null)
-            {
-                $paymentId = $gatewayPayment->getPaymentId();
-            }
+            $paymentId = $gatewayPayment->getPaymentId();
         }
 
         return $paymentId;
@@ -137,28 +122,41 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             //
             if (isset($row[$cst]) === true)
             {
-                $columnServiceTax = $cst;
+                $columnServiceTax = $row[$cst];
                 break;
             }
         }
 
-        if ($columnServiceTax === null)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_FAILURE,
-                    'message'         => 'Unable to get the service tax!',
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
-
-            throw new ReconciliationException('Unable to get the service tax for Axis from the recon file.');
-        }
-
         // Convert service tax into basic unit of currency. (ex: paise)
-        $serviceTax = floatval($row[$columnServiceTax]) * 100;
+        $serviceTax = floatval($columnServiceTax) * 100;
+
+        $gst = $this->getGst($row);
+
+        $serviceTax += $gst;
 
         return round($serviceTax);
+    }
+
+    protected function getGst(array $row)
+    {
+        $columnGst = null;
+
+        foreach(self::COLUMN_GST as $cgst)
+        {
+            //
+            // This should be isset only and not empty
+            // because gst can be 0 also.
+            //
+            if (isset($row[$cgst]) === true)
+            {
+                $columnGst = $row[$cgst];
+                break;
+            }
+        }
+
+        $gst = floatval($columnGst) * 100;
+
+        return $gst;
     }
 
     protected function getGatewayFee($row)
@@ -378,6 +376,30 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return $gatewaySettledAt;
+    }
+
+
+    protected function isCybersource(array $row)
+    {
+        $msgType = $mid = null;
+
+        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        {
+            $msgType = $row[self::COLUMN_MSG_TYPE];
+        }
+
+        if (isset($row[self::COLUMN_MID]) === true)
+        {
+            $mid = $row[self::COLUMN_MID];
+        }
+
+        if ((stripos($msgType, self::PREAUTH) === true) or
+            (ends_with($mid, self::CYBS) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function shouldAttemptForceAuthorizeFailed()

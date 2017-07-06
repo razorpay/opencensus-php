@@ -25,6 +25,7 @@ class Index extends Command
                             {--mode=test : Database mode the command will run in (test|live)}
                             {--index=    : ES index name (eg. beta_api_invoice_test) }
                             {--entity=   : Entity name (eg. item|merchant) }
+                            {--skip=0    : Skip offset (eg. skip first 100 rows) }
                             {--take=5000 : Take count (eg. 1000 at a time) }
                             {--start_at= : Start value(epoch) for time range query }
                             {--end_at=   : End value(epoch) for time range query }';
@@ -35,6 +36,7 @@ class Index extends Command
     protected $mode;
     protected $index;
     protected $entity;
+    protected $skip;
     protected $take;
     protected $startAt;
     protected $endAt;
@@ -58,6 +60,7 @@ class Index extends Command
         $this->mode    = $this->option('mode');
         $this->index   = $this->option('index');
         $this->entity  = $this->option('entity');
+        $this->skip    = (int) $this->option('skip');
         $this->take    = (int) $this->option('take');
         $this->startAt = $this->option('start_at');
         $this->endAt   = $this->option('end_at');
@@ -114,7 +117,7 @@ class Index extends Command
      */
     protected function doIndexing()
     {
-        $skip = 0;
+        $skip = $this->skip;
 
         while (true)
         {
@@ -127,6 +130,15 @@ class Index extends Command
                                     $this->startAt,
                                     $this->endAt);
 
+            $skip += $this->take;
+
+            if (count($documents) === 0)
+            {
+                break;
+            }
+
+            $this->info('Filtering..');
+
             $documents = array_filter(
                             $documents,
                             function (& $doc)
@@ -135,9 +147,13 @@ class Index extends Command
                                             ->isEsSyncNeeded(EsRepository::CREATE, $doc);
                             });
 
-            if (count($documents) === 0)
+            $filteredCount = count($documents);
+
+            $this->info('Filtered docs count: ' . $filteredCount);
+
+            if ($filteredCount === 0)
             {
-                break;
+                continue;
             }
 
             try
@@ -159,8 +175,6 @@ class Index extends Command
                         'options' => $this->option(),
                     ]);
             }
-
-            $skip += $this->take;
         }
     }
 

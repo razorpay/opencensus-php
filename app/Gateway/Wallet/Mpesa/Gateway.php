@@ -194,6 +194,15 @@ class Gateway extends Base\Gateway
                                            SoapAction::REFUND_API,
                                            SoapMethod::REFUND_PAYMENT);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response,
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id']
+            ]);
+
         $content = $response[ResponseFields::UCF_RESPONSE];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
@@ -515,7 +524,7 @@ class Gateway extends Base\Gateway
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
             Base\Entity::RESPONSE_CODE        => $content[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::REFUND_ID            => $input['refund']['id'],
-            Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
+            Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON] ?? ''
         ];
 
         return $attributes;

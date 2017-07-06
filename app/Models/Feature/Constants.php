@@ -35,6 +35,7 @@ class Constants
     const PAYMENT_FAILURE_EMAIL    = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS         = 'virtual_accounts';
     const INVOICE_PARTIAL_PAYMENTS = 'invoice_partial_payments';
+    const HIDE_DOWNTIMES           = 'hide_downtimes';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -67,6 +68,7 @@ class Constants
         self::PAYMENT_FAILURE_EMAIL    => true,
         self::VIRTUAL_ACCOUNTS         => true,
         self::INVOICE_PARTIAL_PAYMENTS => true,
+        self::HIDE_DOWNTIMES           => true,
     ];
 
     public static $visibleFeaturesMap = [

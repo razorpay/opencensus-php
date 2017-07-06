@@ -413,9 +413,17 @@ trait PaymentTrait
     {
         $request = [
             'url'    => '/callback/' . $this->gateway,
-            'method' => 'post',
-            'raw'    => $content
+            'method' => 'post'
         ];
+
+        if (is_string($content))
+        {
+            $request['raw'] = $content;
+        }
+        else
+        {
+            $request['content'] = $content;
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -933,10 +941,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url'     => '/refunds/netbanking/excel',
+            'url'     => '/refunds/excel',
             'method'  => 'post',
             'content' => [
-                'bank'   => $bank
+                'bank'   => $bank,
+                'method' => 'netbanking',
             ],
         );
 
@@ -1117,7 +1126,9 @@ trait PaymentTrait
         $var = 'mock_' . $this->gateway;
 
         if (isset($gateway[$var]))
+        {
             return $gateway['mock_' . $this->gateway];
+        }
 
         return false;
     }

@@ -14,6 +14,8 @@ class EsRepository extends Base\EsRepository
         Entity::CUSTOMER_CONTACT,
         Entity::CUSTOMER_EMAIL,
         Entity::DESCRIPTION,
+        // Entity::STATUS,
+        // Entity::TYPE,
         Entity::TERMS,
         Entity::NOTES,
         Entity::CREATED_AT,

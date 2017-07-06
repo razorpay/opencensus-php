@@ -126,8 +126,12 @@ class Gateway extends Base\Gateway
             {
                 $refundData['response_description'] = substr($content[ResponseFields::MESSAGE], 0, 255);
             }
+            else if (isset($content[ResponseFields::TEXT]) === true)
+            {
+                $refundData['response_description'] = substr($content[ResponseFields::TEXT], 0, 255);
+            }
 
-            $refundData['status_code'] = $content[ResponseFields::STATUS];
+            $refundData['status_code'] = $content[ResponseFields::STATUS] ?? 'FAL';
 
             $this->createGatewayRefundEntity($refundData);
 
@@ -520,30 +524,38 @@ class Gateway extends Base\Gateway
         {
             if (isset($content[ResponseFields::MESSAGE]))
             {
+                $status = $content[ResponseFields::STATUS] ?? 'FAL';
+
                 // Handle Generic Interface layer messages. They are not API
                 // Messages from Airtel.
                 // They have only two fields - STATUS and MESSAGE
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                    $content[ResponseFields::STATUS],
+                    $status,
                     $content[ResponseFields::MESSAGE]);
             }
             else if (isset($content[ResponseFields::ERR_CODE]))
             {
+                $code = $content[ResponseFields::ERR_CODE];
+                $text = $content[ResponseFields::TEXT];
+
                 // It's a different exception of airtel money
                 // Same amount transaction under same tran ID(airtel's),
                 // there should be a time difference of 5 minutes.
                 // Need more clarification on why it occurs.
                 throw new Exception\GatewayErrorException(
-                    ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERR_CODE]),
-                    $content[ResponseFields::ERR_CODE],
-                    $content[ResponseFields::TEXT]);
+                    ResponseCodeMap::getApiErrorCode($code, $text),
+                    $code,
+                    $text);
             }
 
+            $code = $content[ResponseFields::CODE];
+            $msg = $content[ResponseFields::MSG];
+
             throw new Exception\GatewayErrorException(
-                ResponseCodeMap::getApiErrorCode($content[ResponseFields::CODE]),
-                $content[ResponseFields::CODE],
-                substr($content[ResponseFields::MSG], 0, 255));
+                ResponseCodeMap::getApiErrorCode($code, $msg),
+                $code,
+                $msg);
         }
     }
 

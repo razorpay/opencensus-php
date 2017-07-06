@@ -38,6 +38,26 @@ class SubscriptionCancelTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionCancelBasic()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $subscriptionId = $subscription['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/subscriptions/' . $subscriptionId . '/cancel';
+
+        $this->ba->privateAuth();
+        $this->startTest($testData);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertNotNull($subscription['ended_at']);
+    }
+
     public function testSubscriptionChargeAfterCancel()
     {
         $this->doAuthTxnForNewSubscription();

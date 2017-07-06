@@ -54,13 +54,13 @@ class SettlementTest extends TestCase
             {
                 $txn = $payment->transaction;
 
-                $this->assertEquals(2360, $txn->fee);
-                $this->assertEquals(7640, $txn->credit);
+                $this->assertEquals(2000, $txn->fee);
+                $this->assertEquals(8000, $txn->credit);
                 $this->assertEquals(0, $txn->debit);
-                $this->assertEquals(360, $txn->service_tax);
+                $this->assertEquals(0, $txn->service_tax);
             }
 
-            $this->assertEquals(15280, $merchant->balance->getBalance());
+            $this->assertEquals(16000, $merchant->balance->getBalance());
 
             $merchantPayments[] = $payments;
         }
@@ -71,7 +71,7 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(10000, $refund->transaction->debit);
 
-        $this->assertEquals(5280, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
     }
 
     /**
@@ -518,11 +518,11 @@ class SettlementTest extends TestCase
         // Verifiy settlement amounts
         $firstSettlements = $this->getEntities('settlement', ['merchant_id' => $firstMerchant], true);
         $this->assertEquals(1, $firstSettlements['count']);
-        $this->assertEquals(19528, $firstSettlements['items'][0]['amount']);
+        $this->assertEquals(19600, $firstSettlements['items'][0]['amount']);
 
         $secondSettlements = $this->getEntities('settlement', ['merchant_id' => $secondMerchant], true);
         $this->assertEquals(1, $secondSettlements['count']);
-        $this->assertEquals(39056, $secondSettlements['items'][0]['amount']);
+        $this->assertEquals(39200, $secondSettlements['items'][0]['amount']);
     }
 
     public function testSettlementIgnoredTxns()

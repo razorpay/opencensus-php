@@ -30,6 +30,7 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
+        // @TODO: Change/Update this when more methods are added for Virtual Accounts
         $this->verifyBankTransferEnabled();
 
         $customer = $this->getCustomerIfGiven($input);

@@ -389,22 +389,25 @@ class InvoiceTest extends TestCase
     {
         $esMock = $this->createEsMock(['bulkUpdate']);
 
-        //
-        // For the first time, it will createIndex as indexExists will return false.
-        // Asserting all of it.
-        //
-
         $expected = $this->getExpectedUpsertIndexParams();
+
+        // Asserting notes values differently as bulkUpdate gets notes
+        // as object of stdClass. And that is not asserted by
+        // assertArraySelectiveEquals() method.
+        // We declare the expected notes separately and then assert it
+        // against the actual value by typecasting the later to array.
+
+        $expectedNotes = [];
 
         $esMock->expects($this->once())
                ->method('bulkUpdate')
                ->with(
                     $this->callback(
-                        function ($actual) use ($expected)
+                        function ($actual) use ($expected, $expectedNotes)
                         {
-                            $actual['body'][1]['notes'] = (array) $actual['body'][1]['notes'];
-
                             $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
                             $this->assertNotEmpty($actual['body'][0]['index']['_id']);
                             $this->assertNotEmpty($actual['body'][1]['id']);
@@ -573,15 +576,22 @@ class InvoiceTest extends TestCase
                 'terms'   => 'Updated terms & conditions',
             ]);
 
+        // Ref to testCreateInvoiceAndAssertEsSync method of this file
+        // for why this is being asserted differently.
+
+        $expectedNotes = [
+            'key' => 'new value',
+        ];
+
         $esMock->expects($this->once())
                ->method('bulkUpdate')
                ->with(
                     $this->callback(
-                        function ($actual) use ($expected)
+                        function ($actual) use ($expected, $expectedNotes)
                         {
-                            $actual['body'][1]['notes'] = (array) $actual['body'][1]['notes'];
-
                             $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
                             return true;
                         }));
@@ -1208,6 +1218,24 @@ class InvoiceTest extends TestCase
 
         $this->createManyInvoicesForFetchTests();
 
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByEsFeildAndFrom()
+    {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByEsFeildFromAndTo()
+    {
         $esMock = $this->createEsMock(['search']);
 
         $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);

@@ -45,6 +45,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_RBL     = 'NetbankingRbl';
     const JIOMONEY           = 'Jiomoney';
     const EBS                = 'Ebs';
+    const FIRST_DATA         = 'FirstData';
     const ADMIN              = 'admin';
 
     /**
@@ -64,10 +65,10 @@ class Orchestrator extends Base\Core
         self::NETBANKING_AXIS    => ['it.rico@axisbank.com'],
         self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
-        //self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
-        self::NETBANKING_RBL     => [],
+        self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
         self::JIOMONEY           => [],
         self::EBS                => [],
+        self::FIRST_DATA         => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN              => ['prashanth.yv@razorpay.com'],
@@ -157,7 +158,7 @@ class Orchestrator extends Base\Core
             }
 
             $this->trace->traceException(
-                $e, Trace::INFO, TraceCode::RECON_ALERT,
+                $e, Trace::DEBUG, TraceCode::RECON_ALERT,
                 (array) json_decode($e->getMessage()));
 
             // We do not throw an exception as route is hit via Mailgun,
@@ -401,8 +402,7 @@ class Orchestrator extends Base\Core
                 'File contents are empty.',
                 [
                     'all_files_details' => $this->allFilesDetails,
-                ]
-            );
+                ]);
         }
 
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
@@ -868,7 +868,7 @@ class Orchestrator extends Base\Core
     {
         $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
 
-        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
+        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip($fileDetails);
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
