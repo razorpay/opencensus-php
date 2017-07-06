@@ -2216,3 +2216,8 @@ ALTER TABLE netbanking
 ALTER TABLE `upi`
     ADD COLUMN `npci_reference_id` VARCHAR(20) NULL DEFAULT NULL AFTER `gateway_payment_id`,
     ADD INDEX `upi_npci_reference_id_index` (`npci_reference_id`);
+
+# Transfer pricing
+ALTER TABLE transfers
+    ADD COLUMN fees INT UNSIGNED DEFAULT 0 AFTER notes,
+    ADD COLUMN service_tax INT UNSIGNED DEFAULT 0 AFTER fees;

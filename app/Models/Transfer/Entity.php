@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
     const REVERSAL_STATUS       = 'reversal_status';
     const AMOUNT_REVERSED       = 'amount_reversed';
     const NOTES                 = 'notes';
+    const FEES                  = 'fees';
+    const SERVICE_TAX           = 'service_tax';
     const ON_HOLD               = 'on_hold';
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const TRANSACTION_ID        = 'transaction_id';
@@ -58,6 +60,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::NOTES,
+        self::FEES,
+        self::SERVICE_TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
@@ -74,6 +78,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::NOTES,
+        self::FEES,
+        self::SERVICE_TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::CREATED_AT,
@@ -90,6 +96,8 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT                 => 'int',
         self::AMOUNT_REVERSED        => 'int',
+        self::FEES                   => 'int',
+        self::SERVICE_TAX            => 'int',
         self::ON_HOLD                => 'bool',
         self::ON_HOLD_UNTIL          => 'int',
     ];
@@ -101,6 +109,8 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_REVERSED,
+        self::FEES,
+        self::SERVICE_TAX,
     ];
 
     protected $defaults = [
@@ -181,6 +191,16 @@ class Entity extends Base\PublicEntity
         return ($this->getAmount() - $this->getAmountReversed());
     }
 
+    public function getFees()
+    {
+        return $this->getAttribute(self::FEES);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
     public function getOnHold()
     {
         return $this->getAttribute(self::ON_HOLD);
@@ -206,6 +226,10 @@ class Entity extends Base\PublicEntity
     {
         $method = $this->getToType();
 
+        //
+        // Pricing is defined for the 'account' method, which is stored
+        // internally as merchant and we convert convert it accordingly.
+        //
         if ($method === 'merchant')
         {
             $method = ToType::ACCOUNT;
@@ -231,6 +255,16 @@ class Entity extends Base\PublicEntity
     public function setAmountReversed(int $amount)
     {
         $this->setAttribute(self::AMOUNT_REVERSED, $amount);
+    }
+
+    public function setFees(int $fees)
+    {
+        $this->setAttribute(self::FEES, $fees);
+    }
+
+    public function setServiceTax(int $serviceTax)
+    {
+        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
     public function setOnHold(bool $onHold)
