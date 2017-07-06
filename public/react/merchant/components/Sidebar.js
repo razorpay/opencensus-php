@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import LogoFullPNG from 'styles/assets/logo_full.png';
+import LogoPNG from 'styles/assets/logo.png';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
@@ -61,8 +63,8 @@ export default class Sidebar extends Component {
       <div class="sidebar">
         <section class="brand-logo">
           <Link to="/dashboard">
-            <img src="styles/assets/logo_full.png" class="hidden-xs" />
-            <img src="styles/assets/logo.png" class="visible-xs-block" />
+            <img src={LogoFullPNG} class="hidden-xs" />
+            <img src={LogoPNG} class="visible-xs-block" />
           </Link>
         </section>
         <nav>

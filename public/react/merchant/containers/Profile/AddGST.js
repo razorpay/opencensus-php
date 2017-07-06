@@ -147,7 +147,19 @@ export default class AddGST extends Component {
             ? <div>
                 Your GST details have been updated. You can access it anytime from the
                 {' '}
-                <Link to="/profile">Profile Section</Link>
+                <Link to="/profile" onClick={this.props.closeModal}>
+                  Profile Section
+                </Link>
+
+                <div class="Modal__actions">
+                  <Link
+                    class="btn btn-primary btn-block"
+                    to="/profile"
+                    onClick={this.props.closeModal}
+                  >
+                    View my GST details
+                  </Link>
+                </div>
               </div>
             : <form onSubmit={handleSubmit(this.save)}>
                 <div class="help-block">

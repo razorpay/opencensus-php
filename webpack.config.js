@@ -59,7 +59,6 @@ webpackConfig.module.rules = [
           cacheDirectory: true,
           plugins: [
             'react-html-attrs',
-            'transform-react-jsx-img-import',
             'transform-runtime',
             'transform-decorators-legacy',
           ],
