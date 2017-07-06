@@ -73,9 +73,7 @@ class Service extends Base\Service
         $org = $this->getOrgFromCache($domain);
 
         // `/access/resetpwd` is a hard-coded angular route
-        $resetPasswordUrl = 'https://' . $org['hostname'] . '/admin#/access/resetpwd';
-
-        $input['reset_password_url'] = $resetPasswordUrl;
+        $input['reset_password_url'] = url('/admin#/access/resetpwd');
 
         try
         {

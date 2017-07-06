@@ -2,17 +2,24 @@
 //Pricing List controller
 app.controller('PricingsCtrl', [
   '$scope',
+  '$stateParams',
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
+  '$state',
+  function(
+    $scope,
+    $stateParams,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost,
+    $state
+  ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.pricing_plans = {};
     $scope.show_plan = {};
-    $scope.create_plan = false;
     $scope.itemList = [];
     $scope.networks = null;
-    generateTable();
 
     var getDefaultRule = function() {
       return {
@@ -44,12 +51,6 @@ app.controller('PricingsCtrl', [
 
     $scope.new_plan = $scope.new_rule = getDefaultRule();
 
-    $scope.createPlan = function() {
-      $scope.new_plan = getDefaultRule();
-      $scope.show_plan = {};
-      $scope.create_plan = true;
-    };
-
     var getNetworkList = function(method) {
       if ($scope.networks === null) {
         return { '': 'All' };
@@ -69,6 +70,7 @@ app.controller('PricingsCtrl', [
 
         default:
           networks = $scope.networks[method];
+          networks = networks !== undefined ? networks : {};
       }
 
       networks[''] = 'All';
@@ -123,9 +125,9 @@ app.controller('PricingsCtrl', [
               'Plan created successfully',
               true
             );
-            $scope.create_plan = false;
-            $scope.pricing_plans.push(data.data);
-            $scope.showPlan(data.data.id);
+            $state.go('app.pricingdetail', {
+              id: data.data.id,
+            });
           } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {
@@ -268,13 +270,24 @@ app.controller('PricingsCtrl', [
 
       request.success(function(data) {
         if (data.success) {
-          $scope.create_plan = false;
+          if (data.data.length === 0) {
+            $scope.alerts.addAlert(
+              'danger',
+              'No plan exists with the given id',
+              true
+            );
+          }
           $scope.show_plan = data.data;
         }
       });
     };
 
-    function generateTable() {
+    var pricing_plan_id = $stateParams.id;
+    if (pricing_plan_id) {
+      $scope.showPlan(pricing_plan_id);
+    }
+
+    $scope.generateTable = function() {
       var params = {
         route_name: 'pricing_get_merchant_plans',
       };
@@ -288,7 +301,7 @@ app.controller('PricingsCtrl', [
           $scope.pricing_plans = data.data.items;
         }
       });
-    }
+    };
 
     /**
      * Sets defaults ranges for now
