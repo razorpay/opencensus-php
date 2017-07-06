@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Rbl;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -176,20 +176,39 @@ class NetbankingRblGatewayTest extends TestCase
     {
         Mail::fake();
 
-        $payments = $this->createPaymentsToClaim();
+        $payments = $this->createPayments();
+
+        $this->setPaymentsReconciledAtToday();
 
         $this->createRefundsForFileGeneration($payments);
 
         $data = $this->generateRefundsExcelForNb($this->bank);
 
-        $this->assertTrue(file_exists($data['netbanking_rbl']['file']));
+        $this->assertTrue(file_exists($data['netbanking_rbl']['refunds']));
 
-        unlink($data['netbanking_rbl']['file']);
+        $this->assertTrue(file_exists($data['netbanking_rbl']['claims']));
+
+        unlink($data['netbanking_rbl']['refunds']);
+
+        unlink($data['netbanking_rbl']['claims']);
 
         $this->checkMailQueue();
     }
 
-    protected function createPaymentsToClaim()
+    protected function setPaymentsReconciledAtToday()
+    {
+        // Set the transactions to be reconciled today
+        $transactions = $this->getEntities('transaction', [], true);
+
+        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+
+        foreach ($transactions['items'] as $transaction)
+        {
+            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
+        }
+    }
+
+    protected function createPayments()
     {
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -198,18 +217,6 @@ class NetbankingRblGatewayTest extends TestCase
         $this->doAuthAndCapturePayment($this->payment);
 
         $payments = $this->getEntities('payment', [], true);
-
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
-                                                      ->addMinutes(30)
-                                                      ->timestamp;
-
-        // Ensuring that the created at timestamps are for yesterday
-        foreach ($payments['items'] as $payment)
-        {
-            $this->fixtures->edit('payment', $payment['id'], ['created_at'    => $createdAt,
-                                                              'authorized_at' => $createdAt + 10,
-                                                              'captured_at'   => $createdAt + 20]);
-        }
 
         return $payments;
     }
@@ -241,9 +248,11 @@ class NetbankingRblGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertSent(DailyFileMail::class, function ($mail)
         {
-            $this->assertEquals('3', $mail->viewData['count']);
+            $this->assertEquals('3', $mail->viewData['count']['refunds']);
+
+            $this->assertEquals('3', $mail->viewData['count']['claims']);
 
             return true;
         });

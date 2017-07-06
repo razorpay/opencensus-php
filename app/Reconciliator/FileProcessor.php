@@ -139,12 +139,14 @@ class FileProcessor
     /**
      * Unzips the file to a folder which is created in the same folder in which the zip file is present.
      *
-     * @param array $fileDetails
+     * @param array  $fileDetails
      * @param string $password Password to unlock the zip file.
+     * @param bool   $use7z
+     *
      * @return string The folder path of the extracted file
      * @throws Exception\ReconciliationException
      */
-    public function unzipFile($fileDetails, $password = null, $use7z = false)
+    public function unzipFile($fileDetails, $password = null, bool $use7z = false)
     {
         $filePath = $fileDetails[self::FILE_PATH];
         $extension = $fileDetails[self::EXTENSION];

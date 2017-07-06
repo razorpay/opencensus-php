@@ -8,6 +8,7 @@
 namespace RZP\Tests\Functional;
 
 use Artisan;
+
 use RZP\Tests\TestCase as ParentTestCase;
 use RZP\Services\EsClient;
 

@@ -275,46 +275,27 @@ class PaymentRetrieveTest extends TestCase
 
         $paymentId = $payment->getId();
 
-        $mockEs = $this->mockEsClient();
+        $esMock = $this->createEsMock(['search']);
 
-        $mockEs->shouldReceive('searchNotes')
-               ->once()
-               ->with(
-                    Mockery::on(function ($actual)
-                    {
-                        $expected = [
-                            'index' => 'api_test',
-                            'type'  => 'payments',
-                            'body'  => [
-                                'size'  => 10,
-                                'query' => [
-                                    'bool' => [
-                                        'must' => [
-                                            'multi_match' => [
-                                                'query'  => 'es_random_1',
-                                                'type'   => 'cross_fields',
-                                                'fields' => ['notes.*']
-                                            ]
-                                        ],
-                                        'filter' => [
-                                            'term' => [
-                                                'merchant_id' => "10000000000000"
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ],
-                        ];
+        $expectedSearchParams = $this->testData["testSearchEsForNotesExpectedSearchParams"];
 
-                        $this->assertArraySelectiveEquals($expected, $actual);
+        $expectedSearchRes    = [
+            'hits' => [
+                'hits' => [
+                    [
+                        '_id' => $paymentId,
+                    ]
+                ],
+            ],
+        ];
 
-                        return true;
-                    }))
-               ->andReturn([$paymentId]);
+        $esMock->expects($this->once())
+               ->method('search')
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
 
-        $testData = $this->testData[__FUNCTION__];
+        $response = $this->startTest();
 
-        $response = $this->startTest($testData);
         $this->assertEquals('es_random_1', $response['items'][0]['notes']['order_id']);
     }
 
@@ -324,75 +305,45 @@ class PaymentRetrieveTest extends TestCase
 
         $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
-        $mockEs = $this->mockEsClient();
+        $this->createEsMock(['search'])
+             ->expects($this->never())
+             ->method('search');
 
-        $mockEs->shouldNotReceive('searchNotes');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testSearchEsForNotesOnAdminAuth()
     {
         $payments = $this->fixtures->times(4)->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
+        $esMock = $this->createEsMock(['search']);
+
+        $expectedSearchParams = $this->testData["testSearchEsForNotesOnAdminAuthExpectedSearchParams"];
+
         foreach ($payments as $payment)
         {
-            $paymentIds[] = $payment->getId();
+            $expectedSearchRes['hits']['hits'][] = ['_id' => $payment->getId()];
         }
 
-        $mockEs = $this->mockEsClient();
-
-        $mockEs->shouldReceive('searchNotes')
-            ->once()
-            ->with(
-                Mockery::on(function ($actual)
-                {
-                    $expected = [
-                        'index' => 'api_test',
-                        'type'  => 'payments',
-                        'body'  => [
-                            'size'  => 1000,
-                            'query' => [
-                                'bool' => [
-                                    'must' => [
-                                        'multi_match' => [
-                                            'query'  => 'es',
-                                            'type'   => 'cross_fields',
-                                            'fields' => ['notes.*']
-                                        ],
-                                    ],
-                                    'filter' => []
-                                ],
-                            ]
-                        ],
-                    ];
-
-                    $this->assertArraySelectiveEquals($expected, $actual);
-
-                    return true;
-                }))
-            ->andReturn($paymentIds);
+        $esMock->expects($this->once())
+               ->method('search')
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
 
         $this->ba->appAuth();
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testSearchEsWithoutQueryParams()
     {
         $this->ba->proxyAuth();
 
-        $mockEs = $this->mockEsClient();
+        $this->createEsMock(['search'])
+             ->expects($this->never())
+             ->method('search');
 
-        $mockEs->shouldNotReceive('searchNotes');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testSearchEsEntityNotPresentInMySql()
@@ -401,16 +352,23 @@ class PaymentRetrieveTest extends TestCase
 
         $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
-        $mockEs = $this->mockEsClient();
+        $esMock = $this->createEsMock(['search']);
 
-        $mockEs->shouldReceive('searchNotes')
-               ->once()
-               ->with(Mockery::any())
-               ->andReturn(['rand_payment_id']);
+        $expectedSearchRes    = [
+            'hits' => [
+                'hits' => [
+                    [
+                        '_id' => '10000000000000',
+                    ]
+                ],
+            ],
+        ];
 
-        $testData = $this->testData[__FUNCTION__];
+        $esMock->expects($this->once())
+               ->method('search')
+               ->willReturn($expectedSearchRes);
 
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testSearchEsForNotesPrivateAuth()
@@ -419,13 +377,11 @@ class PaymentRetrieveTest extends TestCase
 
         $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
-        $mockEs = $this->mockEsClient();
+        $this->createEsMock(['search'])
+             ->expects($this->never())
+             ->method('search');
 
-        $mockEs->shouldNotReceive('searchNotes');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testSearchEsForStatus()
@@ -434,22 +390,10 @@ class PaymentRetrieveTest extends TestCase
 
         $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
-        $mockEs = $this->mockEsClient();
+        $this->createEsMock(['search'])
+             ->expects($this->never())
+             ->method('search');
 
-        $mockEs->shouldNotReceive('searchNotes');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
-    }
-
-    protected function mockEsClient()
-    {
-        $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
-                                ->makePartial();
-
-        $this->app->instance('es', $clientBuilder);
-
-        return $clientBuilder;
+        $this->startTest();
     }
 }

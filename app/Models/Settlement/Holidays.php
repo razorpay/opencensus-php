@@ -102,7 +102,6 @@ class Holidays
                 26 => 'Ramzan Id (Id-ul-Fitr)',
             ],
             7 => [
-                1  => 'Annual Closing of RBI/Kharchi Puja',
             ],
             8 => [
                 15 => 'Independence Day/Janmashtami',

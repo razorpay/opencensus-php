@@ -1,30 +1,48 @@
 <div>
+
+  @extends('emails.invoice.notification')
+
   @php
-      $status = $invoice['status'];
+      $status    = $invoice['status'];
+      $isInvoice = ($invoice['type'] === 'invoice');
+
+      $amountPaid = ($invoice['amount_paid']);
+
+      if (isset($payment))
+      {
+          $amountPaid += $payment['adjusted_amount'];
+      }
+
       $headerLabel = '';
       $ctaLabel = '';
       $ctaHref = '';
 
       if (isset($payment))
       {
-          $ctaLabel = 'DOWNLOAD PDF';
+          if ($amountPaid >= $invoice['amount'])
+          {
+            $ctaLabel = $isInvoice ? 'DOWNLOAD PDF' : '';
+          }
+          else
+          {
+            $ctaLabel = 'PROCEED TO PAY';
+          }
+
           $ctaHref = $invoice['short_url'];
-          $headerLabel = 'PAYMENT SUCCESSFUL';
+
+          $headerLabel = 'You have made a payment of ' . $payment['amount'];
       }
       elseif ($status === 'issued')
       {
           $ctaLabel = 'PROCEED TO PAY';
           $ctaHref = $invoice['short_url'];
-          $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+          $headerLabel = $merchant['name'] . ' has sent you an ' . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
       }
       elseif ($status === 'expired')
       {
           $headerLabel = strtoupper($invoice['type_label']) . ' EXPIRED';
       }
   @endphp
-
-
-  @extends('emails.invoice.notification')
 
   @section('header')
       <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">

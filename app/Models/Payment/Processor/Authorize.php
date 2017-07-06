@@ -36,6 +36,7 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Upi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -244,10 +245,9 @@ trait Authorize
     }
 
     /**
-     * @param array|null     $request
      * @param Payment\Entity $payment
      *
-     * @return array|mixed
+     * @return array
      */
     protected function processAuth(Payment\Entity $payment): array
     {
@@ -514,13 +514,16 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        if ($subscription->isExpired() === true)
+        $subscriptionStatus = $subscription->getStatus();
+
+        if (in_array($subscriptionStatus, Subscription\Status::$nonChargeableStatuses, true) === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_EXPIRED,
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_EXPIRED_OR_CANCELLED,
                 null,
                 [
-                    'subscription_id' => $subscription->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                    'status'            => $subscriptionStatus
                 ]);
         }
 
@@ -548,7 +551,7 @@ trait Authorize
         Subscription\Entity $subscription,
         Payment\Entity $payment)
     {
-        $publicAuth = $this->app['basicauth']->isPublicAuth();
+        $publicAuth = $this->ba->isPublicAuth();
 
         if (($publicAuth === true) and
             ($subscription->isChangeCardStatus() === false))
@@ -754,8 +757,6 @@ trait Authorize
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
             ($payment->isSecondRecurring() === true))
         {
-            $this->verifyAuthForRecurring();
-
             $this->verifyAggregatorIfApplicable($merchant);
         }
     }
@@ -838,7 +839,7 @@ trait Authorize
         (new Offer\Core)->validateOfferApplicableOnPayment($payment);
     }
 
-    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -865,10 +866,18 @@ trait Authorize
         }
 
         // set token for local card saving in gateway input
-        if ($payment->getTokenId() !== null)
-        {
-            $gatewayInput['token'] = $payment->localToken;
-        }
+        $gatewayInput['token'] = $payment->getGlobalOrLocalTokenEntity();
+
+        //
+        // This is mostly required for first data recurring.
+        // They need gateway merchant id of the terminal to be
+        // sent in the recurring request.
+        // The terminal is set as part of gateway_token.
+        // The normal token may/will not have a terminal (not correct one at least)
+        // That whole global token wala stuff. One customer, one token, multiple
+        // subscriptions/terminals.
+        //
+        $this->setGatewayTokenInInput($payment, $gatewayInput);
 
         $customProperties = [
             'otpSubmitUrl' => $this->getOtpSubmitUrl(),
@@ -876,6 +885,29 @@ trait Authorize
         ];
 
         $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
+    }
+
+    protected function setGatewayTokenInInput(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $token = $gatewayInput['token'];
+
+        if (empty($token) === true)
+        {
+            return;
+        }
+
+        $reference = $payment->getReferenceForGatewayToken();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        //
+        // It's possible that there are no gateway tokens for this.
+        // For NB, wallets, non-recurring cards, first recurring card, etc.
+        //
+        if ($gatewayTokens->count() === 1)
+        {
+            $gatewayInput['gateway_token'] = $gatewayTokens->first();
+        }
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
@@ -995,16 +1027,6 @@ trait Authorize
         });
     }
 
-    protected function verifyAuthForRecurring()
-    {
-        if (($this->app['basicauth']->isPrivateAuth() === false) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
-        }
-    }
-
     protected function processCurrencyConversions(Payment\Entity $payment)
     {
         $currency = $payment->getCurrency();
@@ -1078,20 +1100,26 @@ trait Authorize
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
-        $this->associateSubscriptionIfApplicable($payment, $input);
-
-        $this->setCustomerIdForSubscriptionInput($payment, $input);
-
         //
         // Either the customer ID or the app token ID is required to get the customer.
         // Hence, fill the app token in the input if customer ID is not present.
+        //
+        // This should be done before `addCustomerIdToSubscriptionInput` because we
+        // check if app_token is present in some conditions.
         //
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
             $this->checkAndFillSavedAppToken($input);
         }
 
-        // First fetch the relevant customer
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            $this->associateSubscriptionToPayment($payment, $input);
+
+            $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
+        }
+
+        // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
         if ($customer === null)
@@ -1104,7 +1132,32 @@ trait Authorize
         }
         else
         {
-            $this->preProcessPaymentForGlobalCustomer($customer, $customerApp, $payment, $input, $gatewayInput);
+            $localCustomer = null;
+
+            if ($payment->hasSubscription() === true)
+            {
+                $subscription = $payment->subscription;
+
+                //
+                // If global, create a local customer and link that to the subscription.
+                // $customer is global here currently, create its local copy.
+                //
+                if ($subscription->hasCustomer() === false)
+                {
+                    $localCustomer = $this->associateLocalCustomerToSubscription($subscription, $customer);
+                }
+                else
+                {
+                    //
+                    // `else` is from the second charge onwards
+                    // or change card flow.
+                    //
+                    $localCustomer = $subscription->customer;
+                }
+            }
+
+            $this->preProcessPaymentForGlobalCustomer(
+                $customer, $localCustomer, $customerApp, $payment, $input, $gatewayInput);
         }
 
         if ($payment->isEmi() === true)
@@ -1129,13 +1182,102 @@ trait Authorize
         $payment->setInternational();
     }
 
-    protected function associateSubscriptionIfApplicable(Payment\Entity $payment, array $input)
+    protected function associateLocalCustomerToSubscription(
+        Subscription\Entity $subscription, Customer\Entity $customer)
     {
-        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $subscription->merchant);
+
+        $localCustomer->globalCustomer()->associate($customer);
+
+        $this->repo->saveOrFail($localCustomer);
+
+        return $localCustomer;
+
+        // $subscription->customer()->associate($localCustomer);
+        //
+        // // If this gets saved and then the payment fails, what happens?
+        // // We remove the relation if the payment fails, in `updatePaymentFailed`
+        // $this->repo->saveOrFail($subscription);
+    }
+
+    protected function addCustomerIdToSubscriptionInput(Subscription\Entity $subscription, array & $input)
+    {
+        //
+        // If a subscription_id is sent in the input, the customer_id should
+        // never be sent. It's either associated with the subscription (local customer)
+        // or we use the global customer and associate that later.
+        //
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
         {
-            return;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                ]);
         }
 
+        //
+        // A subscription can have a customer in case of local flow if it's first 2FA.
+        // A subscription can have a customer in case of local or global flow if it's
+        // second 2FA (change card) or subsequent charges.
+        // In case of global flow, local flow will be associated with the customer.
+        //
+        // First 2FA:
+        //  - Local flow: Subscription has customer_id associated with it.
+        //  - Global flow: Subscription does not have any customer_id associated with it.
+        //                 The input has app_token in it set by the session.
+        // Second 2FA (change card):
+        //  - Local flow: Subscription has customer_id already associated with it.
+        //  - Global flow: Subscription has customer_id already associated with it.
+        //                 But, it should also have app_token set in the input. Customer
+        //                 should be logged in.
+        // Subsequent charges:
+        //  - Local flow: Subscription has customer_id associated with it.
+        //  - Global flow: Subscription has customer_id already associated with it.
+        //                 This customer_id is the local customer_id though.
+        //                 So, here, we add the customer_id to the input so that
+        //                 later in the flow, while fetching the customer entity,
+        //                 we use the local customer_id to fetch the global customer_id
+        //                 that would be associated with the local customer entity.
+        //                 From thereon, the flow follows global.
+        //
+        // In case local flow, merchant should always ensure that the correct customer of the
+        // subscription is logged in their checkout before sending us the payment request.
+        //
+        // In case of global flows, the subscription will always be associated with the global token.
+        //
+        if ($subscription->hasCustomer() === true)
+        {
+            //
+            // In case the subscription already has a customer
+            // and that customer has a global customer, we should
+            // also ensure that app_token is present in case of
+            // second 2FA (change card). In the subsequent charges flow,
+            // app_token won't be present anyway, since it's internal.
+            //
+            if($subscription->customer->globalCustomer !== null)
+            {
+                if ((($this->ba->isPublicAuth() === true) and
+                     ($subscription->isChangeCardStatus() === true)) and
+                    (empty($input[Payment\Entity::APP_TOKEN]) === true))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                        null,
+                        [
+                            'subscription_id' => $subscription->getId(),
+                            'global' => true,
+                        ]);
+                }
+            }
+
+            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+        }
+    }
+
+    protected function associateSubscriptionToPayment(Payment\Entity $payment, array $input)
+    {
         $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
 
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
@@ -1176,6 +1318,20 @@ trait Authorize
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
     {
+        //
+        // In the subscription flow, card must always be saved.
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'subscription_id'   => $payment->subscription->getId()
+                ]);
+        }
+
         // No card saving, normal simple flow
         if ($payment->isMethodCardOrEmi())
         {
@@ -1211,14 +1367,42 @@ trait Authorize
     }
 
     protected function preProcessPaymentForGlobalCustomer(Customer\Entity $customer,
-                                                          Customer\AppToken\Entity $customerApp,
+                                                          Customer\Entity $localCustomer = null,
+                                                          Customer\AppToken\Entity $customerApp = null,
                                                           Payment\Entity $payment,
                                                           array & $input,
                                                           array & $gatewayInput)
     {
+        //
+        // Only in the case of privilege auth, it's okay to not
+        // have an app_token. In all other cases, we should have
+        // an app_token when we are processing 2FA.
+        //
+        if (($this->ba->isPrivilegeAuth() === false) and
+            ($customerApp === null))
+        {
+            throw new Exception\LogicException(
+                'Not privilege auth and no app_token. Should not have reached here at all.',
+                ErrorCode::SERVER_ERROR_APP_TOKEN_NOT_PRESENT,
+                [
+                    'customer_id' => $customer->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
+
         $this->payment->app()->associate($customerApp);
 
         $this->payment->globalCustomer()->associate($customer);
+
+        if ($localCustomer !== null)
+        {
+            //
+            // One of the reasons to do this is so that the customer is
+            // also associated with the invoice later in the flow, after
+            // the invoice is marked as paid.
+            //
+            $this->payment->customer()->associate($localCustomer);
+        }
 
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
@@ -1318,8 +1502,10 @@ trait Authorize
                                                            array $input,
                                                            array & $gatewayInput)
     {
-        // Flow if card details are entered with save set to true/false
-        $saveMethod = $payment->getSave();
+        // If save is set to true or recurring is set to true,
+        // we save the card details while processing the payment
+        $saveMethod = (($payment->getSave() === true) or
+                       ($payment->isRecurring() === true));
 
         if ($saveMethod === false)
         {
@@ -1536,17 +1722,7 @@ trait Authorize
 
         if ($appToken !== null)
         {
-            $input['app_token'] = $appToken;
-        }
-    }
-
-    protected function setCustomerIdForSubscriptionInput(Payment\Entity $payment, array & $input)
-    {
-        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
-        {
-            $subscription = $payment->subscription;
-
-            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
     }
 
@@ -1583,6 +1759,7 @@ trait Authorize
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
+            'data'          => $request['data'],
             'request'       => [
                 'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
                 'method' => 'GET',
@@ -1647,17 +1824,60 @@ trait Authorize
 
             $token->incrementUsedCount();
 
-            if (($token->isLocal()) and
-                ($payment->isCard()) and
-                ($payment->isRecurring() === true) and
-                ($token->isRecurring() === false))
+            if (($payment->isCard() === true) and
+                ($payment->isRecurring() === true))
             {
                 $token->setRecurring(true);
 
+                $this->createAndSetTerminalInGatewayToken($payment, $token);
+
+                //
+                // This is being done simply. Can be removed.
+                // Shouldn't be required now since we are using
+                // gateway_token for terminal.
+                //
                 $token->terminal()->associate($payment->terminal);
             }
 
             $this->repo->saveOrFail($token);
+        }
+    }
+
+    protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
+    {
+        $reference = $payment->getReferenceForGatewayToken();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        $gatewayTokensCount = $gatewayTokens->count();
+
+        if ($gatewayTokensCount === 0)
+        {
+            (new GatewayToken\Core)->create($payment, $token, $reference);
+        }
+        else if ($gatewayTokensCount === 1)
+        {
+            $gatewayToken = $gatewayTokens->first();
+
+            $gatewayToken->terminal()->associate($payment->terminal);
+
+            $this->repo->saveOrFail($gatewayToken);
+        }
+        else
+        {
+            //
+            // Not throwing an exception here because it might
+            // screw up with the flow. Going to just trace as critical.
+            //
+            $this->trace->critical(
+                TraceCode::GATEWAY_TOKEN_ALREADY_PRESENT,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'payment_terminal_id'   => $payment->terminal->getId(),
+                    'token_id'              => $token->getId(),
+                    'gateway_tokens_count'  => $gatewayTokens->count(),
+                    'gateway_tokens'        => $gatewayTokens->toArray()
+                ]);
         }
     }
 
@@ -1816,7 +2036,8 @@ trait Authorize
         //
         // This means that it's a change card flow
         //
-        if ($this->app['basicauth']->isPublicAuth() === true)
+        if (($this->ba->isPublicAuth() === true) and
+            ($subscription->isChangeCardStatus() === true))
         {
             $this->processChangeCardForSubscription($subscription, $payment);
 
@@ -1887,6 +2108,7 @@ trait Authorize
         }
 
         $this->updateSubscriptionToken($subscription, $payment);
+        $this->updateSubscriptionCustomer($subscription, $payment);
 
         $subscription->setStatus(Subscription\Status::AUTHENTICATED);
 
@@ -1966,15 +2188,44 @@ trait Authorize
 
         //
         // This would mean that this was a 5rs auth transaction.
-        // There was no addon (upfront_amount) or this is not being used as first charge.
+        // There was no addon (upfront_amount) or this is not
+        // being used as first charge.
         //
         $this->refundAuthorizedPayment($payment);
     }
 
+    protected function updateSubscriptionCustomer(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        $paymentCustomer = $payment->customer;
+
+        $valid = $this->validateSubscriptionState($payment, $paymentCustomer, $subscription);
+
+        if ($valid === false)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CUSTOMER_ASSOCIATE,
+            [
+                'payment_id'        => $payment->getId(),
+                'subscription_id'   => $subscription->getId(),
+                'customer_id'       => $paymentCustomer->getId(),
+            ]);
+
+        //
+        // The reason for doing this here and not before authorization
+        // is that a payment may fail during an authorization. If we
+        // associate the customer to the subscription before itself,
+        // we can end up having wrong data and causes issues like
+        // re-setting the customer later for the subscription.
+        //
+        $subscription->customer()->associate($paymentCustomer);
+    }
+
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        // TODO: This will have to be fixed when we bring in global for subscriptions
-        $paymentToken = $payment->localToken;
+        $paymentToken = $payment->getGlobalOrLocalTokenEntity();
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_TOKEN_ASSOCIATE,
@@ -1984,54 +2235,42 @@ trait Authorize
                 'payment_token_id'  => $paymentToken->getId(),
             ]);
 
-        //
-        // We are commenting this piece of code because token can be associated even if is
-        // in active state and not only in created state. Basically, a change card/token flow.
-        //
-
-        // $valid = $this->validateSubscriptionState($payment, $paymentToken, $subscription);
-
-        // if ($valid === false)
-        // {
-        //     return;
-        // }
-
         $subscription->token()->associate($paymentToken);
     }
 
     protected function validateSubscriptionState(
         Payment\Entity $payment,
-        Token\Entity $paymentToken,
+        Customer\Entity $paymentCustomer,
         Subscription\Entity $subscription)
     {
         $valid = true;
 
-        $subscriptionToken = $subscription->token;
+        $subscriptionCustomer = $subscription->customer;
 
         //
-        // From the second charge onwards, the token would have already been
-        // associated with the subscription.
+        // From the second charge onwards, the customer would have
+        // already been associated with the subscription.
         // Hence, we don't need to associate it again.
         //
-        if ($subscriptionToken !== null)
+        if ($subscriptionCustomer !== null)
         {
-            $this->trace->info(
-                TraceCode::SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED,
+            $this->trace->critical(
+                TraceCode::SUBSCRIPTION_CUSTOMER_ALREADY_ASSOCIATED,
                 [
-                    'payment_id'            => $payment->getId(),
-                    'subscription_id'       => $subscription->getId(),
-                    'payment_token_id'      => $paymentToken->getId(),
-                    'subscription_token_id' => $subscriptionToken->getId(),
+                    'payment_id'                => $payment->getId(),
+                    'subscription_id'           => $subscription->getId(),
+                    'payment_customer_id'       => $paymentCustomer->getId(),
+                    'subscription_customer_id'  => $subscriptionCustomer->getId(),
                 ]);
 
             $valid = false;
         }
 
         //
-        // If a token is not associated with the subscription already,
+        // If a customer is not associated with the subscription already,
         // it means that the subscription is in created state, because,
         // no transaction yet happened on this subscription, due to which,
-        // there's no token associated with it yet.
+        // there's no customer associated with it yet.
         //
         if ($subscription->isCreated() === false)
         {
@@ -2280,9 +2519,10 @@ trait Authorize
     /**
      * Do we support the OTP flow for a given payment
      * and input combination
+     *
      * @param  Payment\Entity $payment
-     * @param  array $input
-     * @return boolean
+     *
+     * @return bool
      */
     protected function canRunOtpPaymentFlow(Payment\Entity $payment): bool
     {
@@ -2457,7 +2697,7 @@ trait Authorize
         $savedCard['number'] = $cardNumber;
         $savedCard['cvv'] = $cvv;
 
-        //create a card entity for merchant
+        // Create a card entity for merchant
         $cardCore = new Card\Core;
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);

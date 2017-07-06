@@ -11,11 +11,13 @@ use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
-    protected $gateways = array();
+    protected $gateways = [];
 
-    protected $mocks = array();
+    protected $mocks = [];
 
-    protected $servers = array();
+    protected $servers = [];
+
+    protected $recons = [];
 
     public function __construct($app)
     {
@@ -134,6 +136,31 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $servers[$driver];
     }
 
+    public function recon($driver)
+    {
+        $recons = & $this->recons;
+
+        if (isset($recons[$driver]))
+        {
+            return $recons[$driver];
+        }
+
+        $recon = $this->getReconClass($driver);
+
+        $recon = new $recon;
+
+        $recons[$driver] = $recon;
+
+        return $recons[$driver];
+    }
+
+    public function setRecon($driver, $recon = null)
+    {
+        $this->recons[$driver] = $recon;
+
+        return $recon;
+    }
+
     public function getServerClass($driver)
     {
         $server = $this->getGatewayNamespace($driver, true) . '\\Server';
@@ -174,6 +201,13 @@ class GatewayManager extends \Illuminate\Support\Manager
         $class = $this->getServerClass($driver);
 
         $this->servers[$driver] = new $class;
+    }
+
+    public function getReconClass($driver)
+    {
+        $recon = $this->getGatewayNamespace($driver, true) . '\\Reconciliator';
+
+        return $recon;
     }
 
     public function resetDriver($driver)

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Pricing;
 
+use Carbon\Carbon;
+
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
@@ -16,17 +18,15 @@ use RZP\Trace\TraceCode;
 
 class FeeCalculator
 {
-    const SERVICE_TAX_PERCENT = 15.0;
+    const IGST_PERCENTAGE   = 1800; // Integrated GST
+    const CGST_PERCENTAGE   = 900;  // Central GST
+    const SGST_PERCENTAGE   = 900;  // State GST
 
-    const SERVICE_TAX_PERCENTAGE            = 1400;
-    const SWACHH_BHARAT_CESS_PERCENTAGE     = 50;
-    const KRISHI_KALYAN_CESS_PERCENTAGE     = 50;
+    // 1st July 2017 00:00:00 IST - Timestamp at which GST will begin to be levied on transactions
+    const GST_START_TIMESTAMP = 1498847400;
 
-    const TAX_COMPONENTS = [
-        FeeBreakupName::KRISHI_KALYAN_CESS => self::KRISHI_KALYAN_CESS_PERCENTAGE,
-        FeeBreakupName::SWACHH_BHARAT_CESS => self::SWACHH_BHARAT_CESS_PERCENTAGE,
-        FeeBreakupName::SERVICE_TAX        => self::SERVICE_TAX_PERCENTAGE,
-    ];
+    // '29' - Karnataka's state code
+    const RZP_GST_STATE_CODE = '29';
 
     /**
      * For which fees needs to be calculated.
@@ -46,6 +46,8 @@ class FeeCalculator
      */
     protected $trace;
 
+    protected $taxComponents = null;
+
     public function __construct($entity)
     {
         $this->entity = $entity;
@@ -55,6 +57,8 @@ class FeeCalculator
         $this->pricingRules = new Base\PublicCollection;
 
         $this->trace = \Trace::getFacadeRoot();
+
+        $this->taxComponents = $this->getTaxComponents();
     }
 
     public function calculate(Pricing\Plan $pricing)
@@ -92,7 +96,7 @@ class FeeCalculator
             $fees += $fee;
         }
 
-        $totalTaxes = $this->calculateServiceTaxes($fees, self::TAX_COMPONENTS);
+        $totalTaxes = $this->calculateGst($fees);
 
         $totalFees = $fees + $totalTaxes;
 
@@ -112,9 +116,13 @@ class FeeCalculator
 
     public static function getServiceTaxRate()
     {
-        return self::SERVICE_TAX_PERCENTAGE +
-                self::KRISHI_KALYAN_CESS_PERCENTAGE +
-                self::SWACHH_BHARAT_CESS_PERCENTAGE;
+        // returning igst percentage as igst = cgst + sgst
+        return self::IGST_PERCENTAGE;
+    }
+
+    public static function isGstApplicable($fromTimestamp)
+    {
+        return ($fromTimestamp >= self::GST_START_TIMESTAMP);
     }
 
     public function getFeesSplit()
@@ -658,20 +666,34 @@ class FeeCalculator
         return $fee;
     }
 
-    public function calculateServiceTaxes($fee, array $taxComponents)
+    protected function calculateGst($fee)
     {
-        $splitTaxes = 0;
+        $totalTaxes = 0;
 
-        $totalTaxPercentage = 0;
+        $taxComponents = $this->taxComponents;
 
-        foreach ($taxComponents as $taxPercentage)
+        // Check if GST needs to be levied
+        $eligibleForGst = $this->isEligibleForGst($fee);
+
+        foreach ($taxComponents as $name => $percentage)
         {
-            $totalTaxPercentage += $taxPercentage;
+            $taxValue = ($eligibleForGst === true) ? ((int) round(($percentage * $fee) / 10000)) : 0;
+
+            $taxBreakup = $this->createFeeBreakup(
+                                            $name,
+                                            $percentage,
+                                            $taxValue);
+
+            $this->feesSplit->push($taxBreakup);
+
+            $totalTaxes += $taxValue;
         }
 
-        $totalTaxes = (int) round(($fee * $totalTaxPercentage) / 10000);
+        return $totalTaxes;
+    }
 
-        // total service tax should be zero for card payments below 2k
+    protected function isEligibleForGst($fee): bool
+    {
         if ($this->entity->getEntity() === Constants\Entity::PAYMENT)
         {
             $payment = $this->entity;
@@ -683,45 +705,22 @@ class FeeCalculator
                 $amount = $amount + $fee;
             }
 
+            // No tax is levied on card payments of 2000 Rs. or less
             if (($payment->isMethodCardOrEmi() === true) and
                 ($amount <= 200000))
             {
-                $totalTaxes = 0;
+                return false;
             }
         }
 
-        foreach ($taxComponents as $name => $percentage)
-        {
-            $taxValue = (int) round(($percentage * $totalTaxes) / $totalTaxPercentage);
-
-            $taxBreakup = $this->createFeeBreakup(
-                                            $name,
-                                            $percentage,
-                                            $taxValue);
-
-            $this->feesSplit->push($taxBreakup);
-
-            $splitTaxes += $taxValue;
-        }
-
-        // TODO: Find a cleaner approach to encounter the difference in tax
-        if ($totalTaxes !== $splitTaxes)
-        {
-            foreach ($this->feesSplit as & $feeSplit)
-            {
-                if ($feeSplit[Transaction\FeeBreakup\Entity::NAME] === FeeBreakupName::SERVICE_TAX)
-                {
-                    $feeSplit[Transaction\FeeBreakup\Entity::AMOUNT] += ($totalTaxes - $splitTaxes);
-                }
-            }
-        }
-
-        return $totalTaxes;
+        return true;
     }
 
-    public function calculateServiceTaxesFromFees($fee, $taxComponents = self::TAX_COMPONENTS)
+    public function calculateServiceTaxesFromFees($fee)
     {
         $totalTaxes = 0;
+
+        $taxComponents = $this->taxComponents;
 
         foreach ($taxComponents as $name => $percentage)
         {
@@ -738,6 +737,35 @@ class FeeCalculator
         }
 
         return $totalTaxes;
+    }
+
+    protected function getTaxComponents(): array
+    {
+        if ($this->isIntrastateGstApplicable() === true)
+        {
+            return [
+                FeeBreakupName::CGST => self::CGST_PERCENTAGE,
+                FeeBreakupName::SGST => self::SGST_PERCENTAGE,
+            ];
+        }
+
+        return [
+            FeeBreakupName::IGST => self::IGST_PERCENTAGE,
+        ];
+    }
+
+    protected function isIntrastateGstApplicable(): bool
+    {
+        $merchant = $this->entity->merchant;
+
+        $merchantBusinessStateCode = $merchant->getBusinessStateCode();
+
+        if ($merchantBusinessStateCode === self::RZP_GST_STATE_CODE)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function calculateTaxFromFees($fee, $taxPercentage)

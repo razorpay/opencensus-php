@@ -21,6 +21,13 @@ class Core extends Base\Core
 {
     use DispatchesJobs;
 
+    /**
+     * Lock wait timeout for acquiring
+     * Since this makes auth and capture requests,
+     * the timeout is set to 60*2
+     */
+    const MUTEX_LOCK_TIMEOUT = 120;
+
     protected $mutex;
 
     public function __construct()
@@ -30,7 +37,16 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer): Entity
+    /**
+     * @param array                 $input
+     * @param Plan\Entity           $plan
+     * @param Customer\Entity|null  $customer This is not type hinted because customer can be null
+     *                                        also, in case the merchant wants to follow global
+     *                                        customer flow.
+     *
+     * @return Entity
+     */
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
         return (new Creator)->create($input, $plan, $customer);
     }
@@ -97,6 +113,13 @@ class Core extends Base\Core
 
     public function expireSubscription(Entity $subscription)
     {
+        //
+        // This is required because all the subscriptions are retrieved in bulk.
+        // By the time it's this subscription's turn to expired, it's possible
+        // that the subscription's status is changed.
+        //
+        $subscription = $subscription->reload();
+
         if (($subscription->getStatus() !== Status::CREATED) or
             ($subscription->getStartAt() === null))
         {
@@ -268,64 +291,74 @@ class Core extends Base\Core
         $this->app['events']->fire('api.subscription.charged', $eventPayload);
     }
 
+    /**
+     * This block is not in redis lock, because fireCharge is anyway
+     * in redis lock. This block by itself doesn't do anything much,
+     * so it's not really required. Also, currently, since we are
+     * not using queues, we'll end up having two redis locks on the
+     * same resource. This will fail. Even after we start using queues,
+     * fireCharge will handle if there's any change in status and stuff.
+     *
+     * @param Entity         $subscription
+     * @param Invoice\Entity $invoice
+     * @param bool           $manual
+     *
+     * @return bool
+     * @throws LogicException
+     */
     public function charge(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
     {
-        return $this->mutex->acquireAndRelease(
-            $subscription->getId(),
-            function() use ($subscription, $invoice, $manual)
-            {
-                $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
+        $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
 
-                $queuePayload = [
-                    'recurring_payload' => $recurringPayload,
+        $queuePayload = [
+            'recurring_payload' => $recurringPayload,
+            'subscription_id'   => $subscription->getId(),
+            'invoice_id'        => $invoice->getId(),
+            // This would almost always be rzp_{mode},since it will be
+            // run via cron. We actually need the mode here. But basicauth
+            // functions mostly work on the key. Hence, sending the key
+            // across rather than the mode.
+            'key_id'            => $this->app['basicauth']->getPublicKey(),
+            'manual'            => $manual,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT,
+            $queuePayload);
+
+        //
+        // If the status is in created state, this means that the token has not
+        // been associated with it yet. An authorized payment for this subscription
+        // has not been done.
+        //
+        if ($subscription->getStatus() === Status::CREATED)
+        {
+            throw new LogicException(
+                'Should not have reached here. The subscription is not ' .
+                'chargeable because it is still in created state.',
+                null,
+                [
                     'subscription_id'   => $subscription->getId(),
-                    'invoice_id'        => $invoice->getId(),
-                    // This would almost always be rzp_{mode},since it will be
-                    // run via cron. We actually need the mode here. But basicauth
-                    // functions mostly work on the key. Hence, sending the key
-                    // across rather than the mode.
-                    'key_id'            => $this->app['basicauth']->getPublicKey(),
-                    'manual'            => $manual,
-                ];
+                    'status'            => $subscription->getStatus(),
+                ]);
+        }
 
-                $this->trace->info(
-                    TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT,
-                    $queuePayload);
+        if ($manual === false)
+        {
+            return (new Charge)->fireCharge($queuePayload);
 
-                //
-                // If the status is in created state, this means that the token has not
-                // been associated with it yet. An authorized payment for this subscription
-                // has not been done.
-                //
-                if ($subscription->getStatus() === Status::CREATED)
-                {
-                    throw new LogicException(
-                        'Should not have reached here. The subscription is not ' .
-                        'chargeable because it is still in created state.',
-                        null,
-                        [
-                            'subscription_id'   => $subscription->getId(),
-                            'status'            => $subscription->getStatus(),
-                        ]);
-                }
-
-                if ($manual === false)
-                {
-                    return (new Charge)->fireCharge($queuePayload);
-
-                    //
-                    // We should move to queue. But, right now we are not, because
-                    // of issues with figuring out the auth for recurring.
-                    // Will fix this later and then move to queue.
-                    //
-                    // $this->dispatch((new ChargeSubscription($queuePayload)));
-                    // return true;
-                }
-                else
-                {
-                    return (new Charge)->fireCharge($queuePayload);
-                }
-            });
+            //
+            // We should move to queue. But, right now we are not, because
+            // of issues with figuring out the auth for recurring.
+            // Will fix this later and then move to queue.
+            //
+            // $this->dispatch((new ChargeSubscription($queuePayload)));
+            // return true;
+        }
+        else
+        {
+            return (new Charge)->fireCharge($queuePayload);
+        }
     }
 
     public function retryCapture(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
@@ -398,6 +431,42 @@ class Core extends Base\Core
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
 
+    public function cancel(Entity $subscription)
+    {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CANCEL,
+            [
+                'subscription_id' => $subscription->getId()
+            ]);
+
+        $subscription->getValidator()->validateSubscriptionCancellable();
+
+        return $this->mutex->acquireAndRelease(
+            $subscription->getId(),
+            function () use ($subscription)
+            {
+                $subscription->setStatus(Status::CANCELLED);
+
+                $this->setFieldsOnCancel($subscription);
+
+                $this->repo->saveOrFail($subscription);
+
+                return $subscription;
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
+
+    protected function setFieldsOnCancel(Entity $subscription)
+    {
+        $subscription->setChargeAt(null);
+
+        $subscription->resetAuthAttempts();
+
+        $subscription->setEndedAt($subscription->getCancelledAt());
+    }
+
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
@@ -449,8 +518,9 @@ class Core extends Base\Core
             Payment\Entity::RECURRING       => '1',
             Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
             Payment\Entity::TOKEN           => $tokenId,
-            Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            // Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Payment\Entity::ORDER_ID        => $order->getPublicId(),
+            // TODO: These fields should not be required to be sent.
             Payment\Entity::EMAIL           => $customer->getEmail(),
             Payment\Entity::CONTACT         => $customer->getContact(),
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',

@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount\Provider;
@@ -39,12 +40,30 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        $bankTransfer = $this->processor->process($input);
+        try
+        {
+            $bankTransfer = $this->processor->process($input);
+
+            $valid = true;
+        }
+        catch (Exception\BadRequestValidationFailureException $ex)
+        {
+            // Returning anything other than a 200 causes Kotak to retry here.
+            //
+            // However, validation failures are due to Kotak sending the request
+            // in wrong format, or (more frequently) the wrong request altogether.
+            // So retrying doesn't help us, and will cause unnecessary errors.
+            // Best to trace, and return false, to stop the request.
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+
+            $valid = false;
+        }
 
         $data = [
-            'valid'          => true,
+            'valid'          => $valid,
             'message'        => null,
-            'transaction_id' => $bankTransfer->getUtr(),
+            'transaction_id' => $input[Entity::REQ_UTR],
         ];
 
         return $data;

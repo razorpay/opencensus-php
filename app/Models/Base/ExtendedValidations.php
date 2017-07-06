@@ -3,10 +3,11 @@
 namespace RZP\Models\Base;
 
 use Lib\PhoneBook;
-use libphonenumber\NumberParseException;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestException;
+use libphonenumber\NumberParseException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
@@ -20,7 +21,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         //
         if ($match !== 1)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return true;
@@ -34,7 +35,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      * @param  array  $parameters Parameter list
      *
      * @return bool
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      */
     protected function validateContactSyntax($attribute, $contact, $parameters)
     {
@@ -51,7 +52,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             {
                 // Example: +697 87654321323
                 case NumberParseException::INVALID_COUNTRY_CODE:
-                    throw new Exception\BadRequestException(
+                    throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE,
                         $attribute);
 
@@ -60,7 +61,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
                 // PhoneNumberUtil.
                 // Example: +91 322-23-43b
                 case NumberParseException::NOT_A_NUMBER:
-                    throw new Exception\BadRequestException(
+                    throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT,
                         $attribute);
 
@@ -69,7 +70,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
                 // code) could have.
                 // Example: +91 998765432
                 case NumberParseException::TOO_SHORT_AFTER_IDD:
-                    throw new Exception\BadRequestException(
+                    throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
                         $attribute);
 
@@ -77,13 +78,13 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
                 // valid phone number could have.
                 // Example: +91 9
                 case NumberParseException::TOO_SHORT_NSN:
-                    throw new Exception\BadRequestException(
+                    throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
                         $attribute);
 
                 // Example: +1 234-234-234-234-234-23
                 case NumberParseException::TOO_LONG:
-                    throw new Exception\BadRequestException(
+                    throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
                         $attribute);
             }
@@ -102,7 +103,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
          */
         if (strlen($formattedContact) < 8)
         {
-            throw new Exception\BadRequestException(
+            throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
                 $attribute);
         }
@@ -115,7 +116,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
          */
         if (strlen($formattedContact) > 15)
         {
-            throw new Exception\BadRequestException(
+            throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
                 $attribute);
         }
@@ -124,11 +125,48 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     }
 
     /**
-     * Create notes validation
+     * Validates notes input for fetch requests. We expect a string value
+     * which is searched against the whole notes object.
      *
      * @param string $attribute
-     * @param array $notes
-     * @param array $parameters
+     * @param mixed  $value
+     *
+     * @return bool
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateNotesFetch(string $attribute, $value)
+    {
+        $error = null;
+
+        if (is_string($value) === false)
+        {
+            $error = 'notes should be a string value';
+        }
+
+        $len = strlen($value);
+
+        if (($len < 2) or ($len > 256))
+        {
+            $error = 'notes value length should be between 2 and 256';
+        }
+
+        if ($error !== null)
+        {
+            throw new BadRequestValidationFailureException($error, $attribute, $value);
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates notes input for create/put requests.
+     *
+     * @param string $attribute
+     * @param array  $notes
+     * @param array  $parameters
+     *
+     * @return bool
+     * @throws BadRequestException
      */
     protected function validateNotes($attribute, $notes, $parameters)
     {
@@ -149,7 +187,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         if ($code !== null)
         {
-            throw new Exception\BadRequestException($code, 'notes');
+            throw new BadRequestException($code, 'notes');
         }
 
         return true;
@@ -159,6 +197,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      * Check notes array is flat
      *
      * @param array $notes
+     *
+     * @return null|string
      */
     protected function validateNotesKeyValue(array $notes)
     {
@@ -216,7 +256,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      *
      * @return boolean
      *
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws BadRequestValidationFailureException
      */
     protected function validateEpoch(string $attribute, $value, array $parameters)
     {
@@ -224,7 +264,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         if ($value === false)
         {
-            throw new Exception\BadRequestValidationFailureException("$attribute must be an integer.");
+            throw new BadRequestValidationFailureException("$attribute must be an integer.");
         }
 
         array_walk(
@@ -241,7 +281,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         if ($isValid === false)
         {
-            throw new Exception\BadRequestValidationFailureException("$attribute must be between $min and $max");
+            throw new BadRequestValidationFailureException("$attribute must be between $min and $max");
         }
 
         return true;

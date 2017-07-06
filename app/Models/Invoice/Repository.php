@@ -32,7 +32,7 @@ class Repository extends Base\Repository
         Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
-        Entity::NOTES             => 'sometimes|string|min:1|max:40',
+        Entity::NOTES             => 'sometimes|notes_fetch',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         // TODO: Enable this once the expand pr is back merged.
         // EsRepository::SEARCH_HITS => 'sometimes|boolean',

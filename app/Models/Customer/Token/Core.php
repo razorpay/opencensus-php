@@ -27,6 +27,9 @@ class Core extends Base\Core
         {
             $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);
 
+            //
+            // This if block gets run only in case of wallet currently.
+            //
             $token->terminal()->associate($terminal);
 
             unset($input[Token\Entity::TERMINAL_ID]);

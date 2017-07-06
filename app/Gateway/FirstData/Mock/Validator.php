@@ -32,6 +32,7 @@ class Validator extends Base\Validator
         ConnectRequestFields::NAME                      => 'sometimes|',
         ConnectRequestFields::NUMBER_OF_INSTALLMENTS    => 'sometimes|',
         ConnectRequestFields::ORDER_ID                  => 'sometimes|',
+        ConnectRequestFields::MERCHANT_TXN_ID           => 'sometimes|',
         ConnectRequestFields::PAYMENT_METHOD            => 'required|',
         ConnectRequestFields::RESPONSE_FAIL_URL         => 'required|url',
         ConnectRequestFields::RESPONSE_SUCCESS_URL      => 'required|url',

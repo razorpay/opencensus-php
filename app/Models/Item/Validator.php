@@ -56,6 +56,7 @@ class Validator extends Base\Validator
      *
      * @param array $input
      *
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function validateTaxInputs(array $input)
     {
