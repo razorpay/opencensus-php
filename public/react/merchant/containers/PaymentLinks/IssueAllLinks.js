@@ -6,12 +6,16 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { issuePaymentLinkBatch } from 'merchant/modules/batches';
+import {
+  issuePaymentLinkBatch,
+  fetchIssuableBatchList,
+} from 'merchant/modules/batches';
 
 @connect(state => state.session, {
   showNotification,
   closeModal,
   issuePaymentLinkBatch,
+  fetchIssuableBatchList,
 })
 @reduxForm({
   form: 'issueAllLinks',
@@ -30,6 +34,7 @@ export default class IssueAllLinksModal extends Component {
           message: 'Successful',
         });
         this.props.closeModal();
+        this.props.fetchIssuableBatchList(); // For refreshing UI (will remove 'Issue all links' Btn corresponding to this batch id as it's success)
       })
       .catch(({ errors }) => {
         this.props.showNotification({
