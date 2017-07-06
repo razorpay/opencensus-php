@@ -112,8 +112,6 @@ export default class AddGST extends Component {
           : null}
 
         <div class="modal-body">
-          <Alert type="error" message={this.state.errors} />
-
           {openedFromTopbar
             ? <div class="rzp-gst">
                 <button
@@ -142,6 +140,8 @@ export default class AddGST extends Component {
                 <label>Add your GST number</label>
               </div>
             : null}
+
+          <Alert type="error" message={this.state.errors} />
 
           {this.state.saved
             ? <div>
