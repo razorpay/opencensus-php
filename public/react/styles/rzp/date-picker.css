@@ -77,7 +77,7 @@
 .rdtPicker td.rdtDisabled,
 .rdtPicker td.rdtDisabled:hover {
 	background: none;
-	color: #999999;
+	color: #d6d6d6;
 	cursor: not-allowed;
 }
 
@@ -87,7 +87,7 @@
 .rdtPicker td span.rdtDisabled,
 .rdtPicker td span.rdtDisabled:hover {
 	background: none;
-	color: #999999;
+	color: #d6d6d6;
 	cursor: not-allowed;
 }
 .rdtPicker th {
