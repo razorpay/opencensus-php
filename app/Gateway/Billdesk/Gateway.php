@@ -875,7 +875,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
-        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+        $bankId = $this->getBankCode($input);
 
         $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
@@ -943,6 +943,19 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $str . '|' . $this->getHashOfString($str);
+    }
+
+    protected function getBankCode($input)
+    {
+        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+
+        if (($input['terminal']['corporate'] === true) and
+            (isset(BankCodes::$corporateBankCodeMap[$input['payment']['bank']]) === true))
+        {
+            $bankId = BankCodes::$corporateBankCodeMap[$input['payment']['bank']];
+        }
+
+        return $bankId;
     }
 
     protected function getHashOfArray($content)

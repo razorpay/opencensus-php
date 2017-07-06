@@ -726,6 +726,44 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
     }
 
+    public function testCorporateMerchantsBilldeskCorporateICICISelection()
+    {
+        // Corporate Enabled Icici terminal for Billdesk
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             [
+                'id'          => 'DrctNbBdkTmnl1',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'corporate'   => 1,
+             ]
+            );
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             [
+              'id' => 'SharNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+             ]
+            );
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+        $billdesk = $this->getLastEntity('billdesk', true);
+
+        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICO', $billdesk['BankID']);
+
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+        $billdesk = $this->getLastEntity('billdesk', true);
+
+        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICO', $billdesk['BankID']);
+
+    }
+
     public function testPharmaMerchantTerminalSelection()
     {
         $this->fixtures->merchant->editCategory2(Category::PHARMA);
