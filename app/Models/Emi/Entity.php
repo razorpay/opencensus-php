@@ -63,19 +63,19 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::MIN_AMOUNT      => 300000,
-        self::BANK            => null,
-        self::NETWORK         => null,
-        self::ISSUER_PLAN_ID  => null,
-        self::SUBVENTION      => Subvention::CUSTOMER,
-        self::MERCHANT_PAYOFF => 0,
+        self::MIN_AMOUNT       => 300000,
+        self::BANK             => null,
+        self::NETWORK          => null,
+        self::ISSUER_PLAN_ID   => null,
+        self::SUBVENTION       => Subvention::CUSTOMER,
+        self::MERCHANT_PAYBACK => 0,
     );
 
     protected $casts = array(
         self::RATE            => 'int',
         self::MIN_AMOUNT      => 'int',
         self::DURATION        => 'int',
-        self::MERCHANT_PAYOFF => 'int',
+        self::MERCHANT_PAYBACK => 'int',
     );
 
     protected $guarded = array(self::ID);
@@ -115,9 +115,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBVENTION);
     }
 
-    public function getMerchantPayoff()
+    public function getMerchantPayback()
     {
-        return $this->getAttribute(self::MERCHANT_PAYOFF);
+        return $this->getAttribute(self::MERCHANT_PAYBACK);
     }
 
     /**
