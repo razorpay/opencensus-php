@@ -180,18 +180,21 @@ class AdminAccess
     {
         $params = $request->route()->parameters();
 
-        $repo = $this->app['repo'];
+        $merchant = null;
 
         if (isset($params['mid']))
         {
             $mid = $params['mid'];
 
-            $merchant = $repo->merchant->findOrFailPublic($mid);
-
-            return $merchant;
+            $merchant = $this->repo->merchant->findOrFailPublic($mid);
+        }
+        else
+        {
+            // Getting from ba Merchant because X-Razorpay-Account will set Merchant.
+            $merchant = $this->ba->getMerchant();
         }
 
-        return null;
+        return $merchant;
     }
 
     private function policyChecker($routeName, $admin, $merchant = null)

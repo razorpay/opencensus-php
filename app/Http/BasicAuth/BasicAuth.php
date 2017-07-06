@@ -25,7 +25,7 @@ class BasicAuth
      * Private -
      * rzp_mode_keyId:merchant_secret
      *
-     * Application -
+     * Application/Internal -
      * rzp_mode:app_secret
      *
      * Application proxy -
