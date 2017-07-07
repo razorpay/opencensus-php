@@ -324,7 +324,7 @@ class Service extends Base\Service
 
         // Return the list which can be shown 'Issue all links' action
 
-        $results = array_diff($batchIds, $results);
+        $results = array_values(array_diff($batchIds, $results));
 
         Batch\Entity::getSignedIdMultiple($results);
 
