@@ -386,6 +386,7 @@ class PublicErrorDescription
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                     = 'Invoice expiry failed as payment exists or is in progress for this invoice.';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                               = 'Invoices disabled because fee bearer is customer';
+    const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                         = 'Some/all payment links of given batch has been issued already';
 
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                = 'Cannot edit/delete an item with which invoices have been created already';

@@ -3,12 +3,13 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Models\Base;
-use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Constants\Entity as E;
-use RZP\Models\Settlement;
+use RZP\Models\Base;
 use RZP\Models\FundTransfer\Icici;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Payment;
+use RZP\Models\Report\Types\BasicEntityReport;
+use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Exception;
 
@@ -154,11 +155,47 @@ class Service extends Base\Service
 
     public function postInitiateTransfer($input)
     {
-        (new Settlement\Validator)->validateInput('nodal_transfer', $input);
+        if (isset($input[Payment\Entity::GATEWAY]) === true)
+        {
+            $gateway = $input[Payment\Entity::GATEWAY];
 
-        $amount = $input['amount']/100;
+            // TODO: add strict validation for gateway based on channel
+            Payment\Gateway::validateGateway($gateway);
 
-        return (new Icici\NodalAccount)->generateTransferFile($amount);
+            $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+
+            $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+
+            // Get the amount for captured payments on gateway for last day
+            $paymentAmount = $this->repo->payment->getCapturedAmountByGateway($gateway, $from, $to);
+
+            // Get the amount for refunds on gateway for last day
+            $refundAmount = $this->repo->refund->getRefundedAmountByGateway($gateway, $from, $to);
+
+            // amount to be transferred in paisa
+            $amount = $paymentAmount - $refundAmount;
+        }
+        else
+        {
+            (new Settlement\Validator)->validateInput('nodal_transfer', $input);
+
+            $amount = $input['amount'];
+        }
+
+        if ($amount > 0)
+        {
+            $amount = $amount/100;
+
+            $response = (new Icici\NodalAccount)->generateTransferFile($amount);
+        }
+        else
+        {
+            $response = [
+                'message' => 'amount to be transferred is zero or negative'
+            ];
+        }
+
+        return $response;
     }
 
     public function calculatePrevousSettlementFees()

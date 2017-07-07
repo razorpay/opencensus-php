@@ -908,4 +908,12 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::TERMINAL_ID, '=', $terminalId)
                     ->count();
     }
+
+    public function getCapturedAmountByGateway(string $gateway, int $from, int $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->sum(Entity::AMOUNT);
+    }
 }

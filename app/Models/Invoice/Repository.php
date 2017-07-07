@@ -254,6 +254,39 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getNonDraftInvoiceCountByBatchId(string $batchId): int
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::STATUS, '!=', Status::DRAFT)
+                    ->count();
+    }
+
+    public function getNonDraftInvoiceCountByBatchIds(array $batchIds): array
+    {
+        $collection = $this->newQuery()
+                           ->selectRaw(Entity::BATCH_ID . ', COUNT(1) as count')
+                           ->whereIn(Entity::BATCH_ID, $batchIds)
+                           ->where(Entity::STATUS, '!=', Status::DRAFT)
+                           ->groupBy(Entity::BATCH_ID)
+                           ->get();
+
+        //  Converts collection results to needed format:
+        //  [
+        //      {
+        //          'batch_id': 'batch_xyz',
+        //          'count':     10
+        //      },
+        //      ..
+        //  ]
+
+        return $collection->map(
+                function ($entity, $key)
+                {
+                    return $entity->getAttributes();
+                })->toArray();
+    }
+
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);

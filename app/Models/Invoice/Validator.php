@@ -46,7 +46,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
@@ -77,7 +77,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
@@ -103,7 +103,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
@@ -129,7 +129,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
@@ -147,7 +147,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
     ];
@@ -157,6 +157,11 @@ class Validator extends Base\Validator
         Entity::IDS . '.*'          => 'required|public_id|size:18',
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+    ];
+
+    protected static $invoiceStatsByBatchesRules = [
+        Entity::BATCH_IDS           => 'required|array|min:1|max:100',
+        Entity::BATCH_IDS . '.*'    => 'required|public_id|size:20',
     ];
 
     //
