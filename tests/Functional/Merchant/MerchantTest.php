@@ -1050,6 +1050,24 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testPutEmiMethod()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testPutEmiWithMerchantSubventionMethod()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
     public function testGetKeySecret()
     {
         $this->ba->appAuth();
