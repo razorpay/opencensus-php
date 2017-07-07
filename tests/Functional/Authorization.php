@@ -413,4 +413,9 @@ class Authorization
 
         return $this->admin;
     }
+
+    public function getOrgId()
+    {
+        return $this->orgId;
+    }
 }
