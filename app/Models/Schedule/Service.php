@@ -75,7 +75,7 @@ class Service extends Base\Service
         return $schedule->toArrayPublic();
     }
 
-    public function processTasks(array $input)
+    public function processTasks(array $input): array
     {
         $this->trace->info(TraceCode::SCHEDULE_TASKS_PROCESS_REQUEST, $input);
 

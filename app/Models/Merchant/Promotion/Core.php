@@ -50,7 +50,7 @@ class Core extends Base\Core
         return $merchantPromotion;
     }
 
-    public function processTasks($scheduleTasks)
+    public function processTasks($scheduleTasks): array
     {
         $successIds = [];
 
@@ -64,10 +64,11 @@ class Core extends Base\Core
 
                 $promotion = $scheduleTask->entity;
 
-                $merchantPromotion = $this->repo->merchant_promotion
+                $merchantPromotion = $this->repo
+                                          ->merchant_promotion
                                           ->findByMerchantAndPromotionId(
-                                            $merchant->getId(),
-                                            $promotion->getId());
+                                                $merchant->getId(),
+                                                $promotion->getId());
 
                 $this->addAndExpireCredits(
                     $merchant,
@@ -126,7 +127,7 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($scheduleTask);
 
-                    $this->applyCredits($merchant, $promotion, $scheduleTask);
+                    $this->applyCredits($merchant, $promotion);
 
                     $merchantPromotion->decrementRemainingIterations();
                 }

@@ -86,7 +86,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchDueScheduleTasks($type, $timestamp)
+    public function fetchDueScheduleTasks(string $type, int $timestamp)
     {
         return $this->newQuery()
                     ->where(Entity::TYPE, '=', $type)

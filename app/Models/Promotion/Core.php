@@ -56,7 +56,7 @@ class Core extends Base\Core
         });
     }
 
-    public function processTasks($tasks)
+    public function processTasks(Base\PublicCollection $tasks): array
     {
         return (new MerchantPromotion\Core)->processTasks($tasks);
     }
