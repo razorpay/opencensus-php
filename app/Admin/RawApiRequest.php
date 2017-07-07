@@ -207,11 +207,19 @@ class RawApiRequest
      */
     protected function parseBody()
     {
+        $inputBody = Input::get('body', '');
+
+        if (is_array($inputBody)) {
+            return $inputBody;
+        }
+
         $postArray = [];
+
         // @note: The second parameter is crucial and a huge
         // security risk if not added because otherwise it
         // replicates register_globals
-        mb_parse_str(Input::get('body', ''), $postArray);
+        mb_parse_str($inputBody, $postArray);
+
         $body = [];
 
         foreach ($postArray as $key => $value)

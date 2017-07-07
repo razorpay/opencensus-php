@@ -1,5 +1,8 @@
 import * as items from './index';
 import * as id from './id';
+import { getAmount, getTime } from 'rzp/ui/item';
+import { makeIdLink } from 'rzp/ui/item/id';
+import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -37,6 +40,7 @@ export const totalCount = { title: 'Count', value: item => item.total_count };
 
 export const paymentId = { title: 'Payment ID', value: id.payment };
 export const orderId = { title: 'Order ID', value: id.order };
+export const rzpOrderId = { title: 'Razorpay Order ID', value: id.rzpOrder };
 export const refundId = { title: 'Refund ID', value: id.refund };
 export const settlementId = { title: 'Settlemt ID', value: id.settlement };
 export const transferId = { title: 'Transfer ID', value: id.transfer };
@@ -49,13 +53,16 @@ export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
 };
 
-// this is notes + order_id mixed
+// this is notes order_id mixed
 export const paymentOrder = orders => mapValues(orders)(orderId.title);
+
+// Razorpay order_id
+export const rzpPaymentOrder = orders => mapValues(orders)(rzpOrderId.title);
 
 // Virtual Accounts
 export const virtualAccountId = {
   title: 'Virtual Account ID',
-  value: id.virtualAccount,
+  value: makeIdLink('virtual_account'),
 };
 export const accountDescription = {
   title: 'Account Description',
@@ -64,5 +71,43 @@ export const accountDescription = {
 export const amountPaid = {
   title: 'Amount Paid',
   columnClass: textRightClass,
-  value: items.getAmount('amount_paid'),
+  value: getAmount('amount_paid'),
+};
+
+// Subscriptions
+export const subscriptionId = {
+  title: 'Subscription ID',
+  value: makeIdLink('subscription'),
+};
+
+export const customerId = {
+  title: 'Customer ID',
+  value: item => item.customer_id,
+};
+
+export const nextDueOn = {
+  title: 'Next Due on',
+  value: getTime('charge_at', 'MMM DD YYYY'),
+};
+
+// Plans
+export const planId = {
+  title: 'Plan ID',
+  value: makeIdLink('plan'),
+};
+
+export const planName = {
+  title: 'Plan Name',
+  value: item => item.item.name,
+};
+
+export const planAmount = {
+  title: 'Amount/Unit (INR)',
+  value: getAmount('item.amount'),
+  columnClass: textRightClass,
+};
+
+export const planBillingCycle = {
+  title: 'Billing Cycle',
+  value: item => getIntervalCycle(item.interval, item.period),
 };

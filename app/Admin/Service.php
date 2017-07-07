@@ -73,9 +73,7 @@ class Service extends Base\Service
         $org = $this->getOrgFromCache($domain);
 
         // `/access/resetpwd` is a hard-coded angular route
-        $resetPasswordUrl = 'https://' . $org['hostname'] . '/admin#/access/resetpwd';
-
-        $input['reset_password_url'] = $resetPasswordUrl;
+        $input['reset_password_url'] = url('/admin#/access/resetpwd');
 
         try
         {
@@ -746,6 +744,8 @@ class Service extends Base\Service
         $data = $error = [];
         $this->setApiCredentials();
 
+        $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
+
         try
         {
             $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
@@ -1286,38 +1286,6 @@ class Service extends Base\Service
         }
 
         return $links;
-    }
-
-    public function sendTestNewsletter($input)
-    {
-        $this->setApiCredentials();
-
-        try
-        {
-            $input['email'] = Auth::guard('api')->user()->email;
-
-            return [null, $this->api->admin->sendTestNewsletter($input)
-                ->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function sendNewsletter($input)
-    {
-        $this->setApiCredentials();
-
-        try
-        {
-            return [null, $this->api->admin->sendNewsletter($input)
-                ->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
     }
 
     public function editName($merchantId, $input)

@@ -197,6 +197,24 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Batches [Used for Refunds, Payment Links]
+        'batch_fetch_multiple'              => [
+            'url'       => 'batches',
+            'routeName' => 'batch_fetch_multiple'
+        ],
+        'batch_fetch_by_id'                 => [
+            'url'       => 'batches/{id}',
+            'routeName' => 'batch_fetch_single'
+        ],
+        'batch_download_file'               => [
+            'url'       => 'batches/{id}/download',
+            'routeName' => 'batch_download'
+        ],
+        'batch_create'                      => [
+            'url'       => 'batches',
+            'routeName' => 'batch_upload'
+        ],
+
         // Invoices
         'invoice_fetch_multiple'            => [
             'url'       => 'invoices',
@@ -234,19 +252,23 @@ return [
         // Customers
         'customer_fetch_multiple'           => [
             'url'       => 'customers',
-            'routeName' => 'customer_fetch_all'
+            'routeName' => 'customer_read'
+        ],
+        'customer_fetch_by_id'           => [
+            'url'       => 'customers/{id}',
+            'routeName' => 'customer_read'
         ],
         'customer_create'                   => [
             'url'       => 'customers',
-            'routeName' => 'customer_create'
+            'routeName' => 'customer_write'
         ],
         'customer_update'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_edit'
+            'routeName' => 'customer_write'
         ],
         'customer_delete'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_delete'
+            'routeName' => 'customer_write'
         ],
 
         // Items
@@ -369,6 +391,54 @@ return [
             'url'       => 'virtual_accounts/{id}/payments',
             'routeName' => 'virtual_accounts_read'
         ],
+
+        // Subscriptions
+        'subscription_fetch_multiple'    => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_account_fetch'             => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_create'            => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_update'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_delete'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_cancel'            => [
+            'url'       => 'subscriptions/{id}/cancel',
+            'routeName' => 'subscriptions_write'
+        ],
+
+        // Plans
+        'plan_fetch_multiple'    => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_account_fetch'             => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_create'            => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_update'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_delete'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
     ],
 
     // auth
@@ -436,8 +506,8 @@ return [
         'payment_verify'                    => 'payments/{id}/verify',
         // Authorize Failed Payment
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
-        // Generate Refunds Excel (Netbanking)
-        'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
+        // Generate Refunds Excel
+        'refund_generate_excel'             => 'refunds/excel',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 
