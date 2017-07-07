@@ -700,7 +700,45 @@ class CaptureTest extends TestCase
                        'expired_at' => time() + 1*24*60*60,
                    ]);
 
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+    }
+
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
+    public function testCreditTransactionWithFeeCreditWithOldFlowForPrepaid()
+    {
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 34000,
+                       'expired_at' => time() + 2*24*60*60,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'fee',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 44000]);
+
+        $this->fixtures->merchant->addFeatures(['old_credits_flow']);
 
         $payment = $this->fixtures->create('payment:authorized', [
             'gateway_captured' => true
@@ -777,6 +815,52 @@ class CaptureTest extends TestCase
      *  This is to make sure that credits
      *  are used first which are expiring first
      */
+    public function testCreditTransactionWithAmountCreditWithOldFlowForPrepaid()
+    {
+        //These never expire. Should be used at last
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 1000000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'amount',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 1010000]);
+
+        $this->fixtures->merchant->addFeatures(['old_credits_flow']);
+
+        $pricing = $this->fixtures->base->createEntity('pricing', [
+            'plan_id'           => '10ZeroPricingP',
+            'feature'           => 'payment',
+            'payment_method'    => 'card'
+        ]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 990000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+    }
+
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
     public function testCreditTransactionWithAmountCreditForPrepaid()
     {
         //These never expire. Should be used at last
@@ -814,6 +898,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
         $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
     }
+
 
     // Fee Model = Prepaid
     // Fee Bearer = Customer
