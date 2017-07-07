@@ -50,7 +50,7 @@ class Core extends Base\Core
         return $merchantPromotion;
     }
 
-    public function processTasks($scheduleTasks): array
+    public function processTasks($scheduleTasks, $timestamp): array
     {
         $successIds = [];
 
@@ -74,7 +74,8 @@ class Core extends Base\Core
                     $merchant,
                     $promotion,
                     $merchantPromotion,
-                    $scheduleTask);
+                    $scheduleTask,
+                    $timestamp);
 
                 $successIds[] = $scheduleTask->getId();
             }
@@ -110,16 +111,18 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Promotion\Entity $promotion,
         Entity $merchantPromotion,
-        Task\Entity $scheduleTask)
+        Task\Entity $scheduleTask,
+        int $timestamp)
     {
         $this->repo->transaction(
             function() use (
                 $merchant,
                 $promotion,
                 $merchantPromotion,
-                $scheduleTask)
+                $scheduleTask,
+                $timestamp)
             {
-                $this->expireCredits($merchant, $promotion);
+                $this->expireCredits($merchant, $promotion, $timestamp);
 
                 if ($merchantPromotion->getRemainingIterations() > 0)
                 {
@@ -184,9 +187,9 @@ class Core extends Base\Core
         $this->repo->saveOrFail($credit);
     }
 
-    public function expireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    protected function expireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion, int $timestamp)
     {
-        $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion);
+        $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion, $timestamp);
 
         if ($creditsToExpire > 0)
         {
@@ -213,10 +216,12 @@ class Core extends Base\Core
         }
     }
 
-    protected function calculateCreditToExpire(Merchant\Entity $merchant, Promotion\Entity $promotion): int
+    protected function calculateCreditToExpire(Merchant\Entity $merchant,
+                                               Promotion\Entity $promotion,
+                                               int $timestamp): int
     {
         $credit = $this->repo->credits->findCreditsToExpire(
-                    $merchant->getId(), $promotion->getId(), Carbon::now('Asia/Kolkata')->timestamp);
+                    $merchant->getId(), $promotion->getId(), $timestamp);
 
         if ($credit === null)
         {

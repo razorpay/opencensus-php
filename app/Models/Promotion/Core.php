@@ -56,9 +56,9 @@ class Core extends Base\Core
         });
     }
 
-    public function processTasks(Base\PublicCollection $tasks): array
+    public function processTasks(Base\PublicCollection $tasks, int $timestamp): array
     {
-        return (new MerchantPromotion\Core)->processTasks($tasks);
+        return (new MerchantPromotion\Core)->processTasks($tasks, $timestamp);
     }
 
     public function isUsed(Entity $promotion): bool

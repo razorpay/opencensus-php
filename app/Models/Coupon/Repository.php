@@ -13,6 +13,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID         => 'sometimes|alpha_num|max:14',
         Entity::ENTITY_ID           => 'sometimes|alpha_num|max:14',
         Entity::ENTITY_TYPE         => 'sometimes|string|in:promotion',
+        Entity::CODE                => 'sometimes|string',
     ];
 
     public function fetchByCodeWithRelations(string $code, string $merchantId)

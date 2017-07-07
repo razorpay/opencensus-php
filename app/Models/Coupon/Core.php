@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Constants\Entity;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core

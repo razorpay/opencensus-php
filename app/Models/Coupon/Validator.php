@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity as PublicEntity;
 
 class Validator extends Base\Validator
 {
@@ -63,7 +64,7 @@ class Validator extends Base\Validator
     {
         $entityType = $this->entity->getEntityType();
 
-        if ($entityType !== Entity::PROMOTION)
+        if ($entityType !== PublicEntity::PROMOTION)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Coupon is not associated with a valid entity: ' . $entityType);

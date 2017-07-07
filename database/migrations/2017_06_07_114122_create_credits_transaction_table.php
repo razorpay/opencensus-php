@@ -37,15 +37,14 @@ class CreateCreditsTransactionTable extends Migration
             $table->integer(CreditTransaction::UPDATED_AT);
 
             $table->foreign(CreditTransaction::CREDITS_ID)
-                ->references(Credits\Entity::ID)
-                ->on(Table::CREDITS)
-                ->on_delete('restrict');
+                  ->references(Credits\Entity::ID)
+                  ->on(Table::CREDITS)
+                  ->on_delete('restrict');
 
-            //This has to be removed because Credit Transaction is created before transaction
-           /* $table->foreign(CreditTransaction::TRANSACTION_ID)
-                ->references(Transaction::ID)
-                ->on(Table::TRANSACTION)
-                ->on_delete('restrict');*/
+           $table->foreign(CreditTransaction::TRANSACTION_ID)
+                 ->references(Transaction::ID)
+                 ->on(Table::TRANSACTION)
+                 ->on_delete('restrict');
 
             $table->unique([CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);
         });

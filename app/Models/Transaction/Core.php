@@ -108,6 +108,8 @@ class Core extends Base\Core
                 'transaction_id' => $txn->getId()
             ]);
 
+        $this->repo->saveOrFail($txn);
+
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);

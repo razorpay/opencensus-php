@@ -88,6 +88,6 @@ class Service extends Base\Service
 
         $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
 
-        return (new $entityNameSpace)->processTasks($scheduleTasksToProcess);
+        return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
     }
 }
