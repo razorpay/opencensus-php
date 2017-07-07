@@ -145,8 +145,8 @@ gulp.task('js:prod', () => {
 gulp.task('tmpl', () => {
   gulp
     .src([
-      'resources/views/**/*.blade.php.tmpl',
       'resources/views/**/tmpgetIndex.blade.php',
+      'resources/views/**/*.blade.php.tmpl',
     ])
     .pipe(
       through(function(file, enc, cb) {

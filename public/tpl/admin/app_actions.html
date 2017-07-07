@@ -52,11 +52,6 @@
            dynamic-tooltip-pos="top" dynamic-tooltip="edit_authorized_failed_payment">
           Authorize Failed Payment
         </a>
-        <!-- <a href class="list-group-item" ng-click="openEditNewsletter()"
-          ng-show="admin.permissions.indexOf('send_newsletter') !== -1"
-          dynamic-tooltip-pos="top" dynamic-tooltip="send_newsletter">
-          Send Merchant Newsletter
-        </a> -->
         <a href class="list-group-item" ng-click="openAddSchedule()" ng-show="admin.permissions.indexOf('schedule_create') !== -1"
            dynamic-tooltip-pos="top" dynamic-tooltip="schedule_create">
           Create Schedule
@@ -76,66 +71,6 @@
     </div>
   </div>
 </div>
-<script type="text/ng-template" id="sendNewsletter.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Send Newsletter</h3>
-  </div>
-  <div class="modal-body newsletter-modal">
-    <form class="form-horizontal row">
-      <div class="col-lg-5">
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="lists">Email list</label>
-          <div class="col-lg-9">
-            <div class="checkbox" ng-repeat="(list, label) in mailingLists">
-              <label class="i-checks">
-                <input ng-model="lists[list]" type="checkbox">
-                <i></i>
-                {{label}}
-              </label>
-            </div>
-            <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
-              exactly once at most to any merchant.
-            </span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="subject">Subject</label>
-          <div class="col-lg-9">
-            <input type="text" class="form-control m-b" maxlength="100" name="subject" ng-model="subject" placeholder="Razorpay">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="template">Template</label>
-          <div class="col-lg-9">
-            <input type="text" class="form-control m-b" maxlength="100" name="template" ng-model="template" placeholder="Template to Use">
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-7">
-        <div class="form-group">
-          <label for="message" class="col-lg-3">Message</label>
-          <div class="col-lg-12 col-sm-12">
-            <textarea rows="17" ng-model="message" class="form-control" name="message" id="message" required="required"></textarea>
-            <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings. <br>
-              You can use <code>%recipient_email%</code> and <code>%recipient_name%</code>
-              to match the merchant email and name.
-            </span>
-          </div>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <div class="col-lg-12 col-sm-12" ng-model="adminEmail">
-      The test email will be sent to {{adminEmail}}
-    </div>
-    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-info" ng-click="test(subject, message, template)">Send Test</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject, message, template)"
-      ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
-    >OK</button>
-  </div>
-</script>
 <script type="text/ng-template" id="addIINModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Add IIN</h3>

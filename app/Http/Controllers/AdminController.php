@@ -421,24 +421,6 @@ class AdminController extends Controller
         return Redirect::to($url);
     }
 
-    public function postSendTestNewsletter()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->sendTestNewsletter($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postSendNewsletter()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->sendNewsletter($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);

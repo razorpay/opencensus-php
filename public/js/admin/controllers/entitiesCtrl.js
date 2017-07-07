@@ -89,6 +89,7 @@ app.controller('EntitiesCtrl', [
       'paytm',
       'sharp',
       'upi_icici',
+      'upi_mindgate',
       'wallet_payumoney',
       'wallet_payzapp',
       'wallet_olamoney',
