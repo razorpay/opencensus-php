@@ -230,15 +230,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function putEdit($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->editAdmin($input, $id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantList()
     {
         $input = Input::all();
@@ -366,39 +357,6 @@ class AdminController extends Controller
         {
             return AppResponse::jsonResponse($error, $data);
         }
-    }
-
-    public function getAdmins()
-    {
-        $admins = (new Admin\Service)->getAdmins();
-
-        return AppResponse::jsonResponse([], $admins);
-    }
-
-    public function getDeleteAdmin($id)
-    {
-        $error = (new Admin\Service)->deleteAdmin($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function postAddAdmin()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->add($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    /**
-     * Promotes a user to a superadmin
-     */
-    public function postPromoteAdmin($id)
-    {
-        list($error) = (new Admin\Service)->promote($id);
-
-        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantHdfcExcel($id)

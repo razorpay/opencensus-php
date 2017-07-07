@@ -150,33 +150,6 @@ class Entity extends Base\Entity
         }
     }
 
-    public function deleteAllSessionsForAdmin($adminId)
-    {
-        $setKey = $this->getAdminSessionKey($adminId);
-
-        // Get all the members of set
-        $sessionIds = Redis::smembers($setKey);
-
-        foreach ($sessionIds as $sessionId)
-        {
-            // Delete individual session entities
-            $key = $this->getSessionKey($sessionId);
-
-            $hash = Redis::hgetall($key);
-
-            Redis::del($key);
-
-            if (isset($hash['user_id']))
-            {
-                $this->deleteUserSessionRelation($hash['user_id'], $sessionId);
-            }
-        }
-
-        Redis::del($setKey);
-
-        // $this->where(self::ADMIN_ID, $adminId)->delete();
-    }
-
     /*
         Delete a session ID from admins:adminId:sessions
     */
