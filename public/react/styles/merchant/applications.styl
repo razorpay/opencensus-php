@@ -14,6 +14,9 @@
   .content-body {
     padding: 10px;
   }
+  .application-details-inner {
+    height 100%
+  }
   .application-details-container {
     height: 128px;
     padding: 10px;
@@ -25,8 +28,8 @@
       padding-right: 20px;
       color: #58666e;
       text-align: left;
-      cursor pointer;
-      &:hover {
+      &:not(.connected-app):hover {
+        cursor pointer;
         background-color: #F0F3F4;
       }
       &.new-application {

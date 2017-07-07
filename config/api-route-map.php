@@ -308,6 +308,14 @@ return [
             'url'       => 'oauth/applications/{id}',
             'routeName' => 'oauth_read'
         ],
+        'oauth_token_fetch_multiple'  => [
+            'url'       => 'oauth/tokens/',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_revoke'  => [
+            'url'       => 'oauth/tokens/{id}/revoke',
+            'routeName' => 'oauth_read'
+        ],
 
         // GST
         'merchant_gst_fetch'    =>  [

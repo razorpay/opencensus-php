@@ -1,8 +1,9 @@
 import ajax from 'merchant/utils/ajax';
-import { set, merge } from 'rzp/utils/immutable';
+import { set, merge, remove } from 'rzp/utils/immutable';
 import Application from 'merchant/models/Application';
 
 const FETCH_APPLICATIONS = 'FETCH_APPLICATIONS';
+const FETCH_CONNECTED_APPLICATIONS = 'FETCH_CONNECTED_APPLICATIONS';
 const FETCH_APPLICATION_DETAILS = 'FETCH_APPLICATION_DETAILS';
 const CREATE_APPLICATION = 'CREATE_APPLICATION';
 const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
@@ -14,6 +15,15 @@ export const fetchApplications = params => {
   return {
     type: FETCH_APPLICATIONS,
     payload: application.fetchAll(params),
+  };
+};
+
+export const fetchConnectedApplications = params => {
+  let application = new Application();
+
+  return {
+    type: FETCH_CONNECTED_APPLICATIONS,
+    payload: application.fetchConnected(params),
   };
 };
 
@@ -57,13 +67,14 @@ export const updateApplication = params => {
 let initialState = {
   loading: true,
   items: [],
-  count: 0,
   details: {},
+  connectedApps: []
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_APPLICATIONS}::PENDING`:
+    case `${FETCH_CONNECTED_APPLICATIONS}::PENDING`:
     case `${CREATE_APPLICATION}::PENDING`:
     case `${UPDATE_APPLICATION}::PENDING`:
     case `${DELETE_APPLICATION}::PENDING`:
@@ -76,7 +87,12 @@ export default function(state = initialState, action) {
       return merge(state, {
         loading: false,
         items: action.payload.data.items,
-        count: action.payload.data.count,
+      });
+
+    case `${FETCH_CONNECTED_APPLICATIONS}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        connectedApps: action.payload.data.items,
       });
 
     case `${CREATE_APPLICATION}::SUCCESS`:
@@ -86,8 +102,8 @@ export default function(state = initialState, action) {
       });
 
     case `${DELETE_APPLICATION}::SUCCESS`:
-      console.log('deleted app')
       return merge(state, {
+        items: remove(state.items, (item) => (item.id === action.payload.id)),
         loading: false,
       })
 

@@ -6,6 +6,7 @@ const newFields = ['name', 'website'];
 
 export default class Key extends GenericEntity {
   listRouteName = 'oauth_application_fetch_multiple';
+  connectedListRouteName = 'oauth_token_fetch_multiple';
   deleteRouteName = 'oauth_application_delete';
   detailsRouteName = 'oauth_application_fetch';
 
@@ -14,13 +15,24 @@ export default class Key extends GenericEntity {
     let id = params.id;
 
     let data = {}
-    if (id) {
-      data.url_params = {
-        '{id}': id,
-      };
-    }
 
     data.route_name = this.listRouteName;
+    return this.makeGenericAjaxCall({ data }).then(response => {
+      response.data.items = response.data.items.map(item =>
+        new Klass().deserialize(item)
+      );
+      return response; 
+    });
+  }
+
+  fetchConnected(params = {}) {
+    console.log('fetching connected apps')
+    const Klass = this.constructor;
+    let id = params.id;
+
+    let data = {}
+
+    data.route_name = this.connectedListRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Klass().deserialize(item)
@@ -61,7 +73,22 @@ export default class Key extends GenericEntity {
     });
   }
 
-  resourceFields() {
-    return this.isNew ? newFields : editFields;
+  delete() {
+    var id = this.id;
+    return this.makeGenericAjaxCall({
+      method: 'delete',
+      data: {
+        route_name: this.deleteRouteName,
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        }),
+      },
+    }).then((data) => {
+      return {id, ...data}
+    });
+  }
+
+  revokeToken (params) {
+    // oauth_token_revoke
   }
 }

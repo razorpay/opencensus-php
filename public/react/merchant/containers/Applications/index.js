@@ -13,7 +13,7 @@ import * as ModalActions from 'rzp/modules/modals';
   state => {
     return {
       user: state.session.user,
-      applications: state.applications
+      applications: state.applications,
     };
   },
   { ...ApplicationActions, ...NotificationActions, ...ModalActions}
@@ -25,6 +25,7 @@ export default class ApplicationContainer extends Component {
 
   componentWillMount() {
     this.props.fetchApplications()
+    this.props.fetchConnectedApplications()
   }
 
   deleteApp(application) {
@@ -36,20 +37,10 @@ export default class ApplicationContainer extends Component {
         this.props
           .deleteApplication(application.id)
           .then(response => {
-            let apps = this.props.applications.items
-            for (var i = 0; i < apps.length; i++) {
-              let app = apps[i]
-              if (app.id = application.id) {
-                apps.splice(i, 1);
-                this.props.applications.count--
-                break;
-              }
-            }
             this.props.showNotification({
               type: 'success',
               message: 'Application deleted successfully',
             });
-            
           })
           .catch(err => {
             this.props.showNotification({
@@ -63,16 +54,18 @@ export default class ApplicationContainer extends Component {
   render() {
     // let { config, features, loading } = this.props.configState;
     let createdApps = this.props.applications.items
+    let connectedApps = this.props.applications.connectedApps
+
     return (
       <div class="application-index-page">
         <div class="content-box">
           <div class="content-header">
             <strong>Connected Applications</strong>
           </div>
-          <div class="text-center content-body">
-            <img src="img/Illustration-noconnectedapp.svg" alt=""/>
-            <div class="panel-body text-muted">No connected apps</div>
-          </div>
+          {connectedApps.length
+            ? connectedApps.map((app) => <AppDetails data={app} key={app.id} type={"connected"} deleteApp={this.deleteApp.bind(this)}/>)
+            : <NoConnectedApps />}
+          <div class="clearfix"></div>  
         </div>
         <div class="content-box">
           <div class="content-header">
@@ -92,9 +85,11 @@ export default class ApplicationContainer extends Component {
 }
 
 function AppDetails (props) {
-  let app = props.data;
-  return (<div class=" application-details-container col-lg-6">
-            <NavLink to={`/applications/${app.id}`}>
+  const app = props.data;
+  const isConnected = props.type === "connected"
+  const Comp = isConnected ? 'div' : NavLink
+  return (<div class={`application-details-container col-lg-6`}>
+            <Comp class="application-details-inner" to={`/applications/${app.id}`}>
               <div class="btn-container pull-right">
                 <button
                   onClick={(e) => {
@@ -104,10 +99,10 @@ function AppDetails (props) {
                   }
                   class="btn btn-default"
                 >
-                  <span>Delete Application</span>
+                  <span>{isConnected ? "Revoke Access" : "Delete Application"}</span>
                 </button>
               </div>
-              <div class="application-details">
+              <div class={`application-details ${isConnected ? "connected-app" : ""}`}>
                 <div class="app-icon-container">
                   <img class="app-icon" src={app.logo_url || 'img/default-app-logo.svg'} alt=""/>
                 </div>
@@ -117,7 +112,7 @@ function AppDetails (props) {
                   <div class="app-created-on">Created on: <Time value={app.created_at} format="DD MMM YYYY" /></div>
                 </div>
               </div>
-            </NavLink>
+            </Comp>
           </div>)
 }
 
@@ -143,4 +138,13 @@ function NewAppLink (props) {
               </div>
             </NavLink>
           </div>)
+}
+
+function NoConnectedApps (props) {
+  return (
+    <div class="text-center content-body">
+      <img src="img/Illustration-noconnectedapp.svg" alt=""/>
+      <div class="panel-body text-muted">No connected apps</div>
+    </div>
+  )
 }
