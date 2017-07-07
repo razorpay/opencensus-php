@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const OPENWALLET        = 'openwallet';
     const MPESA             = 'mpesa';
     const EMI               = 'emi';
+    const EMI_SUBVENTION    = 'emi_subvention';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
@@ -61,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
+        self::EMI_SUBVENTION,
     ];
 
     protected $visible = [
@@ -85,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
+        self::EMI_SUBVENTION,
     ];
 
     protected $public = [
@@ -110,28 +113,30 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD,
         self::ENTITY,
         self::BANK_TRANSFER,
+        self::EMI_SUBVENTION,
     ];
 
     protected $defaults = array(
-        self::AMEX          => false,
-        self::PAYTM         => false,
-        self::MOBIKWIK      => false,
-        self::PAYZAPP       => false,
-        self::PAYUMONEY     => false,
-        self::AIRTELMONEY   => false,
-        self::OLAMONEY      => false,
-        self::FREECHARGE    => false,
-        self::JIOMONEY      => false,
-        self::OPENWALLET    => false,
-        self::MPESA         => false,
-        self::BANKS         => [],
-        self::EMI           => false,
-        self::UPI           => true,
-        self::AEPS          => false,
-        self::NETBANKING    => true,
-        self::CREDIT_CARD   => true,
-        self::DEBIT_CARD    => true,
-        self::BANK_TRANSFER => false,
+        self::AMEX           => false,
+        self::PAYTM          => false,
+        self::MOBIKWIK       => false,
+        self::PAYZAPP        => false,
+        self::PAYUMONEY      => false,
+        self::AIRTELMONEY    => false,
+        self::OLAMONEY       => false,
+        self::FREECHARGE     => false,
+        self::JIOMONEY       => false,
+        self::OPENWALLET     => false,
+        self::MPESA          => false,
+        self::BANKS          => [],
+        self::EMI            => false,
+        self::UPI            => true,
+        self::AEPS           => false,
+        self::NETBANKING     => true,
+        self::CREDIT_CARD    => true,
+        self::DEBIT_CARD     => true,
+        self::BANK_TRANSFER  => false,
+        self::EMI_SUBVENTION => null,
     );
 
     protected $wallets = array(
@@ -163,6 +168,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY,
         self::FREECHARGE,
         self::MPESA,
+        self::EMI_SUBVENTION,
     );
 
     // Casts the attributes to native types
@@ -392,6 +398,11 @@ class Entity extends Base\PublicEntity
     public function getEmi()
     {
         return $this->getAttribute(self::EMI);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     public function setWallets($wallets)

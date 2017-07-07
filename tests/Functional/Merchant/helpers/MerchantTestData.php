@@ -1336,6 +1336,45 @@ return [
         ]
     ],
 
+    'testPutEmiMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'emi' => true,
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                //''
+            ]
+        ]
+    ],
+
+    'testPutEmiWithMerchantSubventionMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'emi'            => true,
+                'emi_subvention' => 'merchant',
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                //''
+            ]
+        ]
+    ],
+
     'testGetKeySecret' => [
         'request' => [
             'url' => '/keys/rzp_test_TheTestAuthKey/secret',

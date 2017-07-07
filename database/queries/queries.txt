@@ -2216,3 +2216,13 @@ ALTER TABLE netbanking
 ALTER TABLE `upi`
     ADD COLUMN `npci_reference_id` VARCHAR(20) NULL DEFAULT NULL AFTER `gateway_payment_id`,
     ADD INDEX `upi_npci_reference_id_index` (`npci_reference_id`);
+
+ALTER TABLE emi_plans
+    ADD COLUMN subvention VARCHAR(255) DEFAULT  'customer' AFTER issuer_plan_id,
+    ADD COLUMN merchant_payback INTEGER UNSIGNED DEFAULT 0  AFTER subvention;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT NULL AFTER emi;
+
+ALTER TABLE terminals
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT NULL AFTER emi_duration;
