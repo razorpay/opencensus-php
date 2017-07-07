@@ -120,6 +120,11 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL     => null,
     ];
 
+    protected $reportDates = [
+        self::CREATED_AT,
+        self::ON_HOLD_UNTIL,
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function transaction()
@@ -346,8 +351,6 @@ class Entity extends Base\PublicEntity
         $data = parent::toArrayReport();
 
         $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
-
-        $data[self::ON_HOLD_UNTIL] = $this->getDateInFormatDMYHMS(self::ON_HOLD_UNTIL);
 
         return $data;
     }
