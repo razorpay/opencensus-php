@@ -42,7 +42,9 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('apply', $input);
 
-        $coupon = $this->repo->coupon->fetchByCode($input);
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $coupon = $this->repo->coupon->fetchByCodeWithRelations($input[Entity::CODE], $merchantId);
 
         if ($coupon === null)
         {
@@ -50,7 +52,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE, $input);
         }
 
-        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $result = $this->core()->apply($merchant, $coupon);
 

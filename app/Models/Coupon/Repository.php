@@ -15,13 +15,14 @@ class Repository extends Base\Repository
         Entity::ENTITY_TYPE         => 'sometimes|string|in:promotion',
     ];
 
-    public function fetchByCode(array $input)
+    public function fetchByCodeWithRelations(string $code, string $merchantId)
     {
-        $allowedMerchantIds = [Merchant\Account::SHARED_ACCOUNT, $input[Entity::MERCHANT_ID]];
+        $allowedMerchantIds = [Merchant\Account::SHARED_ACCOUNT, $merchantId];
 
         return $this->newQuery()
-                    ->where(Entity::CODE, '=', $input[Entity::CODE])
+                    ->where(Entity::CODE, '=', $code)
                     ->whereIn(Entity::MERCHANT_ID, $allowedMerchantIds)
+                    ->with('source')
                     ->first();
     }
 }

@@ -60,7 +60,9 @@ class Core extends Base\Core
      */
     protected function validateMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
-        $promotion = $this->getPromotionEntity($coupon);
+        $coupon->getValidator()->validateEntityType();
+
+        $promotion = $coupon->source;
 
         $merchantPromotion = $this->repo
                                   ->merchant_promotion
@@ -86,7 +88,7 @@ class Core extends Base\Core
      */
     protected function applyMerchantPromotion(Merchant\Entity $merchant, Entity $coupon)
     {
-        $promotion = $this->getPromotionEntity($coupon);
+        $promotion = $coupon->source;
 
         //
         // This need to be in transaction, as credits are applied here,
@@ -114,19 +116,5 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchantPromotion);
         });
-    }
-
-    protected function getPromotionEntity(Entity $coupon)
-    {
-        if ($coupon->getEntityType() !== Entity::PROMOTION)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Coupon provided is not associated with entity promotion',
-                $coupon->getEntityType());
-        }
-
-        $couponSource = $coupon->source;
-
-        return $couponSource;
     }
 }

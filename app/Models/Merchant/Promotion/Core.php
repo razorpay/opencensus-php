@@ -142,7 +142,7 @@ class Core extends Base\Core
             });
     }
 
-    public function createScheduleTask(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    public function createScheduleTask(Merchant\Entity $merchant, Promotion\Entity $promotion): Task\Entity
     {
         $input[Task\Entity::TYPE] = Task\Type::PROMOTION;
 

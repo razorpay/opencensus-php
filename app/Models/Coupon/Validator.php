@@ -59,6 +59,17 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateEntityType()
+    {
+        $entityType = $this->entity->getEntityType();
+
+        if ($entityType !== Entity::PROMOTION)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Coupon is not associated with a valid entity: ' . $entityType);
+        }
+    }
+
     public function validateApplyCoupon(Merchant\Entity $merchant)
     {
         $merchantId = $this->entity->getMerchantId();
