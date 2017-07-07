@@ -6,6 +6,7 @@ import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
+import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
 
@@ -146,7 +147,7 @@ class NewApplicationForm extends Component {
 
     return (
       <div class="content-wrapper new-application-form">
-        <div class="text-center content-wrapper">
+        <div class="content-wrapper">
           <div class="row">
             <div class="col-md-offset-2 col-md-10">
               <h4 class="form-header text-left">{this.state.edit ? 'Edit' : 'Create'} Application</h4>
@@ -295,8 +296,8 @@ class NewApplicationForm extends Component {
                   <div class="col-md-10">
                     <Field
                       name="clients.prod.redirect_url"
-                      component={InputField}
-                      class="form-control"
+                      component={TaggedInput}
+                      class="form-control tagged-input"
                       placeholder="http://test-app.com/"
                     />
                   </div>
