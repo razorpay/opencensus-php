@@ -46,7 +46,7 @@ trait QueryBuilder
         $clause = [
             'match' => [
                 $field => [
-                    'query' => $value,
+                    'query' => strtolower($value),
                     'boost' => 2,
                 ],
             ],

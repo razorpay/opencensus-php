@@ -513,3 +513,6 @@ DELETE FROM refunds WHERE payment_id='89AjRuhzkb4L0Z';
 # Fix stupid terminal
 UPDATE terminals
     SET mode=3 WHERE id='7s0PjmEoOelWFZ';
+
+# Set delay in hours for hourly schedules
+UPDATE schedules SET delay=1 WHERE period='hourly' AND DELAY=0;

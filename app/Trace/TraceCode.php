@@ -552,16 +552,12 @@ class TraceCode
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
     const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
-    const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
-    const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_SYNC_PUSH_PAYLOAD                      = 'ES_SYNC_PUSH_PAYLOAD';
     const ES_SYNC_PUSH_FAILED                       = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
-    const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
-    const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
     const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
 
     const RECON_ALERT                               = 'RECON_ALERT';
@@ -826,10 +822,7 @@ class TraceCode
         self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',
         self::MISC_TRACE_CODE                           => 'Miscellaneous trace code',
-        self::ES_SAVE_FAILED                            => 'Failed while trying to save the entity to ES',
         self::ES_BULK_UPDATE_FAILED                     => 'Failed while bulk updating in ES',
-        self::ES_BULK_UPDATE                            => 'Bulk update for ES',
-        self::ES_SAVE_REQUEST                           => 'Request for saving in ES',
 
         self::RECON_ALERT                               => 'Alert raised for reconciliation',
         self::RECON_FILE_SKIP                           => 'Skipping a reconciliation file',

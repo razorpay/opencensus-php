@@ -297,8 +297,9 @@ class Gateway extends Base\Gateway
 
         if ($verifyRefundResponse === null)
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            // FirstData is returning an an invalid response, i.e. success flag
+            // set to false, implying that the id does not exist on their end
+            return false;
         }
 
         $xmlResponse  = $verifyRefundResponse->children('a1', true)
@@ -1137,13 +1138,13 @@ class Gateway extends Base\Gateway
 
         $this->setPaymentRequestArray($body, $input, TxnType::SALE);
 
+        // Sending merchant_txn_id is not strictly necessary. We use the order id
+        // for refund and verification of purchase/sale payments, so a separate
+        // reference id here is not required. However, keeping it here for future use.
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
-            ApiRequestFields::V1_ORDER_ID        => $input['payment']['id'],
-            //
-            // Not strictly necessary, as we use order id for refund and
-            // verification of purchase/sale payments. Merchant transaction
-            // id is not required. However, keeping it here for future use.
-            ApiRequestFields::V1_MERCHANT_TXN_ID => $input['payment']['id'],
+            ApiRequestFields::V1_ORDER_ID              => $input['payment']['id'],
+            ApiRequestFields::V1_MERCHANT_TXN_ID       => $input['payment']['id'],
+            ApiRequestFields::V1_DYNAMIC_MERCHANT_NAME => $this->getDynamicMerchantName($input['merchant']),
         ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;

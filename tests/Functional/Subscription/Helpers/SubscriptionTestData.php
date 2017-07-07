@@ -853,6 +853,32 @@ return [
         ],
     ],
 
+    'testSubscriptionCancelBasic' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'subscription',
+                'plan_id' => 'plan_1000000000plan',
+                'customer_id' => 'cust_100000customer',
+                'status' => 'cancelled',
+                'total_count' => 6,
+                'paid_count' => 0,
+                'current_start' => null,
+                'current_end' => null,
+                'quantity' => 1,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => 1516386600,
+                'end_at' => 1542652200,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ]
+        ],
+    ],
+
     'subscriptionWebhookDataForAuthFailureOverdue' => [
         'mode'  => 'test',
         'event' => [

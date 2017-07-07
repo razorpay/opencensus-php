@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Upi\Npci;
 
-class UpiErrorCodes
+class ErrorCodes
 {
     const DEFAULT_ERROR = 'Random error';
 

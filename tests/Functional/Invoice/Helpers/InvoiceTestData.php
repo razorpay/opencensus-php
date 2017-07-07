@@ -2495,18 +2495,23 @@ return [
             'url'     => '/invoices',
             'method'  => 'get',
             'content' => [
-                'type'    => 'link',
-                'user_id' => '1000000000user',
+                'customer_id' => 'cust_100000customer',
+                'user_id'     => '1000000000user',
             ],
         ],
         'response' => [
             'content' => [
-                'count' => 1,
+                'count' => 2,
                 'items' => [
                     [
-                        'id'      => 'inv_1000000invoice',
-                        'type'    => 'link',
-                        'user_id' => '1000000000user',
+                        'id'          => 'inv_1000002invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'user_id'     => '1000000000user',
+                    ],
+                    [
+                        'id'          => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'user_id'     => '1000000000user',
                     ],
                 ],
             ],
@@ -2518,16 +2523,17 @@ return [
             'url'     => '/invoices',
             'method'  => 'get',
             'content' => [
-                'type'    => 'link',
-                'user_id' => '1000000000user',
-                'receipt' => 'xyz',
+                'type'        => 'link',
+                'customer_id' => 'cust_100000customer',
+                'user_id'     => '1000000000user',
+                'receipt'     => 'xyz',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'type, user_id not expected with other params sent',
+                    'description' => 'type, customer_id, user_id not expected with other params sent',
                 ],
             ],
             'status_code' => 400,

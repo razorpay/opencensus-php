@@ -2211,6 +2211,12 @@ ALTER TABLE pricing
 ALTER TABLE netbanking
     ADD COLUMN credit_account_number varchar(255) DEFAULT NULL AFTER account_number;
 
+# Add new column to upi table for storing npci reference ids
+
+ALTER TABLE `upi`
+    ADD COLUMN `npci_reference_id` VARCHAR(20) NULL DEFAULT NULL AFTER `gateway_payment_id`,
+    ADD INDEX `upi_npci_reference_id_index` (`npci_reference_id`);
+
 ALTER TABLE emi_plans
     ADD COLUMN subvention VARCHAR(255) DEFAULT  'customer' AFTER issuer_plan_id,
     ADD COLUMN merchant_payback INTEGER UNSIGNED DEFAULT 0  AFTER subvention;
