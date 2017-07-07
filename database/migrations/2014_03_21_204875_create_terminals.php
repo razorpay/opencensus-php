@@ -7,7 +7,6 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Terminal\Mode;
-use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class CreateTerminals extends Migration
 {
@@ -99,7 +98,7 @@ class CreateTerminals extends Migration
                   ->default(0);
 
             $table->string(Terminal::EMI_SUBVENTION)
-                  ->default(EmiSubvention::CUSTOMER);
+                  ->nullable();
 
             $table->tinyInteger(Terminal::TYPE)
                   ->unsigned()

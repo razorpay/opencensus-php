@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Methods;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Exception;
-use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
 {
@@ -137,7 +136,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
         self::BANK_TRANSFER  => false,
-        self::EMI_SUBVENTION => EmiSubvention::CUSTOMER,
+        self::EMI_SUBVENTION => null,
     );
 
     protected $wallets = array(

@@ -9,7 +9,6 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
 {
@@ -159,7 +158,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
-        self::EMI_SUBVENTION            => EmiSubvention::CUSTOMER,
+        self::EMI_SUBVENTION            => null,
     ];
 
     protected $casts = [

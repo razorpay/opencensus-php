@@ -72,9 +72,9 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = array(
-        self::RATE            => 'int',
-        self::MIN_AMOUNT      => 'int',
-        self::DURATION        => 'int',
+        self::RATE             => 'int',
+        self::MIN_AMOUNT       => 'int',
+        self::DURATION         => 'int',
         self::MERCHANT_PAYBACK => 'int',
     );
 

@@ -5,7 +5,6 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Emi\Subvention as EmiSubvention;
 use RZP\Models\Merchant\Methods\Entity as Methods;
 
 class CreateMerchantBanks extends Migration
@@ -82,7 +81,7 @@ class CreateMerchantBanks extends Migration
                   ->default(0);
 
             $table->string(Methods::EMI_SUBVENTION)
-                  ->default(EmiSubvention::CUSTOMER);
+                  ->nullable();
 
             $table->integer(Methods::CREATED_AT);
 
