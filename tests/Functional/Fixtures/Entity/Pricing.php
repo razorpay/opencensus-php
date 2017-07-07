@@ -165,8 +165,6 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
-
-        // $pricing = $this->repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     public function createStandardPlan()
@@ -176,7 +174,7 @@ class Pricing extends Base
         $rows = [
             [
                 'id'             => '1ABp2Xd3t5aRLX',
-                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_id'        => $pricingPlanId,
                 'plan_name'      => 'standard_plan',
                 'feature'        => 'payment',
                 'payment_method' => 'card',
@@ -185,7 +183,7 @@ class Pricing extends Base
             ],
             [
                 'id'             => '1osdf0GGDdalfF',
-                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_id'        => $pricingPlanId,
                 'plan_name'      => 'standard_plan',
                 'feature'        => 'payment',
                 'payment_method' => 'netbanking',
@@ -194,7 +192,7 @@ class Pricing extends Base
             ],
             [
                 'id'             => '1pteg2HHEebmhH',
-                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_id'        => $pricingPlanId,
                 'plan_name'      => 'standard_plan',
                 'feature'        => 'payment',
                 'payment_method' => 'wallet',
@@ -203,7 +201,7 @@ class Pricing extends Base
             ],
             [
                 'id'             => '1pteg2FFEebmgG',
-                'plan_id'        => '1A0Fkd38fGZPVC',
+                'plan_id'        => $pricingPlanId,
                 'plan_name'      => 'standard_plan',
                 'feature'        => 'payment',
                 'payment_method' => 'transfer',
@@ -231,70 +229,68 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
-
-//        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     public function createZeroPricingplan()
     {
         $pricingPlanId = '10ZeroPricingP';
 
-        $rows = array(
-                    array(
-                        'id'             => '1ZeroPricingR1',
-                        'plan_id'        => '10ZeroPricingP',
-                        'plan_name'      => 'ZeroPricingPlan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'card',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1ZeroPricingR2',
-                        'plan_id'        => '10ZeroPricingP',
-                        'plan_name'      => 'ZeroPricingPlan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'netbanking',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1ZeroPricingR3',
-                        'plan_id'        => '10ZeroPricingP',
-                        'plan_name'      => 'ZeroPricingPlan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'wallet',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1ZeroPricingR4',
-                        'plan_id'        => '10ZeroPricingP',
-                        'plan_name'      => 'ZeroPricingPlan',
-                        'feature'        => 'payment',
-                        'payment_method' => 'transfer',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1ZeroPricingR5',
-                        'plan_id'        => '10ZeroPricingP',
-                        'plan_name'      => 'ZeroPricingPlan',
-                        'feature'        => 'transfer',
-                        'payment_method' => 'account',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                    array(
-                        'id'             => '1ZeroPricingR6',
-                        'plan_id'        => '10ZeroPricingP',
-                        'plan_name'      => 'ZeroPricingPlan',
-                        'feature'        => 'transfer',
-                        'payment_method' => 'customer',
-                        'percent_rate'   => 0,
-                        'fixed_rate'     => 0,
-                    ),
-                );
+        $rows = [
+            [
+                'id'             => '1ZeroPricingR1',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1ZeroPricingR2',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1ZeroPricingR3',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'wallet',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1ZeroPricingR4',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1ZeroPricingR5',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'transfer',
+                'payment_method' => 'account',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+            [
+                'id'             => '1ZeroPricingR6',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'transfer',
+                'payment_method' => 'customer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+            ],
+        ];
 
         $this->addPricingRulesToDb($rows);
     }
@@ -303,18 +299,11 @@ class Pricing extends Base
     {
         $repo = new Models\Pricing\Repository;
 
-        $modes = ['live', 'test'];
-
-        // foreach ($modes as $mode)
-        // {
-        //     $this->connection($mode);
-
-            foreach ($rows as $row)
-            {
-                $pricing = new Models\Pricing\Entity;
-                $pricing->fill($row);
-                $repo->saveOrFail($pricing);
-            }
-        // }
+        foreach ($rows as $row)
+        {
+            $pricing = new Models\Pricing\Entity;
+            $pricing->fill($row);
+            $repo->saveOrFail($pricing);
+        }
    }
 }
