@@ -207,7 +207,12 @@ class FeeCalculator
         //
         $ruleFunction = 'getRelevant' . studly_case($feature) . 'PricingRule';
 
-        $rule = $this->$ruleFunction($rules, $method);
+        $rule = null;
+
+        if (method_exists($this, $ruleFunction) === true)
+        {
+            $rule = $this->$ruleFunction($rules, $method);
+        }
 
         if ($rule === null)
         {

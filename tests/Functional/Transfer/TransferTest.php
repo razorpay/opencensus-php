@@ -17,6 +17,11 @@ class TransferTest extends TestCase
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
+    /**
+     * @var string
+     */
+    protected $linkedAccountId;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/TransferTestData.php';
@@ -25,9 +30,9 @@ class TransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->fixtures->create('merchant:marketplace_account');
+        $account = $this->fixtures->create('merchant:marketplace_account');
 
-        $this->customer = $this->fixtures->create('customer:customer_balance');
+        $this->linkedAccountId = $account['id'];
     }
 
     public function testFetchTransferReversals()
@@ -77,7 +82,7 @@ class TransferTest extends TestCase
         $this->assertEquals($transfer['id'], $savedTransfer['id']);
 
         // When Transfer Fee = 0, zero pricing
-        $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
+        $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
 
         $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0]);
 
@@ -91,12 +96,6 @@ class TransferTest extends TestCase
         $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
 
         $transfer = $this->createTransfer('account');
-
-        $savedTransfer =  $this->getLastEntity('transfer', true);
-
-        $this->assertEquals($transfer['id'], $savedTransfer['id']);
-
-        $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
 
         $serviceTax = 4;
         $expectedFee = 20 + $serviceTax;
@@ -299,13 +298,13 @@ class TransferTest extends TestCase
 
         $transferAmount = $transfer['amount'];
 
-        $linkedAccountBalance = $this->getEntityById('balance', '10000000000001', true);
+        $linkedAccountBalance = $this->getEntityById('balance', $this->linkedAccountId, true);
         $this->assertEquals($transferAmount, $linkedAccountBalance['balance']);
 
         // Reset the linked account's balance to 0
-        $balance = $this->fixtures->balance->edit('10000000000001', ['balance' => 0]);
+        $balance = $this->fixtures->balance->edit($this->linkedAccountId, ['balance' => 0]);
 
-        $linkedAccountBalance = $this->getEntityById('balance', '10000000000001', true);
+        $linkedAccountBalance = $this->getEntityById('balance', $this->linkedAccountId, true);
         $this->assertEquals(0, $linkedAccountBalance['balance']);
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer)
@@ -384,7 +383,7 @@ class TransferTest extends TestCase
     // @todo: Refactor for transfer pricing calc
     protected function checkReversals($amount = null)
     {
-        $accOldBalance = $this->getBalance('10000000000001');
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
 
         $marketplaceOldBalance = $this->getBalance('10000000000000');
 
@@ -418,7 +417,7 @@ class TransferTest extends TestCase
 
         $this->assertEquals($marketplaceOldBalance - $amountUntransferred, $this->getBalance('10000000000000'));
 
-        $this->assertEquals($accOldBalance + $amountUntransferred, $this->getBalance('10000000000001'));
+        $this->assertEquals($accOldBalance + $amountUntransferred, $this->getBalance($this->linkedAccountId));
     }
 
     protected function getTransferRequestBody(string $type, string $action = 'create')
