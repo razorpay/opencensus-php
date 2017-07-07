@@ -3,8 +3,10 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { titleCase } from 'rzp/utils/rzp-utils';
+import ProceedFormFields from 'merchant/containers/PaymentLinks/ProceedModal';
+import * as ModalActions from 'rzp/modules/modals';
 
-@connect(state => state.session)
+@connect(state => state.session, ModalActions)
 export default class BatchUpload extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -19,22 +21,13 @@ export default class BatchUpload extends Component {
   };
 
   save = () => {
-    let additionalFormFields = {};
-    this.props.additionalFields.forEach(key => {
-      if (this.form[key].type === 'checkbox') {
-        additionalFormFields[key] = this.form[key].checked ? '1' : '0';
-      } else {
-        additionalFormFields[key] = this.form[key].value;
-      }
-    });
-
     this.context.confirm({
       message: 'Please ensure the amounts in your file are in paise.',
       affirmativeLabel: 'Submit',
       affirmativePendingLabel: 'Submitting...',
       action: () =>
         this.props
-          .uploadBatch(this.state.file, this.props.mode, additionalFormFields)
+          .uploadBatch(this.state.file, this.props.mode)
           .then(() => {
             this.props.showNotification({
               type: 'success',
@@ -48,6 +41,21 @@ export default class BatchUpload extends Component {
               message: errors,
             });
           }),
+    });
+  };
+
+  proceed = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <ProceedFormFields
+          submitUploadBatch={this.props.uploadBatch.bind(
+            null,
+            this.state.file,
+            this.props.mode
+          )}
+        />
+      ),
     });
   };
 
@@ -107,14 +115,22 @@ export default class BatchUpload extends Component {
               </div>
 
               <div class="text-center">
-                <AsyncButton
-                  class="btn btn-primary"
-                  type="button"
-                  text="Submit"
-                  pendingText="Submitting..."
-                  disabled={!this.state.file}
-                  onClick={this.save}
-                />
+                {this.props.isProceedDialogType
+                  ? <button
+                      class="btn btn-primary"
+                      onClick={this.proceed}
+                      disabled={!this.state.file}
+                    >
+                      Proceed
+                    </button>
+                  : <AsyncButton
+                      class="btn btn-primary"
+                      type="button"
+                      text="Submit"
+                      pendingText="Submitting..."
+                      disabled={!this.state.file}
+                      onClick={this.save}
+                    />}
               </div>
             </form>
           </div>

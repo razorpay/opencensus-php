@@ -168,7 +168,6 @@ export const PaymentBatchIdsReducer = function(
   state = paymentBatchIdsInitialState,
   action
 ) {
-  console.log('ACTION TYPE....', action.type);
   switch (action.type) {
     case `${ISSUABLE_BATCHES}::SUCCESS`:
       return set(state, 'issuableIdList', action.payload.data);
