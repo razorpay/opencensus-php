@@ -26,8 +26,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::PROMOTION_ID,
         self::START_TIME,
         self::REMAINING_ITERATIONS,
         self::EXPIRED

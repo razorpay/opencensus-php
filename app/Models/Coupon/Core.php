@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
@@ -117,7 +118,7 @@ class Core extends Base\Core
 
     protected function getPromotionEntity(Entity $coupon)
     {
-        if ($coupon->getEntityType() !== 'promotion')
+        if ($coupon->getEntityType() !== Entity::PROMOTION)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Coupon provided is not associated with entity promotion',

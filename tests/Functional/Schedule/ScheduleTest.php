@@ -205,7 +205,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(30);
+        $time->addDay(31);
 
         Carbon::setTestNow($time);
 
@@ -247,7 +247,7 @@ class ScheduleTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $credits = $this->getEntities('credits', array(), true);
+        $credits = $this->getEntities('credits', [], true);
 
         $this->assertEquals($credits['items'][1]['value'], -1000);
 
@@ -261,7 +261,7 @@ class ScheduleTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $credits = $this->getEntities('credits', array(), true);
+        $credits = $this->getEntities('credits', [], true);
 
         $this->assertEquals(count($credits['items']), 4);
     }
@@ -308,13 +308,13 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(30);
+        $time->addDay(31);
 
         Carbon::setTestNow($time);
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $credits = $this->getEntities('credits', array(), true);
+        $credits = $this->getEntities('credits', [], true);
 
         $credits = $this->getLastEntity('credits', true);
 

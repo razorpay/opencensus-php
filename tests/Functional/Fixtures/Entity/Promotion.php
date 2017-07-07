@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
 use RZP\Models\Schedule\Anchor;
+use RZP\Models\Schedule\Period;
 
 class Promotion extends Base
 {
@@ -25,10 +26,10 @@ class Promotion extends Base
     {
         $day = Carbon::now('Asia/Kolkata');
 
-        $anchor = $day->{Anchor::CHECKS['monthly']};
+        $anchor = $day->{Anchor::CHECKS[Period::MONTHLY]};
 
         $scheduleAttributes = [
-            'period' => 'monthly',
+            'period' => Period::MONTHLY,
             'anchor' => $anchor,
         ];
 
@@ -36,7 +37,7 @@ class Promotion extends Base
 
         $promotionAttributes = [
             'iterations'        => '1',
-            'credits_expire' => true,
+            'credits_expire'    => true,
             'schedule_id'       => $schedule->getId(),
         ];
 
