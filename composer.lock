@@ -4683,12 +4683,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "d1f3cf17594422edb41c9143bb52e039dd5e12b9"
+                "reference": "1ad32512f2590412a57e81de0af1cf0916014a1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/d1f3cf17594422edb41c9143bb52e039dd5e12b9",
-                "reference": "d1f3cf17594422edb41c9143bb52e039dd5e12b9",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/1ad32512f2590412a57e81de0af1cf0916014a1b",
+                "reference": "1ad32512f2590412a57e81de0af1cf0916014a1b",
                 "shasum": ""
             },
             "require": {
@@ -4699,12 +4699,14 @@
                 "zendframework/zend-diactoros": "^1.4"
             },
             "require-dev": {
+                "mockery/mockery": "^0.9.9",
                 "phpunit/phpunit": "^6.1"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Razorpay\\OAuth\\": "src"
+                    "Razorpay\\OAuth\\": "src",
+                    "Razorpay\\OAuth\\Tests\\": "tests"
                 }
             },
             "authors": [
@@ -4725,7 +4727,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2017-06-16T09:33:10+00:00"
+            "time": "2017-07-07T12:43:30+00:00"
         },
         {
             "name": "razorpay/razorpay",
