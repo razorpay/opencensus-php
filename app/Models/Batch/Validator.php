@@ -15,10 +15,13 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|mimes:xlsx|max:1024',
         Entity::TYPE                 => 'required|string|max:14|custom',
 
+        //
         // Type:payment_link specific input parameters
         // With current approach extra input would be ignored
-        // but it's fine as this is proxy route. We should
-        // enhance it to do per type input validations later.
+        // but it's fine as this is proxy route.
+        //
+
+        // @todo:  We should enhance it to do per type input validations later.
 
         Invoice\Entity::DRAFT        => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',

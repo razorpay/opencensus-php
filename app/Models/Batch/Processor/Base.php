@@ -153,9 +153,8 @@ class Base extends BaseModel\Core
 
                 $this->processEntry($entry);
 
-                // Set status as success and errors as null
+                // Set errors as null
 
-                $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
                 $entry[Batch\Header::ERROR_CODE]        = null;
                 $entry[Batch\Header::ERROR_DESCRIPTION] = null;
             }
@@ -192,8 +191,8 @@ class Base extends BaseModel\Core
                                     Batch\Entity::ID => $this->batch->getId(),
                                 ]);
 
-                $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
             }
         }
     }

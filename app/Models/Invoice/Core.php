@@ -656,12 +656,14 @@ class Core extends Base\Core
      */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
+        //
         // There is an action of 'Issue all payment links' of a processed(created
         // in draft state) payment link batch. But currently this action is not
         // saved anywhere and so can be called multiple times on given processed batch.
         // There is validation in the flow to not issue already issued invoice, but
         // following check will throw error in advance if there is any non draft status
         // invoices against the given batch.
+        //
 
         $batchId = $batch->getId();
 
@@ -670,7 +672,12 @@ class Core extends Base\Core
 
         if ($nonDraftInvCount > 0)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batchId,
+                ]);
         }
 
         $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);

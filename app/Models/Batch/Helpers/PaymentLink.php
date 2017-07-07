@@ -35,7 +35,15 @@ class PaymentLink
         $smsNotify   = $params[Invoice\Entity::SMS_NOTIFY] ?? '0';
         $emailNotify = $params[Invoice\Entity::EMAIL_NOTIFY] ?? '0';
 
-        return [
+        $customer    = [
+            Customer\Entity::NAME    => $entry[Batch\Header::CUSTOMER_NAME],
+            Customer\Entity::CONTACT => $entry[Batch\Header::CUSTOMER_CONTACT],
+            Customer\Entity::EMAIL   => $entry[Batch\Header::CUSTOMER_EMAIL],
+        ];
+
+        $customer = array_filter($customer);
+
+        $input = [
             Invoice\Entity::DRAFT           => $draft,
             Invoice\Entity::SMS_NOTIFY      => $smsNotify,
             Invoice\Entity::EMAIL_NOTIFY    => $emailNotify,
@@ -45,12 +53,9 @@ class PaymentLink
             Invoice\Entity::DESCRIPTION     => $entry[Batch\Header::DESCRIPTION],
             Invoice\Entity::EXPIRE_BY       => $entry[Batch\Header::EXPIRE_BY],
             Invoice\Entity::PARTIAL_PAYMENT => $partialPayment,
-
-            Invoice\Entity::CUSTOMER        => [
-                Customer\Entity::NAME    => $entry[Batch\Header::CUSTOMER_NAME],
-                Customer\Entity::CONTACT => $entry[Batch\Header::CUSTOMER_CONTACT],
-                Customer\Entity::EMAIL   => $entry[Batch\Header::CUSTOMER_EMAIL],
-            ],
+            Invoice\Entity::CUSTOMER        => $customer,
         ];
+
+        return $input;
     }
 }

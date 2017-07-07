@@ -17,8 +17,8 @@ class PaymentLink extends Base
 
         // Update the entry with output values
 
+        $entry[Header::STATUS]              = $invoice->getStatus();
         $entry[Header::PAYMENT_LINK_ID]     = $invoice->getPublicId();
-        $entry[Header::PAYMENT_LINK_STATUS] = $invoice->getStatus();
         $entry[Header::SHORT_URL]           = $invoice->getShortUrl();
     }
 }
