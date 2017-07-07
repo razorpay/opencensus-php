@@ -20,30 +20,36 @@ const selector = formValueSelector('uploadBatch');
 })
 export default class ProceedFormFields extends Component {
   onSubmitClick = props => {
-    let additionalFormFields = {};
+    const prom = new Promise(() => {
+      let additionalFormFields = {};
 
-    additionalFormFields['sms_notify'] = props.sms_notify === true ? '1' : '0';
-    additionalFormFields['email_notify'] = props.email_notify === true
-      ? '1'
-      : '0';
-    additionalFormFields['draft'] = '0'; // Implicitly sending draft = '0'
+      additionalFormFields['sms_notify'] = props.sms_notify === true
+        ? '1'
+        : '0';
+      additionalFormFields['email_notify'] = props.email_notify === true
+        ? '1'
+        : '0';
+      additionalFormFields['draft'] = '0'; // Implicitly sending draft = '0'
 
-    this.props
-      .submitUploadBatch(additionalFormFields)
-      .then(() => {
-        this.props.closeModal();
-        this.props.showNotification({
-          type: 'success',
-          message: 'Successful',
+      this.props
+        .submitUploadBatch(additionalFormFields)
+        .then(() => {
+          this.props.closeModal();
+          this.props.showNotification({
+            type: 'success',
+            message: 'Successful',
+          });
+        })
+        .catch(({ errors }) => {
+          this.props.closeModal();
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
         });
-      })
-      .catch(({ errors }) => {
-        this.props.closeModal();
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
-        });
-      });
+    });
+
+    return prom;
   };
 
   render() {
@@ -88,7 +94,7 @@ export default class ProceedFormFields extends Component {
                 type="submit"
                 class="btn btn-primary btn-block btn-lg"
                 text="Submit"
-                pendingText="Submitting"
+                pendingText="Submitting..."
                 onClick={handleSubmit(this.onSubmitClick)}
               />
             </div>
