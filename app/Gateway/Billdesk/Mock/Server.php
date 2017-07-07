@@ -53,7 +53,7 @@ class Server extends Base\Mock\Server
             'SecurityID'        => 'NA',
             'SecurityPassword'  => 'NA',
             'TxnDate'           => $date,
-            'AuthStatus'        => AuthStatus::PENDING,
+            'AuthStatus'        => AuthStatus::SUCCESS,
             'SettlementType'    => 'NA',
             'AdditionalInfo1'   => 'NA',
             'AdditionalInfo2'   => 'NA',
