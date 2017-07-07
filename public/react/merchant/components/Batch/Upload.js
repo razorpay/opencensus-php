@@ -49,6 +49,7 @@ export default class BatchUpload extends Component {
       size: 'small',
       component: (
         <ProceedFormFields
+          closeUrl={this.props.closeUrl}
           submitUploadBatch={this.props.uploadBatch.bind(
             null,
             this.state.file,

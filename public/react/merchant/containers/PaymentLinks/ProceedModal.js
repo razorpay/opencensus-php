@@ -1,13 +1,15 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
+import { withRouter } from 'react-router-dom';
 
+import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
 const selector = formValueSelector('uploadBatch');
+@withRouter
 @connect(
   state => ({
     sms_notify: selector(state, 'sms_notify'),
@@ -39,6 +41,7 @@ export default class ProceedFormFields extends Component {
             type: 'success',
             message: 'Successful',
           });
+          this.props.history.push(this.props.closeUrl);
         })
         .catch(({ errors }) => {
           this.props.closeModal();

@@ -112,7 +112,7 @@ const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
 
   for (let key in extraFields) {
     if (extraFields.hasOwnProperty(key)) {
-      formData.append(`body[${key}]this.props.batchId`, extraFields[key]);
+      formData.append(`body[${key}]`, extraFields[key]);
     }
   }
 
