@@ -98,6 +98,22 @@ trait Callback
                         ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
                 }
 
+                try {
+
+                    $this->processPaymentCallback($payment, $gatewayInput);
+
+                } catch (Exception\GatewayErrorException $ex)
+                {
+                    if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
+                    {
+                        return $this->processPendingResponse($payment);
+                    }
+                    else
+                    {
+                        throw $ex;
+                    }
+                }
+
                 $this->processPaymentCallback($payment, $gatewayInput);
 
                 $this->autoCapturePaymentIfApplicable($payment);
