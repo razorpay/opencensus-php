@@ -34,18 +34,6 @@ class RefundController extends Controller
         return ApiResponse::json($refunds);
     }
 
-    public function generateNetbankingRefunds()
-    {
-        $input = Request::all();
-        // Just a hack, will be shifted to the /refunds/excel route
-        // once properly deployed
-        $input['method'] = 'netbanking';
-
-        $refundExcel = $this->service('refund')->getRefundsFile($input);
-
-        return ApiResponse::json($refundExcel);
-    }
-
     public function generateRefunds()
     {
         $input = Request::all();
