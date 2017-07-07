@@ -24,6 +24,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
+use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
@@ -822,9 +823,7 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $merchantId = $merchantBalance->merchant->getId();
-
-        $amountCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::AMOUNT);
+        $amountCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::AMOUNT);
 
         // Removing Assert for now, as there is a race condition. if 2 payments
         // are authorized at the same time where we create txn on auth with. both
@@ -871,7 +870,7 @@ class Core extends Base\Core
 
         $merchantId = $merchantBalance->merchant->getId();
 
-        $feeCredits =  $this->repo->credits->getMerchantCreditsOfType($merchantId, Credits\Type::FEE);
+        $feeCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::FEE);
 
         if ($feeCredits < $fee)
         {
@@ -969,15 +968,55 @@ class Core extends Base\Core
         }
     }
 
+    protected function getMerchantCreditsOfType($merchantBalance, $type)
+    {
+        $merchant = $merchantBalance->merchant;
+
+        $feature = Feature\Constants::OLD_CREDITS_FLOW;
+
+        if ($merchant->isFeatureEnabled($feature) === true)
+        {
+            if ($type === Credits\Type::FEE)
+            {
+                $credits = $merchantBalance->getFeeCredits();
+            }
+            else
+            {
+                $credits = $merchantBalance->getAmountCredits();
+            }
+        }
+        else
+        {
+            $merchantId = $merchant->getId();
+
+            $credits = $this->repo->credits->getMerchantCreditsOfType($merchantId, $type);
+        }
+
+        return $credits;
+    }
+
     protected function getMerchantCredits($merchantBalance)
     {
-        $merchantId = $merchantBalance->merchant->getId();
+        $merchant = $merchantBalance->merchant;
 
-        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
+        $feature = Feature\Constants::OLD_CREDITS_FLOW;
 
-        $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+        if ($merchant->isFeatureEnabled($feature) === true)
+        {
+            $amountCredits = $merchantBalance->getAmountCredits();
 
-        $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+            $feeCredits = $merchantBalance->getFeeCredits();
+        }
+        else
+        {
+            $merchantId = $merchantBalance->merchant->getId();
+
+            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
+
+            $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+
+            $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+        }
 
         return [$amountCredits, $feeCredits];
     }
