@@ -182,7 +182,7 @@ class AdminAccess
 
         $merchant = null;
 
-        if (isset($params['mid']))
+        if (empty($params['mid']) === false)
         {
             $mid = $params['mid'];
 

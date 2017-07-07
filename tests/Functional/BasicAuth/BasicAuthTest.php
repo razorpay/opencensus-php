@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\BasicAuth;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 class BasicAuthTest extends TestCase
 {
@@ -228,7 +229,7 @@ class BasicAuthTest extends TestCase
         $admin = $this->ba->getAdmin();
 
         $merchant = $this->fixtures->create(
-            'merchant', ['org_id' => last(explode('_', strtolower($this->ba->getOrgId())))]);
+            'merchant', ['org_id' => Org::RZP_ORG]);
 
         $admin->merchants()->attach($merchant);
 
