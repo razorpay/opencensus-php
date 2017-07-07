@@ -6,12 +6,17 @@ export default class TaggedInput extends Component {
   handleOptionsChange = (value, select) => {
     if (value.length > 1 && value.charAt(value.length - 1) === ',') {
       let data = this.props.input.value.slice();
-      data.push(value.slice(0, -1));
+      let result = value.slice(0, -1)
+      if (this.props.isUrl(result)) {
+        data.push(result);
 
-      this.props.input.onChange(data);
+        this.props.input.onChange(data);
 
-      select.search('');
-      select.focus();
+        select.search('');
+        select.focus();
+      } else {
+        // set field invalid
+      }
     }
   };
 

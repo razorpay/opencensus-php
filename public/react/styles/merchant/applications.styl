@@ -82,6 +82,18 @@
 }
 
 .new-application-form
+  &.content-box {
+    border: 1px solid #e2e8ea;
+    background-color: #fff;
+    &:not(:first-child) {
+      margin-top: 20px;
+    }
+  }
+
+  .content-header {
+    border-bottom: 1px solid #e2e8ea;
+    padding: 15px 20px;
+  }
   .PowerSelect {
     padding: 0
     padding-bottom 2px
@@ -106,12 +118,30 @@
     margin-bottom: 30px;
     font-weight: 700;
   }
+  .form-horizontal {
+    padding 30px;
+  }
 
   h5.form-header {
     margin-left: -10px;
     margin-bottom: 16px;
   }
-  
+  .upload-container {
+    height: 90px;
+    width: 120px;
+    text-align: center;
+  }
+  .upload-inner {
+    height 100%
+    width 100%
+    border: 1px solid #cfdadd;
+    border-radius 2px
+    padding 14px
+    i {
+      display block
+      margin-bottom 4 px
+    }
+  }
   .btn {
     margin-left: 10px;
   }
@@ -119,6 +149,8 @@
     position: absolute;
     top: 0;
     right: 15px;
+    background-color: transparent;
+    border: none;
   }
   .copy-field {
     cursor: text;

@@ -8,7 +8,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { required } from 'rzp/utils/validators';
+import { required, isUrl } from 'rzp/utils/validators';
 
 import { NavLink, withRouter } from 'react-router-dom';
 import Header from 'rzp/ui/Header';
@@ -146,12 +146,9 @@ class NewApplicationForm extends Component {
     const { handleSubmit } = this.props;
 
     return (
-      <div class="content-wrapper new-application-form">
-        <div class="content-wrapper">
-          <div class="row">
-            <div class="col-md-offset-2 col-md-10">
-              <h4 class="form-header text-left">{this.state.edit ? 'Edit' : 'Create'} Application</h4>
-            </div>
+      <div class="content-box new-application-form">
+          <div class="content-header">
+            <strong>{this.state.edit ? 'Edit' : 'Create'} Application</strong>
           </div>
           <form 
             class="form-horizontal" 
@@ -189,11 +186,13 @@ class NewApplicationForm extends Component {
               </div>
 
               <div class="form-group">
-                <div className="col-md-offset-2 upload-container col-md-1">
-                  <i class="fa fa-folder-open"></i>
-                  <span>Upload App Icon</span>
+                <div class="col-md-offset-2 upload-container col-md-1">
+                  <div class="upload-inner">
+                    <i class="fa fa-folder-open"></i>
+                    <span>Upload App Icon</span>
+                  </div>
                 </div>
-                <small class="col-md-9 help-block">
+                <small class="col-md-8 help-block">
                   <i class="icon icon-info-circle" />
                   <span>
                     {INFO.icon}
@@ -201,7 +200,7 @@ class NewApplicationForm extends Component {
                 </small>
               </div>
 
-              {this.state.edit && <div className="edit-details">
+              {this.state.edit && <div class="edit-details">
                 <div class="col-md-offset-2 col-md-10">
                   <h5 class="form-header text-left">Development</h5>
                 </div>
@@ -231,7 +230,7 @@ class NewApplicationForm extends Component {
                       class="form-control copy-field"
                       placeholder="client_secret"
                     />
-                    {!this.state.showDevSecret && <button class="btn btn-default btn-show-secret" onClick={this.showDevSecret}>Show</button>}
+                    {!this.state.showDevSecret && <button class="btn btn-default btn-show-secret" onClick={this.showDevSecret}><i class="fa fa-eye"></i></button>}
                   </div>
                 </div>
 
@@ -242,9 +241,10 @@ class NewApplicationForm extends Component {
                   <div class="col-md-10">
                     <Field
                       name="clients.dev.redirect_url"
-                      component={InputField}
-                      class="form-control"
+                      component={TaggedInput}
+                      class="form-control tagged-input"
                       placeholder="http://test-app.com/"
+                      isUrl={isUrl}
                     />
                   </div>
                   <div class="clearfix"></div>
@@ -285,7 +285,7 @@ class NewApplicationForm extends Component {
                       class="form-control copy-field"
                       placeholder="client_secret"
                     />
-                    {!this.state.showProdSecret && <button class="btn btn-default btn-show-secret" onClick={this.showProdSecret}>Show</button>}
+                    {!this.state.showProdSecret && <button class="btn btn-default btn-show-secret" onClick={this.showProdSecret}><i class="fa fa-eye"></i></button>}
                   </div>
                 </div>
 
@@ -299,6 +299,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
+                      isUrl={isUrl}
                     />
                   </div>
                   <div class="clearfix"></div>
@@ -332,7 +333,6 @@ class NewApplicationForm extends Component {
               </div>
             </Fieldset>
           </form>
-        </div>
       </div>
     );
   }
