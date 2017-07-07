@@ -10,7 +10,7 @@ import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required, isUrl } from 'rzp/utils/validators';
 
-import { NavLink, withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
 import * as ApplicationActions from 'merchant/modules/applications';
@@ -148,7 +148,11 @@ class NewApplicationForm extends Component {
     return (
       <div class="content-box new-application-form">
           <div class="content-header">
-            <strong>{this.state.edit ? 'Edit' : 'Create'} Application</strong>
+            <Link to="/applications" class="breadcrumb__backNav--link " >
+              <i class="icon icon-arrow-back" />
+              <span> Back</span>
+            </Link>
+            <strong> / {this.state.edit ? 'Edit' : 'Create'} Application</strong>
           </div>
           <form 
             class="form-horizontal" 
@@ -207,7 +211,7 @@ class NewApplicationForm extends Component {
 
                 <div class="form-group">
                   <label class="col-md-2 control-label">
-                    client_id
+                    Client ID
                   </label>
                   <div class="col-md-4">
                     <Field
@@ -215,11 +219,11 @@ class NewApplicationForm extends Component {
                       component={InputField}
                       disabled={true}
                       class="form-control copy-field"
-                      placeholder="client_id"
+                      placeholder="Client ID"
                     />
                   </div>
                   <label class="col-md-2 control-label">
-                    client_secret
+                    Client Secret
                   </label>
                   <div class="col-md-4">
                     <Field
@@ -228,7 +232,7 @@ class NewApplicationForm extends Component {
                       type={this.state.showDevSecret ? 'text' : 'password'}
                       component={InputField}
                       class="form-control copy-field"
-                      placeholder="client_secret"
+                      placeholder="Client Secret"
                     />
                     {!this.state.showDevSecret && <button class="btn btn-default btn-show-secret" onClick={this.showDevSecret}><i class="fa fa-eye"></i></button>}
                   </div>
@@ -262,7 +266,7 @@ class NewApplicationForm extends Component {
 
                 <div class="form-group">
                   <label class="col-md-2 control-label">
-                    client_id
+                    Client ID
                   </label>
                   <div class="col-md-4">
                     <Field
@@ -270,11 +274,11 @@ class NewApplicationForm extends Component {
                       component={InputField}
                       disabled={true}
                       class="form-control copy-field"
-                      placeholder="client_id"
+                      placeholder="Client ID"
                     />
                   </div>
                   <label class="col-md-2 control-label">
-                    client_secret
+                    Client Secret
                   </label>
                   <div class="col-md-4">
                     <Field
@@ -283,7 +287,7 @@ class NewApplicationForm extends Component {
                       component={InputField}
                       type={this.state.showProdSecret ? 'text' : 'password'}
                       class="form-control copy-field"
-                      placeholder="client_secret"
+                      placeholder="Client Secret"
                     />
                     {!this.state.showProdSecret && <button class="btn btn-default btn-show-secret" onClick={this.showProdSecret}><i class="fa fa-eye"></i></button>}
                   </div>
