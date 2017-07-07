@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Schedule\Task;
@@ -78,7 +79,11 @@ class Core extends Base\Core
             }
             catch (\Exception $e)
             {
-                $this->trace->traceException($e);
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SCHEDULE_TASK_PROCESSING_FAILED,
+                    $scheduleTask->getId());
 
                 $failedIds[] = $scheduleTask->getId();
             }

@@ -20,6 +20,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
@@ -298,13 +299,7 @@ class Core extends Base\Core
         Transaction\Entity $transaction,
         Merchant\Balance\Entity $merchantBalance)
     {
-        $merchantId = $merchantBalance->merchant->getId();
-
-        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
-
-        $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
-
-        $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -338,13 +333,7 @@ class Core extends Base\Core
         Transaction\Entity $transaction,
         Merchant\Balance\Entity $merchantBalance)
     {
-        $merchantId = $merchantBalance->merchant->getId();
-
-        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
-
-        $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
-
-        $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -978,6 +967,19 @@ class Core extends Base\Core
         }
     }
 
+    protected function getMerchantCredits($merchantBalance)
+    {
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
+
+        $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+
+        $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+
+        return [$amountCredits, $feeCredits];
+    }
+
     protected function createCreditTransaction(int $amount, Entity $txn, string $creditType)
     {
         try
@@ -986,7 +988,14 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::CREDITS_TRANSACTION_FAILED);
+            $data = [
+                'credit_amount'  => $amount,
+                'transaction_id' => $txn->getId(),
+                'credit_type'    => $creditType,
+            ];
+
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::CREDITS_TRANSACTION_FAILED, $data);
         }
     }
 }

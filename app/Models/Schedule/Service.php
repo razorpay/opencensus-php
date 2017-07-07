@@ -77,6 +77,8 @@ class Service extends Base\Service
 
     public function processTasks(array $input)
     {
+        $this->trace->info(TraceCode::SCHEDULE_TASKS_PROCESS_REQUEST, $input);
+
         (new ScheduleTask\Validator)->validateInput('processTasks', $input);
 
         //all tasks which are due and less than time
