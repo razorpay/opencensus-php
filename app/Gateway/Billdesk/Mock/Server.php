@@ -66,6 +66,11 @@ class Server extends Base\Mock\Server
             'ErrorDescription'  => 'NA',
         );
 
+        if ($gatewayPayment->getBankId() === 'ICO')
+        {
+            $content['AuthStatus'] = AuthStatus::PENDING;
+        }
+
         $msg = $this->getGatewayInstance()
                     // ->setInput($gatewayInput)
                     ->getMessageStringWithHash($content);
@@ -123,6 +128,8 @@ class Server extends Base\Mock\Server
             if (isset($payment[$key]) === true)
                 $content[$key] = $payment[$key];
         }
+
+        $content['AuthStatus'] = AuthStatus::SUCCESS;
 
         $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
 
