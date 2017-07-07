@@ -44,6 +44,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION                             = 'Payment pending authorization from authorizer';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                 = 'Payment processing cancelled by user';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID             = 'Payment processing cancelled by pressing back button on android';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                         = 'Payment processing cancelled by customer at login screen';

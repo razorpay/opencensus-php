@@ -178,6 +178,7 @@ trait Callback
         if ($payment->hasCard())
         {
             $card = $this->repo->card->fetchForPayment($payment);
+
             $input['card'] = $card->toArray();
         }
 
@@ -218,9 +219,23 @@ trait Callback
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
-                $this->processPaymentCallback($payment, $gatewayInput);
+                try {
 
-                return $this->postPaymentAuthorizeProcessing($payment);
+                    $this->processPaymentCallback($payment, $gatewayInput);
+
+                } catch (Exception\GatewayErrorException $ex)
+                {
+                    if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
+                    {
+                        return $this->processPendingResponse($payment);
+                    }
+                    else
+                    {
+                        throw $ex;
+                    }
+                }
+
+                return $response = $this->postPaymentAuthorizeProcessing($payment);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

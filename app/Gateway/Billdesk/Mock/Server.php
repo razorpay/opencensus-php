@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Billdesk;
+use RZP\Gateway\Billdesk\AuthStatus;
 use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
@@ -52,7 +53,7 @@ class Server extends Base\Mock\Server
             'SecurityID'        => 'NA',
             'SecurityPassword'  => 'NA',
             'TxnDate'           => $date,
-            'AuthStatus'        => '0300',
+            'AuthStatus'        => AuthStatus::PENDING,
             'SettlementType'    => 'NA',
             'AdditionalInfo1'   => 'NA',
             'AdditionalInfo2'   => 'NA',

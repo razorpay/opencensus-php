@@ -96,14 +96,32 @@ class Gateway extends Base\Gateway
         $content['received'] = 1;
         $gatewayPayment->fill($content);
         $this->repo->saveOrFail($gatewayPayment);
+        // For corporate payments we need to mark status with pending also in
+        // created state and keep trying to get success. Once we do, can mark
+        // the payment as successful. Late auth flag should not be set for these
+        // these payments will be treated specially because maker checker.
 
+        // Hence success cases here only - fully authorized payment
+        // payments still pending are to be left in created until
+        // appropriate callback is received.
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
+            if(($input['terminal']->isCorporate() === true) and
+               ($content['AuthStatus'] === AuthStatus::PENDING))
+            {
+                // Payment fails, throw exception
+                throw new Exception\GatewayErrorException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,
+                        $content['AuthStatus'],
+                        'Corporate Payment pending authorization');
+            }
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     $content['AuthStatus'],
                     '');
+
         }
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
