@@ -313,7 +313,9 @@ class AdminAccess
         // This gets all the groups that belong to (child/sub) $groupIds
 
         $allSubGroupIds = [];
-        $allSubAdminIds = [];
+
+        // Adding current admin also because current admin can have direct merchants.
+        $allSubAdminIds = [$admin->getId()];
 
         $groupIds = $parentGroupIds;
 
