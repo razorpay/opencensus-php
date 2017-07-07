@@ -130,7 +130,7 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->amounts as $key)
         {
-            if (isset($report[$key]))
+            if (isset($report[$key]) === true)
             {
                 $report[$key] = $report[$key] / 100;
             }
@@ -141,7 +141,7 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->reportDates as $key)
         {
-            if (isset($report[$key]))
+            if (isset($report[$key]) === true)
             {
                 $report[$key] = $this->getDateInFormatDMYHMS($key);
             }

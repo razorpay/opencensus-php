@@ -1155,17 +1155,6 @@ class Entity extends Base\PublicEntity
 
         $report = parent::toArrayReport();
 
-        // Convert dates
-        // @todo: This needs to be moved to parent method
-
-        foreach ($this->reportDates as $key)
-        {
-            if (isset($report[$key]))
-            {
-                $report[$key] = $this->getDateInFormatDMYHMS($key);
-            }
-        }
-
         // Add flattened customer details in report
 
         $report[self::CUSTOMER_NAME]    = $this->getCustomerName();
