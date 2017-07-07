@@ -8,6 +8,7 @@ const FETCH_APPLICATION_DETAILS = 'FETCH_APPLICATION_DETAILS';
 const CREATE_APPLICATION = 'CREATE_APPLICATION';
 const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
 const DELETE_APPLICATION = 'DELETE_APPLICATION';
+const REVOKE_ACCESS_TOKEN = 'REVOKE_ACCESS_TOKEN';
 
 export const fetchApplications = params => {
   let application = new Application();
@@ -45,6 +46,15 @@ export const deleteApplication = id => {
   };
 };
 
+export const revokeAccess = id => {
+  let application = new Application({id});
+
+  return {
+    type: REVOKE_ACCESS_TOKEN,
+    payload: application.revokeToken(id),
+  };
+};
+
 export const createApplication = params => {
   console.log('save from module', params)
   let application = new Application();
@@ -78,6 +88,7 @@ export default function(state = initialState, action) {
     case `${CREATE_APPLICATION}::PENDING`:
     case `${UPDATE_APPLICATION}::PENDING`:
     case `${DELETE_APPLICATION}::PENDING`:
+    case `${REVOKE_ACCESS_TOKEN}::PENDING`:
     case `${FETCH_APPLICATION_DETAILS}::PENDING`:
       return merge(state, {
         loading: true,
@@ -104,6 +115,12 @@ export default function(state = initialState, action) {
     case `${DELETE_APPLICATION}::SUCCESS`:
       return merge(state, {
         items: remove(state.items, (item) => (item.id === action.payload.id)),
+        loading: false,
+      })
+
+    case `${REVOKE_ACCESS_TOKEN}::SUCCESS`:
+      return merge(state, {
+        connectedApps: remove(state.connectedApps, (item) => (item.id === action.payload.id)),
         loading: false,
       })
 

@@ -23,6 +23,12 @@ export default class ApplicationContainer extends Component {
     confirm: PropTypes.func,
   };
 
+  constructor () {
+    super()
+    this.deleteApp = this.deleteApp.bind(this);
+    this.revokeAccess = this.revokeAccess.bind(this);
+  }
+
   componentWillMount() {
     this.props.fetchApplications()
     this.props.fetchConnectedApplications()
@@ -51,6 +57,29 @@ export default class ApplicationContainer extends Component {
     });
   };
 
+  revokeAccess(token) {
+    this.context.confirm({
+      message: `Are you sure to revoke access to the application? ${token.application.name}`,
+      affirmativeLabel: 'Revoke Access',
+      affirmativePendingLabel: 'Revoking Access...',
+      action: () =>
+        this.props
+          .revokeAccess(token.id)
+          .then(response => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Access revoked successfully',
+            });
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          }),
+    });
+  };
+
   render() {
     // let { config, features, loading } = this.props.configState;
     let createdApps = this.props.applications.items
@@ -63,7 +92,7 @@ export default class ApplicationContainer extends Component {
             <strong>Connected Applications</strong>
           </div>
           {connectedApps.length
-            ? connectedApps.map((app) => <AppDetails data={app} key={app.id} type={"connected"} deleteApp={this.deleteApp.bind(this)}/>)
+            ? connectedApps.map((app) => <AppDetails data={app} key={app.id} type={"connected"} onBtnClick={this.revokeAccess}/>)
             : <NoConnectedApps />}
           <div class="clearfix"></div>  
         </div>
@@ -74,7 +103,7 @@ export default class ApplicationContainer extends Component {
           <div class="text-center content-body">
             <NewAppLink />
             {createdApps.map((app) => 
-              <AppDetails data={app} key={app.id} deleteApp={this.deleteApp.bind(this)}/>
+              <AppDetails data={app} key={app.id} onBtnClick={this.deleteApp}/>
             )}
             <div class="clearfix"></div>
           </div>
@@ -85,17 +114,18 @@ export default class ApplicationContainer extends Component {
 }
 
 function AppDetails (props) {
-  const app = props.data;
+  const data = props.data;
   const isConnected = props.type === "connected"
+  console.log(isConnected, data)
   const Comp = isConnected ? 'div' : NavLink
   return (<div class={`application-details-container col-lg-6`}>
-            <Comp class="application-details-inner" to={`/applications/${app.id}`}>
+            <Comp class="application-details-inner" to={`/applications/${data.id}`}>
               <div class="btn-container pull-right">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    props.deleteApp(app)}
+                    props.onBtnClick(data)}
                   }
                   class="btn btn-default"
                 >
@@ -104,12 +134,12 @@ function AppDetails (props) {
               </div>
               <div class={`application-details ${isConnected ? "connected-app" : ""}`}>
                 <div class="app-icon-container">
-                  <img class="app-icon" src={app.logo_url || 'img/default-app-logo.svg'} alt=""/>
+                  <img class="app-icon" src={data.logo_url || 'img/default-app-logo.svg'} alt=""/>
                 </div>
                 <div class="app-details-container">
-                  <div class="app-name"><strong>{app.name}</strong></div>
-                  <div class="app-id">App ID: {app.id}</div>
-                  <div class="app-created-on">Created on: <Time value={app.created_at} format="DD MMM YYYY" /></div>
+                  <div class="app-name"><strong>{isConnected ? data.application.name : data.name}</strong></div>
+                  <div class="app-id">App ID: {isConnected ? data.application.id : data.id}</div>
+                  <div class="app-created-on">{isConnected ? "Connected" : "Created"} on: <Time value={data.created_at} format="DD MMM YYYY" /></div>
                 </div>
               </div>
             </Comp>

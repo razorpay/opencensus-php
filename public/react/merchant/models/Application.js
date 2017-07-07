@@ -8,6 +8,7 @@ export default class Key extends GenericEntity {
   listRouteName = 'oauth_application_fetch_multiple';
   connectedListRouteName = 'oauth_token_fetch_multiple';
   deleteRouteName = 'oauth_application_delete';
+  revokeRouteName = 'oauth_token_revoke';
   detailsRouteName = 'oauth_application_fetch';
 
   fetchAll(params = {}) {
@@ -89,6 +90,17 @@ export default class Key extends GenericEntity {
   }
 
   revokeToken (params) {
-    // oauth_token_revoke
+    var id = this.id;
+    return this.makeGenericAjaxCall({
+      method: 'put',
+      data: {
+        route_name: this.revokeRouteName,
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        }),
+      },
+    }).then((data) => {
+      return {id, ...data}
+    });
   }
 }
