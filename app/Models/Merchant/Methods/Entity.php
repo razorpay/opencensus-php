@@ -24,12 +24,12 @@ class Entity extends Base\PublicEntity
     const OPENWALLET        = 'openwallet';
     const MPESA             = 'mpesa';
     const EMI               = 'emi';
+    const EMI_SUBVENTION    = 'emi_subvention';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
-    const EMI_SUBVENTION    = 'emi_subvention';
 
     const METHODS           = 'methods';
 

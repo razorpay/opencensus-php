@@ -36,10 +36,10 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const AEPS                          = 'aeps';
     const EMI_DURATION                  = 'emi_duration';
+    const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
-    const EMI_SUBVENTION                = 'emi_subvention';
     const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
     const ENABLED                       = 'enabled';
@@ -71,13 +71,13 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::SHARED,
         self::INTERNATIONAL,
         self::TPV,
         self::TYPE,
         self::MODE,
         self::CURRENCY,
-        self::EMI_SUBVENTION,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -102,10 +102,10 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
-        self::EMI_SUBVENTION,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,

@@ -84,6 +84,9 @@ class CreateTerminals extends Migration
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 
+            $table->string(Terminal::EMI_SUBVENTION)
+                  ->nullable();
+
             $table->tinyInteger(Terminal::RECURRING)
                   ->unsigned()
                   ->default(1);
@@ -96,9 +99,6 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::TPV)
                   ->default(0);
-
-            $table->string(Terminal::EMI_SUBVENTION)
-                  ->nullable();
 
             $table->tinyInteger(Terminal::TYPE)
                   ->unsigned()
