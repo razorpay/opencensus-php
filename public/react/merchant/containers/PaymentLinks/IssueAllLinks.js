@@ -8,14 +8,14 @@ import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import {
   issuePaymentLinkBatch,
-  fetchIssuableBatchList,
+  editIssuableBatchList,
 } from 'merchant/modules/batches';
 
 @connect(state => state.session, {
   showNotification,
   closeModal,
   issuePaymentLinkBatch,
-  fetchIssuableBatchList,
+  editIssuableBatchList,
 })
 @reduxForm({
   form: 'issueAllLinks',
@@ -31,10 +31,10 @@ export default class IssueAllLinksModal extends Component {
       .then(() => {
         this.props.showNotification({
           type: 'success',
-          message: 'Successful',
+          message: 'All payment links of this batch will be issued shortly',
         });
         this.props.closeModal();
-        this.props.fetchIssuableBatchList(); // For refreshing UI (will remove 'Issue all links' Btn corresponding to this batch id as it's success)
+        this.props.editIssuableBatchList(this.props.batchId); // For refreshing UI (will remove 'Issue all links' Btn corresponding to this batch id as it's success)
       })
       .catch(({ errors }) => {
         this.props.showNotification({

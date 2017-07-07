@@ -6,6 +6,7 @@ const REFUND = 'REFUND_BATCHES';
 const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
+const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
 
 const fetchBatchAjax = id => {
   return ajax({
@@ -72,6 +73,14 @@ export const fetchIssuableBatchList = batchIdList => {
   };
 };
 
+// Removing 'Issue all links' btn from view
+export const editIssuableBatchList = batchIdToRemove => {
+  return {
+    type: EDIT_ISSUABLE_BATCHES,
+    batchIdToRemove,
+  };
+};
+
 export const fetchPaymentLinkBatches = params => {
   return dispatch => {
     return dispatch({
@@ -103,7 +112,7 @@ const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
 
   for (let key in extraFields) {
     if (extraFields.hasOwnProperty(key)) {
-      formData.append(key, extraFields[key]);
+      formData.append(`body[${key}]this.props.batchId`, extraFields[key]);
     }
   }
 
@@ -171,6 +180,17 @@ export const PaymentBatchIdsReducer = function(
   switch (action.type) {
     case `${ISSUABLE_BATCHES}::SUCCESS`:
       return set(state, 'issuableIdList', action.payload.data);
+
+    case 'EDIT_ISSUABLE_BATCHES':
+      console.log('BLAL...', action);
+
+      const index = state.issuableIdList.indexOf(action.batchIdToRemove);
+      let issuableIdList = Object.assign([], state.issuableIdList);
+      if (index > -1) {
+        issuableIdList.splice(index, 1);
+      }
+
+      return set(state, 'issuableIdList', issuableIdList);
 
     default:
       return state;
