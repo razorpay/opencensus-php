@@ -606,6 +606,8 @@ class Creator extends Base\Core
 
         $this->extension($this->compressionFormat);
 
+        $this->updateFilePermission($this->getFullFilePath());
+
         $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
 
         $this->mime($this->localFile->getMimeType());
@@ -628,15 +630,22 @@ class Creator extends Base\Core
         fwrite($file, $this->content);
         fclose($file);
 
+        $this->updateFilePermission($fullPath);
+
+        $this->createUploadedFile($fullPath, $fileName);
+    }
+
+    protected function updateFilePermission($filePath)
+    {
         try
         {
             //
             // This step is important because file can be created
             // via different users (www-data or ubuntu (via queue))
             //
-            if (substr(sprintf('%o', fileperms($fullPath)), -3) !== '777')
+            if (substr(sprintf('%o', fileperms($filePath)), -3) !== '777')
             {
-                (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
+                (new Utility)->callFileOperation('chmod', [$filePath, 0777]);
             }
         }
         catch (\Exception $e)
@@ -646,11 +655,9 @@ class Creator extends Base\Core
                 Trace::WARNING,
                 TraceCode::FILE_PERMISSION_CHANGE_FAILED,
                 [
-                    'path' => $fullPath
+                    'path' => $filePath
                 ]);
         }
-
-        $this->createUploadedFile($fullPath, $fileName);
     }
 
     protected function writeToExcelFile()
@@ -663,6 +670,8 @@ class Creator extends Base\Core
             $this->columnFormat,
             $this->file->getExtension(),
             $this->getStorageDir());
+
+        $this->updateFilePermission($fileMetadata['full']);
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }
