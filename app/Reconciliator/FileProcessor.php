@@ -50,7 +50,10 @@ class FileProcessor
             'application/excel',
             'application/vnd.ms-excel',
             'application/msexcel',
-            'application/vnd.ms-office'],
+            'application/vnd.ms-office',
+            'application/vnd.oasis.opendocument.spreadsheet',
+            'application/CDFV2-unknown'
+        ],
         self::CSV => [
             'text/csv',
             'text/x-comma-separated-values',
