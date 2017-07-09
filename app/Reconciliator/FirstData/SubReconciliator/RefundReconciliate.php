@@ -28,7 +28,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId($row)
     {
-        $refundId = $this->getGatewayRefund($row)->getRefundId();
+        $refundId = $this->getGatewayRefundFromGatewayTxnId($row)->getRefundId();
 
         return $refundId;
     }
@@ -42,7 +42,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getPaymentId($row)
     {
-        $paymentId = $this->getGatewayRefund($row)->getPaymentId();
+        $paymentId = $this->getGatewayRefundFromGatewayTxnId($row)->getPaymentId();
 
         return $paymentId;
     }
@@ -80,10 +80,13 @@ class RefundReconciliate extends Base\RefundReconciliate
      * whereas the ids in our database are case sensitive.
      * So we compare ('SESSION ID ASPD') to 'caps_payment_id' of FirstData
      *
-     * @param array             $row
+     * @param array $row
+     *
      * @return FirstData\Entity $payment
+     * @internal param string $refundId
+     *
      */
-    protected function getGatewayRefund($row)
+    protected function getGatewayRefundFromGatewayTxnId(array $row)
     {
         $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 
@@ -106,6 +109,20 @@ class RefundReconciliate extends Base\RefundReconciliate
                                     $capsPaymentId, $gatewayTxnId);
 
         return $refund;
+    }
+
+    protected function getGatewayRefund(string $refundId)
+    {
+        $gatewayEntities = $this->repo->first_data->findSuccessfulRefundByRefundId($refundId);
+
+        if ($gatewayEntities->count() === 0)
+        {
+            return null;
+        }
+
+        $refundEntity = $gatewayEntities->first();
+
+        return $refundEntity;
     }
 
     /**
