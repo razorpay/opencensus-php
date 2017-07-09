@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator;
 
+use App;
 use Requests;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -76,11 +77,16 @@ class FileProcessor
      ********************/
     protected $validator;
     protected $messenger;
+    protected $trace;
 
     public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->validator = new Validator;
         $this->messenger = new Messenger();
+
+        $this->trace =$app['trace'];
     }
 
     public function getFileDetails($file, $type = self::UPLOADED)
@@ -179,14 +185,23 @@ class FileProcessor
 
     public function deleteFileLocally($filePath)
     {
+        $this->trace->info(
+            TraceCode::FILE_DELETING,
+            [
+                'file_path' => $filePath
+            ]);
+
         if (file_exists($filePath) === false)
         {
-            // Critical alert because this should ideally never happen.
-            $this->messenger->raiseReconAlert(
-                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
-                  'message'    => 'File not present, to delete locally.',
-                  'file_path'  => $filePath
-                ]);
+            // // Critical alert because this should ideally never happen.
+            // $this->messenger->raiseReconAlert(
+            //     [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+            //       'message'    => 'File not present, to delete locally.',
+            //       'file_path'  => $filePath
+            //     ]);
+
+            // We sometimes delete the file and then
+            // again try to delete the file. Sorry.
             return;
         }
 
@@ -198,6 +213,60 @@ class FileProcessor
                 [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
                   'message'    => 'Unable to delete the file, locally.',
                   'file_path'  => $filePath
+                ]);
+        }
+    }
+
+    public function deleteDirectoryLocally($dir)
+    {
+        $this->trace->info(
+            TraceCode::DIRECTORY_DELETING,
+            [
+                'dir_path' => $dir
+            ]);
+
+        //
+        // If someone sends file instead of a directory to this function.
+        //
+        if (is_dir($dir) === false)
+        {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+
+        $this->trace->info(
+            TraceCode::FILES_DELETING,
+            [
+                'file_paths' => $files,
+            ]);
+
+        foreach ($files as $file)
+        {
+            $this->trace->info(
+                TraceCode::FILE_DELETING,
+                [
+                    'file_path' => $file
+                ]);
+
+            if (is_dir("$dir/$file") === true)
+            {
+                $this->deleteDirectoryLocally("$dir/$file");
+            }
+            else
+            {
+                unlink("$dir/$file");
+            }
+        }
+
+        $success = rmdir($dir);
+
+        if ($success === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                  'message'    => 'Unable to delete the DIR, locally.',
+                  'dir_path'  => $dir
                 ]);
         }
     }
@@ -292,24 +361,33 @@ class FileProcessor
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
 
-
     /**
      * Extracts the given zip file to a given extract location. Throws an exception if unable to extract.
      *
-     * @param string $filePath The complete file path of the zip file that needs to be extracted
+     * @param string $filePath      The complete file path of the zip file that needs to be extracted
      * @param string $extractToPath The folder path to where the zip file needs to be extracted
-     * @param string $password Optional Password for the zip file, if present
+     * @param string $password      Optional Password for the zip file, if present
+     * @param bool   $use7z
+     *
      * @throws Exception\ReconciliationException
      */
     protected function extractZipFile($filePath, $extractToPath, $password, $use7z)
     {
-        if ($use7z === true)
+        try
         {
-            $this->extractUsing7z($filePath, $extractToPath, $password);
+            if ($use7z === true)
+            {
+                $this->extractUsing7z($filePath, $extractToPath, $password);
+            }
+            else
+            {
+                $this->extractUsingPhpZipArchive($filePath, $extractToPath, $password);
+            }
         }
-        else
+        finally
         {
-            $this->extractUsingPhpZipArchive($filePath, $extractToPath, $password);
+            // Delete the original zip file.
+            $this->deleteFileLocally($filePath);
         }
     }
 
@@ -331,13 +409,15 @@ class FileProcessor
 
         exec($cmd, $unzipOutput, $status);
 
-        if ($status === 0)
+        if ($status !== 0)
         {
-            // Delete the original zip file.
-            $this->deleteFileLocally($filePath);
-        }
-        else
-        {
+            //
+            // Creates a dummy file in the extractToPath
+            // even when it's not able to extract.
+            // *facepalm*
+            //
+            $this->deleteDirectoryLocally($extractToPath);
+
             throw new Exception\ReconciliationException(
                 'Failed to unzip file.',
                 [
@@ -373,12 +453,17 @@ class FileProcessor
         // Checking if it has been successfully extracted
         if ($extracted === true)
         {
-            // Delete the original zip file.
-            $this->deleteFileLocally($filePath);
             $zip->close();
         }
         else
         {
+            //
+            // Creates a dummy file in the extractToPath
+            // even when it's not able to extract.
+            // *facepalm*
+            //
+            $this->deleteDirectoryLocally($extractToPath);
+
             throw new Exception\ReconciliationException(
                 'Failed to unzip file.',
                 [
