@@ -5,13 +5,21 @@ export default class Plan extends GenericEntity {
   detailsRouteName = 'plan_account_fetch';
   deleteRouteName = 'plan_delete';
 
-  resourceFields = ['period', 'interval', 'item'];
+  resourceFields = ['period', 'interval', 'item', 'notes'];
 
   getRouteName() {
     return this.isNew ? 'plan_create' : 'plan_update';
   }
 
   serializeProperty(prop) {
+    if (prop === 'notes') {
+      let notes = this.notes || [];
+      return notes.reduce((prev, curr) => {
+        prev[curr.key] = curr.value;
+        return prev;
+      }, {});
+    }
+
     if (prop === 'item') {
       let item = this.item;
       return {

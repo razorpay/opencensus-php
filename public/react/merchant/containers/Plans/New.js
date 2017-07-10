@@ -1,6 +1,6 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm } from 'redux-form';
+import { Field, FieldArray, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
@@ -10,6 +10,7 @@ import { required } from 'rzp/utils/validators';
 import { savePlan } from 'merchant/modules/plans';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
 @connect(null, {
   savePlan,
@@ -24,6 +25,7 @@ import { showNotification } from 'rzp/modules/notifications';
     item: {
       currency: 'INR',
     },
+    notes: [],
   },
 })
 export default class AddPlan extends Component {
@@ -36,6 +38,7 @@ export default class AddPlan extends Component {
   }
 
   save = props => {
+    debugger;
     return this.props
       .savePlan(props)
       .then(plan => {
@@ -141,6 +144,15 @@ export default class AddPlan extends Component {
                   class="form-control"
                   validate={required()}
                 />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-3 control-label">
+                Internal Notes
+              </label>
+              <div class="col-sm-7">
+                <FieldArray name="notes" component={NotesFieldArray} />
               </div>
             </div>
 
