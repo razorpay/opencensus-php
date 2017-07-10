@@ -941,10 +941,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url'     => '/refunds/netbanking/excel',
+            'url'     => '/refunds/excel',
             'method'  => 'post',
             'content' => [
-                'bank'   => $bank
+                'bank'   => $bank,
+                'method' => 'netbanking',
             ],
         );
 

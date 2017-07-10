@@ -497,7 +497,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Getting the gatewayRefund associated with payment entity.
      * It is implemented in the child class.
      *
-     * @param $refundId string
+     * @param string $refundId
      *
      * @return null
      */

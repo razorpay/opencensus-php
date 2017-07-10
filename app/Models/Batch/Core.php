@@ -35,7 +35,8 @@ class Core extends Base\Core
 
             $entries = $this->parseExcelSheets($file);
 
-            $batch->getValidator()->validateEntries($entries, $this->merchant);
+            $batch->getValidator()
+                  ->validateEntries($entries, $input, $this->merchant);
 
             $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
@@ -44,7 +45,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
-        $this->dispatchOnQueueForProcessingIfApplicable($batch);
+        $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
         return $batch;
     }
@@ -233,18 +234,23 @@ class Core extends Base\Core
      * others are processed via CRON.
      *
      * @param Entity $batch
+     * @param array  $input
      */
-    protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch)
+    protected function dispatchOnQueueForProcessingIfApplicable(
+        Entity $batch,
+        array $input)
     {
         if (Type::isQueueGroup($batch->getType()) == false)
         {
             return;
         }
 
+        unset($input[Entity::FILE]);
+
         // For now this is being pushed onto invoice_emails queue only and
         // later we might have a new queue for this purpose only.
 
-        $job = new BatchJob($this->mode, $batch->getId());
+        $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }

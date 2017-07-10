@@ -188,6 +188,48 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Currently reporting is only available for link type.
+     * This query is used in reporting and here we're adding where type=link
+     * condition.
+     *
+     * @todo: Fix this!
+     *
+     * Ideally there should be two entities - PaymentLink and Invoice
+     * OR some refactoring in entity report generation to pass around additional
+     * query parameters conditionally or anyhow.
+     *
+     * @param       $merchantId
+     * @param       $from
+     * @param       $to
+     * @param       $count
+     * @param       $skip
+     * @param array $relations
+     *
+     * @return
+     */
+    public function fetchEntitiesForReport(
+        $merchantId,
+        $from,
+        $to,
+        $count,
+        $skip,
+        $relations = [])
+    {
+        $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
+
+        $query->where(Entity::TYPE, Type::LINK);
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
+        }
+
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
+    }
+
+    /**
      * Gets list of invoices of given batch ids. If a non-empty array of ids
      * are passed only those out of total invoices of batch are returned.
      *
@@ -210,6 +252,39 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getNonDraftInvoiceCountByBatchId(string $batchId): int
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::STATUS, '!=', Status::DRAFT)
+                    ->count();
+    }
+
+    public function getNonDraftInvoiceCountByBatchIds(array $batchIds): array
+    {
+        $collection = $this->newQuery()
+                           ->selectRaw(Entity::BATCH_ID . ', COUNT(1) as count')
+                           ->whereIn(Entity::BATCH_ID, $batchIds)
+                           ->where(Entity::STATUS, '!=', Status::DRAFT)
+                           ->groupBy(Entity::BATCH_ID)
+                           ->get();
+
+        //  Converts collection results to needed format:
+        //  [
+        //      {
+        //          'batch_id': 'batch_xyz',
+        //          'count':     10
+        //      },
+        //      ..
+        //  ]
+
+        return $collection->map(
+                function ($entity, $key)
+                {
+                    return $entity->getAttributes();
+                })->toArray();
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)

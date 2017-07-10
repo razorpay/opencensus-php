@@ -219,7 +219,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::LIVE)
         {
-            return $this->terminal->getGatewayTerminalId();
+            return $this->terminal->getGatewayMerchantId();
         }
 
         return $this->config['test_merchant_id'];
