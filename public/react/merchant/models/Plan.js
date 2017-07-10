@@ -10,4 +10,15 @@ export default class Plan extends GenericEntity {
   getRouteName() {
     return this.isNew ? 'plan_create' : 'plan_update';
   }
+
+  serializeProperty(prop) {
+    if (prop === 'item') {
+      let item = this.item;
+      return {
+        ...item,
+        amount: Number(item.amount) * 100,
+      };
+    }
+    return super.serializeProperty(prop);
+  }
 }
