@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
@@ -12,6 +13,10 @@ class EmiFile extends Base\EmiFile
     protected $emailIdsToSendTo = ['axiscards.emi@razorpay.com'];
 
     protected $bankName  = 'Axis';
+
+    const EXTENSION = FileStore\Format::CSV;
+
+    const TYPE = FileStore\Type::AXIS_EMI_FILE;
 
     protected static $headers = [
         'Card Number',
@@ -25,17 +30,6 @@ class EmiFile extends Base\EmiFile
         'Source',
         'EMI ID',
     ];
-
-    protected function writeEmiFile($emiData)
-    {
-        // Axis wants the file to be in CSV format, but named with a .txt extension
-        $url = $this->writeToCsvFile($emiData, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
-
-        // Since the file name is in excel we use the txt function
-        $path = $this->getTextFullFilePath();
-
-        return compact('url', 'path');
-    }
 
     protected function getEmiData($input)
     {

@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Http\Mock\Client as MockHttplug;
 use RZP\Models\Admin as Admin;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
@@ -86,7 +87,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
-        $this->app->singleton('raven', function($app)
+        $this->app->bind('raven', function($app)
         {
             return new Raven($app);
         });
@@ -130,6 +131,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerDrip();
 
         $this->registerWorkflow();
+
+        $this->registerHttplugMockClient();
     }
 
     /**
@@ -322,6 +325,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('workflow', function ($app)
         {
             return new Workflow\Service($app);
+        });
+    }
+
+    protected function registerHttplugMockClient()
+    {
+        $this->app['httplug']->extend('mock', function()
+        {
+            return new MockHttplug;
         });
     }
 }

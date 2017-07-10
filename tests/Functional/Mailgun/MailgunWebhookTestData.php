@@ -12,7 +12,8 @@ return [
             'content' => [
                 'X-Mailgun-Tag' => 'kotak_beneficiary_mail',
                 'recipient'     => 'random@email.com',
-                'event'         => 'dropped'
+                'event'         => 'dropped',
+                'sent_at'       => '10-Jul-2017 20:47:56',
             ],
             'method'  => 'POST',
             'url'     => '/mailgun/callback/failure',
@@ -26,7 +27,8 @@ return [
         'request' => [
             'content' => [
                 'recipient' => 'random@email.com',
-                'event' => 'dropped'
+                'event'     => 'dropped',
+                'sent_at'   => '10-Jul-2017 20:47:56',
             ],
             'method'  => 'POST',
             'url'     => '/mailgun/callback/failure',
@@ -41,7 +43,8 @@ return [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
                 'recipient'     => 'random@email.com',
-                'event'         => 'dropped'
+                'event'         => 'dropped',
+                'sent_at'       => '10-Jul-2017 20:47:56',
             ],
             'method'  => 'POST',
             'url'     => '/mailgun/callback/failure',
@@ -55,7 +58,8 @@ return [
         'request' => [
             'content' => [
                 'recipient' => 'random@email.com',
-                'event'     => 'bounced'
+                'event'     => 'bounced',
+                'sent_at'   => '10-Jul-2017 20:47:56',
             ],
             'method'  => 'POST',
             'url'     => '/mailgun/callback/failure',
@@ -70,7 +74,8 @@ return [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
                 'recipient'     => 'random@email.com',
-                'event'         => 'dropped'
+                'event'         => 'dropped',
+                'sent_at'       => '10-Jul-2017 20:47:56',
             ],
             'method'  => 'POST',
             'url'     => '/mailgun/callback/failure',

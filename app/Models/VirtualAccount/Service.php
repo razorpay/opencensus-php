@@ -30,6 +30,7 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
+        // @TODO: Change/Update this when more methods are added for Virtual Accounts
         $this->verifyBankTransferEnabled();
 
         $customer = $this->getCustomerIfGiven($input);
@@ -88,17 +89,6 @@ class Service extends Base\Service
         $virtualAccount = $this->core->edit($virtualAccount, $input);
 
         return $virtualAccount->toArrayPublic();
-    }
-
-    public function delete(string $id)
-    {
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $this->repo->deleteOrFail($virtualAccount);
-
-        return $virtualAccount->toArrayDeleted();
     }
 
     public function fetchPayments(string $virtualAccountId)

@@ -839,7 +839,7 @@ trait Refund
             'payment'   => $payment->toArrayGateway(),
             'refund'    => $refund->toArrayGateway(),
             'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency()
+            'currency'  => $refund->getCurrency(),
         ];
 
         if ($payment->getConvertCurrency())
@@ -854,6 +854,17 @@ trait Refund
             $card = $this->repo->card->fetchForPayment($payment);
 
             $data['card'] = $card->toArray();
+        }
+
+        // refund/reverse on gateway
+        if (($payment->getTransactionId() !== null) or
+            ($payment->isGatewayCaptured() === true))
+        {
+            $data['refund']['reverse'] = false;
+        }
+        else if ($this->gatewaySupportsReversal($payment) === true)
+        {
+            $data['refund']['reverse'] = true;
         }
 
         return $data;

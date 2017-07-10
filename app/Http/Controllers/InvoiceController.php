@@ -184,7 +184,7 @@ class InvoiceController extends Controller
 
         if ($download === '1')
         {
-            return Response::download($path, "$displayName.pdf");
+            return Response::download($path, "$displayName");
         }
 
         return Response::file($path);
@@ -195,6 +195,23 @@ class InvoiceController extends Controller
         $input = Request::all();
 
         $response = $this->service('invoice')->issueInvoicesOfBatch($batchId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Temporary solution: Used by dashboard to show 'Issue all links'
+     * against list of batch ids. This endpoint returns batch_ids for which
+     * that action should be shown. Filter happens by checking if there is
+     * any non-draft invoice in the batch.
+     *
+     * @return ApiResponse
+     */
+    public function getIssuableByBatchIds()
+    {
+        $input = Request::all();
+
+        $response = $this->service('invoice')->getIssuableByBatchIds($input);
 
         return ApiResponse::json($response);
     }

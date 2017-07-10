@@ -126,8 +126,12 @@ class Gateway extends Base\Gateway
             {
                 $refundData['response_description'] = substr($content[ResponseFields::MESSAGE], 0, 255);
             }
+            else if (isset($content[ResponseFields::TEXT]) === true)
+            {
+                $refundData['response_description'] = substr($content[ResponseFields::TEXT], 0, 255);
+            }
 
-            $refundData['status_code'] = $content[ResponseFields::STATUS];
+            $refundData['status_code'] = $content[ResponseFields::STATUS] ?? 'FAL';
 
             $this->createGatewayRefundEntity($refundData);
 
@@ -291,6 +295,40 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContentIfNeeded($gatewayPayment, $content);
 
         return $verify->status;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        $processedRefund = [
+            '7nrkdwUCa5QaZJ',
+            '7nrjJeQ0JV2DQO',
+            '7ntGB12qJWUUtG'
+        ];
+
+        $unprocessedRefund = [
+            '80gr3AA3pfHiaP',
+            '7zwdFzXDz1U1BC',
+            '81EZukEQk9Aaf4',
+            '7mvsRH7Vg0gSuD',
+            '87w1VBQsDf2reN',
+            '7zCqB1tKFeqI7k',
+            '81E2wpeQbguWdd',
+            '7zxv98X8y42R41',
+            '81LPR1MUay15ZL'
+        ];
+
+        if (in_array($input['refund']['id'], $processedRefund, true) === true)
+        {
+            return true;
+        }
+
+        if (in_array($input['refund']['id'], $unprocessedRefund, true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Airtelmoney verify refund not implemented.');
     }
 
     protected function verifyStatusOnGatewayFailure($verify, $gatewayPayment, $input)
@@ -486,30 +524,38 @@ class Gateway extends Base\Gateway
         {
             if (isset($content[ResponseFields::MESSAGE]))
             {
+                $status = $content[ResponseFields::STATUS] ?? 'FAL';
+
                 // Handle Generic Interface layer messages. They are not API
                 // Messages from Airtel.
                 // They have only two fields - STATUS and MESSAGE
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                    $content[ResponseFields::STATUS],
+                    $status,
                     $content[ResponseFields::MESSAGE]);
             }
             else if (isset($content[ResponseFields::ERR_CODE]))
             {
+                $code = $content[ResponseFields::ERR_CODE];
+                $text = $content[ResponseFields::TEXT];
+
                 // It's a different exception of airtel money
                 // Same amount transaction under same tran ID(airtel's),
                 // there should be a time difference of 5 minutes.
                 // Need more clarification on why it occurs.
                 throw new Exception\GatewayErrorException(
-                    ResponseCodeMap::getApiErrorCode($content[ResponseFields::ERR_CODE]),
-                    $content[ResponseFields::ERR_CODE],
-                    $content[ResponseFields::TEXT]);
+                    ResponseCodeMap::getApiErrorCode($code, $text),
+                    $code,
+                    $text);
             }
 
+            $code = $content[ResponseFields::CODE];
+            $msg = $content[ResponseFields::MSG];
+
             throw new Exception\GatewayErrorException(
-                ResponseCodeMap::getApiErrorCode($content[ResponseFields::CODE]),
-                $content[ResponseFields::CODE],
-                substr($content[ResponseFields::MSG], 0, 255));
+                ResponseCodeMap::getApiErrorCode($code, $msg),
+                $code,
+                $msg);
         }
     }
 
@@ -645,7 +691,7 @@ class Gateway extends Base\Gateway
             RequestFields::TXN_ID  => $wallet['gateway_payment_id'],
             RequestFields::AMT     => ($input['amount'] / 100),
             RequestFields::DATE    => $date,
-            RequestFields::REMARKS => 'Razorpay Refund',
+            RequestFields::REMARKS => $input['refund']['id']
         ];
 
         $request = $this->getStandardRequestArray($content);

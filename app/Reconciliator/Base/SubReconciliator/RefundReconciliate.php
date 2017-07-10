@@ -158,7 +158,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return $refundAmount;
     }
 
-    protected function runPreReconciledAtCheckRecon($rowDetails)
+    protected function runPreReconciledAtCheckRecon(array $rowDetails)
     {
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
@@ -285,7 +285,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        if (UniqueIdEntity::verifyUniqueId($refundId) === false)
+        if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
             $this->trace->info(
                 [
@@ -438,7 +438,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refund = $this->refund;
 
-        $refundAcquirerData = $refund->getAcquirerData();
+        //
+        // Converting to an array because, `getAcquirerData`
+        // returns back, (*brace yourself*) an empty OBJECT or
+        // an array with data!
+        //
+        // TODO: Discuss and fix the above one if possible.
+        //
+        $refundAcquirerData = (array) $refund->getAcquirerData();
 
         if (empty($refundAcquirerData[Refund\Entity::ARN]) === false)
         {
@@ -490,7 +497,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Getting the gatewayRefund associated with payment entity.
      * It is implemented in the child class.
      *
-     * @param $refundId string
+     * @param string $refundId
      *
      * @return null
      */

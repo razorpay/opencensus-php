@@ -14,6 +14,7 @@ use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
+use RZP\Models\Admin\Org;
 
 class WorkflowController extends Controller
 {
@@ -185,7 +186,9 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $orgId = Request::header('X-Org-Id');
+        $orgId = $this->ba
+                      ->getAdmin()
+                      ->getPublicOrgId();
 
         $data = (new Workflow\Service)->fetch($orgId, $id);
 

@@ -75,11 +75,15 @@ class CreatePricing extends Migration
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
 
+            $table->integer(Pricing::DELETED_AT)
+                  ->nullable();
+
             $table->integer(Pricing::EXPIRED_AT)
                   ->nullable();
 
             $table->index(Pricing::PLAN_ID);
             $table->index(Pricing::INTERNATIONAL);
+            $table->index(Pricing::DELETED_AT);
         });
     }
 

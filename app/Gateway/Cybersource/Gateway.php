@@ -393,7 +393,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestContent($input, 'refund');
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'Asia/Kolkata')
                             ->format('Ymd');
 
         $request['content'][F::TARGET_DATE] = $targetDate;
@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
-        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'Asia/Kolkata')
                             ->format('Ymd');
 
         $content = [
@@ -582,7 +582,6 @@ class Gateway extends Base\Gateway
                 return $this->getFieldsForFormSubmitToBankAcs($input, $response);
 
             case Result::NOT_ENROLLED:
-
                 $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
 
                 $this->validateAndSetEciValue($input, $this->gatewayPayment, $payerAuthEnrollReply);
@@ -708,9 +707,7 @@ class Gateway extends Base\Gateway
                 $gatewayPayment->fill($gatewayAttributes);
                 $gatewayPayment->save();
 
-                $desc = $payerAuthValidateReply[F::AUTHENTICATION_STATUS_MESSAGE] ?? null;
-
-                $this->checkErrorsAndThrowException($response, null, $desc);
+                $this->checkErrorsAndThrowException($response);
             }
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeEnrolledResponse($input, $response);
@@ -1598,12 +1595,6 @@ class Gateway extends Base\Gateway
 
         $code = $code ?: ResponseCode::getMappedCode($reasonCode);
         $desc = $desc ?: ResponseCode::getDescription($reasonCode);
-
-        if (ResponseCode::isFatalError($reasonCode) === true)
-        {
-            throw new Exception\ServerErrorException(
-                'Server error occured. Please contact admin.', $code);
-        }
 
         throw new Exception\GatewayErrorException(
                 $code, $reasonCode, $desc);

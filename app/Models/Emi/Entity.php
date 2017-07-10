@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
     const ISSUER_PLAN_ID        = 'issuer_plan_id';
+    const SUBVENTION            = 'subvention';
+    const MERCHANT_PAYBACK      = 'merchant_payback';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
@@ -33,7 +35,9 @@ class Entity extends Base\PublicEntity
         self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID);
+        self::ISSUER_PLAN_ID,
+        self::SUBVENTION,
+        self::MERCHANT_PAYBACK);
 
     protected $visible = array(
         self::ID,
@@ -43,7 +47,9 @@ class Entity extends Base\PublicEntity
         self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID);
+        self::ISSUER_PLAN_ID,
+        self::SUBVENTION,
+        self::MERCHANT_PAYBACK);
 
     protected $public = array(
         self::BANK,
@@ -51,19 +57,25 @@ class Entity extends Base\PublicEntity
         self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID);
+        self::ISSUER_PLAN_ID,
+        self::SUBVENTION,
+        self::MERCHANT_PAYBACK,
+    );
 
     protected $defaults = array(
-        self::MIN_AMOUNT     => 300000,
-        self::BANK           => null,
-        self::NETWORK        => null,
-        self::ISSUER_PLAN_ID => null,
+        self::MIN_AMOUNT       => 300000,
+        self::BANK             => null,
+        self::NETWORK          => null,
+        self::ISSUER_PLAN_ID   => null,
+        self::SUBVENTION       => Subvention::CUSTOMER,
+        self::MERCHANT_PAYBACK => 0,
     );
 
     protected $casts = array(
-        self::RATE          => 'int',
-        self::MIN_AMOUNT    => 'int',
-        self::DURATION      => 'int',
+        self::RATE             => 'int',
+        self::MIN_AMOUNT       => 'int',
+        self::DURATION         => 'int',
+        self::MERCHANT_PAYBACK => 'int',
     );
 
     protected $guarded = array(self::ID);
@@ -96,6 +108,16 @@ class Entity extends Base\PublicEntity
     public function getMinAmount()
     {
         return $this->getAttribute(self::MIN_AMOUNT);
+    }
+
+    public function getSubvention()
+    {
+        return $this->getAttribute(self::SUBVENTION);
+    }
+
+    public function getMerchantPayback()
+    {
+        return $this->getAttribute(self::MERCHANT_PAYBACK);
     }
 
     /**

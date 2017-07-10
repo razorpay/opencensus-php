@@ -84,11 +84,11 @@ add_cron "0 18 * * *"      "merch_holiday_add_emails"  POST "$BASE_URL/merchants
 add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants/notify/holiday"         "action=email&lists=live"       $LIVE_AUTH
 
 # Migration
-add_cron "*/10 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      "count=400"                     $LIVE_AUTH
+# add_cron "15 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      ""                              $LIVE_AUTH
 add_cron "0 2 * * *"       "prod_merchant_schdule_mig" POST "$BASE_URL/merchants/schedules/migrate"                                      $LIVE_AUTH
 
 # Refund
-add_cron "0 3 * * *"        "refund_excel_generate"          POST "$BASE_URL/refunds/netbanking/excel"                   ""                              $LIVE_AUTH
+add_cron "0 3 * * *"        "nb_refunds_prod"                POST "$BASE_URL/refunds/excel"                             "method=netbanking"              $LIVE_AUTH
 add_cron "1-59/10 * * * *"  "authorized_old_refund"          POST "$BASE_URL/payments/refund/authorized"                 ""                              $LIVE_AUTH
 add_cron "0 4 * * *"        "upi_refunds_prod"               POST "$BASE_URL/refunds/excel"                              "method=upi&bank=icici"         $LIVE_AUTH
 add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/orders/payments/refund"                     ""                              $LIVE_AUTH
@@ -107,7 +107,11 @@ add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/inv
 # Subscription
 add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/charge/invoices"              ""                              $LIVE_AUTH
 add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
-add_cron "*/10 * * *"       "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+add_cron "*/10 * * * *"       "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+
+# DSP Blackrock
+add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH
+add_cron "0 1 * * *"        "dsp_report_yesterday"           GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=yesterday"  $LIVE_AUTH
 
 
 # Install the generated crontab

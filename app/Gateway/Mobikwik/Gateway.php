@@ -168,11 +168,27 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         // Hardcoding these refunds for processing
-        $ids = ['7mS1VNzr53SCue', '7r8d83OFCFyUrv', '7oMFpxsOk5TSGa'];
+        $unprocessedRefunds = [
+            '87oeRch7kWWLw6',
+            '84gO6KWf1qRCgy',
+            '87oeOJoJ98KTVR',
+            '7zzIk6t8YRUbMV',
+        ];
 
-        if (in_array($input['refund']['id'], $ids) === true)
+        $processedRefund = [
+            '7mWcjUCj5WpY1f',
+            '84gQUiSDbfMInm',
+            '84gOn3uk4nsihk',
+        ];
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
             return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefund) === true)
+        {
+            return true;
         }
 
         // Mobikwik returns an error when refund amount exceeds the remaining amount

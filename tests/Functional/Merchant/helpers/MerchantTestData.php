@@ -951,6 +951,90 @@ return [
             'url'    => null,
             'method' => 'get',
         ],
+        'tests' => [
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'VISA',
+                    'issuer'              => 'HDFC',
+                    'iins'                => ['123456'],
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'payment_network' => 'VISA',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'netbanking',
+                    'payment_network'     => 'HDFC',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity'     => 'methods',
+                            'netbanking' => [
+                                'HDFC' => 'HDFC Bank',
+                            ]
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'netbanking',
+                                'payment_network' => 'HDFC',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'wallet',
+                    'payment_network'     => 'airtelmoney',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity'     => 'methods',
+                            'wallet' => [
+                                'airtelmoney'
+                            ]
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'wallet',
+                                'payment_network' => 'airtelmoney',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
         'response' => [
             'content' => [
                 'methods' => [
@@ -1239,6 +1323,45 @@ return [
                     'UTIB',
                     'PUNB',
                 ],
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                //''
+            ]
+        ]
+    ],
+
+    'testPutEmiMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'emi' => true,
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                //''
+            ]
+        ]
+    ],
+
+    'testPutEmiWithMerchantSubventionMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'emi'            => true,
+                'emi_subvention' => 'merchant',
             ],
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',

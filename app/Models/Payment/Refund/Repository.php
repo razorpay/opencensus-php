@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
-        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
     );
 
@@ -82,6 +82,24 @@ class Repository extends Base\Repository
                     ->where('refunds.created_at', '<=', $to)
                     ->where('payments.gateway', '=', $gateway)
                     ->get();
+    }
+
+    public function getRefundedAmountByGateway(string $gateway, int $from, int $to)
+    {
+        $refundPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+        $refundAmount = $this->dbColumn(Entity::BASE_AMOUNT);
+        $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+        $paymentCapturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->whereNotNull($paymentCapturedAt)
+                    ->whereBetween($refundCreatedAt, [$from, $to])
+                    ->sum($refundAmount);
     }
 
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)

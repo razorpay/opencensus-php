@@ -12,8 +12,20 @@ use RZP\Exception\BadRequestException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::FILE => 'required|file|mimes:xlsx|max:1024',
-        Entity::TYPE => 'required|string|max:14|custom'
+        Entity::FILE                 => 'required|file|mimes:xlsx|max:1024',
+        Entity::TYPE                 => 'required|string|max:14|custom',
+
+        //
+        // Type:payment_link specific input parameters
+        // With current approach extra input would be ignored
+        // but it's fine as this is proxy route.
+        //
+
+        // @todo:  We should enhance it to do per type input validations later.
+
+        Invoice\Entity::DRAFT        => 'filled|in:0,1',
+        Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY => 'filled|in:0,1',
     ];
 
     protected function validateType(string $attribute, string $type)
@@ -48,11 +60,15 @@ class Validator extends Base\Validator
      * creating the batch entity.
      *
      * @param array           $entries
+     * @param array           $params
      * @param Merchant\Entity $merchant
      *
      * @throws BadRequestException
      */
-    public function validateEntries(array $entries, Merchant\Entity $merchant)
+    public function validateEntries(
+        array & $entries,
+        array $params,
+        Merchant\Entity $merchant)
     {
         $type = $this->entity->getType();
 
@@ -64,11 +80,12 @@ class Validator extends Base\Validator
 
         $validator = 'validate' . studly_case($type) .'Entries';
 
-        $this->$validator($entries, $merchant);
+        $this->$validator($entries, $params, $merchant);
     }
 
     protected function validateRefundEntries(
         array & $entries,
+        array $params,
         Merchant\Entity $merchant)
     {
         $existingPaymentIds = [];
@@ -121,6 +138,7 @@ class Validator extends Base\Validator
      */
     protected function validatePaymentLinkEntries(
         array & $entries,
+        array $params,
         Merchant\Entity $merchant)
     {
         // Associative array with index as input file's row index and values
@@ -130,25 +148,33 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
+            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+
+            // Need to create dummy entity and associate merchant
+            // for the validation around max allowed payment to happen.
+
+            $rule = Invoice\Validator::CREATE_DRAFT;
+
+            if ($input[Invoice\Entity::DRAFT] === '0')
+            {
+                $rule = Invoice\Validator::CREATE_ISSUED;
+            }
+
+            $invoice = new Invoice\Entity;
+
+            $invoice->merchant()->associate($merchant);
+
             try
             {
-                $input = Helpers\PaymentLink::getEntityInput($entry);
-
-                // Need to create dummy entity and associate merchant
-                // for the validation around max allowed payment to happen.
-
-                $invoice = new Invoice\Entity;
-
-                $invoice->merchant()->associate($merchant);
-
-                $invoice->getValidator()
-                        ->validateInput(Invoice\Validator::CREATE_DRAFT, $input);
-
-                unset($invoice);
+                $invoice->getValidator()->validateInput($rule, $input);
             }
             catch (BaseException $e)
             {
                 $errors[$idx] = $e->getError()->getDescription();
+            }
+            finally
+            {
+                unset($invoice);
             }
         }
 

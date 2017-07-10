@@ -1413,9 +1413,20 @@ class Entity extends Base\PublicEntity
 
     public function isSecondRecurring()
     {
-        return (($this->isRecurring() === true) and
-                ($this->getTokenId() !== null) and
-                ($this->localToken->isRecurring() === true));
+        $app = \App::getFacadeRoot();
+
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        if ($this->isRecurring() === false)
+        {
+            return false;
+        }
+
+        $reference = $this->getReferenceForGatewayToken();
+
+        $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
+
+        return ($existingGatewayTokens->count() === 1);
     }
 
     public function getConvertCurrency()
@@ -1559,6 +1570,39 @@ class Entity extends Base\PublicEntity
         }
 
         return $token;
+    }
+
+    public function getReferenceForGatewayToken()
+    {
+        if ($this->hasSubscription() === true)
+        {
+            $reference = $this->getSubscriptionId();
+        }
+        else
+        {
+            //
+            // TODO: Get reference from checkout input.
+            // This is required for charge at will local
+            // recurring. Merchant passes this for every
+            // new subscription.
+            //
+            // For subsequent charges, the reference won't
+            // come from checkout input. It has to come from
+            // the payment or something like that. So, for the
+            // 2FA txns also, we should get from payment itself.
+            // This requires us to store reference at a payment level,
+            // like how we store subscription_id.
+            //
+            // For now, just returning back null.
+            // Also, for Zoho, accept null, but for any
+            // other merchant, throw an exception if it's null.
+            // It should probably go in validateRecurringInput though.
+            //
+
+            $reference = null;
+        }
+
+        return $reference;
     }
 
     public function setPublicOrderIdAttribute(array & $array)

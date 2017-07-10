@@ -57,7 +57,7 @@ class Repository extends Base\Repository
         Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED           => 'sometimes|in:0,1',
         Entity::WALLET             => 'sometimes|custom',
-        Entity::NOTES              => 'sometimes|string|max:500',
+        Entity::NOTES              => 'sometimes|notes_fetch',
         Card\Entity::IIN           => 'sometimes|integer|digits:6',
         Card\Entity::LAST4         => 'sometimes|string|digits:4',
         Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
@@ -907,5 +907,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Payment\Entity::TERMINAL_ID, '=', $terminalId)
                     ->count();
+    }
+
+    public function getCapturedAmountByGateway(string $gateway, int $from, int $to)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->sum(Entity::AMOUNT);
     }
 }

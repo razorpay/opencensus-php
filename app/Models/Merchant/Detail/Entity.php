@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
     const BUSINESS_OPERATION_CITY           =      'business_operation_city';
     const BUSINESS_OPERATION_PIN            =      'business_operation_pin';
     const BUSINESS_DOE                      =      'business_doe';
-    const GSTIN                             =      'gstin';
+    const GSTIN                             =      'gstin'; // Goods and Services Tax Identification Number
     const P_GSTIN                           =      'p_gstin';
     const COMPANY_CIN                       =      'company_cin';
     const COMPANY_PAN                       =      'company_pan';
@@ -267,6 +267,18 @@ class Entity extends Base\PublicEntity
     public function getBusinessRegisteredAddress()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
+    }
+
+    public function getBusinessStateCode()
+    {
+        $gstin = $this->getGstin();
+
+        if (empty($gstin) === true)
+        {
+            return null;
+        }
+
+        return substr($gstin, 0, 2);
     }
 
     public function setContactEmail($email)

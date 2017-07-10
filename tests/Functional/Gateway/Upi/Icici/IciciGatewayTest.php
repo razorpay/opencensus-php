@@ -21,7 +21,7 @@ class IciciGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
         $this->gateway = 'upi_icici';
 

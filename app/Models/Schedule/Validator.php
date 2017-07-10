@@ -30,11 +30,13 @@ class Validator extends Base\Validator
         'period',
         'anchor',
         'hour',
+        'interval',
     );
 
     protected static $editValidators = array(
         'anchor',
         'hour',
+        'interval',
     );
 
     protected function validatePeriod($input)
@@ -62,6 +64,19 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED);
+            }
+        }
+    }
+
+    protected function validateInterval($input)
+    {
+        if ((isset($input[Entity::PERIOD]) === true) and
+            ($input[Entity::PERIOD] === Period::HOURLY))
+        {
+            if (isset($input[Entity::INTERVAL]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL);
             }
         }
     }

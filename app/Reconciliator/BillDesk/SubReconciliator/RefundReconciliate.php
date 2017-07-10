@@ -42,4 +42,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         return $paymentId;
     }
+
+    //
+    // Just in case you decide to implement gateway_settled_at for refunds, don't.
+    // The settled_at present in the refund MIS files is of the corresponding payment.
+    //
 }

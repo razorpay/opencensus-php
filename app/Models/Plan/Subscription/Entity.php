@@ -101,7 +101,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END,
         self::ENDED_AT,
         self::QUANTITY,
-        self::TOKEN_ID,
+        // self::TOKEN_ID,
         self::NOTES,
         self::CHARGE_AT,
         self::START_AT,
@@ -110,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::TOTAL_COUNT,
         self::PAID_COUNT,
         self::CUSTOMER_NOTIFY,
+        self::CREATED_AT,
     ];
 
     protected $casts = [
@@ -128,7 +129,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::TOKEN_ID,
+        // self::TOKEN_ID,
         self::PLAN_ID,
     ];
 
@@ -218,6 +219,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENT_END);
     }
 
+    public function getCancelledAt()
+    {
+        return $this->getAttribute(self::CANCELLED_AT);
+    }
+
     public function getAuthAttempts()
     {
         return $this->getAttribute(self::AUTH_ATTEMPTS);
@@ -236,6 +242,11 @@ class Entity extends Base\PublicEntity
     public function hasSchedule()
     {
         return $this->isAttributeNotNull(self::SCHEDULE_ID);
+    }
+
+    public function hasCustomer()
+    {
+        return $this->isAttributeNotNull(self::CUSTOMER_ID);
     }
 
     public function getCustomerId()
@@ -290,6 +301,29 @@ class Entity extends Base\PublicEntity
     public function isChangeCardStatus()
     {
         return (in_array($this->getStatus(), Status::$changeCardStatuses, true) === true);
+    }
+
+    public function followLocalFlow()
+    {
+        $localCustomer = $this->customer;
+
+        // If local customer is null, then it needs to be created and mapped
+        // to global customer for subscription first 2FA txn.
+        if ($localCustomer === null)
+        {
+            return false;
+        }
+
+        //
+        // If global customer is null, it means, that the subscription
+        // follows the local flow only.
+        // In case it's not null, it means that this is NOT the first 2FA
+        // txn and is a second charge or change card flow
+        // and follows global flow. The mapping happens in first txn.
+        //
+        $hasGlobalCustomer = $localCustomer->hasGlobalCustomer();
+
+        return ($hasGlobalCustomer === false);
     }
 
     // --------------------- END GETTERS ---------------------
@@ -466,12 +500,12 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
-    public function setPublicTokenIdAttribute(array & $array)
-    {
-        $tokenId = $this->getAttribute(self::TOKEN_ID);
-
-        $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
-    }
+    // public function setPublicTokenIdAttribute(array & $array)
+    // {
+    //     $tokenId = $this->getAttribute(self::TOKEN_ID);
+    //
+    //     $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
+    // }
 
     // --------------------- END PUBLIC SETTERS ---------------------
 
@@ -495,13 +529,24 @@ class Entity extends Base\PublicEntity
 
     public function associateEntities(
         Plan\Entity $plan,
-        Customer\Entity $customer)
+        Customer\Entity $customer = null)
     {
-        $merchant = $customer->merchant;
+        //
+        // Cannot get it via customer since customer can be null too.
+        //
+        $merchant = $plan->merchant;
 
         $this->merchant()->associate($merchant);
         $this->plan()->associate($plan);
-        $this->customer()->associate($customer);
+
+        //
+        // Don't want to override the relation to null by mistake;
+        // hence the check.
+        //
+        if ($customer !== null)
+        {
+            $this->customer()->associate($customer);
+        }
     }
 
     public function getAnchorForSchedule()

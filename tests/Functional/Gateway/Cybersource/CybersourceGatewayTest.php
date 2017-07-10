@@ -670,7 +670,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }

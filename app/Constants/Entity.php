@@ -57,10 +57,12 @@ class Entity
     const FILE_STORE            = 'file_store';
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
-    const SUBSCRIPTION          = 'subscription';
     const FEE_BREAKUP           = 'fee_breakup';
+    const GATEWAY_RULE          = 'gateway_rule';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const SUBSCRIPTION          = 'subscription';
+    const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
@@ -70,7 +72,6 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
-    const GATEWAY_RULE          = 'gateway_rule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
@@ -120,6 +121,7 @@ class Entity
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
     const AEPS_ICICI            = 'aeps_icici';
+    const UPI_MINDGATE          = 'upi_mindgate';
     const UPI_ICICI             = 'upi_icici';
     const UPI_IDFC              = 'upi_idfc';
     const NETBANKING_AXIS       = 'netbanking_axis';
@@ -178,6 +180,7 @@ class Entity
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
@@ -205,6 +208,7 @@ class Entity
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
+        self::UPI_MINDGATE          => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::AEPS                  => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI            => \RZP\Gateway\Aeps\Icici::class,
@@ -252,25 +256,29 @@ class Entity
     ];
 
     protected static $repository = [
-        self::NETBANKING_HDFC     => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_KOTAK    => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_ICICI    => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_AIRTEL   => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_AXIS     => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_FEDERAL  => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_RBL      => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_INDUSIND => \RZP\Gateway\Netbanking\Base::class,
-        self::UPI_IDFC            => \RZP\Gateway\Upi\Base::class,
-        self::UPI_NPCI            => \RZP\Gateway\Upi\Base::class,
-        self::UPI_ICICI           => \RZP\Gateway\Upi\Base::class,
-        self::AEPS_ICICI          => \RZP\Gateway\Aeps\Base::class,
-        self::WALLET_AIRTELMONEY  => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYUMONEY    => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP      => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_FREECHARGE   => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_JIOMONEY     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_MPESA        => \RZP\Gateway\Wallet\Base::class,
+        self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Base::class,
+
+        self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
+        self::UPI_IDFC              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
+
+        self::AEPS_ICICI            => \RZP\Gateway\Aeps\Base::class,
+
+        self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_MPESA          => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Base::class,
     ];
 
     protected static $syncedInLiveAndTest = [

@@ -16,11 +16,11 @@ class Kernel extends ConsoleKernel
         Commands\Inspire::class,
         Commands\AddDbData::class,
         Commands\GenerateEmailTemplates::class,
-        Commands\MigrateNotesToEs::class,
         Commands\RzpDbRefresh::class,
         Commands\IinImport::class,
         Commands\UidCheckDigitVerify::class,
         Commands\Index::class,
+        Commands\IndexCreate::class,
         Commands\VerifyUpiProviders::class,
         \Laravel\Tinker\Console\TinkerCommand::class,
     ];

@@ -4,6 +4,7 @@ namespace RZP\Models\Card;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
@@ -375,6 +376,22 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function setPublicIssuerAttribute(array & $array)
+    {
+        //
+        // Allowing only for policy bazaar and shared merchant account
+        //
+        $allowedMerchantIds = ['7LAuMvKMcy7s0f', Merchant\Account::SHARED_ACCOUNT];
+
+        $cardMerchant = $this->getMerchantId();
+
+        if (($this->getEmi() === false) and
+            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+        {
+            unset($array[self::ISSUER]);
+        }
     }
 
     public function getEmi()

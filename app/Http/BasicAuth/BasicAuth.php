@@ -25,7 +25,7 @@ class BasicAuth
      * Private -
      * rzp_mode_keyId:merchant_secret
      *
-     * Application -
+     * Application/Internal -
      * rzp_mode:app_secret
      *
      * Application proxy -
@@ -1318,13 +1318,18 @@ class BasicAuth
     {
         $authType = $this->getAuthType();
 
+        if (empty($this->admin) === false)
+        {
+            // returning true on admin auth because admin access middleware
+            // checks and drops if it is not a valid merchant.
+
+            return true;
+        }
+
         switch ($authType)
         {
             case Type::PRIVATE_AUTH:
                 return ($account->getParentId() === $this->getMerchant()->getId());
-
-            case Type::ADMIN_AUTH:
-                return ($account->getOrgId() === $this->getAdmin()->getOrgId());
 
             case Type::PRIVILEGE_AUTH:
                 return true;

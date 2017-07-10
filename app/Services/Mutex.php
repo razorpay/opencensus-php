@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Redis;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 /**
@@ -110,7 +111,14 @@ class Mutex
         }
         catch (PredisException $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MUTEX_UNABLE_TO_ACQUIRE,
+                [
+                    'resource'  => $resource,
+                    'ttl'       => $ttl
+                ]);
 
             // Do not block the payment in case of any exception
             return true;
@@ -141,6 +149,7 @@ class Mutex
      * @param int    $maxRetryDelay Maximum time to wait before retry in millisec
      *
      * @return bool Whether finally lock was acquired or not
+     * @throws Exception\InvalidArgumentException
      */
     public function acquire(
         $resource,
@@ -156,8 +165,6 @@ class Mutex
             throw new Exception\InvalidArgumentException(
                 'Retry delay difference between min and max not enough.');
         }
-
-        $acquired = false;
 
         do
         {
