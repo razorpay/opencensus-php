@@ -968,7 +968,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function getMerchantCreditsOfType($merchantBalance, $type)
+    protected function getMerchantCreditsOfType(Merchant\Balance\Entity $merchantBalance, string $type)
     {
         $merchant = $merchantBalance->merchant;
 
@@ -995,7 +995,7 @@ class Core extends Base\Core
         return $credits;
     }
 
-    protected function getMerchantCredits($merchantBalance)
+    protected function getMerchantCredits(Merchant\Balance\Entity $merchantBalance): array
     {
         $merchant = $merchantBalance->merchant;
 
@@ -1027,7 +1027,7 @@ class Core extends Base\Core
         {
             (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $data = [
                 'credit_amount'  => $amount,
@@ -1035,8 +1035,11 @@ class Core extends Base\Core
                 'credit_type'    => $creditType,
             ];
 
-            $this->trace->traceException($e, Trace::CRITICAL,
-                TraceCode::CREDITS_TRANSACTION_FAILED, $data);
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::CREDITS_TRANSACTION_FAILED,
+                $data);
         }
     }
 }

@@ -62,8 +62,8 @@ class CreateCreditsTransactionTable extends Migration
             $table->dropForeign(
                 Table::CREDIT_TRANSACTION.'_'.CreditTransaction::CREDITS_ID.'_foreign');
 
-            /*$table->dropForeign(
-                Table::CREDIT_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');*/
+            $table->dropForeign(
+                Table::CREDIT_TRANSACTION.'_'.CreditTransaction::TRANSACTION_ID.'_foreign');
 
             $table->dropUnique(
                 [CreditTransaction::TRANSACTION_ID, CreditTransaction::CREDITS_ID]);

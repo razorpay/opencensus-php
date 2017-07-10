@@ -93,7 +93,6 @@ class Core extends Base\Core
 
         $response = [
             'success_ids'   => $successIds,
-            'failedIds'     => $failedIds,
         ];
 
         $this->trace->info(
@@ -145,7 +144,7 @@ class Core extends Base\Core
             });
     }
 
-    public function createScheduleTask(Merchant\Entity $merchant, Promotion\Entity $promotion): Task\Entity
+    protected function createScheduleTask(Merchant\Entity $merchant, Promotion\Entity $promotion): Task\Entity
     {
         $input[Task\Entity::TYPE] = Task\Type::PROMOTION;
 
@@ -216,9 +215,10 @@ class Core extends Base\Core
         }
     }
 
-    protected function calculateCreditToExpire(Merchant\Entity $merchant,
-                                               Promotion\Entity $promotion,
-                                               int $timestamp): int
+    protected function calculateCreditToExpire(
+        Merchant\Entity $merchant,
+        Promotion\Entity $promotion,
+        int $timestamp): int
     {
         $credit = $this->repo->credits->findCreditsToExpire(
                     $merchant->getId(), $promotion->getId(), $timestamp);
