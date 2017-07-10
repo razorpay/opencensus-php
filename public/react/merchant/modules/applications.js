@@ -78,7 +78,7 @@ let initialState = {
   loading: true,
   items: [],
   details: {},
-  connectedApps: []
+  tokens: []
 };
 
 export default function(state = initialState, action) {
@@ -103,7 +103,7 @@ export default function(state = initialState, action) {
     case `${FETCH_CONNECTED_APPLICATIONS}::SUCCESS`:
       return merge(state, {
         loading: false,
-        connectedApps: action.payload.data.items,
+        tokens: action.payload.data.items,
       });
 
     case `${CREATE_APPLICATION}::SUCCESS`:
@@ -120,7 +120,7 @@ export default function(state = initialState, action) {
 
     case `${REVOKE_ACCESS_TOKEN}::SUCCESS`:
       return merge(state, {
-        connectedApps: remove(state.connectedApps, (item) => (item.id === action.payload.id)),
+        tokens: remove(state.tokens, (item) => (item.id === action.payload.id)),
         loading: false,
       })
 

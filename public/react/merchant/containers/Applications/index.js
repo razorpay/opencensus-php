@@ -36,7 +36,7 @@ export default class ApplicationContainer extends Component {
 
   deleteApp(application) {
     this.context.confirm({
-      message: `Are you sure to delete the application? ${application.name}`,
+      message: `Are you sure you want to delete ${application.name}?`,
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting...',
       action: () =>
@@ -59,7 +59,7 @@ export default class ApplicationContainer extends Component {
 
   revokeAccess(token) {
     this.context.confirm({
-      message: `Are you sure to revoke access to the application? ${token.application.name}`,
+      message: `Are you sure you want to revoke access to ${token.application.name}?`,
       affirmativeLabel: 'Revoke Access',
       affirmativePendingLabel: 'Revoking Access...',
       action: () =>
@@ -83,7 +83,7 @@ export default class ApplicationContainer extends Component {
   render() {
     // let { config, features, loading } = this.props.configState;
     let createdApps = this.props.applications.items
-    let connectedApps = this.props.applications.connectedApps
+    let tokens = this.props.applications.tokens
 
     return (
       <div class="application-index-page">
@@ -91,8 +91,8 @@ export default class ApplicationContainer extends Component {
           <div class="content-header">
             <strong>Connected Applications</strong>
           </div>
-          {connectedApps.length
-            ? connectedApps.map((app) => <AppDetails data={app} key={app.id} type={"connected"} onBtnClick={this.revokeAccess}/>)
+          {tokens.length
+            ? tokens.map((data) => <AppDetails data={data} key={data.id} type={"connected"} onBtnClick={this.revokeAccess}/>)
             : <NoConnectedApps />}
           <div class="clearfix"></div>  
         </div>
@@ -102,8 +102,8 @@ export default class ApplicationContainer extends Component {
           </div>
           <div class="text-center content-body">
             <NewAppLink />
-            {createdApps.map((app) => 
-              <AppDetails data={app} key={app.id} onBtnClick={this.deleteApp}/>
+            {createdApps.map((data) => 
+              <AppDetails data={data} key={data.id} onBtnClick={this.deleteApp}/>
             )}
             <div class="clearfix"></div>
           </div>
@@ -138,8 +138,8 @@ function AppDetails (props) {
                 </div>
                 <div class="app-details-container">
                   <div class="app-name"><strong>{isConnected ? data.application.name : data.name}</strong></div>
-                  <div class="app-id">App ID: {isConnected ? data.application.id : data.id}</div>
-                  <div class="app-created-on">{isConnected ? "Connected" : "Created"} on: <Time value={data.created_at} format="DD MMM YYYY" /></div>
+                  {!isConnected && <div class="app-id">App ID: {data.id}</div>}
+                  <div class="app-created-on">{isConnected ? "Approved" : "Created"} on: <Time value={data.created_at} format="DD MMM YYYY" /></div>
                 </div>
               </div>
             </Comp>
