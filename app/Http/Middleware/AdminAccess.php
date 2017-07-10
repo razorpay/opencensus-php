@@ -312,7 +312,7 @@ class AdminAccess
         // SELECT entity_id FROM group_map WHERE group_id IN ($groupIds)
         // This gets all the groups that belong to (child/sub) $groupIds
 
-        $allSubGroupIds = [];
+        $allSubGroupIds = $parentGroupIds;
 
         // Adding current admin also because current admin can have direct merchants.
         $allSubAdminIds = [$admin->getId()];
