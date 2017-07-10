@@ -19,7 +19,7 @@ class DropInvitationsTable extends Migration
             $table->dropForeign('invitations_user_id_foreign');
         });
 
-        Schema::drop('invitations');
+        Schema::dropIfExists('invitations');
     }
 
     /**
