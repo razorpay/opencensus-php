@@ -392,7 +392,12 @@ class Orchestrator extends Base\Core
                 continue;
             }
 
+            //
             // Delete the file. We have all the data in $allFilesContents.
+            // Ensure that you don't delete the directory by mistake.
+            // In case of zip files, that's fine. But otherwise, it'll delete
+            // off the settlement folder only.
+            //
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
@@ -706,7 +711,32 @@ class Orchestrator extends Base\Core
 
         foreach ($zipFilesDetails as $zipFileDetails)
         {
-            $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            try
+            {
+                $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            }
+            catch (\Exception $ex)
+            {
+                $level = Trace::ERROR;
+
+                if ($this->gateway === self::AXIS)
+                {
+                    $level = Trace::INFO;
+                }
+
+                $this->trace->traceException(
+                    $ex,
+                    $level,
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'message'           => 'Unable to extract zip file',
+                        'zip_file_details'  => $zipFileDetails,
+                        'gateway'           => $this->gateway,
+                    ]);
+
+                continue;
+            }
+
             $allExtractedFileDetails = array_merge($allExtractedFileDetails, $extractedFileDetails);
         }
 

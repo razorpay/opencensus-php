@@ -328,6 +328,10 @@ class TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
 
+    const FILE_DELETING                                 = 'FILE_DELETING';
+    const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
+    const FILES_DELETING                                = 'FILES_DELETING';
+
 
     // Gateway component error messages
     const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
