@@ -159,7 +159,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
-        $gatewayRefund->setArn($arn);
+        $gatewayRefund->setArnNo($arn);
     }
 
     /**
