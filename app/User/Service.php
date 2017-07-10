@@ -918,16 +918,6 @@ class Service extends Base\Service
 
         $currentMerchant = $user->currentMerchant();
 
-        // Verify that the dashboard user has access to authorize the application
-        $allowed = $this->verifyUserRoleForOAuthAuthorize($currentMerchant);
-
-        if ($allowed === false)
-        {
-            $error[] = 'You do not have permissions to authorize this application.';
-
-            return [$error, $data];
-        }
-
         // Create and cache a random token tying the user to the request
         $token = str_random(30);
 
@@ -946,7 +936,8 @@ class Service extends Base\Service
         $response = [
             'token' => $token,
             'email' => $user->email,
-            'name'  => $user->name
+            'name'  => $user->name,
+            'role'  => $currentMerchant->role
         ];
 
         return [$error, $response];
@@ -992,25 +983,6 @@ class Service extends Base\Service
     private function getOAuthSessionTokenCacheKey(string $token): string
     {
         return self::OAUTH_SESSION_TOKEN . '.' . $token;
-    }
-
-    /**
-     * Whether the current user has the require role for
-     * authorizing an OAuth application.
-     *
-     * TODO: Move this check to auth-service
-     *
-     * @param $merchant
-     *
-     * @return bool
-     */
-    protected function verifyUserRoleForOAuthAuthorize($merchant): bool
-    {
-        $allowedRoles = ['owner'];
-
-        $userRole = $merchant->role;
-
-        return (in_array($userRole, $allowedRoles, true) === true);
     }
 
     public function getUserDetails()
