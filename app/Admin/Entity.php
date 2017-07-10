@@ -72,13 +72,4 @@ class Entity extends Base\Entity implements AuthenticatableContract, Authorizabl
     {
         return ($this->superadmin == 1);
     }
-
-    /**
-     * Promotes a user to a superadmin
-     */
-    public function promote()
-    {
-        $this->superadmin = 1;
-        $this->save();
-    }
 }
