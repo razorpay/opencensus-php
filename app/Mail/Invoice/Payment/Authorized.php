@@ -49,4 +49,9 @@ class Authorized extends Base
 
         return $this;
     }
+
+    public function isCustomerReceiptEmail()
+    {
+        return true;
+    }
 }

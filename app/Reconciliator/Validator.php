@@ -17,7 +17,7 @@ class Validator
         // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
                     'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
-                    'application/CDFV2-unknown'],
+                    'application/cdfv2-unknown'],
         'xlsb'  => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',

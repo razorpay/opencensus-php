@@ -86,7 +86,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
-        $this->app->singleton('raven', function($app)
+        $this->app->bind('raven', function($app)
         {
             return new Raven($app);
         });
