@@ -68,7 +68,7 @@ export default class ProceedFormFields extends Component {
           <div class="modal-body">
             <div>
               <p>
-                Send instructions to...
+                Send link and payment instructions to...
               </p>
 
               <div class="rzpCheckbox">
@@ -91,6 +91,8 @@ export default class ProceedFormFields extends Component {
                 <label for="email_notify">Email Notify</label>
               </div>
             </div>
+
+            <div>A <b>payment link</b> will also be created.</div>
 
             <div class="Modal__actions">
               <AsyncButton
