@@ -101,6 +101,13 @@ class RefundReconciliate extends Base\RefundReconciliate
         $gatewayTxnId = $row[self::GATEWAY_TRANSACTION_ID];
 
         //
+        // The MIS files have gateway txn id as `000065367447799`
+        // but in DB, we store them without leading zeroes.
+        // hence removing them before querying.
+        //
+        $gatewayTxnId = ltrim($gatewayTxnId, '0');
+
+        //
         // The broad assumption here is that these ids will not collide
         // The mathematical probability is very low (not zero though)!
         //
