@@ -120,9 +120,9 @@ export default class AddPlan extends Component {
                     validate={required()}
                   />
                   <Field name="period" component="select" class="form-control">
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
+                    <option value="weekly">Week(s)</option>
+                    <option value="monthly">Month(s)</option>
+                    <option value="yearly">Year(s)</option>
                   </Field>
                 </div>
               </div>
@@ -158,8 +158,8 @@ export default class AddPlan extends Component {
                   <AsyncButton
                     type="submit"
                     class="btn btn-primary"
-                    text="Save"
-                    pendingText="Saving..."
+                    text="Create Plan"
+                    pendingText="Creating..."
                     onClick={handleSubmit(this.save)}
                   />
                 </div>
