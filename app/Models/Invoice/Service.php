@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\LineItem;
+use RZP\Models\Batch;
 
 class Service extends Base\Service
 {
@@ -291,6 +292,43 @@ class Service extends Base\Service
         $response = $this->core->issueInvoicesOfBatch($batch, $input);
 
         return $response;
+    }
+
+    /**
+     * Returns filtered list of batch ids which should be allowed
+     * 'Issue all links' action.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getIssuableByBatchIds(array $input): array
+    {
+        (new Validator)->validateInput('invoiceStatsByBatches', $input);
+
+        $batchIds = $input[Entity::BATCH_IDS];
+
+        Batch\Entity::verifyIdAndSilentlyStripSignMultiple($batchIds);
+
+        $results = $this->repo->invoice->getNonDraftInvoiceCountByBatchIds($batchIds);
+
+        // Following batch ids have non draft invoices and we assume this
+        // whole batch was already issued.
+
+        $results = array_filter($results, function ($result)
+                    {
+                        return ($result['count'] > 0);
+                    });
+
+        $results = array_column($results, Entity::BATCH_ID);
+
+        // Return the list which can be shown 'Issue all links' action
+
+        $results = array_values(array_diff($batchIds, $results));
+
+        Batch\Entity::getSignedIdMultiple($results);
+
+        return $results;
     }
 
     /**

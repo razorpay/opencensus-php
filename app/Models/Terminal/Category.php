@@ -192,7 +192,7 @@ class Category
 
     public static function getIncompatibleCategories()
     {
-        return array_merge(self::TPV, []);
+        return self::TPV;
     }
 
     public static function isMerchantCategoryTPV($category2)

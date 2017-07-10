@@ -40,6 +40,7 @@ class BasicEntityReport extends BaseReport
         E::SETTLEMENT   => [],
         E::TRANSFER     => [],
         E::REVERSAL     => [],
+        E::INVOICE      => [E::ORDER],
     ];
 
     // Entities for which report-generation is allowed
@@ -52,6 +53,7 @@ class BasicEntityReport extends BaseReport
         E::MERCHANT,
         E::TRANSFER,
         E::REVERSAL,
+        E::INVOICE,
     ];
 
     public function __construct(string $entity)
@@ -67,6 +69,13 @@ class BasicEntityReport extends BaseReport
         if ($entity === 'account')
         {
             $entity = 'merchant';
+        }
+
+        // @todo: Fix this!
+
+        if ($entity === 'payment_link')
+        {
+            $entity = 'invoice';
         }
 
         $this->entity = $entity;
@@ -262,8 +271,12 @@ class BasicEntityReport extends BaseReport
      * 1. Fetches entities to be added in report
      * 2. Formats data to be shown in report
      *
-     * @param $from, $to, $count, $skip
-     * @return [$formattedData, $fetchCount] array
+     * @param $from
+     * @param $to
+     * @param $count
+     * @param $skip
+     *
+     * @return array
      */
     protected function getReportData($from, $to, $count, $skip): array
     {
@@ -336,6 +349,13 @@ class BasicEntityReport extends BaseReport
      * This function is overridden in concerned repo
      * If not, it is executed from base repo
      *
+     * @param $merchantId
+     * @param $from
+     * @param $to
+     * @param $count
+     * @param $skip
+     *
+     * @return \RZP\Base\PublicCollection
      */
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
@@ -358,10 +378,8 @@ class BasicEntityReport extends BaseReport
      * Sets report entity by building it from params
      * The resultant report entity is not yet saved to DB
      *
-     * @param $from  integer
-     * @param $to    integer
      * @param $input array
-     *        expected : 'day', 'month', 'year'
+     *               expected : 'day', 'month', 'year'
      */
     protected function createReportEntity(array $input)
     {
@@ -381,12 +399,15 @@ class BasicEntityReport extends BaseReport
     }
 
     /**
-     * Creates uploded file &
+     * Creates uploaded file &
      * Uses UFH to save file to s3
      *
      * @param  $filePath string
      * @param  $fileName string
-     * @return $s3File   FileStore\Entity
+     *
+     * @return FileStore\Entity $s3File
+     *
+     * @throws Exception\LogicException
      */
     protected function createFileAndSave($filePath, $fileName)
     {

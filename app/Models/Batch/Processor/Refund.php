@@ -23,10 +23,9 @@ class Refund extends Base
                                         $this->batch,
                                         $amount);
 
-        //
         // Update the entry with output values
-        //
 
+        $entry[Batch\Header::STATUS]          = Batch\Status::SUCCESS;
         $entry[Batch\Header::REFUND_ID]       = $refund->getPublicId();
         $entry[Batch\Header::REFUNDED_AMOUNT] = $refund->getAmount();
     }
