@@ -111,8 +111,6 @@ export default class BatchUpload extends Component {
                     <FileUploadInputButton onChange={this.handleChange} />
                   </div>
                 </div>
-                {this.props.additionalFieldsComp &&
-                  this.props.additionalFieldsComp}
               </div>
 
               <div class="text-center">

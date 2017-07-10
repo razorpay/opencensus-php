@@ -50,14 +50,7 @@ export const fetchRefundBatches = params => {
   };
 };
 
-let lastSetOfBatchIds = null;
 export const fetchIssuableBatchList = batchIdList => {
-  if (batchIdList) {
-    lastSetOfBatchIds = batchIdList; // Update last set of batch ids. To update UI when issuePaymentLinkBatch() is called from IssueAllLinks.js
-  } else {
-    batchIdList = lastSetOfBatchIds;
-  }
-
   return {
     type: ISSUABLE_BATCHES,
     payload: ajax({
@@ -182,8 +175,6 @@ export const PaymentBatchIdsReducer = function(
       return set(state, 'issuableIdList', action.payload.data);
 
     case 'EDIT_ISSUABLE_BATCHES':
-      console.log('BLAL...', action);
-
       const index = state.issuableIdList.indexOf(action.batchIdToRemove);
       let issuableIdList = Object.assign([], state.issuableIdList);
       if (index > -1) {
