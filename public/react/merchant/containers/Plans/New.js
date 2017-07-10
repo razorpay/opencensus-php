@@ -38,7 +38,6 @@ export default class AddPlan extends Component {
   }
 
   save = props => {
-    debugger;
     return this.props
       .savePlan(props)
       .then(plan => {
