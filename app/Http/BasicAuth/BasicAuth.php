@@ -1318,7 +1318,7 @@ class BasicAuth
     {
         $authType = $this->getAuthType();
 
-        if (!empty($this->admin))
+        if (empty($this->admin) === false)
         {
             // returning true on admin auth because admin access middleware
             // checks and drops if it is not a valid merchant.
