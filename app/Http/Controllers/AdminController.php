@@ -15,6 +15,7 @@ use App\Merchant;
 use App\Admin\Entity;
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
+use Razorpay\Api\Request as ApiRequest;
 
 class AdminController extends Controller
 {
@@ -253,6 +254,8 @@ class AdminController extends Controller
 
     public function getMerchant($id)
     {
+        ApiRequest::addHeader('X-Razorpay-Account', $id);
+
         list($error, $data) = (new Admin\Service)->fetchFullMerchantDetails($id);
 
         return AppResponse::jsonResponse($error, $data);

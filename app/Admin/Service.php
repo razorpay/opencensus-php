@@ -476,6 +476,8 @@ class Service extends Base\Service
 
         $error = [];
 
+        $this->setAdminCredentials();
+
         if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
