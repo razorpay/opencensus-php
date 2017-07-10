@@ -2,10 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Pnb;
 
-use Mail;
-use Mockery;
 use Carbon\Carbon;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -130,7 +127,9 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->mockSetVerifyTransactionId();
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
         {
             $this->verifyPayment($payment['id']);
         });

@@ -1,0 +1,22 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Pnb\Mock;
+
+use RZP\Base;
+use RZP\Gateway\Netbanking\Pnb\RequestFields;
+
+class Validator extends Base\Validator
+{
+    protected static $authRules = [
+        RequestFields::ENCDATA         => 'required|string',
+    ];
+
+    protected static $verifyRules = [
+        RequestFields::CHALLAN_NUMBER  => 'required|string|size:14',
+        RequestFields::MERCHANT_DATE   => 'required|string',
+        RequestFields::MERCHANT_AMOUNT => 'required|string',
+        RequestFields::RETURN_URL      => 'required|string',
+        RequestFields::ITEM_CODE       => 'required|string',
+        RequestFields::CHECKSUM        => 'required|string',
+    ];
+}

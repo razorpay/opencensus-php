@@ -19,6 +19,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    const NA = 'na';
+
     protected $gateway = 'netbanking_pnb';
 
     protected $bank = 'pnb';
@@ -33,7 +35,7 @@ class Gateway extends Base\Gateway
      */
     protected $map = [
         RequestFields::MERCHANT_AMOUNT => Base\Entity::AMOUNT,
-        RequestFields::CIN             => Base\Entity::PAYMENT_ID,
+        RequestFields::CHALLAN_NUMBER  => Base\Entity::PAYMENT_ID,
         RequestFields::ITEM_CODE       => Base\Entity::CAPS_PAYMENT_ID,
     ];
 
@@ -41,19 +43,14 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        // get attributes for entity
         $entityAttrs = $this->getEntityAttributes($input);
 
-        // creates gateway payment entity
         $this->createGatewayPaymentEntity($entityAttrs);
 
-        // gets content for bank authorization
-        $content = $this->getAuthorizeRequestData($input);
+        $content = $this->getRequestData($input);
 
-        // gets request array for authorize
         $request = $this->getStandardRequestArray($content);
 
-        // trace the request
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
@@ -63,26 +60,21 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        // traces the gateway response & payment id
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'gateway_response' => $input['gateway'],
-                'payment_id'       => $input['payment']['id'],
+                'gateway_response' => $input[Payment\Entity::GATEWAY],
+                'payment_id'       => $input['payment'][Payment\Entity::ID],
             ]
         );
 
-        // gets content after decrypting gateway response
-        $content = $this->getDataFromCallbackResponse($input['gateway']);
+        $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY]);
 
-        // checks if payment_id is same as 'cin' in response fields
-        $this->assertPaymentId($input['payment']['id'],
+        $this->assertPaymentId($input['payment'][Payment\Entity::ID],
              $content[ResponseFields::CHALLAN_NUMBER]);
 
-        // save date from callback's response
         $this->saveCallbackResponse($content);
 
-        // checks callback status for success
         $this->checkCallbackStatus($content);
 
         //
@@ -91,13 +83,12 @@ class Gateway extends Base\Gateway
         //        e.g. : RBL , Federal bank
         //
 
-        // return payment's two factor auth as passed
         return $this->getCallbackResponseData($input);
     }
 
     /**
      * We run the 'verify' flow to remove anomalies from our system
-     * e.g : if we mark a payment as failed that payment,
+     * e.g : if we mark a payment as failed,
      * that payment can be successful at bank’s side.
      * This can be due to timeout, or getting info late from the bank.
      * Earlier this was done via recon,
@@ -110,10 +101,8 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // create new instance of Verify with gateway & input
         $verify = new Verify($this->gateway, $input);
 
-        // run the payment verify flow
         return $this->runPaymentVerifyFlow($verify);
     }
 
@@ -126,19 +115,15 @@ class Gateway extends Base\Gateway
      */
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        // gets data for payment verify request
         $content = $this->getPaymentVerifyData($verify);
 
-        // gets request array for verify with content
         $request = $this->getStandardRequestArray($content);
 
-        // trace the request
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request
         );
 
-        // send request
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
@@ -146,29 +131,28 @@ class Gateway extends Base\Gateway
             [
                 'gateway'    => $this->gateway,
                 'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
+                'payment_id' => $verify->input['payment'][Payment\Entity::ID],
             ]
         );
 
-        // response body is received as json string
         $response = json_decode($response->body, true);
 
-        // set veirfy response content after parsing
         $verify->verifyResponseContent = $this->parseVerifyResponse($response);
     }
 
     /**
-     * We get verify response content, match status
-     * and if the status matches, we save verify content
+     * We get verify response content,
+     * check if the status of verify matches.
+     * and save the verify content if applicable.
      *
-     * @param $verify Verify
+     * @param  Verify $verify
      * @return void
      */
     public function verifyPayment(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
-        $verify->status = $this->getVerifyStatus($verify, $content);
+        $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
@@ -182,8 +166,8 @@ class Gateway extends Base\Gateway
      * ECB encrypts each block of data independently
      * and the same plaintext block will result in the same ciphertext block.
      *
-     * @param $queryString      string
-     * @return $encryptedString string
+     * @param  string $queryString
+     * @return string $encryptedString
      */
     public function encryptString(string $queryString): string
     {
@@ -203,8 +187,8 @@ class Gateway extends Base\Gateway
      * ECB encrypts each block of data independently
      * and the same plaintext block will result in the same ciphertext block.
      *
-     * @param $encryptedString  string
-     * @return $decryptedString string
+     * @param  string $encryptedString
+     * @return string $decryptedString
      */
     public function decryptString(string $encryptedString): string
     {
@@ -222,15 +206,15 @@ class Gateway extends Base\Gateway
      * We only need amount, as the other fields are picked up
      * from the payment array.
      *
-     * @param $input array
+     * @param  array $input
      * @return array
      */
     protected function getEntityAttributes(array $input): array
     {
         $entityAttributes = [
             RequestFields::MERCHANT_AMOUNT => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
-            RequestFields::CIN             => $input['payment']['id'],
-            RequestFields::ITEM_CODE       => strtoupper($input['payment']['id'])
+            RequestFields::CHALLAN_NUMBER  => $input['payment'][Payment\Entity::ID],
+            RequestFields::ITEM_CODE       => strtoupper($input['payment'][Payment\Entity::ID])
         ];
 
         return $entityAttributes;
@@ -247,7 +231,7 @@ class Gateway extends Base\Gateway
      * @param  array $input
      * @return array ['encdata' => $encData]
      */
-    protected function getAuthorizeRequestData(array $input): array
+    protected function getRequestData(array $input): array
     {
         $encdata = $this->getHashOfArray($input);
 
@@ -256,9 +240,7 @@ class Gateway extends Base\Gateway
 
     /**
      * First, we create request data from payment array,
-     * this has to a string with params delimited by '|'.
-     * We need to preserve this string, because after appending
-     * checksum only, we encode the entire string.
+     * this has to a string with appropriate params, delimited by '|'.
      *
      * The combined string above is used to generate checksum,
      * and is added to the combined string, delimited by '|'.
@@ -310,14 +292,14 @@ class Gateway extends Base\Gateway
         $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]);
 
         // date has to be of format DDMMYYYY-24HHMMSS
-        $date = Carbon::createFromTimestamp($input['payment']['created_at'],
+        $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT],
                                            'Asia/Kolkata')
                                            ->format('dmY-His');
 
         $paymentId = $input['payment']['id'];
 
         $data = [
-            RequestFields::CIN             => $paymentId,
+            RequestFields::CHALLAN_NUMBER  => $paymentId,
             RequestFields::MERCHANT_DATE   => $date,
             RequestFields::MERCHANT_AMOUNT => $amount,
             RequestFields::ITEM_CODE       => strtoupper($paymentId),
@@ -329,10 +311,9 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $data[RequestFields::RETURN_URL] = 'na';
+            $data[RequestFields::RETURN_URL] = self::NA;
         }
 
-        // string http_build_query($data, $prefix, $delimiter)
         $dataString = http_build_query($data, null, $glue);
 
         return $dataString;
@@ -340,10 +321,10 @@ class Gateway extends Base\Gateway
 
     /**
      * Uses MD5 Algorithm to calculate checksum of given string.
-     * Adds the checksum string and key to exitsing data.
+     * Adds the checksum string and key to existing data.
      *
-     * @param $data  string
-     * @return $data string
+     * @param  string $data
+     * @return string $data
      */
     protected function computeAndAppendChecksumToRequestData(string $data): string
     {
@@ -359,7 +340,7 @@ class Gateway extends Base\Gateway
     /**
      * Formats amount to 2 decimal places
      *
-     * @param  $amount int [amount in paise (100)]
+     * @param  int [amount in paise (100)] $amount
      * @return string [amount formatted to 2 decimal places in INR (1.00)]
      */
     protected function formatAmount(int $amount): string
@@ -381,9 +362,9 @@ class Gateway extends Base\Gateway
 
         $decryptedString = $this->decryptString($encryptedString);
 
-        $this->checkDecryptionFailure($decryptedString);
+        $this->checkDecryptionFailure($decryptedString, $encryptedString);
 
-        $response = $this->formatDecrytedResponseString($decryptedString);
+        $response = $this->formatDecryptedResponseString($decryptedString);
 
         return $response;
     }
@@ -392,12 +373,14 @@ class Gateway extends Base\Gateway
      * Checks if the decryptedString is null after decryption
      * If yes, then the decryption has failed, and we trace the error
      *
-     * @param $decryptedString string
+     * @param string $decryptedString
+     * @param string $encryptedString
      * @return void
      */
-    protected function checkDecryptionFailure(string $decryptedString)
+    protected function checkDecryptionFailure(
+        string $decryptedString, string $encryptedString)
     {
-        if (is_null($decryptedString) === true)
+        if (empty($decryptedString) === true)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -455,11 +438,13 @@ class Gateway extends Base\Gateway
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 [
-                    'content' => $content
+                    'content'    => $content,
+                    'payment_id' => $content[ResponseFields::CHALLAN_NUMBER]
                 ]);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
         }
     }
 
@@ -473,9 +458,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPaymentVerifyData(Verify $verify): array
     {
-        $input = $verify->input;
-
-        $data = $this->getAuthorizeRequestData($input);
+        $data = $this->getRequestData($verify->input);
 
         return $data;
     }
@@ -494,7 +477,9 @@ class Gateway extends Base\Gateway
 
         $decryptedString = $this->decryptString($encryptedString);
 
-        $response = $this->formatDecrytedResponseString($decryptedString);
+        $this->checkDecryptionFailure($decryptedString, $encryptedString);
+
+        $response = $this->formatDecryptedResponseString($decryptedString);
 
         return $response;
     }
@@ -502,32 +487,27 @@ class Gateway extends Base\Gateway
     /**
      * The decrypted string is in the format :
      * "key1=value1|key2=value2|key3=value3"
-     * So the one-step functions like, simple explode or parse_str
-     * were not being useful here.
      *
      * This is a helper function to parse decrypted string to array.
-     * We first explode array by delimiter '|' to get all pairs.
-     * Then we iterate over all those pairs, explode them by delim '=',
-     * and store the key-val in a 'result' array.
+     * We first replace the delimiter '|' with '&'.
+     * This is by assumption that checksum & cin will not contain
+     * '&' char because md5 only works on alphanum.
+     * Then we use parse_str to obtains, resultant array.
      *
-     * @param $decryptedString string
-     * @return $result         array
+     * @param string $decryptedString
+     * @return array $decryptedData
      */
-    protected function formatDecrytedResponseString(string $decryptedString): array
+    protected function formatDecryptedResponseString(string $decryptedString): array
     {
-        $result = [];
+        $search = '|';
 
-        $allPairs = explode('|' , $decryptedString);
+        $replace = '&';
 
-        foreach ($allPairs as $pairString)
-        {
-            $pair = explode('=', $pairString);
+        $decryptedString = str_replace($search, $replace, $decryptedString);
 
-            // $pair[0] => 'key' , $pair[1] => 'value'
-            $result[$pair[0]] = $pair[1];
-        }
+        parse_str($decryptedString, $decryptedData);
 
-        return $result;
+        return $decryptedData;
     }
 
     /**
@@ -536,12 +516,13 @@ class Gateway extends Base\Gateway
      * They are both set as either true/false.
      * Basis comparison, it returns the verifyStatus
      *
-     * @param $verify   Verify
-     * @param $response array
-     * @return $status  string
+     * @param Verify  $verify
+     * @return string $status
      */
-    protected function getVerifyStatus(Verify $verify, array $response) :string
+    protected function getVerifyStatus(Verify $verify) :string
     {
+        $response = $verify->verifyResponseContent;
+
         $this->checkApiSuccess($verify);
 
         $this->checkGatewaySuccess($verify, $response);
@@ -569,8 +550,8 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        if (($input['payment']['status'] === Payment\Status::FAILED) or
-            ($input['payment']['status'] === Payment\Status::CREATED))
+        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input['payment'][Payment\Entity::STATUS] === Payment\Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
@@ -597,11 +578,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Saves the 'received' & 'status' attribute in gateway entity
+     * Saves the attributes in gateway entity
      * after the verify call is made.
+     * namely - bank_payment_id & status (if applicable)
      *
-     * @param $verify          Verify
-     * @return $gatewayPayment Base\Entity
+     * @param Verify       $verify
+     * @return Base\Entity $gatewayPayment
      */
     protected function saveVerifyContent(Verify $verify): Base\Entity
     {
@@ -609,15 +591,64 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $attrs = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => $content[ResponseFields::BANK_PAYMENT_STATUS],
-        ];
+        $attrs = $this->getVerifyAttributesToSave($content, $gatewayPayment);
 
         $gatewayPayment->fill($attrs);
 
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    /**
+     * Sets attributes that need to be set after verify call
+     * Also checks if bank transaction id is same as that set in
+     * gateway payment.
+     *
+     * Status should be conditionally saved iff -
+     * the auth was never saved or auth status was a failure.
+     * We do not save status if authorize's status is same.
+     *
+     * @param array       $content
+     * @param Base\Entity $gatewayPayment
+     * @return array      $attributes
+     */
+    protected function getVerifyAttributesToSave(
+        array $content, Base\Entity $gatewayPayment): array
+    {
+        $attributes = [];
+
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::BANK_PAYMENT_STATUS];
+        }
+
+        //
+        // Saving BID from Verify response only if BID from authorize hasn't been saved
+        //
+        if (isset($content[ResponseFields::BANK_TRANSACTION_ID]) === true)
+        {
+            if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+            {
+                $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_TRANSACTION_ID];
+            }
+            else if ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::BANK_TRANSACTION_ID])
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
+                    [
+                        'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+                        'verify_bid'    => $content[ResponseFields::BANK_TRANSACTION_ID]
+                    ]
+                );
+            }
+        }
+
+        return $attributes;
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Status::getAuthSuccessStatus();
     }
 }
