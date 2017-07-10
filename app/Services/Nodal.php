@@ -16,31 +16,29 @@ class Nodal
      */
     const TIMEOUT = 5;
 
+    const GET_BALANCE = '/nodal-balance/';
+
     /**
      * Configuration array
      * @var array
      */
-    protected $config = array();
-
-    protected $app;
+    protected $config = [];
 
     protected $trace;
 
     public function __construct($app)
     {
-        $this->app = $app;
-
-        $this->config = $this->app['config']['applications.nodal'];
-
-        $this->trace = $this->app['trace'];
+        $this->config = $app['config']['applications.nodal'];
 
         if ($this->config === null)
         {
             throw new Exception\LogicException('Nodal Config not defined');
         }
+
+        $this->trace = $this->app['trace'];
     }
 
-    private function getAuthHeaders()
+    private function getAuthHeaders() : array
     {
         return [
             $this->config['auth']['username'],
@@ -48,7 +46,7 @@ class Nodal
         ];
     }
 
-    public function getBalance($data)
+    public function getBalance($data) : array
     {
         $params = $data['account_number'];
 
@@ -60,7 +58,7 @@ class Nodal
 
         if ($this->config['mock'] === false)
         {
-            $request['url'] = $this->config['url'] . '/nodal-balance/' . $data['account_number'];
+            $request['url'] = $this->config['url'] . self::GET_BALANCE . $data['account_number'];
 
             $request['method'] = 'get';
 
@@ -72,36 +70,33 @@ class Nodal
 
             return json_decode($response->body, true);
         }
+        else
+        {
+            return [
+                'account_number' => $data['account_number'],
+                'mock'           => true,
+                'balance'        => 1000,
+            ];
+        }
     }
 
     protected function sendRequest($request)
     {
-        if (isset($request['options']) === false)
-        {
-            $request['options'] = [];
-        }
+        $request['options'] = $request['options'] ?? [];
 
-        if (isset($request['headers']) === false)
-        {
-            $request['headers'] = [];
-        }
+        $request['headers'] = $request['headers'] ?? [];
 
-        $method = 'post';
+        $method = 'POST';
 
         if (isset($request['method']) === true)
         {
-            $method = $request['method'];
+            $method = strtoupper($request['method']);
         }
 
-        if (isset($request['options']['timeout']) === false)
-        {
-            $request['options']['timeout'] = self::TIMEOUT;
-        }
+        $request['options']['timeout'] = $request['options']['timeout'] ?? self::TIMEOUT;
 
         try
         {
-            $method = strtoupper($method);
-
             $response = Requests::request(
                 $request['url'],
                 $request['headers'],
@@ -125,7 +120,6 @@ class Nodal
             //
             // Some error occurred.
             // Check that whether the response timed out.
-            // Mostly it should be gateway timeout only
             //
             if (Utility::checkTimeout($e))
             {
@@ -133,10 +127,8 @@ class Nodal
 
                 throw new Exception\IntegrationException('NodalService Timed out', $data);
             }
-            else
-            {
-                throw new Exception\IntegrationException($e->getMessage(), $data);
-            }
+
+            throw new Exception\IntegrationException($e->getMessage(), $data);
         }
     }
 }

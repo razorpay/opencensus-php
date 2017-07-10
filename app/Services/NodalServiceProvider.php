@@ -33,6 +33,6 @@ class NodalServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('nodal-service');
+        return ['nodal-service'];
     }
 }

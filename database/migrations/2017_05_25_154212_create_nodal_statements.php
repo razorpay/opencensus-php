@@ -67,6 +67,16 @@ class CreateNodalStatements extends Migration
 
             $table->integer('created_at');
             $table->integer('updated_at');
+
+            $table->index('receiver_account_number');
+
+            $table->index('sender_account_number');
+
+            $table->index('bank_reference_number');
+
+            $table->index('created_at');
+
+            $table->index('updated_at');
         });
         //
     }
