@@ -458,13 +458,13 @@ class Repository extends Base\Repository
         // Add merchant details, groups and admins
 
         $serialized[Table::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
-        $serialized[Entity::ADMINS]         = $entity->admins->pluck(Common::ENTITY_ID)->all();
+        $serialized[Entity::ADMINS]         = $entity->admins->pluck(Common::ID)->all();
 
         $groups = $this->repo
                        ->group
                        ->getParentsRecursively($entity->groups, true);
 
-        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ENTITY_ID)->all();
+        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ID)->all();
 
         return $serialized;
     }

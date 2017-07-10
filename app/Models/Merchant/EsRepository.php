@@ -33,13 +33,11 @@ class EsRepository extends Base\EsRepository
     ];
 
     protected $groupFields = [
-        Common::MERCHANT_ID,
-        Common::ENTITY_ID,
+        Common::ID,
     ];
 
     protected $adminFields = [
-        Common::MERCHANT_ID,
-        Common::ENTITY_ID,
+        Common::ID,
     ];
 
     public function getMerchantDetailFields()
