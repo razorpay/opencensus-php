@@ -26,7 +26,7 @@ export default class Settings extends Component {
             <NavLink to="/keys">API Keys</NavLink>
           </ShowWhen>
 
-          <ShowWhen myRole="owner admin">
+          <ShowWhen featureEnabled="Oauth" myRole="owner">
             <NavLink to="/applications">Applications</NavLink>
           </ShowWhen>
         </header>
