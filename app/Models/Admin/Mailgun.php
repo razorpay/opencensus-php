@@ -91,9 +91,9 @@ class Mailgun extends Base\Core
             'reason'        => $input['reason'] ?? null,
             'error'         => $input['error'] ?? null,
             'X-Mailgun-Tag' => $input['X-Mailgun-Tag'] ?? null,
-            'event'         => $input['event'],
-            'recipient'     => $input['recipient'],
-            'sent_at'       => $input['sent_at'],
+            'event'         => $input['event'] ?? null,
+            'recipient'     => $input['recipient'] ?? null,
+            'sent_at'       => $input['sent_at'] ?? null,
         ];
     }
 
