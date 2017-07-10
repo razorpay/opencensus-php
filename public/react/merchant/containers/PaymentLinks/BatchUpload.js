@@ -15,7 +15,9 @@ export default class BatchUploadContainer extends Component {
   render() {
     let isProceedDialogType = false;
     // Api must give this flag. Currently hard coded for uber
-    if (this.props.user.current === '82LK42BGTN2bOe') {
+    if (
+      ['82LK42BGTN2bOe', '7SVOQZGZuwHr4I'].indexOf(this.props.user.current) > -1
+    ) {
       isProceedDialogType = true;
     }
 
