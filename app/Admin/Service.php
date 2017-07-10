@@ -297,36 +297,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function editAdmin($input, $id)
-    {
-        $error = [];
-
-        try
-        {
-            $this->logAdminEdits($id, $input);
-
-            $error = array();
-
-            $admin = Admin\Entity::findorfail($id);
-
-            $error = $admin->edit($input);
-
-            $admin->saveOrFail();
-
-            if (empty($error) === true)
-            {
-                // Delete all existing sessions
-                $this->deleteAllAdminSessions($id);
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, []];
-    }
-
     public function listMerchants($input)
     {
         $user = Auth::guard('api')->user();
@@ -391,12 +361,6 @@ class Service extends Base\Service
         return $this->api->admin->fetchMerchants($orgId, $adminId, $input);
     }
 
-
-    public function getAdmins()
-    {
-        return Admin\Entity::get()->toArray();
-    }
-
     public function getAdminActivity($id)
     {
         $sessionsCollection = (new SessionTable\Entity)->getAllSessionsForAdmin($id);
@@ -436,50 +400,6 @@ class Service extends Base\Service
         $sessionId = Crypt::decrypt($sessionId);
 
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
-    }
-
-    public function deleteAllAdminSessions($adminId)
-    {
-        (new SessionTable\Entity)->deleteAllSessionsForAdmin($adminId);
-    }
-
-    /**
-     * Adds a new admin
-     * @param $data input array
-     * @return Status
-     */
-    public function add($input)
-    {
-        $admin = new Admin\Entity;
-        $error = $admin->build($input);
-
-        if (empty($error))
-        {
-            $admin->password = Hash::make($admin->password);
-            $admin->saveOrFail();
-        }
-
-        return array($error, $admin->toArray());
-    }
-
-    /**
-     * Adds a new admin
-     * @param $data input array
-     * @return Status
-     */
-    public function promote($id)
-    {
-        $admin = Admin\Entity::findorfail($id);
-
-        try
-        {
-            $admin = $admin->promote();
-            return [null];
-        }
-        catch(\Exception $e)
-        {
-            return [$e->getMessage()];
-        }
     }
 
     public function fetchMerchantActivationDetails($id)
@@ -730,14 +650,6 @@ class Service extends Base\Service
             // This is always sent currently for every edit.
             unset($input['transaction_report_email']);
             $this->logActionToSlack($id, Actions::RISK_RATING_CHANGED, $input);
-        }
-    }
-
-    protected function logAdminEdits($id, $input)
-    {
-        if (isset($input['email']))
-        {
-            $this->logActionToSlack($id, Actions::ADMIN_EDIT);
         }
     }
 
