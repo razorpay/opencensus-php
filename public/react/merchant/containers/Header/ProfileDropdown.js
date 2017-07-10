@@ -50,10 +50,7 @@ export default class ProfileDropdown extends Component {
                 <div class="media-left">
                   <div class="media-object">
                     {this.props.logo_url
-                      ? <img
-                          class="media-responsive"
-                          src={this.props.logo_url}
-                        />
+                      ? <img class="img-responsive" src={this.props.logo_url} />
                       : <i class="icon icon-business" />}
                   </div>
                 </div>

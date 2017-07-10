@@ -19,6 +19,7 @@ import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import { defaults } from 'react-chartjs-2';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
+import TadaPNG from 'styles/assets/tada.png';
 
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
@@ -119,7 +120,7 @@ export default class HomeContainer extends Component {
                             <img
                               style={{ width: '40px' }}
                               class="media-object"
-                              src="styles/assets/tada.png"
+                              src={TadaPNG}
                             />
                           </div>
                           <div class="media-body">

@@ -30,7 +30,10 @@ export default class SubmitFeedback extends Component {
           });
         })
         .catch(err => {
-          debugger;
+          this.props.showNotification({
+            type: 'error',
+            message: err,
+          });
         });
     }
 

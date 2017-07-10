@@ -36,8 +36,7 @@ class Tour extends Component {
       if ($target) {
         let clientRect = $target.getBoundingClientRect();
         targetLensPos = {
-          top: clientRect.top,
-          left: clientRect.left,
+          transform: `translate(${clientRect.left}px, ${clientRect.top}px)`,
           width: clientRect.width,
           height: clientRect.height,
         };
