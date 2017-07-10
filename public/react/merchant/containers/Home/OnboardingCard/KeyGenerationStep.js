@@ -45,6 +45,7 @@ export default class KeyGenerationStep extends Component {
         <a
           href="https://docs.razorpay.com/docs/getting-started"
           target="_blank"
+          onClick={e => e.stopPropagation()}
         >
           start integration
         </a>
@@ -59,7 +60,14 @@ export default class KeyGenerationStep extends Component {
           header = 'Integrate Razorpay in Live Mode';
           headerDesc = (
             <div>
-              <a onClick={this.switchToLiveMode}>Switch to Live Mode</a>
+              <a
+                onClick={e => {
+                  e.stopPropagation();
+                  this.switchToLiveMode();
+                }}
+              >
+                Switch to Live Mode
+              </a>
               {' '}
               & generate live keys
             </div>
@@ -77,6 +85,7 @@ export default class KeyGenerationStep extends Component {
           <a
             href="https://docs.razorpay.com/docs/getting-started"
             target="_blank"
+            onClick={e => e.stopPropagation()}
           >
             Integration docs
           </a>
@@ -87,7 +96,7 @@ export default class KeyGenerationStep extends Component {
     }
 
     return (
-      <div class="Onboarding__Step">
+      <Link class="Onboarding__Step" to="/activation">
         <div class="media">
           <div class="media-left">
             <img class="media-object" src={svgSrc} />
@@ -104,7 +113,7 @@ export default class KeyGenerationStep extends Component {
                 {headerDesc}
               </div>}
         </div>
-      </div>
+      </Link>
     );
   }
 }

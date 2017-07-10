@@ -102,6 +102,7 @@
 
     .media-object {
       width: 320px;
+      min-height: 200px;
       max-height: 220px;
     }
   }
@@ -116,21 +117,28 @@
     }
 
     ul.row {
-      margin-bottom: 16px;
+      margin-bottom: 8px;
       padding-left: 30px;
 
       > li {
         padding-left: 0;
+        margin-bottom: 8px;
       }
     }
 
-    .btn-lg > span {
-      margin-right: 48px;
+    .btn-lg {
+      padding-left: 12px;
+      font-size: 14px;
+      border-radius: 2px;
+
+      > span {
+        margin-right: 48px;
+      }
     }
   }
 
   .media-heading {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
   }
 
@@ -143,8 +151,17 @@
     padding: 14px;
     border: 1px solid #D8E1E3;
 
+    a {
+      text-decoration: underline;
+      color: inherit;
+    }
+
+    .icon-external-link {
+      font-size: 100%;
+    }
+
     .media-heading {
-      margin-bottom: 0;
+      margin-bottom: 2px;
     }
 
     .media-body {
@@ -163,6 +180,8 @@
 
       .progress {
         height: 8px;
+        border-radius: 2px;
+        background-color: #e4e9ea;
         margin-bottom: 0;
       }
     }

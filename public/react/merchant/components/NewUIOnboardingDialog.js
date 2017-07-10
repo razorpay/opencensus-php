@@ -8,11 +8,19 @@ export default ({ onShowChanges, onCancelClick }) => {
       <div class="modal-body">
         To simplify your experience, we have made some small changes on the dashboard
         <div class="Modal__actions clearfix text-center">
-          <button class="btn btn-default pull-left" onClick={onCancelClick}>
+          <button
+            class="btn btn-default pull-left"
+            onClick={onCancelClick}
+            style={{ width: '48%' }}
+          >
             Skip
           </button>
 
-          <button class="btn btn-primary pull-right" onClick={onShowChanges}>
+          <button
+            class="btn btn-primary pull-right"
+            onClick={onShowChanges}
+            style={{ width: '48%' }}
+          >
             Show Changes
           </button>
         </div>

@@ -146,8 +146,8 @@ export default class MerchantTour extends Component {
             to="#profile-dropdown"
             attachment="top center"
             targetAttachment="bottom left"
-            offset="-15px 12px"
-            arrowLeftPos="75%"
+            offset="-15px 30px"
+            arrowLeftPos="85%"
           >
             <p>
               Your
