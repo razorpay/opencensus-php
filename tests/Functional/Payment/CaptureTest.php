@@ -668,7 +668,7 @@ class CaptureTest extends TestCase
 
         $creditTransactions = $this->getEntities('credit_transaction', [], true);
 
-        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 9000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 9600);
         $this->assertEquals($creditTransactions['items'][1]['credits_used'], 14000);
 
         //need to update the test case To fill
@@ -712,7 +712,7 @@ class CaptureTest extends TestCase
 
         $creditTransactions = $this->getEntities('credit_transaction', [], true);
 
-        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13600);
         $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
         $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
         $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
@@ -752,7 +752,7 @@ class CaptureTest extends TestCase
 
         $creditTransactions = $this->getEntities('credit_transaction', [], true);
 
-        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13600);
         $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
         $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
         $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
