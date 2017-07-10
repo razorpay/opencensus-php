@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+    const MERCHANT_DETAIL           = 'merchantDetail';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';

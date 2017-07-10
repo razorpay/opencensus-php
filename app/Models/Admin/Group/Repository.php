@@ -9,6 +9,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -35,5 +36,35 @@ class Repository extends Base\Repository
             throw new Exception\BadRequestValidationFailureException(
                 'The group with the name already exists');
         }
+    }
+
+    public function getParentsRecursively(
+        PublicCollection $groups,
+        bool $withOriginal = false): PublicCollection
+    {
+        $finalResult = $withOriginal ? $groups : new PublicCollection;
+
+        $parentGruops = $this->findImmdiateParentsOfGroups($groups);
+
+        while ($parentGruops->count() > 0)
+        {
+            $parentGruops->each(function ($group, $id) use ($finalResult)
+            {
+                $finalResult->push($group);
+            });
+
+            $parentGruops = $this->findImmdiateParentsOfGroups($parentGruops);
+        }
+
+        return $finalResult;
+    }
+
+    public function findImmdiateParentsOfGroups(PublicCollection $groups): PublicCollection
+    {
+        $groups->load(Entity::PARENTS);
+
+        $parents = $groups->pluck(Entity::PARENTS)->collapse()->all();
+
+        return (new PublicCollection($parents));
     }
 }

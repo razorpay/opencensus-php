@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Closure;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\Common;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Constants\Table;
@@ -20,7 +21,7 @@ class Repository extends Base\Repository
 
     protected $sharedMerchant = null;
 
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::ACTIVATED               => 'sometimes|boolean',
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
         Entity::LIVE                    => 'sometimes|boolean',
@@ -36,7 +37,7 @@ class Repository extends Base\Repository
         Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
-    );
+    ];
 
     public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end, array $merchantIds = [])
     {
@@ -415,5 +416,56 @@ class Repository extends Base\Repository
                                ->whereNull(Entity::SUSPENDED_AT);
                 break;
         }
+    }
+
+    protected function modifyQueryForIndexing(\RZP\Base\BuilderEx $query)
+    {
+        $detailSelector = function ($query)
+                          {
+                              $fields = $this->esRepo->getMerchantDetailFields();
+
+                              $query->select($fields);
+                          };
+
+        $groupSelector = function ($query)
+                         {
+                              $fields = $this->esRepo->getGroupFields();
+
+                              $query->select($fields);
+                         };
+
+        $adminSelector = function ($query)
+                         {
+                              $fields = $this->esRepo->getAdminFields();
+
+                              $query->select($fields);
+                         };
+
+        $with = [
+            Entity::MERCHANT_DETAIL => $detailSelector,
+            Entity::GROUPS          => $groupSelector,
+            Entity::ADMINS          => $adminSelector,
+        ];
+
+        $query->with($with);
+    }
+
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+
+        // Add merchant details, groups and admins
+
+        $serialized[Table::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
+        $serialized[Entity::ADMINS]         = $entity->admins->pluck(Common::ENTITY_ID)->all();
+
+        $groups = $this->repo
+                       ->group
+                       ->getParentsRecursively($entity->groups, true);
+
+        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ENTITY_ID)->all();
+
+        return $serialized;
     }
 }
