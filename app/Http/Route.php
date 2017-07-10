@@ -951,7 +951,6 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
-        'merchant_activation_details'
     ];
 
     public static $proxy = [
@@ -1209,6 +1208,7 @@ final class Route
         'merchant_get_terminals'           => '*',
         'merchant_get_pricing'             => '*',
         'merchant_activation_details'      => '*',
+        'merchant_fetch_users'             => '*',
     ];
 
     public static $direct = [
