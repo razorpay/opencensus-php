@@ -12,6 +12,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 trait PaymentTrait
 {
@@ -734,6 +735,8 @@ trait PaymentTrait
     protected function refundAuthorizedPayment($id, array $input = [])
     {
         $this->ba->adminAuth();
+
+        $this->ba->addAdminAuthHeaders(Org::RZP_ORG);
 
         $merchant = (new MerchantFluid())->getMerchant('10000000000000')->get();
 
