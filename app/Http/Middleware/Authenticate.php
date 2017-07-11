@@ -154,7 +154,7 @@ class Authenticate
 
         $oauth = new OAuth;
 
-        $merchantId = $oauth->resolveToken($bearerToken);
+        list($merchantId, $tokenId, $clientId) = $oauth->resolveToken($bearerToken);
 
         if ($merchantId === null)
         {
@@ -177,6 +177,10 @@ class Authenticate
         // TODO: Move this to a common auth class
         //
         $this->ba->setMerchantById($merchantId);
+
+        $this->ba->setAccessTokenId($tokenId);
+
+        $this->ba->setOAuthClientId($clientId);
     }
 
     protected function checkScopes(array $routeScopes) : bool
