@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use RZP\Base\JitValidator;
 use Trace;
 use ApiResponse;
 use RZP\Models\Merchant;
@@ -91,12 +92,24 @@ class OAuthApplicationController extends Controller
         return ApiResponse::json($app);
     }
 
+    /**
+     * Handles logic for Application logo create/update
+     *
+     * Added here and not Application/Service because
+     * the logic for logo resides on API, all the service
+     * cares about is the logo_url that needs to be saved
+     *
+     * @param array $input
+     */
     protected function addOrUploadImageIfApplicable(array & $input)
     {
-        \Validator::make($input, ['logo' => 'sometimes|file'])->validate();
-
         if (isset($input['logo']) === true)
         {
+            (new JitValidator)->rules(['logo' => 'sometimes|file'])
+                              ->input($input)
+                              ->validate();
+
+            // TODO: Move this out of Merchant namespace, and make generic
             $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
 
             $input[Application\Entity::LOGO_URL] = $logoUrl;

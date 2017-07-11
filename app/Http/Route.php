@@ -580,7 +580,7 @@ final class Route
         'oauth_application_fetch_multiple'        => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
         'oauth_application_fetch'                 => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
         'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
-        'oauth_application_update'                => ['patch',    'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+        'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
     ];
 
     public static $public = [
