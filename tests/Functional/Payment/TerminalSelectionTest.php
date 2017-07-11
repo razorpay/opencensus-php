@@ -2,6 +2,11 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -744,8 +749,30 @@ class TerminalSelectionTest extends TestCase
              ]
             );
 
+        $data = [
+            'response'  => [
+                'content'     => [
+                    'error' => [
+                        'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'                 => \RZP\Exception\GatewayErrorException::class,
+                'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            ]
+        ];
+
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
-        $this->doAuthAndCapturePayment($payment);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
@@ -755,7 +782,12 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->editCategory2('corporate');
 
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
-        $this->doAuthAndCapturePayment($payment);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
