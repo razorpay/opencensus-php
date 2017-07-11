@@ -4,8 +4,10 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
-use Illuminate\Foundation\Application;
 use RZP\Http\Route;
+use RZP\Http\Throttle;
+use RZP\Http\BasicAuth\Type;
+use Illuminate\Foundation\Application;
 
 class Authenticate
 {
@@ -56,26 +58,38 @@ class Authenticate
         }
         else if (in_array($route, Route::$private, true))
         {
+            $this->throttleRequests(Type::PRIVATE_AUTH);
+
             $ret = $ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true))
         {
+            $this->throttleRequests(Type::PUBLIC_AUTH);
+
             $ret = $ba->publicAuth();
         }
         else if (in_array($route, Route::$publicCallback, true))
         {
+            $this->throttleRequests(Type::PUBLIC_AUTH);
+
             $ret = $ba->publicCallbackAuth();
         }
         else if (in_array($route, Route::$proxy, true))
         {
+            $this->throttleRequests(Type::PROXY_AUTH);
+
             $ret = $ba->proxyAuth();
         }
         else if (in_array($route, Route::$device, true))
         {
+            $this->throttleRequests(Type::DEVICE_AUTH);
+
             $ret = $ba->deviceAuth();
         }
         else if (in_array($route, Route::$direct, true))
         {
+            $this->throttleRequests(Type::DIRECT_AUTH);
+
             ; // $ret = $ba->proxyAuth();
         }
         else
@@ -96,5 +110,15 @@ class Authenticate
         }
 
         return $next($request);
+    }
+
+    /**
+     * This is our global rate throttling mechanism
+     */
+    private function throttleRequests(string $auth)
+    {
+        $throttle = new Throttle($this->app);
+
+        $throttle->process($auth);
     }
 }

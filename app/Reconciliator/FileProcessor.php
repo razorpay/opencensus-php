@@ -53,7 +53,7 @@ class FileProcessor
             'application/msexcel',
             'application/vnd.ms-office',
             'application/vnd.oasis.opendocument.spreadsheet',
-            'application/CDFV2-unknown'
+            'application/cdfv2-unknown'
         ],
         self::CSV => [
             'text/csv',
@@ -332,7 +332,7 @@ class FileProcessor
     {
         $fileName = strtolower($file->getClientOriginalName());
         $extension = strtolower($file->getClientOriginalExtension());
-        $mimeType = $file->getMimeType();
+        $mimeType = strtolower($file->getMimeType());
         $size = $file->getClientSize();
         $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
         $filePath = $sourceFolderPath . '/' . $fileName;
@@ -353,7 +353,7 @@ class FileProcessor
     {
         $fileName = strtolower($file->getFilename());
         $extension = strtolower($file->getExtension());
-        $mimeType = mime_content_type($file->getRealPath());
+        $mimeType = strtolower(mime_content_type($file->getRealPath()));
         $size = $file->getSize();
         $sourceFolderPath =  $file->getPath();
         $filePath = $file->getRealPath();

@@ -2227,6 +2227,9 @@ ALTER TABLE merchant_banks
 ALTER TABLE terminals
     ADD COLUMN emi_subvention VARCHAR(255) DEFAULT NULL AFTER emi_duration;
 
+ALTER TABLE first_data
+    ADD COLUMN arn_no VARCHAR(40) AFTER error_message;
+
 # Transfer pricing
 ALTER TABLE transfers
     ADD COLUMN fees INT UNSIGNED DEFAULT 0 AFTER notes,

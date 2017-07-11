@@ -381,7 +381,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $cardType;
     }
 
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
         if (empty($row[self::COLUMN_SETTLED_AT]) === true)
         {

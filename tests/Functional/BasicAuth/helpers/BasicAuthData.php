@@ -340,7 +340,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '10000000000000'
             ],
             'status_code' => 200,
         ],

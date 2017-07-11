@@ -159,7 +159,27 @@ class InvoiceController extends Controller
             $data['error'] = $error;
         }
 
-        return View::make('invoice.index')
+        $view = 'invoice.index';
+
+        //
+        // Following is only temporary and is to be removed soon.
+        // In case of Uber, a different hosted page is being served.
+        // For testing purposes have made one more test account behave same way.
+        //
+
+        $idsForUberFlow = [
+            '82LK42BGTN2bOe', // Uber's
+            '7SVOQZGZuwHr4I', // Amit. M's
+        ];
+
+
+        if ((empty($data['merchant']) === false) and
+            (in_array($data['merchant']['id'], $idsForUberFlow, true) === true))
+        {
+            $view = 'invoice.uber';
+        }
+
+        return View::make($view)
                    ->with('data', $data);
     }
 
