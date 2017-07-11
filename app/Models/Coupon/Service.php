@@ -22,7 +22,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::COUPON_DELETE_REQUEST, ['coupon_id' => $id]);
 
-        // TODO discuss
         $coupon = $this->repo->coupon->findOrFailPublic($id);
 
         if ($coupon->getUsedCount() > 0)

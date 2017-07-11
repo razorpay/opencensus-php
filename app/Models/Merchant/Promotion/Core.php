@@ -93,6 +93,7 @@ class Core extends Base\Core
 
         $response = [
             'success_ids'   => $successIds,
+            'failed_ids'    => $failedIds,
         ];
 
         $this->trace->info(
@@ -125,7 +126,7 @@ class Core extends Base\Core
 
                 if ($merchantPromotion->getRemainingIterations() > 0)
                 {
-                    $scheduleTask->updateNextRunAndLastRun($considerHolidays = false);
+                    $scheduleTask->updateNextRunAndLastRun(false);
 
                     $this->repo->saveOrFail($scheduleTask);
 

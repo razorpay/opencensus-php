@@ -91,8 +91,10 @@ class Validator extends Base\Validator
 
         $startAt = $this->entity->getStartAt();
 
+        $currentTime = time();
+
         if (($startAt !== null) and
-            ($startAt > time()))
+            ($startAt > $currentTime))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_NOT_APPLICABLE);
@@ -101,7 +103,7 @@ class Validator extends Base\Validator
         $endAt = $this->entity->getEndAt();
 
         if (($endAt !== null) and
-            ($endAt < time()))
+            ($endAt < $currentTime))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_COUPON_EXPIRED);

@@ -75,7 +75,7 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function createSchedule(array $input)
+    protected function createSchedule(array $input): Schedule\Entity
     {
         $period = $input[Entity::CREDITS_EXPIRY_PERIOD];
 
@@ -103,7 +103,7 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    protected function getAnchorForPromotion($period)
+    protected function getAnchorForPromotion(string $period)
     {
        $anchor = null;
 
