@@ -229,6 +229,8 @@ class Inferno
                 'attempt'     => $this->job->attempts(),
             ]);
 
+        $timeOfRequest = microtime(true);
+
         try
         {
             $response = $this->makeRequest($request);
@@ -289,7 +291,8 @@ class Inferno
                     'webhook_id'        => $webhook->getId(),
                     'merchant_id'       => $webhook->merchant->getId(),
                     'response_code'     => $statusCode,
-                    'response_headers'  => $response->getHeaders()
+                    'response_headers'  => $response->getHeaders(),
+                    'response_time'     => (microtime(true) - $timeOfRequest),
                 ]);
 
             $clientError = false;
