@@ -123,7 +123,7 @@ class BilldeskGatewayTest extends TestCase
         // Allow verify to pick up payment
         $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
 
-        $this->runVerify('payment_failed');
+        $this->runVerify('payments_failed');
 
         $billdesk = $this->getLastEntity('billdesk', true);
         $payment = $this->getLastEntity('payment', true);
@@ -246,7 +246,7 @@ class BilldeskGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
-    protected function runVerify($filter = 'payment_created')
+    protected function runVerify($filter = 'payments_created')
     {
         $request = [
             'url'    => '/payments/verify/'. $filter,
