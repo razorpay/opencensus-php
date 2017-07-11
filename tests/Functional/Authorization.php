@@ -246,7 +246,6 @@ class Authorization
         $this->setOrganisation($orgId);
 
         $this->adminHeaders = [
-            'X-Org-Id' => $orgId,
             'X-Admin-Token' => $adminToken,
             'X-Org-Hostname' => $this->defaultDashboardHostname
         ];
