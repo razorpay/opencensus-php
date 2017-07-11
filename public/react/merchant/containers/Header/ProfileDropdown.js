@@ -96,7 +96,8 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            {user.isNewUIEnabled
+            {/* Don't show for new signups after this timestamp July 11, 5:00pm */}
+            {user.isNewUIEnabled && user.created_at < 1499729400
               ? <div
                   class="media media-action"
                   onClick={() => this.submitFeedback({ revert: true })}
