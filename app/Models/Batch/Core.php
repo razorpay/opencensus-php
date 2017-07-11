@@ -165,7 +165,7 @@ class Core extends Base\Core
         {
             $this->trace->traceException(
                 $e,
-                Trace::ERROR,
+                null,
                 TraceCode::BATCH_PROCESSING_ERROR,
                 [
                     'batch' => $batch->toArrayPublic(),

@@ -16,6 +16,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 
+
 class Entity extends Base\PublicEntity
 {
     const PDF_PREFIX = 'pdfs/';
@@ -133,6 +134,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate  = true;
 
     protected $validOperations = [
+        // Core's actions
         'create',
         'update',
         'delete',
@@ -146,6 +148,10 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
+
+        // Notifier's actions
+        'notifyInvoiceIssued',
+        'notifyInvoiceExpired',
     ];
 
     protected $defaults = [
