@@ -736,7 +736,7 @@ trait PaymentTrait
     {
         $this->ba->adminAuth();
 
-        $this->ba->addAdminAuthHeaders(Org::RZP_ORG);
+        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
 
         $merchant = (new MerchantFluid())->getMerchant('10000000000000')->get();
 
