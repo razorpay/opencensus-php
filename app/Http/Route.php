@@ -85,7 +85,6 @@ final class Route
         'refund_create'                           => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
-        'refund_netbanking_generate_excel'        => ['post',     'refunds/netbanking/excel',                       'RefundController@generateNetbankingRefunds'                        ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
         'refund_verify'                           => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerify'                                 ],
         'refund_create_missing_txn'               => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
@@ -336,6 +335,7 @@ final class Route
         'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_issue_by_batch'                  => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
+        'invoice_get_stats_by_batch_ids'          => ['get',      'invoices/batches/issuable',                      'InvoiceController@getIssuableByBatchIds'                           ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_get_pdf'                         => ['get',      'invoices/{id}/pdf',                              'InvoiceController@getInvoicePdf'                                   ],
@@ -847,7 +847,6 @@ final class Route
         'refund_create_missing_txn',
         'refund_gateway_refunded_txns',
         'refund_gateway_manual',
-        'refund_netbanking_generate_excel',
         'refund_generate_excel',
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
@@ -991,6 +990,7 @@ final class Route
         'batch_retry',
         'batch_download_file',
         'invoice_issue_by_batch',
+        'invoice_get_stats_by_batch_ids',
         'invoice_add_line_items',
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
@@ -1204,6 +1204,11 @@ final class Route
         'offer_create'                     => Permission::CREATE_MERCHANT_OFFER,
         'offer_update'                     => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'             => Permission::ASSIGN_MERCHANT_HANDLE,
+        'merchant_fetch'                   => '*',
+        'merchant_get_terminals'           => '*',
+        'merchant_get_pricing'             => '*',
+        'merchant_activation_details'      => '*',
+        'merchant_fetch_users'             => '*',
     ];
 
     public static $direct = [

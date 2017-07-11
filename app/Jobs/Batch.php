@@ -27,11 +27,19 @@ class Batch extends Job implements ShouldQueue
      */
     protected $id;
 
-    public function __construct(string $mode, string $id)
+    /**
+     * Additional parameters from request or query.
+     *
+     * @var array
+     */
+    protected $params;
+
+    public function __construct(string $mode, string $id, array $params = [])
     {
         parent::__construct($mode);
 
-        $this->id = $id;
+        $this->id     = $id;
+        $this->params = $params;
     }
 
     public function handle()
@@ -52,7 +60,9 @@ class Batch extends Job implements ShouldQueue
 
             $batch->getValidator()->validateNotProcessedAlready();
 
-            BatchModel\Processor\Base::get($batch)->process();
+            BatchModel\Processor\Base::get($batch)
+                                     ->setParams($this->params)
+                                     ->process();
 
             $timeTaken = microtime(true) - $timeStarted;
 

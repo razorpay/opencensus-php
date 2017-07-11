@@ -27,6 +27,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->whereNotNull(Token\Entity::USED_AT)
                     ->orderBy(Entity::ID, 'desc')
                     ->get();
     }

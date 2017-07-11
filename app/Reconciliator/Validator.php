@@ -14,8 +14,10 @@ class Validator
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         // `text/plain` is being added here because HDFC sends CSV files with XLS extension. kthxbye
+        // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                    'application/vnd.ms-office', 'application/octet-stream', 'text/plain'],
+                    'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
+                    'application/cdfv2-unknown'],
         'xlsb'  => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',

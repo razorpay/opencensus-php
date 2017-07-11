@@ -142,7 +142,7 @@ class SubReconciliate
      * @param $row
      * @return null
      */
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
         return null;
     }

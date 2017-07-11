@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use RZP\Exception\EarlyWorkflowResponse;
 
@@ -87,6 +88,10 @@ class Handler extends ExceptionHandler
 
             case $e instanceof MethodNotAllowedHttpException:
                 $response = ApiResponse::httpMethodNotAllowed();
+                break;
+
+            case $e instanceof TooManyRequestsHttpException:
+                $response = ApiResponse::rateLimitExceeded();
                 break;
 
             case $e instanceof EarlyWorkflowResponse:

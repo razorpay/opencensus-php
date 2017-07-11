@@ -67,9 +67,7 @@ class Mailgun extends Base\Core
 
     protected function failureCallback(array $input)
     {
-        $sentDate = Carbon::createFromTimestamp($input['timestamp'], 'Asia/Kolkata')->format('d-M-Y H:i:s');
-
-        $input['sent_at'] = $sentDate;
+        $input = $this->getPayload($input);
 
         $this->trace->error(TraceCode::EMAIL_SENDING_FAILED, $input);
 
@@ -84,6 +82,19 @@ class Mailgun extends Base\Core
             default:
                 return 406;
         }
+    }
+
+    protected function getPayload($input)
+    {
+        return [
+            'code'          => $input['code'] ?? null,
+            'reason'        => $input['reason'] ?? null,
+            'error'         => $input['error'] ?? null,
+            'X-Mailgun-Tag' => $input['X-Mailgun-Tag'] ?? null,
+            'event'         => $input['event'] ?? null,
+            'recipient'     => $input['recipient'] ?? null,
+            'sent_at'       => $input['sent_at'] ?? null,
+        ];
     }
 
     protected function droppedCallback(array $input)

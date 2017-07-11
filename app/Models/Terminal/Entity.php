@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const AEPS                          = 'aeps';
     const EMI_DURATION                  = 'emi_duration';
+    const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
@@ -73,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::SHARED,
         self::INTERNATIONAL,
         self::TPV,
@@ -104,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
@@ -161,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
+        self::EMI_SUBVENTION            => null,
     ];
 
     protected $casts = [
@@ -246,6 +251,11 @@ class Entity extends Base\PublicEntity
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     protected function getSubMerchants()
