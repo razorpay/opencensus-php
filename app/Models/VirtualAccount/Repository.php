@@ -16,6 +16,17 @@ class Repository extends Base\Repository
         Entity::STATUS     => 'sometimes|in:active,closed,paid',
     ];
 
+    const SHARED_ID = 'SharedVirtlAcc';
+
+    public function getSharedAccount()
+    {
+        $sharedVirtualAccount = $this->newQuery()
+                                     ->where(Entity::ID, '=', self::SHARED_ID)
+                                     ->firstOrFail();
+
+        return $sharedVirtualAccount;
+    }
+
     public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
     {
         return $this->newQuery()

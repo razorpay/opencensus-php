@@ -202,6 +202,21 @@ class DatabaseSeeder extends Seeder
                     'org_id'        => self::RAZORPAY_ORG_ID,
                 ));
 
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  Account::VA_ACCOUNT,
+                    'name'          =>  'Razorpay VA Account',
+                    'email'         =>  'harman@razorpay.com',
+                    'category'      =>  '1234',
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
+                    'transaction_report_email'=>'harman@razorpay.com',
+                    'settlement_schedule' => 3,
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                ));
+
             DB::table(Table::MERCHANT_DETAIL)->insert(
                 array(
                     'merchant_id'   => Account::ATOM_ACCOUNT,
@@ -1011,6 +1026,18 @@ class DatabaseSeeder extends Seeder
                 'id'            =>  Account::DEMO_ACCOUNT_KEY_ID,
                 'merchant_id'   =>  Account::DEMO_ACCOUNT,
                 'secret'        =>  Crypt::encrypt('thisissupersecret'),
+                'created_at'    =>  time(),
+                'updated_at'    =>  time()
+                )
+            );
+
+        DB::table(Table::VIRTUAL_ACCOUNT)->insert(
+            array(
+                'id'            =>  'SharedVirtlAcc',
+                'merchant_id'   =>  Account::VA_ACCOUNT,
+                'name'          =>  'RZP VA',
+                'description'   =>  'Shared Razorpay Virtual Account',
+                'notes'         =>  '{}',
                 'created_at'    =>  time(),
                 'updated_at'    =>  time()
                 )

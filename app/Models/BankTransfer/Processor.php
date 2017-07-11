@@ -6,9 +6,11 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Currency\Currency;
-use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends Base\Core
@@ -50,12 +52,16 @@ class Processor extends Base\Core
 
             $this->setMerchant();
 
-            $this->processExpectedBankTransfer($bankTransfer);
+            $this->processBankTransferForMerchant($bankTransfer, $this->merchant);
 
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
                 $bankTransfer->toArrayPublic()
             );
+        }
+        else if ($this->isTransferExpected($bankTransfer) === false)
+        {
+            $this->processUnexpectedBankTransfer($bankTransfer);
         }
         else
         {
@@ -67,11 +73,14 @@ class Processor extends Base\Core
         return $bankTransfer;
     }
 
-    protected function processExpectedBankTransfer(Entity $bankTransfer)
+    protected function processBankTransferForMerchant(Entity $bankTransfer, Merchant $merchant)
     {
-        $paymentProcessor = new PaymentProcessor($this->merchant);
+        $paymentProcessor = new PaymentProcessor($merchant);
 
-        $this->repo->transaction(function() use ($bankTransfer, $paymentProcessor)
+        $this->repo->transaction(function() use (
+            $bankTransfer,
+            $paymentProcessor,
+            $merchant)
         {
             $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
 
@@ -83,7 +92,7 @@ class Processor extends Base\Core
 
             $bankTransfer->payment()->associate($payment);
 
-            $bankTransfer->merchant()->associate($this->merchant);
+            $bankTransfer->merchant()->associate($merchant);
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
@@ -91,6 +100,17 @@ class Processor extends Base\Core
 
             $this->updateVirtualAccount($bankTransfer);
         });
+    }
+
+    protected function processUnexpectedBankTransfer(Entity $bankTransfer)
+    {
+        $bankTransfer->setExpected(false);
+
+        $this->setDefaultMerchant();
+
+        $this->createAndSetVirtualAccount($bankTransfer);
+
+        $this->processBankTransferForMerchant($bankTransfer, $this->merchant);
     }
 
     protected function setUtrInTestMode(Entity $bankTransfer)
@@ -101,7 +121,7 @@ class Processor extends Base\Core
         // UTR is not sent by dashboard in test mode, but is exposed to the merchant.
         // So we add a mock UTR here itself, and skip the uniqueness check.
         if (($this->mode === Mode::TEST) and
-            ($this->provider === Provider::DASHBOARD) and
+            ($this->provider === VirtualAccount\Provider::DASHBOARD) and
             ($this->env !== 'testing'))
         {
             $mockedUtr = $this->getMockedUtr();
@@ -170,6 +190,27 @@ class Processor extends Base\Core
         $this->merchant = $this->virtualAccount->merchant;
     }
 
+    protected function setDefaultMerchant()
+    {
+        $defaultMerchantId = Account::DEMO_ACCOUNT;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $defaultMerchantId = Account::TEST_ACCOUNT;
+        }
+
+        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
+    }
+
+    protected function createAndSetVirtualAccount(Entity $bankTransfer)
+    {
+        $data = $this->virtualAccountCreationArray($bankTransfer);
+
+        $virtualAccount = (new VirtualAccount\Core)->create($data, $this->merchant);
+
+        $this->virtualAccount = $virtualAccount;
+    }
+
     protected function updateVirtualAccount(Entity $bankTransfer)
     {
         $this->virtualAccount->incrementAmountPaid($bankTransfer->getAmount());
@@ -201,13 +242,20 @@ class Processor extends Base\Core
 
     protected function getBankAccountFromNumber(string $accountNumber)
     {
-        $bankCode = Provider::getBankCode($this->provider);
+        $bankCode = VirtualAccount\Provider::getBankCode($this->provider);
 
         $bankAccount = $this->repo
                             ->bank_account
                             ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
         return $bankAccount;
+    }
+
+    protected function virtualAccountCreationArray(Entity $bankTransfer): array
+    {
+        return [
+            VirtualAccount\Entity::AMOUNT_EXPECTED => $bankTransfer->getAmount(),
+        ];
     }
 
     protected function bankTransferPaymentArray(Entity $bankTransfer): array

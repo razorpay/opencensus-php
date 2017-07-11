@@ -141,6 +141,27 @@ class BankTransferTest extends TestCase
         $response = $this->processBankTransfer($accountNumber, $ifsc);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
+
+        // Created bank transfer is an unexpected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Invalid account forced creation of a temp acc for default merchant
+        $virtualAccount =  $this->getLastEntity('virtual_account', true);
+        $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
+        $this->assertEquals(5000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(5000000, $virtualAccount['amount_received']);
+        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
     }
 
     public function testBankTransferProcessFailure()
