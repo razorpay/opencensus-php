@@ -19,6 +19,8 @@ class Type
      */
     const PRIVATE_AUTH      = 'private';
 
+    const PROXY_AUTH        = 'proxy';
+
     /**
      * For app auth where an app is behaving as an admin.
      * Over time, this will be shifted to oauth model

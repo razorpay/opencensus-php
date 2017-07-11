@@ -109,7 +109,14 @@ class Header
         if (($headersMissing === true) or ($extraHeadersInInput === true))
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS);
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                        null,
+                        [
+                            'expected_headers'  => $expectedHeaders,
+                            'input_headers'     => $keys,
+                            'headers_missing'   => $headersMissing,
+                            'extra_headers'     => $extraHeadersInInput,
+                        ]);
         }
     }
 }

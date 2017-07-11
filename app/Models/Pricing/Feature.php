@@ -18,6 +18,21 @@ class Feature
         self::TRANSFER,
     ];
 
+    /**
+     * List of features for which pricing rules are optional.
+     * If rules are not defined for these features, 0 pricing
+     * is applied.
+     *
+     * IMPORTANT: If you're adding a feature here, ensure to get a
+     * rule added for the every method of feature on
+     * the zero-pricing plan
+     *
+     * @var array
+     */
+    const OPTIONAL_PRICING = [
+        self::TRANSFER
+    ];
+
     public static function validateFeature($feature)
     {
         if (defined(__CLASS__ . '::' . strtoupper($feature)) === false)
@@ -25,5 +40,17 @@ class Feature
             throw new Exception\InvalidArgumentException(
                 'Not a valid Pricing feature: ' . $feature);
         }
+    }
+
+    /**
+     * Whether having pricing rules are optional for the feature
+     *
+     * @param string $feature
+     *
+     * @return bool
+     */
+    public static function isFeaturePricingOptional(string $feature): bool
+    {
+        return (in_array($feature, self::OPTIONAL_PRICING, true) === true);
     }
 }

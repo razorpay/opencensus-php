@@ -70,6 +70,9 @@ class CreateFirstDataGateway extends Migration
             $table->string(FirstData::ERROR_MESSAGE, 255)
                   ->nullable();
 
+            $table->char(FirstData::ARN_NO, 40)
+                  ->nullable();
+
             $table->integer(FirstData::CREATED_AT);
 
             $table->integer(FirstData::UPDATED_AT);
