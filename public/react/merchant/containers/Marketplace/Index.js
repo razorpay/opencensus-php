@@ -17,12 +17,14 @@ export default class MarketplaceContainer extends Component {
           <NavLink to="/route/accounts">Accounts</NavLink>
         </header>
 
-        <Switch>
-          <Route path="/route/payments" component={PaymentsList} />
-          <Route path="/route/transfers" component={TransfersList} />
-          <Route path="/route/reversals" component={ReversalsList} />
-          <Route path="/route/accounts" component={AccountsList} />
-        </Switch>
+        <content>
+          <Switch>
+            <Route path="/route/payments" component={PaymentsList} />
+            <Route path="/route/transfers" component={TransfersList} />
+            <Route path="/route/reversals" component={ReversalsList} />
+            <Route path="/route/accounts" component={AccountsList} />
+          </Switch>
+        </content>
       </tabbed-container>
     );
   }

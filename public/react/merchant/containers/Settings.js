@@ -25,9 +25,11 @@ export default class Settings extends Component {
           </ShowWhen>
         </header>
 
-        <Route path="/config" component={Configuration} />
-        <Route path="/webhooks" component={Webhooks} />
-        <Route path="/keys" component={ApiKeys} />
+        <content>
+          <Route path="/config" component={Configuration} />
+          <Route path="/webhooks" component={Webhooks} />
+          <Route path="/keys" component={ApiKeys} />
+        </content>
       </tabbed-container>
     );
   }

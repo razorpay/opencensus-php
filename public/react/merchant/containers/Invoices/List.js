@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -58,14 +58,7 @@ export default class InvoicesListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#invoicing-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
-
+        <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
               <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
@@ -86,7 +79,7 @@ export default class InvoicesListContainer extends ListContainer {
                 : null}
             </div>
           </ShowWhen>
-        </TetherComponent>
+        </HeaderAction>
 
         <InvoiceListFilter
           form="InvoiceListFilter"

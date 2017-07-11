@@ -22,7 +22,7 @@ export default class SubmitFeedback extends Component {
   _submit = props => {
     const Smooch = window.Smooch;
     if (Smooch) {
-      return Smooch.sendMessage(props.message)
+      return Smooch.sendMessage(`New Dashboard Feedback: ${props.message}`)
         .then(() => {
           this.props.showNotification({
             type: 'success',

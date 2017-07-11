@@ -96,7 +96,7 @@ export default class KeyGenerationStep extends Component {
     }
 
     return (
-      <Link class="Onboarding__Step" to="/activation">
+      <Link class="Onboarding__Step" to="/keys">
         <div class="media">
           <div class="media-left">
             <img class="media-object" src={svgSrc} />

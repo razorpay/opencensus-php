@@ -45,7 +45,9 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
       <header id={headerId}>
         <NavLink to={to}>{navLabel}</NavLink>
       </header>
-      <Route path={path || to} component={component} />
+      <content>
+        <Route path={path || to} component={component} />
+      </content>
     </tabbed-container>
   );
 };
@@ -70,11 +72,13 @@ const RefundsTabbedContainer = () => {
           </NavLink>
         </ShowWhen>
       </header>
-      <Switch>
-        <Route path="/refunds/batchupload" component={BatchUpload} />
-        <Route path="/refunds/batchuploads" component={BatchUploads} />
-        <Route path="/refunds" component={RefundsList} />
-      </Switch>
+      <content>
+        <Switch>
+          <Route path="/refunds/batchupload" component={BatchUpload} />
+          <Route path="/refunds/batchuploads" component={BatchUploads} />
+          <Route path="/refunds" component={RefundsList} />
+        </Switch>
+      </content>
     </tabbed-container>
   );
 };

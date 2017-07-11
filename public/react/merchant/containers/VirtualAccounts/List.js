@@ -47,28 +47,30 @@ export default class VirtualAccountsListContainer extends ListContainer {
           </div>
         </header>
 
-        <div class="content-wrapper">
-          <VirtualAccountsListFilter
-            form="virtualAccountsListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+        <content>
+          <div class="content-wrapper">
+            <VirtualAccountsListFilter
+              form="virtualAccountsListFilter"
+              count={this.state.count}
+              onSubmit={this.search}
+            />
 
-          <DataTable
-            title="Virtual Accounts"
-            columns={[
-              virtualAccountId,
-              accountDescription,
-              amountPaid,
-              status,
-              createdAt,
-            ]}
-            count={this.state.count}
-            skip={this.state.skip}
-            paginate={this.paginate}
-            {...this.props}
-          />
-        </div>
+            <DataTable
+              title="Virtual Accounts"
+              columns={[
+                virtualAccountId,
+                accountDescription,
+                amountPaid,
+                status,
+                createdAt,
+              ]}
+              count={this.state.count}
+              skip={this.state.skip}
+              paginate={this.paginate}
+              {...this.props}
+            />
+          </div>
+        </content>
       </tabbed-container>
     );
   }

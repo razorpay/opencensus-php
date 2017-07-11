@@ -3,7 +3,7 @@ import FirstPaymentSVG from 'styles/assets/first-payment.svg';
 
 export default ({ user }) => {
   return (
-    <div class="Onboarding__Step">
+    <Link class="Onboarding__Step" to="/payments">
       <div class="media">
         <div class="media-left">
           <img class="media-object" src={FirstPaymentSVG} />
@@ -15,6 +15,6 @@ export default ({ user }) => {
           View all payments in <Link to="/payments">Transactions tab</Link>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
