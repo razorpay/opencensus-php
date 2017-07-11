@@ -97,7 +97,6 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($content);
         $this->repo->saveOrFail($gatewayPayment);
 
-        // For now converting pending status payments to failed.
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
             // Payment fails, throw exception
@@ -105,7 +104,6 @@ class Gateway extends Base\Gateway
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     $content['AuthStatus'],
                     '');
-
         }
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);

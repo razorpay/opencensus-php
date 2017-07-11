@@ -221,7 +221,7 @@ trait Callback
 
                 $this->processPaymentCallback($payment, $gatewayInput);
 
-                return $response = $this->postPaymentAuthorizeProcessing($payment);
+                return $this->postPaymentAuthorizeProcessing($payment);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

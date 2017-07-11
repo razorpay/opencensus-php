@@ -2342,55 +2342,6 @@ trait Authorize
         return $returnData;
     }
 
-    /**
-     * Returns the proper response to checkout
-     * in case of the payment is authorized
-     * @param  Payment\Entity $payment
-     * @return array
-     */
-    protected function processPendingResponse(Payment\Entity $payment): array
-    {
-        //
-        // If callback url has been set, then we need to redirect
-        // to the callback url and prepare data using coproto protocol.
-        //
-        // Otherwise we simply return 'razorpay_payment_id' as is normal.
-        //
-
-        $returnData = [
-            'razorpay_payment_id' => $payment->getPublicId()
-        ];
-
-        //
-        // If being run via cron (recurring), we don't care
-        // about the signature at all.
-        // Also, when run via cron, we cannot create a signature
-        // for the payment since the merchant key is not set in scope.
-        // The cron key is set in scope.
-        // A hacky way to do this would be to override the cron auth
-        // with merchant auth. This might cause other issues though.
-        //
-        if ($this->app['basicauth']->isPrivilegeAuth() === false)
-        {
-            if ($payment->hasSubscription() === true)
-            {
-                $this->fillReturnDataWithSubscription($payment, $returnData);
-            }
-            else if ($payment->hasOrder() === true)
-            {
-                $this->fillReturnDataWithOrder($payment, $returnData);
-            }
-        }
-
-        if (($this->app['basicauth']->isPrivateAuth() === false) and
-            ($payment->getCallbackUrl()))
-        {
-            $this->fillReturnRequestDataForMerchant($payment, $returnData);
-        }
-
-        return $returnData;
-    }
-
     protected function fillReturnDataWithSubscription(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
