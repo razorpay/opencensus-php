@@ -579,6 +579,7 @@ class Creator extends Base\Core
             $this->compressFile();
         }
 
+        $this->updateFilePermission();
     }
 
     /*
@@ -605,8 +606,6 @@ class Creator extends Base\Core
 
         $this->extension($this->compressionFormat);
 
-        $this->updateFilePermission($this->getFullFilePath());
-
         $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
 
         $this->mime($this->localFile->getMimeType());
@@ -629,8 +628,6 @@ class Creator extends Base\Core
         fwrite($file, $this->content);
         fclose($file);
 
-        $this->updateFilePermission($fullPath);
-
         $this->createUploadedFile($fullPath, $fileName);
     }
 
@@ -645,8 +642,6 @@ class Creator extends Base\Core
             $this->file->getExtension(),
             $this->getStorageDir());
 
-        $this->updateFilePermission($fileMetadata['full']);
-
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }
 
@@ -657,15 +652,15 @@ class Creator extends Base\Core
      * @param  string $filePath Full path of the file whose permission needs to be changed
      * @return [type]           [description]
      */
-    protected function updateFilePermission($filePath)
+    protected function updateFilePermission()
     {
         //
         // This step is important because file can be created
         // via different users (www-data or ubuntu (via queue))
         //
-        if (substr(sprintf('%o', fileperms($filePath)), -3) !== '777')
+        if (substr(sprintf('%o', fileperms($this->filePath)), -3) !== '777')
         {
-            (new Utility)->callFileOperation('chmod', [$filePath, 0777]);
+            (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
         }
     }
 
