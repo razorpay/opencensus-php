@@ -146,7 +146,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
-        Route::put('/admin/{id}/edit', 'AdminController@putEdit');
 
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
@@ -169,10 +168,6 @@ Route::group(['middleware' => ['web']], function () {
             // This is the RAW API route which processes api calls
             Route::post('/api/{path?}', 'AdminController@passThrough')
                 ->where('path', '.*$');
-            Route::post('/admin/users', 'AdminController@postAddAdmin');
-            Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
-            Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
-            Route::get('/admin/users', 'AdminController@getAdmins');
         });
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
