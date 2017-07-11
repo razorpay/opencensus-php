@@ -13,6 +13,14 @@ import {
 @connect(state => state.session, { uploadBatch, showNotification })
 export default class BatchUploadContainer extends Component {
   render() {
+    let isProceedDialogType = false;
+    // Api must give this flag. Currently hard coded for uber
+    if (
+      ['82LK42BGTN2bOe', '7SVOQZGZuwHr4I'].indexOf(this.props.user.current) > -1
+    ) {
+      isProceedDialogType = true;
+    }
+
     return (
       <BatchUpload
         batchType="payment_link"
@@ -20,6 +28,8 @@ export default class BatchUploadContainer extends Component {
         sampleUrl="https://dashboard.razorpay.com/files/sample_batch_payment_links.xlsx"
         closeUrl="/paymentlinks/batchuploads"
         title="payment links"
+        isProceedDialogType={isProceedDialogType}
+        submitBtnTitle="Proceed"
         modeFormatted={this.props.modeFormatted}
         {...this.props}
       />

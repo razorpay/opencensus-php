@@ -248,6 +248,10 @@ return [
             'url'       => 'invoices/batch/{batchId}/issue',
             'routeName' => 'invoice_issue_by_batch',
         ],
+        'invoice_batches_issuable'          => [
+            'url'       => 'invoices/batches/issuable',
+            'routeName' => 'invoice_batches_issuable',
+        ],
 
         // Customers
         'customer_fetch_multiple'           => [
