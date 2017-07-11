@@ -29,6 +29,7 @@ class RateLimitingTest extends TestCase
 
     public function testThrottle()
     {
+        $this->skipTest();
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5217294025032720';
 
@@ -44,6 +45,7 @@ class RateLimitingTest extends TestCase
 
     public function testThrottleWithCallback()
     {
+        $this->skipTest();
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4111111111111111';
 
@@ -61,6 +63,7 @@ class RateLimitingTest extends TestCase
 
     public function testThrottleWithMultipleLimits()
     {
+        $this->skipTest();
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5217294025032720';
 
