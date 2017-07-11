@@ -6,7 +6,7 @@ export default ({ fields, onAdd }) => {
     <ul class="list-unstyled notes">
       {fields.map((note, index) => {
         return (
-          <li class="note" key={index} style={{ marginBottom: '12px' }}>
+          <li class="note" key={index}>
             <div class="key">
               <i class="icon icon-close" onClick={() => fields.remove(index)} />
               <Field
