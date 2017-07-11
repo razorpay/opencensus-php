@@ -736,7 +736,7 @@ class CaptureTest extends TestCase
                        'expired_at' => time() + 1*24*60*60,
                    ]);
 
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 44000]);
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 0]);
 
         $this->fixtures->merchant->addFeatures(['old_credits_flow']);
 
@@ -752,10 +752,7 @@ class CaptureTest extends TestCase
 
         $creditTransactions = $this->getEntities('credit_transaction', [], true);
 
-        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13600);
-        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
-        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
-        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+        $this->assertEmpty($creditTransactions['items']);
     }
 
     // Fee Model = Prepaid
@@ -829,7 +826,7 @@ class CaptureTest extends TestCase
                        'expired_at' => time() + 1*24*60*60,
                    ]);
 
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 1010000]);
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 30]);
 
         $this->fixtures->merchant->addFeatures(['old_credits_flow']);
 
@@ -851,10 +848,8 @@ class CaptureTest extends TestCase
 
         $creditTransactions = $this->getEntities('credit_transaction', [], true);
 
-        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 990000);
-        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
-        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
-        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 30);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit2['id']);
     }
 
     /**
