@@ -8,7 +8,13 @@ import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-function batchActions({ mode, viewAll, issueAll, onDownloadClick }) {
+function batchActions({
+  mode,
+  viewAll,
+  issueAll,
+  onDownloadClick,
+  issuableIdList,
+}) {
   return {
     viewAll,
     issueAll,
@@ -33,7 +39,14 @@ function batchActions({ mode, viewAll, issueAll, onDownloadClick }) {
                 </button>;
               }
 
-              if (issueAll && item.status === 'processed') {
+              {
+                /*issuableIdList is present only in case of Payment Links*/
+              }
+              if (
+                issueAll &&
+                item.status === 'processed' &&
+                (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
+              ) {
                 <button
                   class="btn btn-default btn-xs"
                   onClick={_ => issueAll(item)}
@@ -81,6 +94,7 @@ export default class BatchList extends Component {
       uploadUrl,
       viewAll,
       issueAll,
+      issuableIdList,
     } = this.props;
     let handleDownloadClick = this.dowload;
 
@@ -116,6 +130,7 @@ export default class BatchList extends Component {
               viewAll,
               issueAll,
               onDownloadClick: handleDownloadClick,
+              issuableIdList,
             }),
           ]}
           count={count}

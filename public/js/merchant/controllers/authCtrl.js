@@ -159,7 +159,7 @@ app
 
         // Get invitation details
         $http({
-          url: '/invitation',
+          url: '/admin/generic',
 
           method: 'GET',
 
