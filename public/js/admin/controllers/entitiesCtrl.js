@@ -72,6 +72,7 @@ app.controller('EntitiesCtrl', [
       'billdesk',
       'ebs',
       'cybersource',
+      'hitachi',
       'first_data',
       'ezeclick',
       'hdfc',
