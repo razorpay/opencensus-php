@@ -131,6 +131,7 @@ export default class App extends Component {
               activated: data.activated,
               locked: data.locked,
               submitted: data.submitted,
+              isNewUIEnabled: data.isNewUIEnabled,
               role: role,
               userEmail: data.user.email,
               dashboardLink: location.origin +
