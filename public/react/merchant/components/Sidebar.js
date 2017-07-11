@@ -120,7 +120,6 @@ export default class Sidebar extends Component {
                     featureEnabled="subscriptions"
                     to={routes.subscriptions}
                   />
-
                   <MainNavLink
                     label="Customers"
                     icon="icon icon-people"
@@ -128,14 +127,6 @@ export default class Sidebar extends Component {
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
                   />
-
-                  <ShowWhen
-                    notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
-                  >
-                    <div class="divider" />
-                  </ShowWhen>
-
                   <MainNavLink
                     label="Route"
                     icon="icon icon-store"
@@ -144,7 +135,6 @@ export default class Sidebar extends Component {
                     featureEnabled="Marketplace"
                     beta={true}
                   />
-
                   <MainNavLink
                     label="Virtual Accounts"
                     icon="icon icon-account-balance"
