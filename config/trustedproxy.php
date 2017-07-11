@@ -12,8 +12,7 @@ return [
      * of your proxy (e.g. if using Rackspace balancers).
      */
     'proxies' => [
-        '10.0.0.0/16',
-        '10.1.0.0/16',
+        '10.0.0.0/8',
     ],
     /*
      * Default Header Names
