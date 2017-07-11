@@ -117,8 +117,8 @@ class Authenticate
      */
     private function throttleRequests(string $auth)
     {
-        $throttle = new Throttle($this->app);
+        // $throttle = new Throttle($this->app);
 
-        $throttle->process($auth);
+        // $throttle->process($auth);
     }
 }
