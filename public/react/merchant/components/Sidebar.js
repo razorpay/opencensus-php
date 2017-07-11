@@ -227,7 +227,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Subscriptions"
-                    icon="icon icon-refresh"
+                    icon="icon icon-refresh text-warning"
                     notMyRole="sellerapp support"
                     featureEnabled="subscriptions"
                     to={routes.subscriptions}

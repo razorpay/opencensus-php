@@ -577,3 +577,47 @@ tr:hover .row-action.btn-group {
 .amount {
   white-space: nowrap;
 }
+
+.pre {
+  white-space: pre;
+}
+
+.notes {
+  .note {
+    position: relative;
+    margin-bottom: 12px;
+
+    .icon-close {
+      position: absolute;
+      right: -31px;
+      top: 1px;
+      padding: 8px;
+      cursor: pointer;
+      color: #ccc;
+
+      &:hover {
+        color: #aaa;
+      }
+    }
+
+    .key {
+      margin-bottom: 4px;
+    }
+  }
+
+  .add-note {
+    padding-left: 0;
+  }
+}
+
+.detail-notes {
+  .sub-details {
+    margin-top: 10px;
+    margin-left: 15px;
+
+    > .detail-row > label {
+      margin-left: -15px;
+      padding-left: 30px;
+    }
+  }
+}

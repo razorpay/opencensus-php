@@ -26,20 +26,21 @@ export default class ListGroupToggler extends Component {
 
   render() {
     return (
-      <div class="list-group-item no-flex">
-        <span>{this.props.label}</span>
-        <AsyncButton
-          class="btn btn-xs btn-default pull-right"
-          text="Show/Hide"
-          pendingText="Fetching..."
-          onClick={this.toggle}
-        />
+      <div class="row detail-row">
+        <label class="col-sm-4">{this.props.label}</label>
+
+        <div class="col-sm-8">
+          <AsyncButton
+            class="btn btn-xs btn-default"
+            text="Show/Hide"
+            pendingText="Fetching..."
+            onClick={this.toggle}
+          />
+        </div>
         {this.state.show
-          ? <div class="panel-body">
-              <div class="list-group detail-row-container">
-                {this.props.children}
-              </div>
-            </div>
+          ? <section class="sub-details col-sm-12">
+              {this.props.children}
+            </section>
           : null}
       </div>
     );
