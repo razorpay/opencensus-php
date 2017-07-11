@@ -134,7 +134,34 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testTransferAndVerifyCustomerBalance' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'customer' => null,
+                        'amount'   => null,
+                        'currency' => 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testTransferAndVerifyPricing' => [
         'request' => [
             'content' => [
                 'transfers' => [

@@ -9,6 +9,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
+use RZP\Models\Transfer;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
@@ -16,37 +17,37 @@ use RZP\Models\Bank\IFSC;
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
-            Entity::FEATURE             => 'sometimes|alpha',
-            Entity::GATEWAY             => 'sometimes|',
-            Entity::PLAN_NAME           => 'sometimes|',
-            Entity::PAYMENT_METHOD      => 'required|string',
-            Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
-            Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
-            Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
-            Entity::INTERNATIONAL       => 'sometimes|in:0,1',
-            Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
-            Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
-            Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
-            Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
-            Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
-            Entity::MIN_FEE             => 'sometimes|integer|max:100000',
-            Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000'
-        ];
+        Entity::FEATURE             => 'sometimes|alpha',
+        Entity::GATEWAY             => 'sometimes|',
+        Entity::PLAN_NAME           => 'sometimes|',
+        Entity::PAYMENT_METHOD      => 'required|string',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
+        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
+        Entity::INTERNATIONAL       => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
+        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
+        Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
+        Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
+        Entity::MIN_FEE             => 'sometimes|integer|max:100000',
+        Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000'
+    ];
 
     protected static $addPlanRuleValidators = [
-            'addPlanRuleRate',
-            'addPlanRuleNB',
-            'addPlanRulePaymentNetwork',
-            'addPlanRuleInternational',
-            'addPlanRuleAmountRange',
-            'addPlanRuleFeature',
-            'addPlanRulePricingMethod',
-            'addPlanRuleMinAndMaxFee'
-        ];
+        'addPlanRuleRate',
+        'addPlanRuleNB',
+        'addPlanRulePaymentNetwork',
+        'addPlanRuleInternational',
+        'addPlanRuleAmountRange',
+        'addPlanRuleFeature',
+        'addPlanRulePricingMethod',
+        'addPlanRuleMinAndMaxFee'
+    ];
 
     protected static $createPlanRules = [
-            Entity::PLAN_NAME => 'required|alpha_num|max:20'
-        ];
+        Entity::PLAN_NAME => 'required|alpha_num|max:20'
+    ];
 
     protected function validateAddPlanRuleFeature($input)
     {
@@ -58,7 +59,7 @@ class Validator extends Base\Validator
         Pricing\Feature::validateFeature($input[Pricing\Entity::FEATURE]);
     }
 
-    protected function validateAddPlanRulePricingMethod($input)
+    protected function validateAddPlanRulePricingMethod(array $input)
     {
         $feature = Pricing\Feature::PAYMENT;
 
@@ -67,13 +68,24 @@ class Validator extends Base\Validator
             $feature = $input[Pricing\Entity::FEATURE];
         }
 
-        if ($feature === Pricing\Feature::PAYMENT)
+        $method = $input[Pricing\Entity::PAYMENT_METHOD];
+
+        switch ($feature)
         {
-            Payment\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
-        }
-        else if ($feature === Pricing\Feature::PAYOUT)
-        {
-            Payout\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
+            case Pricing\Feature::PAYMENT:
+                Payment\Method::validateMethod($method);
+
+                break;
+
+            case Pricing\Feature::PAYOUT:
+                Payout\Method::validateMethod($method);
+
+                break;
+
+            case Pricing\Feature::TRANSFER:
+                Transfer\ToType::validateDestination($method);
+
+                break;
         }
     }
 

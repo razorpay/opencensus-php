@@ -19,7 +19,6 @@ class CreditsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
-        $this->fixtures->create('pricing:zero_pricing_plan');
     }
 
     /**
