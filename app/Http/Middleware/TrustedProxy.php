@@ -1,5 +1,6 @@
 <?php
- namespace App\Http\Middleware;
+
+ namespace RZP\Http\Middleware;
 
  use Closure;
  use Config;
@@ -57,4 +58,4 @@
          $trustedHeaderNames = is_array($trustedHeaderNames) ? $trustedHeaderNames : [];
          return $trustedHeaderNames;
      }
- } 
+ }
