@@ -27,7 +27,9 @@ export default ({ plan, isLoading, statusMsg }) => {
 
                 <EntityDetailRow
                   label="Plan Description"
-                  value={plan.item.description}
+                  value={() => {
+                    return <span class="pre">{plan.item.description}</span>;
+                  }}
                 />
 
                 <EntityDetailRow
