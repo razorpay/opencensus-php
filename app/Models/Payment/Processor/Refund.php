@@ -13,6 +13,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
@@ -646,7 +647,7 @@ trait Refund
                 $this->updatePaymentRefunded();
             });
 
-            $refunded = $this->callGatewayRefundFunction($payment, $data);
+            $refunded = $this->callRefundFunction($payment, $data);
 
             $this->refund->setGatewayRefunded($refunded);
 
@@ -662,6 +663,18 @@ trait Refund
         }, 120);
 
         return $this->refund;
+    }
+
+    protected function callRefundFunction($payment, $data)
+    {
+        if ($this->shouldHitGateway($payment) === true)
+        {
+            return $this->callGatewayRefundFunction($payment, $data);
+        }
+        else if ($payment->isBankTransfer() === true)
+        {
+            return $this->refundBankTransfer($payment, $data);
+        }
     }
 
     protected function callGatewayRefundFunction($payment, $data)
@@ -900,9 +913,8 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        // Captured payments of transfer/bank_transfer cannot be refunded via direct API requests
-        if (($payment->isTransfer() === true) or
-            ($payment->isBankTransfer() === true))
+        // Captured payments of transfer cannot be refunded via direct API requests
+        if ($payment->isTransfer() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
@@ -1032,5 +1044,32 @@ trait Refund
         ];
 
         return $this->callGatewayForRefundValidation($data);
+    }
+
+    protected function refundBankTransfer($payment, $data)
+    {
+        $refunded = false;
+
+        try
+        {
+            (new BankTransfer\Refund)->process($data);
+
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+
+            $refunded = true;
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment(
+                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
+        }
+
+        return $refunded;
     }
 }

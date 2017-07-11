@@ -202,16 +202,6 @@ trait Authorize
         return $request;
     }
 
-    protected function shouldHitGateway(Payment\Entity $payment)
-    {
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function logAndCheckForAuthRetry($e, $payment): bool
     {
         $traceData = array(

@@ -1457,4 +1457,14 @@ class Processor
 
         return $merchant->methods;
     }
+
+    protected function shouldHitGateway(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -23,8 +23,6 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
-        $this->ba->privateAuth();
-
         $this->bankAccount = $this->createVirtualAccount();
 
         $this->ba->appAuth();
@@ -52,6 +50,25 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testBankTransferRefund()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+        // Process API always returns true
+        $this->processBankTransfer($accountNumber, $ifsc);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
     }
 
     public function testBankTransferProcessAndFetchDetails()
@@ -262,6 +279,8 @@ class BankTransferTest extends TestCase
 
     protected function createVirtualAccount()
     {
+        $this->ba->privateAuth();
+
         $request = $this->testData[__FUNCTION__];
 
         $response = $this->makeRequestAndGetContent($request);

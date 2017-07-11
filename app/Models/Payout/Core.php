@@ -175,7 +175,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function createPayoutEntity(array $input, Merchant\Entity $merchant): Entity
+    public function createPayoutEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $payout = (new Entity)->build($input);
 
