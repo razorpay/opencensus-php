@@ -18,6 +18,8 @@ class BasicEntityReport extends BaseReport
 
     const BATCH_LIMIT = 20000;
 
+    const MAX_FILE_LIMIT = 200000;
+
     protected $entity;
 
     protected $report;
@@ -178,11 +180,13 @@ class BasicEntityReport extends BaseReport
      */
     protected function writeDataToCsv(array $input, $filename)
     {
-        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
+        list($from, $to, $originalCount, $originalSkip) = $this->getParamsForReport($input);
 
         $append = false;
 
-        $merchantIds = (new Merchant\Service)->getAllSubmerchants($this->merchant);
+        $merchantIds = (new Merchant\Service)->getSubmerchantsForReport();
+
+        $totalEntries = 0;
 
         foreach ($merchantIds as $merchantId)
         {
@@ -197,8 +201,20 @@ class BasicEntityReport extends BaseReport
 
                 $skip += $count;
 
+                $totalEntries += $count;
+
                 $append = true;
             }
+        }
+
+        if ($totalEntries > self::MAX_FILE_LIMIT)
+        {
+            $this->trace->critical(
+                TraceCode::MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED,
+                [
+                    'merchant_id'   => $this->merchant->getId(),
+                    'total_entries' => $totalEntries,
+                ]);
         }
 
         return $fullpath;

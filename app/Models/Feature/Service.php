@@ -103,15 +103,22 @@ class Service extends Base\Service
         return $response->toArray();
     }
 
-    public function getFeaturesForEntity($entity)
+    public function getEnabledFeatures($entity)
     {
         $entityId = $entity->getId();
-
-        $data['features'] = [];
 
         $enabledFeatures = $entity->features
                                   ->pluck(\RZP\Models\Feature\Entity::NAME)
                                   ->toArray();
+
+        return $enabledFeatures;
+    }
+
+    public function getFeaturesForEntity($entity)
+    {
+        $enabledFeatures = $this->getEnabledFeatures($entity);
+
+        $data['features'] = [];
 
         foreach (Constants::$visibleFeaturesMap as $visibleFeature => $featureDetails)
         {
