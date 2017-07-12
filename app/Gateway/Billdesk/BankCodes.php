@@ -73,4 +73,16 @@ class BankCodes
     ];
 
     // We are not using Deusctche Bank corporate net-banking currently.
+
+    public static function getBankCode($ifsc, $corporate = false)
+    {
+        $bankId = self::$bankCodeMap[$ifsc];
+
+        if ($corporate === true)
+        {
+            $bankId = self::$corporateBankCodeMap[$ifsc] ?? $bankId;
+        }
+
+        return $bankId;
+    }
 }
