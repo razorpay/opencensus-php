@@ -18,7 +18,6 @@ use App\Mailers\UserMailer;
 use App\RZP\PublicCollection;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
-use App\Exceptions\EntityNotFoundException;
 
 class Service extends Base\Service
 {
