@@ -13,6 +13,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -332,6 +333,26 @@ class FeeCalculator
         return $rule;
     }
 
+    protected function applyEmiDurationFilterAndReturnOneRule($rules)
+    {
+       $payment = $this->entity;
+
+       $merchant = $payment->merchant;
+
+       $emiPlan = $payment->emiPlan;
+
+       if ($merchant->getEmiSubvention() === Emi\Subvention::CUSTOMER)
+       {
+            return $rules;
+       }
+
+       $filters = [
+            [Pricing\Entity::EMI_DURATION, $emiPlan->getDuration(), false, false]
+        ];
+
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
     protected function getRelevantPricingRuleForNBPayment($rules)
     {
         // All the rules for the current pricing plan will be put
@@ -390,6 +411,8 @@ class FeeCalculator
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        $rules = $this->applyEmiDurationFilterAndReturnOneRule($rules);
 
         return $this->validateAndGetOnePricingRule($rules);
     }

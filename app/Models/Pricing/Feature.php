@@ -10,12 +10,14 @@ class Feature
     const PAYOUT            = 'payout';
     const RECURRING         = 'recurring';
     const TRANSFER          = 'transfer';
+    const EMI_PLAN          = 'emi_plan';
 
     const FEATURE_LIST = [
         self::PAYMENT,
         self::PAYOUT,
         self::RECURRING,
         self::TRANSFER,
+        self::EMI_PLAN,
     ];
 
     /**

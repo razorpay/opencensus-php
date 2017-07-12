@@ -7,6 +7,7 @@ use Lib\PhoneBook;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Emi;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
 use RZP\Models\Currency;
@@ -2033,6 +2034,12 @@ class Entity extends Base\PublicEntity
         if ($this->isRecurring() === true)
         {
             $features[] = Pricing\Feature::RECURRING;
+        }
+
+        if (($this->isEmi() === true) and
+            ($this->merchant->getEmiSubvention() === Emi\Subvention::MERCHANT))
+        {
+            $features[] = Pricing\Feature::EMI_PLAN;
         }
 
         return $features;

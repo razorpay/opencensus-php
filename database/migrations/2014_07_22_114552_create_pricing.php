@@ -72,6 +72,10 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Pricing::EMI_DURATION)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
 
