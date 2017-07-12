@@ -134,7 +134,7 @@ class Core extends Base\Core
             {
                 $data['emi'] = $emi;
 
-                $data['emi_subvention'] = $merchant->getSubvention();
+                $data['emi_subvention'] = $merchant->getEmiSubvention();
 
                 $data['emi_plans'] = (new Emi\Service)->all();
             }
