@@ -93,45 +93,25 @@
   }
 
   .report-list-panel {
-    padding: 0;
-    padding-top: 16px;
-    border-right: 1px solid #DEE5E7;
-
     .title {
       color: #7f7f7f;
       font-size: 12px;
-      padding: 0 0 8px 16px;
     }
+    &--mobile {
+      padding: 16px 16px 0;
 
-    input[type=radio].report-type {
-      display: none;
+      .title {
+        padding: 0 0 8px 0;
+      }
     }
+    &--desktop {
+      padding: 0;
+      padding-top: 16px;
+      border-right: 1px solid #DEE5E7;
 
-    input[type=radio].report-type + label {
-      width: 100%;
-      padding: 12px 16px;
-      margin: 0;
-      color: #555555;
-      font-size: 14px;
-      font-weight: 400;
-      box-shadow: inset 0 -1px 0 0 rgba(0,0,0,0.03);
-      cursor: pointer;
-    }
-
-    input[type=radio].report-type + label:hover {
-      background-color: #f9f9f9;
-    }
-
-    input[type=radio].report-type:checked + label {
-      color: #6A55D1;
-      background-color: #f9f9f9;
-    }
-
-    input[type=radio].report-type:checked + label:after {
-      float: right;
-      content: "\25BA";
-      color: #a5a5a5;
-      font-size: 11px;
+      .title {
+        padding: 0 0 8px 16px;
+      }
     }
   }
 
@@ -281,5 +261,35 @@
         margin-bottom: 0;
       }
     }
+.reports-entity-options {
+  input[type=radio].report-type {
+    display: none;
+  }
+
+  input[type=radio].report-type + label {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 0;
+    color: #555555;
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: inset 0 -1px 0 0 rgba(0,0,0,0.03);
+    cursor: pointer;
+  }
+
+  input[type=radio].report-type + label:hover {
+    background-color: #f9f9f9;
+  }
+
+  input[type=radio].report-type:checked + label {
+    color: #6A55D1;
+    background-color: #f9f9f9;
+  }
+
+  input[type=radio].report-type:checked + label:after {
+    float: right;
+    content: "\25BA";
+    color: #a5a5a5;
+    font-size: 11px;
   }
 }

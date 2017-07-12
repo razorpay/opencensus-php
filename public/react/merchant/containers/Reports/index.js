@@ -10,6 +10,7 @@ import { generateReport } from 'merchant/modules/reports';
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import Datetime from 'react-datetime';
+import { PowerSelect, TypeAhead } from 'react-power-select';
 
 function validYear(current) {
   return current.year() >= 2015 && current.year() <= 2017;
@@ -22,7 +23,7 @@ const selector = formValueSelector('generateReports');
     return {
       mode: state.session.mode,
       user: state.session.user,
-      account: state.accounts,
+      accounts: state.accounts.accounts,
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
       date: selector(state, 'date'),
@@ -39,11 +40,83 @@ const selector = formValueSelector('generateReports');
   },
 })
 export default class ReportsContainer extends Component {
+  state = {};
+
   componentWillMount() {
     this.props.fetchAccounts();
+    this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
+
+    this.prepareEntityOptions();
   }
+
+  prepareEntityOptions() {
+    const { user } = this.props;
+
+    this.entityOptions = [
+      {
+        value: 'transaction',
+        id: 'combined',
+        label: 'Combined Report',
+      },
+      {
+        value: 'payment',
+        id: 'payment',
+        label: 'Payments',
+      },
+      {
+        value: 'refund',
+        id: 'refund',
+        label: 'Refunds',
+      },
+      {
+        value: 'settlement',
+        id: 'settlement',
+        label: 'Settlements',
+      },
+      {
+        value: 'invoice',
+        id: 'invoice',
+        label: 'Monthly Invoice',
+      },
+    ];
+
+    if (!user.tags.indexOf('Broking_Report') === -1) {
+      this.entityOptions.push({
+        value: 'broking',
+        id: 'broking',
+        label: 'Broking Reports', //
+      });
+    }
+
+    {
+      /*DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants*/
+    }
+    if (!user.tags.indexOf('Dsp_Report') === -1) {
+      this.entityOptions.push({
+        value: 'dsp_report',
+        id: 'dsp_report',
+        label: 'DSP Transaction Report', //
+      });
+    }
+
+    if (!user.tags.indexOf('Marketplace') === -1) {
+      this.entityOptions.push({
+        value: 'transfer',
+        id: 'transfer',
+        label: 'Transfers', //
+      });
+
+      this.entityOptions.push({
+        value: 'reversal',
+        id: 'reversal',
+        label: 'Reversals', //
+      });
+    }
+  }
+
   prepareGenerateReport = values => {
-    let { entity, type, date, account_id } = values;
+    let { entity, type, date } = values;
+    const account_id = this.state.merchantSelected.id;
 
     let data = {
       month: date.month() + 1, // Jan is 0 in moment library
@@ -69,7 +142,7 @@ export default class ReportsContainer extends Component {
     };
 
     if (account_id !== this.props.user.id) {
-      data.account_id = account_id;
+      data.account_id = 'acc_' + account_id; // It will be handled at api level later
     }
 
     if (entity === 'broking') {
@@ -110,7 +183,6 @@ export default class ReportsContainer extends Component {
     let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
     isMarketplace = true;
 
-    // console.log('USER', user);
     return (
       <tabbed-container>
         <header>
@@ -118,108 +190,46 @@ export default class ReportsContainer extends Component {
         </header>
         <div class="report-wrapper col-lg-8 col-sm-10 col-xs-11">
           {/*Report Type Selection*/}
-          <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel">
+          <div
+            class={`col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel report-list-panel${this.isMobileDevice ? '--mobile' : '--desktop'}`}
+          >
             <div class="title">SELECT REPORT TYPE</div>
-            <Field
-              name="entity"
-              value="transaction"
-              id="combined"
-              component="input"
-              type="radio"
-              class="report-type form-control"
-            />
-            <label for="combined">Combined Report</label>
-
-            <Field
-              name="entity"
-              value="payment"
-              id="payment"
-              component="input"
-              type="radio"
-              class="report-type form-control"
-            />
-            <label for="payment">Payments</label>
-
-            <Field
-              name="entity"
-              value="refund"
-              id="refund"
-              component="input"
-              type="radio"
-              class="report-type form-control"
-            />
-            <label for="refund">Refunds</label>
-
-            <Field
-              name="entity"
-              value="settlement"
-              id="settlement"
-              component="input"
-              type="radio"
-              class="report-type form-control"
-            />
-            <label for="settlement">Settlements</label>
-
-            {user.tags.indexOf('Broking_Report') === -1 ||
-              <div>
-                <Field
-                  name="entity"
-                  value="broking"
-                  id="broking"
-                  component="input"
-                  type="radio"
-                  class="report-type form-control"
+            {this.isMobileDevice
+              ? <PowerSelect
+                  optionLabelPath="report_type"
+                  options={this.entityOptions}
+                  searchEnabled={false}
+                  optionComponent={({ option }) => (
+                    <div class="reports-entity-options">
+                      <Field
+                        name="entity"
+                        value={option.value}
+                        id={option.id}
+                        component="input"
+                        type="radio"
+                        class="report-type form-control"
+                      />
+                      <label for={option.id}>{option.label}</label>
+                    </div>
+                  )}
+                  selectedOptionComponent={({ option }) => option.label}
                 />
-                <label for="broking">Broking Reports</label>
-              </div>}
-
-            {/*DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants*/}
-            {user.tags.indexOf('Dsp_Report') === -1 ||
-              <div>
-                <Field
-                  name="entity"
-                  value="dsp_report"
-                  id="dsp_report"
-                  component="input"
-                  type="radio"
-                  class="report-type form-control"
-                />
-                <label for="dsp_report">DSP Transaction Report</label>
-              </div>}
-            <Field
-              name="entity"
-              value="invoice"
-              id="invoice"
-              component="input"
-              type="radio"
-              class="report-type form-control"
-            />
-            <label for="invoice">Monthly Invoice</label>
-
-            {user.tags.indexOf('Marketplace') === -1 ||
-              <div>
-                <Field
-                  name="entity"
-                  value="transfer"
-                  id="transfer"
-                  component="input"
-                  type="radio"
-                  class="report-type form-control"
-                />
-                <label for="transfer">Transfers</label>
-
-                <Field
-                  name="entity"
-                  value="reversal"
-                  id="reversal"
-                  component="input"
-                  type="radio"
-                  class="report-type form-control"
-                />
-                <label for="reversal">Reversals</label>
-              </div>}
+              : <div class="reports-entity-options">
+                  {this.entityOptions.map(option => (
+                    <div>
+                      <Field
+                        name="entity"
+                        value={option.value}
+                        id={option.id}
+                        component="input"
+                        type="radio"
+                        class="report-type form-control"
+                      />
+                      <label for={option.id}>{option.label}</label>
+                    </div>
+                  ))}
+                </div>}
           </div>
-
           {/*Report Generate Panel*/}
           <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 report-generate-panel">
 
@@ -235,20 +245,27 @@ export default class ReportsContainer extends Component {
                     {' '}
                     {user.email || user.user.email}
                   </div>
-                : <Field
-                    component="select"
-                    class="form-control"
-                    name="account_id"
-                  >
-                    <option value={user.id || user.user.id} disabled selected>
-                      Current Account
-                    </option>
-                    <option class="divider" disabled />
-                    <option value="acc_89wltQH83y3z7s">
-                      89wltQH83y3z7s
-                    </option>
-                  </Field>}
+                : <PowerSelect
+                    options={this.props.accounts}
+                    placeholder="Search for merchant Name/Email/Merchant ID"
+                    optionLabelPath="merchant_account"
+                    searchIndices={['name', 'id']}
+                    selected={this.state.merchantSelected}
+                    optionComponent={({ option }) => (
+                      <div><b>{option.name}</b><span>- {option.id}</span></div>
+                    )}
+                    selectedOptionComponent={({ option }) => (
+                      <div><b>{option.name}</b><span>- {option.id}</span></div>
+                    )}
+                    onChange={({ option }) => {
+                      if (option) {
+                        console.log('OPTIOSN..', option);
+                        this.setState({ merchantSelected: option });
+                      }
+                    }}
+                  />}
             </div>
+
             <div class="form-element">
               <div class="title">
                 DATE RANGE
