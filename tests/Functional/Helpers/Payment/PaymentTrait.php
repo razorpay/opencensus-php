@@ -13,6 +13,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Account;
 
 trait PaymentTrait
 {
@@ -738,7 +739,7 @@ trait PaymentTrait
 
         $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
 
-        $merchant = (new MerchantFluid())->getMerchant('10000000000000')->get();
+        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
 
         $admin = $this->ba->getAdmin();
 
