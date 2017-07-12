@@ -5,6 +5,7 @@ namespace RZP\Models\Report\Types;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Report;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
@@ -181,15 +182,23 @@ class BasicEntityReport extends BaseReport
 
         $append = false;
 
-        while ($count === self::BATCH_LIMIT)
+        $merchantIds = (new Merchant\Service)->getAllSubmerchants($this->merchant);
+
+        foreach ($merchantIds as $merchantId)
         {
-            list($data, $count) = $this->getReportData($from, $to, self::BATCH_LIMIT, $skip);
+            $count = $originalCount;
+            $skip = $originalSkip;
 
-            $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
+            while ($count === self::BATCH_LIMIT)
+            {
+                list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
 
-            $skip += $count;
+                $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
 
-            $append = true;
+                $skip += $count;
+
+                $append = true;
+            }
         }
 
         return $fullpath;
@@ -282,6 +291,23 @@ class BasicEntityReport extends BaseReport
     {
         $merchantId = $this->merchant->getId();
 
+        return $this->getReportDataForMerchant($from, $to, $count, $skip, $merchantId);
+    }
+
+    /**
+     * Gets report data for concerned entity
+     * 1. Fetches entities to be added in report
+     * 2. Formats data to be shown in report
+     *
+     * @param  [type] $from       [description]
+     * @param  [type] $to         [description]
+     * @param  [type] $count      [description]
+     * @param  [type] $skip       [description]
+     * @param  [type] $merchantId [description]
+     * @return [type]             [description]
+     */
+    protected function getReportDataForMerchant($from, $to, $count, $skip, $merchantId): array
+    {
         $begin = time();
 
         $this->trace->debug(

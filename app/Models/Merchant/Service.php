@@ -991,6 +991,16 @@ class Service extends Base\Service
     }
 
     /**
+     * Return all submerchants of the master merchant (for aggregator model only)
+     * @param  Entity $merchant [description]
+     * @return [type]           [description]
+     */
+    public function getAllSubmerchants(Entity $merchant)
+    {
+        return [ $merchant->getId() ];
+    }
+
+    /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
      */
