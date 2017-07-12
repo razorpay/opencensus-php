@@ -69,7 +69,7 @@ class Reconciliate extends Base\Reconciliate
     public function getReconPassword($fileDetails)
     {
         // TODO: Fix password
-        return 'NESTECHRAZP';
+        return 'RAZORPAYADD';
     }
 
     public function getStartRow($fileDetails)
