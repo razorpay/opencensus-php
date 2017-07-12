@@ -195,6 +195,8 @@ class EntityReportTest extends TestCase
 
     public function testDspReport()
     {
+        $this->fixtures->merchant->addFeatures(['dsp_report']);
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
 
         $order = $this->fixtures->create('order',
@@ -223,7 +225,7 @@ class EntityReportTest extends TestCase
         $dt = Carbon::today('Asia/Kolkata');
 
         $input = [
-            'day'         => 'yesterday',
+            'day'         => 'today',
             'merchant_id' => '10000000000000',
             'email'       => 'test1@razorpay.com',
         ];
@@ -306,7 +308,7 @@ class EntityReportTest extends TestCase
             'method' => 'get',
             'content' => $content);
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
     }

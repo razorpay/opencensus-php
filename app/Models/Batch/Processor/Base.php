@@ -125,8 +125,8 @@ class Base extends BaseModel\Core
 
                 $this->repo->saveOrFail($this->batch);
             },
-            self::MUTEX_LOCK_TIMEOUT
-        );
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayPublic());
 
@@ -165,7 +165,7 @@ class Base extends BaseModel\Core
 
                 $this->trace->traceException(
                                 $e,
-                                Trace::ERROR,
+                                null,
                                 TraceCode::BATCH_PROCESSING_ERROR,
                                 [
                                     Batch\Entity::ID => $this->batch->getId(),
