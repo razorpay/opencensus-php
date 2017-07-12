@@ -1004,9 +1004,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $enabledFeatures = (new Feature\Service)->getEnabledFeatures($merchant);
-
-        if (in_array(Feature\Constants::AGGREGATOR_REPORT, $enabledFeatures, true))
+        if ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
         {
             return [ $merchant->getId() ];
         }
