@@ -1673,9 +1673,11 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
+        $subvention = $payment->merchant->getEmiSubvention();
+
         // Set emi plan id
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration);
+                                            $iinEntity, $emiDuration, $subvention);
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
