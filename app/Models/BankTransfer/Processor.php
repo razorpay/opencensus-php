@@ -109,6 +109,15 @@ class Processor extends Base\Core
 
     protected function processUnexpectedBankTransfer(Entity $bankTransfer)
     {
+        $payeeAccount = $bankTransfer->getPayeeAccount();
+
+        // Ignore payments made to reserved accounts, i.e. accounts that use the
+        // reserved roots. We will use this for other cool stuff.
+        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $this->provider) === true)
+        {
+            return;
+        }
+
         $bankTransfer->setExpected(false);
 
         $this->setDefaultMerchant();
@@ -197,7 +206,7 @@ class Processor extends Base\Core
 
     protected function setDefaultMerchant()
     {
-        $defaultMerchantId = Account::DEMO_ACCOUNT;
+        $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
 
         if ($this->mode === Mode::TEST)
         {

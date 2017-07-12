@@ -299,6 +299,25 @@ class BankTransferTest extends TestCase
         });
     }
 
+    public function testBankTransferReservedAccount()
+    {
+        $accountNumber = 'RZRNODAL123';
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // No bank transfer created
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertNull($bankTransfer);
+
+        // No payment created
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertNull($payment);
+    }
+
     protected function createVirtualAccount()
     {
         $this->ba->privateAuth();

@@ -7,6 +7,7 @@ use ErrorException;
 use phpseclib\Crypt\RSA;
 use Request;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -684,7 +685,7 @@ class Gateway extends Base\Gateway
             Fields::ONLINE_REFUND                   => 'N',
         ];
 
-        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        if ($input['payment']['merchant_id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
         {
             $data[Fields::ONLINE_REFUND] = 'Y';
         }
