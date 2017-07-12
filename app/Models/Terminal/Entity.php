@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
 {
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
     protected static $modifiers = [
         'inputRemoveBlanks',
         self::INTERNATIONAL,
+        self::EMI_SUBVENTION,
     ];
 
     protected $defaults = [
@@ -475,6 +477,16 @@ class Entity extends Base\PublicEntity
             {
                 $input[self::INTERNATIONAL] = 1;
             }
+        }
+    }
+
+    protected function modifyEmiSubvention(& $input)
+    {
+        if ((empty($input[self::EMI]) === false) and
+            ($input[self::EMI] == true) and
+            (empty($input[self::EMI_SUBVENTION]) === true))
+        {
+            $input[self::EMI_SUBVENTION] = EmiSubvention::CUSTOMER;
         }
     }
 

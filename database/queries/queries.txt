@@ -2237,3 +2237,5 @@ ALTER TABLE transfers
 
 ALTER TABLE terminals
     ADD COLUMN corporate TINYINT(1) NOT NULL DEFAULT 0 AFTER mode;
+
+UPDATE terminals set emi_subvention = 'customer' where emi = 1;
