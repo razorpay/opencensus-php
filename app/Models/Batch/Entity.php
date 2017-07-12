@@ -283,4 +283,12 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- End Setters ---------------------------
+
+    public function toArrayDebug()
+    {
+        return [
+            self::ID          => $this->getId(),
+            self::MERCHANT_ID => $this->getMerchantId(),
+        ];
+    }
 }

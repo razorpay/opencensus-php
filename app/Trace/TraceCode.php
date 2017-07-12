@@ -587,6 +587,7 @@ class TraceCode
     const PRICING_RULE_MISTMATCH                        = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 
+    const BATCH_CREATE_REQUEST                          = 'BATCH_CREATE_REQUEST';
     const BATCH_CREATED                                 = 'BATCH_CREATED';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';

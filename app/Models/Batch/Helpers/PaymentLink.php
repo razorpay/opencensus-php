@@ -36,22 +36,22 @@ class PaymentLink
         $emailNotify = $params[Invoice\Entity::EMAIL_NOTIFY] ?? '0';
 
         $customer    = [
-            Customer\Entity::NAME    => $entry[Batch\Header::CUSTOMER_NAME],
-            Customer\Entity::CONTACT => $entry[Batch\Header::CUSTOMER_CONTACT],
-            Customer\Entity::EMAIL   => $entry[Batch\Header::CUSTOMER_EMAIL],
+            Customer\Entity::NAME    => (string) $entry[Batch\Header::CUSTOMER_NAME],
+            Customer\Entity::CONTACT => (string) $entry[Batch\Header::CUSTOMER_CONTACT],
+            Customer\Entity::EMAIL   => (string) $entry[Batch\Header::CUSTOMER_EMAIL],
         ];
 
         $customer = array_filter($customer);
 
         $input = [
-            Invoice\Entity::DRAFT           => $draft,
-            Invoice\Entity::SMS_NOTIFY      => $smsNotify,
-            Invoice\Entity::EMAIL_NOTIFY    => $emailNotify,
+            Invoice\Entity::DRAFT           => (string) $draft,
+            Invoice\Entity::SMS_NOTIFY      => (string) $smsNotify,
+            Invoice\Entity::EMAIL_NOTIFY    => (string) $emailNotify,
             Invoice\Entity::TYPE            => Invoice\Type::LINK,
-            Invoice\Entity::RECEIPT         => $entry[Batch\Header::INVOICE_NUMBER],
-            Invoice\Entity::AMOUNT          => $entry[Batch\Header::AMOUNT],
-            Invoice\Entity::DESCRIPTION     => $entry[Batch\Header::DESCRIPTION],
-            Invoice\Entity::EXPIRE_BY       => $entry[Batch\Header::EXPIRE_BY],
+            Invoice\Entity::RECEIPT         => (string) $entry[Batch\Header::INVOICE_NUMBER],
+            Invoice\Entity::AMOUNT          => (int) number_format($entry[Batch\Header::AMOUNT], 0, '', ''),
+            Invoice\Entity::DESCRIPTION     => (string) $entry[Batch\Header::DESCRIPTION],
+            Invoice\Entity::EXPIRE_BY       => (int) $entry[Batch\Header::EXPIRE_BY],
             Invoice\Entity::PARTIAL_PAYMENT => $partialPayment,
             Invoice\Entity::CUSTOMER        => $customer,
         ];

@@ -186,8 +186,9 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
                 Entity::FILE,
                 [
-                    'count'  => $errorsCount,
-                    'errors' => $errors,
+                    'count'       => $errorsCount,
+                    'errors'      => $errors,
+                    'merchant_id' => $merchant->getId(),
                 ]);
         }
     }

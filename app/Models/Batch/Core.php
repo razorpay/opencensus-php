@@ -17,6 +17,10 @@ class Core extends Base\Core
 
     public function create(array $input): Entity
     {
+        $this->trace->info(
+            TraceCode::BATCH_CREATE_REQUEST,
+            array_diff($input, [Entity::FILE => '']));
+
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);

@@ -147,8 +147,8 @@ class Base extends BaseModel\Core
                 $this->trace->debug(
                                 TraceCode::BATCH_PROCESSING_ENTRY,
                                 [
-                                    Batch\Entity::ID => $this->batch->getId(),
-                                    'entry'          => $entry,
+                                    'batch' => $this->batch->toArrayDebug(),
+                                    'entry' => $entry,
                                 ]);
 
                 $this->processEntry($entry);
@@ -167,9 +167,7 @@ class Base extends BaseModel\Core
                                 $e,
                                 null,
                                 TraceCode::BATCH_PROCESSING_ERROR,
-                                [
-                                    Batch\Entity::ID => $this->batch->getId(),
-                                ]);
+                                $this->batch->toArrayDebug());
 
                 $error = $e->getError();
 
@@ -187,9 +185,7 @@ class Base extends BaseModel\Core
                                 $e,
                                 Trace::CRITICAL,
                                 TraceCode::BATCH_PROCESSING_ERROR,
-                                [
-                                    Batch\Entity::ID => $this->batch->getId(),
-                                ]);
+                                $this->batch->toArrayDebug());
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
