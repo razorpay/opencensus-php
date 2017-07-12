@@ -88,6 +88,11 @@ class Validator extends Base\Validator
         Org\Entity::AUTH_TYPE         => 'required|string|in:password',
     ];
 
+    protected static $changeRules = [
+        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::OLD_PASSWORD          => 'required|string',
+    ];
+
     protected static $filterRules = [
         self::SUSPENDED         => 'sometimes|boolean',
         self::ARCHIVED          => 'sometimes|boolean',
