@@ -517,4 +517,5 @@ UPDATE terminals
 # Set delay in hours for hourly schedules
 UPDATE schedules SET delay=1 WHERE period='hourly' AND DELAY=0;
 
+# sets emi_subvention in terminals
 UPDATE terminals set emi_subvention = 'customer' where emi = 1;

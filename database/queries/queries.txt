@@ -2238,7 +2238,6 @@ ALTER TABLE transfers
 ALTER TABLE terminals
     ADD COLUMN corporate TINYINT(1) NOT NULL DEFAULT 0 AFTER mode;
 
-UPDATE terminals set emi_subvention = 'customer' where emi = 1;
-
+# Removes emi_subvention from methods
 ALTER TABLE merchant_banks
     DROP COLUMN emi_subvention;
