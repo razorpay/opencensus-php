@@ -242,6 +242,8 @@ app.controller('EntitiesCtrl', [
         refund_id: ['Refund ID'],
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
+        caps_payment_id: ['Caps Payment ID'],
+        gateway_transaction_id: ['Gateway Transaction ID'],
       },
       batch_fund_transfer: {
         type: ['all', 'settlement', 'payout'],
