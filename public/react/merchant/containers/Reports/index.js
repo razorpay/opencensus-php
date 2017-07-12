@@ -88,14 +88,12 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    {
-      /*DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants*/
-    }
+    // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
     if (!user.tags.indexOf('Dsp_Report') === -1) {
       this.entityOptions.push({
         value: 'dsp_report',
         id: 'dsp_report',
-        label: 'DSP Transaction Report', //
+        label: 'DSP Transaction Report',
       });
     }
 
@@ -103,13 +101,13 @@ export default class ReportsContainer extends Component {
       this.entityOptions.push({
         value: 'transfer',
         id: 'transfer',
-        label: 'Transfers', //
+        label: 'Transfers',
       });
 
       this.entityOptions.push({
         value: 'reversal',
         id: 'reversal',
-        label: 'Reversals', //
+        label: 'Reversals',
       });
     }
   }
@@ -196,9 +194,13 @@ export default class ReportsContainer extends Component {
             <div class="title">SELECT REPORT TYPE</div>
             {this.isMobileDevice
               ? <PowerSelect
-                  optionLabelPath="report_type"
                   options={this.entityOptions}
                   searchEnabled={false}
+                  selected={this.state.entity}
+                  onChange={({ option }) => {
+                    this.setState({ entity: option }); // only for powerselect view otherwise not consumed elsewhere
+                    this.props.change('entity', option.value); // programmatically set redux-form 'entity' otherwise, powerselect closes before redux-form is updated
+                  }}
                   optionComponent={({ option }) => (
                     <div class="reports-entity-options">
                       <Field
@@ -212,7 +214,9 @@ export default class ReportsContainer extends Component {
                       <label for={option.id}>{option.label}</label>
                     </div>
                   )}
-                  selectedOptionComponent={({ option }) => option.label}
+                  selectedOptionComponent={({ option }) => (
+                    <div>{option.label}</div>
+                  )}
                 />
               : <div class="reports-entity-options">
                   {this.entityOptions.map(option => (
@@ -246,20 +250,24 @@ export default class ReportsContainer extends Component {
                     {user.email || user.user.email}
                   </div>
                 : <PowerSelect
-                    options={this.props.accounts}
+                    options={this.props.accounts.concat(this.props.accounts)}
                     placeholder="Search for merchant Name/Email/Merchant ID"
-                    optionLabelPath="merchant_account"
                     searchIndices={['name', 'id']}
                     selected={this.state.merchantSelected}
                     optionComponent={({ option }) => (
-                      <div><b>{option.name}</b><span>- {option.id}</span></div>
+                      <div style={{ padding: '5' }}>
+                        <b style={{ marginRight: '5' }}>{option.name}</b>
+                        <span>- {option.id}</span>
+                      </div>
                     )}
                     selectedOptionComponent={({ option }) => (
-                      <div><b>{option.name}</b><span>- {option.id}</span></div>
+                      <div>
+                        <b style={{ marginRight: '5' }}>{option.name}</b>
+                        <span>- {option.id}</span>
+                      </div>
                     )}
                     onChange={({ option }) => {
                       if (option) {
-                        console.log('OPTIOSN..', option);
                         this.setState({ merchantSelected: option });
                       }
                     }}
