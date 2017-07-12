@@ -13,7 +13,9 @@ class Service extends Base\Service
 {
     public function all()
     {
-        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+        $subvention = $this->merchant->getEmiSubvention();
+
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans($subvention);
 
         $plans = [];
 

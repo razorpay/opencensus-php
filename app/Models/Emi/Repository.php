@@ -17,9 +17,10 @@ class Repository extends Base\Repository
         Entity::NETWORK         => 'sometimes|string|max:12',
     );
 
-    public function fetchEmiPlans()
+    public function fetchEmiPlans($subvention)
     {
         return $this->newQuery()
+                    ->where(Entity::SUBVENTION, $subvention)
                     ->withoutTrashed()
                     ->get();
     }
