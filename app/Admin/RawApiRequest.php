@@ -87,6 +87,8 @@ class RawApiRequest
     {
         $adminUser = Auth::guard('api')->user();
 
+        $adminToken = null;
+
         if (empty($adminUser) === false)
         {
             $adminToken = $adminUser->token;
@@ -96,7 +98,7 @@ class RawApiRequest
         switch ($input['auth'])
         {
             case 'proxy':
-                $merchantId = $this->resolveMerchantId($input);
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
@@ -107,13 +109,13 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
-                $merchantId = $this->resolveMerchantId($input);
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
             case 'admin':
-                $merchantId = $this->resolveMerchantId($input);
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
                 $this->setAdminCredentials($adminToken, $input['mode'], $merchantId);
                 break;
@@ -336,19 +338,24 @@ class RawApiRequest
      *
      * @return string
      */
-    protected function resolveMerchantId($input)
+    protected function resolveMerchantId($input, $adminToken = null)
     {
         $merchantId = null;
 
-        $adminUser = Auth::guard('admin')->user();
         $merchantUser = Auth::guard('user')->user();
 
         // If current user is NOT an admin
-        if (empty($adminUser) === true and empty($merchantUser) === false)
+        if (empty($adminToken) === true and empty($merchantUser) === false)
         {
-            $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+            $currentMerchant = $merchantUser->currentMerchant();
+
+            if (empty($currentMerchant) === false)
+            {
+                $merchantId = $currentMerchant->id;
+            }
         }
-        else
+
+        if (empty($merchantId) === true)
         {
             $merchantId = $input['merchant_id'] ?? null;
         }
