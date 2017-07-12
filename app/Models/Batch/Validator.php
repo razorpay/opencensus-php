@@ -51,7 +51,7 @@ class Validator extends Base\Validator
             throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
                         Entity::STATUS,
-                        $this->entity->toArrayPublic());
+                        $this->entity->toArray());
         }
     }
 
@@ -145,6 +145,7 @@ class Validator extends Base\Validator
         // as the error message.
 
         $errors = [];
+        $errorEntries = [];
 
         foreach ($entries as $idx => $entry)
         {
@@ -170,7 +171,10 @@ class Validator extends Base\Validator
             }
             catch (BaseException $e)
             {
-                $errors[$idx] = $e->getError()->getDescription();
+                $idx++;
+
+                $errors[$idx]       = $e->getError()->getDescription();
+                $errorEntries[$idx] = $entry;
             }
             finally
             {
@@ -186,9 +190,10 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
                 Entity::FILE,
                 [
-                    'count'       => $errorsCount,
-                    'errors'      => $errors,
-                    'merchant_id' => $merchant->getId(),
+                    'count'         => $errorsCount,
+                    'errors'        => $errors,
+                    'error_entries' => $errorEntries,
+                    'merchant_id'   => $merchant->getId(),
                 ]);
         }
     }

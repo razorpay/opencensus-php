@@ -589,7 +589,9 @@ class TraceCode
 
     const BATCH_CREATE_REQUEST                          = 'BATCH_CREATE_REQUEST';
     const BATCH_CREATED                                 = 'BATCH_CREATED';
+    const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
+    const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';

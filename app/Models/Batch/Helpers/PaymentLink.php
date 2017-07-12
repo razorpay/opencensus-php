@@ -25,8 +25,17 @@ class PaymentLink
         // from excel file.
 
         $partialPayment = $entry[Batch\Header::PARTIAL_PAYMENT];
-
         $partialPayment = $partialPayment === null ? '0' : (string) $partialPayment;
+
+        $receipt = $entry[Batch\Header::INVOICE_NUMBER];
+        $receipt = $receipt === null ? null : (string) $receipt;
+
+        $expireBy = $entry[Batch\Header::EXPIRE_BY];
+        $expireBy = $expireBy === null ? null : (int) $expireBy;
+
+        // Amount needs to be formatted this way as excel reader in cases
+        // reads 4255 as 4244.99999. This is known php + excel issue.
+        $amount   = (int) number_format($entry[Batch\Header::AMOUNT], 0, '', '');
 
         // Get draft, sms_notify, email_notify from $params or use default as
         // 1, 0 and 0 respectively.
@@ -34,6 +43,8 @@ class PaymentLink
         $draft       = $params[Invoice\Entity::DRAFT] ?? '1';
         $smsNotify   = $params[Invoice\Entity::SMS_NOTIFY] ?? '0';
         $emailNotify = $params[Invoice\Entity::EMAIL_NOTIFY] ?? '0';
+
+        // Build customer input
 
         $customer    = [
             Customer\Entity::NAME    => (string) $entry[Batch\Header::CUSTOMER_NAME],
@@ -44,14 +55,14 @@ class PaymentLink
         $customer = array_filter($customer);
 
         $input = [
-            Invoice\Entity::DRAFT           => (string) $draft,
-            Invoice\Entity::SMS_NOTIFY      => (string) $smsNotify,
-            Invoice\Entity::EMAIL_NOTIFY    => (string) $emailNotify,
+            Invoice\Entity::DRAFT           => $draft,
+            Invoice\Entity::SMS_NOTIFY      => $smsNotify,
+            Invoice\Entity::EMAIL_NOTIFY    => $emailNotify,
             Invoice\Entity::TYPE            => Invoice\Type::LINK,
-            Invoice\Entity::RECEIPT         => (string) $entry[Batch\Header::INVOICE_NUMBER],
-            Invoice\Entity::AMOUNT          => (int) number_format($entry[Batch\Header::AMOUNT], 0, '', ''),
+            Invoice\Entity::RECEIPT         => $receipt,
+            Invoice\Entity::AMOUNT          => $amount,
             Invoice\Entity::DESCRIPTION     => (string) $entry[Batch\Header::DESCRIPTION],
-            Invoice\Entity::EXPIRE_BY       => (int) $entry[Batch\Header::EXPIRE_BY],
+            Invoice\Entity::EXPIRE_BY       => $expireBy,
             Invoice\Entity::PARTIAL_PAYMENT => $partialPayment,
             Invoice\Entity::CUSTOMER        => $customer,
         ];

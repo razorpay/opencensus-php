@@ -103,6 +103,8 @@ class Base extends BaseModel\Core
 
     public function process()
     {
+        $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
+
         $this->batch->getValidator()->validateNotProcessedAlready();
 
         $this->batch->incrementAttempts();
@@ -128,7 +130,7 @@ class Base extends BaseModel\Core
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
 
-        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
 
         $this->postProcess();
     }
@@ -142,14 +144,15 @@ class Base extends BaseModel\Core
     {
         foreach ($entries as & $entry)
         {
+            $tracePayload = [
+                Batch\Entity::ID          => $this->batch->getId(),
+                Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
+                'entry'                   => $entry,
+            ];
+
             try
             {
-                $this->trace->debug(
-                                TraceCode::BATCH_PROCESSING_ENTRY,
-                                [
-                                    'batch' => $this->batch->toArrayDebug(),
-                                    'entry' => $entry,
-                                ]);
+                $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $tracePayload);
 
                 $this->processEntry($entry);
 
@@ -167,7 +170,7 @@ class Base extends BaseModel\Core
                                 $e,
                                 null,
                                 TraceCode::BATCH_PROCESSING_ERROR,
-                                $this->batch->toArrayDebug());
+                                $tracePayload);
 
                 $error = $e->getError();
 
@@ -185,7 +188,7 @@ class Base extends BaseModel\Core
                                 $e,
                                 Trace::CRITICAL,
                                 TraceCode::BATCH_PROCESSING_ERROR,
-                                $this->batch->toArrayDebug());
+                                $tracePayload);
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
@@ -333,6 +336,8 @@ class Base extends BaseModel\Core
 
     public function saveInputFile(UploadedFile $file): \SplFileInfo
     {
+        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
+
         //
         // PHP's upload file get's deleted automatically once request terminates.
         // Moving this file to batch save location where UFH downloads the same
