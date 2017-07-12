@@ -338,11 +338,19 @@ class RawApiRequest
      */
     protected function resolveMerchantId($input)
     {
-        $merchantId = $input['merchant_id'] ?? null;
+        $merchantId = null;
 
-        if (empty($merchantId) === true)
+        $adminUser = Auth::guard('admin')->user();
+        $merchantUser = Auth::guard('user')->user();
+
+        // If current user is NOT an admin
+        if (empty($adminUser) === true and empty($merchantUser) === false)
         {
             $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+        }
+        else
+        {
+            $merchantId = $input['merchant_id'] ?? null;
         }
 
         return $merchantId;
