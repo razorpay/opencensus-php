@@ -166,9 +166,13 @@ class Service extends Base\Service
 
     public function resetPassword(string $orgId, array $input)
     {
+        $validator = new Validator();
+
         $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
+
+        $validator->validateInput('reset', $input);
 
         // Get admin
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
@@ -614,7 +618,8 @@ class Service extends Base\Service
 
         $adminOrgAuthType = $admin->org->getAuthType();
 
-        if ($adminOrgAuthType !== Org\AuthType::PASSWORD) {
+        if ($adminOrgAuthType !== Org\AuthType::PASSWORD)
+        {
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED);
