@@ -162,10 +162,6 @@ class Gateway extends Base\Gateway
     /**
      * Encrypts the query string using AES256Key provided by bank.
      *
-     * AES in ECB mode without padding.
-     * ECB encrypts each block of data independently
-     * and the same plaintext block will result in the same ciphertext block.
-     *
      * @param  string $queryString
      * @return string $encryptedString
      */
@@ -173,7 +169,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $crypto = new AESCrypto(AES::MODE_ECB, $masterKey);
+        $crypto = new AESCrypto($masterKey);
 
         $encryptedString = $crypto->encryptString($queryString);
 
@@ -183,10 +179,6 @@ class Gateway extends Base\Gateway
     /**
      * Decrypts the encrypted string using AES256Key provided by bank.
      *
-     * AES in ECB mode wihout padding.
-     * ECB encrypts each block of data independently
-     * and the same plaintext block will result in the same ciphertext block.
-     *
      * @param  string $encryptedString
      * @return string $decryptedString
      */
@@ -194,7 +186,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $crypto = new AESCrypto(AES::MODE_ECB, $masterKey);
+        $crypto = new AESCrypto($masterKey);
 
         $decryptedString = $crypto->decryptString($encryptedString);
 
