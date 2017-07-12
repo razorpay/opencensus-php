@@ -166,13 +166,9 @@ class Service extends Base\Service
 
     public function resetPassword(string $orgId, array $input)
     {
-        $validator = new Validator();
-
         $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
-
-        $validator->validateInput('reset', $input);
 
         // Get admin
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
@@ -605,5 +601,29 @@ class Service extends Base\Service
         return sprintf(
             self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
             $orgId, $adminId);
+    }
+
+    /**
+     * Change password for admin.
+     * @param  array $input input request params
+     * @return array        response
+     */
+    public function changePassword($input)
+    {
+        $admin = $this->auth->getAdmin();
+
+        $adminOrgAuthType = $admin->org->getAuthType();
+
+        if ($adminOrgAuthType !== Org\AuthType::PASSWORD) {
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED);
+        }
+
+        $this->core()->updatePassword($admin, $input, false, 'change');
+
+        $this->repo->admin->saveOrFail($admin);
+
+        return ['success' => true];
     }
 }
