@@ -89,7 +89,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $changeRules = [
-        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::PASSWORD              => 'required|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required',
         Entity::OLD_PASSWORD          => 'required|string',
     ];
 
