@@ -5,11 +5,10 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import Datetime from 'react-datetime';
+import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 
 function validYear(current) {
@@ -124,7 +123,7 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props.mode}/reports/invoice?year=${year}&month=${month}`,
+          `/${this.props.mode}/reports/invoice?year=${data.year}&month=${month}`,
           '_blank'
         )
       );
@@ -175,11 +174,8 @@ export default class ReportsContainer extends Component {
   };
 
   render() {
-    let { entity, type, mode, month, year, user, handleSubmit } = this.props;
-    user.tags.push('Marketplace');
-
+    let { entity, type, mode, user, date, handleSubmit } = this.props;
     let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
-    isMarketplace = true;
 
     return (
       <tabbed-container>
@@ -219,8 +215,8 @@ export default class ReportsContainer extends Component {
                   )}
                 />
               : <div class="reports-entity-options">
-                  {this.entityOptions.map(option => (
-                    <div>
+                  {this.entityOptions.map((option, index) => (
+                    <div key={index}>
                       <Field
                         name="entity"
                         value={option.value}
@@ -250,9 +246,9 @@ export default class ReportsContainer extends Component {
                     {user.email || user.user.email}
                   </div>
                 : <PowerSelect
-                    options={this.props.accounts.concat(this.props.accounts)}
+                    options={this.props.accounts}
                     placeholder="Search for merchant Name/Email/Merchant ID"
-                    searchIndices={['name', 'id']}
+                    searchIndices={['name', 'id', 'email']}
                     selected={this.state.merchantSelected}
                     optionComponent={({ option }) => (
                       <div style={{ padding: '5' }}>
@@ -293,20 +289,11 @@ export default class ReportsContainer extends Component {
                   <div class="form-group">
                     <Field
                       name="date"
-                      component={props => (
-                        <Datetime
-                          dateFormat="MMM, YYYY"
-                          defaultValue={props.input.value}
-                          value={props.input.value}
-                          onChange={value => props.input.onChange(value)}
-                          inputProps={{
-                            placeholder: 'Select Year-Month',
-                          }}
-                          isValidDate={validYear}
-                          timeFormat={false}
-                        />
-                      )}
-                      class="form-control"
+                      component={ReduxDatetime}
+                      dateFormat="MMM, YYYY"
+                      isValidDate={validYear}
+                      placeholder="Select Year-Month"
+                      timeFormat={false}
                     />
                   </div>
                 </div>}
@@ -317,20 +304,11 @@ export default class ReportsContainer extends Component {
                   <div class="form-group">
                     <Field
                       name="date"
-                      component={props => (
-                        <Datetime
-                          dateFormat="DD MMM, YYYY"
-                          defaultValue={props.input.value}
-                          value={props.input.value}
-                          onChange={value => props.input.onChange(value)}
-                          inputProps={{
-                            placeholder: 'Select Date-Month-Year',
-                          }}
-                          isValidDate={validYear}
-                          timeFormat={false}
-                        />
-                      )}
-                      class="form-control"
+                      dateFormat="DD MMM, YYYY"
+                      component={ReduxDatetime}
+                      placeholder="Select Date-Month-Year"
+                      isValidDate={validYear}
+                      timeFormat={false}
                     />
                   </div>
                 </div>}
