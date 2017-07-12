@@ -437,6 +437,7 @@ final class Route
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
         'admin_reset_password'                    => ['post',     'orgs/{orgId}/admin/reset_password',              'OrganizationController@postResetPassword'                          ],
+        'admin_change_password'                   => ['post',     'orgs/admin/reset_password',                      'OrganizationController@postChangePassword'                         ],
         'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
         'group_get_multiple'                      => ['get',      'orgs/{orgId}/groups',                            'OrganizationController@getGroupsMultiple'                          ],
         'group_get_allowed_groups'                => ['get',      'orgs/{orgId}/groups/{id}/allowed_groups',        'OrganizationController@getAllowedGroups'                           ],
