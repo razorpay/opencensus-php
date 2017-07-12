@@ -25,13 +25,13 @@ class PaymentLink
         // from excel file.
 
         $partialPayment = $entry[Batch\Header::PARTIAL_PAYMENT];
-        $partialPayment = $partialPayment === null ? '0' : (string) $partialPayment;
+        $partialPayment = empty($partialPayment) === true ? '0' : (string) $partialPayment;
 
         $receipt = $entry[Batch\Header::INVOICE_NUMBER];
-        $receipt = $receipt === null ? null : (string) $receipt;
+        $receipt = empty($receipt) === true ? null : (string) $receipt;
 
         $expireBy = $entry[Batch\Header::EXPIRE_BY];
-        $expireBy = $expireBy === null ? null : (int) $expireBy;
+        $expireBy = empty($expireBy) === true ? null : (int) $expireBy;
 
         // Amount needs to be formatted this way as excel reader in cases
         // reads 4255 as 4244.99999. This is known php + excel issue.
