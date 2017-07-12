@@ -948,5 +948,34 @@ return [
         'expected_terminal_ids' => [
             '1000HdfcShared',
         ]
+    ],
+
+    'testFeatureBasedMigrationPlan' => [
+        [
+            'payment_options' => [
+                'method' => Method::CARD,
+            ],
+            'expected_terminal_ids' => [
+                '1000HdfcShared',
+            ]
+        ],
+        [
+            'payment_options' => [
+                'method' => Method::CARD,
+            ],
+            'fixtures' => [
+                [
+                    'method'      => Method::CARD,
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'hdfc',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'method_filter',
+                ],
+            ],
+            'expected_terminal_ids' => [
+                '1000HdfcShared',
+            ]
+        ]
     ]
 ];

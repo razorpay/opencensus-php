@@ -224,6 +224,22 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
+    public function testFeatureBasedMigrationPlan()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $testCases = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($testCases[0], $merchant);
+
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
+        $this->runTestCase($testCases[1], $merchant);
+    }
+
     public function testMerchantSpecificFilterRules()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal');
@@ -242,7 +258,10 @@ class TerminalRuleFilterTest extends TestCase
     {
         $payment = $this->createPaymentEntity($merchant, $testData['payment_options']);
 
-        $ruleIds = $this->createRules($testData['fixtures']);
+        if (isset($testData['fixtures']) === true)
+        {
+            $ruleIds = $this->createRules($testData['fixtures']);
+        }
 
         $expectedTerminalIds = $testData['expected_terminal_ids'];
 
@@ -263,7 +282,10 @@ class TerminalRuleFilterTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
 
-        $this->fixtures->gateway_rule->delete($ruleIds);
+        if (empty($ruleIds) === false)
+        {
+            $this->fixtures->gateway_rule->delete($ruleIds);
+        }
     }
 
     protected function createRules(array $fixtures): array
