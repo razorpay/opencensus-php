@@ -89,7 +89,6 @@ Route::group(['middleware' => ['web']], function () {
         // Team Administration
         Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember', 'team_users_update');
         Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember', 'team_users_delete');
-
         // Invitation related (User side)
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
 
@@ -119,7 +118,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
         Route::any('/admin/generic', 'GenericController@handle');
-
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
@@ -143,9 +141,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('admin/{mode}/merchants/aggregations', 'AdminController@getMerchantAggregations');
         Route::get('admin/{mode}/merchants/{merchant_id}/aggregations', 'AdminController@getSingleMerchantAggregations');
-
-        // Admin Meta Routes
-        Route::post('/admin/password', 'AdminController@postPassword');
 
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
