@@ -219,21 +219,26 @@ class Core extends Base\Core
 
     protected function getCustomer(array $input, Merchant\Entity $merchant): Customer\Entity
     {
-        $customerId = $input[Entity::CUSTOMER_ID];
+        if (isset($input[Entity::CUSTOMER_ID]) === true)
+        {
+            $customerId = $input[Entity::CUSTOMER_ID];
 
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
+            $customer = $this->repo
+                             ->customer
+                             ->findByPublicIdAndMerchant($customerId, $merchant);
 
-        return $customer;
+            return $customer;
+        }
     }
 
-    protected function getPayoutDestination(array $input, Merchant\Entity $merchant, Customer\Entity $customer)
+    protected function getPayoutDestination(array $input, Merchant\Entity $merchant, Customer\Entity $customer = null)
     {
         $destId = $input[Entity::DESTINATION];
 
+        $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destId, $merchant);
+
         if ($input[Entity::METHOD] === Method::FUND_TRANSFER)
         {
-            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destId, $merchant);
-
             // Check if the bank account destination is linked to the customer
             if ($destination->getEntityId() !== $customer->getId())
             {

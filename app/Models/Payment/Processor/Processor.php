@@ -1096,7 +1096,7 @@ class Processor
         // Bank transfers are customer-initiated, and so are auto-captured.
         if ($payment->isBankTransfer() === true)
         {
-            return true;
+            return false;
         }
 
         //

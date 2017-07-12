@@ -99,6 +99,11 @@ class Processor extends Base\Core
             $this->repo->saveOrFail($bankTransfer);
 
             $this->updateVirtualAccount($bankTransfer);
+
+            if ($bankTransfer->isExpected() === true)
+            {
+                $paymentProcessor->autoCapturePayment($payment);
+            }
         });
     }
 

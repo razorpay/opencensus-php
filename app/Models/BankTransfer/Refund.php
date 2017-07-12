@@ -24,7 +24,7 @@ class Refund extends Base\Core
 
         $bankAccount = $this->createPayerBankAccount($bankTransfer);
 
-        $this->createPayoutWithoutTransaction($input, $bankTransfer);
+        $this->createPayoutWithoutTransaction($input, $bankAccount);
     }
 
     protected function getBankTransfer(array $payment)
@@ -32,6 +32,8 @@ class Refund extends Base\Core
         $bankTransfer = $this->repo
                              ->bank_transfer
                              ->findByPaymentId($payment['id']);
+
+        $this->virtualAccount = $bankTransfer->virtualAccount;
 
         return $bankTransfer;
     }
@@ -53,13 +55,13 @@ class Refund extends Base\Core
         return $bankAccount;
     }
 
-    protected function createPayoutWithoutTransaction(array $input, Entity$bankTransfer)
+    protected function createPayoutWithoutTransaction(array $input, BankAccount\Entity $bankAccount)
     {
-        $payoutInput = $this->getPayoutInput($input, $bankTransfer);
+        $payoutInput = $this->getPayoutInput($input, $bankAccount);
 
         $payout = (new Payout\Core)->createPayoutEntity($payoutInput, $this->merchant);
 
-        sd($payout);
+        $this->repo->saveOrFail($payout);
     }
 
     protected function getBankAccountInput(Entity $bankTransfer)
@@ -71,15 +73,22 @@ class Refund extends Base\Core
         ];
     }
 
-    protected function getPayoutInput(array $input, Entity $bankTransfer)
+    protected function getPayoutInput(array $input, BankAccount\Entity $bankAccount)
     {
-        return [
+        $payoutArray = [
             Payout\Entity::METHOD          => Payout\Method::BANK_TRANSFER,
             Payout\Entity::AMOUNT          => $input['refund']['amount'],
             Payout\Entity::CURRENCY        => Currency::INR,
-            Payout\Entity::DESTINATION     => $bankTransfer->getId(),
+            Payout\Entity::DESTINATION     => $bankAccount->getPublicId(),
         ];
 
+        if ($this->virtualAccount->hasCustomer() === true)
+        {
+            $customer = $this->virtualAccount->customer;
 
+            $payoutArray[Payment::CUSTOMER_ID] = $customer->getPublicId();
+        }
+
+        return $payoutArray;
     }
 }

@@ -16,7 +16,8 @@ class Method
     ];
 
     protected static $methodToEntityMap = [
-        self::FUND_TRANSFER     => Constants\Entity::BANK_ACCOUNT
+        self::FUND_TRANSFER     => Constants\Entity::BANK_ACCOUNT,
+        self::BANK_TRANSFER     => Constants\Entity::BANK_ACCOUNT,
     ];
 
     public static function formatted($method)

@@ -16,8 +16,6 @@ class Account
     const TEST_ACCOUNT          = '10000000000000';
     const SHARED_ACCOUNT        = '100000Razorpay';
 
-    const VA_ACCOUNT            = '1000VARazorpay';
-
     const TEST_ACCOUNT_2        = '4izmfM9TFCAgFN';
 
     const TEST_ACCOUNT_KEY_ID   = '1DP5mmOlF5G5ag';

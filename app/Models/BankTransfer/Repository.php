@@ -24,8 +24,10 @@ class Repository extends Base\Repository
 
     public function findByPaymentId(string $paymentId)
     {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->firstOrFail();
+        $bankTransfer = $this->newQuery()
+                             ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                             ->firstOrFail();
+
+        return $bankTransfer;
     }
 }
