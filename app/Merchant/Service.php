@@ -500,17 +500,10 @@ class Service extends Base\Service
 
         $error = $response = null;
 
-        try
-        {
-            $response = $this->api
-                             ->merchant
-                             ->fetch($merchantId)
-                             ->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            throw new EntityNotFoundException("merchant");
-        }
+        $response = $this->api
+                         ->merchant
+                         ->fetch($merchantId)
+                         ->toArray();
 
         if (empty($response) === false)
         {
