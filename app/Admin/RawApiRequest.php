@@ -345,6 +345,7 @@ class RawApiRequest
         $merchantUser = Auth::guard('user')->user();
 
         // If current user is NOT an admin
+        // Due to login as merchant this has to be in this way!
         if (empty($adminToken) === true and empty($merchantUser) === false)
         {
             $currentMerchant = $merchantUser->currentMerchant();
