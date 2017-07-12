@@ -704,6 +704,7 @@ class Terminal extends Base
             'emi'                       => 1,
             'emi_duration'              => 9,
             'shared'                    => 1,
+            'emi_subvention'            => 'customer',
         ];
 
         return parent::create($attributes);
