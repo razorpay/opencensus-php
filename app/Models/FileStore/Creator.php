@@ -554,6 +554,8 @@ class Creator extends Base\Core
     {
         $extension = $this->file->getExtension();
 
+        $this->createDirectory();
+
         switch($extension)
         {
             case Format::TXT:
@@ -628,10 +630,8 @@ class Creator extends Base\Core
         }
     }
 
-    protected function writeTextFile()
+    protected function createDirectory()
     {
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
-
         $fullPath = $this->getFullFilePath();
 
         $dir = dirname($fullPath);
@@ -640,6 +640,13 @@ class Creator extends Base\Core
         {
             (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
+    }
+
+    protected function writeTextFile()
+    {
+        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $fullPath = $this->getFullFilePath();
 
         $file = fopen($fullPath, 'w');
         fwrite($file, $this->content);
