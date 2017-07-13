@@ -13,7 +13,7 @@ export default (url, params = {}) => {
     appendModeInQueryParam,
     ...ajaxParams
   } = params;
-  let mode = store.getState().session.mode;
+  let mode = (params.data && params.data.mode) || store.getState().session.mode;
   ajaxParams.url = normalizeUrl(params.url);
 
   if (appendModeInQueryParam) {

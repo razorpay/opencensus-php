@@ -277,26 +277,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Changes password oflogged in admin
-     *
-     * @param  $input input array
-     * @param  $admin Admin\Entity Object
-     * @return  Status
-     */
-    public function changePassword($input, $admin)
-    {
-        $error = $admin->changePassword($input);
-
-        if (empty($error))
-        {
-            $admin->password = Hash::make($admin->password);
-            $admin->saveOrFail();
-        }
-
-        return [$error, null];
-    }
-
     public function listMerchants($input)
     {
         $user = Auth::guard('api')->user();
@@ -481,6 +461,11 @@ class Service extends Base\Service
         if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
+
+            if (empty($details) === true)
+            {
+                return [["Merchant not found"], []];
+            }
         }
 
         $terminal = $this->fetchMerchantTerminal($id);

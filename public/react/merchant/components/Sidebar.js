@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import LogoFullPNG from 'styles/assets/logo_full.png';
+import LogoPNG from 'styles/assets/logo.png';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
@@ -65,8 +67,8 @@ export default class Sidebar extends Component {
       <div class="sidebar">
         <section class="brand-logo">
           <Link to="/dashboard">
-            <img src="img/logo_full.png" class="hidden-xs" />
-            <img src="img/logo.png" class="visible-xs-block" />
+            <img src={LogoFullPNG} class="hidden-xs" />
+            <img src={LogoPNG} class="visible-xs-block" />
           </Link>
         </section>
         <nav>
@@ -118,7 +120,6 @@ export default class Sidebar extends Component {
                     featureEnabled="subscriptions"
                     to={routes.subscriptions}
                   />
-
                   <MainNavLink
                     label="Customers"
                     icon="icon icon-people"
@@ -126,14 +127,6 @@ export default class Sidebar extends Component {
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
                   />
-
-                  <ShowWhen
-                    notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
-                  >
-                    <div class="divider" />
-                  </ShowWhen>
-
                   <MainNavLink
                     label="Route"
                     icon="icon icon-store"
@@ -142,7 +135,6 @@ export default class Sidebar extends Component {
                     featureEnabled="Marketplace"
                     beta={true}
                   />
-
                   <MainNavLink
                     label="Virtual Accounts"
                     icon="icon icon-account-balance"
@@ -227,7 +219,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Subscriptions"
-                    icon="icon icon-refresh"
+                    icon="icon icon-refresh text-warning"
                     notMyRole="sellerapp support"
                     featureEnabled="subscriptions"
                     to={routes.subscriptions}

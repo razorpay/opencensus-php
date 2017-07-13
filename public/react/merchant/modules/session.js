@@ -53,6 +53,21 @@ export const logout = () => {
   };
 };
 
+export const enableOrDisableNewui = enableOrDisable => {
+  return () => {
+    return ajax({
+      url: `/tags`,
+      method: 'post',
+      appendModeInURL: false,
+      data: {
+        newui: enableOrDisable,
+      },
+    }).then(() => {
+      window.location.reload();
+    });
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},
