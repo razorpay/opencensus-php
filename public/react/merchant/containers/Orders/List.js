@@ -26,7 +26,7 @@ export default class OrdersListContainer extends ListContainer {
 
         <DataTable
           title="Orders"
-          columns={[orderId, attempts, amount, status, receipt, createdAt]}
+          columns={[orderId, amount, attempts, receipt, createdAt, status]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
