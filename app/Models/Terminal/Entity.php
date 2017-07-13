@@ -46,6 +46,10 @@ class Entity extends Base\PublicEntity
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
     const MODE                          = 'mode';
+
+    // Used for allowing gateway level changes for coporate netbanking payments.
+    const CORPORATE                     = 'corporate';
+
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -77,6 +81,7 @@ class Entity extends Base\PublicEntity
         self::TPV,
         self::TYPE,
         self::MODE,
+        self::CORPORATE,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -113,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
+        self::CORPORATE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -152,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => false,
         self::TYPE                      => 1,
         self::MODE                      => Mode::DUAL,
+        self::CORPORATE                 => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -173,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'boolean',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
+        self::CORPORATE                 => 'boolean',
         self::USED                      => 'boolean',
     ];
 
@@ -335,6 +343,11 @@ class Entity extends Base\PublicEntity
         $merchantId = $this->getAttribute(self::MERCHANT_ID);
 
         return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
+    }
+
+    public function isCorporate()
+    {
+        return $this->getAttribute(self::CORPORATE);
     }
 
     // ---------------------- SETTERS ----------------------
