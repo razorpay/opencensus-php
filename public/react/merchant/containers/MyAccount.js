@@ -31,11 +31,13 @@ export default class MyAccount extends Component {
           </ShowWhen>
         </header>
 
-        <Route path="/profile" component={Profile} />
-        <Route path="/activation" component={Activation} />
-        <Route path="/credits" component={Credits} />
-        <Route path="/addfunds" component={AddFunds} />
-        <Route path="/referrals" component={Referrals} />
+        <content>
+          <Route path="/profile" component={Profile} />
+          <Route path="/activation" component={Activation} />
+          <Route path="/credits" component={Credits} />
+          <Route path="/addfunds" component={AddFunds} />
+          <Route path="/referrals" component={Referrals} />
+        </content>
       </tabbed-container>
     );
   }

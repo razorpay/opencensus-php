@@ -113,6 +113,7 @@ Route::group(['middleware' => ['web']], function () {
         // Registers a sub-merchant account
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
+        Route::post('/tags', 'MerchantController@postTagMerchant');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()

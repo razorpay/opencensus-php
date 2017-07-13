@@ -9,3 +9,11 @@ export default class TourStep extends Component {
     );
   }
 }
+
+TourStep.defaultProps = {
+  attachment: 'middle left',
+  targetAttachment: 'middle right',
+  offset: '0 -15px',
+  arrowTopPos: '50%',
+  arrowLeftPos: '50%',
+};

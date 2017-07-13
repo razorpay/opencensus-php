@@ -461,6 +461,11 @@ class Service extends Base\Service
         if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
+
+            if (empty($details) === true)
+            {
+                return [["Merchant not found"], []];
+            }
         }
 
         $terminal = $this->fetchMerchantTerminal($id);

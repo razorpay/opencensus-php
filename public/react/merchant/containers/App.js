@@ -9,6 +9,7 @@ import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
+import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
@@ -16,8 +17,8 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
 import User from 'merchant/models/User';
-import MerchantTour from 'merchant/containers/MerchantTour';
 import ShowWhen from 'merchant/components/ShowWhen';
+import AddGST from 'merchant/containers/Profile/AddGST';
 
 @withRouter
 @connect(state => state.session, {
@@ -47,7 +48,9 @@ export default class App extends Component {
 
         this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(user);
+        setTimeout(() => {
+          this.initSmooch(user);
+        });
       }),
       this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
@@ -128,6 +131,7 @@ export default class App extends Component {
               activated: data.activated,
               locked: data.locked,
               submitted: data.submitted,
+              isNewUIEnabled: data.isNewUIEnabled,
               role: role,
               userEmail: data.user.email,
               dashboardLink: location.origin +
@@ -176,12 +180,6 @@ export default class App extends Component {
       });
   };
 
-  logout = () => {
-    return this.props.logout().then(() => {
-      location.reload();
-    });
-  };
-
   lock = () => {
     let email = this.props.user.user.email;
     return this.props.logout().then(() => {
@@ -203,6 +201,13 @@ export default class App extends Component {
     });
   };
 
+  showGSTModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <AddGST openedFromTopbar={true} />,
+    });
+  };
+
   render() {
     let { user, mode, modeFormatted } = this.props;
 
@@ -216,9 +221,9 @@ export default class App extends Component {
           user={user}
           mode={mode}
           modeFormatted={modeFormatted}
+          showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
-          onLogout={this.logout}
           toggleMobileNav={this.toggleMobileNav}
           showMobileNav={this.state.showMobileNav}
         />
@@ -240,6 +245,8 @@ export default class App extends Component {
           onIdleEnd={this.props.closeModal}
           onIdleTimeout={this.lock}
         />
+
+        <MerchantTour user={user} />
       </div>
     );
   }

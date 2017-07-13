@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
 import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
@@ -100,13 +100,7 @@ export default class BatchList extends Component {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="tabbed-container > header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
+        <HeaderAction>
           <div class="btn-toolbar pull-right">
             {docUrl &&
               <a class="btn btn-link" href={docUrl} target="_blank">
@@ -118,7 +112,7 @@ export default class BatchList extends Component {
               Click here to upload
             </Link>
           </div>
-        </TetherComponent>
+        </HeaderAction>
 
         <BatchListFilter
           form="batchListFilter"

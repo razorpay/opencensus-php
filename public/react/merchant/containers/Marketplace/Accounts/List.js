@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import AccountsList
@@ -87,13 +87,7 @@ export default class AccountsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#marketplace-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
+        <HeaderAction>
           <div class="btn-toolbar pull-right">
             <a
               class="btn btn-link"
@@ -113,7 +107,7 @@ export default class AccountsListContainer extends ListContainer {
               <span>Add Account</span>
             </button>
           </div>
-        </TetherComponent>
+        </HeaderAction>
 
         <AccountsListFilter
           form="accountsListFilter"

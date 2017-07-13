@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -74,14 +74,7 @@ export default class CustomersListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#invoicing-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
-
+        <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">
               <button
@@ -93,7 +86,7 @@ export default class CustomersListContainer extends ListContainer {
               </button>
             </div>
           </ShowWhen>
-        </TetherComponent>
+        </HeaderAction>
 
         <Alert type={status.type} message={status.message} />
 

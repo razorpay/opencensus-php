@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import PlansListFilter from 'merchant/components/Plans/ListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -41,14 +41,7 @@ export default class PlansListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#subscriptions-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
-
+        <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">
               <button
@@ -60,7 +53,7 @@ export default class PlansListContainer extends ListContainer {
               </button>
             </div>
           </ShowWhen>
-        </TetherComponent>
+        </HeaderAction>
 
         <PlansListFilter
           form="plansListFilter"
