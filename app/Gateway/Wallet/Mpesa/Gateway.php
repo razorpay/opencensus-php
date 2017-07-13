@@ -370,6 +370,8 @@ class Gateway extends Base\Gateway
             RequestFields::NARRATION             => Constants::NARRATION
         ];
 
+        $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
+
         return $gatewayParam;
     }
 
