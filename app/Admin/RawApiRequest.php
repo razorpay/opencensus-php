@@ -351,7 +351,8 @@ class RawApiRequest
         {
             $merchantId = $input['merchant_id'] ?? null;
         }
-        else if (empty($merchantUser) === false)
+
+        if (empty($merchantId) === true and empty($merchantUser) === false)
         {
             $currentMerchant = $merchantUser->currentMerchant();
 
