@@ -44,6 +44,14 @@ class CreateTransfers extends Migration
 
             $table->text(Entity::NOTES);
 
+            $table->integer(Entity::FEES)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Entity::SERVICE_TAX)
+                  ->unsigned()
+                  ->default(0);
+
             $table->tinyInteger(Entity::ON_HOLD)
                   ->default(0);
 

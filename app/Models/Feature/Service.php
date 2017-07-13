@@ -38,6 +38,17 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
+        // Workflow
+
+        list($original, $dirty) = [
+            ['feature' => $featureName],
+            ['feature' => null],
+        ];
+
+        $this->app['workflow']
+             ->setEntity($feature->getEntity())
+             ->handle($original, $dirty);
+
         $this->repo->feature->delete($feature);
 
         (new Core)->notifyOnSlack($feature, true);

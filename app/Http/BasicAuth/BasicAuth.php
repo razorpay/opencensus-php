@@ -26,7 +26,7 @@ class BasicAuth
      * Private -
      * rzp_mode_keyId:merchant_secret
      *
-     * Application -
+     * Application/Internal -
      * rzp_mode:app_secret
      *
      * Application proxy -
@@ -56,6 +56,8 @@ class BasicAuth
      * Dashboard headers are prefixed with following literal.
      */
     const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
+
+    const ADMIN_TOKEN_HEADER = 'X-Admin-Token';
 
     /**
      * The application instance.
@@ -471,13 +473,13 @@ class BasicAuth
      */
     protected function setAdminAuthIfApplicable()
     {
-        $adminToken = $this->request->header('X-Admin-Token');
+        $adminToken = $this->request->header(self::ADMIN_TOKEN_HEADER);
 
         if ($adminToken !== null)
         {
             // Remove the token so that subsequent code has no
             // access to it (prevents logging, etc.)
-            $this->request->headers->remove('X-Admin-Token');
+            $this->request->headers->remove(self::ADMIN_TOKEN_HEADER);
 
             $token = $this->fetchAdminToken($adminToken);
 
@@ -1387,13 +1389,18 @@ class BasicAuth
     {
         $authType = $this->getAuthType();
 
+        if (empty($this->admin) === false)
+        {
+            // returning true on admin auth because admin access middleware
+            // checks and drops if it is not a valid merchant.
+
+            return true;
+        }
+
         switch ($authType)
         {
             case Type::PRIVATE_AUTH:
                 return ($account->getParentId() === $this->getMerchant()->getId());
-
-            case Type::ADMIN_AUTH:
-                return ($account->getOrgId() === $this->getAdmin()->getOrgId());
 
             case Type::PRIVILEGE_AUTH:
                 return true;

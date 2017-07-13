@@ -49,6 +49,13 @@ class Base extends BaseModel\Core
     protected $merchant;
 
     /**
+     * Additional parameters from request or query.
+     *
+     * @var array
+     */
+    protected $params;
+
+    /**
      * Holds local file path of input and output file respectively.
      * They are re-used in the flow.
      * E.g.
@@ -84,8 +91,20 @@ class Base extends BaseModel\Core
         $this->merchant = $batch->merchant;
     }
 
+    public function setParams(array $params = null)
+    {
+        // To maintain backward compatibility with old queue jobs.
+        // Old queue job will have $params as null in Job\Batch class.
+
+        $this->params = $params ?: [];
+
+        return $this;
+    }
+
     public function process()
     {
+        $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
+
         $this->batch->getValidator()->validateNotProcessedAlready();
 
         $this->batch->incrementAttempts();
@@ -108,10 +127,10 @@ class Base extends BaseModel\Core
 
                 $this->repo->saveOrFail($this->batch);
             },
-            self::MUTEX_LOCK_TIMEOUT
-        );
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
 
-        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
 
         $this->postProcess();
     }
@@ -125,20 +144,20 @@ class Base extends BaseModel\Core
     {
         foreach ($entries as & $entry)
         {
+            $tracePayload = [
+                Batch\Entity::ID          => $this->batch->getId(),
+                Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
+                'entry'                   => $entry,
+            ];
+
             try
             {
-                $this->trace->debug(
-                                TraceCode::BATCH_PROCESSING_ENTRY,
-                                [
-                                    Batch\Entity::ID => $this->batch->getId(),
-                                    'entry'          => $entry,
-                                ]);
+                $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $tracePayload);
 
                 $this->processEntry($entry);
 
-                // Set status as success and errors as null
+                // Set errors as null
 
-                $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
                 $entry[Batch\Header::ERROR_CODE]        = null;
                 $entry[Batch\Header::ERROR_DESCRIPTION] = null;
             }
@@ -149,11 +168,9 @@ class Base extends BaseModel\Core
 
                 $this->trace->traceException(
                                 $e,
-                                Trace::ERROR,
+                                null,
                                 TraceCode::BATCH_PROCESSING_ERROR,
-                                [
-                                    Batch\Entity::ID => $this->batch->getId(),
-                                ]);
+                                $tracePayload);
 
                 $error = $e->getError();
 
@@ -171,12 +188,10 @@ class Base extends BaseModel\Core
                                 $e,
                                 Trace::CRITICAL,
                                 TraceCode::BATCH_PROCESSING_ERROR,
-                                [
-                                    Batch\Entity::ID => $this->batch->getId(),
-                                ]);
+                                $tracePayload);
 
-                $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
             }
         }
     }
@@ -321,6 +336,8 @@ class Base extends BaseModel\Core
 
     public function saveInputFile(UploadedFile $file): \SplFileInfo
     {
+        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
+
         //
         // PHP's upload file get's deleted automatically once request terminates.
         // Moving this file to batch save location where UFH downloads the same

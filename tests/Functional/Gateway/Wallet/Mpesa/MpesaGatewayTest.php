@@ -75,11 +75,27 @@ class MpesaGatewayTest extends TestCase
         $this->assertEmpty($wallet['gateway_payment_id_2']);
     }
 
+    public function testVerifyCallbackFailure()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->mockActionFailure(SoapAction::QUERY_API);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
     public function testAuthPaymentFailure()
     {
         $data = $this->testData[__FUNCTION__];
 
-        $payment = $this->payment; 
+        $payment = $this->payment;
 
         $this->mockActionFailure(Action::AUTHORIZE);
 

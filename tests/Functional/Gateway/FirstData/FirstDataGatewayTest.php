@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
@@ -102,6 +103,126 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('passed', $payment['two_factor_auth']);
+    }
+
+    public function testVerifyRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->getErrorInReturn();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('FAILED', $firstData['status']);
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $refundId = explode('_', $refund['id'], 2)[1];
+
+        $this->clearMockFunction();
+
+        $response = $this->retryFailedRefunds();
+
+        $actualRefund = $this->getEntityById('refund', $refundId, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('CAPTURED', $firstData['status']);
+    }
+
+    public function testVerifyRefundFailure()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->getErrorInReturn();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('FAILED', $firstData['status']);
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $refundId = explode('_', $refund['id'], 2)[1];
+
+        $this->getErrorInVerifyRefund();
+
+        $response = $this->retryFailedRefunds();
+
+        $actualRefund = $this->getEntityById('refund', $refundId, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('failed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('FAILED', $firstData['status']);
+    }
+
+    public function testVerifyReverse()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->getErrorInReturn();
+
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('FAILED', $firstData['status']);
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $refundId = explode('_', $refund['id'], 2)[1];
+
+        $this->clearMockFunction();
+
+        $response = $this->retryFailedRefunds();
+
+        $actualRefund = $this->getEntityById('refund', $refundId, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('CAPTURED', $firstData['status']);
     }
 
     public function testMaestroCard()

@@ -8,9 +8,9 @@ use Carbon\Carbon;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
+use RZP\Trace\TraceCode;
 
 /**
  * Defines functions to process Mailgun webhook requests
@@ -31,11 +31,15 @@ class Mailgun extends Base\Core
      * @return int statusCode
      * @throws Exception\BadRequestException
      */
-    public function processCallback($type, $input)
+    public function processCallback(string $type, array $input)
     {
         $mailgunKey = Config::get('applications.mailgun.key');
 
         $this->authenticateSignature($mailgunKey, $input);
+
+        unset($input['token']);
+
+        unset($input['signature']);
 
         $functionName = $type . 'Callback';
 
@@ -49,7 +53,7 @@ class Mailgun extends Base\Core
 
     }
 
-    protected function authenticateSignature($apiKey, $input)
+    protected function authenticateSignature(string $apiKey, array $input)
     {
         $hashData = $input['timestamp'] . $input['token'];
 
@@ -61,8 +65,12 @@ class Mailgun extends Base\Core
         }
     }
 
-    protected function failureCallback($input)
+    protected function failureCallback(array $input)
     {
+        $input = $this->getPayload($input);
+
+        $this->trace->error(TraceCode::EMAIL_SENDING_FAILED, $input);
+
         switch ($input[self::EVENT])
         {
             case self::BOUNCED_EVENT:
@@ -70,12 +78,26 @@ class Mailgun extends Base\Core
 
             case self::DROPPED_EVENT:
                 return $this->droppedCallback($input);
-        }
 
-        return 406;
+            default:
+                return 406;
+        }
     }
 
-    protected function droppedCallback($input)
+    protected function getPayload($input)
+    {
+        return [
+            'code'          => $input['code'] ?? null,
+            'reason'        => $input['reason'] ?? null,
+            'error'         => $input['error'] ?? null,
+            'X-Mailgun-Tag' => $input['X-Mailgun-Tag'] ?? null,
+            'event'         => $input['event'] ?? null,
+            'recipient'     => $input['recipient'] ?? null,
+            'sent_at'       => $input['sent_at'] ?? null,
+        ];
+    }
+
+    protected function droppedCallback(array $input)
     {
         if ((isset($input[MailTags::HEADER]) === true) and
             (in_array($input[MailTags::HEADER], MailTags::$setlNotifyTags, true)))
@@ -88,43 +110,28 @@ class Mailgun extends Base\Core
         return 406;
     }
 
-    protected function bouncedCallback($input)
+    protected function bouncedCallback(array $input)
     {
         $this->notifyBounce($input);
 
         return 200;
     }
 
-    protected function notifyDrop($input)
+    protected function notifyDrop(array $input)
     {
         $message = '*ALERT*: Email delivery dropped, for tag: ' . $input[MailTags::HEADER];
 
         $channel = Config::get('slack.channels.settlements');
 
-        $this->notifyOnSlack($message, $channel, $input);
+        $this->app['slack']->queue($message, $input, ['channel' => $channel]);
     }
 
-    protected function notifyBounce($input)
+    protected function notifyBounce(array $input)
     {
         $message = '*ALERT*: Email delivery bounced';
 
         $channel = Config::get('slack.channels.tech_logs_mail');
 
-        $this->notifyOnSlack($message, $channel, $input);
-    }
-
-    protected function notifyOnSlack($message, $channel, $input)
-    {
-        $sentDate = Carbon::createFromTimestamp($input['timestamp'], 'Asia/Kolkata')->format('d-M-Y H:i:s');
-
-        $params = [
-            'recipient' => $input['recipient'],
-            'sent_at'   => $sentDate,
-            'code'      => $input['code']   ?? null,
-            'reason'    => $input['reason'] ?? null,
-            'error'     => $input['error']  ?? null,
-        ];
-
-        $this->app->slack->queue($message, $params, ['channel' => $channel]);
+        $this->app['slack']->queue($message, $input, ['channel' => $channel]);
     }
 }

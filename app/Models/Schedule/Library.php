@@ -218,12 +218,12 @@ class Library
 
         $minimumDelay = $schedule->getDelay();
 
-        if ($minimumDelay === 0)
+        if ($schedule->isHourly() === true)
         {
-            // Avoiding zero delay to prevent race conditions
-            $current->addHour();
+            // Hourly schedules have delays in hours
+            $current->addHour($minimumDelay);
 
-            // Adding a single hour resulted in a holiday.
+            // Adding a few hours resulted in a holiday.
             // Now jump forward in days instead of hours.
             if (Holidays::isWorkingDay($current) === false)
             {

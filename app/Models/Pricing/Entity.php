@@ -3,9 +3,12 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                   = 'id';
     const PLAN_ID              = 'plan_id';
     const PLAN_NAME            = 'plan_name';
@@ -33,6 +36,7 @@ class Entity extends Base\PublicEntity
     const MAX_FEE              = 'max_fee';
 
     const EXPIRED_AT           = 'expired_at';
+    const DELETED_AT           = 'deleted_at';
 
     protected $revisionEnabled = true;
 

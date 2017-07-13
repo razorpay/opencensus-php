@@ -490,7 +490,9 @@ class MerchantController extends Controller
 
         $report = new Report\Types\DSPTransactionReport(E::TRANSACTION);
 
-        return $report->getReport($input);
+        $data = $report->getReport($input);
+
+        return ApiResponse::json($data);
     }
 
     public function getInvoiceReport()

@@ -3,14 +3,19 @@
 namespace RZP\Reconciliator\Axis;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
     const SALE = 'sale';
     const ACCEPTED_SHEET_NAMES = [
         'Refund', 'REFUND', 'refund', 'Refunds', 'refunds', 'REFUNDS',
-        'Sale', 'SALE', 'sale', 'Sales', 'sales', 'SALES'
+        'Sale', 'SALE', 'sale', 'Sales', 'sales', 'SALES',
+        'Visa Sale', 'Master Sale',
+        'Visa Refund', 'Master Refund'
     ];
+
+    const START_ROW = 3;
 
     /**
      * Figures out what kind of reconciliation is it
@@ -51,5 +56,34 @@ class Reconciliate extends Base\Reconciliate
     public function getSheetNames()
     {
         return self::ACCEPTED_SHEET_NAMES;
+    }
+
+    public function shouldUse7z($zipFileDetails)
+    {
+        //
+        // All axis zip files should go via 7z flow.
+        //
+        return true;
+    }
+
+    public function getReconPassword($fileDetails)
+    {
+        // TODO: Fix password
+        return 'RAZORPAYADD';
+    }
+
+    public function getStartRow($fileDetails)
+    {
+        //
+        // We get two different types of files from Axis. For one of the files,
+        // the start row is different from `1`.
+        //
+        if (($fileDetails[FileProcessor::EXTENSION] === 'xls') and
+            (strpos('RAZORPAYADD', $fileDetails[FileProcessor::FILE_NAME]) === false))
+        {
+            return self::START_ROW;
+        }
+
+        return Base\Reconciliate::DEFAULT_START_ROW;
     }
 }

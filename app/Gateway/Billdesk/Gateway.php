@@ -756,8 +756,8 @@ class Gateway extends Base\Gateway
     protected function getPaymentRefundRequestContent($payment, $input)
     {
         // Format YYYYMMDD
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-        $date = $date->format('Ymd');
+        $txnDate = Carbon::createFromFormat('d-m-Y H:i:s', $payment['TxnDate'], 'Asia/Kolkata');
+        $txnDate = $txnDate->format('Ymd');
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
         // hh is in 24 hrs
@@ -773,7 +773,7 @@ class Gateway extends Base\Gateway
             'RequestType'       => '0400',
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['TxnReferenceNo'],
-            'TxnDate'           => $date,
+            'TxnDate'           => $txnDate,
             'CustomerID'        => $input['payment']['id'],
             'TxnAmount'         => $txnAmount,
             'RefAmount'         => $refundAmount,
@@ -875,7 +875,11 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
-        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+        $bankIfsc = $input['payment']['bank'];
+
+        $corporate = $input['terminal']['corporate'];
+
+        $bankId = BankCodes::getBankCode($bankIfsc, $corporate);
 
         $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],

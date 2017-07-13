@@ -88,6 +88,10 @@ if (! function_exists('read_env_file'))
     }
 }
 
-read_env_file($envDir, '.env.vault');
+if ($env !== 'testing')
+{
+    read_env_file($envDir, '.env.vault');
+}
+
 read_env_file($envDir, $cascadingEnvFile);
 read_env_file($envDir, '.env.defaults');

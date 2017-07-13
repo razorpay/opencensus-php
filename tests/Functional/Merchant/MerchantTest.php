@@ -918,17 +918,27 @@ class MerchantTest extends TestCase
 
         $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $offer = $this->fixtures->create('offer:card', [
-                'display_text' => 'Some display text',
-                'terms'        => 'Some terms',
-                'starts_at'    => $startsAt
-            ]);
+        $testData = $this->testData[__FUNCTION__];
 
-        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+        $request = $testData['request'];
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+        foreach ($testData['tests'] as $test)
+        {
+            $data = [
+                'request' => $request,
+                'response' => $test['response'],
+            ];
 
-        $this->startTest();
+            $fixtureData = $test['offer'];
+            $fixtureData['starts_at'] = $startsAt;
+
+            $offer = $this->fixtures->create('offer', $fixtureData);
+            $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+
+            $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+            $this->runRequestResponseFlow($data);
+        }
     }
 
     public function testGetCheckoutRouteWithSavedLocal()
@@ -1003,8 +1013,6 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->fixtures->merchant->addFeatures(['cardsaving']);
-
         $response = $this->startTest();
 
         $this->assertNotNull($response['customer']['tokens']);
@@ -1036,6 +1044,24 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         $this->fixtures->merchant->disableInternational();
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testPutEmiMethod()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testPutEmiWithMerchantSubventionMethod()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $this->ba->appAuth();
 

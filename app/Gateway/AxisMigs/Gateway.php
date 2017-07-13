@@ -318,6 +318,8 @@ class Gateway extends Base\Gateway
             'action' => $this->action,
             'payment' => $input['payment'],
             'refund' => $input['refund']]);
+
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function forceAuthorizeFailed($input)
@@ -381,11 +383,18 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $hardcodedRefundIds = ['7myk24mVipncjt', '7quh5ytxljRfqo'];
+        $unprocessedRefundIds = ['85VhjZuf8juCfZ'];
 
-        if (in_array($input['refund']['id'], $hardcodedRefundIds) === true)
+        if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {
             return false;
+        }
+
+        $processedRefundIds = ['8COZiOoXPgf2cI'];
+
+        if (in_array($input['refund']['id'], $processedRefundIds) === true)
+        {
+            return true;
         }
 
         // Adding a check for 8th May 2017 as track id was
@@ -1062,7 +1071,7 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = null;
 
-        if (isset($content['vpc_TxnResponseCode']))
+        if (isset($content['vpc_TxnResponseCode']) === true)
         {
             $txnResponseCode = $content['vpc_TxnResponseCode'];
         }
@@ -1074,16 +1083,22 @@ class Gateway extends Base\Gateway
 
         $msg = null;
 
-        if (isset($content['vpc_Message']))
+        if (isset($content['vpc_Message']) === true)
         {
             $msg = $content['vpc_Message'];
         }
-        else if (isset($content['ERROR']))
+        else if (isset($content['ERROR']) === true)
         {
             $msg = $content['ERROR'];
         }
 
         $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if (($txnResponseCode !== null) and
+            (isset(TxnResponseCode::$map[$txnResponseCode]) === true))
+        {
+            $code = TxnResponseCode::$map[$txnResponseCode];
+        }
 
         if ($this->action === Base\Action::REFUND)
         {

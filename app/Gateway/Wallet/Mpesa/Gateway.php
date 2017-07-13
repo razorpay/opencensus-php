@@ -62,13 +62,46 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::TRANSACTION_REFERENCE]);
 
-        $this->saveCallbackResponse($content);
+        $wallet = $this->repo->findByPaymentIdAndAction(
+                    $input['payment']['id'],
+                    Action::AUTHORIZE);
+
+        $this->saveCallbackResponse($content, $wallet);
 
         $this->checkGatewayResponse($content[ResponseFields::STATUS_CODE]);
 
-        // TODO: Need to verify the callback
+        $this->verifyCallback($input, $wallet);
 
         return $this->getCallbackResponseData($input);
+    }
+
+    /**
+     * Verifying the payment after callback response is saved to
+     * prevent user tampering with the data while making a payment.
+     *
+     * @param array $input
+     */
+    protected function verifyCallback(array $input, Base\Entity $wallet)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $wallet;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function otpGenerate(array $input)
@@ -161,6 +194,15 @@ class Gateway extends Base\Gateway
                                            SoapAction::REFUND_API,
                                            SoapMethod::REFUND_PAYMENT);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response,
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id']
+            ]);
+
         $content = $response[ResponseFields::UCF_RESPONSE];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
@@ -202,7 +244,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $verify->payment = $this->saveVerifyContent($verify);
+        $this->saveVerifyContent($verify);
     }
 
     protected function getVerifyStatus(Verify $verify)
@@ -328,14 +370,16 @@ class Gateway extends Base\Gateway
             RequestFields::NARRATION             => Constants::NARRATION
         ];
 
+        $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
+
         return $gatewayParam;
     }
 
     protected function getVerifyRequestData(Verify $verify)
     {
-        $wallet = $verify->payment;
-
         $input = $verify->input;
+
+        $wallet = $verify->payment;
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId() ?? "";
 
@@ -482,7 +526,7 @@ class Gateway extends Base\Gateway
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
             Base\Entity::RESPONSE_CODE        => $content[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::REFUND_ID            => $input['refund']['id'],
-            Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
+            Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON] ?? ''
         ];
 
         return $attributes;
@@ -548,12 +592,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveCallbackResponse(array $content)
+    protected function saveCallbackResponse(array $content, Base\Entity $wallet)
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-                    $this->input['payment']['id'],
-                    Action::AUTHORIZE);
-
         $contentToSave = [
             Base\Entity::RECEIVED             => true,
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],

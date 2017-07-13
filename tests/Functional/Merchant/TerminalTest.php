@@ -200,7 +200,7 @@ class TerminalTest extends TestCase
     public function testEditUpiIciciTerminal()
     {
         $terminal = $this->fixtures->create(
-            'terminal:shared_upi_terminal', ['used' => true, 'upi' => 0]);
+            'terminal:shared_upi_icici_terminal', ['used' => true, 'upi' => 0]);
 
         $tid = $terminal['id'];
 

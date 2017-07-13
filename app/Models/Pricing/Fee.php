@@ -29,19 +29,21 @@ class Fee extends Base\Core
     /**
      *  Used in testing to mock
      *  pricing repository
+     *
+     * @param $repo
      */
     public function setPricingRepo($repo)
     {
         $this->repo = $repo;
     }
 
-    public function getZeroPricingPlanRule($entity)
+    public function getZeroPricingPlanRule($entity): Entity
     {
         $feature = $entity->getEntity();
 
         $method = $entity->getMethod();
 
-        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
+        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method);
     }
 
     public function calculateMerchantFees($entity)

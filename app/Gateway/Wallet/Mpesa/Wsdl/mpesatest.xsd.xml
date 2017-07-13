@@ -1,0 +1,405 @@
+<xsd:schema targetNamespace="http://paymentgateway.mcommerce/" xmlns:ns0="http://paymentgateway.mcommerce/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:complexType name="processPayment">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MCODE" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnDate" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="transRefNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MSISDN" type="xsd:string"/>
+            <xsd:element name="amt" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="narration" type="xsd:string"/>
+            <xsd:element name="surcharge" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler4" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler5" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="mPin" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="validateCustomer">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="commonServiceData" type="ns0:mcomCommonServiceData"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgEncryptDataResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="pgEncryptDataResponse" type="ns0:mcomPgEncryptDataResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcommPGResponse">
+        <xsd:sequence>
+            <xsd:element name="mcomPgTransID" type="xsd:string"/>
+            <xsd:element name="transRefNo" type="xsd:string"/>
+            <xsd:element name="statusCode" type="xsd:string"/>
+            <xsd:element name="reason" type="xsd:string"/>
+            <xsd:element name="MSISDN" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgSendSMSResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="pgSendSMSDataResponse" type="ns0:mcomResponseStatus"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="processPaymentResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="Response" type="ns0:mcommPGResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mrchntInitiatedPymnt">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MrchntId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="toEnttyType" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnDate" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="transRefNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MSISDN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="fromEnttyType" type="xsd:string"/>
+            <xsd:element name="amt" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="checkSum" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler4" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler5" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mrchntIntiativePymntResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="McommPGResponse" type="ns0:mcommPGResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgEmoneyCreation">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="commonServiceData" type="ns0:mcomCommonServiceData"/>
+            <xsd:element minOccurs="0" name="virtualCode" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="entityMobileNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="entityName" type="xsd:string"/>
+            <xsd:element name="amount" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="instance" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="utrNumber" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnDate" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnTime" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DebitCredit" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="cmsNumber" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="collectionBank" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="remittingBankIFSC" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="refundPaymentTransaction">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MCODE" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="mcomPgTransID" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="transRefNo" type="xsd:string"/>
+            <xsd:element name="amt" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="narration" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MSISDN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="reversalType" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryPaymentTransactionResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="Response" type="ns0:mcommPGResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="emoneyRequestData">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="mcomCommonServiceData" type="ns0:mcomCommonServiceData"/>
+            <xsd:element minOccurs="0" name="virtualCode" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="msisdn" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="entityNme" type="xsd:string"/>
+            <xsd:element name="amount" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="utrNum" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnDate" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnTime" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="debitCredit" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="product" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="zone" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="location" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="remittingBankIFSC" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryPaymentTransaction">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MCODE" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnDate" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="mcomPgTransID" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="transRefNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="paymentTransRefNo" type="xsd:string"/>
+            <xsd:element name="AMT" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="CMDID" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgSendSMS">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="msisdn" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="smsToSend" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="smsEvent" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mrchntIntiativePymnt">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MrchntId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="toEnttyType" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="OTP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnDate" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="txnTime" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="transRefNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MSISDN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="fromEnttyType" type="xsd:string"/>
+            <xsd:element name="amt" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="checkSum" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler4" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler5" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgAuthenticateCustomer">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="commonServiceData" type="ns0:mcomCommonServiceData"/>
+            <xsd:element minOccurs="0" name="mPIN" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgEncryptData">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="merchantCde" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="inputToEncrypt" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomPgEncryptDataResponse">
+        <xsd:sequence>
+            <xsd:element name="statusCode" type="xsd:string"/>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="description" type="xsd:string"/>
+            <xsd:element name="processedResult" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="validateCustomerResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MCOMResponseStatus" type="ns0:mcomResponseStatus"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomMrchntPymtReq">
+        <xsd:sequence>
+            <xsd:element name="MCODE" type="xsd:string"/>
+            <xsd:element name="TXNDATE" type="xsd:string"/>
+            <xsd:element name="TRANSREFNO" type="xsd:string"/>
+            <xsd:element name="TXNTYPE" type="xsd:string"/>
+            <xsd:element name="AMT" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="MSISDN" type="xsd:string"/>
+            <xsd:element name="fromEnttyType" type="xsd:string"/>
+            <xsd:element name="toEnttyType" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="cmdId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="OTP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="OTPREFNUM" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MPIN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="FILLER1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="FILLER2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="FILLER3" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="FILLER4" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="FILLER5" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="channelId" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgValidateOTP">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="commonServiceData" type="ns0:mcomCommonServiceData"/>
+            <xsd:element minOccurs="0" name="MrchntId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="otp" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="transRefNum" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgRetrieveBalanceResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MCOMBalanceResponse" type="ns0:mcomBalanceResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgMultiEmoneyCreation">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="listEmoneyRequestData" type="ns0:emoneyRequestData"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgAuthenticateCustomerResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="MCOMResponseStatus" type="ns0:mcomResponseStatus"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomResponseStatus">
+        <xsd:sequence>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="statusCode" type="xsd:string"/>
+            <xsd:element name="description" type="xsd:string"/>
+            <xsd:element name="responseId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="upsellMsg" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="finalDescription" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="referalDescription" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="feedbackFlag" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcommPGMerchantInitiatedPaymentResponse">
+        <xsd:sequence>
+            <xsd:element name="mcomPgRefNo" type="xsd:string"/>
+            <xsd:element name="transRefNo" type="xsd:string"/>
+            <xsd:element name="statusCode" type="xsd:string"/>
+            <xsd:element name="reason" type="xsd:string"/>
+            <xsd:element name="MSISDN" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomOtpResponse">
+        <xsd:sequence>
+            <xsd:element name="transRefNum" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="otp" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="msisdn" type="xsd:string"/>
+            <xsd:element name="response" type="ns0:mcomResponseStatus"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomCommonServiceData">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="channelID" type="xsd:string"/>
+            <xsd:element name="requestId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="entityTypeId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="entityId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MSISDN" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgRetrieveBalance">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="commonServiceData" type="ns0:mcomCommonServiceData"/>
+            <xsd:element minOccurs="0" name="mPIN" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgValidateOTPResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="McomOtpResponse" type="ns0:mcomOtpResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgMrchntPymtResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="Response" type="ns0:mcomPgMrchntPymtResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgSendOTP">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="commonServiceData" type="ns0:mcomCommonServiceData"/>
+            <xsd:element minOccurs="0" name="MrchntId" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler1" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler2" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler3" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler4" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="filler5" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="refundPaymentTransactionResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="Response" type="ns0:mcommPGResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomEmoneyResponse">
+        <xsd:sequence>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="statusCode" type="xsd:string"/>
+            <xsd:element name="description" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="responseId" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgEmoneyCreationResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="McomEmoneyResponse" type="ns0:mcomEmoneyResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgSendOTPResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="McomOtpResponse" type="ns0:mcomOtpResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgMultiEmoneyCreationResponse">
+        <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="return" type="ns0:mcomEmoneyResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomPgMrchntPymtResponse">
+        <xsd:sequence>
+            <xsd:element name="mcomPgTransID" type="xsd:string"/>
+            <xsd:element name="transRefNo" type="xsd:string"/>
+            <xsd:element name="statusCode" type="xsd:string"/>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="description" type="xsd:string"/>
+            <xsd:element name="MSISDN" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="pgMrchntPymt">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="McomMrchntPymtReq" type="ns0:mcomMrchntPymtReq"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mrchntInitiatedPymntResponse">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="McommPGMerchantInitiatedPaymentResponse" type="ns0:mcommPGMerchantInitiatedPaymentResponse"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mcomBalanceResponse">
+        <xsd:sequence>
+            <xsd:element name="responseStatus" type="ns0:mcomResponseStatus"/>
+            <xsd:element name="totalBalance" type="xsd:double"/>
+            <xsd:element name="walletAcctNo" type="xsd:string"/>
+            <xsd:element name="walletBalance" type="xsd:double"/>
+            <xsd:element minOccurs="0" name="bankAcctNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="bankBalance" type="xsd:double"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="processPayment" type="ns0:processPayment"/>
+    <xsd:element name="validateCustomer" type="ns0:validateCustomer"/>
+    <xsd:element name="MCOMResponseStatus" type="ns0:mcomResponseStatus"/>
+    <xsd:element name="pgEncryptDataResponse" type="ns0:pgEncryptDataResponse"/>
+    <xsd:element name="mcommPGResponse" type="ns0:mcommPGResponse"/>
+    <xsd:element name="MCOMCommonServiceData" type="ns0:mcomCommonServiceData"/>
+    <xsd:element name="pgSendSMSResponse" type="ns0:pgSendSMSResponse"/>
+    <xsd:element name="processPaymentResponse" type="ns0:processPaymentResponse"/>
+    <xsd:element name="password" type="xsd:string"/>
+    <xsd:element name="mrchntInitiatedPymnt" type="ns0:mrchntInitiatedPymnt"/>
+    <xsd:element name="mrchntIntiativePymntResponse" type="ns0:mrchntIntiativePymntResponse"/>
+    <xsd:element name="pgEmoneyCreation" type="ns0:pgEmoneyCreation"/>
+    <xsd:element name="refundPaymentTransaction" type="ns0:refundPaymentTransaction"/>
+    <xsd:element name="queryPaymentTransactionResponse" type="ns0:queryPaymentTransactionResponse"/>
+    <xsd:element name="emoneyRequestData" type="ns0:emoneyRequestData"/>
+    <xsd:element name="queryPaymentTransaction" type="ns0:queryPaymentTransaction"/>
+    <xsd:element name="PgMrchntPymtReq" type="ns0:mcomMrchntPymtReq"/>
+    <xsd:element name="pgSendSMS" type="ns0:pgSendSMS"/>
+    <xsd:element name="userId" type="xsd:string"/>
+    <xsd:element name="mrchntIntiativePymnt" type="ns0:mrchntIntiativePymnt"/>
+    <xsd:element name="pgAuthenticateCustomer" type="ns0:pgAuthenticateCustomer"/>
+    <xsd:element name="pgEncryptData" type="ns0:pgEncryptData"/>
+    <xsd:element name="mcomPgEncryptDataResponse" type="ns0:mcomPgEncryptDataResponse"/>
+    <xsd:element name="validateCustomerResponse" type="ns0:validateCustomerResponse"/>
+    <xsd:element name="pgValidateOTP" type="ns0:pgValidateOTP"/>
+    <xsd:element name="pgRetrieveBalanceResponse" type="ns0:pgRetrieveBalanceResponse"/>
+    <xsd:element name="pgMultiEmoneyCreation" type="ns0:pgMultiEmoneyCreation"/>
+    <xsd:element name="pgAuthenticateCustomerResponse" type="ns0:pgAuthenticateCustomerResponse"/>
+    <xsd:element name="mcommPGMerchantInitiatedPaymentResponse" type="ns0:mcommPGMerchantInitiatedPaymentResponse"/>
+    <xsd:element name="mcomOtpResponse" type="ns0:mcomOtpResponse"/>
+    <xsd:element name="pgRetrieveBalance" type="ns0:pgRetrieveBalance"/>
+    <xsd:element name="pgValidateOTPResponse" type="ns0:pgValidateOTPResponse"/>
+    <xsd:element name="pgMrchntPymtResponse" type="ns0:pgMrchntPymtResponse"/>
+    <xsd:element name="pgSendOTP" type="ns0:pgSendOTP"/>
+    <xsd:element name="refundPaymentTransactionResponse" type="ns0:refundPaymentTransactionResponse"/>
+    <xsd:element name="mcomEmoneyResponse" type="ns0:mcomEmoneyResponse"/>
+    <xsd:element name="MCOMBalanceResponse" type="ns0:mcomBalanceResponse"/>
+    <xsd:element name="pgEmoneyCreationResponse" type="ns0:pgEmoneyCreationResponse"/>
+    <xsd:element name="pgSendOTPResponse" type="ns0:pgSendOTPResponse"/>
+    <xsd:element name="pgMultiEmoneyCreationResponse" type="ns0:pgMultiEmoneyCreationResponse"/>
+    <xsd:element name="mcomPgMrchntPymtResponse" type="ns0:mcomPgMrchntPymtResponse"/>
+    <xsd:element name="pgMrchntPymt" type="ns0:pgMrchntPymt"/>
+    <xsd:element name="mrchntInitiatedPymntResponse" type="ns0:mrchntInitiatedPymntResponse"/>
+</xsd:schema>

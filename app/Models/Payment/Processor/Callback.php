@@ -115,6 +115,9 @@ trait Callback
     {
         $payment = $this->retrieve($id);
 
+        // For redirect flow
+        $this->checkForMerchantCallbackUrl($payment);
+
         if ($payment->isCreated() === false)
         {
             return $this->processPaymentCallbackSecondTime($payment);
@@ -175,6 +178,7 @@ trait Callback
         if ($payment->hasCard())
         {
             $card = $this->repo->card->fetchForPayment($payment);
+
             $input['card'] = $card->toArray();
         }
 

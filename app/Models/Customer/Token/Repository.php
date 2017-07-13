@@ -20,12 +20,14 @@ class Repository extends Base\Repository
         Entity::CARD_ID         => 'sometimes|alpha_num',
         Entity::BANK            => 'sometimes|alpha',
         Entity::WALLET          => 'sometimes|alpha',
+        Entity::RECURRING       => 'sometimes|in:0,1'
     );
 
     public function getByCustomer($customer)
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->whereNotNull(Token\Entity::USED_AT)
                     ->orderBy(Entity::ID, 'desc')
                     ->get();
     }

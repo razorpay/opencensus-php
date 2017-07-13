@@ -47,7 +47,7 @@ class Core extends Base\Core
      * We will create a dummy transaction with no fee split.
      * The actual fee split will be calculated at the time of payment capture
      * @param  Payment\Entity $payment
-     * @return [Transaction\Entity $txn, PublicCollection $feesSplit]
+     * @return array [Transaction\Entity $txn, PublicCollection $feesSplit]
      */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
@@ -255,7 +255,7 @@ class Core extends Base\Core
 
         if ($oldTransaction === true)
         {
-            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
 
             $fee = 0;
             $serviceTax = 0;
@@ -374,7 +374,7 @@ class Core extends Base\Core
             ]
         );
 
-        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
 
         $transaction->setPricingRule($pricingRuleId);
 
@@ -633,19 +633,24 @@ class Core extends Base\Core
 
         $amount = $transfer->getAmount();
 
+        list($fee, $serviceTax, $feesSplit) =
+            (new Pricing\Fee)->calculateMerchantFees($transfer);
+
         $settledAt = time();
 
+        $amountPlusFees = abs($amount + $fee);
+
         $values = [
-            Transaction\Entity::DEBIT         => $amount,
+            Transaction\Entity::DEBIT         => $amountPlusFees,
             Transaction\Entity::CREDIT        => 0,
             Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
             Transaction\Entity::GATEWAY_FEE   => 0,
-            Transaction\Entity::API_FEE       => 0,
+            Transaction\Entity::API_FEE       => $fee,
             Transaction\Entity::RECONCILED_AT => time(),
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
-            Transaction\Entity::FEE           => 0,
-            Transaction\Entity::SERVICE_TAX   => 0,
+            Transaction\Entity::FEE           => $fee,
+            Transaction\Entity::SERVICE_TAX   => $serviceTax,
             Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,

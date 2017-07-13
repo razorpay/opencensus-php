@@ -61,7 +61,7 @@ class Converter
         return $sheets;
     }
 
-    public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [])
+    public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [], $startRow = 1)
     {
         //
         // For the current implementation to work the way it is expected to,
@@ -70,6 +70,8 @@ class Converter
         // an array of rows to be returned rather than an array of sheets.
         //
         Config::set('excel.import.force_sheets_collection', false);
+
+        Config::set('excel.import.startRow', $startRow);
 
         if (empty($sheetNames) === false)
         {
@@ -321,7 +323,7 @@ class Converter
         foreach ($rowIterator as $row)
         {
             // this deals with the empty rows
-            if (max($row) === "")
+            if (count(array_filter($row)) === 0)
             {
                 continue;
             }

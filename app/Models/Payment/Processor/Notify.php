@@ -404,12 +404,13 @@ class Notify
                 'id'            => $this->payment->merchant->getId(),
             ],
             'payment'   => [
-                'id'          => $this->payment->getId(),
-                'public_id'   => $this->payment->getPublicId(),
-                'amount'      => $this->payment->getFormattedAmount(),
-                'raw_amount'  => $this->payment['base_amount'],
-                'timestamp'   => $this->payment->getUpdatedAt(),
-                'captured_at' => $this->payment->getAttribute('captured_at'),
+                'id'              => $this->payment->getId(),
+                'public_id'       => $this->payment->getPublicId(),
+                'amount'          => $this->payment->getFormattedAmount(),
+                'raw_amount'      => $this->payment['base_amount'],
+                'adjusted_amount' => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
+                'timestamp'       => $this->payment->getUpdatedAt(),
+                'captured_at'     => $this->payment->getAttribute('captured_at'),
 
                 // note that payment method is unavailable to the merchant
                 'method'    => $this->payment->getMethodWithDetail(),
@@ -532,8 +533,9 @@ class Notify
     /**
      * Decides if we send a mail to customer for a payment event
      *
-     * @param  Mailable $mailable Mailable object being sent
-     * @return boolean
+     * @param PaymentMail\Base|Mailable $mailable Mailable object being sent
+     *
+     * @return bool
      */
     protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
     {

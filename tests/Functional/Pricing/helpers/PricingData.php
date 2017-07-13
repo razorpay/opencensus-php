@@ -408,7 +408,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
                 'entity' => 'collection',
                 'items' => array(
                     array(
@@ -498,7 +498,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
                 'entity' => 'collection',
                 'items' => array(
                     array(
@@ -758,6 +758,18 @@ return [
     'testDeletePricingPlanRule' => [
         'request' => [
             'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
+    'testDeletePricingPlanRuleForce' => [
+        'request' => [
+            'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB/force',
             'method' => 'delete',
         ],
         'response' => [

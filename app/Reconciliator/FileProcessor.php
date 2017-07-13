@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator;
 
+use App;
 use Requests;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -50,7 +51,10 @@ class FileProcessor
             'application/excel',
             'application/vnd.ms-excel',
             'application/msexcel',
-            'application/vnd.ms-office'],
+            'application/vnd.ms-office',
+            'application/vnd.oasis.opendocument.spreadsheet',
+            'application/cdfv2-unknown'
+        ],
         self::CSV => [
             'text/csv',
             'text/x-comma-separated-values',
@@ -73,11 +77,16 @@ class FileProcessor
      ********************/
     protected $validator;
     protected $messenger;
+    protected $trace;
 
     public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->validator = new Validator;
         $this->messenger = new Messenger();
+
+        $this->trace =$app['trace'];
     }
 
     public function getFileDetails($file, $type = self::UPLOADED)
@@ -92,210 +101,6 @@ class FileProcessor
         {
             return $this->getStorageFileDetails($file);
         }
-    }
-
-    /**
-     * This method is used to get the file details of files received through a route directly
-     *
-     * @param UploadedFile $file
-     * @return array
-     */
-    protected function getUploadedFileDetails(UploadedFile $file)
-    {
-        $fileName = strtolower($file->getClientOriginalName());
-        $extension = strtolower($file->getClientOriginalExtension());
-        $mimeType = $file->getMimeType();
-        $size = $file->getClientSize();
-        $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
-        $filePath = $sourceFolderPath . '/' . $fileName;
-
-        $file->move($sourceFolderPath, $fileName);
-
-        return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
-    }
-
-    /**
-     * This methods is used to get the file details of files which are already present on the storage.
-     * getUploadedFileDetails() cannot be used because the file object class is different here.
-     *
-     * @param $file
-     * @return array
-     */
-    protected function getStorageFileDetails(SplFileInfo $file)
-    {
-        $fileName = strtolower($file->getFilename());
-        $extension = strtolower($file->getExtension());
-        $mimeType = mime_content_type($file->getRealPath());
-        $size = $file->getSize();
-        $sourceFolderPath =  $file->getPath();
-        $filePath = $file->getRealPath();
-
-        return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
-    }
-
-    /**
-     * @param string $fileName String name of the file to be stored
-     * @param string $extension String extension of the file
-     * @param string $mimeType String mimetype of the type
-     * @param int $size Integer Size of the file
-     * @param string $sourceFolderPath Path of the folder in which the file is present
-     * @param string $filePath Full path of the file
-     * @return array
-     */
-    protected function fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath)
-    {
-        $fileDetails = [
-            self::FILE_NAME          => $fileName,
-            self::EXTENSION          => $extension,
-            self::MIME_TYPE          => $mimeType,
-            self::SIZE               => $size,
-            self::DESTINATION_FOLDER => $sourceFolderPath,
-            self::FILE_PATH          => $filePath,
-        ];
-
-        return $fileDetails;
-    }
-
-    public function deleteFileLocally($filePath)
-    {
-        if (file_exists($filePath) === false)
-        {
-            // Critical alert because this should ideally never happen.
-            $this->messenger->raiseReconAlert(
-                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
-                  'message'    => 'File not present, to delete locally.',
-                  'file_path'  => $filePath
-                ]);
-            return;
-        }
-
-        $success = unlink($filePath);
-
-        if ($success === false)
-        {
-            $this->messenger->raiseReconAlert(
-                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
-                  'message'    => 'Unable to delete the file, locally.',
-                  'file_path'  => $filePath
-                ]);
-        }
-    }
-
-    /**
-     * Gets the extension of the file.
-     * Also validates the (mime type + extension) combination.
-     *
-     * @param UploadedFile $file
-     * @param              $fileLocationType
-     *
-     * @return string Extension of the file
-     */
-    public function getTypeOfFile($file, $fileLocationType)
-    {
-        if ($fileLocationType === self::UPLOADED)
-        {
-            $mimeType = $file->getMimeType();
-            $extension = $file->getClientOriginalExtension();
-        }
-        else
-        {
-            $mimeType = mime_content_type($file->getRealPath());
-            $extension = $file->getExtension();
-        }
-
-        // Validates the mime type + extension.
-        $this->validator->validateExtensionMimeType($extension, $mimeType);
-
-        return $extension;
-    }
-
-    /**
-     * Unzips the file to a folder which is created in the same folder in which the zip file is present.
-     *
-     * @param array $fileDetails
-     * @param string $password Password to unlock the zip file.
-     * @return string The folder path of the extracted file
-     * @throws Exception\ReconciliationException
-     */
-    public function unzipFile($fileDetails, $password = null)
-    {
-        $filePath = $fileDetails[self::FILE_PATH];
-        $extension = $fileDetails[self::EXTENSION];
-
-        // TODO: Review zip files security.
-
-        // Since there can be multiple zip files which will need to get extracted,
-        // will be storing each zip file's extracted files in a separate directory.
-        $randomFolderName = UniqueIdEntity::generateUniqueId();
-        $extractToPath = $this->getFolderFromFilePath($filePath) . '/' . $randomFolderName;
-
-        // Currently supporting only zip files
-        // When other types of zip needs to be supported,
-        // handle for each type separately using the conditional statements.
-        if ($extension !== self::ZIP_EXTENSION)
-        {
-            throw new Exception\ReconciliationException(
-                'Unsupported zip type. Currently supporting only zip files.', ['file_details' => $fileDetails]
-            );
-        }
-
-        // Extracts the zip file to the given path.
-        $this->extractZipFile($filePath, $extractToPath, $password);
-
-        return $extractToPath;
-    }
-
-    /**
-     * Extracts the given zip file to a given extract location. Throws an exception if unable to extract.
-     *
-     * @param string $filePath The complete file path of the zip file that needs to be extracted
-     * @param string $extractToPath The folder path to where the zip file needs to be extracted
-     * @param string $password Optional Password for the zip file, if present
-     * @throws Exception\ReconciliationException
-     */
-    protected function extractZipFile($filePath, $extractToPath, $password)
-    {
-        $zip = new ZipArchive;
-        $zipped = $zip->open($filePath);
-
-        // Checking if it is actually a zipped file.
-        if ($zipped === false)
-        {
-            throw new Exception\ReconciliationException(
-                'Attempt to unzip a non-zip file.', ['file_path' => $filePath]
-            );
-        }
-
-        // Use the password to extract if present.
-        if (empty($password) === false)
-        {
-            $zip->setPassword($password);
-        }
-
-        $extracted = $zip->extractTo($extractToPath);
-
-        // Checking if it has been successfully extracted
-        if ($extracted === true)
-        {
-            // Delete the original zip file.
-            $this->deleteFileLocally($filePath);
-            $zip->close();
-        }
-        else
-        {
-            throw new Exception\ReconciliationException(
-                'Failed to unzip file.',
-                [
-                    'file_path'      => $filePath,
-                    'status_message' => $zip->getStatusString(),
-                ]
-            );
-        }
-    }
-
-    public function getFolderFromFilePath($filePath)
-    {
-        return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
     }
 
     /**
@@ -338,5 +143,338 @@ class FileProcessor
         Storage::disk('settlements')->put($fileName, $response->body);
 
         return new SplFileInfo($filePath);
+    }
+
+    /**
+     * Unzips the file to a folder which is created in the same folder in which the zip file is present.
+     *
+     * @param array  $fileDetails
+     * @param string $password Password to unlock the zip file.
+     * @param bool   $use7z
+     *
+     * @return string The folder path of the extracted file
+     * @throws Exception\ReconciliationException
+     */
+    public function unzipFile($fileDetails, $password = null, bool $use7z = false)
+    {
+        $filePath = $fileDetails[self::FILE_PATH];
+        $extension = $fileDetails[self::EXTENSION];
+
+        // TODO: Review zip files security.
+
+        // Since there can be multiple zip files which will need to get extracted,
+        // will be storing each zip file's extracted files in a separate directory.
+        $randomFolderName = UniqueIdEntity::generateUniqueId();
+        $extractToPath = $this->getFolderFromFilePath($filePath) . '/' . $randomFolderName;
+
+        // Currently supporting only zip files
+        // When other types of zip needs to be supported,
+        // handle for each type separately using the conditional statements.
+        if ($extension !== self::ZIP_EXTENSION)
+        {
+            throw new Exception\ReconciliationException(
+                'Unsupported zip type. Currently supporting only zip files.', ['file_details' => $fileDetails]
+            );
+        }
+
+        // Extracts the zip file to the given path.
+        $this->extractZipFile($filePath, $extractToPath, $password, $use7z);
+
+        return $extractToPath;
+    }
+
+    public function deleteFileLocally($filePath)
+    {
+        $this->trace->info(
+            TraceCode::FILE_DELETING,
+            [
+                'file_path' => $filePath
+            ]);
+
+        if (file_exists($filePath) === false)
+        {
+            // // Critical alert because this should ideally never happen.
+            // $this->messenger->raiseReconAlert(
+            //     [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+            //       'message'    => 'File not present, to delete locally.',
+            //       'file_path'  => $filePath
+            //     ]);
+
+            // We sometimes delete the file and then
+            // again try to delete the file. Sorry.
+            return;
+        }
+
+        $success = unlink($filePath);
+
+        if ($success === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                  'message'    => 'Unable to delete the file, locally.',
+                  'file_path'  => $filePath
+                ]);
+        }
+    }
+
+    public function deleteDirectoryLocally($dir)
+    {
+        $this->trace->info(
+            TraceCode::DIRECTORY_DELETING,
+            [
+                'dir_path' => $dir
+            ]);
+
+        //
+        // If someone sends file instead of a directory to this function.
+        //
+        if (is_dir($dir) === false)
+        {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+
+        $this->trace->info(
+            TraceCode::FILES_DELETING,
+            [
+                'file_paths' => $files,
+            ]);
+
+        foreach ($files as $file)
+        {
+            $this->trace->info(
+                TraceCode::FILE_DELETING,
+                [
+                    'file_path' => $file
+                ]);
+
+            if (is_dir("$dir/$file") === true)
+            {
+                $this->deleteDirectoryLocally("$dir/$file");
+            }
+            else
+            {
+                unlink("$dir/$file");
+            }
+        }
+
+        $success = rmdir($dir);
+
+        if ($success === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                  'message'    => 'Unable to delete the DIR, locally.',
+                  'dir_path'  => $dir
+                ]);
+        }
+    }
+
+    /**
+     * Gets the extension of the file.
+     * Also validates the (mime type + extension) combination.
+     *
+     * @param UploadedFile $file
+     * @param              $fileLocationType
+     *
+     * @return string Extension of the file
+     */
+    public function getTypeOfFile($file, $fileLocationType)
+    {
+        if ($fileLocationType === self::UPLOADED)
+        {
+            $mimeType = $file->getMimeType();
+            $extension = $file->getClientOriginalExtension();
+        }
+        else
+        {
+            $mimeType = mime_content_type($file->getRealPath());
+            $extension = $file->getExtension();
+        }
+
+        // Validates the mime type + extension.
+        $this->validator->validateExtensionMimeType($extension, $mimeType);
+
+        return $extension;
+    }
+
+    /**
+     * @param string $fileName String name of the file to be stored
+     * @param string $extension String extension of the file
+     * @param string $mimeType String mimetype of the type
+     * @param int $size Integer Size of the file
+     * @param string $sourceFolderPath Path of the folder in which the file is present
+     * @param string $filePath Full path of the file
+     * @return array
+     */
+    protected function fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath)
+    {
+        $fileDetails = [
+            self::FILE_NAME          => $fileName,
+            self::EXTENSION          => $extension,
+            self::MIME_TYPE          => $mimeType,
+            self::SIZE               => $size,
+            self::DESTINATION_FOLDER => $sourceFolderPath,
+            self::FILE_PATH          => $filePath,
+        ];
+
+        return $fileDetails;
+    }
+
+    /**
+     * This method is used to get the file details of files received through a route directly
+     *
+     * @param UploadedFile $file
+     * @return array
+     */
+    protected function getUploadedFileDetails(UploadedFile $file)
+    {
+        $fileName = strtolower($file->getClientOriginalName());
+        $extension = strtolower($file->getClientOriginalExtension());
+        $mimeType = strtolower($file->getMimeType());
+        $size = $file->getClientSize();
+        $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $filePath = $sourceFolderPath . '/' . $fileName;
+
+        $file->move($sourceFolderPath, $fileName);
+
+        return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
+    }
+
+    /**
+     * This methods is used to get the file details of files which are already present on the storage.
+     * getUploadedFileDetails() cannot be used because the file object class is different here.
+     *
+     * @param $file
+     * @return array
+     */
+    protected function getStorageFileDetails(SplFileInfo $file)
+    {
+        $fileName = strtolower($file->getFilename());
+        $extension = strtolower($file->getExtension());
+        $mimeType = strtolower(mime_content_type($file->getRealPath()));
+        $size = $file->getSize();
+        $sourceFolderPath =  $file->getPath();
+        $filePath = $file->getRealPath();
+
+        return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
+    }
+
+    /**
+     * Extracts the given zip file to a given extract location. Throws an exception if unable to extract.
+     *
+     * @param string $filePath      The complete file path of the zip file that needs to be extracted
+     * @param string $extractToPath The folder path to where the zip file needs to be extracted
+     * @param string $password      Optional Password for the zip file, if present
+     * @param bool   $use7z
+     *
+     * @throws Exception\ReconciliationException
+     */
+    protected function extractZipFile($filePath, $extractToPath, $password, $use7z)
+    {
+        try
+        {
+            if ($use7z === true)
+            {
+                $this->extractUsing7z($filePath, $extractToPath, $password);
+            }
+            else
+            {
+                $this->extractUsingPhpZipArchive($filePath, $extractToPath, $password);
+            }
+        }
+        finally
+        {
+            // Delete the original zip file.
+            $this->deleteFileLocally($filePath);
+        }
+    }
+
+    protected function extractUsing7z($filePath, $extractToPath, $password)
+    {
+        $cmdPath = '';
+
+        if (PHP_OS === 'Darwin')
+        {
+            $cmdPath = '/usr/local/Cellar/p7zip/16.02/bin/';
+        }
+
+        $cmd = escapeshellcmd(
+                    $cmdPath .
+                    '7z x' .
+                    ' -P' . escapeshellarg($password) .
+                    ' -o' . escapeshellarg($extractToPath) .
+                    ' ' . escapeshellarg($filePath));
+
+        exec($cmd, $unzipOutput, $status);
+
+        if ($status !== 0)
+        {
+            //
+            // Creates a dummy file in the extractToPath
+            // even when it's not able to extract.
+            // *facepalm*
+            //
+            $this->deleteDirectoryLocally($extractToPath);
+
+            throw new Exception\ReconciliationException(
+                'Failed to unzip file.',
+                [
+                    'file_path'      => $filePath,
+                    'extract_path'   => $extractToPath,
+                    'status_message' => $status,
+                    'response'       => $unzipOutput
+                ]);
+        }
+    }
+
+    protected function extractUsingPhpZipArchive($filePath, $extractToPath, $password)
+    {
+        $zip = new ZipArchive;
+        $zipped = $zip->open($filePath);
+
+        // Checking if it is actually a zipped file.
+        if ($zipped === false)
+        {
+            throw new Exception\ReconciliationException(
+                'Attempt to unzip a non-zip file.', ['file_path' => $filePath]
+            );
+        }
+
+        // Use the password to extract if present.
+        if (empty($password) === false)
+        {
+            $zip->setPassword($password);
+        }
+
+        $extracted = $zip->extractTo($extractToPath);
+
+        // Checking if it has been successfully extracted
+        if ($extracted === true)
+        {
+            $zip->close();
+        }
+        else
+        {
+            //
+            // Creates a dummy file in the extractToPath
+            // even when it's not able to extract.
+            // *facepalm*
+            //
+            $this->deleteDirectoryLocally($extractToPath);
+
+            throw new Exception\ReconciliationException(
+                'Failed to unzip file.',
+                [
+                    'file_path'      => $filePath,
+                    'status_message' => $zip->getStatusString(),
+                ]);
+        }
+    }
+
+    protected function getFolderFromFilePath($filePath)
+    {
+        return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
     }
 }

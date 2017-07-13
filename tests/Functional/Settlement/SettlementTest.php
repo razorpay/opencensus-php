@@ -72,7 +72,6 @@ class SettlementTest extends TestCase
         $this->assertEquals(10000, $refund->transaction->debit);
 
         $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
-        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
     }
 
     /**

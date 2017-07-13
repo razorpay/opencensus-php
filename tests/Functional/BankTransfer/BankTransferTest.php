@@ -7,13 +7,11 @@ use Mockery;
 use Closure;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BankTransferTest extends TestCase
 {
-    use EntityActionTrait;
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -228,13 +226,28 @@ class BankTransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankTransferPublicAuth()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'bank_transfer';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $response = $this->doAuthPayment($payment);
+        });
+    }
+
     protected function createVirtualAccount()
     {
         $request = $this->testData[__FUNCTION__];
 
         $response = $this->makeRequestAndGetContent($request);
 
-        return $response['bank_account'];
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
     }
 
     protected function processBankTransfer($accountNumber, $ifsc, $utr = null)

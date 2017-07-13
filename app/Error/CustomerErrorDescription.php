@@ -6,6 +6,8 @@ class CustomerErrorDescription
 {
     const GATEWAY_ERROR                                                         = 'Payment failed. Please try again with a different payment method';
 
+    const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
+
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = '3dsecure or OTP authentication failed';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment declined';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'The CVV provided is incorrect';
@@ -39,4 +41,10 @@ class CustomerErrorDescription
 
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment cancelled due to clicking the cancel button on 3dSecure page';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined';
+
+    const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT                    = 'Payment failed';
+    const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Payment failed';
+    const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                  = 'Payment failed. Please login.';
+    const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Payment failed. Please login.';
+    const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Payment failed. Please login.';
 }

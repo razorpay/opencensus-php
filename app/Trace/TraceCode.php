@@ -106,6 +106,7 @@ class TraceCode
     const PAYMENT_REFUND_TIMEOUT_SKIP                   = 'PAYMENT_REFUND_TIMEOUT_SKIP';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND         = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE                 = 'CHECKOUT_PREFERENCES_RESPONSE';
+    const CHECKOUT_PREFERENCES_EXCEPTION                = 'CHECKOUT_PREFERENCES_EXCEPTION';
     const PAYMENT_AUTO_REFUND_FAILURE                   = 'PAYMENT_AUTO_REFUND_FAILURE';
     const CREATE_GATEWAY_REFUND_RECORD_FAILED           = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
     const GATEWAY_REFUND_RECORD_CREATED                 = 'GATEWAY_REFUND_RECORD_CREATED';
@@ -134,6 +135,8 @@ class TraceCode
     const RECON_FILE_LINK_NOT_FOUND                     = 'RECON_FILE_LINK_NOT_FOUND';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED             = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION              = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
+
+    const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
     const GATEWAY_MULTIPLE_BANK_PAYMENT_IDS             = 'GATEWAY_MULTIPLE_BANK_PAYMENT_IDS';
 
@@ -178,6 +181,7 @@ class TraceCode
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
+    const GATEWAY_TOKEN_ALREADY_PRESENT                 = 'GATEWAY_TOKEN_ALREADY_PRESENT';
 
     const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
     const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
@@ -214,7 +218,8 @@ class TraceCode
     const PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE           = 'PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE';
     const SUBSCRIPTION_STATE_UNEXPECTED                 = 'SUBSCRIPTION_STATE_UNEXPECTED';
     const SUBSCRIPTION_TOKEN_ASSOCIATE                  = 'SUBSCRIPTION_TOKEN_ASSOCIATE';
-    const SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED         = 'SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED';
+    const SUBSCRIPTION_CUSTOMER_ALREADY_ASSOCIATED      = 'SUBSCRIPTION_CUSTOMER_ALREADY_ASSOCIATED';
+    const SUBSCRIPTION_CUSTOMER_ASSOCIATE               = 'SUBSCRIPTION_CUSTOMER_ASSOCIATE';
     const PAYMENT_SUBSCRIPTION_ASSOCIATE                = 'PAYMENT_SUBSCRIPTION_ASSOCIATE';
     const SUBSCRIPTION_ERROR_STATUS_UNEXPECTED          = 'SUBSCRIPTION_ERROR_STATUS_UNEXPECTED';
     const SUBSCRIPTION_CHARGE_QUEUE_FAILED              = 'SUBSCRIPTION_CHARGE_QUEUE_FAILED';
@@ -240,6 +245,8 @@ class TraceCode
     const RUN_CREATE_REQUEST                            = 'RUN_CREATE_REQUEST';
     const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
     const INVOICE_SEND_SUBSCRIPTION_NOTIFICATION        = 'INVOICE_SEND_SUBSCRIPTION_NOTIFICATION';
+    const SUBSCRIPTION_CANCEL                           = 'SUBSCRIPTION_CANCEL';
+    const SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE          = 'SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE';
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
@@ -298,6 +305,10 @@ class TraceCode
     const PAYMENT_APP_TOKEN_NOT_FOUND                   = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                          = 'PAYMENT_UPDATE_TOKEN';
     const SAVED_CARDS_UPDATED_WITH_IIN                  = 'SAVED_CARDS_UPDATED_WITH_IIN';
+    const TOKENS_FETCHED_COUNT_FOR_MIGRATE              = 'TOKENS_FETCHED_COUNT_FOR_MIGRATE';
+    const TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED         = 'TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED';
+    const TOKEN_BEING_MIGRATED                          = 'TOKEN_BEING_MIGRATED';
+    const GATEWAY_TOKEN_MIGRATED                        = 'GATEWAY_TOKEN_MIGRATED';
 
     //Pricing
     const PRICING_RULE_SELECTION                        = 'PRICING_RULE_SELECTION';
@@ -318,6 +329,10 @@ class TraceCode
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED             = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
+
+    const FILE_DELETING                                 = 'FILE_DELETING';
+    const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
+    const FILES_DELETING                                = 'FILES_DELETING';
 
 
     // Gateway component error messages
@@ -508,9 +523,11 @@ class TraceCode
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
+    const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
@@ -541,16 +558,12 @@ class TraceCode
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
     const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
-    const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
-    const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_SYNC_PUSH_PAYLOAD                      = 'ES_SYNC_PUSH_PAYLOAD';
     const ES_SYNC_PUSH_FAILED                       = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
-    const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
-    const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
     const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
 
     const RECON_ALERT                               = 'RECON_ALERT';
@@ -576,8 +589,11 @@ class TraceCode
     const PRICING_RULE_MISTMATCH                        = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 
+    const BATCH_CREATE_REQUEST                          = 'BATCH_CREATE_REQUEST';
     const BATCH_CREATED                                 = 'BATCH_CREATED';
+    const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
+    const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
@@ -592,6 +608,7 @@ class TraceCode
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
+    const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
     /**
      * Trace code for critical info
@@ -814,10 +831,7 @@ class TraceCode
         self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',
         self::MISC_TRACE_CODE                           => 'Miscellaneous trace code',
-        self::ES_SAVE_FAILED                            => 'Failed while trying to save the entity to ES',
         self::ES_BULK_UPDATE_FAILED                     => 'Failed while bulk updating in ES',
-        self::ES_BULK_UPDATE                            => 'Bulk update for ES',
-        self::ES_SAVE_REQUEST                           => 'Request for saving in ES',
 
         self::RECON_ALERT                               => 'Alert raised for reconciliation',
         self::RECON_FILE_SKIP                           => 'Skipping a reconciliation file',

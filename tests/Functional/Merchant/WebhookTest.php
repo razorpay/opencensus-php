@@ -81,7 +81,8 @@ class WebhookTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        HttpClientDiscovery::prependStrategy(MockClientStrategy::class);
+        $this->app['webhook.inferno']->setClient($this->app['httplug']->driver('mock'));
+
         $messageFactory = MessageFactoryDiscovery::find();
 
         $client = $this->app['webhook.inferno']->getClient();

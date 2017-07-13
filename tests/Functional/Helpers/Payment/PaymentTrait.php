@@ -11,6 +11,9 @@ use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Account;
 
 trait PaymentTrait
 {
@@ -413,9 +416,17 @@ trait PaymentTrait
     {
         $request = [
             'url'    => '/callback/' . $this->gateway,
-            'method' => 'post',
-            'raw'    => $content
+            'method' => 'post'
         ];
+
+        if (is_string($content))
+        {
+            $request['raw'] = $content;
+        }
+        else
+        {
+            $request['content'] = $content;
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -724,7 +735,18 @@ trait PaymentTrait
 
     protected function refundAuthorizedPayment($id, array $input = [])
     {
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
+
+        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
+
+        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
+
+        $admin = $this->ba->getAdmin();
+
+        // Linking merchant with admin because admins can access only linked merchants.
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->addAccountAuth($merchant->getId());
 
         $request = array(
             'method'  => 'POST',
@@ -933,10 +955,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url'     => '/refunds/netbanking/excel',
+            'url'     => '/refunds/excel',
             'method'  => 'post',
             'content' => [
-                'bank'   => $bank
+                'bank'   => $bank,
+                'method' => 'netbanking',
             ],
         );
 
@@ -1117,7 +1140,9 @@ trait PaymentTrait
         $var = 'mock_' . $this->gateway;
 
         if (isset($gateway[$var]))
+        {
             return $gateway['mock_' . $this->gateway];
+        }
 
         return false;
     }

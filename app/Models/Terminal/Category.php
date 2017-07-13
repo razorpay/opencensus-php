@@ -29,6 +29,8 @@ class Category
     const PHARMA          = 'pharma';
     const LENDING         = 'lending';
     const CRYPTOCURRENCY  = 'cryptocurrency';
+    const FINANCE         = 'finance';
+    const FOREX           = 'forex';
 
 
     /**
@@ -59,6 +61,7 @@ class Category
         self::PHARMA,
         self::LENDING,
         self::CRYPTOCURRENCY,
+        self::FOREX,
     ];
 
 
@@ -105,6 +108,7 @@ class Category
                 self::DEFAULT   => self::ECOMMERCE,
                 self::UTILITIES => self::UTILITIES,
                 self::LENDING   => self::UTILITIES,
+                // self::FOREX     => self::FINANCE,
             ]
         ],
         Method::CARD => [
@@ -188,7 +192,7 @@ class Category
 
     public static function getIncompatibleCategories()
     {
-        return array_merge(self::TPV, []);
+        return self::TPV;
     }
 
     public static function isMerchantCategoryTPV($category2)

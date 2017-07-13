@@ -58,17 +58,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The payer ifsc field is required.',
-                    'field'       => 'payer_ifsc',
-                ],
+                'valid'          => false,
+                'message'        => null,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'status_code' => 200,
         ],
     ],
 
@@ -94,6 +87,22 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The payee ifsc field is required.',
                     'field'       => 'payee_ifsc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testBankTransferPublicAuth' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid payment method given: bank_transfer',
                 ],
             ],
             'status_code' => 400,

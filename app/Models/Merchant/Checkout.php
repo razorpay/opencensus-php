@@ -6,19 +6,22 @@ use App;
 use Request;
 use Session;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
-use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Offer;
-use RZP\Models\Payment;
-use RZP\Models\Invoice;
-use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Offer;
+use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Plan\Subscription;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Checkout
 {
@@ -27,13 +30,20 @@ class Checkout
 
     const SUBSCRIPTION_ID    = 'subscription_id';
 
-    const DOWNTIME_FILTER_REGEX = '/[a-z]$/';
+    protected $app;
+    /**
+     * @var Trace
+     */
+    protected $trace;
+    protected $repo;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
     }
 
     public function getPreferences(Entity $merchant, $mode, array $input)
@@ -42,7 +52,7 @@ class Checkout
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
-        $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
+        $data = $this->getMerchantPreferencesData($merchant, $mode);
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
@@ -158,6 +168,11 @@ class Checkout
 
         try
         {
+            //
+            // For the second 2FA in global flow also, we will have the app_token. Hence,
+            // in this usage (preferences) of getCustomerAndApp, we don't need to have
+            // the global_customer_id in the input.
+            //
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
             if ($customer === null)
@@ -165,9 +180,9 @@ class Checkout
                 return null;
             }
 
-            if((Base\Utility::isUpdatedAndroidSdk($input)) and
-                    ($appToken !== null) and
-                    ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
+            if ((Base\Utility::isUpdatedAndroidSdk($input)) and
+                ($appToken !== null) and
+                ($appToken->getMerchantId() === $this->repo->merchant->getSharedAccount()->getId()))
             {
                 return null;
             }
@@ -180,14 +195,19 @@ class Checkout
                 'tokens'    => $savedTokens->toArrayPublic()
             );
 
+            //
+            // This case comes when customer_id is sent in the input (always local customer).
+            //
             if ($customer->isLocal() === true)
             {
+                // TODO: Figure out a way to tell the checkout whether it's local/global flow.
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException(
+                $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
 
         return $custData;
@@ -218,15 +238,44 @@ class Checkout
 
     protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data)
     {
+        // we don't return the customer data if request is jsonp
+        if (isset($input['callback']) === true)
+        {
+            return;
+        }
+
+        if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            $this->doCustomerProcessingForSubscription($input, $data, $merchant);
+        }
+
+        //
+        // To recognize the flow as local, the only way is, to check
+        // if `customer_id` is present in the input.
+        // If it's not, we consider it as global by default.
+        //
+        // In case of subscriptions, the customer_id is added to the input
+        // if subscription has a customer associated with it and the customer
+        // associated does not have any global customer associated.
+        //
+
+        $data['global'] = true;
+
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            $data['global'] = false;
+        }
+
         try
         {
-            /// we don't return the customer data if request is jsonp
-            if (isset($input['callback']) === true)
-            {
-                return;
-            }
-
-            // fetch customer data and saved cards data
+            //
+            // We get the customer using either the customer_id or the app_token.
+            // If customer_id is present in the input, it means that it's a local customer.
+            // Since the merchant will not have customer_id of a global customer.
+            // If app_token is present in the input, it means that it's a global customer.
+            // It also means that the user is already logged in.
+            // If customer_id AND app_token both are present, we give preference to the customer_id.
+            //
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
             {
@@ -237,7 +286,16 @@ class Checkout
                     $data['customer'] = $custData;
                 }
             }
-            else if(isset($input['contact']))
+            //
+            // In cases where neither app_token is present nor any customer_id,
+            // we use the contact number + device_token to search for an existing
+            // global customer. We receive device token only in case of
+            // mobile (sometimes). (contact will always be there anyway).
+            // If device token is valid, we fetch the tokens and send across.
+            // Otherwise, we don't send any tokens. (Refer the checkout flow to
+            // find out what happens at checkout when we don't send any tokens).
+            //
+            else if (empty($input['contact']) === false)
             {
                 $response = (new Customer\Service)->fetchGlobalCustomerStatus(
                     $input['contact'],
@@ -263,11 +321,85 @@ class Checkout
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException(
+                $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
     }
 
-    protected function getMerchantPreferencesData(Entity $merchant, $mode, array $input)
+    /**
+     * If a customer is associated with the subscription, we assume
+     * that the merchant wants the local cards, and go ahead with
+     * that flow. We add customer_id to the input to force the local flow.
+     * If no customer is associated with the subscription, we go
+     * ahead with the global flow. (It involves more logic, though)
+     *
+     * @param array  $input
+     * @param array  $data
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function doCustomerProcessingForSubscription(array & $input, array $data, Merchant\Entity $merchant)
+    {
+        //
+        // Since customer_id will always be associated with the subscription,
+        // it should not be sent in the input. If it is sent, we would
+        // not know whether to use the customer associated with the subscription
+        // or the one sent in the input.
+        // If the customer is not present in subscription AND not sent in
+        // the input, we use/create global customer.
+        //
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
+                null,
+                $input);
+        }
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
+            $input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
+
+        //
+        // If a customer is not associated with the subscription already,
+        // we go ahead with the global flow. But, for global flow, we need
+        // to ensure that noflashcheckout is not enabled for the merchant.
+        //
+        // For the first 2FA txn, subscription.customer_id will always be null
+        // for a global flow.
+        // For the next non-2FA txn, this will NOT be null and the global flow
+        // is handled in the ELSE condition.
+        //
+        if ($subscription->hasCustomer() === false)
+        {
+            //
+            // Card saving is not enabled for the merchant.
+            //
+            if ($data['options']['remember_customer'] === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED,
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'input'             => $input
+                    ]);
+            }
+        }
+        //
+        // If a customer is associated with the subscription, it can mean
+        // local OR global.
+        //
+        else
+        {
+            if ($subscription->followLocalFlow() === true)
+            {
+                $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+            }
+        }
+    }
+
+    protected function getMerchantPreferencesData(Entity $merchant, $mode)
     {
         $data['options']['theme']['color'] = $merchant->getBrandColor();
 
@@ -412,7 +544,7 @@ class Checkout
     {
         try
         {
-            if ($this->shouldExposeDowntime($merchant) === true)
+            if ($merchant->isFeatureEnabled(Feature\Constants::HIDE_DOWNTIMES) === false)
             {
                 $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
 
@@ -424,26 +556,7 @@ class Checkout
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
         }
-    }
-
-    /**
-     * Checks if the last character of mid is in a certain set of characters
-     * to control rollout
-     * @param  Merchant\Entity $merchant
-     * @return bool            Check if downtime should be exposed to merchant
-     */
-    protected function shouldExposeDowntime(Merchant\Entity $merchant): bool
-    {
-        if ($this->app->environment('prod') === false)
-        {
-            return true;
-        }
-
-        $result = ((preg_match(self::DOWNTIME_FILTER_REGEX, $merchant->getId()) === 1) or
-                    ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true));
-
-        return $result;
     }
 }
