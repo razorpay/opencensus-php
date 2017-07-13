@@ -346,7 +346,12 @@ class RawApiRequest
 
         // If current user is NOT an admin
         // Due to login as merchant this has to be in this way!
-        if (empty($adminToken) === true and empty($merchantUser) === false)
+
+        if (empty($adminToken) === false)
+        {
+            $merchantId = $input['merchant_id'] ?? null;
+        }
+        else if (empty($merchantUser) === false)
         {
             $currentMerchant = $merchantUser->currentMerchant();
 
@@ -354,11 +359,6 @@ class RawApiRequest
             {
                 $merchantId = $currentMerchant->id;
             }
-        }
-
-        if (empty($merchantId) === true)
-        {
-            $merchantId = $input['merchant_id'] ?? null;
         }
 
         return $merchantId;
