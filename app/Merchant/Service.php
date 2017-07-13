@@ -917,4 +917,31 @@ class Service extends Base\Service
 
         return [$error, $genericUsers];
     }
+
+    public function tagMerchant(array $input)
+    {
+        $currentMerchant = $this->currentUser->currentMerchant();
+
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
+
+        $merchantTags = $currentMerchant->tagNames;
+
+        $allTags = [];
+
+        if (empty($merchantTags) === false)
+        {
+            $allTags = explode(', ', strtolower($merchantTags));
+        }
+
+        $newAllTags = array_diff($allTags, ['newui']);
+
+        if ((isset($input['newui']) === true) and ($input['newui'] === 'true'))
+        {
+            $newAllTags[] = 'newui';
+        }
+
+        $currentMerchant->retag($newAllTags);
+
+        return [[], $currentMerchant->toArray()];
+    }
 }

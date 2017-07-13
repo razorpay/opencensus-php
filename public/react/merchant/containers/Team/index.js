@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import NewInvitation from './NewInvitation';
@@ -38,55 +39,59 @@ export default class TeamContainer extends Component {
         <header>
           <NavLink to="/team">Manage Team</NavLink>
 
-          <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/team-support"
-              target="_blank"
-            >
-              Documentation &nbsp;
-              <i class="icon icon-external-link" />
-            </a>
-          </div>
+          <HeaderAction>
+            <div class="btn-toolbar pull-right">
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/team-support"
+                target="_blank"
+              >
+                Documentation &nbsp;
+                <i class="icon icon-external-link" />
+              </a>
+            </div>
+          </HeaderAction>
         </header>
 
-        <div class="content-wrapper content-sm">
-          <NewInvitation />
+        <content>
+          <div class="content-wrapper content-sm">
+            <NewInvitation />
 
-          {otherUsers.length
-            ? <div>
-                <div class="panel-heading">Team Members</div>
-                <table class="table table-noborder">
-                  <tbody>
-                    {otherUsers.map(user => (
-                      <User
-                        key={user.id}
-                        user={user}
-                        form={`editUser_${user.id}`}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            : null}
+            {otherUsers.length
+              ? <div>
+                  <div class="panel-heading">Team Members</div>
+                  <table class="table table-noborder">
+                    <tbody>
+                      {otherUsers.map(user => (
+                        <User
+                          key={user.id}
+                          user={user}
+                          form={`editUser_${user.id}`}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              : null}
 
-          {invitations.length
-            ? <div>
-                <div class="panel-heading">Pending Invitations</div>
-                <table class="table table-noborder">
-                  <tbody>
-                    {invitations.map(invite => (
-                      <Invitation
-                        key={invite.id}
-                        invite={invite}
-                        form={`editInvitation_${invite.id}`}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            : null}
-        </div>
+            {invitations.length
+              ? <div>
+                  <div class="panel-heading">Pending Invitations</div>
+                  <table class="table table-noborder">
+                    <tbody>
+                      {invitations.map(invite => (
+                        <Invitation
+                          key={invite.id}
+                          invite={invite}
+                          form={`editInvitation_${invite.id}`}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              : null}
+          </div>
+        </content>
       </tabbed-container>
     );
   }
