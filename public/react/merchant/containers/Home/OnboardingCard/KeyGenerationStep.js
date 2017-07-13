@@ -34,7 +34,7 @@ export default class KeyGenerationStep extends Component {
 
   render() {
     let { user, mode, modeFormatted } = this.props;
-    let isLoading = this.props.isLoading || this.state.isLoading;
+    let isLoading = this.state.isLoading;
 
     let header = `Integrate Razorpay in ${modeFormatted} Mode`;
     let svgSrc = GenerateKeySVG;

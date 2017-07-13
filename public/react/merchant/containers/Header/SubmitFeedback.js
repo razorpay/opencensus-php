@@ -39,7 +39,7 @@ export default class SubmitFeedback extends Component {
 
     this.props.showNotification({
       type: 'error',
-      message: 'Smooch not loaded!!!',
+      message: 'Error in sending feedback!',
     });
 
     return Promise.reject();

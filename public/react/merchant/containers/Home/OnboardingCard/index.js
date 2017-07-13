@@ -94,7 +94,6 @@ export default class OnboardingCard extends Component {
                         user={user}
                         mode={mode}
                         modeFormatted={modeFormatted}
-                        isLoading={payments.loading}
                       />}
                 </div>
               </div>
