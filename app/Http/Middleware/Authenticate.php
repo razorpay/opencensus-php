@@ -169,7 +169,7 @@ class Authenticate
         if ($scopeAllowed === false)
         {
             // todo: Change to unauthorized response
-            return ApiResponse::routeNotFound();
+            return ApiResponse::httpMethodNotAllowed();
         }
 
         //
@@ -177,6 +177,10 @@ class Authenticate
         // TODO: Move this to a common auth class
         //
         $this->ba->setMerchantById($merchantId);
+
+        $this->ba->setMode('test');
+
+        \Database\DefaultConnection::set('test');
 
         $this->ba->setAccessTokenId($tokenId);
 
