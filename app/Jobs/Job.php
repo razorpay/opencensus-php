@@ -32,6 +32,8 @@ class Job
      */
     protected $trace;
 
+    protected $taskId;
+
     /*
     |--------------------------------------------------------------------------
     | Queueable Jobs
@@ -48,6 +50,10 @@ class Job
     public function __construct(string $mode = null)
     {
         $this->mode = $mode;
+
+        $app = App::getFacadeRoot();
+
+        $this->taskId = $app['request']->getTaskId();
     }
 
     public function handle()
@@ -70,6 +76,15 @@ class Job
 
         $this->repoManager = $app['repo'];
 
+        // We are reinitializing the request id here, so that we don't trace the request id
+        // for the worker daemon process
+        $app['request']->generateId();
+
+        // For jobs, we set the task id to the task_id of the api request which queued the job
+        $app['request']->generateTaskId($this->taskId);
+
+        // Trace should be resolved from app container after generating request id
+        // and task id for the job.
         $this->trace = $app['trace'];
 
         //
