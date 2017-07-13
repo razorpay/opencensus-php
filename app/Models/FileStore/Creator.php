@@ -608,26 +608,11 @@ class Creator extends Base\Core
             escapeshellarg($unzippedFilePath)
         );
 
-        $this->unlinkFile($unzippedFilePath);
-
         $this->extension($this->compressionFormat);
 
         $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
 
         $this->mime($this->localFile->getMimeType());
-    }
-
-    /**
-     * unlinks the file from path after it is saved to AWS
-     *
-     * @param $fullpath string
-     */
-    protected function unlinkFile(string $fullpath)
-    {
-        if (file_exists($fullpath) === true)
-        {
-            unlink($fullpath);
-        }
     }
 
     protected function createDirectory()
