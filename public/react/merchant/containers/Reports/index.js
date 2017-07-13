@@ -214,9 +214,9 @@ export default class ReportsContainer extends Component {
                     <div>{option.label}</div>
                   )}
                 />
-              : <div class="reports-entity-options">
+              : <div>
                   {this.entityOptions.map((option, index) => (
-                    <div key={index}>
+                    <div class="reports-entity-options" key={index}>
                       <Field
                         name="entity"
                         value={option.value}
@@ -245,29 +245,33 @@ export default class ReportsContainer extends Component {
                     {' '}
                     {user.email || user.user.email}
                   </div>
-                : <PowerSelect
-                    options={this.props.accounts}
-                    placeholder="Search for merchant Name/Email/Merchant ID"
-                    searchIndices={['name', 'id', 'email']}
-                    selected={this.state.merchantSelected}
-                    optionComponent={({ option }) => (
-                      <div style={{ padding: '5' }}>
-                        <b style={{ marginRight: '5' }}>{option.name}</b>
-                        <span>- {option.id}</span>
-                      </div>
-                    )}
-                    selectedOptionComponent={({ option }) => (
-                      <div>
-                        <b style={{ marginRight: '5' }}>{option.name}</b>
-                        <span>- {option.id}</span>
-                      </div>
-                    )}
-                    onChange={({ option }) => {
-                      if (option) {
-                        this.setState({ merchantSelected: option });
-                      }
-                    }}
-                  />}
+                : <div class="custom-select">
+                    <i class="icon icon-search custom-icon" />
+                    <TypeAhead
+                      options={this.props.accounts}
+                      placeholder="Search for merchant Name/Email/Merchant ID"
+                      optionLabelPath="name"
+                      searchIndices={['name', 'id', 'email']}
+                      selected={this.state.merchantSelected}
+                      optionComponent={({ option }) => (
+                        <div style={{ padding: '5' }}>
+                          <b style={{ marginRight: '5' }}>{option.name}</b>
+                          <span>- {option.id}</span>
+                        </div>
+                      )}
+                      selectedOptionComponent={({ option }) => (
+                        <div>
+                          <b style={{ marginRight: '5' }}>{option.name}</b>
+                          <span>- {option.id}</span>
+                        </div>
+                      )}
+                      onChange={({ option }) => {
+                        if (option) {
+                          this.setState({ merchantSelected: option });
+                        }
+                      }}
+                    />
+                  </div>}
             </div>
 
             <div class="form-element">
@@ -291,6 +295,7 @@ export default class ReportsContainer extends Component {
                       name="date"
                       component={ReduxDatetime}
                       dateFormat="MMM, YYYY"
+                      closeOnSelect={true}
                       isValidDate={validYear}
                       placeholder="Select Year-Month"
                       timeFormat={false}
@@ -305,6 +310,7 @@ export default class ReportsContainer extends Component {
                     <Field
                       name="date"
                       dateFormat="DD MMM, YYYY"
+                      closeOnSelect={true}
                       component={ReduxDatetime}
                       placeholder="Select Date-Month-Year"
                       isValidDate={validYear}
