@@ -59,8 +59,8 @@ export default class GSTDetails extends Component {
           </div>
 
           <div class="list-group-item">
-            <span>Razorpay's GST Number (Provisional)</span>
-            <span>{rzp_gst.p_gstin}</span>
+            <span>Razorpay's GST Number</span>
+            <span>{rzp_gst.gstin}</span>
           </div>
         </div>
       </div>

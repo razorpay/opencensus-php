@@ -54,7 +54,7 @@ export default props => {
                     </div>
 
                     <div class="list-group-item">
-                      <span>Service Tax</span>
+                      <span>GST</span>
                       <Amount value={settlement.service_tax} />
                     </div>
 
