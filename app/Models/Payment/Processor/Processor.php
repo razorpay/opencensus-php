@@ -724,6 +724,8 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
+        $this->validateBankTransferDetailsIfApplicable($payment);
+
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
         $metadata = $payment->getMetadata();
@@ -941,6 +943,16 @@ class Processor
         $invoice->getValidator()->validateInvoicePayable();
 
         $payment->invoice()->associate($invoice);
+    }
+
+    protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
+    {
+        if (($payment->isBankTransfer() === true) and
+            ($this->app['basicauth']->isAppAuth() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $payment->getMethod());
+        }
     }
 
     protected function tracePaymentFailed($error, string $traceCode)
