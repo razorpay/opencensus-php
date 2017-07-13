@@ -319,14 +319,14 @@ class OrganizationController extends Controller
         $data = (new Admin\Permission\Service)->createPermission($input);
 
         return ApiResponse::json($data);
-     }
+    }
 
     public function deletePermission(string $permId)
     {
         $data = (new Admin\Permission\Service)->deletePermission($permId);
 
         return ApiResponse::json($data);
-     }
+    }
 
     public function getPermission(string $id)
     {
@@ -374,10 +374,10 @@ class OrganizationController extends Controller
                 $data = (new Admin\Permission\Service)->getAllPermissions();
 
                 break;
-         }
+        }
 
          return ApiResponse::json($data);
-     }
+    }
 
 // --------------------- END CRUD for Permissions ----------------------------------------
 
@@ -407,6 +407,15 @@ class OrganizationController extends Controller
         $input = Request::all();
 
         $response = $adminService->resetPassword($orgId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postChangePassword(Admin\Admin\Service $adminService)
+    {
+        $input = Request::all();
+
+        $response = $adminService->changePassword($input);
 
         return ApiResponse::json($response);
     }

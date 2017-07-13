@@ -323,7 +323,7 @@ class Converter
         foreach ($rowIterator as $row)
         {
             // this deals with the empty rows
-            if (max($row) === "")
+            if (count(array_filter($row)) === 0)
             {
                 continue;
             }
