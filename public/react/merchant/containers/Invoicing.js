@@ -26,9 +26,11 @@ export default class InvoicingContainer extends Component {
           </ShowWhen>
         </header>
 
-        <Route path="/invoices" component={Invoices} />
-        <Route path="/items" component={Items} />
-        <Route path="/customers" component={Customers} />
+        <content>
+          <Route path="/invoices" component={Invoices} />
+          <Route path="/items" component={Items} />
+          <Route path="/customers" component={Customers} />
+        </content>
       </tabbed-container>
     );
   }

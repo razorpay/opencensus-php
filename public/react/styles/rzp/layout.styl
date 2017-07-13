@@ -230,17 +230,16 @@ body {
 }
 
 .content-wrapper {
-  padding: 20px;
+  padding: 24px;
   @media (max-width $screen-sm-min) {
     padding: 10px;
   }
 }
 
 .content-sm {
-  max-width: 800px
-  &.txn-details {
-    margin: auto;
-  }
+  max-width: 800px;
+  margin: auto;
+  min-height: 300px;
 }
 
 // React Modal Style Overrides
@@ -576,4 +575,96 @@ tr:hover .row-action.btn-group {
 
 .amount {
   white-space: nowrap;
+}
+
+.ProfileDropdown {
+  min-width: 300px;
+  padding: 0;
+  line-height: 1.8;
+
+  .media {
+    margin-top: 0;
+    padding: 10px 12px;
+
+    + .media {
+      border-top: 1px solid #eee;
+    }
+  }
+
+  .media-left {
+    vertical-align: middle;
+  }
+
+  .media-action {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #F7F8FA;
+    }
+  }
+
+  .media-object {
+    width: 40px;
+    text-align: center;
+  }
+
+  .merchantname {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .icon-business,
+  .icon-account {
+    font-size: 40px;
+    color: #dadada;
+  }
+
+  .icon-help,
+  .icon-undo {
+    font-size: 20px;
+  }
+}
+
+.pre {
+  white-space: pre;
+}
+
+.notes {
+  .note {
+    position: relative;
+    margin-bottom: 12px;
+
+    .icon-close {
+      position: absolute;
+      right: -31px;
+      top: 1px;
+      padding: 8px;
+      cursor: pointer;
+      color: #ccc;
+
+      &:hover {
+        color: #aaa;
+      }
+    }
+
+    .key {
+      margin-bottom: 4px;
+    }
+  }
+
+  .add-note {
+    padding-left: 0;
+  }
+}
+
+.detail-notes {
+  .sub-details {
+    margin-top: 10px;
+    margin-left: 15px;
+
+    > .detail-row > label {
+      margin-left: -15px;
+      padding-left: 30px;
+    }
+  }
 }

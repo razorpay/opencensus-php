@@ -13,10 +13,12 @@ export default class PaymentLinksContainer extends Component {
           <NavLink to="/plans">Plans</NavLink>
         </header>
 
-        <Switch>
-          <Route path="/subscriptions" component={SubscriptionsList} />
-          <Route path="/plans" component={PlansList} />
-        </Switch>
+        <content>
+          <Switch>
+            <Route path="/subscriptions" component={SubscriptionsList} />
+            <Route path="/plans" component={PlansList} />
+          </Switch>
+        </content>
       </tabbed-container>
     );
   }

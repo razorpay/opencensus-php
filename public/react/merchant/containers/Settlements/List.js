@@ -30,36 +30,38 @@ export default class SettlementsListContainer extends ListContainer {
           <NavLink to="/settlements">Settlements</NavLink>
         </header>
 
-        <div class="content-wrapper">
-          <SettlementsListFilter
-            form="settlementsListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+        <content>
+          <div class="content-wrapper">
+            <SettlementsListFilter
+              form="settlementsListFilter"
+              count={this.state.count}
+              onSubmit={this.search}
+            />
 
-          {error && <Alert type="error" message={error} />}
+            {error && <Alert type="error" message={error} />}
 
-          <SettlementsList
-            settlements={items}
-            isLoading={loading}
-            showBreakup={this.showBreakup}
-          />
+            <SettlementsList
+              settlements={items}
+              isLoading={loading}
+              showBreakup={this.showBreakup}
+            />
 
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={items.length}
-            onClick={this.paginate}
-          />
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={items.length}
+              onClick={this.paginate}
+            />
 
-          <div class="row">
-            <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-              <p>
-                A settlement is an aggregate of payments and refunds, and as such the fees in a settlement is not reflective of the pricing. We only charge fees on a captured payment.
-              </p>
+            <div class="row">
+              <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
+                <p>
+                  A settlement is an aggregate of payments and refunds, and as such the fees in a settlement is not reflective of the pricing. We only charge fees on a captured payment.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </content>
       </tabbed-container>
     );
   }

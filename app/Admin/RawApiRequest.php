@@ -31,6 +31,8 @@ class RawApiRequest
         'timeout'   =>  60
     ];
 
+    const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
+
     /**
      * Construct a RawApiRequest instance
      * @param array $auth of auth (proxy|admin)
@@ -85,6 +87,8 @@ class RawApiRequest
     {
         $adminUser = Auth::guard('api')->user();
 
+        $adminToken = null;
+
         if (empty($adminUser) === false)
         {
             $adminToken = $adminUser->token;
@@ -94,12 +98,7 @@ class RawApiRequest
         switch ($input['auth'])
         {
             case 'proxy':
-                $merchantId = $input['merchant_id'] ?? null;
-
-                if (empty($merchantId))
-                {
-                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
-                }
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
@@ -110,18 +109,15 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
-                $merchantId = $input['merchant_id'] ?? null;
-
-                if (empty($merchantId))
-                {
-                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
-                }
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
             case 'admin':
-                $this->setAdminCredentials($adminToken, $input['mode']);
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
+
+                $this->setAdminCredentials($adminToken, $input['mode'], $merchantId);
                 break;
 
             case 'internal':
@@ -139,7 +135,7 @@ class RawApiRequest
         }
     }
 
-    protected function setAdminCredentials($token, $mode = 'live')
+    protected function setAdminCredentials($token, $mode = 'live', $merchantId = null)
     {
         $this->setApiCredentials($mode);
 
@@ -153,6 +149,11 @@ class RawApiRequest
         }
 
         $this->params['headers']['X-Admin-Token'] = $token;
+
+        if (empty($merchantId) === false) {
+
+            $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $merchantId;
+        }
     }
 
     protected function setApiCredentials($mode, $merchantId = '')
@@ -329,5 +330,38 @@ class RawApiRequest
         }
 
         return [$errors, null];
+    }
+
+    /**
+     * function to resolve merchantId from input/Auth guard
+     * @param  array  $input
+     *
+     * @return string
+     */
+    protected function resolveMerchantId($input, $adminToken = null)
+    {
+        $merchantId = null;
+
+        $merchantUser = Auth::guard('user')->user();
+
+        // If current user is NOT an admin
+        // Due to login as merchant this has to be in this way!
+
+        if (empty($adminToken) === false)
+        {
+            $merchantId = $input['merchant_id'] ?? null;
+        }
+
+        if (empty($merchantId) === true and empty($merchantUser) === false)
+        {
+            $currentMerchant = $merchantUser->currentMerchant();
+
+            if (empty($currentMerchant) === false)
+            {
+                $merchantId = $currentMerchant->id;
+            }
+        }
+
+        return $merchantId;
     }
 }

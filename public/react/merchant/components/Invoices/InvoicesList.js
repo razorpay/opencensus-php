@@ -33,6 +33,9 @@ const InvoiceListItem = props => {
       <td>
         <Time value={invoice.date} />
       </td>
+      <td class="text-right">
+        <Amount value={invoice.amount} />
+      </td>
       <td>{invoice.receipt}</td>
       <td>
         {invoice.customer_details.customer_contact ||
@@ -41,9 +44,6 @@ const InvoiceListItem = props => {
       </td>
       <td>{invoice.short_url}</td>
       {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
-      <td class="text-right">
-        <Amount value={invoice.amount} />
-      </td>
       <td class="text-right">
         <InvoiceStatusLabel status={invoice.status} />
       </td>
@@ -79,11 +79,11 @@ export default props => {
           <tr>
             <th>{label} Id</th>
             <th>{label} Date</th>
+            <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
             {!isNewUIEnabled ? <th>Type</th> : ''}
-            <th class="text-right">Amount</th>
             <th class="text-right">Status</th>
             <th>Actions</th>
           </tr>

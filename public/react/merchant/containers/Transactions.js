@@ -31,13 +31,15 @@ export default class TransactionsContainer extends Component {
           <NavLink to="/orders">Orders</NavLink>
         </header>
 
-        <Switch>
-          <Route path="/refunds/batchupload" component={BatchUpload} />
-          <Route path="/refunds/batchuploads" component={BatchUploads} />
-          <Route path="/refunds" component={RefundsList} />
-          <Route path="/orders" component={OrdersList} />
-          <Route path="/payments" component={PaymentsList} />
-        </Switch>
+        <content>
+          <Switch>
+            <Route path="/refunds/batchupload" component={BatchUpload} />
+            <Route path="/refunds/batchuploads" component={BatchUploads} />
+            <Route path="/refunds" component={RefundsList} />
+            <Route path="/orders" component={OrdersList} />
+            <Route path="/payments" component={PaymentsList} />
+          </Switch>
+        </content>
       </tabbed-container>
     );
   }

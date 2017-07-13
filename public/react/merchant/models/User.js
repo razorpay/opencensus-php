@@ -36,6 +36,10 @@ export default class User {
     return !!parseInt(this.activated);
   }
 
+  get isSubmitted() {
+    return !!parseInt(this.submitted);
+  }
+
   get isNewUIEnabled() {
     return (this.tags || []).indexOf('Newui') !== -1;
   }

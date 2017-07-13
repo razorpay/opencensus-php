@@ -34,10 +34,10 @@ export default class Clipboard extends Component {
     }
 
     return (
-      <div>
+      <div class="ClipboardCustom">
         <textarea
           value={this.props.value}
-          class="Clipboard__CustomInput"
+          class="ClipboardCustom__Input"
           readOnly={true}
           ref={textarea => (this.textarea = textarea)}
           onFocus={this.selectValue}

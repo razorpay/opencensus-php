@@ -63,8 +63,10 @@ return [
         'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
 
-        // Workflows
+        // Admin Change Password
+        'admin_change_password'             => 'orgs/admin/change_password',
 
+        // Workflows
         'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
@@ -89,6 +91,10 @@ return [
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
+
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
     ],
 
     // auth
@@ -432,9 +438,6 @@ return [
             'routeName' => 'put_config'
         ],
 
-        // Admin Payment Actions
-        // Refund Authorized Payment
-        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
         // Refund Payment
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment
