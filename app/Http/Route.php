@@ -956,7 +956,6 @@ final class Route
 
     public static $proxy = [
         'payment_fetch_card_details',
-        'payment_authorize_refund',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
@@ -1093,6 +1092,7 @@ final class Route
         'workflow_get_actions_checked',
         'merchants_update_hold_funds',
         'adj_add',
+        'payment_authorize_refund',
         'admin_change_password',
     ];
 
