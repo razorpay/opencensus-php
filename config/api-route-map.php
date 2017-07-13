@@ -63,8 +63,10 @@ return [
         'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
 
-        // Workflows
+        // Admin Change Password
+        'admin_change_password'             => 'orgs/admin/change_password',
 
+        // Workflows
         'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',

@@ -222,15 +222,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postPassword()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->changePassword($input, Auth::guard('api')->user());
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantList()
     {
         $input = Input::all();
