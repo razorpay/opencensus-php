@@ -14,7 +14,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    //
     // We have rules on create and update for the two status: DRAFT, ISSUED.
     // Eg. In ISSUED state, you cannot update amount of the invoice. There are
     //     rules to accommodate such requirements. This way it's good to manage and
@@ -24,7 +23,6 @@ class Validator extends Base\Validator
     // - Create invoice in ISSUED status
     // - Update invoice when it's in DRAFT status
     // - Update invoice when it's in ISSUED status
-    //
 
     const CREATE_DRAFT  = 'createDraft';
     const CREATE_ISSUED = 'createIssued';
@@ -34,9 +32,10 @@ class Validator extends Base\Validator
 
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
-    //
-    // A minimum of 15 minutes of gap must exist between invoice issue and expired by
-    //
+    /**
+     * A minimum of 15 minutes of gap must exist between invoice
+     * issue and expired by timestamps.
+     */
     const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
@@ -445,6 +444,14 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Validates if given operation is allowed against invoice's current
+     * status. $operations is generally the names of core's methods.
+     *
+     * @param string $operation
+     *
+     * @throws BadRequestValidationFailureException
+     */
     public function validateOperation(string $operation)
     {
         $invoice = $this->entity;
@@ -469,6 +476,7 @@ class Validator extends Base\Validator
                 break;
 
             case 'sendNotification':
+            case 'notifyInvoiceIssued':
             case 'expireInvoice':
                 $allowedStatuses = [
                     Status::ISSUED,
@@ -479,6 +487,14 @@ class Validator extends Base\Validator
             case 'sendSubscriptionNotification':
                 // Right now, we don't send anything at all
                 $allowedStatuses = [];
+
+                break;
+
+            case 'notifyInvoiceExpired':
+
+                $allowedStatuses = [
+                    Status::EXPIRED,
+                ];
 
                 break;
 
