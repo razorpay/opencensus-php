@@ -2241,3 +2241,6 @@ ALTER TABLE terminals
 # Removes emi_subvention from methods
 ALTER TABLE merchant_banks
     DROP COLUMN emi_subvention;
+
+ALTER TABLE pricing
+    ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER max_fee;
