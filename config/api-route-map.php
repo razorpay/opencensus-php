@@ -91,6 +91,10 @@ return [
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
+
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
     ],
 
     // auth
@@ -434,9 +438,6 @@ return [
             'routeName' => 'put_config'
         ],
 
-        // Admin Payment Actions
-        // Refund Authorized Payment
-        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
         // Refund Payment
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment
