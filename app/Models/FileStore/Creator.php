@@ -648,9 +648,6 @@ class Creator extends Base\Core
     /**
      * Updates permission to 777 on any local files generated via filestore, so that
      * delete operations can be performed successfully on them
-     *
-     * @param  string $filePath Full path of the file whose permission needs to be changed
-     * @return [type]           [description]
      */
     protected function updateFilePermission()
     {
