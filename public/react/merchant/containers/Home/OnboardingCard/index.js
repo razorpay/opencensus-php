@@ -36,18 +36,19 @@ export default class OnboardingCard extends Component {
 
   render() {
     let { user, mode, modeFormatted, payments = [] } = this.props;
+    let { isFirstStep, showOnboarding } = this.state;
 
-    if (!this.state.showOnboarding) {
+    if (!showOnboarding) {
       return null;
     }
 
     return (
-      <div class="media onboarding-card">
+      <div class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}>
         <div class="media-left">
           <img class="media-object" src={OnboardingIllustrationPNG} />
         </div>
 
-        {this.state.isFirstStep
+        {isFirstStep
           ? <div class="media-body">
               <div class="media-heading">
                 Welcome to Razorpay. Let's get started.
@@ -65,7 +66,7 @@ export default class OnboardingCard extends Component {
               </ul>
 
               <button
-                class="btn btn-lg btn-default"
+                class="btn btn-lg btn-primary"
                 onClick={this.gotoNextStep}
               >
                 <span>Got it! So, what's next?</span>
