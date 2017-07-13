@@ -276,6 +276,10 @@ class Gateway extends Base\Gateway
      * Then uses 'http_build_query' to create the string.
      * Not using 'implode' because need to preserve keys.
      *
+     * All the keys are necessary to be set.
+     * In case, the data is not present, they can be set to empty string, not null.
+     * Failing this, the bank rejects the request.
+     *
      * @param  array  $input
      * @return string $dataString
      */
@@ -290,11 +294,18 @@ class Gateway extends Base\Gateway
 
         $paymentId = $input['payment']['id'];
 
+        $merchantDetail = $input['merchant']->merchantDetail;
+
         $data = [
+            RequestFields::USER_NAME       => $merchantDetail->getContactName(),
+            RequestFields::EMAIL           => $merchantDetail->getContactEmail(),
+            RequestFields::ADDRESS         => $merchantDetail->getBusinessRegisteredAddress() ?: '',
+            RequestFields::PHONE_NUMBER    => $merchantDetail->getContactMobile(),
             RequestFields::CHALLAN_NUMBER  => $paymentId,
             RequestFields::MERCHANT_DATE   => $date,
             RequestFields::MERCHANT_AMOUNT => $amount,
             RequestFields::ITEM_CODE       => strtoupper($paymentId),
+            RequestFields::REMARK          => '',
         ];
 
         if ($this->action === Action::AUTHORIZE)
@@ -306,7 +317,7 @@ class Gateway extends Base\Gateway
             $data[RequestFields::RETURN_URL] = self::NA;
         }
 
-        $dataString = http_build_query($data, null, $glue);
+        $dataString = urldecode(http_build_query($data, null, $glue));
 
         return $dataString;
     }
