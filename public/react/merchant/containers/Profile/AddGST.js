@@ -124,8 +124,8 @@ export default class AddGST extends Component {
 
                 <label>Razorpay's GST number</label>
                 <div>
-                  <span>{rzp_gst.p_gstin}</span>
-                  <CustomClipboard value={rzp_gst.p_gstin}>
+                  <span>{rzp_gst.gstin}</span>
+                  <CustomClipboard value={rzp_gst.gstin}>
                     <button
                       class="btn btn-default btn-xs"
                       style={{ marginLeft: '5px' }}
