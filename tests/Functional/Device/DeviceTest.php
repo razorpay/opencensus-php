@@ -11,6 +11,8 @@ class DeviceTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/DeviceTestData.php';
 
         parent::setUp();
