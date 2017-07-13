@@ -2234,3 +2234,15 @@ ALTER TABLE first_data
 ALTER TABLE transfers
     ADD COLUMN fees INT UNSIGNED DEFAULT 0 AFTER notes,
     ADD COLUMN service_tax INT UNSIGNED DEFAULT 0 AFTER fees;
+
+ALTER TABLE terminals
+    ADD COLUMN corporate TINYINT(1) NOT NULL DEFAULT 0 AFTER mode;
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_caps_payment_id_index` (`caps_payment_id`);
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_gateway_transaction_id_index` (`gateway_transaction_id`);
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_action_index` (`action`);
