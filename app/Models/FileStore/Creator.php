@@ -114,7 +114,6 @@ class Creator extends Base\Core
 
         $this->file->generate([]);
 
-
         $this->setDefaults();
     }
 
@@ -580,6 +579,7 @@ class Creator extends Base\Core
             $this->compressFile();
         }
 
+        $this->updateFilePermission();
     }
 
     /*
@@ -635,31 +635,6 @@ class Creator extends Base\Core
         $this->createUploadedFile($fullPath, $fileName);
     }
 
-    protected function updateFilePermission($filePath)
-    {
-        try
-        {
-            //
-            // This step is important because file can be created
-            // via different users (www-data or ubuntu (via queue))
-            //
-            if (substr(sprintf('%o', fileperms($filePath)), -3) !== '777')
-            {
-                (new Utility)->callFileOperation('chmod', [$filePath, 0777]);
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::WARNING,
-                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
-                [
-                    'path' => $filePath
-                ]);
-        }
-    }
-
     protected function writeToExcelFile()
     {
         $fileNameWithoutExt = $this->file->getName();
@@ -674,6 +649,25 @@ class Creator extends Base\Core
         $this->updateFilePermission($fileMetadata['full']);
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
+    }
+
+    /**
+     * Updates permission to 777 on any local files generated via filestore, so that
+     * delete operations can be performed successfully on them
+     *
+     * @param  string $filePath Full path of the file whose permission needs to be changed
+     * @return [type]           [description]
+     */
+    protected function updateFilePermission()
+    {
+        //
+        // This step is important because file can be created
+        // via different users (www-data or ubuntu (via queue))
+        //
+        if (substr(sprintf('%o', fileperms($this->filePath)), -3) !== '777')
+        {
+            (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
+        }
     }
 
     protected function createUploadedFile($filePath, $fileName)
