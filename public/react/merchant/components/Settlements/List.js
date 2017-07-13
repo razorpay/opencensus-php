@@ -49,7 +49,7 @@ export default props => {
             <th class="text-right">Amount</th>
             <th>Created At</th>
             <th class="text-right">Fees</th>
-            <th class="text-right">Service Tax</th>
+            <th class="text-right">GST</th>
             <th>Status</th>
             <th />
           </tr>

@@ -182,13 +182,13 @@ export default props => {
                   />
 
                   <DetailRow
-                    label="Service Tax"
+                    label="GST"
                     value={() => <Amount value={payment.service_tax} />}
                   />
 
                   <DetailRow
                     label="Total Fees"
-                    data-tip="Total Fees is inclusive of Service Tax charges"
+                    data-tip="Total Fees is inclusive of GST charges"
                     value={() => <Amount value={payment.fee} />}
                   />
 
