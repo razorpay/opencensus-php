@@ -208,6 +208,8 @@ class EsRepository extends \Razorpay\Spine\Repository
             }
         }
 
+        $this->buildQueryAdditional($query, $params);
+
         $sort = $this->getSortParameter();
 
         return [
@@ -221,6 +223,10 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'sort'    => $sort,
             ],
         ];
+    }
+
+    public function buildQueryAdditional(array & $query, array $params)
+    {
     }
 
     /**

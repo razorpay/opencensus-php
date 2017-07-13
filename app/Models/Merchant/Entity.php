@@ -53,11 +53,12 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
-    const GROUPS                    = 'groups';
-    const ADMINS                    = 'admins';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
+
+    const IS_MARKETPLACE            = 'is_marketplace';
+    const REFERRER                  = 'referrer';
 
     //
     // Configs
@@ -77,6 +78,9 @@ class Entity extends Base\PublicEntity
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
     const MERCHANT_DETAIL           = 'merchantDetail';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
+    const FEATURES                  = 'features';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';

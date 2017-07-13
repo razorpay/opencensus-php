@@ -445,6 +445,7 @@ class Repository extends Base\Repository
             Entity::MERCHANT_DETAIL => $detailSelector,
             Entity::GROUPS          => $groupSelector,
             Entity::ADMINS          => $adminSelector,
+            Entity::FEATURES        => function () {},
         ];
 
         $query->with($with);
@@ -454,17 +455,38 @@ class Repository extends Base\Repository
     {
         $serialized = parent::serializeForIndexing($entity);
 
+        // The serialized merchant document in ES contains following
+        // additional values:
 
-        // Add merchant details, groups and admins
+        // Merchant detail's attributes, Using toArray() as attributes
+        // are already projected in query.
 
         $serialized[Table::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
-        $serialized[Entity::ADMINS]         = $entity->admins->pluck(Common::ID)->all();
+
+        // List of admin ids which have direct access to this merchant document
+
+        $serialized[Entity::ADMINS] = $entity->admins->pluck(Common::ID)->all();
+
+        // List of groups which this merchant belongs to as well as their
+        // recursive parents hierarchy.
 
         $groups = $this->repo
                        ->group
                        ->getParentsRecursively($entity->groups, true);
 
-        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ID)->all();
+        $serialized[Entity::GROUPS] = $groups->pluck(Common::ID)->all();
+
+        // 'is_marketplace': Whether marketplace feature is enabled for the
+        // merchant. Gets consumed by dashboard in response.
+
+        $serialized[Entity::IS_MARKETPLACE] = $entity->isMarketplace();
+
+        // 'referrer': Holds name of first admin of entity
+
+        $firstAdmin = $entity->admins->first();
+
+        $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
+
 
         return $serialized;
     }

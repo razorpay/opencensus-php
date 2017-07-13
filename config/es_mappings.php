@@ -230,7 +230,19 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
+            'archived_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
             'suspended_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'updated_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
@@ -239,11 +251,19 @@ return [
                     'merchant_id' => [
                         'type' => 'keyword',
                     ],
-                    'business_name' => [
-                        'type'            => 'text',
-                        'analyzer'        => 'edge_ngram_analyzer',
-                        'search_analyzer' => 'standard',
-                        'index_options'   => 'offsets',
+                    'steps_finished' => [
+                        'type' => 'keyword',
+                    ],
+                    'activation_progress' => [
+                        'type' => 'byte',
+                    ],
+                    'submitted' => [
+                        'type' => 'boolean',
+                    ],
+                    'updated_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        'index'  => false,
                     ],
                 ],
             ],
@@ -253,6 +273,13 @@ return [
 
             'groups' => [
                 'type' => 'keyword',
+            ],
+            'is_marketplace' => [
+                'type' => 'boolean',
+            ],
+            'referrer' => [
+                'type'  => 'keyword',
+                'index' => false,
             ],
         ],
     ],

@@ -541,6 +541,63 @@ class Service extends Base\Service
         return $responseHash;
     }
 
+    public function getMerchantsFromEs(
+        string $orgId,
+        string $adminId,
+        array $input): array
+    {
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+        (new Validator)->validateInput(Validator::FILTER, $input);
+
+        // Appends more payload in $input for ES search:
+
+        // If admin not allowed to see all merchants, get all group
+        // ids he belongs to and pass in $input. This gets used to
+        // filter results.
+
+        if ($admin->canSeeAllMerchants() === false)
+        {
+            $input[Merchant\Entity::GROUPS] = $admin->groups->getIds();
+        }
+
+        // Adds following to $input so all merchant to which this admin
+        // has direct access to can be filtered.
+
+        $input[Merchant\Entity::ADMINS] = $admin->getId();
+
+        // We would want to receive the ES payload
+
+        $input[Base\EsRepository::SEARCH_HITS] = 1;
+
+        // Set ES Repository and make search
+
+        $results = $this->repo
+                        ->merchant
+                        ->setEsRepoIfExist()
+                        ->getEsRepo()
+                        ->buildQueryAndSearch($input);
+
+        // TODO: Format results a little as per prev expectations, if needed.
+
+        return $results;
+    }
+
+    public function getMerchantIdsFromEs(string $orgId, string $adminId)
+    {
+        $results = $this->getMerchantsFromEs($orgId, $adminId, []);
+
+        $ids       = array_column($results, Merchant\Entity::ID);
+        $referrers = array_column($results, Merchant\Entity::REFERRER);
+
+        return array_combine($ids, $referrers);
+    }
+
+    /**
+     * @deprecated
+     *
+     * Now getMerchantsFromEs is being used.
+     */
     public function getMerchants($orgId, $adminId, $input)
     {
         $responseHash = $this->getMerchantIds($orgId, $adminId);

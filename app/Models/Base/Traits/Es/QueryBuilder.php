@@ -189,6 +189,26 @@ trait QueryBuilder
 
     // Helper methods
 
+    public function getExistsQueryForField(string $field)
+    {
+        return ['exists' => ['field' => $field]];
+    }
+
+    public function addNotNullFilterForField(array & $query, string $field)
+    {
+        $this->addFilter($query, $this->getExistsQueryForField($field));
+    }
+
+    public function addNullFilterForField(array & $query, string $field)
+    {
+        $this->addNegativeFilter($query, $this->getExistsQueryForField($field));
+    }
+
+    public function addShould(array & $query, array $clause)
+    {
+        $query['bool']['should'][] = $clause;
+    }
+
     public function addMust(array & $query, array $clause)
     {
         $query['bool']['must'][] = $clause;
@@ -197,5 +217,10 @@ trait QueryBuilder
     public function addFilter(array & $query, array $filter)
     {
         $query['bool']['filter']['bool']['must'][] = $filter;
+    }
+
+    public function addNegativeFilter(array & $query, array $filter)
+    {
+        $query['bool']['filter']['bool']['must_not'][] = $filter;
     }
 }
