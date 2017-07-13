@@ -2,6 +2,11 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -724,6 +729,71 @@ class TerminalSelectionTest extends TestCase
         // But because of the newly added icici billdesk filter,
         // the ecommerce one should get picked.
         $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
+    }
+
+    public function testCorporateMerchantsBilldeskCorporateICICISelection()
+    {
+        // Corporate Enabled Icici terminal for Billdesk
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             [
+                'id'          => 'DrctNbBdkTmnl1',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'corporate'   => 1,
+             ]
+            );
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             [
+              'id' => 'SharNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+             ]
+            );
+
+        $data = [
+            'response'  => [
+                'content'     => [
+                    'error' => [
+                        'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'                 => \RZP\Exception\GatewayErrorException::class,
+                'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            ]
+        ];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $billdesk = $this->getLastEntity('billdesk', true);
+
+        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICO', $billdesk['BankID']);
+
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $billdesk = $this->getLastEntity('billdesk', true);
+
+        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICO', $billdesk['BankID']);
+
     }
 
     public function testPharmaMerchantTerminalSelection()

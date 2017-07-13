@@ -95,6 +95,12 @@ class CreateFirstDataGateway extends Migration
             $table->index(FirstData::TDATE);
 
             $table->index(FirstData::GATEWAY_PAYMENT_ID);
+
+            $table->index(FirstData::GATEWAY_TRANSACTION_ID);
+
+            $table->index(FirstData::ACTION);
+
+            $table->index(FirstData::CAPS_PAYMENT_ID);
         });
     }
 

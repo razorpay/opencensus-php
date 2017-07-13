@@ -178,6 +178,7 @@ trait Callback
         if ($payment->hasCard())
         {
             $card = $this->repo->card->fetchForPayment($payment);
+
             $input['card'] = $card->toArray();
         }
 

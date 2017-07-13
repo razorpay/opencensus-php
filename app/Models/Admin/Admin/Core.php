@@ -90,11 +90,12 @@ class Core extends Base\Core
     public function updatePassword(
         Entity $admin,
         array $input,
-        bool $forgotPassword = true)
+        bool $forgotPassword = true,
+        $updateType = 'reset')
     {
         $validator = new Validator();
 
-        $validator->validateInput('reset', $input);
+        $validator->validateInput($updateType, $input);
 
         $admin->setAuditAction(Action::RESET_PASSWORD);
 

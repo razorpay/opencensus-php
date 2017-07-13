@@ -125,25 +125,21 @@ class Handler extends ExceptionHandler
     {
         $traceData = $this->getExceptionDetails($exception, 0, $extraData);
 
-        if (($level === null) and
-            ($code === null))
-        {
-            if ($exception instanceof RecoverableException)
-            {
-                $level = Trace::INFO;
-                $code = TraceCode::RECOVERABLE_EXCEPTION;
-            }
-            else
-            {
-                $level = Trace::ERROR;
-                $code = TraceCode::ERROR_EXCEPTION;
+        // Gets default level and code based on exception
 
-                if ($this->route->isCriticalRoute())
-                {
-                    $level = Trace::CRITICAL;
-                }
-            }
+        $defaultLevel = $this->route->isCriticalRoute() ? Trace::CRITICAL : Trace::ERROR;
+        $defaultCode  = TraceCode::ERROR_EXCEPTION;
+
+        if ($exception instanceof RecoverableException)
+        {
+            $defaultLevel = Trace::INFO;
+            $defaultCode  = TraceCode::RECOVERABLE_EXCEPTION;
         }
+
+        // Use default level and code if not sent as part of arguments
+
+        $level = $level ?: $defaultLevel;
+        $code  = $code ?: $defaultCode;
 
         $this->trace->addRecord($level, $code, $traceData);
     }

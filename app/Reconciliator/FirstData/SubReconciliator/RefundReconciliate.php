@@ -28,9 +28,22 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId($row)
     {
-        $refundId = $this->getGatewayRefundFromGatewayTxnId($row)->getRefundId();
+        $refund = $this->getGatewayRefundFromGatewayTxnId($row);
 
-        return $refundId;
+        if ($refund->getAction() === FirstData\Action::REVERSE)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'message'   => 'Reversal entity. Skipping.',
+                    'row'       => $row,
+                    'gateway'   => get_called_class()
+                ]);
+
+            return null;
+        }
+
+        return $refund->getRefundId();
     }
 
     /**

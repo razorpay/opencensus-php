@@ -875,7 +875,11 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
-        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+        $bankIfsc = $input['payment']['bank'];
+
+        $corporate = $input['terminal']['corporate'];
+
+        $bankId = BankCodes::getBankCode($bankIfsc, $corporate);
 
         $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
