@@ -177,6 +177,9 @@ export default class ReportsContainer extends Component {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
     let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
+    console.log('USER...', user.tags);
+    isMarketplace = true;
+
     return (
       <tabbed-container>
         <header>
@@ -232,20 +235,21 @@ export default class ReportsContainer extends Component {
           </div>
           {/*Report Generate Panel*/}
           <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 report-generate-panel">
-
             <div class="form-element">
               <div class="title">
-                {isMarketplace ? 'SELECT ' : ''}ACCOUNT
+                {isMarketplace &&
+                  ['transaction', 'payment', 'refund', 'settlement'].indexOf(
+                    this.props.entity
+                  ) > -1
+                  ? 'SELECT '
+                  : ''}
+                ACCOUNT
               </div>
-              {isMarketplace === false
-                ? <div class="account">
-                    <strong>{user.name || user.user.name}</strong>
-                    {' '}
-                    -
-                    {' '}
-                    {user.email || user.user.email}
-                  </div>
-                : <div class="custom-select">
+              {isMarketplace &&
+                ['transaction', 'payment', 'refund', 'settlement'].indexOf(
+                  this.props.entity
+                ) > -1
+                ? <div class="custom-select">
                     <i class="icon icon-search custom-icon" />
                     <TypeAhead
                       options={this.props.accounts}
@@ -271,6 +275,13 @@ export default class ReportsContainer extends Component {
                         }
                       }}
                     />
+                  </div>
+                : <div class="account">
+                    <strong>{user.name || user.user.name}</strong>
+                    {' '}
+                    -
+                    {' '}
+                    {user.email || user.user.email}
                   </div>}
             </div>
 
