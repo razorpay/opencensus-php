@@ -1,0 +1,38 @@
+<?php
+
+namespace RZP\Constants;
+
+/**
+ * Keeps ES related constants.
+ */
+final class Es
+{
+    // ---------- Various query constants ----------
+
+    const LT                   = 'lt';
+    const GT                   = 'gt';
+    const LTE                  = 'lte';
+    const GTE                  = 'gte';
+    const DESC                 = 'desc';
+    const MUST                 = 'must';
+    const TERM                 = 'term';
+    const TYPE                 = 'type';
+    const QUERY                = 'query';
+    const BOOST                = 'boost';
+    const SCORE                = '_score';
+    const BOOLQ                = 'bool';
+    const MATCH                = 'match';
+    const TERMS                = 'terms';
+    const FIELD                = 'field';
+    const VALUE                = 'value';
+    const RANGE                = 'range';
+    const ORDER                = 'order';
+    const FILTER               = 'filter';
+    const FIELDS               = 'fields';
+    const EXISTS               = 'exists';
+    const SHOULD               = 'should';
+    const MUST_NOT             = 'must_not';
+    const MULTI_MATCH          = 'multi_match';
+    const BEST_FIELDS          = 'best_fields';
+    const MINIMUM_SHOULD_MATCH = 'minimum_should_match';
+}

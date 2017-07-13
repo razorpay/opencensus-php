@@ -240,6 +240,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @deprecated
+     *
+     * Ref: #4216
+     *
+     * Fetches the merchants with its relations (admin, groups)
+     */
+    public function findManyByIdsWithRelations(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->with(['admins'])
+                    ->get();
+    }
+
     public function fetchMerchantsByOrgId($orgId)
     {
         return $this->newQuery()
@@ -263,6 +278,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @deprecated
+     *
+     * Ref: #4216
+     */
     public function fetchMerchantsByFilter(array $merchantIds, array $input)
     {
         $merchantCreatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
@@ -375,6 +395,11 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    /**
+     * @deprecated
+     *
+     * Ref: #4216
+     */
     protected function modifyQuery($query, array $input)
     {
         $submittedAt = $this->repo
@@ -418,6 +443,13 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * Modifies query to lazy load details, admins, groups and features.
+     * Also projects to find only needed attributes.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     *
+     */
     protected function modifyQueryForIndexing(\RZP\Base\BuilderEx $query)
     {
         $detailSelector = function ($query)
@@ -451,6 +483,15 @@ class Repository extends Base\Repository
         $query->with($with);
     }
 
+    /**
+     * Overrides method to fill in formatted data in merchant index against
+     * given merchant entity. Merchant entity has some relations and so this
+     * handling.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
     protected function serializeForIndexing(Base\PublicEntity $entity): array
     {
         $serialized = parent::serializeForIndexing($entity);

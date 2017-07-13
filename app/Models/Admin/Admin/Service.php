@@ -424,6 +424,11 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
+    /**
+     * @deprecated
+     *
+     * Ref: #4216
+     */
     public function getMerchantIds($orgId, $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
@@ -587,6 +592,8 @@ class Service extends Base\Service
     {
         $results = $this->getMerchantsFromEs($orgId, $adminId, []);
 
+        // Existing consumer(dashboard) expect the result as following.
+
         $ids       = array_column($results, Merchant\Entity::ID);
         $referrers = array_column($results, Merchant\Entity::REFERRER);
 
@@ -596,7 +603,7 @@ class Service extends Base\Service
     /**
      * @deprecated
      *
-     * Now getMerchantsFromEs is being used.
+     * Ref: #4216
      */
     public function getMerchants($orgId, $adminId, $input)
     {

@@ -38,6 +38,18 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * Get all hierarchical parent groups of given set of groups.
+     * Returns final collection which includes the whole upward tree for
+     * given set of groups.
+     *
+     * If $withOriginal=true, returns the passed $groups merged.
+     *
+     * @param PublicCollection $groups
+     * @param bool|boolean     $withOriginal
+     *
+     * @return PublicCollection
+     */
     public function getParentsRecursively(
         PublicCollection $groups,
         bool $withOriginal = false): PublicCollection
@@ -59,7 +71,16 @@ class Repository extends Base\Repository
         return $finalResult;
     }
 
-    public function findImmdiateParentsOfGroups(PublicCollection $groups): PublicCollection
+    /**
+     * Finds immediate parents of given set of groups.
+     * Usage eager load to avoid multiple queries.
+     *
+     * @param PublicCollection $groups
+     *
+     * @return PublicCollection
+     */
+    public function findImmdiateParentsOfGroups(
+        PublicCollection $groups): PublicCollection
     {
         $groups->load(Entity::PARENTS);
 

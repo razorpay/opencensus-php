@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits\Es;
 
 use RZP\Base\Common;
+use RZP\Constants\Es as EsConst;
 
 /**
  * Trait used in Es/Repository class for forming es queries.
@@ -54,11 +55,11 @@ trait QueryBuilder
         //
 
         $clause = [
-            'match' => [
+            EsConst::MATCH => [
                 $field => [
-                    'query'                => strtolower($value),
-                    'boost'                => 2,
-                    'minimum_should_match' => '75%',
+                    EsConst::QUERY                => strtolower($value),
+                    EsConst::BOOST                => 2,
+                    EsConst::MINIMUM_SHOULD_MATCH => '75%',
                 ],
             ],
         ];
@@ -84,12 +85,12 @@ trait QueryBuilder
         //
 
         $clause = [
-            'multi_match' => [
-                'query'                => $value,
-                'type'                 => 'best_fields',
-                'fields'               => $this->queryFields,
-                'boost'                => 1,
-                'minimum_should_match' => '75%',
+            EsConst::MULTI_MATCH => [
+                EsConst::QUERY                => $value,
+                EsConst::TYPE                 => EsConst::BEST_FIELDS,
+                EsConst::FIELDS               => $this->queryFields,
+                EsConst::BOOST                => 1,
+                EsConst::MINIMUM_SHOULD_MATCH => '75%',
             ],
         ];
 
@@ -106,12 +107,12 @@ trait QueryBuilder
         //
 
         $clause = [
-            'multi_match' => [
-                'query'                => $value,
-                'type'                 => 'best_fields',
-                'fields'               => 'notes.*',
-                'boost'                => 2,
-                'minimum_should_match' => '75%',
+            EsConst::MULTI_MATCH => [
+                EsConst::QUERY                => $value,
+                EsConst::TYPE                 => EsConst::BEST_FIELDS,
+                EsConst::FIELDS               => 'notes.*',
+                EsConst::BOOST                => 2,
+                EsConst::MINIMUM_SHOULD_MATCH => '75%',
             ],
         ];
 
@@ -130,9 +131,9 @@ trait QueryBuilder
         // fields.
 
         $filter = [
-            'term' => [
-                'merchant_id' => [
-                    'value' => $value,
+            EsConst::TERM => [
+                Common::MERCHANT_ID => [
+                    EsConst::VALUE => $value,
                 ],
             ],
         ];
@@ -152,8 +153,8 @@ trait QueryBuilder
      */
     public function buildQueryForFromAndToIfApplies(array & $query, array & $params)
     {
-        $clause['gte'] = $params[self::FROM] ?? null;
-        $clause['lte'] = $params[self::TO] ?? null;
+        $clause[EsConst::GTE] = $params[self::FROM] ?? null;
+        $clause[EsConst::LTE] = $params[self::TO] ?? null;
 
         $clause = array_filter($clause);
 
@@ -162,7 +163,7 @@ trait QueryBuilder
             return;
         }
 
-        $filter = ['range' => [Common::CREATED_AT => $clause]];
+        $filter = [EsConst::RANGE => [Common::CREATED_AT => $clause]];
 
         $this->addFilter($query, $filter);
 
@@ -178,11 +179,11 @@ trait QueryBuilder
     public function getSortParameter()
     {
         return [
-            '_score' => [
-                'order' => 'desc',
+            EsConst::SCORE => [
+                EsConst::ORDER => EsConst::DESC,
             ],
             Common::CREATED_AT => [
-                'order' => 'desc',
+                EsConst::ORDER => EsConst::DESC,
             ],
         ];
     }
@@ -191,7 +192,7 @@ trait QueryBuilder
 
     public function getExistsQueryForField(string $field)
     {
-        return ['exists' => ['field' => $field]];
+        return [EsConst::EXISTS => [EsConst::FIELD => $field]];
     }
 
     public function addNotNullFilterForField(array & $query, string $field)
@@ -206,21 +207,21 @@ trait QueryBuilder
 
     public function addShould(array & $query, array $clause)
     {
-        $query['bool']['should'][] = $clause;
+        $query[EsConst::BOOLQ][EsConst::SHOULD][] = $clause;
     }
 
     public function addMust(array & $query, array $clause)
     {
-        $query['bool']['must'][] = $clause;
+        $query[EsConst::BOOLQ][EsConst::MUST][] = $clause;
     }
 
     public function addFilter(array & $query, array $filter)
     {
-        $query['bool']['filter']['bool']['must'][] = $filter;
+        $query[EsConst::BOOLQ][EsConst::FILTER][EsConst::BOOLQ][EsConst::MUST][] = $filter;
     }
 
     public function addNegativeFilter(array & $query, array $filter)
     {
-        $query['bool']['filter']['bool']['must_not'][] = $filter;
+        $query[EsConst::BOOLQ][EsConst::FILTER][EsConst::BOOLQ][EsConst::MUST_NOT][] = $filter;
     }
 }

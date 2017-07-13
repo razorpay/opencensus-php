@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Constants\Es as EsConst;
 use RZP\Base\Common;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -35,7 +36,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::MERCHANT_ID,
         DetailEntity::STEPS_FINISHED,
         DetailEntity::ACTIVATION_PROGRESS,
-        DetailEntity::SUBMITTED,
+        DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
     ];
 
@@ -67,6 +68,13 @@ class EsRepository extends Base\EsRepository
 
     // --------------- Query builders ----------------------
 
+    //
+    // Queries for admins and groups are build at once in buildQueryAdditional().
+    // It is required for doing ACL filter.
+    // Following methods with empty block are here so the default impl of query
+    // builder doesn't get called for these fields in input.
+    //
+
     public function buildQueryForAdmins(array & $query, string $value)
     {
     }
@@ -79,11 +87,11 @@ class EsRepository extends Base\EsRepository
     {
         if ($value === '1')
         {
-            $filter = $this->getExistsQuery('parent_id');
+            $filter = $this->getExistsQuery(Entity::PARENT_ID);
         }
         else
         {
-            $filter = ['term' => ['parent_id' => $value]];
+            $filter = [EsConst::TERM => [Entity::PARENT_ID => $value]];
         }
 
         $this->addFilter($query, $filter);
@@ -91,23 +99,24 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForSuspended(array & $query, string $value)
     {
-        $this->addNotNullFilterForField($query, 'suspended_at');
+        $this->addNotNullFilterForField($query, Entity::SUSPENDED_AT);
     }
 
     public function buildQueryForArchived(array & $query, string $value)
     {
-        $this->addNotNullFilterForField($query, 'archived_at');
+        $this->addNotNullFilterForField($query, Entity::ARCHIVED_AT);
     }
 
     public function buildQueryForActivated(array & $query, string $value)
     {
-        $this->addNotNullFilterForField($query, 'activated_at');
+        $this->addNotNullFilterForField($query, Entity::ACTIVATED_AT);
     }
 
     public function buildQueryForPending(array & $query, string $value)
     {
         $this->addNotNullFilterForField($query, 'merchant_details.submitted_at');
-        $this->addNullFilterForField($query, 'activated_at');
+
+        $this->addNullFilterForField($query, Entity::ACTIVATED_AT);
     }
 
     public function buildQueryForDead(array & $query, string $value)
@@ -117,9 +126,9 @@ class EsRepository extends Base\EsRepository
         $dayBefore = Carbon::now()->subDays(1)->timestamp;
 
         $filter = [
-            'range' => [
-                'created_at' => [
-                    'lt' => $dayBefore,
+            EsConst::RANGE => [
+                Common::CREATED_AT => [
+                    EsConst::LT => $dayBefore,
                 ],
             ],
         ];
@@ -129,9 +138,12 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryAdditional(array & $query, array $params)
     {
+        // Adds ACL filter using admins and groups values in $params.
+
         $this->addQueryForAcl($query, $params);
 
-        // TODO: Add comment
+        // If $params doesn't have following two filters add filter
+        // to only pick non-suspended and non-archived merchants always.
 
         $inactiveFilters = ['suspended', 'archived'];
 
@@ -142,17 +154,17 @@ class EsRepository extends Base\EsRepository
     }
 
     /**
-     * TODO: Add comment and correct annot.!
+     * Adds filter query using groups and admins value in $params.
      *
-     * @param  [type] $query  [description]
-     * @param  array  $params [description]
-     * @return [type]         [description]
+     * Builds new bool.should clause for matching either admins and
+     * groups against document and then add this to existing filter.bool.must
+     * list of clauses.
+     *
+     * @param array $query
+     * @param array $params
      */
     protected function addQueryForAcl(array & $query, array $params)
     {
-        // Build new bool.should clause for admins and groups and add
-        // that to existing filter.bool.must clause.
-
         $admins = $params[Entity::ADMINS] ?? null;
         $groups = $params[Entity::GROUPS] ?? [];
 
@@ -160,12 +172,12 @@ class EsRepository extends Base\EsRepository
 
         if (empty($admins) === false)
         {
-            $this->addShould($aclQuery, ['term' => ['admins' => $admins]]);
+            $this->addShould($aclQuery, [EsConst::TERM => [Entity::ADMINS => $admins]]);
         }
 
         if (empty($groups) === false)
         {
-            $this->addShould($aclQuery, ['terms' => ['groups' => $groups]]);
+            $this->addShould($aclQuery, [EsConst::TERMS => [Entity::GROUPS => $groups]]);
         }
 
         if (empty($aclQuery) === false)
@@ -176,7 +188,7 @@ class EsRepository extends Base\EsRepository
 
     protected function addQueryForActiveOnlyMerchants(array & $query)
     {
-        $this->addNullFilterForField($query, 'suspended_at');
-        $this->addNullFilterForField($query, 'archived_at');
+        $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
+        $this->addNullFilterForField($query, Entity::ARCHIVED_AT);
     }
 }

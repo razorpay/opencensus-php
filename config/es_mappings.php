@@ -208,7 +208,8 @@ return [
                 'type' => 'keyword',
             ],
             'org_id' => [
-                'type' => 'keyword',
+                'type'  => 'keyword',
+                'index' => false,
             ],
             'name' => [
                 'type'            => 'text',
@@ -249,16 +250,20 @@ return [
             'merchant_details' => [
                 'properties' => [
                     'merchant_id' => [
-                        'type' => 'keyword',
+                        'type'  => 'keyword',
+                        'index' => false,
                     ],
                     'steps_finished' => [
-                        'type' => 'keyword',
+                        'type'  => 'keyword',
+                        'index' => false,
                     ],
                     'activation_progress' => [
                         'type' => 'byte',
                     ],
-                    'submitted' => [
-                        'type' => 'boolean',
+                    'submitted_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        'index'  => false,
                     ],
                     'updated_at' => [
                         'type'   => 'date',
@@ -275,7 +280,8 @@ return [
                 'type' => 'keyword',
             ],
             'is_marketplace' => [
-                'type' => 'boolean',
+                'type'  => 'boolean',
+                'index' => false,
             ],
             'referrer' => [
                 'type'  => 'keyword',
