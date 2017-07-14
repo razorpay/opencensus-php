@@ -26,44 +26,42 @@ export default props => {
             <div class="SliderPanel__Body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
-                <div class="list-group details-row-container">
-                  <EntityDetailRow
-                    label="Amount"
-                    value={() => <Amount value={order.amount} />}
-                  />
+                <EntityDetailRow
+                  label="Amount"
+                  value={() => <Amount value={order.amount} />}
+                />
 
-                  <EntityDetailRow label="Currency" value={order.currency} />
-                  <EntityDetailRow label="Attempts" value={order.attempts} />
+                <EntityDetailRow label="Currency" value={order.currency} />
+                <EntityDetailRow label="Attempts" value={order.attempts} />
 
-                  <EntityDetailRow
-                    label="Status"
-                    value={() => <OrderStatusLabel status={order.status} />}
-                  />
+                <EntityDetailRow
+                  label="Status"
+                  value={() => <OrderStatusLabel status={order.status} />}
+                />
 
-                  <EntityDetailRow
-                    label="Created At"
-                    value={() => (
-                      <Time
-                        value={order.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
+                <EntityDetailRow
+                  label="Created At"
+                  value={() => (
+                    <Time
+                      value={order.created_at}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />
+                  )}
+                />
+
+                {order.attempts > 0
+                  ? <ListGroupToggler
+                      label="Payments"
+                      onToggleClick={() => props.onTogglePayments(order)}
+                    >
+                      <DataTable
+                        columns={[paymentId, amount, status, createdAt]}
+                        items={payments.items}
+                        loading={payments.loading}
+                        showHeaders={false}
                       />
-                    )}
-                  />
-
-                  {order.attempts > 0
-                    ? <ListGroupToggler
-                        label="Payments"
-                        onToggleClick={() => props.onTogglePayments(order)}
-                      >
-                        <DataTable
-                          columns={[paymentId, amount, status, createdAt]}
-                          items={payments.items}
-                          loading={payments.loading}
-                          showHeaders={false}
-                        />
-                      </ListGroupToggler>
-                    : <EntityDetailRow label="Payments" value="No Payments" />}
-                </div>
+                    </ListGroupToggler>
+                  : <EntityDetailRow label="Payments" value="No Payments" />}
               </div>
             </div>
           </div>}
