@@ -159,12 +159,10 @@ class Server extends Base\Mock\Server
 
     public function authEnrolled()
     {
-        $cardNumber = $this->data['card'];
-
         $this->processInput('authEnrolled');
         $this->setAction('authorize');
 
-        $res = $this->getAuthResponse($this->data['paymentid'], $cardNumber);
+        $res = $this->getAuthResponse($this->data['paymentid']);
 
         $this->content($res, $this->action);
 
