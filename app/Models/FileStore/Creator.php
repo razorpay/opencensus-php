@@ -666,12 +666,14 @@ class Creator extends Base\Core
             // This step is important because file can be created
             // via different users (www-data or ubuntu (via queue))
             //
-            if (substr(sprintf('%o', fileperms($this->filePath)), -3) !== '777')
+            $filePermission = substr(sprintf('%o', fileperms($this->filePath)), -3);
+
+            if ($filePermission !== '777')
             {
                 (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
              $this->trace->traceException(
                  $e,
