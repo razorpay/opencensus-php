@@ -17,6 +17,8 @@ class EsRepository extends Job implements ShouldQueue
      */
     public function __construct($data)
     {
+        parent::__construct();
+
         $this->data = $data;
     }
 
