@@ -24,9 +24,7 @@ Route::group(['middleware' => ['web']], function () {
     // Org
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/auth', 'AdminController@initiateAuth');
-
         Route::get('/org', 'AdminController@getOrg');
-        Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
         Route::post('/signin', 'AdminController@postSignin');
 
         Route::post('/password/reset', 'PasswordController@forgotAdminPassword');
@@ -41,7 +39,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
-        Route::post('/track_lead', 'UserController@trackLead');
         Route::get('/invitations/token/{token}', 'InvitationsController@fetchByToken');
     });
 
