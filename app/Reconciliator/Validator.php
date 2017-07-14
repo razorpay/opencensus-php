@@ -35,8 +35,11 @@ class Validator
         Orchestrator::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
                                             . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
         Orchestrator::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
-        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated " .
-                                            "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
+        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
+                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
+        Orchestrator::AXIS               => "/^Axis Estatement [0-9]{2}-"
+                                            . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -47,12 +50,18 @@ class Validator
         Orchestrator::NETBANKING_ICICI   => "/Please find below the payment report for the day./",
         Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
+        Orchestrator::AXIS               => "/Please find attached the settlement file for today."
+                                            . " You net amount settled is/",
+        Orchestrator::FIRST_DATA         => "/Please find attached herewith the statement of "
+                                            . "transactions for MID <razorpay.>./"
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY           => 1,
         Orchestrator::NETBANKING_AXIS    => 1,
-        Orchestrator::NETBANKING_FEDERAL => 1
+        Orchestrator::NETBANKING_FEDERAL => 1,
+        Orchestrator::AXIS               => 1,
+        Orchestrator::FIRST_DATA         => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -152,6 +161,32 @@ class Validator
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
             Orchestrator::NETBANKING_FEDERAL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateAxisEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::AXIS);
+
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::AXIS);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::AXIS);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateFirstDataEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::FIRST_DATA);
+
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::FIRST_DATA);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::FIRST_DATA);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
