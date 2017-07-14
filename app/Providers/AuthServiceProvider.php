@@ -31,9 +31,18 @@ class AuthServiceProvider extends BaseAuthServiceProvider
 
         foreach ($userRoles as $route => $roles)
         {
-            $gate->define($route, function($user) use ($roles){
+            $gate->define($route, function($user) use ($roles)
+            {
+                $currentMerchant = $user->currentMerchant();
 
-                return (in_array($user->currentMerchant()->role, $roles, true));
+                $currentRole = null;
+
+                if (empty($currentMerchant) === false)
+                {
+                    $currentRole = $currentMerchant->role;
+                }
+
+                return (in_array($currentRole, $roles, true));
             });
         }
     }

@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Razorpay\Api\Errors\BadRequestError;
 
@@ -53,6 +54,7 @@ class Handler extends ExceptionHandler
      */
     protected $infoReport = [
         BadRequestError::class,
+        AuthorizationException::class,
     ];
 
     /**
@@ -119,6 +121,10 @@ class Handler extends ExceptionHandler
         else if ($e instanceof MethodNotFoundException)
         {
             $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]]);
+        }
+        else if ($e instanceof AuthorizationException)
+        {
+            $response = Response::json(['success' => false, 'errors' => [$e->getMessage()]], 403);
         }
         else if (($e instanceof TokenMismatchException) or
                  ($e instanceof DecryptException))
