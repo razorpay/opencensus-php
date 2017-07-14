@@ -53,7 +53,7 @@ class TraceServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('trace');
+        return ['trace'];
     }
 
     protected function registerRequestGetClientIpMacro()
