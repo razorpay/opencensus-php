@@ -30,6 +30,7 @@ return [
         'test' => [
             'payment' => [
                 'authorized'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'captured'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'failed'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'order' => [
@@ -56,6 +57,7 @@ return [
         'live' => [
             'payment' => [
                 'authorized'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'captured'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'failed'        => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
             ],
             'order' => [
