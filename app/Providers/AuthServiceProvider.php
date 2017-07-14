@@ -25,7 +25,6 @@ class AuthServiceProvider extends BaseAuthServiceProvider
      */
     public function boot(GateContract $gate)
     {
-
         $this->registerPolicies($gate);
 
         $userRoles = Config::get('user-roles');
@@ -36,14 +35,14 @@ class AuthServiceProvider extends BaseAuthServiceProvider
             {
                 $currentMerchant = $user->currentMerchant();
 
-                $role = null;
+                $currentRole = null;
 
                 if (empty($currentMerchant) === false)
                 {
-                    $role = $currentMerchant->role;
+                    $currentRole = $currentMerchant->role;
                 }
 
-                return (in_array($role, $roles, true));
+                return (in_array($currentRole, $roles, true));
             });
         }
     }
