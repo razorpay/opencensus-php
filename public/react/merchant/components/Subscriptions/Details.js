@@ -4,7 +4,7 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedDetailRow from 'merchant/components/NestedDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { getFixedINRAmount, getIntervalCycle } from 'rzp/utils/rzp-utils';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -99,7 +99,10 @@ export default ({
                   )}
                 />
 
-                <NestedDetailRow label="Notes" value={subscription.notes} />
+                <NestedEntityDetailRow
+                  label="Notes"
+                  value={subscription.notes}
+                />
 
                 {['cancelled', 'completed', 'expired'].indexOf(
                   subscription.status

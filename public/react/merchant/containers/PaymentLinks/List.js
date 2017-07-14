@@ -13,7 +13,7 @@ import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 
-@connect(state => state.invoices, {
+@connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
   luminateRow,
@@ -39,7 +39,8 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices } = this.props;
+    let { loading, invoices, user } = this.props;
+    let isNewUIEnabled = user.isNewUIEnabled;
     let status = this.state.status;
 
     return (
@@ -71,6 +72,7 @@ export default class PaymentLinksContainer extends ListContainer {
           invoices={invoices}
           isLoading={loading}
           type="link"
+          isNewUIEnabled={isNewUIEnabled}
           onEdit={this.showPaymentLinkModal}
         />
 

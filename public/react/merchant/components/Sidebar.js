@@ -107,6 +107,7 @@ export default class Sidebar extends Component {
                     to={routes.invoices}
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
+                    beta={true}
                   />
                   <MainNavLink
                     label="Payment Links"
@@ -119,6 +120,7 @@ export default class Sidebar extends Component {
                     notMyRole="sellerapp support"
                     featureEnabled="subscriptions"
                     to={routes.subscriptions}
+                    beta={true}
                   />
                   <MainNavLink
                     label="Customers"
@@ -223,6 +225,7 @@ export default class Sidebar extends Component {
                     notMyRole="sellerapp support"
                     featureEnabled="subscriptions"
                     to={routes.subscriptions}
+                    beta={true}
                   />
 
                   <MainNavLink

@@ -1,49 +1,17 @@
-import AsyncButton from 'react-async-button';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
+import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import TableBody from 'rzp/ui/TableBody';
-import DetailRow from 'merchant/components/DetailRow';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
-import { Link } from 'react-router-dom';
-import NestedDetailRow from 'merchant/components/NestedDetailRow';
-
-const ListItem = ({ item, value }) => {
-  return (
-    <tr>
-      <td>
-        {item}
-      </td>
-      <td class="text-right">
-        {value}
-      </td>
-    </tr>
-  );
-};
-
-const RefundsListItem = ({ refund }) => {
-  return (
-    <tr>
-      <td>
-        <Link to={`/refunds/${refund.id}`}>
-          <code>{refund.id}</code>
-        </Link>
-      </td>
-      <td>
-        <Amount value={refund.amount} />
-      </td>
-      <td class="text-right">
-        <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
-      </td>
-    </tr>
-  );
-};
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
 
 const shownByDefault = [
   'amount',
@@ -112,87 +80,87 @@ export default props => {
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
                 <div class="list-group details-row-container">
-                  <DetailRow
+                  <EntityDetailRow
                     label="Amount"
                     value={() => <Amount value={payment.amount} />}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Amount Refunded"
                     value={() => <Amount value={payment.amount_refunded} />}
                   />
 
-                  <DetailRow label="Currency" value={payment.currency} />
-                  <DetailRow
+                  <EntityDetailRow label="Currency" value={payment.currency} />
+                  <EntityDetailRow
                     label="Status"
                     value={() => <PaymentStatusLabel status={payment.status} />}
                   />
 
-                  <DetailRow label="Captured" value={payment.captured} />
+                  <EntityDetailRow label="Captured" value={payment.captured} />
 
-                  <DetailRow label="Method" value={titleCase(payment.method)} />
+                  <EntityDetailRow
+                    label="Method"
+                    value={titleCase(payment.method)}
+                  />
 
                   {payment.bank
-                    ? <DetailRow label="Bank" value={payment.bank} />
+                    ? <EntityDetailRow label="Bank" value={payment.bank} />
                     : null}
                   {payment.wallet
-                    ? <DetailRow label="Wallet" value={payment.wallet} />
+                    ? <EntityDetailRow label="Wallet" value={payment.wallet} />
                     : null}
                   {payment.method === 'card'
                     ? <ListGroupToggler
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        <div class="table-responsive">
-                          <table class="table table-hover">
-                            <TableBody
-                              colSpan={2}
-                              isLoading={card.loading}
-                              rows={Object.keys(card.details)}
-                            >
-                              {Object.keys(card.details).map(key => (
-                                <ListItem
-                                  key={key}
-                                  item={titleCase(key)}
-                                  value={card.details[key]}
-                                />
-                              ))}
-                            </TableBody>
-                          </table>
-                        </div>
+                        {Object.keys(card.details).map(key => (
+                          <EntityDetailRow
+                            key={key}
+                            label={titleCase(key)}
+                            value={card.details[key]}
+                          />
+                        ))}
                       </ListGroupToggler>
                     : null}
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Refund Status"
                     value={titleCase(payment.refund_status)}
                   />
 
-                  <DetailRow label="Description" value={payment.description} />
+                  <EntityDetailRow
+                    label="Description"
+                    value={payment.description}
+                  />
 
-                  <DetailRow label="Email" value={payment.email} />
+                  <EntityDetailRow label="Email" value={payment.email} />
 
-                  <DetailRow label="Contact" value={payment.contact} />
+                  <EntityDetailRow label="Contact" value={payment.contact} />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Fees"
                     value={() => (
                       <Amount value={payment.fee - payment.service_tax} />
                     )}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="GST"
                     value={() => <Amount value={payment.service_tax} />}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Total Fees"
-                    data-tip="Total Fees is inclusive of GST charges"
-                    value={() => <Amount value={payment.fee} />}
+                    value={() => (
+                      <span data-tip="Total Fees is inclusive of GST charges">
+                        <Amount value={payment.fee} />
+                        <i class="icon icon-info-circle info-tooltip" />
+                      </span>
+                    )}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="International"
                     value={() => <CheckIcon value={payment.international} />}
                   />
@@ -206,18 +174,21 @@ export default props => {
                     />
                   ))}
                   {payment.error_code
-                    ? <DetailRow label="Error" value={payment.error_code} />
+                    ? <EntityDetailRow
+                        label="Error"
+                        value={payment.error_code}
+                      />
                     : null}
                   {payment.error_description
-                    ? <DetailRow
+                    ? <EntityDetailRow
                         label="Error Description"
                         value={payment.error_description}
                       />
                     : null}
 
-                  <NestedDetailRow label="Notes" value={payment.notes} />
+                  <NestedEntityDetailRow label="Notes" value={payment.notes} />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Created At"
                     value={() => (
                       <Time
@@ -231,50 +202,43 @@ export default props => {
                         label="Refunds"
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
-                        <div class="table-responsive">
-                          <table class="table table-hover">
-                            <TableBody
-                              colSpan={2}
-                              isLoading={refunds.loading}
-                              rows={refunds.items}
-                            >
-                              {refunds.items.map(refund => (
-                                <RefundsListItem
-                                  key={refund.id}
-                                  refund={refund}
-                                />
-                              ))}
-                            </TableBody>
-                          </table>
-                        </div>
+                        <DataTable
+                          columns={[refundId, amount, createdAt]}
+                          items={refunds.items}
+                          loading={refunds.loading}
+                          showHeaders={false}
+                        />
                       </ListGroupToggler>
-                    : <DetailRow label="Refunds" value="No Refunds" />}
+                    : <EntityDetailRow label="Refunds" value="No Refunds" />}
                 </div>
                 <ShowWhen myRole="owner manager operations admin">
-                  <div class="text-center">
-                    {payment.status === 'authorized'
-                      ? <button
-                          type="submit"
-                          class="btn btn-success"
-                          onClick={() => {
-                            props.confirmCapture(payment);
-                          }}
-                        >
-                          Capture Payment
-                        </button>
-                      : null}
-                    {payment.status === 'captured' &&
-                      payment.refund_status !== 'full'
-                      ? <button
-                          type="submit"
-                          class="btn btn-primary"
-                          onClick={() => {
-                            props.openRefundModal(payment);
-                          }}
-                        >
-                          Refund Payment
-                        </button>
-                      : null}
+                  <div>
+                    <hr />
+                    <div class="col-sm-offset-4 col-sm-8">
+                      {payment.status === 'authorized'
+                        ? <button
+                            type="submit"
+                            class="btn btn-success"
+                            onClick={() => {
+                              props.confirmCapture(payment);
+                            }}
+                          >
+                            Capture Payment
+                          </button>
+                        : null}
+                      {payment.status === 'captured' &&
+                        payment.refund_status !== 'full'
+                        ? <button
+                            type="submit"
+                            class="btn btn-primary"
+                            onClick={() => {
+                              props.openRefundModal(payment);
+                            }}
+                          >
+                            Refund Payment
+                          </button>
+                        : null}
+                    </div>
                   </div>
                 </ShowWhen>
               </div>
