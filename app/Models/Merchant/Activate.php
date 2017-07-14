@@ -290,7 +290,6 @@ class Activate extends Base\Core
     /**
      * Remove rules in the merchant's pricing plan
      * for methods not enabled for the merchant
-     * Current checks for International, Emi and Amex
      *
      * @param array $rules Array of rules
      * @param Entity $merchant Merchant entity being activated

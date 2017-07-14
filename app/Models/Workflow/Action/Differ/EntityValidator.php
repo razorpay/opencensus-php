@@ -103,19 +103,7 @@ class EntityValidator
 
         if (in_array($route, self::RELATIONS_WHITELIST))
         {
-            if (array_key_exists($route, self::WORKFLOW_MAP))
-            {
-                $map = self::WORKFLOW_MAP[$route];
-
-                if ((static::indexBasedMap($map)) and (empty($map[0]) === false))
-                {
-                    $entityName = $map[0];
-                }
-                else if (empty($map[self::ENTITY_NAME_KEY]) === false)
-                {
-                    $entityName = $map[self::ENTITY_NAME_KEY];
-                }
-            }
+            $entityName = self::getEntityName($route);
         }
 
         // Entity name has been resolved through which

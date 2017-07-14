@@ -2,24 +2,21 @@
 
 namespace RZP\Models\Invoice;
 
-use App;
-use Mail;
 use Config;
 
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\LogicException;
-use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
-use RZP\Models\Item;
 use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use RZP\Models\Plan\Subscription;
 use RZP\Services\Elfin\Service as Elfin;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Generator extends Base\Core
 {

@@ -13,6 +13,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -29,8 +30,6 @@ class FeeCalculator
 
     /**
      * For which fees needs to be calculated.
-     *
-     * @var \RZP\Models\Payment\Entity
      */
     protected $entity;
 
@@ -41,6 +40,11 @@ class FeeCalculator
     protected $pricingRules = null;
 
     protected $amount = null;
+
+    /**
+     * @var Trace
+     */
+    protected $trace;
 
     protected $taxComponents = null;
 
@@ -57,7 +61,7 @@ class FeeCalculator
         $this->taxComponents = $this->getTaxComponents();
     }
 
-    public function calculate(Pricing\Plan $pricing)
+    public function calculate(Pricing\Plan $pricing): array
     {
         $entity = $this->entity;
 
@@ -178,17 +182,36 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
+        $rulesCount = count($rules);
+
         $this->trace->debug(
             TraceCode::PRICING_RULE_SELECTION,
-            ['count' => count($rules)]);
+            ['count' => $rulesCount]);
 
-        if ($feature === Pricing\Feature::PAYMENT)
+        //
+        // If pricing for the feature is optional, no rules may exist
+        // In this case, we add the zero pricing rule and return
+        //
+        if (($rulesCount === 0) and
+            (Feature::isFeaturePricingOptional($feature) === true))
         {
-            $rule = $this->getRelevantPaymentPricingRule($rules, $method);
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+
+            $this->pricingRules->push($zeroPricingRule);
+
+            return;
         }
-        else if ($feature === Pricing\Feature::PAYOUT)
+
+        //
+        // `$feature` is among those defined in Pricing/Feature
+        //
+        $ruleFunction = 'getRelevant' . studly_case($feature) . 'PricingRule';
+
+        $rule = null;
+
+        if (method_exists($this, $ruleFunction) === true)
         {
-            $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+            $rule = $this->$ruleFunction($rules, $method);
         }
 
         if ($rule === null)
@@ -200,13 +223,6 @@ class FeeCalculator
         }
 
         $this->pricingRules->push($rule);
-    }
-
-    protected function getRelevantPayoutPricingRule($rules, $method)
-    {
-        $rule = $this->getRelevantPricingRuleForMethod($rules);
-
-        return $rule;
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)
@@ -245,6 +261,25 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
         }
+
+        return $rule;
+    }
+
+    protected function getRelevantPayoutPricingRule($rules, $method)
+    {
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
+
+        return $rule;
+    }
+
+    protected function getRelevantTransferPricingRule($rules, $method)
+    {
+        //
+        // Transfer pricing rules are optional -
+        // However, if a rule exists, we validate that only one
+        // rule is applied per transfer
+        //
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
 
         return $rule;
     }
@@ -760,6 +795,7 @@ class FeeCalculator
       * If fee is less than min_fee, then min_fee will be charged.
       * If max_fee is available and fee is above max_fee,
       *  then max_fee will be charged.
+      *
       * @param int $fee
       * @param int $min
       * @param int $max

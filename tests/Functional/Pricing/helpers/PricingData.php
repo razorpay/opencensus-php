@@ -408,7 +408,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
                 'entity' => 'collection',
                 'items' => array(
                     array(
@@ -498,7 +498,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 3,
+                'count' => 4,
                 'entity' => 'collection',
                 'items' => array(
                     array(

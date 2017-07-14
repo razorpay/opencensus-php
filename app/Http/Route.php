@@ -438,6 +438,7 @@ final class Route
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
         'admin_reset_password'                    => ['post',     'orgs/{orgId}/admin/reset_password',              'OrganizationController@postResetPassword'                          ],
+        'admin_change_password'                   => ['post',     'orgs/admin/change_password',                     'OrganizationController@postChangePassword'                         ],
         'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
         'group_get_multiple'                      => ['get',      'orgs/{orgId}/groups',                            'OrganizationController@getGroupsMultiple'                          ],
         'group_get_allowed_groups'                => ['get',      'orgs/{orgId}/groups/{id}/allowed_groups',        'OrganizationController@getAllowedGroups'                           ],
@@ -678,6 +679,7 @@ final class Route
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
         'payment_fetch_transaction',
+        'payment_fetch_card_details',
         'payment_payout',
         'refund_create',
         'refund_fetch_by_id',
@@ -967,8 +969,6 @@ final class Route
     ];
 
     public static $proxy = [
-        'payment_fetch_card_details',
-        'payment_authorize_refund',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
@@ -1105,6 +1105,8 @@ final class Route
         'workflow_get_actions_checked',
         'merchants_update_hold_funds',
         'adj_add',
+        'payment_authorize_refund',
+        'admin_change_password',
     ];
 
     public static $routePermission = [
@@ -1222,6 +1224,7 @@ final class Route
         'merchant_get_pricing'             => '*',
         'merchant_activation_details'      => '*',
         'merchant_fetch_users'             => '*',
+        'admin_change_password'            => '*',
     ];
 
     public static $direct = [

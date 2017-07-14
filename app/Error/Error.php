@@ -234,6 +234,9 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_FORBIDDEN:
                 $httpStatusCode = 403;
                 break;
+            case ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED:
+                $httpStatusCode = 429;
+                break;
         }
 
         $this->setPublicErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);

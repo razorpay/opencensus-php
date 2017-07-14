@@ -14,7 +14,6 @@ use RZP\Models\Batch as BatchModel;
  *
  * Handler:
  * - Calls the batch processor on given batch id.
- *
  */
 class Batch extends Job implements ShouldQueue
 {
@@ -77,7 +76,7 @@ class Batch extends Job implements ShouldQueue
         {
             $this->trace->traceException(
                             $e,
-                            Trace::ERROR,
+                            null,
                             TraceCode::BATCH_JOB_ERROR,
                             [
                                 BatchModel\Entity::ID => $this->id,

@@ -12,7 +12,7 @@ use RZP\Exception\BadRequestException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::FILE                 => 'required|file|mimes:xlsx|max:1024',
+        Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream|max:1024',
         Entity::TYPE                 => 'required|string|max:14|custom',
 
         //
@@ -51,7 +51,7 @@ class Validator extends Base\Validator
             throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
                         Entity::STATUS,
-                        $this->entity->toArrayPublic());
+                        $this->entity->toArray());
         }
     }
 
@@ -145,6 +145,7 @@ class Validator extends Base\Validator
         // as the error message.
 
         $errors = [];
+        $errorEntries = [];
 
         foreach ($entries as $idx => $entry)
         {
@@ -170,7 +171,10 @@ class Validator extends Base\Validator
             }
             catch (BaseException $e)
             {
-                $errors[$idx] = $e->getError()->getDescription();
+                $idx++;
+
+                $errors[$idx]       = $e->getError()->getDescription();
+                $errorEntries[$idx] = $entry;
             }
             finally
             {
@@ -186,8 +190,10 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
                 Entity::FILE,
                 [
-                    'count'  => $errorsCount,
-                    'errors' => $errors,
+                    'count'         => $errorsCount,
+                    'errors'        => $errors,
+                    'error_entries' => $errorEntries,
+                    'merchant_id'   => $merchant->getId(),
                 ]);
         }
     }

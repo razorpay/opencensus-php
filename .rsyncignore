@@ -7,6 +7,11 @@
 /storage/framework/views/*
 /storage/framework/sessions/*
 /storage/logs/*
+/storage/files/batch/*
+/storage/files/filestore/*
+/storage/files/logos/*
+/storage/files/report/*
+/storage/files/settlement/*
 /.git/*
 /report
 /docs
