@@ -3,7 +3,6 @@ namespace App\Http\Controllers;
 
 use Auth;
 use Input;
-use App\Lead;
 use App\User;
 use App\Admin;
 use App\Merchant;
@@ -195,15 +194,6 @@ class UserController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new User\Service)->upgradeUserToMerchant($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function trackLead()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new User\Service)->createLead($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
