@@ -34,7 +34,6 @@ class AuthServiceProvider extends BaseAuthServiceProvider
         {
             $gate->define($route, function($user) use ($roles)
             {
-
                 $currentMerchant = $user->currentMerchant();
 
                 $role = null;

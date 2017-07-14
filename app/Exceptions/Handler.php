@@ -122,6 +122,10 @@ class Handler extends ExceptionHandler
         {
             $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]]);
         }
+        else if ($e instanceof AuthorizationException)
+        {
+            $response = Response::json(['success' => false, 'errors' => [$e->getMessage()]], 403);
+        }
         else if (($e instanceof TokenMismatchException) or
                  ($e instanceof DecryptException))
         {
