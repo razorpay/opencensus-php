@@ -71,6 +71,10 @@ class TraceServiceProvider extends BaseServiceProvider
         });
     }
 
+    /**
+     * Registers getId macro on request to get a new request id to identify
+     * the given request in trace logs. Generates a new rquest id if not already set
+     */
     protected function registerRequestGetIdMacro()
     {
         $request = $this->app['request'];
@@ -86,6 +90,9 @@ class TraceServiceProvider extends BaseServiceProvider
         });
     }
 
+    /**
+     * Generates a neew random id for logging
+     */
     protected function registerRequestGenerateIdMacro()
     {
         $request = $this->app['request'];
@@ -98,6 +105,11 @@ class TraceServiceProvider extends BaseServiceProvider
         });
     }
 
+    /**
+     * Registers a getTaskId macro on request. It uses the X-Razorpay-TaskId header value
+     * if present, else generates a new one.If api is the source of new task id, then uses
+     * the request id value instead of generating new one
+     */
     protected function registerRequestGetTaskIdMacro()
     {
         $request = $this->app['request'];
@@ -125,7 +137,7 @@ class TraceServiceProvider extends BaseServiceProvider
         {
             if ($taskId === null)
             {
-                $this->taskId = bin2hex(openssl_random_pseudo_bytes(16));
+                $this->taskId = $this->getId();
             }
             else
             {
