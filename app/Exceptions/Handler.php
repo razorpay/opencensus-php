@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Razorpay\Api\Errors\BadRequestError;
 
@@ -53,6 +54,7 @@ class Handler extends ExceptionHandler
      */
     protected $infoReport = [
         BadRequestError::class,
+        AuthorizationException::class,
     ];
 
     /**
