@@ -920,6 +920,11 @@ class Service extends Base\Service
 
     public function tagMerchant(array $input)
     {
+        if ($this->currentUser === null)
+        {
+            return [[], []];
+        }
+
         $currentMerchant = $this->currentUser->currentMerchant();
 
         $currentMerchant = Merchant\Entity::find($currentMerchant->id);
