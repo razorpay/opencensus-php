@@ -29,7 +29,7 @@
         <div class="form-group">
           <label for='description' class="col-lg-2 control-label">Assign Parent Group</label>
           <div class="col-lg-10">
-            <select class="select2" style="width: 100%" ng-model="new_parent_group">
+            <select class="select2 role-select2" style="width: 100%"  multiple="multiple" style="width: 100%" ng-model="new_parent_group" role-select="Select a Parent Group">
               <option></option>
               <option ng-repeat="(key, row) in groups" value="{{ row.id }}">{{ row.name }} - {{ row.description }}</option>
             </select>

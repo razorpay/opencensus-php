@@ -179,10 +179,8 @@ app.controller('AddGroupCtrl', [
             // 1. Reset select2
             // Seems like a bad hack, should get better with react transition
             $scope.new_parent_group = undefined;
-            $('.select2').select2({
-              placeholder: 'Select a Parent Group',
-              allowClear: true,
-            });
+
+            // Define $scope.initRoleSelector here and attach event listener if anything to peform on option selection (eg- option filtering, etc)
 
             if ($scope.group_id) {
               // 2. Update Parent Group list
