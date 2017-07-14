@@ -9,5 +9,5 @@ class Url
 
     // TODO : set verify url
     const AUTHORIZE   = 'Request.aspx';
-    const VERIFY      = '';
+    const VERIFY      = 'verification.aspx';
 }

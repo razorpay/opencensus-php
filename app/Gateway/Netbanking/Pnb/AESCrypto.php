@@ -36,7 +36,7 @@ class AESCrypto extends Base\AESCrypto
 
     public function encryptString(string $string)
     {
-        return base64_encode($this->aes->encrypt(urldecode($string)));
+        return base64_encode($this->aes->encrypt($string));
     }
 
     public function decryptString(string $string)
