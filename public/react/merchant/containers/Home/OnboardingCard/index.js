@@ -38,7 +38,7 @@ export default class OnboardingCard extends Component {
     let { user, mode, modeFormatted, payments = [] } = this.props;
     let { isFirstStep, showOnboarding } = this.state;
 
-    if (!showOnboarding) {
+    if (!showOnboarding || !user.isNewUIEnabled) {
       return null;
     }
 

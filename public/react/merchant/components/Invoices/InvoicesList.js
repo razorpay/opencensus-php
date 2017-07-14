@@ -44,7 +44,7 @@ const InvoiceListItem = props => {
       </td>
       <td>{invoice.short_url}</td>
       {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
-      <td class="text-right">
+      <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
       <td>
@@ -84,7 +84,7 @@ export default props => {
             <th>Customer</th>
             <th>Payment Link</th>
             {!isNewUIEnabled ? <th>Type</th> : ''}
-            <th class="text-right">Status</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>

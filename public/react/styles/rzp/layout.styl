@@ -486,7 +486,7 @@ tr:hover .row-action.btn-group {
 
     > .panel-heading {
       background-color: #fff;
-      line-height: 70px;
+      line-height: 74px;
       vertical-align: middle;
       padding-top: 0;
       padding-bottom: 0;
@@ -559,6 +559,7 @@ tr:hover .row-action.btn-group {
 
 .detail-row {
   margin-bottom: 12px;
+  padding-left: 5px;
 
   > label {
     font-weight: normal;
@@ -657,14 +658,28 @@ tr:hover .row-action.btn-group {
   }
 }
 
-.detail-notes {
-  .sub-details {
-    margin-top: 10px;
-    margin-left: 15px;
+.secondary-details {
+  margin-top: 10px;
+  margin-left: 15px;
 
-    > .detail-row > label {
-      margin-left: -15px;
-      padding-left: 30px;
-    }
+  .table-responsive {
+    max-width: 475px;
+    border-left: 4px solid #e9eff0;
+    border-right: 1px solid #e9eff0;
   }
+
+  .table {
+    margin: 0;
+  }
+
+  > .detail-row > label {
+    margin-left: -15px;
+    padding-left: 30px;
+  }
+}
+
+.info-tooltip {
+  font-size: 13px;
+  color: #ccc;
+  margin-left: 4px;
 }

@@ -2,9 +2,9 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
-import DetailRow from 'merchant/components/DetailRow';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { Link } from 'react-router-dom';
-import NestedDetailRow from 'merchant/components/NestedDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 
 export default ({ refund, isLoading, statusMsg }) => {
   return (
@@ -22,7 +22,7 @@ export default ({ refund, isLoading, statusMsg }) => {
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
                 <div class="list-group details-row-container">
-                  <DetailRow
+                  <EntityDetailRow
                     label="Payment"
                     value={() => (
                       <Link to={`/payments/${refund.payment_id}`}>
@@ -31,14 +31,14 @@ export default ({ refund, isLoading, statusMsg }) => {
                     )}
                   />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Amount"
                     value={() => <Amount value={refund.amount} />}
                   />
 
-                  <DetailRow label="Currency" value={refund.currency} />
+                  <EntityDetailRow label="Currency" value={refund.currency} />
 
-                  <DetailRow
+                  <EntityDetailRow
                     label="Created At"
                     value={() => (
                       <Time
@@ -48,11 +48,11 @@ export default ({ refund, isLoading, statusMsg }) => {
                     )}
                   />
 
-                  <NestedDetailRow
+                  <NestedEntityDetailRow
                     label="Acquirer Data"
                     value={refund.acquirer_data}
                   />
-                  <NestedDetailRow label="Notes" value={refund.notes} />
+                  <NestedEntityDetailRow label="Notes" value={refund.notes} />
                 </div>
               </div>
             </div>
