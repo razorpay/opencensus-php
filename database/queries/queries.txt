@@ -2246,3 +2246,6 @@ ALTER TABLE `first_data`
 
 ALTER TABLE `first_data`
     ADD INDEX `first_data_action_index` (`action`);
+
+DROP TABLE coupons;
+DELETE FROM migrations WHERE migration = '2016_11_29_101058_create_coupons';
