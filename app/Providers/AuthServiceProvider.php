@@ -25,15 +25,26 @@ class AuthServiceProvider extends BaseAuthServiceProvider
      */
     public function boot(GateContract $gate)
     {
+
         $this->registerPolicies($gate);
 
         $userRoles = Config::get('user-roles');
 
         foreach ($userRoles as $route => $roles)
         {
-            $gate->define($route, function($user) use ($roles){
+            $gate->define($route, function($user) use ($roles)
+            {
 
-                return (in_array($user->currentMerchant()->role, $roles, true));
+                $currentMerchant = $user->currentMerchant();
+
+                $role = null;
+
+                if (empty($currentMerchant) === false)
+                {
+                    $role = $currentMerchant->role;
+                }
+
+                return (in_array($role, $roles, true));
             });
         }
     }
