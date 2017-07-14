@@ -505,25 +505,4 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
-
-    /**
-     * Check if email address exists in bounce list
-     */
-    public function getEmailBounce($email)
-    {
-        list($error, $response) = (new Admin\Service)->getEmailBounce($email);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Delete email address from bounce list
-     */
-    public function deleteEmailBounce($email)
-    {
-        list($error, $response) = (new Admin\Service)->deleteEmailBounce($email);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
 }
