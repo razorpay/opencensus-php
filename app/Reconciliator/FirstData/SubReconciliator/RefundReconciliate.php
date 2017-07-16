@@ -28,9 +28,22 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId($row)
     {
-        $refundId = $this->getGatewayRefund($row)->getRefundId();
+        $refund = $this->getGatewayRefundFromGatewayTxnId($row);
 
-        return $refundId;
+        if ($refund->getAction() === FirstData\Action::REVERSE)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'message'   => 'Reversal entity. Skipping.',
+                    'row'       => $row,
+                    'gateway'   => get_called_class()
+                ]);
+
+            return null;
+        }
+
+        return $refund->getRefundId();
     }
 
     /**
@@ -42,7 +55,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getPaymentId($row)
     {
-        $paymentId = $this->getGatewayRefund($row)->getPaymentId();
+        $paymentId = $this->getGatewayRefundFromGatewayTxnId($row)->getPaymentId();
 
         return $paymentId;
     }
@@ -80,10 +93,13 @@ class RefundReconciliate extends Base\RefundReconciliate
      * whereas the ids in our database are case sensitive.
      * So we compare ('SESSION ID ASPD') to 'caps_payment_id' of FirstData
      *
-     * @param array             $row
+     * @param array $row
+     *
      * @return FirstData\Entity $payment
+     * @internal param string $refundId
+     *
      */
-    protected function getGatewayRefund($row)
+    protected function getGatewayRefundFromGatewayTxnId(array $row)
     {
         $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 
@@ -98,6 +114,13 @@ class RefundReconciliate extends Base\RefundReconciliate
         $gatewayTxnId = $row[self::GATEWAY_TRANSACTION_ID];
 
         //
+        // The MIS files have gateway txn id as `000065367447799`
+        // but in DB, we store them without leading zeroes.
+        // hence removing them before querying.
+        //
+        $gatewayTxnId = ltrim($gatewayTxnId, '0');
+
+        //
         // The broad assumption here is that these ids will not collide
         // The mathematical probability is very low (not zero though)!
         //
@@ -106,6 +129,20 @@ class RefundReconciliate extends Base\RefundReconciliate
                                     $capsPaymentId, $gatewayTxnId);
 
         return $refund;
+    }
+
+    protected function getGatewayRefund(string $refundId)
+    {
+        $gatewayEntities = $this->repo->first_data->findSuccessfulRefundByRefundId($refundId);
+
+        if ($gatewayEntities->count() === 0)
+        {
+            return null;
+        }
+
+        $refundEntity = $gatewayEntities->first();
+
+        return $refundEntity;
     }
 
     /**
@@ -135,7 +172,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
-        $gatewayRefund->setArn($arn);
+        $gatewayRefund->setArnNo($arn);
     }
 
     /**

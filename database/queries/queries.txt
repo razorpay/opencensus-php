@@ -2216,3 +2216,39 @@ ALTER TABLE netbanking
 ALTER TABLE `upi`
     ADD COLUMN `npci_reference_id` VARCHAR(20) NULL DEFAULT NULL AFTER `gateway_payment_id`,
     ADD INDEX `upi_npci_reference_id_index` (`npci_reference_id`);
+
+ALTER TABLE emi_plans
+    ADD COLUMN subvention VARCHAR(255) DEFAULT  'customer' AFTER issuer_plan_id,
+    ADD COLUMN merchant_payback INTEGER UNSIGNED DEFAULT 0  AFTER subvention;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT NULL AFTER emi;
+
+ALTER TABLE terminals
+    ADD COLUMN emi_subvention VARCHAR(255) DEFAULT NULL AFTER emi_duration;
+
+ALTER TABLE first_data
+    ADD COLUMN arn_no VARCHAR(40) AFTER error_message;
+
+# Transfer pricing
+ALTER TABLE transfers
+    ADD COLUMN fees INT UNSIGNED DEFAULT 0 AFTER notes,
+    ADD COLUMN service_tax INT UNSIGNED DEFAULT 0 AFTER fees;
+
+ALTER TABLE terminals
+    ADD COLUMN corporate TINYINT(1) NOT NULL DEFAULT 0 AFTER mode;
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_caps_payment_id_index` (`caps_payment_id`);
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_gateway_transaction_id_index` (`gateway_transaction_id`);
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_action_index` (`action`);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_reference1_index (`reference1`);
+
+DROP TABLE coupons;
+DELETE FROM migrations WHERE migration = '2016_11_29_101058_create_coupons';

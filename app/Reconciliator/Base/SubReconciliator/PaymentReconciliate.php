@@ -553,7 +553,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $this->persistCardType($cardDetails[BaseReconciliate::CARD_TYPE]);
+        if (empty($cardDetails[BaseReconciliate::CARD_TYPE]) === false)
+        {
+            $this->persistCardType($cardDetails[BaseReconciliate::CARD_TYPE]);
+        }
 
         if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)
         {

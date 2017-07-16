@@ -116,7 +116,7 @@ class Terminal extends Base
 
     public function createBilldeskTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultValues = [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
@@ -124,6 +124,8 @@ class Terminal extends Base
             'netbanking'            => 1,
             'shared'                => 0
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }

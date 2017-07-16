@@ -13,7 +13,9 @@ use RZP\Models\Address;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Models\Plan\Subscription;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+
 
 class Entity extends Base\PublicEntity
 {
@@ -96,6 +98,7 @@ class Entity extends Base\PublicEntity
     const EMAIL_NOTIFY             = 'email_notify';
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
+    const BATCH_IDS                = 'batch_ids';
 
     // ---------------------- Input Keys End -------------------------
 
@@ -131,6 +134,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate  = true;
 
     protected $validOperations = [
+        // Core's actions
         'create',
         'update',
         'delete',
@@ -144,6 +148,10 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
+
+        // Notifier's actions
+        'notifyInvoiceIssued',
+        'notifyInvoiceExpired',
     ];
 
     protected $defaults = [
@@ -332,6 +340,45 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS => 'bool',
     ];
 
+    protected $amounts = [
+        self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
+    ];
+
+    /**
+     * Reports currently works for type:link only.
+     *
+     * @todo: Plan and spit link, invoices.
+     *
+     * @var array
+     */
+    protected $hiddenInReport = [
+        self::INVOICE_NUMBER,
+        self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
+        self::LINE_ITEMS,
+        self::PAYMENT_ID,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::COMMENT,
+        self::VIEW_LESS,
+        self::BILLING_START,
+        self::BILLING_END,
+        self::TYPE,
+        self::GROUP_TAXES_DISCOUNTS,
+    ];
+
+    protected $reportDates = [
+        self::DATE,
+        self::EXPIRE_BY,
+        self::ISSUED_AT,
+        self::PAID_AT,
+        self::EXPIRED_AT,
+        self::CANCELLED_AT,
+    ];
+
     // -------------------------------------- Mutators ---------------
 
     // Following 2 mutators are for converting '' (empty strings)
@@ -369,6 +416,11 @@ class Entity extends Base\PublicEntity
     public function getSmsStatus()
     {
         return $this->getAttribute(self::SMS_STATUS);
+    }
+
+    public function getCustomerName()
+    {
+        return $this->getAttribute(self::CUSTOMER_NAME);
     }
 
     public function getCustomerEmail()
@@ -551,6 +603,11 @@ class Entity extends Base\PublicEntity
     public function hasCustomerBillingAddress(): bool
     {
         return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
+    }
+
+    public function isTypeLink(): bool
+    {
+        return ($this->getType() === Type::LINK);
     }
 
     public function isTypeInvoice(): bool
@@ -1083,5 +1140,36 @@ class Entity extends Base\PublicEntity
     public function getValidOperations(): array
     {
         return $this->validOperations;
+    }
+
+    // -------------------------------------- Serializations ---------
+
+    public function toArrayReport()
+    {
+        if ($this->isTypeLink() === false)
+        {
+            throw new LogicException('Report not available for types other than link');
+        }
+
+        $report = parent::toArrayReport();
+
+        // Convert dates
+        // @todo: This needs to be moved to parent method
+
+        foreach ($this->reportDates as $key)
+        {
+            if (isset($report[$key]))
+            {
+                $report[$key] = $this->getDateInFormatDMYHMS($key);
+            }
+        }
+
+        // Add flattened customer details in report
+
+        $report[self::CUSTOMER_NAME]    = $this->getCustomerName();
+        $report[self::CUSTOMER_EMAIL]   = $this->getCustomerEmail();
+        $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
+
+        return $report;
     }
 }

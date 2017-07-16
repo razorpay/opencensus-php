@@ -5,21 +5,22 @@ namespace RZP\Models\Invoice;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Trace\Trace;
 use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
-use RZP\Models\Batch;
-use RZP\Models\Plan\Subscription;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Error\ErrorCode;
-use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\Plan\Subscription;
+use RZP\Exception\BadRequestException;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 
 class Core extends Base\Core
 {
@@ -655,6 +656,30 @@ class Core extends Base\Core
      */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
+        //
+        // There is an action of 'Issue all payment links' of a processed(created
+        // in draft state) payment link batch. But currently this action is not
+        // saved anywhere and so can be called multiple times on given processed batch.
+        // There is validation in the flow to not issue already issued invoice, but
+        // following check will throw error in advance if there is any non draft status
+        // invoices against the given batch.
+        //
+
+        $batchId = $batch->getId();
+
+        $nonDraftInvCount = $this->repo->invoice
+                                       ->getNonDraftInvoiceCountByBatchId($batchId);
+
+        if ($nonDraftInvCount > 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batchId,
+                ]);
+        }
+
         $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -803,12 +828,19 @@ class Core extends Base\Core
         {
             $this->trace->traceException(
                 $e,
-                Trace::ERROR,
+                null,
                 TraceCode::INVOICE_PDF_GEN_FAILED,
                 [
                     'id'       => $id,
                     'attempts' => $attempt,
                 ]);
+
+            // Don't attempt regenerating file if there was some 4XX error
+
+            if ($e instanceof BadRequestValidationFailureException)
+            {
+                return null;
+            }
 
             $this->generatePdfWithRetry($id, $attempt);
         }

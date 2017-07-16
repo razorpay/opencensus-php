@@ -383,11 +383,18 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $hardcodedRefundIds = ['7myk24mVipncjt', '7quh5ytxljRfqo'];
+        $unprocessedRefundIds = ['85VhjZuf8juCfZ'];
 
-        if (in_array($input['refund']['id'], $hardcodedRefundIds) === true)
+        if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {
             return false;
+        }
+
+        $processedRefundIds = ['8COZiOoXPgf2cI'];
+
+        if (in_array($input['refund']['id'], $processedRefundIds) === true)
+        {
+            return true;
         }
 
         // Adding a check for 8th May 2017 as track id was

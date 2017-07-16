@@ -180,18 +180,21 @@ class AdminAccess
     {
         $params = $request->route()->parameters();
 
-        $repo = $this->app['repo'];
+        $merchant = null;
 
-        if (isset($params['mid']))
+        if (empty($params['mid']) === false)
         {
             $mid = $params['mid'];
 
-            $merchant = $repo->merchant->findOrFailPublic($mid);
-
-            return $merchant;
+            $merchant = $this->repo->merchant->findOrFailPublic($mid);
+        }
+        else
+        {
+            // Getting from ba Merchant because X-Razorpay-Account will set Merchant.
+            $merchant = $this->ba->getMerchant();
         }
 
-        return null;
+        return $merchant;
     }
 
     private function policyChecker($routeName, $admin, $merchant = null)
@@ -309,8 +312,10 @@ class AdminAccess
         // SELECT entity_id FROM group_map WHERE group_id IN ($groupIds)
         // This gets all the groups that belong to (child/sub) $groupIds
 
-        $allSubGroupIds = [];
-        $allSubAdminIds = [];
+        $allSubGroupIds = $parentGroupIds;
+
+        // Adding current admin also because current admin can have direct merchants.
+        $allSubAdminIds = [$admin->getId()];
 
         $groupIds = $parentGroupIds;
 

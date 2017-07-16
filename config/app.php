@@ -129,7 +129,7 @@ return array(
     |
     */
 
-    'providers' => array(
+    'providers' => [
         /*
          * Laravel Framework Service Providers...
          */
@@ -168,6 +168,7 @@ return array(
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
+        GrahamCampbell\Throttle\ThrottleServiceProvider::class,
 
         /**
          * Application Service Providers...
@@ -182,8 +183,7 @@ return array(
         RZP\Services\DashboardServiceProvider::class,
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
-
-    ),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -253,6 +253,7 @@ return array(
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
         'Mail'          => RZP\Mail\Facade::class,
         'Workflow'      => RZP\Services\Workflow\Facade::class,
+        'Throttle'      => GrahamCampbell\Throttle\Facades\Throttle::class,
     ),
 
     'context' => env('CONTEXT'),

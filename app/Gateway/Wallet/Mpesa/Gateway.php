@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $verify->payment = $this->saveVerifyContent($verify);
+        $this->saveVerifyContent($verify);
     }
 
     protected function getVerifyStatus(Verify $verify)
@@ -369,6 +369,8 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL            => $input['callbackUrl'],
             RequestFields::NARRATION             => Constants::NARRATION
         ];
+
+        $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
 
         return $gatewayParam;
     }

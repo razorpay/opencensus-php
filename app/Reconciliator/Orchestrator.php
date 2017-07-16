@@ -54,7 +54,7 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC               => ['payoutreport@hdfcbank.com'],
-        self::AXIS               => [],
+        self::AXIS               => ['pg.estatements@axisbank.com'],
         self::BILLDESK           => [],
         self::PAYZAPP            => [],
         self::MOBIKWIK           => [],
@@ -68,7 +68,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
         self::JIOMONEY           => [],
         self::EBS                => [],
-        self::FIRST_DATA         => [],
+        self::FIRST_DATA         => ['customer.care@icici.mailserv.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN              => ['prashanth.yv@razorpay.com'],
@@ -79,9 +79,11 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_EMAIL_VALIDATION = [
         self::HDFC,
+        self::AXIS,
         self::KOTAK,
         self::OLAMONEY,
         self::FREECHARGE,
+        self::FIRST_DATA,
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL
@@ -392,7 +394,12 @@ class Orchestrator extends Base\Core
                 continue;
             }
 
+            //
             // Delete the file. We have all the data in $allFilesContents.
+            // Ensure that you don't delete the directory by mistake.
+            // In case of zip files, that's fine. But otherwise, it'll delete
+            // off the settlement folder only.
+            //
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
@@ -706,7 +713,32 @@ class Orchestrator extends Base\Core
 
         foreach ($zipFilesDetails as $zipFileDetails)
         {
-            $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            try
+            {
+                $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            }
+            catch (\Exception $ex)
+            {
+                $level = Trace::ERROR;
+
+                if ($this->gateway === self::AXIS)
+                {
+                    $level = Trace::INFO;
+                }
+
+                $this->trace->traceException(
+                    $ex,
+                    $level,
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'message'           => 'Unable to extract zip file',
+                        'zip_file_details'  => $zipFileDetails,
+                        'gateway'           => $this->gateway,
+                    ]);
+
+                continue;
+            }
+
             $allExtractedFileDetails = array_merge($allExtractedFileDetails, $extractedFileDetails);
         }
 

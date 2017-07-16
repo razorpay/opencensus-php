@@ -84,6 +84,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getRefundedAmountByGateway(string $gateway, int $from, int $to)
+    {
+        $refundPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+        $refundAmount = $this->dbColumn(Entity::BASE_AMOUNT);
+        $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+        $paymentCapturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->whereNotNull($paymentCapturedAt)
+                    ->whereBetween($refundCreatedAt, [$from, $to])
+                    ->sum($refundAmount);
+    }
+
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
     {
         return $this->newQuery()

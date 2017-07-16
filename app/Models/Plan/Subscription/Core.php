@@ -187,7 +187,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId) : array
+    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId): array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
 
@@ -215,7 +215,7 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws LogicException
      */
-    public function getAuthTransactionAmount(Entity $subscription) : int
+    public function getAuthTransactionAmount(Entity $subscription): int
     {
         //
         // Currently, we allow a 2FA txn to be done only if
@@ -467,7 +467,7 @@ class Core extends Base\Core
         $subscription->setEndedAt($subscription->getCancelledAt());
     }
 
-    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int
+    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription): int
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
@@ -495,12 +495,12 @@ class Core extends Base\Core
         return $authAmount;
     }
 
-    protected function getAuthTransactionAmountForRetry() : int
+    protected function getAuthTransactionAmountForRetry(): int
     {
         return Entity::DEFAULT_AUTH_AMOUNT;
     }
 
-    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice) : array
+    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice): array
     {
         //
         // Ensure that invoice amount is taken always because

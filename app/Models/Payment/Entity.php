@@ -1682,8 +1682,8 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants and PolicyBazaar merchant ID's
-        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f'];
+        // Adding test merchants PolicyBazaar, DSP Blackrock merchant ID's
+        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL'];
 
         $currentMerchantId = $this->getMerchantId();
 

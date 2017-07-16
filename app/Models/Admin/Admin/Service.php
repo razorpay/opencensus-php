@@ -606,4 +606,29 @@ class Service extends Base\Service
             self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
             $orgId, $adminId);
     }
+
+    /**
+     * Change password for admin.
+     * @param  array $input input request params
+     * @return array        response
+     */
+    public function changePassword($input)
+    {
+        $admin = $this->auth->getAdmin();
+
+        $adminOrgAuthType = $admin->org->getAuthType();
+
+        if ($adminOrgAuthType !== Org\AuthType::PASSWORD)
+        {
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED);
+        }
+
+        $this->core()->updatePassword($admin, $input, false, 'change');
+
+        $this->repo->admin->saveOrFail($admin);
+
+        return ['success' => true];
+    }
 }

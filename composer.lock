@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf9e40c9c7b6f766f22652151305b669",
+    "content-hash": "894d97f6ddab4479746c4d6c0a921925",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -144,16 +144,16 @@
         },
         {
             "name": "bjeavons/zxcvbn-php",
-            "version": "0.2.0",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bjeavons/zxcvbn-php.git",
-                "reference": "e9e242d76fc32de68af3b7e360b7179af05ced9e"
+                "reference": "331a88932d1a399c989967d3399a4a40eb182fd5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bjeavons/zxcvbn-php/zipball/e9e242d76fc32de68af3b7e360b7179af05ced9e",
-                "reference": "e9e242d76fc32de68af3b7e360b7179af05ced9e",
+                "url": "https://api.github.com/repos/bjeavons/zxcvbn-php/zipball/331a88932d1a399c989967d3399a4a40eb182fd5",
+                "reference": "331a88932d1a399c989967d3399a4a40eb182fd5",
                 "shasum": ""
             },
             "require": {
@@ -185,7 +185,7 @@
                 "password",
                 "zxcvbn"
             ],
-            "time": "2016-09-08T17:29:46+00:00"
+            "time": "2017-01-06T15:43:33+00:00"
         },
         {
             "name": "box/spout",
@@ -1298,6 +1298,67 @@
                 "xsd"
             ],
             "time": "2017-03-10T14:00:59+00:00"
+        },
+        {
+            "name": "graham-campbell/throttle",
+            "version": "v5.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/GrahamCampbell/Laravel-Throttle.git",
+                "reference": "a6df8ca608304f8149275be392a43d070b20d0eb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/GrahamCampbell/Laravel-Throttle/zipball/a6df8ca608304f8149275be392a43d070b20d0eb",
+                "reference": "a6df8ca608304f8149275be392a43d070b20d0eb",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/cache": "5.1.*|5.2.*|5.3.*|5.4.*",
+                "illuminate/contracts": "5.1.*|5.2.*|5.3.*|5.4.*",
+                "illuminate/http": "5.1.*|5.2.*|5.3.*|5.4.*",
+                "illuminate/support": "5.1.*|5.2.*|5.3.*|5.4.*",
+                "php": ">=5.5.9"
+            },
+            "require-dev": {
+                "graham-campbell/testbench": "^3.1",
+                "mockery/mockery": "^0.9.4",
+                "phpunit/phpunit": "^4.8|^5.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "5.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "GrahamCampbell\\Throttle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Graham Campbell",
+                    "email": "graham@alt-three.com"
+                }
+            ],
+            "description": "Throttle Is A Rate Limiter For Laravel 5",
+            "keywords": [
+                "Graham Campbell",
+                "GrahamCampbell",
+                "Laravel Throttle",
+                "Laravel-Throttle",
+                "framework",
+                "laravel",
+                "rate limit",
+                "throttle",
+                "throttling"
+            ],
+            "time": "2017-01-01T13:34:57+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -4449,16 +4510,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "2324d1e58be217eddba008486dbcc076c9ec093a"
+                "reference": "ba2fd039f4255a1f0023ecf794a34eb28137b22e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/2324d1e58be217eddba008486dbcc076c9ec093a",
-                "reference": "2324d1e58be217eddba008486dbcc076c9ec093a",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/ba2fd039f4255a1f0023ecf794a34eb28137b22e",
+                "reference": "ba2fd039f4255a1f0023ecf794a34eb28137b22e",
                 "shasum": ""
             },
             "require": {
@@ -4492,7 +4553,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-06-19T11:31:32+00:00"
+            "time": "2017-07-10T06:52:15+00:00"
         },
         {
             "name": "razorpay/razorpay",
