@@ -543,19 +543,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantBalance($id)
-    {
-        $this->setApiCredentials(null, 'test');
-
-        $test = $this->api->merchant->setId($id)->fetchBalance()->toArray();
-
-        $this->setApiCredentials(null, 'live');
-
-        $live = $this->api->merchant->setId($id)->fetchBalance()->toArray();
-
-        return compact('test', 'live');
-    }
-
     public function postEditMerchant($id, $input)
     {
         $error = [];
