@@ -16,11 +16,8 @@ class GenericUser extends AuthGenericUser
         return $userArray;
     }
 
-    public function currentMerchant($a=null)
+    public function currentMerchant()
     {
-        if ($a =='asd') {
-            ddd($a);
-        }
         $currentMerchant = (new Helper)->getCurrentMerchant($this);
 
         return $currentMerchant;
