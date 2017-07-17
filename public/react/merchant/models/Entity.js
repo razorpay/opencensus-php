@@ -3,9 +3,9 @@ import ajax from 'merchant/utils/ajax';
 import store from 'merchant/store';
 
 /*
-  Abstrace class for most CRUD entities. The base Entity has methods like
-  - Class.fetchAll(params)
-  - Class.fetch(params)
+  Abstract class for most CRUD entities. The base Entity has methods like
+  - instance.fetchAll(params)
+  - instance.fetch(params)
   - instance.save()
   - instance.delete()
 */

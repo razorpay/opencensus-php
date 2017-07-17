@@ -1,6 +1,14 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
 
+/*
+  Abstract class for most CRUD entities. The base Entity has methods like
+  - instance.fetchAll(params)
+  - instance.fetch(params)
+  - instance.save()
+  - instance.delete()
+*/
+
 // `GenericEntity will replace the `Entity` when all routes are migrated to `/generic` routes
 export default class GenericEntity extends Entity {
   resourceUrl = '/user/generic';
