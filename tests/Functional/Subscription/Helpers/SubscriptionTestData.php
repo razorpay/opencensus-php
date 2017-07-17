@@ -879,11 +879,11 @@ return [
         ],
     ],
 
-    'subscriptionWebhookDataForAuthFailureOverdue' => [
+    'subscriptionWebhookDataForAuthFailurePending' => [
         'mode'  => 'test',
         'event' => [
             'entity'    => 'event',
-            'event'     => 'subscription.overdue',
+            'event'     => 'subscription.pending',
             'contains' => [
                 'subscription',
             ],
@@ -893,7 +893,7 @@ return [
                         'entity'            => 'subscription',
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
-                        'status'            => 'overdue',
+                        'status'            => 'pending',
                         'current_start'     => 1516386600,
                         'current_end'       => 1521484200,
                         'ended_at'          => null,
@@ -912,11 +912,11 @@ return [
         ],
     ],
 
-    'subscriptionWebhookDataForCaptureFailureOverdue' => [
+    'subscriptionWebhookDataForCaptureFailurePending' => [
         'mode'  => 'test',
         'event' => [
             'entity'    => 'event',
-            'event'     => 'subscription.overdue',
+            'event'     => 'subscription.pending',
             'contains' => [
                 // 'subscription', 'payment'
                 'subscription'
@@ -927,7 +927,7 @@ return [
                         'entity'            => 'subscription',
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
-                        'status'            => 'overdue',
+                        'status'            => 'pending',
                         'current_start'     => 1516386600,
                         'current_end'       => 1521484200,
                         'ended_at'          => null,
@@ -972,7 +972,7 @@ return [
         ],
     ],
 
-    'subscriptionWebhookDataForSuccessAfterOverdue' => [
+    'subscriptionWebhookDataForSuccessAfterPending' => [
         'mode'  => 'test',
         'event' => [
             'entity'    => 'event',
