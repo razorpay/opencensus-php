@@ -42,8 +42,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->netbankingRepo->findByPaymentIdAndActionOrFail($paymentId,
-                                                                     Action::AUTHORIZE);
+        $status = [Status::SUCCESS];
+
+        return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
+                                                                     Action::AUTHORIZE,
+                                                                     $status);
     }
 
     protected function getNbCustomerDetails($row)
