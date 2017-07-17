@@ -756,38 +756,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    /**
-     * Fetches merchant balance
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $merchantId Merchant Id
-     * @return array contains both test and live balances
-     */
-    public function fetchMerchantBalance($merchantId)
-    {
-        $test = $this->fetchProxyMerchantBalance($merchantId, 'test');
-        $live = $this->fetchProxyMerchantBalance($merchantId, 'live');
-
-        return compact('test', 'live');
-    }
-
-    protected function fetchProxyMerchantBalance($merchantId, $mode)
-    {
-        try
-        {
-            $this->setApiCredentials($merchantId, $mode);
-            return $this->api->merchant->fetchProxyBalance()->toArray();
-        }
-
-        catch(BadRequestError $e)
-        {
-            return [
-                'id'        =>  $merchantId,
-                'balance'   =>  0
-            ];
-        }
-    }
-
     public function fetchReferredMerchants($merchantId)
     {
         $tag = "ref-$merchantId";
