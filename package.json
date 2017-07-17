@@ -25,7 +25,7 @@
     "gulp-rev": "^7.1.2",
     "gulp-stylus": "^2.6.0",
     "gulp-uglify": "^2.0.1",
-    "html-webpack-plugin": "^2.28.0",
+    "html-webpack-plugin": "^2.29.0",
     "husky": "^0.13.3",
     "lazypipe": "^1.0.1",
     "lint-staged": "^3.4.0",
@@ -35,7 +35,7 @@
     "style-loader": "^0.13.1",
     "stylus-loader": "^2.5.0",
     "through2": "^2.0.3",
-    "webpack": "^2.5.1"
+    "webpack": "^3.3.0"
   },
   "dependencies": {
     "autoprefixer-stylus": "^0.13.0",
