@@ -9,6 +9,7 @@ use Mail;
 use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Kotak\Headings;
