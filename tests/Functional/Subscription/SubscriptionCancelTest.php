@@ -130,7 +130,7 @@ class SubscriptionCancelTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
 
-        foreach (range(1,2) as $i)
+        foreach (range(1,3) as $i)
         {
             $this->failCharge();
 

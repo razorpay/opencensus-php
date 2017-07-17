@@ -16,7 +16,7 @@ class SubscriptionChargeTest extends TestCase
     use PaymentTrait;
     use SubscriptionTrait;
 
-    const MAX_AUTH_ATTEMPTS = 3;
+    const MAX_AUTH_ATTEMPTS = 4;
 
     public function setUp()
     {
@@ -451,7 +451,7 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
 
-        foreach (range(1,2) as $i)
+        foreach (range(1,3) as $i)
         {
             $this->failCharge();
 
@@ -486,7 +486,7 @@ class SubscriptionChargeTest extends TestCase
         $payments = $this->getEntities('payment', [], true);
 
         // 3 failures, 1 success, 1 auth txn
-        $this->assertEquals(5, $payments['count']);
+        $this->assertEquals(6, $payments['count']);
 
         $this->assertEquals('active', $subscription['status']);
         $this->assertNull($subscription['error_status']);
@@ -517,7 +517,7 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
 
-        foreach (range(1,2) as $i)
+        foreach (range(1,3) as $i)
         {
             $this->failCharge();
 
@@ -552,8 +552,8 @@ class SubscriptionChargeTest extends TestCase
         $invoice = $this->getLastEntity('invoice', true);
         $payments = $this->getEntities('payment', [], true);
 
-        // 3 failures, 1 success, 1 auth txn
-        $this->assertEquals(5, $payments['count']);
+        // 4 failures, 1 success, 1 auth txn
+        $this->assertEquals(6, $payments['count']);
 
         $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
@@ -889,9 +889,6 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('overdue', $subscription['status']);
         $this->assertEquals(2, $subscription['auth_attempts']);
 
-        // subscription.halted event fired after final failed charge
-        $this->mockAndTestWebhookData('subscription.halted');
-
         // $task = $this->getLastEntity('schedule_task', true);
 
         $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
@@ -900,9 +897,20 @@ class SubscriptionChargeTest extends TestCase
         // Third failure
         $this->makeSubscriptionRetryCronRequest();
         $subscription = $this->getLastEntity('subscription', true);
+
+        // subscription.halted event fired after final failed charge
+        $this->mockAndTestWebhookData('subscription.halted');
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        Carbon::setTestNow($chargeAt);
+
+        // Fourth failure
+        $this->makeSubscriptionRetryCronRequest();
+        $subscription = $this->getLastEntity('subscription', true);
+
         // Retries exhausted, subscription marked as halted
         $this->assertEquals('halted', $subscription['status']);
-        $this->assertEquals(3, $subscription['auth_attempts']);
+        $this->assertEquals(4, $subscription['auth_attempts']);
 
         $this->clearMock();
         // subscription.halted event fired after successful re-auth
