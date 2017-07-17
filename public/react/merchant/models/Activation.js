@@ -1,6 +1,7 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
 import { normalizeBoolean } from 'rzp/utils/rzp-utils';
+import { isBlank } from 'rzp/utils/rzp-utils';
 
 const activationFields = [
   'contact_name',
@@ -90,6 +91,18 @@ export default class Activation extends Entity {
   }
 
   serializeProperty(prop) {
+    // The below fields should not be sent if they are not set, as the api expects them only when they are set
+    if (
+      [
+        'business_international',
+        'transaction_volume',
+        'transaction_value',
+      ].indexOf(prop) !== -1 &&
+      isBlank(this[prop])
+    ) {
+      return undefined;
+    }
+
     if (prop === 'business_international') {
       return normalizeBoolean(this.business_international);
     }
