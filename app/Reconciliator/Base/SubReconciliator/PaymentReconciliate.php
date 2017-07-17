@@ -298,18 +298,22 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'gateway'    => get_called_class(),
                 ]);
 
-            return $this->handleVerifyAuthorized();
+            $authResponse = $this->handleVerifyAuthorized();
+        }
+        else
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Unable to force authorize the payment. Payment is still in failed state.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            $authResponse = false;
         }
 
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                'message'    => 'Unable to force authorize the payment. Payment is still in failed state.',
-                'payment_id' => $this->payment->getId(),
-                'gateway'    => get_called_class()
-            ]);
-
-        return false;
+        return $authResponse;
     }
 
     /**
@@ -368,28 +372,34 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($this->paymentTransaction !== null)
         {
-            return true;
+            $success = true;
         }
-
-        $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
-
-        if ($createTransactionSuccess === true)
+        else
         {
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
 
-            return true;
+            if ($createTransactionSuccess === true)
+            {
+                $this->paymentTransaction = $this->payment->reload()->transaction;
+
+                $success = true;
+            }
+            else
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_FAILURE,
+                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'message'       => 'Unable to create payment transaction after verifying',
+                        'payment_id'    => $this->payment->getId(),
+                        'gateway'       => get_called_class()
+                    ]);
+
+                $success = false;
+            }
         }
 
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::RECON_FAILURE,
-                'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
-                'message'       => 'Unable to create payment transaction after verifying',
-                'payment_id'    => $this->payment->getId(),
-                'gateway'       => get_called_class()
-            ]);
-
-        return false;
+        return $success;
     }
 
     protected function persistReconciliationData($rowDetails)
