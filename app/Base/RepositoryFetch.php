@@ -39,10 +39,19 @@ trait RepositoryFetch
     ];
 
     protected $fetchParamRules = [
-        'from'              => 'integer',
-        'to'                => 'integer',
-        'count'             => 'integer|min:1',
-        'skip'              => 'integer',
+        self::FROM          => 'integer',
+        self::TO            => 'integer',
+        self::COUNT         => 'integer|min:1',
+        self::SKIP          => 'integer',
+
+        //
+        // Idea is, by default expand can be send in query for all current
+        // fetch routes, similar to other common query parameter eg. skip etc.
+        //
+        // By default no value is allowed, one must specify the same(2nd line)
+        // in respective repository branch. This is done to avoid unnecessary
+        // exposing of relation attributes.
+        //
 
         self::EXPAND        => 'sometimes|array|max:5',
         self::EXPAND . '.*' => 'string|in:',
