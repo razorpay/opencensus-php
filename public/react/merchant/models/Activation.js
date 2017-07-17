@@ -1,5 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
+import { normalizeBoolean } from 'rzp/utils/rzp-utils';
 
 const activationFields = [
   'contact_name',
@@ -51,6 +52,7 @@ const activationFields = [
   'bank_beneficiary_pin',
   'role',
   'department',
+  'business_international',
 ];
 
 export default class Activation extends Entity {
@@ -85,5 +87,13 @@ export default class Activation extends Entity {
       appendModeInURL: false,
       data,
     });
+  }
+
+  serializeProperty(prop) {
+    if (prop === 'business_international') {
+      return normalizeBoolean(this.business_international);
+    }
+
+    return super.serializeProperty(prop);
   }
 }
