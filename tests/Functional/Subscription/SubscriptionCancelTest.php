@@ -81,7 +81,7 @@ class SubscriptionCancelTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSubscriptionCancelWhenOverdue()
+    public function testSubscriptionCancelWhenPending()
     {
         $this->doAuthTxnForNewSubscription();
 
@@ -96,7 +96,7 @@ class SubscriptionCancelTest extends TestCase
         $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
 

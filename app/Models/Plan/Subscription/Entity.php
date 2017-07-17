@@ -274,9 +274,9 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
     }
 
-    public function isOverDue()
+    public function isPending()
     {
-        return ($this->getAttribute(self::STATUS) === Status::OVERDUE);
+        return ($this->getAttribute(self::STATUS) === Status::PENDING);
     }
 
     public function isHalted()

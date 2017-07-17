@@ -269,7 +269,7 @@ class Charge extends Base\Core
 
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
-            $subscription->setStatus(Status::OVERDUE);
+            $subscription->setStatus(Status::PENDING);
             $this->incrementChargeAtByOneDay($subscription);
             $this->updateScheduleTask($subscription->task, true);
         }
