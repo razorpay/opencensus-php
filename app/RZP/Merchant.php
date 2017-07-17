@@ -14,7 +14,6 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 class Merchant extends Entity
 {
     const SUBMERCHANT_CREATE_URL = 'submerchants';
-    const PROXY_BALANCE_URL = 'balance';
 
     public function create($params = null)
     {
@@ -109,18 +108,6 @@ class Merchant extends Entity
         $relativeUrl = $this->getEntityUrl().$this->id.'/bank_account';
 
         return $this->request('POST', $relativeUrl, $params);
-    }
-
-    public function fetchBalance()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/balance';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
-    public function fetchProxyBalance()
-    {
-        return $this->request('GET', self::PROXY_BALANCE_URL);
     }
 
     public function setId($id)
