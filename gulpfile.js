@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 const gulp = require('gulp');
 const webpack = require('webpack');
-const BabiliPlugin = require('babili-webpack-plugin');
 const through = require('through2').obj;
 const plumber = require('gulp-plumber');
 const run = require('run-sequence');
@@ -184,7 +183,7 @@ gulp.task('webpack', cb => {
 var webpackCompiler = null;
 gulp.task('webpack:watch', cb => {
   if (!webpackCompiler) {
-    webpackCompiler = webpack(Object.assign({}, webpackConfig));
+    webpackCompiler = webpack(Object.assign({}, webpackConfig('development')));
   }
   webpackCompiler.run(function(err, stats) {
     console.log(
@@ -198,25 +197,7 @@ gulp.task('webpack:watch', cb => {
 });
 
 gulp.task('webpack:prod', cb => {
-  let config = Object.create(webpackConfig);
-  config.plugins = config.plugins.concat(
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('production'),
-      },
-    }),
-    new BabiliPlugin({
-      mangle: { topLevel: true },
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-      },
-      output: {
-        comments: false,
-      },
-    })
-  );
+  let config = Object.create(webpackConfig('production'));
 
   runWebpack(config, cb);
 });
