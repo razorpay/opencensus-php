@@ -116,7 +116,7 @@ return [
 
     'testBalanceInTestAfterCreatedMerchant' => [
         'request' => [
-            'url' => '/merchants/1X4hRFHFx4UiXt/balance',
+            'url' => '/balance',
             'method' => 'GET',
         ],
         'response' => [
@@ -129,7 +129,7 @@ return [
 
     'testBalanceInLiveAfterCreatedMerchant' => [
         'request' => [
-            'url' => '/merchants/1X4hRFHFx4UiXt/balance',
+            'url' => '/balance',
             'method' => 'GET',
         ],
         'response' => [
