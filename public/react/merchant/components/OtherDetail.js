@@ -2,7 +2,7 @@ import { getType } from 'rzp/utils/entity';
 import { humanize } from 'rzp/utils/rzp-utils';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
-import DetailRow from './DetailRow';
+import EntityDetailRow from './EntityDetailRow';
 import { NavLink } from 'react-router-dom';
 
 const entityWithViews = [
@@ -58,5 +58,5 @@ export default ({ label, value, entity = {} }) => {
 
   label = typeof label === 'function' ? label : humanize(label);
 
-  return <DetailRow label={label} value={val} />;
+  return <EntityDetailRow label={label} value={val} />;
 };

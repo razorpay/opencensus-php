@@ -162,14 +162,7 @@ export default class InvoicesNewContainer extends Component {
       let config = response.data;
       let user = this.props.session.user;
       let merchant = user.merchants[user.current];
-      let logoUrl = '';
-
-      if (config.logo_url) {
-        let cdnName = window.location.hostname.indexOf('-') !== -1
-          ? 'betacdn'
-          : 'cdn';
-        logoUrl = `https://${cdnName}.razorpay.com${config.logo_url.replace(/\.([^\.]+$)/, '_medium.$1')}`;
-      }
+      let logoUrl = config.logo_url;
 
       this.setState({
         merchantLogoUrl: logoUrl,

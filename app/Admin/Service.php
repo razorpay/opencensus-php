@@ -1691,36 +1691,4 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
-
-    public function getEmailBounce($email)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->getBounce($email);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function deleteEmailBounce($email)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->deleteBounce($email);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
 }

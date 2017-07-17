@@ -1014,6 +1014,11 @@ angular
               idParam: 'id',
               sign: '',
             },
+            feature: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
           };
 
           if (typeof entityMap[entityName] !== 'undefined') {

@@ -38,7 +38,7 @@ export default class ListGroupToggler extends Component {
           />
         </div>
         {this.state.show
-          ? <section class="sub-details col-sm-12">
+          ? <section class="secondary-details col-sm-12">
               {this.props.children}
             </section>
           : null}
