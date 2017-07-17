@@ -351,14 +351,12 @@ class Generator extends Base\Core
             Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
-        $order = (new Order\Core)->create($orderInput, $this->merchant);
+        $partialPayment = $this->invoice->isPartialPaymentAllowed();
 
-        if ($this->invoice->hasPartialPaymentEnabled() === true)
-        {
-            $order->enablePartialPayment();
-
-            $this->repo->order->saveOrFail($order);
-        }
+        $order = (new Order\Core)->create(
+                                    $orderInput,
+                                    $this->merchant,
+                                    $partialPayment);
 
         $this->invoice->order()->associate($order);
     }

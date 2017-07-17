@@ -83,7 +83,7 @@ class Validator extends Base\Validator
 
         $isOrderAuthorized = (
                                 ($order->isAuthorized() === true) and
-                                ($order->hasPartialPaymentEnabled() === false)
+                                ($order->isPartialPaymentAllowed() === false)
                             );
 
         if (($isOrderPaid === true) or ($isOrderAuthorized === true))
@@ -108,16 +108,16 @@ class Validator extends Base\Validator
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
         // otherwise it should be same.
 
-        $hasPartialPaymentEnabled = $this->entity->hasPartialPaymentEnabled();
+        $partialPaymentAllowed = $this->entity->isPartialPaymentAllowed();
 
-        if (($hasPartialPaymentEnabled === false) and
+        if (($partialPaymentAllowed === false) and
             ($orderAmountDue !== $paymentAmount))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
         }
 
-        if (($hasPartialPaymentEnabled === true) and
+        if (($partialPaymentAllowed === true) and
             ($paymentAmount > $orderAmountDue))
         {
             throw new Exception\BadRequestException(
