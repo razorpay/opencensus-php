@@ -58,7 +58,6 @@ class Entity extends Base\PublicEntity
     const PAYMENT_CAPTURE = 'payment_capture';
 
     protected $fillable = [
-        self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -87,7 +86,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        // self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -275,9 +273,14 @@ class Entity extends Base\PublicEntity
 
     /** Other Functions */
 
-    public function hasPartialPaymentEnabled()
+    public function isPartialPaymentAllowed()
     {
         return $this->getAttribute(self::PARTIAL_PAYMENT);
+    }
+
+    public function allowPartialPayment()
+    {
+        $this->setAttribute(self::PARTIAL_PAYMENT, true);
     }
 
     public function incrementAttempts()
