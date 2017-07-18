@@ -1640,7 +1640,7 @@ final class Route
         $this->router
              ->any('{all}',
                    [
-                       'as' => 'api_root',
+                       'as' => 'api_catch_all',
                        'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
                    ])
              ->where('all', '.*');
