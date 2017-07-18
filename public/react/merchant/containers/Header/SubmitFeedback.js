@@ -24,6 +24,7 @@ export default class SubmitFeedback extends Component {
     return this.props
       .submitFeedback({
         ...props,
+        message: props.message || '',
         email: this.props.user.user.email,
       })
       .then(() => {
@@ -55,10 +56,12 @@ export default class SubmitFeedback extends Component {
     return this.props.enableOrDisableNewui(false);
   };
 
-  submitAndRevert = props => {
+  submitAndRevert = (props = {}) => {
     return this._submit({
       ...props,
-      subject: 'New Dashboard Revert Feedback',
+      subject: props.message
+        ? 'New Dashboard Revert Feedback'
+        : 'New Dashboard Revert Without Feedback',
     }).then(() => {
       return this.revert();
     });
@@ -120,7 +123,7 @@ export default class SubmitFeedback extends Component {
                   class="btn btn-default btn-block"
                   text="Revert without giving feedback"
                   pendingText="Reverting..."
-                  onClick={this.revert}
+                  onClick={() => this.submitAndRevert()}
                   style={{
                     marginTop: '16px',
                   }}
