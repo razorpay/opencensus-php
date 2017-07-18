@@ -331,6 +331,6 @@ class MerchantController extends Controller
 
         $mailer->sendFeedbackToSupport($input['email'], $input['subject'], $input['message'])->queueAndDeliver();
 
-        return AppResponse::jsonResponse(null, ['success' => true]);
+        return AppResponse::jsonResponse([], ['success' => true]);
     }
 }
