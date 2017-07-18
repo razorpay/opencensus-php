@@ -45,7 +45,7 @@ export default class SubmitFeedback extends Component {
       ...props,
       subject: this.props.user.isNewUIEnabled
         ? 'New Dashboard Feedback'
-        : 'Dashboard Feedback',
+        : 'Old Dashboard Feedback',
     }).then(() => {
       this.props.closeModal();
     });
