@@ -93,7 +93,7 @@ export default class SubmitFeedback extends Component {
                   rows={10}
                   placeholder={
                     revertToOldDesign
-                      ? 'his will help us learn and fix issues'
+                      ? 'This will help us learn and fix issues'
                       : 'We would love to know your thoughts'
                   }
                   validate={required()}
@@ -120,7 +120,7 @@ export default class SubmitFeedback extends Component {
                   class="btn btn-default btn-block"
                   text="Revert without giving feedback"
                   pendingText="Reverting..."
-                  onClick={handleSubmit(this.revert)}
+                  onClick={this.revert}
                   style={{
                     marginTop: '16px',
                   }}
