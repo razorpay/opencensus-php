@@ -64,49 +64,6 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
-    public function forgotPassword($input)
-    {
-        $error = $data = null;
-
-        $domain = \Request::server('SERVER_NAME');
-
-        $org = $this->getOrgFromCache($domain);
-
-        // `/access/resetpwd` is a hard-coded angular route
-        $input['reset_password_url'] = url('/admin#/access/resetpwd');
-
-        try
-        {
-            $data = $this->api->admin->forgotPassword($org['id'], $input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    public function resetPassword($input)
-    {
-        $error = $data = null;
-
-        $domain = \Request::server('SERVER_NAME');
-
-        $org = $this->getOrgFromCache($domain);
-
-        try
-        {
-            $data = $this->api->admin->resetPassword($org['id'], $input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
     public function passwordLogin($domain, array $input)
     {
         $error = $data = null;

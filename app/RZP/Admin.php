@@ -50,20 +50,6 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    public function forgotPassword($orgId, $input)
-    {
-        $relativeUrl = "orgs/$orgId/admin/forgot_password";
-
-        return $this->request('POST', $relativeUrl, $input);
-    }
-
-    public function resetPassword($orgId, $input)
-    {
-        $relativeUrl = "orgs/$orgId/admin/reset_password";
-
-        return $this->request('POST', $relativeUrl, $input);
-    }
-
     public function makeReconciliateRequest($input, $mode = 'live')
     {
         // Makes a guzzle file request
