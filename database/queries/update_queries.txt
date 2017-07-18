@@ -518,3 +518,11 @@ UPDATE terminals
 UPDATE schedules SET delay=1 WHERE period='hourly' AND DELAY=0;
 
 UPDATE refunds SET reference1='NA' WHERE reference1 = '(Onus transaction)';
+
+UPDATE billdesk SET RefundId = 'IICI53376607981' WHERE id = 1714166;
+
+UPDATE terminals SET emi_subvention='customer' WHERE gateway IN ('amex', 'first_data') AND emi = 1 and emi_subvention is null;
+
+UPDATE terminals SET emi_subvention='customer' WHERE gateway_terminal_id in ('74014181', '74014180', '74014179', '74014178', '74014177', '74014176');
+
+UPDATE terminals SET emi_subvention='merchant' WHERE gateway = 'hdfc' and emi = 1 and emi_subvention is null;
