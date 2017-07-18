@@ -232,9 +232,29 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '7gcKngYfqyDMjN',
-                'name' => 'Linked Account 2',
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 2',
                 'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountMaxPaymentLimit' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'POST',
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 4',
+                'email' => 'linkedaccount@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                 => '7gcKngYfqyDMjN',
+                'name'               => 'Linked Account 4',
+                'email'              => 'linkedaccount@razorpay.com',
+                'max_payment_amount' => 6000
             ],
         ],
     ],
@@ -251,8 +271,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '7gbqextd68Co4t',
-                'name' => 'Linked Account 3',
+                'id'    => '7gbqextd68Co4t',
+                'name'  => 'Linked Account 3',
                 'email' => 'linkedaccount@razorpay.com',
             ],
         ],
