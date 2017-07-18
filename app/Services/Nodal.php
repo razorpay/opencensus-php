@@ -15,6 +15,7 @@ class Nodal
      * Nodal Service should return response in 5 sec
      */
     const TIMEOUT = 5;
+    const CONNECT_TIMEOUT = 5;
 
     const GET_BALANCE = '/nodal-balance/';
 
@@ -94,6 +95,8 @@ class Nodal
         }
 
         $request['options']['timeout'] = $request['options']['timeout'] ?? self::TIMEOUT;
+
+        $request['options']['connect_timeout'] = $requests['options']['connect_timeout'] ?? self::CONNECT_TIMEOUT;
 
         try
         {
