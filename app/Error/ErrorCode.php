@@ -604,4 +604,11 @@ class ErrorCode
 
     const BAD_REQUEST_GATEWAY_RULE_EXISTS                                           = 'BAD_REQUEST_GATEWAY_RULE_EXISTS';
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                                   = 'BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD';
+
+    const BAD_REQUEST_COUPON_LIMIT_REACHED                                          = 'BAD_REQUEST_COUPON_LIMIT_REACHED';
+    const BAD_REQUEST_COUPON_ALREADY_USED                                           = 'BAD_REQUEST_COUPON_ALREADY_USED';
+    const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                                 = 'BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT';
+    const BAD_REQUEST_COUPON_NOT_APPLICABLE                                         = 'BAD_REQUEST_COUPON_NOT_APPLICABLE';
+    const BAD_REQUEST_COUPON_EXPIRED                                                = 'BAD_REQUEST_COUPON_EXPIRED';
+    const BAD_REQUEST_INVALID_COUPON_CODE                                           = 'BAD_REQUEST_INVALID_COUPON_CODE';
 }

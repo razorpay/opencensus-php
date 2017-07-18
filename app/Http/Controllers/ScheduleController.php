@@ -48,4 +48,13 @@ class ScheduleController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processTasks()
+    {
+        $input = Request::all();
+
+        $data = $this->service('schedule')->processTasks($input);
+
+        return ApiResponse::json($data);
+    }
 }
