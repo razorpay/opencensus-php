@@ -50,6 +50,9 @@ class Entity extends Base\PublicEntity
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
 
+    // Coupon Related Data for display only
+    const COUPON_CODE               = 'coupon_code';
+
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;

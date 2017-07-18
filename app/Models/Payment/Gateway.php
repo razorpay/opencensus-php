@@ -339,7 +339,7 @@ class Gateway
         ],
     ];
 
-    public static $walletToGatewayMap = array(
+    public static $walletToGatewayMap = [
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
@@ -350,13 +350,13 @@ class Gateway
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
-    );
+    ];
 
-    public static $upiToGatewayMap = array(
+    public static $upiToGatewayMap = [
         Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
         Upi::IDFC   => Gateway::UPI_IDFC,
-    );
+    ];
 
     /**
      * @deprecated
@@ -415,25 +415,25 @@ class Gateway
      *
      * @var array
      */
-    public static $s2sCallbackGateways = array(
+    public static $s2sCallbackGateways = [
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::SHARP
-    );
+    ];
 
     /**
      * Card gateways which support international payments
      *
      * @var array
      */
-    public static $internationalCardGateways = array(
+    public static $internationalCardGateways = [
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-    );
+    ];
 
     /**
      * For the banks that need a claims file to be generated,
@@ -452,10 +452,11 @@ class Gateway
      *
      * @var array
      */
-    public static $partiallySupportedCardNetworks = array(
+    public static $partiallySupportedCardNetworks = [
         Network::MAES,
         Network::RUPAY,
-        Network::DICL);
+        Network::DICL
+    ];
 
     /**
      * For the banks we have direct tie-ups with,
@@ -465,7 +466,7 @@ class Gateway
      *
      * @var array
      */
-    public static $netbankingToGatewayMap = array(
+    public static $netbankingToGatewayMap = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
@@ -473,7 +474,8 @@ class Gateway
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL);
+        IFSC::RATN => Gateway::NETBANKING_RBL
+    ];
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -481,27 +483,29 @@ class Gateway
      *
      * @var array
      */
-    public static $refundFileNetbankingGateways = array(
+    public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND);
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND
+    ];
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
      *
      * @var array
      */
-    public static $netbankingGateways = array(
+    public static $netbankingGateways = [
         Gateway::BILLDESK,
         Gateway::EBS,
         Gateway::PAYTM,
-        Gateway::ATOM);
+        Gateway::ATOM
+    ];
 
-    public static $emiBanks = array(
+    public static $emiBanks = [
         IFSC::HDFC,
         IFSC::HSBC,
         IFSC::ICIC,
@@ -510,21 +514,25 @@ class Gateway
         IFSC::RATN,
         IFSC::SCBL,
         IFSC::UTIB,
-    );
+    ];
 
-    public static $emiBanksUsingCardTerminals = array(
+    public static $emiBanksUsingCardTerminals = [
         IFSC::INDB,
         IFSC::KKBK,
         IFSC::RATN,
         IFSC::UTIB,
-    );
+    ];
 
-    public static $emiBankToGatewayMap = array(
+    public static $emiBankToGatewayMap = [
         IFSC::HDFC => Gateway::HDFC,
         IFSC::ICIC => Gateway::FIRST_DATA,
         IFSC::HSBC => Gateway::FIRST_DATA,
         IFSC::SCBL => Gateway::FIRST_DATA,
-    );
+    ];
+
+    public static $subscriptionOverOneYearGateways = [
+        Gateway::AXIS_MIGS
+    ];
 
     public static function isNetbankingBankDirectlySupported($bank)
     {
