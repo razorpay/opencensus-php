@@ -436,8 +436,6 @@ class Service extends Base\Service
 
     public function saveDetailsOnAPI(array $input, $merchantId = null)
     {
-        $input = $this->unsetExtraValues($input);
-
         if ($merchantId === null)
         {
             $merchantId = $this->merchant->id;
@@ -497,46 +495,6 @@ class Service extends Base\Service
         $response = $this->api
                          ->merchantDetail
                          ->uploadActivationFile($this->merchant->id, $input);
-    }
-
-    protected function unsetExtraValues(array $input)
-    {
-        $fieldsToDrop = [
-            '1', '2', '3', '4', '5', '6',
-            'steps_finished', 'submitted', 'submitted_at', 'created_at', 'updated_at', 'verification',
-            'can_submit', 'bank_account_number_confirmation', 'locked', 'activation_progress',
-            'agree_terms', 'files', 'business_proof_url', 'business_operation_proof_url',
-            'business_pan_url', 'address_proof_url', 'promoter_proof_url', 'promoter_pan_url', 'promoter_address_url',
-            'activated'
-        ];
-
-        $dropIfEmpty = [
-            'transaction_volume',
-            'transaction_value',
-            'business_international',
-        ];
-
-        foreach ($fieldsToDrop as $key)
-        {
-            unset($input[$key]);
-        }
-
-        foreach ($dropIfEmpty as $key)
-        {
-            if (isset($input[$key]) and empty($input[$key]))
-            {
-                unset($input[$key]);
-            }
-        }
-
-        if (isset($input['business_international']) === true)
-        {
-            // This is boolean, but needs to be passed as 0, 1 to API
-            $input['business_international'] = intval($input['business_international']);
-        }
-
-        return $input;
-
     }
 
     protected function calculateSteps(array $response = null) : array

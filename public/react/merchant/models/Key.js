@@ -23,9 +23,7 @@ export default class Key extends GenericEntity {
     }
 
     return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
-      );
+      response.data.items = response.data.items.map(item => new Klass(item));
       return response;
     });
   }
@@ -59,8 +57,8 @@ export default class Key extends GenericEntity {
         return new Klass().deserialize(response.data);
       } else {
         return {
-          new: new Klass().deserialize(response.data.new),
-          old: new Klass().deserialize(response.data.old),
+          new: new Klass(response.data.new),
+          old: new Klass(response.data.old),
           delayRoll: +params.delay_roll,
         };
       }

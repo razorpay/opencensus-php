@@ -15,7 +15,7 @@ export default class Payment extends GenericEntity {
     data.route_name = 'payment_fetch_refunds';
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Refund().deserialize(item)
+        new Refund(item).deserialize()
       );
       return response;
     });
