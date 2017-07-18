@@ -101,9 +101,11 @@ class CouponsTest extends TestCase
             'method' => 'GET',
         ];
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
+
+        $this->assertEquals(100, $response['fee_credits']);
     }
 
     public function testMerchantSignUpWithInValidCoupon()
@@ -121,9 +123,11 @@ class CouponsTest extends TestCase
             'method' => 'GET',
         ];
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
+
+        $this->assertEquals(0, $response['fee_credits']);
     }
 
 
