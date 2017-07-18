@@ -17,7 +17,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::EXPIRED => false
+        self::EXPIRED => false,
     ];
 
     protected $casts = [

@@ -105,7 +105,60 @@ class CouponsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
 
-        $this->assertEquals(100, $response['fee_credits']);
+        $this->assertEquals(0, $response['fee_credits']);
+    }
+
+    public function testMerchantSignUpWithCouponAndActivation()
+    {
+        $this->createCoupon();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'website' => 'abc.com',
+            'category' => 1100,
+            'billing_label' => 'labore',
+            'transaction_report_email' => 'test@razorpay.com',
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
+
+        $balanceRequest = [
+            'url'    => '/balance',
+            'method' => 'GET',
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $response = $this->makeRequestAndGetContent($balanceRequest);
+
+        $this->assertEquals(0, $response['fee_credits']);
+
+        $activationRequest = [
+            'url' => '/merchants/' . $merchantId .  '/activate',
+            'method' => 'post',
+        ];
+
+        $this->ba->appAuth();
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);
+
+        $this->fixtures
+             ->create(
+                'merchant:bank_account',
+                ['merchant_id' => $merchantId,
+                 'entity_id'   => $merchantId,
+                 'type'        => 'merchant']);
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals('100', $credits['value']);
     }
 
     public function testMerchantSignUpWithInValidCoupon()
@@ -373,7 +426,7 @@ class CouponsTest extends TestCase
             });
     }
 
-     public function testApplyNotApplicableCoupon()
+    public function testApplyNotApplicableCoupon()
     {
         $promotion = $this->fixtures->create('promotion:onetime');
 
@@ -401,5 +454,15 @@ class CouponsTest extends TestCase
             {
                 $response = $this->applyCouponOnMerchant($content);
             });
+    }
+
+    protected function merchantAssignPricingPlan($planId, $id = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/pricing',
+            'method' => 'POST',
+            'content' => ['pricing_plan_id' => $planId]);
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

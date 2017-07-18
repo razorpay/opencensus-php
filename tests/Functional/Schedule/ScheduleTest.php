@@ -199,6 +199,8 @@ class ScheduleTest extends TestCase
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
+        $this->fixtures->merchant->activate('10000000000000');
+
         $this->applyCouponOnMerchant($coupon['code']);
 
         $request = $this->testData[__FUNCTION__];
@@ -234,6 +236,8 @@ class ScheduleTest extends TestCase
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->fixtures->merchant->activate('10000000000000');
 
         $this->applyCouponOnMerchant($coupon['code']);
 
@@ -295,6 +299,8 @@ class ScheduleTest extends TestCase
         ];
 
         $coupon2 = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->fixtures->merchant->activate('10000000000000');
 
         $this->applyCouponOnMerchant($coupon1['code']);
 

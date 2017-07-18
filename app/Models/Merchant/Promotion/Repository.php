@@ -24,4 +24,11 @@ class Repository extends Base\Repository
 
         return $count;
     }
+
+    public function getByMerchantId(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->get();
+    }
 }
