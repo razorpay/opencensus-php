@@ -8,57 +8,58 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import { required } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { enableOrDisableNewui } from 'merchant/modules/session';
+import { enableOrDisableNewui, submitFeedback } from 'merchant/modules/session';
 
 @connect(state => state.session, {
   closeModal,
   showNotification,
   enableOrDisableNewui,
+  submitFeedback,
 })
 @reduxForm({
   form: 'submitFeedback',
 })
 export default class SubmitFeedback extends Component {
   _submit = props => {
-    const Smooch = window.Smooch;
-    if (Smooch) {
-      return Smooch.sendMessage(`New Dashboard Feedback: ${props.message}`)
-        .then(() => {
-          this.props.showNotification({
-            type: 'success',
-            message: 'Submitted! Thanks for your feedback.',
-          });
-        })
-        .catch(err => {
-          this.props.showNotification({
-            type: 'error',
-            message: err,
-          });
+    return this.props
+      .submitFeedback({
+        ...props,
+        email: this.props.user.user.email,
+      })
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Submitted! Thanks for your feedback.',
         });
-    }
-
-    this.props.showNotification({
-      type: 'error',
-      message: 'Error in sending feedback!',
-    });
-
-    return Promise.reject();
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   submit = props => {
-    return this._submit(props).then(() => {
+    return this._submit({
+      ...props,
+      subject: this.props.user.isNewUIEnabled
+        ? 'New Dashboard Feedback'
+        : 'Dashboard Feedback',
+    }).then(() => {
       this.props.closeModal();
     });
   };
 
   revert = () => {
-    // Remove onboarding card
-    LocalStorageService.removeItem('show_onboarding_card');
     return this.props.enableOrDisableNewui(false);
   };
 
   submitAndRevert = props => {
-    return this._submit(props).then(() => {
+    return this._submit({
+      ...props,
+      subject: 'New Dashboard Revert Feedback',
+    }).then(() => {
       return this.revert();
     });
   };
@@ -83,25 +84,20 @@ export default class SubmitFeedback extends Component {
                 {label}
               </label>
               <div>
-                {revertToOldDesign
-                  ? <Field
-                      name="message"
-                      component="textarea"
-                      class="form-control"
-                      rows={10}
-                      placeholder="This will help us learn and fix issues"
-                      autoFocus={true}
-                    />
-                  : <Field
-                      name="message"
-                      component={InputField}
-                      tagName="textarea"
-                      class="form-control"
-                      autoFocus={true}
-                      rows={10}
-                      placeholder="We would love to know your thoughts"
-                      validate={required()}
-                    />}
+                <Field
+                  name="message"
+                  component={InputField}
+                  tagName="textarea"
+                  class="form-control"
+                  autoFocus={true}
+                  rows={10}
+                  placeholder={
+                    revertToOldDesign
+                      ? 'his will help us learn and fix issues'
+                      : 'We would love to know your thoughts'
+                  }
+                  validate={required()}
+                />
               </div>
             </div>
 
