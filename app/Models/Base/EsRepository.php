@@ -63,11 +63,26 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected $fields         = [];
 
     /**
-     * Fields against with 'q' param will be matched against from ES
+     * Fields which will be used to search against 'q' parameter.
      *
      * @var array
      */
     protected $queryFields    = [];
+
+    /**
+     * List of fields which are only query-able from ES.
+     *
+     * @var array
+     */
+    protected $esOnlyFetchParams = [];
+
+    /**
+     * List of fields which can be queried from MySQL as well
+     * and are in ES mostly for assisting with combined queries.
+     *
+     * @var array
+     */
+    protected $commonFetchParams = [];
 
     /**
      * Constructor
@@ -106,16 +121,14 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this->fields;
     }
 
-    /**
-     * Returns list of fields (possible) that can appear in fetch query params.
-     *
-     * Used in RepositoryFetch->getMysqlAndEsParams, please refer.
-     *
-     * @return array
-     */
-    public function getPossibleFieldsInParam(): array
+    public function getCommonFetchParams(): array
     {
-        return array_merge($this->fields, [self::QUERY, self::SEARCH_HITS]);
+        return $this->commonFetchParams;
+    }
+
+    public function getEsOnlyFetchParams(): array
+    {
+        return $this->esOnlyFetchParams;
     }
 
     /**

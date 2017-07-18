@@ -14,8 +14,8 @@ class EsRepository extends Base\EsRepository
         Entity::CUSTOMER_CONTACT,
         Entity::CUSTOMER_EMAIL,
         Entity::DESCRIPTION,
-        // Entity::STATUS,
-        // Entity::TYPE,
+        Entity::STATUS,
+        Entity::TYPE,
         Entity::TERMS,
         Entity::NOTES,
         Entity::CREATED_AT,
@@ -30,4 +30,46 @@ class EsRepository extends Base\EsRepository
         Entity::TERMS,
         Entity::NOTES . '.*',
     ];
+
+    protected $esOnlyFetchParams = [
+        self::QUERY,
+        Entity::NOTES,
+        Entity::TERMS,
+        Entity::RECEIPT,
+        Entity::CUSTOMER_NAME,
+        Entity::CUSTOMER_CONTACT,
+        Entity::CUSTOMER_EMAIL,
+    ];
+
+    protected $commonFetchParams = [
+        Entity::STATUS,
+        Entity::TYPE,
+        Entity::MERCHANT_ID,
+    ];
+
+    public function buildQueryForType(array & $query, string $value)
+    {
+        $filter = [
+            'term' => [
+                'type' => [
+                    'value' => $value,
+                ],
+            ],
+        ];
+
+        $this->addFilter($query, $filter);
+    }
+
+    public function buildQueryForStatus(array & $query, string $value)
+    {
+        $filter = [
+            'term' => [
+                'status' => [
+                    'value' => $value,
+                ],
+            ],
+        ];
+
+        $this->addFilter($query, $filter);
+    }
 }

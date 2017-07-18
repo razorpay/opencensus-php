@@ -2533,7 +2533,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'type, customer_id, user_id not expected with other params sent',
+                    'description' => 'customer_id, user_id not expected with other params sent',
                 ],
             ],
             'status_code' => 400,
