@@ -55,8 +55,12 @@ export default class AddGST extends Component {
   state = {};
 
   componentWillMount() {
+    let { merchant_gst } = this.props;
+
     let initialValues = {
-      gst_type: 'p_gstin',
+      gst_type: !merchant_gst.gstin && !merchant_gst.p_gstin
+        ? 'p_gstin'
+        : 'gstin',
     };
 
     this.props.initialize({
@@ -174,6 +178,7 @@ export default class AddGST extends Component {
                       type="radio"
                       id="p_gstin"
                       value="p_gstin"
+                      disabled={this.props.merchant_gst.p_gstin}
                     />
                     <label for="p_gstin">
                       Provisional GSTIN
@@ -224,7 +229,14 @@ export default class AddGST extends Component {
                 <div class="help-block">
                   {isPGST
                     ? 'You can submit your final GSTIN here once you have received it.'
-                    : 'final GSTIN once submitted cannot be updated via dashboard.'}
+                    : <span>
+                        Final GSTIN once submitted cannot be updated via dashboard.
+                        To update it, write to us at
+                        {' '}
+                        <a href="mailto:support@razorpay.com">
+                          support@razorpay.com
+                        </a>
+                      </span>}
 
                 </div>
 
