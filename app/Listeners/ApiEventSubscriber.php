@@ -198,7 +198,7 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onSubscriptionOverdue($subscription)
+    protected function onSubscriptionPending($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
@@ -372,7 +372,7 @@ class ApiEventSubscriber extends Base\Core
             Event\Entity::EVENT       => $eventFired,
             //
             // The same event may or may not contain some entities, based on the state.
-            // For example, if subscription.overdue is fired on an auth failure,
+            // For example, if subscription.pending is fired on an auth failure,
             // the payload will contain only subscription entity not contain `payment` entity.
             // If it's fired on capture failure, it'll contain both subscription and payment
             // entity. For this reason, we cannot have a static list of contains array.

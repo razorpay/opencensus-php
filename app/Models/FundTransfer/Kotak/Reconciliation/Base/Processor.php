@@ -269,6 +269,8 @@ class Processor extends Base\Core
             $failureAmount += $entity->getAmount();
         }
 
+        $failureAmount = $failureAmount / 100;
+
         // If multiple, let's say 2, attempts were made, on the same day for a settlement,
         // the recon file would have both failure and success rows corresponding to each
         // attempt. In this case the settlement corresponding to them would be part of
@@ -281,36 +283,41 @@ class Processor extends Base\Core
 
         $summary = [
             'total_count'               => $totalCount,
+            'unprocessed_ids'           => implode(', ', $this->unprocessedIds),
             'failures_count'            => $failureCount,
-            'failure_amount'            => $failureAmount,
+            'failure_amount (in Rs.)'   => $failureAmount,
             'failure ids'               => $failureEntityIds,
-            'processing failed ids'     => implode(', ', $this->unprocessedIds),
         ];
 
         $this->trace->error(
             TraceCode::SETTLEMENT_RECONCILIATION_FAILED, $summary);
 
-        $failureMsg = '';
-
-        if (($failureCount > 0) and ($totalCount === $failureCount))
+        if ($failureCount > 0)
         {
-            $failureMsg .= 'All settlements failed. ';
+            if ($totalCount === $failureCount)
+            {
+                $failureRemark = 'All settlements failed.';
+            }
+            else
+            {
+                $failureRemark = $failureCount . ' settlement(s) failed.';
+            }
+
+            if ($failureCount > 5)
+            {
+                $failureEntityIds = array_slice($failureEntityIds, 0, 5, true);
+
+                $failureIdMsg = ' A few failed settlement IDs: ';
+            }
+            else
+            {
+                $failureIdMsg = ' Settlement IDs: ';
+            }
+
+            $summary['failure remarks'] = $failureRemark;
+
+            $summary['failure ids'] = $failureIdMsg . implode(', ', $failureEntityIds);
         }
-
-        if ($failureCount > 5)
-        {
-            $failureEntityIds = array_slice($failureEntityIds, 0, 5, true);
-
-            $failureMsg .= 'A few failed settlement IDs: ';
-        }
-        else if ($failureCount > 0)
-        {
-            $failureMsg .= 'Failed settlement IDs: ';
-        }
-
-        $failureMsg .= implode(', ', $failureEntityIds);
-
-        $summary['failure ids'] = $failureMsg;
 
         return $summary;
     }

@@ -62,13 +62,42 @@ class MpesaGatewayTest extends TestCase
 
         $this->doAuthAndCapturePayment($this->payment);
 
-        $this->payment = $this->getLastEntity('payment', true);
+        $payment = $this->getLastEntity('payment', true);
 
-        $this->assertArraySelectiveEquals($testData, $this->payment);
+        $this->assertArraySelectiveEquals($testData, $payment);
 
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testAuthPaymentWalletEntity');
+
+        $this->assertNotEmpty($wallet['gateway_payment_id']);
+
+        $this->assertEmpty($wallet['gateway_payment_id_2']);
+    }
+
+    /**
+     * The purpose of this test to ensure that
+     * float payments don't cause an issue when
+     * array_flip is called when generating request xml
+     */
+    public function testAuthFloatPayment()
+    {
+        //
+        // Changing amount to 500.50/-
+        //
+        $this->payment['amount'] = '50050';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySelectiveEquals($testData, $payment);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testAuthFloatPaymentWalletEntity');
 
         $this->assertNotEmpty($wallet['gateway_payment_id']);
 

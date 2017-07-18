@@ -109,7 +109,8 @@ class Gateway
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
         self::AXIS_MIGS,
-        self::WALLET_JIOMONEY
+        self::WALLET_JIOMONEY,
+        self::NETBANKING_RBL,
     ];
 
     /**

@@ -170,6 +170,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     /**
      * Validates that the payment status is not failed.
+     *
+     * @param $row
+     *
+     * @return bool
      */
     protected function validatePaymentStatus($row)
     {
@@ -193,6 +197,23 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function tryAuthorizeFailedPayment($row)
     {
+        //
+        // If a gateway has implemented force authorization,
+        // always use that, instead of verify. There's no
+        // need for running verify if force authorization is present.
+        //
+        if ($this->shouldAttemptForceAuthorizeFailed() === true)
+        {
+            return $this->handleForceAuthorization($row);
+        }
+        else
+        {
+            return $this->handleVerifyPayment();
+        }
+    }
+
+    protected function handleVerifyPayment()
+    {
         $paymentService = new Payment\Service;
 
         try
@@ -215,38 +236,55 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return false;
         }
 
-        if ($verifyResponse === VerifyResult::AUTHORIZED)
+        switch($verifyResponse)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO,
-                [
-                    'message'    => 'Verify returned authorized.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]
-            );
+            case VerifyResult::AUTHORIZED:
 
-            return $this->handleVerifyAuthorized();
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'message'    => 'Verify returned authorized.',
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => get_called_class()
+                    ]
+                );
+
+                $authorizeSuccess = $this->handleVerifyAuthorized();
+
+                break;
+
+            case VerifyResult::SUCCESS:
+
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                        'message'    => 'Verify returned failed. Payment is still in failed state.',
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => get_called_class()
+                    ]);
+
+                $authorizeSuccess = false;
+
+                break;
+
+            default:
+
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_FAILED_VERIFY,
+                        'message'       => 'Verify command failed or unable to recognize the response.',
+                        'payment_id'    => $this->payment->getId(),
+                        'verify_status' => $verifyResponse,
+                        'gateway'       => get_called_class()
+                    ]);
+
+                $authorizeSuccess = false;
         }
 
-        if ($verifyResponse === VerifyResult::SUCCESS)
-        {
-            return $this->handleVerifySuccess($row);
-        }
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::RECON_FAILED_VERIFY,
-                'message'       => 'Verify command failed or unable to recognize the response.',
-                'payment_id'    => $this->payment->getId(),
-                'verify_status' => $verifyResponse,
-                'gateway'       => get_called_class()
-            ]);
-
-        return false;
+        return $authorizeSuccess;
     }
 
-    protected function handleVerifySuccess($row)
+    protected function handleForceAuthorization(array $row)
     {
         $authorizeSuccess = $this->forceAuthorizeFailed($row);
 
@@ -255,37 +293,73 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'message'    => 'Verify did not authorize. Force authorized the failed payment.',
+                    'message'    => 'Force authorized the failed payment.',
                     'payment_id' => $this->payment->getId(),
                     'gateway'    => get_called_class(),
-                ]
-            );
+                ]);
 
-            return $this->handleVerifyAuthorized();
+            $authResponse = $this->handleVerifyAuthorized();
+        }
+        else
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Unable to force authorize the payment. Payment is still in failed state.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            $authResponse = false;
         }
 
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                'message'    => 'Verify returned failed. Payment is still in failed state.',
-                'payment_id' => $this->payment->getId(),
-                'gateway'    => get_called_class()
-            ]);
-
-        return false;
+        return $authResponse;
     }
 
-
     /**
-     * This should be implemented in the child class if the gateway requires
-     * a force authorization from failed state. If no force authorization,
+     * This function will be called if the gateway requires a force
+     * authorization from failed state. If no force authorization,
      * it means that the payment is still in failed state and hence
      * should return back false.
      *
+     * @param array $row
+     *
      * @return bool
      */
-    protected function forceAuthorizeFailed($row)
+    protected function forceAuthorizeFailed(array $row)
     {
+        $paymentService = new Payment\Service;
+
+        $paymentId = $this->payment->getPublicId();
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'message'         => 'Payment status is failed. Doing force authorize',
+                'payment_id'      => $this->payment->getId(),
+                'gateway'         => get_called_class()
+            ]);
+
+        $input = $this->getInputForForceAuthorize($row);
+
+        // If there's any issue during authorize, the function throws an exception.
+        $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
+                'message'   => 'Response received from force authorization',
+                'response'  => $response
+            ]
+        );
+
+        if ((empty($response['status']) === false) and
+            ($response['status'] === Payment\Status::AUTHORIZED))
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -298,28 +372,34 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($this->paymentTransaction !== null)
         {
-            return true;
+            $success = true;
         }
-
-        $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
-
-        if ($createTransactionSuccess === true)
+        else
         {
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
 
-            return true;
+            if ($createTransactionSuccess === true)
+            {
+                $this->paymentTransaction = $this->payment->reload()->transaction;
+
+                $success = true;
+            }
+            else
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_FAILURE,
+                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'message'       => 'Unable to create payment transaction after verifying',
+                        'payment_id'    => $this->payment->getId(),
+                        'gateway'       => get_called_class()
+                    ]);
+
+                $success = false;
+            }
         }
 
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::RECON_FAILURE,
-                'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
-                'message'       => 'Unable to create payment transaction after verifying',
-                'payment_id'    => $this->payment->getId(),
-                'gateway'       => get_called_class()
-            ]);
-
-        return false;
+        return $success;
     }
 
     protected function persistReconciliationData($rowDetails)
@@ -407,93 +487,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         return $rowDetails;
-    }
-
-    /**
-     * For wallets and netbanking, there will be no card, hence we
-     * send an empty array for these payment methods.
-     *
-     * @param $row
-     * @return array
-     */
-    protected function getCardDetails($row)
-    {
-        return [];
-    }
-
-    /**
-     * If this is being implemented in the child class, ensure that
-     * the setter for storing the reference number is present
-     * in the gateway entity.
-     *
-     * @param $row
-     * @return null
-     */
-    protected function getReferenceNumber($row)
-    {
-        return null;
-    }
-
-    /**
-     * If this is being implemented in the child class, ensure that
-     * the setter for storing the gateway payment date is present
-     * in the gateway entity.
-     * @param $row
-     * @return null
-     */
-    protected function getGatewayPaymentDate($row)
-    {
-        return null;
-    }
-
-    /**
-     * If this is being implemented in the child class, ensure that
-     * the setters for customerId and customerName are present
-     * for the gateway entity.
-     *
-     * @param $row
-     * @return null
-     */
-    protected function getNbCustomerDetails($row)
-    {
-        return [];
-    }
-
-    /**
-     * If this is being implemented in the child class, ensure that
-     * the setters for accountNumber and creditAccountNumber are present
-     * for the gateway entity.
-     *
-     * @param $row
-     * @return null
-     */
-    protected function getNbAccountDetails($row)
-    {
-        return [];
-    }
-
-    /**
-     * A few netbanking gateways do not provide us with
-     * gateway service tax in their reconciliation files.
-     * For them, we mark the gateway service tax as null.
-     *
-     * @return null
-     */
-    protected function getGatewayServiceTax($row)
-    {
-        return null;
-    }
-
-    /**
-     * A few netbanking gateways do not provide us with
-     * gateway fees in their reconciliation files.
-     * For them, we mark the gateway fees as null.
-     *
-     * @return null
-     */
-    protected function getGatewayFee($row)
-    {
-        return null;
     }
 
     protected function setPaymentAndTransaction($row, $paymentId)
@@ -755,18 +748,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $accountNumber = $accountDetails[BaseReconciliate::CREDIT_ACCOUNT_NUMBER];
 
         $gatewayPayment->setCreditAccountNumber($accountNumber);
-    }
-
-    /**
-     * Getting the gatewayPayment associated with payment entity.
-     * It is implemented in the child class.
-     *
-     * NOTE: If this is being implemented in the child class,
-     * ensure that the relevant setters are implemented in the entity.
-     */
-    protected function getGatewayPayment($paymentId)
-    {
-        return null;
     }
 
     protected function persistIssuer($reconIssuer)
@@ -1250,8 +1231,131 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * For wallets and netbanking, there will be no card, hence we
+     * send an empty array for these payment methods.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getCardDetails($row)
+    {
+        return [];
+    }
+
+    /**
+     * If this is being implemented in the child class, ensure that
+     * the setter for storing the reference number is present
+     * in the gateway entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getReferenceNumber($row)
+    {
+        return null;
+    }
+
+    /**
+     * If this is being implemented in the child class, ensure that
+     * the setter for storing the gateway payment date is present
+     * in the gateway entity.
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayPaymentDate($row)
+    {
+        return null;
+    }
+
+    /**
+     * If this is being implemented in the child class, ensure that
+     * the setters for customerId and customerName are present
+     * for the gateway entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getNbCustomerDetails($row)
+    {
+        return [];
+    }
+
+    /**
+     * If this is being implemented in the child class, ensure that
+     * the setters for accountNumber and creditAccountNumber are present
+     * for the gateway entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getNbAccountDetails($row)
+    {
+        return [];
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway service tax in their reconciliation files.
+     * For them, we mark the gateway service tax as null.
+     *
+     * @return null
+     */
+    protected function getGatewayServiceTax($row)
+    {
+        return null;
+    }
+
+    /**
+     * A few netbanking gateways do not provide us with
+     * gateway fees in their reconciliation files.
+     * For them, we mark the gateway fees as null.
+     *
+     * @return null
+     */
+    protected function getGatewayFee($row)
+    {
+        return null;
+    }
+
+    /**
+     * This function should be implemented in the child class
+     * It will fetch the input required to do force authorize
+     * on the gateway.
+     *
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [];
+    }
+
+    /**
+     * This function should be implemented in the child class
+     * It tells whether we should attempt force authorize on
+     * the gateway.
+     *
+     * @return bool
+     */
+    protected function shouldAttemptForceAuthorizeFailed()
+    {
+        return false;
+    }
+
+    /**
+     * Getting the gatewayPayment associated with payment entity.
+     * It is implemented in the child class.
+     *
+     * NOTE: If this is being implemented in the child class,
+     * ensure that the relevant setters are implemented in the entity.
+     */
+    protected function getGatewayPayment($paymentId)
+    {
+        return null;
+    }
+
+    /**
      * Checks if amount in recon file matches the actual amount in payment entity
-     * Implementation to be provided by child clasess
+     * Implementation to be provided by child classes
      *
      * @param  array $row Row data
      *
