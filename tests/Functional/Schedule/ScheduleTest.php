@@ -205,7 +205,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(31);
+        $time->addDay(32);
 
         Carbon::setTestNow($time);
 
@@ -241,7 +241,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(31);
+        $time->addDay(32);
 
         Carbon::setTestNow($time);
 
@@ -255,7 +255,7 @@ class ScheduleTest extends TestCase
 
         $this->assertEquals(count($credits['items']), 3);
 
-        $time->addDay(31);
+        $time->addDay(32);
 
         Carbon::setTestNow($time);
 
@@ -308,7 +308,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(31);
+        $time->addDay(32);
 
         Carbon::setTestNow($time);
 
