@@ -161,7 +161,16 @@ class BasicEntityReport extends BaseReport
 
         $filename = $this->generateFilename($now);
 
-        $fullpath = $this->writeDataToCsv($input, $filename);
+        // We do not want all the aggregator merchant to download the complete report
+        // so its behind aggregator_report feature
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
+        {
+            $fullpath = $this->writeDataToCsvForAggregator($input, $filename);
+        }
+        else
+        {
+            $fullpath = $this->writeDataToCsv($input, $filename);
+        }
 
         $s3File = $this->createFileAndSave($fullpath, $filename);
 
@@ -171,20 +180,23 @@ class BasicEntityReport extends BaseReport
     }
 
     /**
-     * Generates report data and creates the csv file
+     *  Generates report data and creates the csv file
+     *  We need to get the report for all the merchants
+     *  Currently, we are taking BATCH_LIMIT for each merchant's report
+     *  We will later modify the logic of how many enties of each merchant we want.
      *
      * @param $input array
      *        expected : 'day', 'month', 'year'
      * @param $filename  string
      * @return $fullpath string
      */
-    protected function writeDataToCsv(array $input, $filename)
+    protected function writeDataToCsvForAggregator(array $input, $filename)
     {
         list($from, $to, $originalCount, $originalSkip) = $this->getParamsForReport($input);
 
-        $append = false;
+        $merchantIds = (new Merchant\Service)->getSubmerchants();
 
-        $merchantIds = (new Merchant\Service)->getSubmerchantsForReport();
+        $append = false;
 
         $totalEntries = 0;
 
@@ -193,18 +205,11 @@ class BasicEntityReport extends BaseReport
             $count = $originalCount;
             $skip = $originalSkip;
 
-            while ($count === self::BATCH_LIMIT)
-            {
-                list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
+            list($count, $fullPath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append);
 
-                $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
+            $totalEntries += $count;
 
-                $skip += $count;
-
-                $totalEntries += $count;
-
-                $append = true;
-            }
+            $append = true;
         }
 
         if ($totalEntries > self::MAX_FILE_LIMIT)
@@ -218,6 +223,41 @@ class BasicEntityReport extends BaseReport
         }
 
         return $fullpath;
+    }
+
+    /**
+     * Generates report data and creates the csv file
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @param $filename  string
+     * @return $fullpath string
+     */
+    protected function writeDataToCsv(array $input, $filename)
+    {
+        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
+
+        $merchantId = $this->merchant->getId();
+
+        list($count, $fullpath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId);
+
+        return $fullpath;
+    }
+
+    protected function writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append = false)
+    {
+        while ($count === self::BATCH_LIMIT)
+        {
+            list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
+
+            $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
+
+            $skip += $count;
+
+            $append = true;
+        }
+
+        return [$count, $fullpath];
     }
 
     /**

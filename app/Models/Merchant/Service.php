@@ -1000,14 +1000,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getSubmerchantsForReport()
+    public function getSubmerchants(): array
     {
         $merchant = $this->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
-        {
-            return [ $merchant->getId() ];
-        }
 
         return [ $merchant->getId() ];
     }
