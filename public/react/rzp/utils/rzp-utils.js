@@ -27,17 +27,14 @@ export function makeArray(obj) {
   return Array.isArray(obj) ? obj : [obj];
 }
 
-export function isBlank(obj) {
-  if (!obj) return !obj;
-
-  if (typeof obj === 'object') {
-    return !Object.keys(obj).length;
+export function isBlank(value) {
+  if (value !== null && typeof value === 'object') {
+    return !Object.keys(value).length;
   }
-
-  if (typeof obj === 'string') {
-    obj = obj.trim();
+  if (typeof value === 'string') {
+    value = value.trim();
   }
-  return !obj;
+  return isNone(value);
 }
 
 export function isPresent(obj) {
