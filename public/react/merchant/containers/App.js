@@ -19,12 +19,14 @@ import { applyTheme } from 'rzp/themes';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AddGST from 'merchant/containers/Profile/AddGST';
+import { fetchGST } from 'merchant/modules/profile';
 
 @withRouter
 @connect(state => state.session, {
   ...ModalActions,
   ...SessionActions,
   ...NotificationActions,
+  fetchGST,
 })
 export default class App extends Component {
   state = {
@@ -35,6 +37,7 @@ export default class App extends Component {
   componentWillMount() {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
+    this.props.fetchGST();
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;

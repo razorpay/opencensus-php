@@ -68,6 +68,17 @@ export const enableOrDisableNewui = enableOrDisable => {
   };
 };
 
+export const submitFeedback = data => {
+  return () => {
+    return ajax({
+      url: '/sendfeedback',
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    });
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},

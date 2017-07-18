@@ -18,4 +18,6 @@ class MailTags
     const ACCOUNT_CONFIRMATION_MAIL     = 'account_confirmation_mail';
 
     const PASSWORD_RESET_REQUEST        = 'password_reset_request';
+
+    const FEEDBACK_MAIL                 = 'feedback_mail';
 }
