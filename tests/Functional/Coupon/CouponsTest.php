@@ -97,15 +97,13 @@ class CouponsTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $balanceRequest = [
-            'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
+            'url'    => '/balance',
             'method' => 'GET',
         ];
 
         $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
-
-        $this->assertEquals(100, $response['fee_credits']);
     }
 
     public function testMerchantSignUpWithInValidCoupon()
@@ -119,15 +117,13 @@ class CouponsTest extends TestCase
         $this->assertEquals('Coupon code not found', $response['apply_coupon']['message']);
 
         $balanceRequest = [
-            'url'    => '/merchants/1X4hRFHFx4UiXt/balance',
+            'url'    => '/balance',
             'method' => 'GET',
         ];
 
         $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
-
-        $this->assertEquals($response['fee_credits'], 0);
     }
 
 
