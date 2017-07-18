@@ -16,7 +16,7 @@ trait Hydrator
     {
         $class = $this->getEntityClass();
 
-        $instance = (new $class)->newInstance();
+        $instance = new $class;
 
         $hydrator = function (array $item) use ($instance)
                     {

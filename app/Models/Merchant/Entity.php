@@ -72,12 +72,27 @@ class Entity extends Base\PublicEntity
     const MAX_AUTO_REFUND_DELAY = 864000;
 
     /**
+     * A query parameter to filter results based on
+     * account status which can be one of suspended,
+     * archived, activated, pending or dead.
+     */
+    const ACCOUNT_STATUS            = 'account_status';
+
+    /**
+     * A query parameters to get only merchants who
+     * are sub accounts(if value is 1) or sub accounts
+     * of specific merchant (if value is an id).
+     */
+    const SUB_ACCOUNTS              = 'sub_accounts';
+
+
+    /**
      * Refers to methods relation and not a property;
      */
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
-    const MERCHANT_DETAIL           = 'merchantDetail';
+    const MERCHANT_DETAIL           = 'merchant_detail';
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';

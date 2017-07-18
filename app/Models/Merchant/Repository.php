@@ -17,20 +17,6 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
 
-    /**
-     * A query parameter to filter results based on
-     * account status which can be one of suspended,
-     * archived, activated, pending or dead.
-     */
-    const ACCOUNT_STATUS = 'account_status';
-
-    /**
-     * A query parameters to get only merchants who
-     * are sub accounts(if value is 1) or sub accounts
-     * of specific merchant (if value is an id).
-     */
-    const SUB_ACCOUNTS   = 'sub_accounts';
-
     protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
@@ -56,8 +42,8 @@ class Repository extends Base\Repository
     protected $adminFetchParamRules = [
         EsRepository::SEARCH_HITS       => 'sometimes|boolean',
         EsRepository::QUERY             => 'sometimes|string|min:2|max:100',
-        self::ACCOUNT_STATUS            => 'sometimes|string|in:suspended,archived,activated,pending,dead',
-        self::SUB_ACCOUNTS              => 'sometimes',
+        Entity::ACCOUNT_STATUS          => 'sometimes|string|in:suspended,archived,activated,pending,dead',
+        Entity::SUB_ACCOUNTS            => 'sometimes',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'required|string',
     ];
@@ -497,10 +483,10 @@ class Repository extends Base\Repository
                          };
 
         $with = [
-            Entity::MERCHANT_DETAIL => $detailSelector,
-            Entity::GROUPS          => $groupSelector,
-            Entity::ADMINS          => $adminSelector,
-            Entity::FEATURES        => function () {},
+            camel_case(Entity::MERCHANT_DETAIL) => $detailSelector,
+            Entity::GROUPS                      => $groupSelector,
+            Entity::ADMINS                      => $adminSelector,
+            Entity::FEATURES                    => function () {},
         ];
 
         $query->with($with);
@@ -525,7 +511,7 @@ class Repository extends Base\Repository
         // Merchant detail's attributes, Using toArray() as attributes
         // are already projected in query.
 
-        $serialized[Table::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
+        $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
 
         // List of admin ids which have direct access to this merchant document
 
@@ -553,5 +539,19 @@ class Repository extends Base\Repository
 
 
         return $serialized;
+    }
+
+    protected function postProcessForHydration($model, array & $item)
+    {
+        $attributes = $item[Entity::MERCHANT_DETAIL];
+
+        $merchantDetail = (new Detail\Entity)->newFromBuilder($attributes);
+
+        $model->setRelation('merchantDetail', $merchantDetail);
+
+        $model->__unset(Entity::GROUPS);
+        $model->__unset(Entity::ADMINS);
+        $model->__unset(Entity::MERCHANT_DETAIL);
+
     }
 }

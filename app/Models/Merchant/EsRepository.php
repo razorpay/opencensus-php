@@ -55,7 +55,7 @@ class EsRepository extends Base\EsRepository
         AdminEntity::NAME,
     ];
 
-    protected $esOnlyFetchParams = [
+    protected $esFetchParams = [
         self::QUERY,
         self::SEARCH_HITS,
         Entity::GROUPS,
@@ -140,7 +140,7 @@ class EsRepository extends Base\EsRepository
     {
         if ($value === '1')
         {
-            $filter = $this->getExistsQuery(Entity::PARENT_ID);
+            $filter = $this->getExistsQueryForField(Entity::PARENT_ID);
         }
         else
         {
@@ -198,7 +198,7 @@ class EsRepository extends Base\EsRepository
         // 'archived' then return else in all cases add filter to send
         // only active merchants.
 
-        $accountStatus = $params[Repository::ACCOUNT_STATUS] ?? null;
+        $accountStatus = $params[Entity::ACCOUNT_STATUS] ?? null;
 
         if (in_array($accountStatus, ['suspended', 'archived'], true) === true)
         {

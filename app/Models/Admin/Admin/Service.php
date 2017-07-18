@@ -573,7 +573,7 @@ class Service extends Base\Service
 
         $input[Base\EsRepository::SEARCH_HITS] = 1;
 
-        return $this->repo->merchant->fetch($input)->toArrayPublic();
+        return $this->repo->merchant->fetch($input)->toArrayAdmin();
     }
 
     public function getMerchantIdsFromEs(string $orgId, string $adminId)
