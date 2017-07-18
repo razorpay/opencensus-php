@@ -75,6 +75,8 @@ class Core extends Base\Core
             // where transfer method pricing is 0
             $subMerchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
 
+            $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
+
             $subMerchant->parent()->associate($aggregatorMerchant);
         }
 

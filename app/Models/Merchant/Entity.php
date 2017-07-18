@@ -441,6 +441,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
     }
 
+    public function setMaxPaymentAmount(int $maxAmount)
+    {
+        $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
+    }
+
     protected function setBrandColorAttribute($brandColor)
     {
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
