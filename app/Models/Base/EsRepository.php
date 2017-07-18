@@ -60,7 +60,7 @@ class EsRepository extends \Razorpay\Spine\Repository
      *
      * @var array
      */
-    protected $fields         = [];
+    protected $indexedFields  = [];
 
     /**
      * Fields which will be used to search against 'q' parameter.
@@ -74,11 +74,11 @@ class EsRepository extends \Razorpay\Spine\Repository
      *
      * @var array
      */
-    protected $esOnlyFetchParams = [];
+    protected $esFetchParams  = [];
 
     /**
-     * List of fields which can be queried from MySQL as well
-     * and are in ES mostly for assisting with combined queries.
+     * List of fields which can be queried from MySQL as well.
+     * And are in ES mostly for assisting with combined queries.
      *
      * @var array
      */
@@ -126,9 +126,9 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this->commonFetchParams;
     }
 
-    public function getEsOnlyFetchParams(): array
+    public function getEsFetchParams(): array
     {
-        return $this->esOnlyFetchParams;
+        return $this->esFetchParams;
     }
 
     /**

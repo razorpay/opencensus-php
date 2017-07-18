@@ -31,7 +31,7 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES . '.*',
     ];
 
-    protected $esOnlyFetchParams = [
+    protected $esFetchParams = [
         self::QUERY,
         Entity::NOTES,
         Entity::TERMS,

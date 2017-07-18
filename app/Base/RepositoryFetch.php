@@ -146,41 +146,34 @@ trait RepositoryFetch
             return [$params, []];
         }
 
-        // Gets parameters common to ES & MySQL and for only ES respectively.
-        $allowedCommonFetchParams = $this->esRepo->getCommonFetchParams();
+        // Remove (1) default parameters (e.g. skip, from etc.) and (2) parameters
+        // common to MySQL and Es for further checks.
+        $filteredParams = array_diff_key($params, $this->originalFetchParamRules);
+        $filteredParams = array_diff_key($filteredParams, array_flip($this->esRepo->getCommonFetchParams()));
 
-        $commonParams = array_intersect_key($params, array_flip($allowedCommonFetchParams));
+        // Following is allowed keys for ES fetch. And then we get allowed keys
+        // for MySQL fetch which is basically filtered parameters subtracted by
+        // whatever will go in es.
+        $allowedEsFetchKeys    = $this->esRepo->getEsFetchParams();
+        $allowedMysqlFetchKeys = array_keys(array_diff_key($filteredParams, array_flip($allowedEsFetchKeys)));
 
-        $allowedEsOnlyFetchParams = $this->esRepo->getEsOnlyFetchParams();
-
-        $esOnlyParams = array_intersect_key($params, array_flip($allowedEsOnlyFetchParams));
-
-        // If no ES only parameters, just return and let it do fetch on MySQL
-        // with the actual $params
-        if (count($esOnlyParams) === 0)
+        // $filteredParams should be subset of either MySQL or ES keys only.
+        if (empty(array_diff(array_keys($filteredParams), $allowedMysqlFetchKeys)) === true)
         {
             return [$params, []];
         }
-
-        // Now that there are some parameters which needs to be searched in ES,
-        // ensure parameters list is exclusive to ES and none require MySQL.
-        $mysqlOnlyParams = array_diff_key($params, array_merge($commonParams, $esOnlyParams));
-
-        $extraMysqlParams = array_diff_key($mysqlOnlyParams, $this->originalFetchParamRules);
-
-        if (count($extraMysqlParams) > 0)
+        else if (empty(array_diff(array_keys($filteredParams), $allowedEsFetchKeys)) === true)
         {
-            $message = implode(', ', array_keys($extraMysqlParams)) . ' not expected with other params sent';
+            return [[], $params];
+        }
+        else
+        {
+            $extraKeys = array_diff(array_keys($filteredParams), $allowedEsFetchKeys);
+
+            $message = implode(', ', $extraKeys) . ' not expected with other params sent';
 
             throw new BadRequestValidationFailureException($message);
         }
-
-        // Prepare final $esParams which includes the split common parameters
-        // and default fetch parameters as well.
-        $esParams = array_merge($esOnlyParams, $commonParams);
-        $esParams += array_intersect_key($params, $this->originalFetchParamRules);
-
-        return [[], $esParams];
     }
 
     /**
