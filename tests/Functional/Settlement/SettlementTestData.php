@@ -2,6 +2,9 @@
 
 use Carbon\Carbon;
 
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\Settlement\Status as SettlementStatus;
+
 return [
     'fetchAndMatchSettlement' => [
         'channel'           => "kotak",
@@ -10,7 +13,8 @@ return [
         'fees'              => 118000,
         'service_tax'       => 18000,
         'failure_reason'    => null,
-        'attempts'     => 1,
+        'attempts'          => 1,
+        'status'            => SettlementStatus::CREATED,
     ],
 
     'fetchAndMatchBatchDataSettlement' => [
@@ -29,7 +33,7 @@ return [
         'version'           => 'V3',
         'merchant_id'       => '10000000000000',
         'bank_status_code'  => null,
-        'status'            => 'created',
+        'status'            => AttemptStatus::INITIATED,
         'utr'               => null,
         'remarks'           => null,
         'failure_reason'    => null,
