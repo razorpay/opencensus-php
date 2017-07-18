@@ -17,6 +17,20 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
 
+    /**
+     * A query parameter to filter results based on
+     * account status which can be one of suspended,
+     * archived, activated, pending or dead.
+     */
+    const ACCOUNT_STATUS = 'account_status';
+
+    /**
+     * A query parameters to get only merchants who
+     * are sub accounts(if value is 1) or sub accounts
+     * of specific merchant (if value is an id).
+     */
+    const SUB_ACCOUNTS   = 'sub_accounts';
+
     protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
@@ -37,6 +51,15 @@ class Repository extends Base\Repository
         Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
+    ];
+
+    protected $adminFetchParamRules = [
+        EsRepository::SEARCH_HITS       => 'sometimes|boolean',
+        EsRepository::QUERY             => 'sometimes|string|min:2|max:100',
+        self::ACCOUNT_STATUS            => 'sometimes|string|in:suspended,archived,activated,pending,dead',
+        self::SUB_ACCOUNTS              => 'sometimes',
+        Entity::GROUPS                  => 'sometimes|array',
+        Entity::ADMINS                  => 'required|string',
     ];
 
     public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end, array $merchantIds = [])

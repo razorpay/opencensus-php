@@ -5,8 +5,9 @@ namespace RZP\Models\Merchant;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Constants\Es as EsConst;
 use RZP\Base\Common;
+use RZP\Constants\Es as EsConst;
+use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
@@ -19,6 +20,8 @@ class EsRepository extends Base\EsRepository
         Entity::ORG_ID,
         Entity::NAME,
         Entity::EMAIL,
+        Entity::BILLING_LABEL,
+        Entity::WEBSITE,
         Entity::PARENT_ID,
         Entity::ACTIVATED,
         Entity::ACTIVATED_AT,
@@ -29,7 +32,10 @@ class EsRepository extends Base\EsRepository
     ];
 
     protected $queryFields = [
-        // TODO: Decide this.
+        Entity::NAME,
+        Entity::EMAIL,
+        Entity::BILLING_LABEL,
+        Entity::WEBSITE,
     ];
 
     protected $merchantDetailFields = [
@@ -47,6 +53,15 @@ class EsRepository extends Base\EsRepository
     protected $adminFields = [
         AdminEntity::ID,
         AdminEntity::NAME,
+    ];
+
+    protected $esOnlyFetchParams = [
+        self::QUERY,
+        self::SEARCH_HITS,
+        Entity::GROUPS,
+        Entity::ADMINS,
+        Entity::ACCOUNT_STATUS,
+        Entity::SUB_ACCOUNTS,
     ];
 
     // --------------- Getters -----------------------------
@@ -83,6 +98,44 @@ class EsRepository extends Base\EsRepository
     {
     }
 
+    public function buildQueryForAccountStatus(array & $query, string $value)
+    {
+        switch ($value)
+        {
+            case 'suspended':
+            case 'archived':
+            case 'activated':
+                $this->addNotNullFilterForField($query, "{$value}_at");
+
+                break;
+
+            case 'pending':
+                $this->addNotNullFilterForField($query, 'merchant_details.submitted_at');
+                $this->addNullFilterForField($query, Entity::ACTIVATED_AT);
+
+                break;
+
+            case 'dead':
+                $this->addNullFilterForField($query, 'merchant_details.submitted_at');
+
+                $dayBefore = Carbon::now()->subDays(1)->timestamp;
+                $filter = [
+                    EsConst::RANGE => [
+                        Common::CREATED_AT => [
+                            EsConst::LT => $dayBefore,
+                        ],
+                    ],
+                ];
+                $this->addFilter($query, $filter);
+
+                break;
+
+            default:
+
+                throw new \LogicException();
+        }
+    }
+
     public function buildQueryForSubAccounts(array & $query, string $value)
     {
         if ($value === '1')
@@ -97,60 +150,11 @@ class EsRepository extends Base\EsRepository
         $this->addFilter($query, $filter);
     }
 
-    public function buildQueryForSuspended(array & $query, string $value)
-    {
-        $this->addNotNullFilterForField($query, Entity::SUSPENDED_AT);
-    }
-
-    public function buildQueryForArchived(array & $query, string $value)
-    {
-        $this->addNotNullFilterForField($query, Entity::ARCHIVED_AT);
-    }
-
-    public function buildQueryForActivated(array & $query, string $value)
-    {
-        $this->addNotNullFilterForField($query, Entity::ACTIVATED_AT);
-    }
-
-    public function buildQueryForPending(array & $query, string $value)
-    {
-        $this->addNotNullFilterForField($query, 'merchant_details.submitted_at');
-
-        $this->addNullFilterForField($query, Entity::ACTIVATED_AT);
-    }
-
-    public function buildQueryForDead(array & $query, string $value)
-    {
-        $this->addNullFilterForField($query, 'merchant_details.submitted_at');
-
-        $dayBefore = Carbon::now()->subDays(1)->timestamp;
-
-        $filter = [
-            EsConst::RANGE => [
-                Common::CREATED_AT => [
-                    EsConst::LT => $dayBefore,
-                ],
-            ],
-        ];
-
-        $this->addFilter($query, $filter);
-    }
-
     public function buildQueryAdditional(array & $query, array $params)
     {
-        // Adds ACL filter using admins and groups values in $params.
-
         $this->addQueryForAcl($query, $params);
 
-        // If $params doesn't have following two filters add filter
-        // to only pick non-suspended and non-archived merchants always.
-
-        $inactiveFilters = ['suspended', 'archived'];
-
-        if (empty(array_intersect_key($inactiveFilters, array_keys($params))) === false)
-        {
-            $this->addQueryForActiveOnlyMerchants($query, $params);
-        }
+        $this->addQueryForActiveOnlyMerchantsIfApplies($query, $params);
     }
 
     /**
@@ -186,8 +190,21 @@ class EsRepository extends Base\EsRepository
         }
     }
 
-    protected function addQueryForActiveOnlyMerchants(array & $query)
+    protected function addQueryForActiveOnlyMerchantsIfApplies(
+        array & $query,
+        array $params)
     {
+        // If account_status in query parameter is either of 'suspended' or
+        // 'archived' then return else in all cases add filter to send
+        // only active merchants.
+
+        $accountStatus = $params[Repository::ACCOUNT_STATUS] ?? null;
+
+        if (in_array($accountStatus, ['suspended', 'archived'], true) === true)
+        {
+            return;
+        }
+
         $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
         $this->addNullFilterForField($query, Entity::ARCHIVED_AT);
     }

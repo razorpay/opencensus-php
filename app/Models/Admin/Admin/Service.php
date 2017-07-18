@@ -553,8 +553,6 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        (new Validator)->validateInput(Validator::FILTER, $input);
-
         // Appends more payload in $input for ES search:
 
         // If admin not allowed to see all merchants, get all group
@@ -575,17 +573,7 @@ class Service extends Base\Service
 
         $input[Base\EsRepository::SEARCH_HITS] = 1;
 
-        // Set ES Repository and make search
-
-        $results = $this->repo
-                        ->merchant
-                        ->setEsRepoIfExist()
-                        ->getEsRepo()
-                        ->buildQueryAndSearch($input);
-
-        // TODO: Format results a little as per prev expectations, if needed.
-
-        return $results;
+        return $this->repo->merchant->fetch($input)->toArrayPublic();
     }
 
     public function getMerchantIdsFromEs(string $orgId, string $adminId)

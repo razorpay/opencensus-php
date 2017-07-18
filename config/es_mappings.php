@@ -220,7 +220,17 @@ return [
             'email' => [
                 'type' => 'text',
             ],
-
+            'billing_label' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard',
+                'index_options'   => 'offsets',
+            ],
+            'website' => [
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
+            ],
             'parent_id' => [
                 'type' => 'keyword',
             ],
