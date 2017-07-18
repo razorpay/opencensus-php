@@ -26,7 +26,7 @@ class Creator extends Base\Core
      */
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
-        $subscription = (new Entity)->build($input);
+        $subscription = (new Entity);
 
         //
         // Transaction on live and test is required because
@@ -43,6 +43,13 @@ class Creator extends Base\Core
                 // merchant to associated with the subscription first.
                 //
                 $subscription->associateEntities($plan, $customer);
+
+                //
+                // This needs to be done after associating the entities
+                // since create validations need to access the
+                // corresponding plan's attributes.
+                //
+                $subscription->build($input);
 
                 //
                 // This should be called before filling end_at and total_count,
