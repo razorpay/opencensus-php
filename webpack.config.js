@@ -8,6 +8,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const bootstrap = require('bootstrap-styl');
 
+const BabiliPlugin = require('babili-webpack-plugin');
+
+let isProd;
+
 const webpackConfig = {
   context: process.cwd() + '/public/react',
   resolve: {
@@ -46,80 +50,6 @@ webpackConfig.output = {
 };
 
 // ------------------------------------
-// Loaders
-// ------------------------------------
-webpackConfig.module.rules = [
-  {
-    test: /\.(js|jsx)$/,
-    include: path.resolve(__dirname, 'public/react'),
-    use: [
-      {
-        loader: 'babel-loader',
-        options: {
-          cacheDirectory: true,
-          plugins: [
-            'react-html-attrs',
-            'transform-runtime',
-            'transform-decorators-legacy',
-          ],
-          presets: [
-            ['es2015', { loose: true, modules: false }],
-            'react',
-            'stage-0',
-          ],
-        },
-      },
-    ],
-  },
-  {
-    test: /\.styl$/,
-    // exclude: path.resolve(__dirname, 'node_modules'),
-    use: ExtractTextPlugin.extract({
-      fallback: 'style-loader',
-      use: [
-        {
-          loader: 'css-loader',
-          options: {
-            minimize: true,
-          },
-        },
-        {
-          loader: 'postcss-loader',
-          options: {
-            plugins: loader => [require('autoprefixer')()],
-          },
-        },
-        {
-          loader: 'stylus-loader',
-          options: {
-            use: bootstrap(),
-            paths: 'node_modules/bootstrap-styl/bootstrap',
-          },
-        },
-      ],
-    }),
-  },
-
-  {
-    test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-    use: [
-      {
-        loader: 'file-loader',
-      },
-    ],
-  },
-
-  {
-    test: /\.jst$/,
-    use: [
-      {
-        loader: 'dot-tpl-loader',
-      },
-    ],
-  },
-];
-
-// ------------------------------------
 // Plugins
 // ------------------------------------
 webpackConfig.plugins = [
@@ -141,10 +71,6 @@ webpackConfig.plugins = [
     $: 'jquery',
   }),
 
-  new ExtractTextPlugin({
-    filename: '[name]_[chunkhash].css',
-  }),
-
   new HtmlWebpackPlugin({
     template: path.resolve(
       __dirname + '/resources/views/merchant/getIndex.blade.php'
@@ -156,4 +82,127 @@ webpackConfig.plugins = [
   }),
 ];
 
-module.exports = webpackConfig;
+module.exports = env => {
+  isProd = env === 'production' ? true : false;
+
+  // ------------------------------------
+  // Loaders
+  // ------------------------------------
+  webpackConfig.module.rules = [
+    {
+      test: /\.(js|jsx)$/,
+      include: path.resolve(__dirname, 'public/react'),
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: true,
+            plugins: [
+              'react-html-attrs',
+              'transform-runtime',
+              'transform-decorators-legacy',
+            ],
+            presets: [
+              ['es2015', { loose: true, modules: false }],
+              'react',
+              'stage-0',
+            ],
+          },
+        },
+      ],
+    },
+    {
+      test: /\.styl$/,
+      loader: isProd
+        ? ExtractTextPlugin.extract({
+            fallback: 'style-loader',
+            use: [
+              {
+                loader: 'css-loader',
+                options: {
+                  minimize: true,
+                },
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  plugins: loader => [require('autoprefixer')()],
+                },
+              },
+              {
+                loader: 'stylus-loader',
+                options: {
+                  use: bootstrap(),
+                  paths: 'node_modules/bootstrap-styl/bootstrap',
+                },
+              },
+            ],
+          })
+        : [
+            {
+              loader: 'style-loader',
+            },
+            {
+              loader: 'css-loader',
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                plugins: loader => [require('autoprefixer')()],
+              },
+            },
+            {
+              loader: 'stylus-loader',
+              options: {
+                use: bootstrap(),
+                paths: 'node_modules/bootstrap-styl/bootstrap',
+              },
+            },
+          ],
+    },
+    {
+      test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+      use: [
+        {
+          loader: 'file-loader',
+        },
+      ],
+    },
+
+    {
+      test: /\.jst$/,
+      use: [
+        {
+          loader: 'dot-tpl-loader',
+        },
+      ],
+    },
+  ];
+
+  // Production specific plugins
+  if (isProd) {
+    webpackConfig.plugins.push(
+      new ExtractTextPlugin({
+        filename: '[name]_[chunkhash].css',
+      }),
+      new webpack.DefinePlugin({
+        'process.env': {
+          NODE_ENV: JSON.stringify('production'),
+        },
+      }),
+      new BabiliPlugin({
+        mangle: { topLevel: true },
+      }),
+      new webpack.optimize.UglifyJsPlugin({
+        compress: {
+          warnings: false,
+        },
+        output: {
+          comments: false,
+        },
+      })
+    );
+  }
+
+  return webpackConfig;
+};
