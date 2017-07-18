@@ -1,7 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import { normalizeBoolean } from 'rzp/utils/rzp-utils';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { normalizeBoolean, isBlank } from 'rzp/utils/rzp-utils';
 
 const activationFields = [
   'contact_name',
