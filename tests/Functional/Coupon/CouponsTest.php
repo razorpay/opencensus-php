@@ -345,6 +345,8 @@ class CouponsTest extends TestCase
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
 
+        $this->fixtures->merchant->activate('10000000000000');
+
         $this->startTest();
 
         $credit = $this->getLastEntity('credits', true);
@@ -363,6 +365,8 @@ class CouponsTest extends TestCase
         ];
 
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->fixtures->merchant->activate('10000000000000');
 
         $this->startTest();
 
