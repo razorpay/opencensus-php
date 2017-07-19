@@ -124,6 +124,19 @@ return [
         ],
     ],
 
+    'testMerchantSignUpWithCouponAndActivation' => [
+        'request' => [
+            'content' => [
+                'id'    => '1X4hRFHFx4UiXt',
+                'name'  => 'Tester',
+                'email' => 'test@localhost.com',
+                'coupon_code' => 'RANDOM-123',
+            ],
+            'url'    => '/merchants',
+            'method' => 'POST'
+        ],
+    ],
+
     'testMerchantSignUpWithInValidCoupon' => [
         'request' => [
             'content' => [

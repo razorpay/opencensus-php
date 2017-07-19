@@ -101,19 +101,14 @@ class Core extends Base\Core
 
             $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
 
-            //
-            // Initial apply of Credit is done instantly
-            // Subsequent run and expiry will be handled by cron
-            //
-            $merchantPromotionCore->applyCredits($merchant, $promotion);
+            if ($merchant->isActivated() === true)
+            {
+                $merchantPromotionCore->activate($merchantPromotion);
+            }
 
             $coupon->incrementUsedCount();
 
-            $merchantPromotion->decrementRemainingIterations();
-
             $this->repo->saveOrFail($coupon);
-
-            $this->repo->saveOrFail($merchantPromotion);
         });
     }
 }

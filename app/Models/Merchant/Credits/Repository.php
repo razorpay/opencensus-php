@@ -98,6 +98,7 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->selectRaw('SUM(value - used) as sum')
                       ->merchantId($merchantId)
+                      ->where(Entity::VALUE, '>', 0)
                       ->where(function ($query)
                             {
                                 $query->where(Entity::EXPIRED_AT, '>', time())
@@ -129,6 +130,7 @@ class Repository extends Base\Repository
                       ->selectRaw(
                           Entity::TYPE . ', ' .
                           'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+                      ->where(Entity::VALUE, '>', 0)
                       ->merchantId($merchantId)
                       ->where(function ($query)
                           {

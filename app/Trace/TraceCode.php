@@ -262,6 +262,7 @@ class TraceCode
 
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
     const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
+    const PROMOTION_ACTIVATION_FAILED                   = 'PROMOTION_ACTIVATION_FAILED';
 
     const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
     const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';
