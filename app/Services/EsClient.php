@@ -4,11 +4,14 @@ namespace RZP\Services;
 
 use Elasticsearch\ClientBuilder;
 
-use RZP\Exception\InvalidArgumentException;
+use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
+use RZP\Exception\InvalidArgumentException;
 
 class EsClient
 {
+    const DEFAULT_SCROLL_SECS = '30s';
+
     protected $client;
 
     protected $esMock;
@@ -108,10 +111,42 @@ class EsClient
     {
         if ($this->esMock === true)
         {
-            return ['hits' => ['hits' => []]];
+            return [Es::HITS => [Es::HITS => []]];
         }
 
         return $this->client->search($params);
+    }
+
+    public function searchAndScroll(array $params): \Generator
+    {
+        $params[Es::SCROLL] = self::DEFAULT_SCROLL_SECS;
+
+        $response = $this->search($params);
+
+        while ((isset($response[Es::HITS][Es::HITS]) === true) and
+            (count($response[Es::HITS][Es::HITS]) > 0))
+        {
+            yield $response;
+
+            $scrollId = $response[Es::_SCROLL_ID];
+
+            $response = $this->scroll($scrollId);
+        }
+    }
+
+    public function scroll(string $scrollId): array
+    {
+        if ($this->esMock === true)
+        {
+            return [Es::HITS => [Es::HITS => []]];
+        }
+
+        $params = [
+            Es::SCROLL_ID => $scrollId,
+            Es::SCROLL    => self::DEFAULT_SCROLL_SECS,
+        ];
+
+        return $this->client->scroll($params);
     }
 
     public function indexExists(array $params)
@@ -173,12 +208,12 @@ class EsClient
 
         $searchResponse = $this->heimdallClient->search($params);
 
-        if ($searchResponse['hits']['total'] === 0)
+        if ($searchResponse[Es::HITS]['total'] === 0)
         {
             return null;
         }
 
-        $entityResults = $searchResponse['hits']['hits'];
+        $entityResults = $searchResponse[Es::HITS][Es::HITS];
 
         return $entityResults;
     }

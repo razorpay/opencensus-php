@@ -413,7 +413,7 @@ class Repository extends \Razorpay\Spine\Repository
      * be put in _construct of this class as it needs rzp.mode and that is not
      * set in few flows - tests etc.
      */
-    public function setEsRepoIfExist(): Repository
+    public function setEsRepoIfExist()
     {
         $parentNamespace = $this->getParentNamespace();
 
@@ -423,8 +423,6 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $this->esRepo = (new $esRepoClassPath($this->entity));
         }
-
-        return $this;
     }
 
     /**

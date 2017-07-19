@@ -12,7 +12,6 @@ use RZP\Models\Admin\Action;
 class Validator extends Base\Validator
 {
     const TOKEN              = 'token';
-    const FILTER             = 'filter';
     const RESET_PASSWORD_URL = 'reset_password_url';
 
     const SUSPENDED          = 'suspended';
@@ -96,9 +95,7 @@ class Validator extends Base\Validator
     ];
 
     /**
-     * @deprecated
-     *
-     * Ref: #4216
+     * @deprecated Ref: #4216
      */
     protected static $filterRules = [
         self::SUSPENDED         => 'sometimes|boolean',

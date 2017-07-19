@@ -4,6 +4,8 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Org;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Jobs\MerchantSync;
 use RZP\Models\Admin\Action;
 
 class Service extends Base\Service
@@ -54,6 +56,12 @@ class Service extends Base\Service
         $group->setAuditAction(Action::DELETE_GROUP);
 
         $this->repo->deleteOrFail($group);
+
+        (new Merchant\Core)->syncEventToEs(
+            MerchantSync::GROUP_DELETE,
+            [
+                Entity::ID => $group->getId(),
+            ]);
 
         return $group->toArrayDeleted();
     }

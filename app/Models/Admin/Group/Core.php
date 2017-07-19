@@ -3,8 +3,10 @@
 namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
+use RZP\Jobs\MerchantSync;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Action;
 
@@ -38,6 +40,12 @@ class Core extends Base\Core
         $this->repo->saveOrFail($group);
 
         $this->associateRelevantEntitiesToGroup($input, $group);
+
+        (new Merchant\Core)->syncEventToEs(
+            MerchantSync::GROUP_EDIT,
+            [
+                Entity::ID => $group->getId(),
+            ]);
 
         return $group;
     }

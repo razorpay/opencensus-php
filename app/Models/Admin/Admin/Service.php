@@ -425,9 +425,7 @@ class Service extends Base\Service
     }
 
     /**
-     * @deprecated
-     *
-     * Ref: #4216
+     * @deprecated Ref: #4216
      */
     public function getMerchantIds($orgId, $adminId)
     {
@@ -546,10 +544,7 @@ class Service extends Base\Service
         return $responseHash;
     }
 
-    public function getMerchantsFromEs(
-        string $orgId,
-        string $adminId,
-        array $input): array
+    public function getMerchantsFromEs(string $orgId, string $adminId, array $input): array
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
@@ -576,7 +571,7 @@ class Service extends Base\Service
         return $this->repo->merchant->fetch($input)->toArrayAdmin();
     }
 
-    public function getMerchantIdsFromEs(string $orgId, string $adminId)
+    public function getMerchantIdsFromEs(string $orgId, string $adminId): array
     {
         $results = $this->getMerchantsFromEs($orgId, $adminId, []);
 
@@ -589,9 +584,7 @@ class Service extends Base\Service
     }
 
     /**
-     * @deprecated
-     *
-     * Ref: #4216
+     * @deprecated Ref: #4216
      */
     public function getMerchants($orgId, $adminId, $input)
     {

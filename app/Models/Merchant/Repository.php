@@ -250,9 +250,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @deprecated
-     *
-     * Ref: #4216
+     * @deprecated Ref: #4216
      *
      * Fetches the merchants with its relations (admin, groups)
      */
@@ -288,9 +286,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @deprecated
-     *
-     * Ref: #4216
+     * @deprecated Ref: #4216
      */
     public function fetchMerchantsByFilter(array $merchantIds, array $input)
     {
@@ -405,9 +401,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @deprecated
-     *
-     * Ref: #4216
+     * @deprecated Ref: #4216
      */
     protected function modifyQuery($query, array $input)
     {
@@ -463,21 +457,21 @@ class Repository extends Base\Repository
     {
         $detailSelector = function ($query)
                           {
-                              $fields = $this->esRepo->getMerchantDetailFields();
+                              $fields = $this->esRepo->getMerchantDetailIndexedFields();
 
                               $query->select($fields);
                           };
 
         $groupSelector = function ($query)
                          {
-                              $fields = $this->esRepo->getGroupFields();
+                              $fields = $this->esRepo->getGroupIndexedFields();
 
                               $query->select($fields);
                          };
 
         $adminSelector = function ($query)
                          {
-                              $fields = $this->esRepo->getAdminFields();
+                              $fields = $this->esRepo->getAdminIndexedFields();
 
                               $query->select($fields);
                          };
@@ -507,36 +501,24 @@ class Repository extends Base\Repository
 
         // The serialized merchant document in ES contains following
         // additional values:
-
-        // Merchant detail's attributes, Using toArray() as attributes
-        // are already projected in query.
+        // - List of admins who have access to this merchant,
+        // - List of groups which this merchant belongs to as well as their
+        //   recursive parents hierarchy.
+        // - Few additional attributes consumed by clients.
 
         $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
-
-        // List of admin ids which have direct access to this merchant document
-
-        $serialized[Entity::ADMINS] = $entity->admins->pluck(Common::ID)->all();
-
-        // List of groups which this merchant belongs to as well as their
-        // recursive parents hierarchy.
+        $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
 
         $groups = $this->repo
                        ->group
                        ->getParentsRecursively($entity->groups, true);
 
-        $serialized[Entity::GROUPS] = $groups->pluck(Common::ID)->all();
-
-        // 'is_marketplace': Whether marketplace feature is enabled for the
-        // merchant. Gets consumed by dashboard in response.
-
+        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ID)->all();
         $serialized[Entity::IS_MARKETPLACE] = $entity->isMarketplace();
-
-        // 'referrer': Holds name of first admin of entity
 
         $firstAdmin = $entity->admins->first();
 
         $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
-
 
         return $serialized;
     }
@@ -552,6 +534,5 @@ class Repository extends Base\Repository
         $model->__unset(Entity::GROUPS);
         $model->__unset(Entity::ADMINS);
         $model->__unset(Entity::MERCHANT_DETAIL);
-
     }
 }

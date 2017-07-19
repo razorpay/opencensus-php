@@ -4,8 +4,8 @@ namespace RZP\Models\Base;
 
 use App;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 
 class EsRepository extends \Razorpay\Spine\Repository
@@ -46,6 +46,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     protected $esDao;
     protected $trace;
+    protected $mode;
+    protected $entity;
+    protected $indexPrefix;
 
     /**
      * Name of the index to which this repo might correspond to.
@@ -94,18 +97,44 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
+        $this->mode = $app['rzp.mode'];
+
+        $this->entity = $entity;
+
         $this->trace = $app['trace'];
 
         $this->esDao = new Base\EsDao;
 
-        $esEntityIndexPrefix = $app['config']->get('database.es_entity_index_prefix');
+        $this->indexPrefix = $app['config']->get('database.es_entity_index_prefix');
 
-        // Index name is of following format:
-        // <prefix><entity>_<mode>, Eg. 'delta_api_invoice_live'.
+        $this->setIndexName();
+    }
 
-        $indexName = $esEntityIndexPrefix . $entity . '_' . $app['rzp.mode'];
+    /**
+     * Sets index name corresponding to this Es repository.
+     * Format: <prefix>_<entity>_<mode>
+     */
+    public function setIndexName()
+    {
+        $index = "{$this->indexPrefix}{$this->entity}_{$this->mode}";
 
-        $this->setIndexNameByValue($indexName);
+        $this->setIndexNameByValue($index);
+    }
+
+    /**
+     * This is used for cases where both _test and _live
+     * suffixed indices needs to be updated if either of former
+     * get updated.
+     *
+     * Ref: EsRepositoryUpdateTestAndLive
+     */
+    public function setIndexNameForAlternateMode()
+    {
+        $mode = Mode::getAlternateMode($this->mode);
+
+        $index = "{$this->indexPrefix}{$this->entity}_{$mode}";
+
+        $this->setIndexNameByValue($index);
     }
 
     public function setIndexNameByValue(string $indexName)
@@ -131,8 +160,6 @@ class EsRepository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * Makes search in ES on this model with given params.
-     *
      * @param array       $params
      * @param string|null $merchantId
      *
@@ -146,18 +173,26 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
 
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, $esRequestParams);
+        return $this->esDao->search($esRequestParams);
+    }
 
-        $response = $this->esDao->search($esRequestParams);
+    /**
+     * Yields Es search results until exhausted. Usage ES scroll endpoint.
+     *
+     * @param array       $params
+     * @param string|null $merchantId
+     *
+     * @return Generator
+     */
+    public function buildQuerySearchAndScroll(
+        array $params,
+        string $merchantId = null): \Generator
+    {
+        $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
 
-        // Plucks the source fields if set, else ids and forms an uniform array
-        // to be returned to callee.
-        return array_map(
-                    function ($res)
-                    {
-                        return $res['_source'] ?? ['id' => $res['_id']];
-                    },
-                    $response['hits']['hits']);
+        $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
+
+        return $this->esDao->searchAndScroll($esRequestParams);
     }
 
     /**

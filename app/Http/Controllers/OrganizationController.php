@@ -436,6 +436,9 @@ class OrganizationController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchantIds($id, $adminId)
     {
         $merchantIds = $this->service(E::ADMIN)->getMerchantIds($id, $adminId);
@@ -443,11 +446,30 @@ class OrganizationController extends Controller
         return ApiResponse::json($merchantIds);
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchants($id, $adminId)
     {
         $input = Request::all();
 
         $response = $this->service(E::ADMIN)->getMerchants($id, $adminId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantIdsFromEs($id, $adminId)
+    {
+        $response = (new Admin\Admin\Service)->getMerchantIdsFromEs($id, $adminId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantsFromEs($id, $adminId)
+    {
+        $input = Request::all();
+
+        $response = (new Admin\Admin\Service)->getMerchantsFromEs($id, $adminId, $input);
 
         return ApiResponse::json($response);
     }

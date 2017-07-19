@@ -241,10 +241,17 @@ trait RepositoryFetch
     {
         $entity = $this->entity;
 
-        // Build query and get es response
-        $result = $this->esRepo->buildQueryAndSearch($params, $merchantId);
+        $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
-        // If no results from es, return empty collection
+        // Extract results from ES response: If hit has _source get that else
+        // just the document id.
+        $result = array_map(
+                    function ($res)
+                    {
+                        return $res['_source'] ?? ['id' => $res['_id']];
+                    },
+                    $response['hits']['hits']);
+
         if (count($result) === 0)
         {
             return new PublicCollection;

@@ -6,16 +6,19 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Base\Common;
-use RZP\Constants\Es as EsConst;
+use RZP\Constants\Es;
 use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Base\Traits\Es\EsRepositoryUpdateTestAndLive;
 
 class EsRepository extends Base\EsRepository
 {
+    use EsRepositoryUpdateTestAndLive;
+
     // --------------- Fields ------------------------------
 
-    protected $fields = [
+    protected $indexedFields = [
         Entity::ID,
         Entity::ORG_ID,
         Entity::NAME,
@@ -31,14 +34,7 @@ class EsRepository extends Base\EsRepository
         Entity::UPDATED_AT,
     ];
 
-    protected $queryFields = [
-        Entity::NAME,
-        Entity::EMAIL,
-        Entity::BILLING_LABEL,
-        Entity::WEBSITE,
-    ];
-
-    protected $merchantDetailFields = [
+    protected $merchantDetailIndexedFields = [
         DetailEntity::MERCHANT_ID,
         DetailEntity::STEPS_FINISHED,
         DetailEntity::ACTIVATION_PROGRESS,
@@ -46,13 +42,20 @@ class EsRepository extends Base\EsRepository
         DetailEntity::UPDATED_AT,
     ];
 
-    protected $groupFields = [
+    protected $groupIndexedFields = [
         Common::ID,
     ];
 
-    protected $adminFields = [
+    protected $adminIndexedFields = [
         AdminEntity::ID,
         AdminEntity::NAME,
+    ];
+
+    protected $queryFields = [
+        Entity::NAME,
+        Entity::EMAIL,
+        Entity::BILLING_LABEL,
+        Entity::WEBSITE,
     ];
 
     protected $esFetchParams = [
@@ -66,19 +69,19 @@ class EsRepository extends Base\EsRepository
 
     // --------------- Getters -----------------------------
 
-    public function getMerchantDetailFields()
+    public function getMerchantDetailIndexedFields()
     {
-        return $this->merchantDetailFields;
+        return $this->merchantDetailIndexedFields;
     }
 
-    public function getGroupFields()
+    public function getGroupIndexedFields()
     {
-        return $this->groupFields;
+        return $this->groupIndexedFields;
     }
 
-    public function getAdminFields()
+    public function getAdminIndexedFields()
     {
-        return $this->adminFields;
+        return $this->adminIndexedFields;
     }
 
     // --------------- Query builders ----------------------
@@ -102,6 +105,9 @@ class EsRepository extends Base\EsRepository
     {
         switch ($value)
         {
+            case 'all':
+                break;
+
             case 'suspended':
             case 'archived':
             case 'activated':
@@ -120,9 +126,9 @@ class EsRepository extends Base\EsRepository
 
                 $dayBefore = Carbon::now()->subDays(1)->timestamp;
                 $filter = [
-                    EsConst::RANGE => [
+                    Es::RANGE => [
                         Common::CREATED_AT => [
-                            EsConst::LT => $dayBefore,
+                            Es::LT => $dayBefore,
                         ],
                     ],
                 ];
@@ -144,7 +150,7 @@ class EsRepository extends Base\EsRepository
         }
         else
         {
-            $filter = [EsConst::TERM => [Entity::PARENT_ID => $value]];
+            $filter = [Es::TERM => [Entity::PARENT_ID => $value]];
         }
 
         $this->addFilter($query, $filter);
@@ -176,12 +182,12 @@ class EsRepository extends Base\EsRepository
 
         if (empty($admins) === false)
         {
-            $this->addShould($aclQuery, [EsConst::TERM => [Entity::ADMINS => $admins]]);
+            $this->addShould($aclQuery, [Es::TERM => [Entity::ADMINS => $admins]]);
         }
 
         if (empty($groups) === false)
         {
-            $this->addShould($aclQuery, [EsConst::TERMS => [Entity::GROUPS => $groups]]);
+            $this->addShould($aclQuery, [Es::TERMS => [Entity::GROUPS => $groups]]);
         }
 
         if (empty($aclQuery) === false)
@@ -200,7 +206,7 @@ class EsRepository extends Base\EsRepository
 
         $accountStatus = $params[Entity::ACCOUNT_STATUS] ?? null;
 
-        if (in_array($accountStatus, ['suspended', 'archived'], true) === true)
+        if (in_array($accountStatus, ['suspended', 'archived', 'all'], true) === true)
         {
             return;
         }
