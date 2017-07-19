@@ -502,6 +502,9 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
+
+        // Get Admin File
+        'admin_get_file'                    => 'files/{fileId}/signed-url',
     ],
 
     // auth
