@@ -135,13 +135,24 @@
       pointer-events: none;
     }
     .custom-select .custom-icon {
-      top: 49px;
-      left: 24px;
+      top: 8px;
+      left: 8px;
       font-size: 20px;
     }
     .custom-date .custom-icon {
       top: 10px;
       right: 10px;
+    }
+
+    .typeAheadSkin {
+      position: absolute;
+      z-index: 2;
+      background-color: rgb(255, 255, 255);
+      top: 10px;
+      width: 87%;
+      margin-left: 30px;
+      pointer-events none;
+      font-size: 12px;
     }
 
     .PowerSelect__TriggerInput {
@@ -245,7 +256,7 @@
   .Onboarding__Step {
     display: block;
     color: #58666e;
-    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.05);
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     background-color: #FAFAFA;
     padding: 14px;
@@ -285,6 +296,9 @@
         margin-bottom: 0;
       }
     }
+  }
+}
+
 .reports-entity-options {
   input[type=radio].report-type {
     display: none;
@@ -306,7 +320,6 @@
     }
   }
 
-
   input[type=radio].report-type + label:hover {
     background-color: #f9f9f9;
   }
@@ -321,5 +334,15 @@
     content: "\25BA";
     color: #a5a5a5;
     font-size: 11px;
+  }
+}
+
+.custom-tag {
+  color: #6a55d1;
+  float: right;
+  font-size: 14px;
+
+  &.icon {
+    margin-top: 2px;
   }
 }

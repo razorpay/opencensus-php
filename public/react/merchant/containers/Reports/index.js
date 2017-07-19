@@ -177,8 +177,19 @@ export default class ReportsContainer extends Component {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
     let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    console.log('USER...', user.tags);
     isMarketplace = true;
+
+    let merchantAccounts = this.props.accounts
+      ? Object.assign([], this.props.accounts)
+      : [];
+
+    merchantAccounts.push({
+      name: user.name,
+      id: user.current,
+      email: user.email,
+      tag: 'My Account',
+      tagIcon: 'icon-account',
+    });
 
     return (
       <tabbed-container>
@@ -249,18 +260,52 @@ export default class ReportsContainer extends Component {
                 ['transaction', 'payment', 'refund', 'settlement'].indexOf(
                   this.props.entity
                 ) > -1
-                ? <div class="custom-select">
+                ? <div class="custom-select" style={{ position: 'relative' }}>
                     <i class="icon icon-search custom-icon" />
+                    <div
+                      class="typeAheadSkin"
+                      ref={typeAheadSkin => {
+                        this.typeAheadSkin = typeAheadSkin;
+                      }}
+                    >
+                      {this.state.merchantSelected
+                        ? <div>
+                            <b style={{ marginRight: '5' }}>
+                              {this.state.merchantSelected.name}
+                            </b>
+                            <span>- {this.state.merchantSelected.id}</span>
+                            <span
+                              class={`${this.isMobileDevice ? this.state.merchantSelected.tagIcon + ' icon' : ''} custom-tag`}
+                            >
+                              {this.isMobileDevice
+                                ? ''
+                                : this.state.merchantSelected.tag}
+                            </span>
+                          </div>
+                        : null}
+                    </div>
+
                     <TypeAhead
-                      options={this.props.accounts}
+                      options={merchantAccounts}
                       placeholder="Search for merchant Name/Email/Merchant ID"
                       optionLabelPath="name"
+                      onClick={() => {
+                        this.typeAheadSkin.classList.add('hide');
+                      }}
+                      onBlur={() => {
+                        this.typeAheadSkin.classList.remove('hide');
+                      }}
                       searchIndices={['name', 'id', 'email']}
                       selected={this.state.merchantSelected}
                       optionComponent={({ option }) => (
-                        <div style={{ padding: '5' }}>
+                        <div style={{ padding: 5 }}>
                           <b style={{ marginRight: '5' }}>{option.name}</b>
                           <span>- {option.id}</span>
+                          <span
+                            class={`${this.isMobileDevice ? option.tagIcon + ' icon' : ''} custom-tag`}
+                          >
+                            {this.isMobileDevice ? '' : option.tag}
+                          </span>
                         </div>
                       )}
                       selectedOptionComponent={({ option }) => (
