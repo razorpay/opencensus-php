@@ -327,15 +327,100 @@ class ScheduleTest extends TestCase
         $this->assertEquals($credits['value'], -1000);
     }
 
+    public function testExpireCreditsAfterActivation()
+    {
+        $this->ba->appAuth();
 
-    protected function applyCouponOnMerchant(string $code)
+        $merchantSignupRequest = [
+            'content' => [
+                'id'    => '1X4hRFHFx4UiXt',
+                'name'  => 'Tester',
+                'email' => 'test@localhost.com',
+                'coupon_code' => 'RANDOM-123',
+            ],
+            'url'    => '/merchants',
+            'method' => 'POST',
+        ];
+
+        $response = $this->makeRequestAndGetContent($merchantSignupRequest);
+
+        $promotionAttributes = [
+            'credit_amount' => '1000',
+        ];
+
+        $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion['id'],
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $this->applyCouponOnMerchant($coupon['code'], $merchantId);
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(31);
+
+        Carbon::setTestNow($time);
+
+        $merchantAttributes = [
+            'website' => 'abc.com',
+            'category' => 1100,
+            'billing_label' => 'labore',
+            'transaction_report_email' => 'test@razorpay.com',
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
+
+        $activationRequest = [
+            'url' => '/merchants/' . $merchantId .  '/activate',
+            'method' => 'post',
+        ];
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $request = $this->testData['testExpireCredits'];
+
+        $time->addDay(31);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -1000);
+
+    }
+
+
+    protected function applyCouponOnMerchant(string $code, string $merchantId = '10000000000000')
     {
         $request = $this->testData[__FUNCTION__];
 
         $request['content']['code'] = $code;
 
+        $request['content']['merchant_id'] = $merchantId;
+
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    protected function merchantAssignPricingPlan($planId, $id = '10000000000000')
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/pricing',
+            'method' => 'POST',
+            'content' => ['pricing_plan_id' => $planId]);
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
