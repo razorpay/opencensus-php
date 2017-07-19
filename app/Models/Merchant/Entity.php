@@ -288,7 +288,7 @@ class Entity extends Base\PublicEntity
     {
         $subvention = Emi\Subvention::CUSTOMER;
 
-        if ($this->isFeatureEnabled(Feature\Constants::MERCHANT_SUBVENTION))
+        if ($this->isFeatureEnabled(Feature\Constants::EMI_MERCHANT_SUBVENTION))
         {
             $subvention = Emi\Subvention::MERCHANT;
         }
