@@ -205,9 +205,9 @@ class BasicEntityReport extends BaseReport
             $count = $originalCount;
             $skip = $originalSkip;
 
-            list($count, $fullPath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append);
+            list($totalCount, $fullPath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append);
 
-            $totalEntries += $count;
+            $totalEntries += $totalCount;
 
             $append = true;
         }
@@ -239,13 +239,15 @@ class BasicEntityReport extends BaseReport
 
         $merchantId = $this->merchant->getId();
 
-        list($count, $fullpath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId);
+        list($totalCount, $fullpath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId);
 
         return $fullpath;
     }
 
     protected function writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append = false)
     {
+        $totalCount = 0;
+
         while ($count === self::BATCH_LIMIT)
         {
             list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
@@ -254,10 +256,12 @@ class BasicEntityReport extends BaseReport
 
             $skip += $count;
 
+            $totalCount += $count;
+
             $append = true;
         }
 
-        return [$count, $fullpath];
+        return [$totalCount, $fullpath];
     }
 
     /**
