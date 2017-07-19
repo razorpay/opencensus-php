@@ -10,14 +10,20 @@ use RZP\Constants\Table;
 
 class Org extends Base
 {
-    const HDFC_ORG     = 'HDFCbankOrgnId';
-    const RZP_ORG      = '100000razorpay';
-    const DEFAULT_GRP  = '1RazorpayGrpId';
-    const ADMIN_ROLE   = 'RzpAdminRoleId';
-    const MANAGER_ROLE = 'RzpMngerRoleId';
-    const SUPER_ADMIN  = 'RzrpySprAdmnId';
+    const HDFC_ORG       = 'HDFCbankOrgnId';
+    const RZP_ORG        = '100000razorpay';
+    const DEFAULT_GRP    = '1RazorpayGrpId';
+    const ADMIN_ROLE     = 'RzpAdminRoleId';
+    const MANAGER_ROLE   = 'RzpMngerRoleId';
+    const SUPER_ADMIN    = 'RzrpySprAdmnId';
+    const MAKER_ROLE     = 'RzpMakerRoleId';
+    const MAKER_ADMIN    = 'RzpMakerAdmnId';
+    const CHECKER_ROLE   = 'RzpChekrRoleId';
+    const CHECKER_ADMIN  = 'RzpChekrAdmnId';
 
-    const DEFAULT_TOKEN = 'SecretTokenForRazorpayAdminAuthentication';
+    const DEFAULT_TOKEN  = 'SecretTokenForRazorpayAdminAuthentication';
+    const MAKER_TOKEN    = 'SecretTokenForRazorpayMAKERAdminAuthentic';
+    const CHECKER_TOKEN  = 'SecretTokenForRazorpayCHECKERAdminAuthent';
 
     public function setUp()
     {
@@ -85,6 +91,18 @@ class Org extends Base
             'name'   => 'Admin',
         ]);
 
+        $makerRole = $this->fixtures->create('role', [
+            'id'     => self::MAKER_ROLE,
+            'org_id' => self::RZP_ORG,
+            'name'   => 'Maker',
+        ]);
+
+        $checkerRole = $this->fixtures->create('role', [
+            'id'     => self::CHECKER_ROLE,
+            'org_id' => self::RZP_ORG,
+            'name'   => 'Checker',
+        ]);
+
         $adminRole->permissions()->attach($permissions);
 
         $admin = $this->fixtures->create('admin', [
@@ -93,11 +111,41 @@ class Org extends Base
             'email'  => 'superadmin@razorpay.com'
         ]);
 
+        $adminMaker = $this->fixtures->create('admin', [
+            'id'     => self::MAKER_ADMIN,
+            'org_id' => self::RZP_ORG,
+            'email'  => 'maker@razorpay.com',
+        ]);
+
+        $adminChecker = $this->fixtures->create('admin', [
+            'id'     => self::CHECKER_ADMIN,
+            'org_id' => self::RZP_ORG,
+            'email'  => 'checker@razorpay.com',
+        ]);
+
         $admin->roles()->attach($adminRole);
+
+        $adminMaker->roles()->attach($makerRole);
+
+        $adminChecker->roles()->attach($checkerRole);
 
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::SUPER_ADMIN,
             'token'      => self::DEFAULT_TOKEN,
+            'created_at' => $now,
+            'expires_at' => Carbon::now()->addYear()->timestamp,
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'admin_id'   => self::MAKER_ADMIN,
+            'token'      => self::MAKER_TOKEN,
+            'created_at' => $now,
+            'expires_at' => Carbon::now()->addYear()->timestamp,
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'admin_id'   => self::CHECKER_ADMIN,
+            'token'      => self::CHECKER_TOKEN,
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
