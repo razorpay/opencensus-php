@@ -291,6 +291,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::EXPIRED);
     }
 
+    public function isCompleted()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::COMPLETED);
+    }
+
     public function isAuthTxnCharge()
     {
         //

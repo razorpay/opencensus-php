@@ -81,6 +81,7 @@ class Status
         self::PENDING   => Event::SUBSCRIPTION_PENDING,
         self::HALTED    => Event::SUBSCRIPTION_HALTED,
         self::CANCELLED => Event::SUBSCRIPTION_CANCELLED,
+        self::COMPLETED => Event::SUBSCRIPTION_COMPLETED,
         // self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
