@@ -1,167 +1,169 @@
-<div class="bg-light lter b-b wrapper-md">
-  <h1 class="m-n font-thin h3">
-    Gateway Rules
-    <spinner class="inline"></spinner>
-  </h1>
+<div ng-controller="GatewayRulesCtrl">
+  <div class="bg-light lter b-b wrapper-md" style="dispaly: table">
+    <h1 class="m-n font-thin h3" style="display: table-cell; width: 100%;">
+      Gateway Rules
+      <spinner class="inline"></spinner>
+    </h1>
+    <div class="gateway-search-element">
+      <div style="width: 180px; text-align: right;">
+        Mode:
+        <select class="form-control inline" ng-model="mode" style="width: 100px;" ng-change="getRulesById()">
+          <option value="live">Live</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="wrapper-md">
+    <div class="text-center">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div style="padding: 15px; margin: 8px 0;">
+      <form style="display: table" ng-init="gatewayRuleSearch={}">
+        <div class="gateway-search-fields">
+          <div class="gateway-search-element">
+            <label for="merchant_id">Merchant Id:</label>
+            <input id="merchant_id" type="text" class="form-control" ng-model="gatewayRuleSearch.merchantId" placeholder="Merchant Id" style="width:150px;">
+          </div>
+
+          <div class="gateway-search-element">
+            <label for="type">Type:</label>
+            <select id="type"
+                    ng-model="gatewayRuleSearch.type"
+                    class="form-control">
+              <option value="sorter">Sorter</option>
+              <option value="filter">Filter</option>
+            </select>
+          </div>
+
+          <div class="gateway-search-element">
+            <label for="group">Group:</label>
+            <input id="group" type="text" class="form-control" ng-model="gatewayRuleSearch.group" placeholder="Group" style="width:150px;">
+          </div>
+
+          <div class="gateway-search-element">
+            <label for="filter_type">Filter Type:</label>
+            <select id="filter_type"
+                    ng-model="gatewayRuleSearch.filter_type"
+                    class="form-control">
+              <option value=""></option>
+              <option value="select">Select</option>
+              <option value="reject">Reject</option>
+            </select>
+          </div>
+
+          <div class="gateway-search-element">
+            <label for="method">Method:</label>
+            <select id="method" ng-model="gatewayRuleSearch.method" class="form-control" ng-change="updateGatewayList(gatewayRuleSearch.method, gatewayRuleSearch);">
+              <option value=""></option>
+              <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
+            </select>
+          </div>
+
+
+          <div class="gateway-search-element" ng-if="gatewayRuleSearch.method">
+            <label for="gateway">Gateway:</label>
+            <select id="gateway" ng-model="gatewayRuleSearch.gateway" class="form-control">
+              <option value=""></option>
+              <option
+                ng-repeat="(key, option) in gatewayListMap"
+                ng-selected="{{key == gatewayRuleSearch.gateway}}"
+                value={{key}}>{{option}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="gateway-search-element">
+          <button class="btn btn-info m-l" ng-click="getRulesById()">
+            Search
+          </button>
+        </div>
+        <div class="gateway-search-element">
+          <button class="btn btn-danger" ng-click="gatewayRuleSearch = {}">
+            Clear
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="panel panel-default" >
+      <div class="panel-heading">
+        List of all Gatway Rules
+      </div>
+      <div class="row wrapper">
+        <div class="col-md-6 m-b-xs" >
+          <div ng-if="gatewayRules && !noResults">
+            <label for='filter' class='m-r'>Search</label>
+            <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
+          </div>
+        </div>
+        <div class="col-md-6" ng-if="admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1">
+          <button id='addRoleButton' class='btn btn-primary pull-right' ng-click="addNewRule()">
+            Add new Rule
+          </button>
+        </div>
+      </div>
+
+      <div ng-if="!gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
+        Loading Gateway Rules...
+      </div>
+
+      <div ng-if="gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
+        No gateway rules found
+      </div>
+
+
+      <div ng-if="gatewayRules">
+        <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="pricing-table table table-responsive table-striped b-t b-light">
+          <thead>
+          <tr>
+            <th>Rule ID</th>
+            <th>Merchant ID</th>
+            <th>Type</th>
+            <th>Group</th>
+            <th>Gateway</th>
+            <th>Method</th>
+            <th>Load</th>
+            <th>Filter Type</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
+            <td>{{row.id}}</td>
+            <td>{{row.merchant_id}}</td>
+            <td>{{row.type}}</td>
+            <td>{{row.group}}</td>
+            <td>{{getGatewayLabel(row.method, row.gateway)}}</td>
+            <td>{{methodMap[row.method]}}</td>
+            <td>{{row.type === 'sorter' ? row.load : 'NA'}}</td>
+            <td>{{row.type === 'filter' ? (row.filter_type | titlecase) : 'NA'}}</td>
+            <td>
+              <button class="btn btn-default btn-xs"
+                      ng-click="editRule(row)">
+                <i class="fa fa-pencil-square"></i>
+                {{admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1 ? 'edit' : 'view'}}
+              </button>
+              <button class="btn btn-default btn-xs"
+                      ng-if="admin.permissions && admin.permissions.indexOf('delete_gateway_rule') !== -1"
+                      ng-confirm-click="Are you sure you want to delete this Gateway Rule?"
+                      ng-click="deleteRuleById(row.id)">
+                <i class="fa fa-user-times text-danger"></i>
+                delete
+              </button>
+            </td>
+          </tr>
+          </tbody>
+          <tfoot>
+          <tr>
+            <td colspan="12" class="text-center">
+              <ul class="pagination"></ul>
+            </td>
+          </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="wrapper-md" ng-controller="GatewayRulesCtrl">
-  <div class="text-center">
-    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-  </div>
-  <div style="padding: 15px; margin: 8px 0;">
-    <form style="display: table" ng-init="gatewayRuleSearch={}">
-      <div class="gateway-search-fields">
-        <div class="gateway-search-element">
-          <label for="mode">Mode:</label>
-          <select id="mode" class="form-control inline m-r" ng-model="mode">
-            <option value="live">Live</option>
-            <option value="test">Test</option>
-          </select>
-        </div>
-
-        <div class="gateway-search-element">
-          <label for="merchant_id">Merchant Id:</label>
-          <input id="merchant_id" type="text" class="form-control" ng-model="gatewayRuleSearch.merchantId" placeholder="Merchant Id" style="width:150px;">
-        </div>
-
-        <div class="gateway-search-element">
-          <label for="type">Type:</label>
-          <select id="type"
-                  ng-model="gatewayRuleSearch.type"
-                  class="form-control">
-            <option value="sorter">Sorter</option>
-            <option value="filter">Filter</option>
-          </select>
-        </div>
-
-        <div class="gateway-search-element">
-          <label for="group">Group:</label>
-          <input id="group" type="text" class="form-control" ng-model="gatewayRuleSearch.group" placeholder="Group" style="width:150px;">
-        </div>
-
-        <div class="gateway-search-element">
-          <label for="filter_type">Filter Type:</label>
-          <select id="filter_type"
-                  ng-model="gatewayRuleSearch.filter_type"
-                  class="form-control">
-            <option value=""></option>
-            <option value="select">Select</option>
-            <option value="reject">Reject</option>
-          </select>
-        </div>
-
-        <div class="gateway-search-element">
-          <label for="method">Method:</label>
-          <select id="method" ng-model="gatewayRuleSearch.method" class="form-control" ng-change="updateGatewayList(gatewayRuleSearch.method, gatewayRuleSearch);">
-            <option value=""></option>
-            <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
-          </select>
-        </div>
-
-
-        <div class="gateway-search-element" ng-if="gatewayRuleSearch.method">
-          <label for="gateway">Gateway:</label>
-          <select id="gateway" ng-model="gatewayRuleSearch.gateway" class="form-control">
-            <option value=""></option>
-            <option
-              ng-repeat="(key, option) in gatewayListMap"
-              ng-selected="{{key == gatewayRuleSearch.gateway}}"
-              value={{key}}>{{option}}</option>
-          </select>
-        </div>
-      </div>
-      <div class="gateway-search-element">
-        <button class="btn btn-info m-l" ng-click="getRulesById()">
-          Search
-        </button>
-      </div>
-      <div class="gateway-search-element">
-        <button class="btn btn-danger" ng-click="gatewayRuleSearch = {}">
-          Clear
-        </button>
-      </div>
-    </form>
-  </div>
-  <div class="panel panel-default" >
-    <div class="panel-heading">
-      List of all Gatway Rules
-    </div>
-    <div class="row wrapper">
-      <div class="col-md-6 m-b-xs" >
-        <div ng-if="gatewayRules && !noResults">
-          <label for='filter' class='m-r'>Search</label>
-          <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
-        </div>
-      </div>
-      <div class="col-md-6" ng-if="admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1">
-        <button id='addRoleButton' class='btn btn-primary pull-right' ng-click="addNewRule()">
-          Add new Rule
-        </button>
-      </div>
-    </div>
-
-    <div ng-if="!gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
-      Loading Gateway Rules...
-    </div>
-
-    <div ng-if="gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
-      No gateway rules found
-    </div>
-
-
-    <div ng-if="gatewayRules">
-      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="pricing-table table table-responsive table-striped b-t b-light">
-        <thead>
-        <tr>
-          <th>Rule ID</th>
-          <th>Merchant ID</th>
-          <th>Type</th>
-          <th>Group</th>
-          <th>Gateway</th>
-          <th>Method</th>
-          <th>Load</th>
-          <th>Filter Type</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
-          <td>{{row.id}}</td>
-          <td>{{row.merchant_id}}</td>
-          <td>{{row.type}}</td>
-          <td>{{row.group}}</td>
-          <td>{{getGatewayLabel(row.method, row.gateway)}}</td>
-          <td>{{methodMap[row.method]}}</td>
-          <td>{{row.type === 'sorter' ? row.load : 'NA'}}</td>
-          <td>{{row.type === 'filter' ? (row.filter_type | titlecase) : 'NA'}}</td>
-          <td>
-            <button class="btn btn-default btn-xs"
-                    ng-click="editRule(row)">
-              <i class="fa fa-pencil-square"></i>
-              {{admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1 ? 'edit' : 'view'}}
-            </button>
-            <button class="btn btn-default btn-xs"
-                    ng-if="admin.permissions && admin.permissions.indexOf('delete_gateway_rule') !== -1"
-                    ng-confirm-click="Are you sure you want to delete this Gateway Rule?"
-                    ng-click="deleteRuleById(row.id)">
-              <i class="fa fa-user-times text-danger"></i>
-              delete
-            </button>
-          </td>
-        </tr>
-        </tbody>
-        <tfoot>
-        <tr>
-          <td colspan="12" class="text-center">
-            <ul class="pagination"></ul>
-          </td>
-        </tr>
-        </tfoot>
-      </table>
-    </div>
-  </div>
-</div>
-
 
 <script type="text/ng-template" id="editGatewayRuleModal.html">
   <div class="modal-header">
