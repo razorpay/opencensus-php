@@ -24,7 +24,7 @@ trait RepositoryFetch
         'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
-    protected $originalFetchParamRules;
+    protected $defaultFetchParamRules;
 
     /**
      * Ids which have signed prefix.
@@ -95,7 +95,7 @@ trait RepositoryFetch
 
         // validateFetchParams modifies fetchParamRules.
         // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
-        $this->originalFetchParamRules = $this->fetchParamRules;
+        $this->defaultFetchParamRules = $this->fetchParamRules;
 
         $this->validateFetchParams($params);
 
@@ -129,13 +129,15 @@ trait RepositoryFetch
      * - Most of the fields are queried from MySQL.
      * - There are few fields which can only be queried from ES e.g. notes.
      * - There are some fields which we index in ES just to assist with fetches
-     *   for es only fields. E.g. we index invoice.type as well so that when notes
+     *   for es only fields.
+     *   E.g. we index invoice.type as well so that when notes
      *   is search along with type filter it works via ES. So all these fields will
      *   be in common. That means when just queried type, it'll not go to ES.
      *
      * @param array $params
      *
      * @return array
+     * @throws BadRequestValidationFailureException
      */
     protected function getMysqlAndEsParams(array $params): array
     {
@@ -146,33 +148,56 @@ trait RepositoryFetch
             return [$params, []];
         }
 
-        // Remove (1) default parameters (e.g. skip, from etc.) and (2) parameters
-        // common to MySQL and Es for further checks.
-        $filteredParams = array_diff_key($params, $this->originalFetchParamRules);
-        $filteredParams = array_diff_key($filteredParams, array_flip($this->esRepo->getCommonFetchParams()));
+        //
+        // Following is list of keys common to Es & MySQL, only in ES, only in
+        // MySQL respectively.
+        // These do not include default keys(e.g. skip, count).
+        //
 
-        // Following is allowed keys for ES fetch. And then we get allowed keys
-        // for MySQL fetch which is basically filtered parameters subtracted by
-        // whatever will go in es.
-        $allowedEsFetchKeys    = $this->esRepo->getEsFetchParams();
-        $allowedMysqlFetchKeys = array_keys(array_diff_key($filteredParams, array_flip($allowedEsFetchKeys)));
+        $commonFetchKeys = $this->esRepo->getCommonFetchParams();
+        $esFetchKeys     = $this->esRepo->getEsFetchParams();
+        $mysqlFetchKeys  = array_values(array_diff(
+                                array_keys($this->fetchParamRules),
+                                array_keys($this->defaultFetchParamRules),
+                                $esFetchKeys,
+                                $commonFetchKeys));
 
-        // $filteredParams should be subset of either MySQL or ES keys only.
-        if (empty(array_diff(array_keys($filteredParams), $allowedMysqlFetchKeys)) === true)
+        //
+        // Get the keys send as part of $params.
+        // This is filtered list (defaults and common keys removed).
+        // Now this list has to be subset of MySQL keys or Es Keys exclusively,
+        // otherwise raises error.
+        //
+
+        $filteredParamsKeys = array_values(array_diff(
+                                    array_keys($params),
+                                    array_keys($this->defaultFetchParamRules),
+                                    $commonFetchKeys));
+
+        if (empty(array_diff($filteredParamsKeys, $mysqlFetchKeys)) === true)
         {
             return [$params, []];
         }
-        else if (empty(array_diff(array_keys($filteredParams), $allowedEsFetchKeys)) === true)
+        else if (empty(array_diff($filteredParamsKeys, $esFetchKeys)) === true)
         {
             return [[], $params];
         }
         else
         {
-            $extraKeys = array_diff(array_keys($filteredParams), $allowedEsFetchKeys);
+            $extraKeys = array_values(array_diff($filteredParamsKeys, $esFetchKeys));
 
             $message = implode(', ', $extraKeys) . ' not expected with other params sent';
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException(
+                        $message,
+                        null,
+                        [
+                            'params_keys'       => array_keys($params),
+                            'common_fetch_keys' => $commonFetchKeys,
+                            'es_fetch_keys'     => $esFetchKeys,
+                            'mysql_fetch_keys'  => $mysqlFetchKeys,
+                            'extra_keys'        => $extraKeys,
+                        ]);
         }
     }
 
@@ -423,13 +448,16 @@ trait RepositoryFetch
 
     protected function addQueryParamDefault($query, $params, $key)
     {
-        if ($params[$key] === 'null')
+        $attribute = $this->dbColumn($key);
+        $value     = $params[$key];
+
+        if ($value === 'null')
         {
-            $query->whereNull($key);
+            $query->whereNull($attribute);
         }
         else
         {
-            $query = $query->where($key, '=', $params[$key]);
+            $query->where($attribute, $value);
         }
     }
 
