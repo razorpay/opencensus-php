@@ -121,6 +121,19 @@ app
             delete gatewayRule[key];
           }
         });
+
+        if (!gatewayRule.type === 'filter' && gatewayRule.filter_type) {
+          delete gatewayRule.filter_type;
+        }
+
+        if (!gatewayRule.method === 'emi' && gatewayRule.emi_duration) {
+          delete gatewayRule.emi_duration;
+        }
+
+        if (!gatewayRule.type === 'sorter' && gatewayRule.load) {
+          delete gatewayRule.load;
+        }
+
         return gatewayRule;
       }
 
