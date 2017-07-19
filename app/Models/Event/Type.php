@@ -25,5 +25,6 @@ class Type
     const SUBSCRIPTION_PENDING      = 'subscription.pending';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
     const SUBSCRIPTION_CHARGED      = 'subscription.charged';
+    const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 }

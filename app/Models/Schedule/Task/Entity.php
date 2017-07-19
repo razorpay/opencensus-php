@@ -186,7 +186,11 @@ class Entity extends Base\PublicEntity
         $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
 
         $this->setNextRunAt($nextRun->timestamp);
-        $this->setLastRunAt($lastRun->timestamp);
+
+        if ($lastRun !== null)
+        {
+            $this->setLastRunAt($lastRun->timestamp);
+        }
     }
 
     /**

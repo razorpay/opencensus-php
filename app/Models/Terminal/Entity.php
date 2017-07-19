@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
 {
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
     protected static $modifiers = [
         'inputRemoveBlanks',
         self::INTERNATIONAL,
+        self::EMI_SUBVENTION,
     ];
 
     protected $defaults = [
@@ -478,6 +480,16 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function modifyEmiSubvention(& $input)
+    {
+        $isEmi = $input[self::EMI] ?? false;
+
+        if ($isEmi == true)
+        {
+            $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
+        }
+    }
+
     // ---------------------- END MODIFIERS ----------------------
 
     // ---------------------- SCOPES ----------------------
@@ -608,11 +620,12 @@ class Entity extends Base\PublicEntity
         return ($this->isTpv() === false);
     }
 
-    public function isValidEmiTerminal($gateway, $emiDuration)
+    public function isValidEmiTerminal($gateway, $emiDuration, $subvention)
     {
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            ($this->getEmiDuration() === $emiDuration))
+            ($this->getEmiDuration() === $emiDuration) and
+            ($this->getEmiSubvention() === $subvention))
         {
             return true;
         }

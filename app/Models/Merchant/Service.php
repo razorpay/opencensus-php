@@ -1031,6 +1031,23 @@ class Service extends Base\Service
     }
 
     /**
+     * Return all submerchants of the master merchant (for aggregator model only)
+     *
+     * 1. We do not want all the aggregator merchant to download the complete report
+     *    so its behind aggregator_report feature
+     * 2. We will have to write the logic to fetch all its submerchants based on tags
+     * 3. Currently feature will be enabled only for e-Mitra, and merchants will be hard coded.
+     *
+     * @return array
+     */
+    public function getSubmerchants(): array
+    {
+        $merchant = $this->merchant;
+
+        return [ $merchant->getId() ];
+    }
+
+    /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
      */
