@@ -34,7 +34,6 @@ class Validator extends Base\Validator
         Entity::AEPS           => 'sometimes|boolean',
         Entity::MPESA          => 'sometimes|boolean',
         Entity::BANK_TRANSFER  => 'sometimes|boolean',
-        Entity::EMI_SUBVENTION => 'required_only_if:emi,1|string|in:merchant,customer',
     );
 
     protected static $setMethodsValidators = array(

@@ -528,3 +528,6 @@ UPDATE terminals SET emi_subvention='customer' WHERE gateway_terminal_id in ('74
 UPDATE terminals SET emi_subvention='merchant' WHERE gateway = 'hdfc' and emi = 1 and emi_subvention is null;
 
 UPDATE billdesk SET RefundId = 'JSBI54543766931' WHERE id = 1714165;
+
+# sets emi_subvention in terminals
+UPDATE terminals set emi_subvention = 'customer' where emi = 1;
