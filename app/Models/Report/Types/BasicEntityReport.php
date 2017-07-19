@@ -5,6 +5,7 @@ namespace RZP\Models\Report\Types;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Report;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
