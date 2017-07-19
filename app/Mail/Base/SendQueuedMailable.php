@@ -19,7 +19,7 @@ class SendQueuedMailable extends BaseSendQueuedMailable
         $app['request']->generateId();
 
         // For queued mails pick the task id from the mailable payload
-        $app['request']->generateTaskId($this->mailable->taskId);
+        $app['request']->setTaskId($this->mailable->taskId);
 
         parent::handle($mailer);
     }

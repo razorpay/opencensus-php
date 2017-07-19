@@ -81,7 +81,7 @@ class Job
         $app['request']->generateId();
 
         // For jobs, we set the task id to the task_id of the api request which queued the job
-        $app['request']->generateTaskId($this->taskId);
+        $app['request']->setTaskId($this->taskId);
 
         // Trace should be resolved from app container after generating request id
         // and task id for the job.

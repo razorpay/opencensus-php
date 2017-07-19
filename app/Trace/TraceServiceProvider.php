@@ -30,6 +30,8 @@ class TraceServiceProvider extends BaseServiceProvider
 
         $this->registerRequestGetIdMacro();
 
+        $this->registerRequestSetTaskIdMacro();
+
         $this->registerRequestGenerateTaskIdMacro();
 
         $this->registerRequestGetTaskIdMacro();
@@ -122,8 +124,20 @@ class TraceServiceProvider extends BaseServiceProvider
                 // value before generating our own task id
                 $taskIdHeader = $this->headers->get('X-Razorpay-TaskId');
 
-                $this->taskId = $request->generateTaskId($taskIdHeader);
+                $this->taskId = $taskIdHeader ?? $this->generateTaskId();
             }
+
+            return $this->taskId;
+        });
+    }
+
+    protected function registerRequestSetTaskIdMacro()
+    {
+        $request = $this->app['request'];
+
+        $request->macro('setTaskId', function ($taskId)
+        {
+            $this->taskId = $taskId;
 
             return $this->taskId;
         });
@@ -133,16 +147,9 @@ class TraceServiceProvider extends BaseServiceProvider
     {
         $request = $this->app['request'];
 
-        $request->macro('generateTaskId', function ($taskId = null)
+        $request->macro('generateTaskId', function ()
         {
-            if ($taskId === null)
-            {
-                $this->taskId = $this->getId();
-            }
-            else
-            {
-                $this->taskId = $taskId;
-            }
+            $this->taskId = $this->getId();
 
             return $this->taskId;
         });
