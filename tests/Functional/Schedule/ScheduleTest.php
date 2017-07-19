@@ -216,6 +216,8 @@ class ScheduleTest extends TestCase
         $credits = $this->getLastEntity('credits', true);
 
         $this->assertEquals($credits['value'], -1000);
+
+        Carbon::setTestNow();
     }
 
     public function testExpireAndAssignCredits()
@@ -268,6 +270,8 @@ class ScheduleTest extends TestCase
         $credits = $this->getEntities('credits', [], true);
 
         $this->assertEquals(count($credits['items']), 4);
+
+        Carbon::setTestNow();
     }
 
     public function testExpireUsedCredits()
@@ -325,6 +329,8 @@ class ScheduleTest extends TestCase
         $credits = $this->getLastEntity('credits', true);
 
         $this->assertEquals($credits['value'], -1000);
+
+        Carbon::setTestNow();
     }
 
     public function testExpireCreditsAfterActivation()
