@@ -320,6 +320,21 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerSns()
+    {
+        $this->app->singleton('sns', function ($app)
+        {
+            $snsMock = $app['config']->get('applications.sns.mock');
+
+            if ($snsMock === true)
+            {
+                return new Mock\Aws\Sns($app);
+            }
+
+            return new Aws\Sns($app);
+        });
+    }
+
     protected function registerWorkflow()
     {
         $this->app->singleton('workflow', function ($app)
