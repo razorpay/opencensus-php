@@ -180,17 +180,17 @@ class BasicEntityReport extends BaseReport
     }
 
     /**
-     *  Generates report data and creates the csv file
-     *  We need to get the report for all the merchants
-     *  Currently, we are taking BATCH_LIMIT for each merchant's report
-     *  We will later modify the logic of how many enties of each merchant we want.
+     * Generates report data and creates the csv file
+     * We need to get the report for all the merchants
+     * Currently, we are taking BATCH_LIMIT for each merchant's report
+     * We will later modify the logic of how many enties of each merchant we want.
      *
-     * @param $input array
-     *        expected : 'day', 'month', 'year'
-     * @param $filename  string
-     * @return $fullpath string
+     * @param  array  $input    [expected : 'day', 'month', 'year']
+     * @param  string $filename
+     *
+     * @return string
      */
-    protected function writeDataToCsvForAggregator(array $input, $filename)
+    protected function writeDataToCsvForAggregator(array $input, string $filename): string
     {
         list($from, $to, $originalCount, $originalSkip) = $this->getParamsForReport($input);
 
@@ -228,12 +228,12 @@ class BasicEntityReport extends BaseReport
     /**
      * Generates report data and creates the csv file
      *
-     * @param $input array
-     *        expected : 'day', 'month', 'year'
-     * @param $filename  string
-     * @return $fullpath string
+     * @param  array  $input    [expected : 'day', 'month', 'year']
+     * @param  string $filename
+     *
+     * @return string
      */
-    protected function writeDataToCsv(array $input, $filename)
+    protected function writeDataToCsv(array $input, string $filename): string
     {
         list($from, $to, $count, $skip) = $this->getParamsForReport($input);
 
@@ -244,7 +244,13 @@ class BasicEntityReport extends BaseReport
         return $fullpath;
     }
 
-    protected function writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append = false)
+    protected function writeDataToCsvForMerchant(int $from,
+                                                 int $to,
+                                                 int $count,
+                                                 int $skip,
+                                                 string $filename,
+                                                 string $merchantId,
+                                                 bool $append = false): array
     {
         $totalCount = 0;
 
@@ -340,14 +346,13 @@ class BasicEntityReport extends BaseReport
      * 1. Fetches entities to be added in report
      * 2. Formats data to be shown in report
      *
-     * @param $from
-     * @param $to
-     * @param $count
-     * @param $skip
-     *
+     * @param  int    $from
+     * @param  int    $to
+     * @param  int    $count
+     * @param  int    $skip
      * @return array
      */
-    protected function getReportData($from, $to, $count, $skip): array
+    protected function getReportData(int $from, int $to, int $count, int $skip): array
     {
         $merchantId = $this->merchant->getId();
 
@@ -359,14 +364,18 @@ class BasicEntityReport extends BaseReport
      * 1. Fetches entities to be added in report
      * 2. Formats data to be shown in report
      *
-     * @param  [type] $from       [description]
-     * @param  [type] $to         [description]
-     * @param  [type] $count      [description]
-     * @param  [type] $skip       [description]
-     * @param  [type] $merchantId [description]
-     * @return [type]             [description]
+     * @param  int    $from
+     * @param  int    $to
+     * @param  int    $count
+     * @param  int    $skip
+     * @param  string $merchantId
+     * @return array
      */
-    protected function getReportDataForMerchant($from, $to, $count, $skip, $merchantId): array
+    protected function getReportDataForMerchant(int $from,
+                                                int $to,
+                                                int $count,
+                                                int $skip,
+                                                string $merchantId): array
     {
         $begin = time();
 
