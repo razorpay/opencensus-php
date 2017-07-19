@@ -9,48 +9,75 @@
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
   </div>
   <div style="padding: 15px; margin: 8px 0;">
-    <form style="display: table">
-      <div class="gateway-search-element">
-        <label for="mode">Mode:</label>
-        <select id="mode" class="form-control inline m-r" ng-model="mode">
-          <option value="live">Live</option>
-          <option value="test">Test</option>
-        </select>
-      </div>
+    <form style="display: table" ng-init="gatewayRuleSearch={}">
+      <div class="gateway-search-fields">
+        <div class="gateway-search-element">
+          <label for="mode">Mode:</label>
+          <select id="mode" class="form-control inline m-r" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
 
-      <div class="gateway-search-element">
-        <label for="merchant_id">Merchant Id:</label>
-        <input id="merchant_id" type="text" class="form-control" ng-model="merchantId" placeholder="Merchant Id" style="width:200px;">
-      </div>
+        <div class="gateway-search-element">
+          <label for="merchant_id">Merchant Id:</label>
+          <input id="merchant_id" type="text" class="form-control" ng-model="gatewayRuleSearch.merchantId" placeholder="Merchant Id" style="width:150px;">
+        </div>
 
-      <div class="gateway-search-element">
-        <label for="type">Type:</label>
-        <select id="type"
-                ng-model="type"
-                class="form-control">
-          <option value="sorter">Sorter</option>
-          <option value="filter">Filter</option>
-        </select>
-      </div>
+        <div class="gateway-search-element">
+          <label for="type">Type:</label>
+          <select id="type"
+                  ng-model="gatewayRuleSearch.type"
+                  class="form-control">
+            <option value="sorter">Sorter</option>
+            <option value="filter">Filter</option>
+          </select>
+        </div>
 
-      <div class="gateway-search-element">
-        <label for="group">Group:</label>
-        <input id="group" type="text" class="form-control" ng-model="group" placeholder="Group" style="width:200px;">
-      </div>
+        <div class="gateway-search-element">
+          <label for="group">Group:</label>
+          <input id="group" type="text" class="form-control" ng-model="gatewayRuleSearch.group" placeholder="Group" style="width:150px;">
+        </div>
 
-      <div class="gateway-search-element">
-        <label for="filter_type">Filter Type:</label>
-        <select id="filter_type"
-                ng-model="filter_type"
-                class="form-control">
-          <option value="select">Select</option>
-          <option value="reject">Reject</option>
-        </select>
-      </div>
+        <div class="gateway-search-element">
+          <label for="filter_type">Filter Type:</label>
+          <select id="filter_type"
+                  ng-model="gatewayRuleSearch.filter_type"
+                  class="form-control">
+            <option value=""></option>
+            <option value="select">Select</option>
+            <option value="reject">Reject</option>
+          </select>
+        </div>
 
+        <div class="gateway-search-element">
+          <label for="method">Method:</label>
+          <select id="method" ng-model="gatewayRuleSearch.method" class="form-control" ng-change="updateGatewayList(gatewayRuleSearch.method, gatewayRuleSearch);">
+            <option value=""></option>
+            <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
+          </select>
+        </div>
+
+
+        <div class="gateway-search-element" ng-if="gatewayRuleSearch.method">
+          <gatewayRuleSearch for="gateway">Gateway:</gatewayRuleSearch>
+          <select id="gateway" ng-model="gatewayRuleSearch.gateway" class="form-control">
+            <option value=""></option>
+            <option
+              ng-repeat="(key, option) in gatewayListMap"
+              ng-selected="{{key == gatewayRuleSearch.gateway}}"
+              value={{key}}>{{option}}</option>
+          </select>
+        </div>
+      </div>
       <div class="gateway-search-element">
-        <button class="btn btn-info m-l save-btn ng-scope" ng-model="searchMerchantId" ng-click="getRulesById()">
+        <button class="btn btn-info m-l" ng-click="getRulesById()">
           Search
+        </button>
+      </div>
+      <div class="gateway-search-element">
+        <button class="btn btn-danger" ng-click="gatewayRuleSearch = {}">
+          Clear
         </button>
       </div>
     </form>
@@ -179,6 +206,54 @@
         </div>
       </div>
 
+      <!-- Filter Type .........-->
+      <div class="form-group" ng-if="current.type === 'filter'">
+        <label class="col-lg-2 control-label">
+          <span style="color: red" ng-if="!editMode">*</span>
+          Filter Type:
+        </label>
+
+
+        <div class="col-lg-10" >
+          <select name="type"
+                  ng-model="current.filter_type"
+                  ng-init="current.filter_type = current.filter_type"
+                  class="form-control"
+                  ng-required="!editMode"
+                  ng-disabled="editMode">
+            <option value="select">Select</option>
+            <option value="reject">Reject</option>
+          </select>
+
+        </div>
+      </div>
+
+      <!-- Load .........-->
+      <div class="form-group" ng-if="current.type === 'sorter'">
+        <label class="col-lg-2 control-label">
+          <span style="color: red" ng-if="!editMode">*</span>
+          Load:
+        </label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="merchant_id"
+                 placeholder="Load value must be 0-100. Example: 45.3"
+                 min="0"
+                 max="100"
+                 ng-model="current.load"
+                 ng-init="current.load = current.load"
+                 ng-required="!editMode">
+        </div>
+      </div>
+
+      <!-- Group ........-->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Group:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="merchant_id"
+                 ng-model="current.group">
+        </div>
+      </div>
+
       <!-- Merchant Id-->
       <div class="form-group" ng-if="!editMode">
         <label class="col-lg-2 control-label">Merchant ID*:</label>
@@ -200,7 +275,7 @@
 
         <div class="col-lg-10" >
           <select name="method" ng-model="current.method" class="form-control"
-                  ng-change="updateGatewayList(current.method)"
+                  ng-change="updateGatewayList(current.method, current)"
                   ng-disabled="editMode" ng-required="!editMode" >
             <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
           </select>
@@ -387,15 +462,6 @@
         </div>
       </div>
 
-      <!-- Group ........-->
-      <div class="form-group">
-        <label class="col-lg-2 control-label">Group:</label>
-        <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" name="merchant_id"
-                 ng-model="current.group">
-        </div>
-      </div>
-
       <!-- Netowork Category ........ -->
       <div class="form-group" ng-if="current.type === 'filter'">
         <label class="col-lg-2 control-label">Network Category:</label>
@@ -434,45 +500,6 @@
             <option value="USD">USD</option>
             <option value="INR">INR</option>
           </select>
-        </div>
-      </div>
-
-      <!-- Filter Type .........-->
-      <div class="form-group" ng-if="current.type === 'filter'">
-        <label class="col-lg-2 control-label">
-          <span style="color: red" ng-if="!editMode">*</span>
-          Filter Type:
-        </label>
-
-
-        <div class="col-lg-10" >
-          <select name="type"
-                  ng-model="current.filter_type"
-                  ng-init="current.filter_type = current.filter_type"
-                  class="form-control"
-                  ng-required="!editMode"
-                  ng-disabled="editMode">
-            <option value="select">Select</option>
-            <option value="reject">Reject</option>
-          </select>
-
-        </div>
-      </div>
-
-      <!-- Load .........-->
-      <div class="form-group" ng-if="current.type === 'sorter'">
-        <label class="col-lg-2 control-label">
-          <span style="color: red" ng-if="!editMode">*</span>
-          Load:
-        </label>
-        <div class="col-lg-10" >
-          <input type="number" class="form-control m-b" name="merchant_id"
-                 placeholder="Load value must be 0-100. Example: 45.3"
-                 min="0"
-                 max="100"
-                 ng-model="current.load"
-                 ng-init="current.load = current.load"
-                 ng-required="!editMode">
         </div>
       </div>
 

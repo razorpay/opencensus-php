@@ -62,15 +62,19 @@ app
 
       // fetch gateway rules on basis of mode and merchant id selected by user
       $scope.getRulesById = function() {
+        // Clear empty fields
+        for (var item in $scope.gatewayRuleSearch) {
+          !$scope.gatewayRuleSearch[item] &&
+            delete $scope.gatewayRuleSearch[item];
+        }
+
         var data = {
           route_name: 'admin_fetch_entity_multiple',
           url_params: {
             '{type}': 'gateway_rule',
           },
           mode: $scope.mode,
-          query_params: {
-            merchant_id: $scope.merchantId,
-          },
+          query_params: $scope.gatewayRuleSearch,
         };
         var request = $http.get('/admin/generic', {
           params: data,
@@ -240,6 +244,30 @@ app
         openRuleModal({}); // create new rule = {}
       };
 
+      $scope.updateGatewayList = function(method, gatewayRule) {
+        gatewayRule.gateway == null && delete gatewayRule.gateway; // reset gateway as the value is dependent on method type
+
+        switch (method) {
+          case 'card':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayUpiMap');
+            break;
+          default:
+            delete gatewayRule.method;
+        }
+      };
+
       // Open modal for editing existing gateway rule OR creating new gateway rule
       function openRuleModal(gatewayRule) {
         var modalInstance = $modal.open({
@@ -277,8 +305,10 @@ app
 
       $scope.editMode = false;
 
-      $scope.updateGatewayList = function(methodType) {
-        switch (methodType) {
+      $scope.updateGatewayList = function(method, gatewayRule) {
+        gatewayRule.gateway == null && delete gatewayRule.gateway; // reset gateway as the value is dependent on method type
+
+        switch (method) {
           case 'card':
             $scope.gatewayListMap = utilMapping.getMap('gatewayCardMap');
             break;
@@ -294,6 +324,8 @@ app
           case 'upi':
             $scope.gatewayListMap = utilMapping.getMap('gatewayUpiMap');
             break;
+          default:
+            delete gatewayRule.method;
         }
       };
 
