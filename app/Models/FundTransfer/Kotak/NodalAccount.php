@@ -134,19 +134,21 @@ class NodalAccount
         return [$textFileEntity, $excelFileEntity];
     }
 
-    public function getPayoutsFile(Base\PublicCollection $payouts)
+    public function generatePayoutsFile(Base\PublicCollection $payoutAttempts): string
     {
         $textData = [];
 
         $totalAmount = 0;
 
-        foreach ($payouts as $payout)
+        foreach ($payoutAttempts as $attempt)
         {
-            $merchant = $payout->merchant;
+            list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($attempt);
 
-            $ba = $payout->destination;
+            $merchant = $attempt->merchant;
 
-            $amount = $payout->getAmount() / 100;
+            $ba = $attempt->bankAccount;
+
+            $amount = $source->getAmount() / 100;
 
             $totalAmount += $amount;
 
@@ -154,7 +156,7 @@ class NodalAccount
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
                 Headings::PRODUCT_CODE            => 'REFUND',
                 Headings::PAYMENT_TYPE            => 'IMPS',
-                Headings::PAYMENT_REF_NO          => $payout->getPublicId(),
+                Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => (string) $amount,
@@ -163,10 +165,10 @@ class NodalAccount
                 Headings::IFSC_CODE               => $ba->getIfscCode(),
                 Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYOUTS',
+                Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
                 Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $ba->getId(),
-                Headings::PAYMENT_DETAILS_4       => $payout->getBatchFundTransferId(),
+                Headings::PAYMENT_DETAILS_3       => $version,
+                Headings::PAYMENT_DETAILS_4       => $attempt->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);
@@ -178,7 +180,7 @@ class NodalAccount
 
         $amounts['total'] = $totalAmount;
 
-        $count['total'] = $payouts->count();
+        $count['total'] = $payoutAttempts->count();
 
         $txt = $this->generateText($textData);
 

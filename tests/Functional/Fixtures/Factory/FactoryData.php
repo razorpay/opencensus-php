@@ -185,7 +185,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
-            'status' => 'created',
+            'status' => 'initiated',
             'channel' => 'kotak',
             'version' => 'V3',
         ]);

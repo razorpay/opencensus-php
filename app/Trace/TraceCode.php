@@ -766,6 +766,8 @@ class TraceCode
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
 
+    const DUMMY_JOB = 'DUMMY_JOB';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
