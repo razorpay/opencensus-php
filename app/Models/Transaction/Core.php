@@ -20,9 +20,12 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
+use RZP\Models\Feature;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -105,6 +108,8 @@ class Core extends Base\Core
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId()
             ]);
+
+        $this->repo->saveOrFail($txn);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
@@ -297,9 +302,7 @@ class Core extends Base\Core
         Transaction\Entity $transaction,
         Merchant\Balance\Entity $merchantBalance)
     {
-        $amountCredits = $merchantBalance->getAmountCredits();
-
-        $feeCredits = $merchantBalance->getFeeCredits();
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -333,9 +336,7 @@ class Core extends Base\Core
         Transaction\Entity $transaction,
         Merchant\Balance\Entity $merchantBalance)
     {
-        $amountCredits = $merchantBalance->getAmountCredits();
-
-        $feeCredits = $merchantBalance->getFeeCredits();
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
         list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
 
@@ -827,7 +828,7 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $amountCredits = $merchantBalance->getAmountCredits();
+        $amountCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::AMOUNT);
 
         // Removing Assert for now, as there is a race condition. if 2 payments
         // are authorized at the same time where we create txn on auth with. both
@@ -851,6 +852,9 @@ class Core extends Base\Core
 
         $merchantBalance->subtractAmountCredits($amount);
 
+        //create a credit transaction for the same
+        $this->createCreditTransaction($amount, $txn, Credits\Type::AMOUNT);
+
         // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
     }
@@ -869,7 +873,9 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
-        $feeCredits = $merchantBalance->getFeeCredits();
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $feeCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::FEE);
 
         if ($feeCredits < $fee)
         {
@@ -881,6 +887,9 @@ class Core extends Base\Core
         // $nodalBalance->subtractFeeCredits($fee);
 
         $merchantBalance->subtractFeeCredits($fee);
+
+        //create a credit transaction for the same
+        $this->createCreditTransaction($fee, $txn, Credits\Type::FEE);
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
@@ -961,6 +970,81 @@ class Core extends Base\Core
         else if ($txn->getFeeCredits() > 0)
         {
             $this->updateFeeCredits($txn);
+        }
+    }
+
+    protected function getMerchantCreditsOfType(Merchant\Balance\Entity $merchantBalance, string $type)
+    {
+        $merchant = $merchantBalance->merchant;
+
+        $feature = Feature\Constants::OLD_CREDITS_FLOW;
+
+        if ($merchant->isFeatureEnabled($feature) === true)
+        {
+            if ($type === Credits\Type::FEE)
+            {
+                $credits = $merchantBalance->getFeeCredits();
+            }
+            else
+            {
+                $credits = $merchantBalance->getAmountCredits();
+            }
+        }
+        else
+        {
+            $merchantId = $merchant->getId();
+
+            $credits = $this->repo->credits->getMerchantCreditsOfType($merchantId, $type);
+        }
+
+        return $credits;
+    }
+
+    protected function getMerchantCredits(Merchant\Balance\Entity $merchantBalance): array
+    {
+        $merchant = $merchantBalance->merchant;
+
+        $feature = Feature\Constants::OLD_CREDITS_FLOW;
+
+        if ($merchant->isFeatureEnabled($feature) === true)
+        {
+            $amountCredits = $merchantBalance->getAmountCredits();
+
+            $feeCredits = $merchantBalance->getFeeCredits();
+        }
+        else
+        {
+            $merchantId = $merchantBalance->merchant->getId();
+
+            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchantId);
+
+            $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+
+            $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+        }
+
+        return [$amountCredits, $feeCredits];
+    }
+
+    protected function createCreditTransaction(int $amount, Entity $txn, string $creditType)
+    {
+        try
+        {
+            (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+        }
+        catch (\Throwable $e)
+        {
+            $data = [
+                'credit_amount'  => $amount,
+                'transaction_id' => $txn->getId(),
+                'credit_type'    => $creditType,
+            ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::CREDITS_TRANSACTION_FAILED,
+                $data);
         }
     }
 }

@@ -3,6 +3,8 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\Settlement\Status as SettlementStatus;
 
 return [
     'fetchAndMatchBatchDataSettlement' => [
@@ -56,7 +58,7 @@ return [
         'fees'              => 118000,
         'service_tax'       => 18000,
         'failure_reason'    => 'Reconciliation',
-        'status'            => 'failed',
+        'status'            => SettlementStatus::FAILED,
         'attempts'          => 1,
         'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
     ],
@@ -75,7 +77,7 @@ return [
         'channel'          => 'kotak',
         'version'          => 'V3',
         'bank_status_code' => 'P',
-        'status'           => 'failed',
+        'status'           => AttemptStatus::FAILED,
         'remarks'          => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
         'failure_reason'   => 'Reconciliation',
     ],

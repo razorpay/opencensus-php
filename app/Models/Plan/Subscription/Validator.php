@@ -9,16 +9,10 @@ use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Plan\Cycle;
 
 class Validator extends Base\Validator
 {
-    /**
-     * Number of years allowed for a subscription.
-     *
-     * TODO: We may have to take into consideration leap years also.
-     */
-    const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 1;
-
     /**
      * Maximum number of addons that we allow
      * as part of the subscription creations
@@ -32,7 +26,7 @@ class Validator extends Base\Validator
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
         Entity::QUANTITY        => 'required|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1|max:365',
+        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1',
         Entity::START_AT        => 'sometimes|integer|custom',
         Entity::END_AT          => 'required_without:total_count|epoch',
         // This is just for backward compatibility. Later, we are going to make `1` as
@@ -184,17 +178,17 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $maxSecondsFromStartAt = $startAt + (self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
+        $maxSecondsFromStartAt = $startAt + (Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
 
         if ($endAt > $maxSecondsFromStartAt)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at should be within ' . self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s of start_at.',
+                'end_at should be within ' . Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s of start_at.',
                 null,
                 [
                     'start_at'  => $startAt,
                     'end_at'    => $endAt,
-                    'max_years' => self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+                    'max_years' => Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
                     'seconds'   => $maxSecondsFromStartAt,
                 ]);
         }
@@ -242,18 +236,18 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $maxSecondsAllowedForSubscription = self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR;
+        $maxSecondsAllowedForSubscription = Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR;
 
         $maxSecondsFromCurrentTime = $currentTime + $maxSecondsAllowedForSubscription;
 
         if ($value > $maxSecondsFromCurrentTime)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'start_at must be less than one year from now.',
+                'start_at must be less than ' . Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s from now.',
                 null,
                 [
                     'start_at'  => $value,
-                    'max_year'  => self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+                    'max_year'  => Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
                     'seconds'   => $maxSecondsFromCurrentTime,
                 ]);
         }
@@ -280,7 +274,27 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        // TODO: Add more validations around the maximum value of
-        // total_count depending on the interval and period of the plan.
+        $totalCount = $input[Entity::TOTAL_COUNT];
+
+        $subscription = $this->entity;
+        $plan = $subscription->plan;
+
+        $period = $plan->getPeriod();
+        $interval = $plan->getInterval();
+
+        $maxAllowedTotalCount = Cycle::getMaxAllowedTotalCount($plan);
+
+        if ($totalCount > $maxAllowedTotalCount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exceeds the maximum total_count (' . $maxAllowedTotalCount . ') allowed for the given period and interval',
+                null,
+                [
+                    'period'        => $period,
+                    'interval'      => $interval,
+                    'max_allowed'   => $maxAllowedTotalCount,
+                    'input'         => $input,
+                ]);
+        }
     }
 }

@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::TYPE            => 'required|string|custom',
         Entity::URL             => 'required|string',
         Entity::ROUTE_PARAMS    => 'sometimes|array',
-        Entity::METHOD          => 'required|string|custom',
+        Entity::METHOD          => 'required|string',
         Entity::PAYLOAD         => 'sometimes|array',
         Entity::CONTROLLER      => 'required|string',
         Entity::ROUTE           => 'required|string',
@@ -34,15 +34,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
-        }
-    }
-
-    protected function validateMethod($attribute, $method)
-    {
-        if (Method::exists($method) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACTION_INVALID_METHOD);
         }
     }
 }

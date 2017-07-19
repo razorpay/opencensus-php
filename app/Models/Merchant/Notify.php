@@ -71,7 +71,7 @@ trait Notify
                 ];
             }
 
-            $this->app['slack']->send($headline, $data, $settings);
+            $this->app['slack']->queue($headline, $data, $settings);
         }
     }
 

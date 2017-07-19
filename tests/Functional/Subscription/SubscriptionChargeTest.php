@@ -16,7 +16,7 @@ class SubscriptionChargeTest extends TestCase
     use PaymentTrait;
     use SubscriptionTrait;
 
-    const MAX_AUTH_ATTEMPTS = 3;
+    const MAX_AUTH_ATTEMPTS = 4;
 
     public function setUp()
     {
@@ -222,9 +222,9 @@ class SubscriptionChargeTest extends TestCase
         // But subscription charge failed
         $this->assertEquals('failed', $payment['status']);
 
-        // Subscription marked as overdue
+        // Subscription marked as pending
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
 
@@ -233,9 +233,9 @@ class SubscriptionChargeTest extends TestCase
         $this->assertNull($invoice['subscription_status']);
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
-        // Subscription is in overdue state, so won't be picked up by charge cron
+        // Subscription is in pending state, so won't be picked up by charge cron
         $this->assertEquals(0, $result['invoices_created']);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
         $this->clearMock();
@@ -297,9 +297,9 @@ class SubscriptionChargeTest extends TestCase
         // But subscription charge failed
         $this->assertEquals('authorized', $payment['status']);
 
-        // Subscription marked as overdue
+        // Subscription marked as pending
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
         $this->assertEquals('capture_failure', $subscription['error_status']);
 
@@ -308,9 +308,9 @@ class SubscriptionChargeTest extends TestCase
         $this->assertNull($invoice['subscription_status']);
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
-        // Subscription is in overdue state, so won't be picked up by charge cron
+        // Subscription is in pending state, so won't be picked up by charge cron
         $this->assertEquals(0, $result['invoices_created']);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
         $task = $this->getLastEntity('schedule_task', true);
@@ -396,7 +396,7 @@ class SubscriptionChargeTest extends TestCase
 
         // Retry succeeded, subscription marked as active
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals('capture_failure', $subscription['error_status']);
         $this->assertEquals(2, $subscription['auth_attempts']);
 
@@ -451,7 +451,7 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
 
-        foreach (range(1,2) as $i)
+        foreach (range(1,3) as $i)
         {
             $this->failCharge();
 
@@ -486,7 +486,7 @@ class SubscriptionChargeTest extends TestCase
         $payments = $this->getEntities('payment', [], true);
 
         // 3 failures, 1 success, 1 auth txn
-        $this->assertEquals(5, $payments['count']);
+        $this->assertEquals(6, $payments['count']);
 
         $this->assertEquals('active', $subscription['status']);
         $this->assertNull($subscription['error_status']);
@@ -517,7 +517,7 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
 
-        foreach (range(1,2) as $i)
+        foreach (range(1,3) as $i)
         {
             $this->failCharge();
 
@@ -552,8 +552,8 @@ class SubscriptionChargeTest extends TestCase
         $invoice = $this->getLastEntity('invoice', true);
         $payments = $this->getEntities('payment', [], true);
 
-        // 3 failures, 1 success, 1 auth txn
-        $this->assertEquals(5, $payments['count']);
+        // 4 failures, 1 success, 1 auth txn
+        $this->assertEquals(6, $payments['count']);
 
         $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
@@ -604,8 +604,8 @@ class SubscriptionChargeTest extends TestCase
 
         while($subscription['auth_attempts'] < self::MAX_AUTH_ATTEMPTS)
         {
-            // Subscription marked as overdue
-            $this->assertEquals('overdue', $subscription['status']);
+            // Subscription marked as pending
+            $this->assertEquals('pending', $subscription['status']);
 
             $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
                               ->addDay(1)
@@ -691,8 +691,8 @@ class SubscriptionChargeTest extends TestCase
 
         while($subscription['auth_attempts'] < self::MAX_AUTH_ATTEMPTS)
         {
-            // Subscription marked as overdue
-            $this->assertEquals('overdue', $subscription['status']);
+            // Subscription marked as pending
+            $this->assertEquals('pending', $subscription['status']);
 
             $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
                               ->addDay(1)->addMinute(1);
@@ -769,8 +769,8 @@ class SubscriptionChargeTest extends TestCase
 
         while($subscription['auth_attempts'] < self::MAX_AUTH_ATTEMPTS)
         {
-            // Subscription marked as overdue
-            $this->assertEquals('overdue', $subscription['status']);
+            // Subscription marked as pending
+            $this->assertEquals('pending', $subscription['status']);
 
             $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
                 ->addDay(1)
@@ -851,7 +851,7 @@ class SubscriptionChargeTest extends TestCase
             [
                 'events' => [
                     'subscription.activated' => '1',
-                    'subscription.overdue'   => '1',
+                    'subscription.pending'   => '1',
                     'subscription.halted'    => '1',
                 ]
             ]);
@@ -869,14 +869,14 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $subscription['paid_count']);
 
         $this->failCharge();
-        // subscription.overdue event fired after
+        // subscription.pending event fired after
         // first and second failed charge attempts
-        $this->mockAndTestWebhookData('subscription.overdue', self::MAX_AUTH_ATTEMPTS - 1);
+        $this->mockAndTestWebhookData('subscription.pending', self::MAX_AUTH_ATTEMPTS - 1);
         // First failure
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
@@ -886,11 +886,8 @@ class SubscriptionChargeTest extends TestCase
         // Second failure
         $res = $this->makeSubscriptionRetryCronRequest();
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(2, $subscription['auth_attempts']);
-
-        // subscription.halted event fired after final failed charge
-        $this->mockAndTestWebhookData('subscription.halted');
 
         // $task = $this->getLastEntity('schedule_task', true);
 
@@ -900,9 +897,20 @@ class SubscriptionChargeTest extends TestCase
         // Third failure
         $this->makeSubscriptionRetryCronRequest();
         $subscription = $this->getLastEntity('subscription', true);
+
+        // subscription.halted event fired after final failed charge
+        $this->mockAndTestWebhookData('subscription.halted');
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        Carbon::setTestNow($chargeAt);
+
+        // Fourth failure
+        $this->makeSubscriptionRetryCronRequest();
+        $subscription = $this->getLastEntity('subscription', true);
+
         // Retries exhausted, subscription marked as halted
         $this->assertEquals('halted', $subscription['status']);
-        $this->assertEquals(3, $subscription['auth_attempts']);
+        $this->assertEquals(4, $subscription['auth_attempts']);
 
         $this->clearMock();
         // subscription.halted event fired after successful re-auth
@@ -918,13 +926,13 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testAuthFailureOverdueWebhookEventData()
+    public function testAuthFailurePendingWebhookEventData()
     {
         $this->createWebhook(
             [
                 'events' => [
                     'subscription.activated' => '1',
-                    'subscription.overdue'   => '1',
+                    'subscription.pending'   => '1',
                     'subscription.halted'    => '1',
                 ]
             ]);
@@ -942,14 +950,14 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $subscription['paid_count']);
 
         $this->failCharge();
-        // subscription.overdue event fired after
+        // subscription.pending event fired after
         // first failed charge attempts
-        $this->mockAndTestWebhookDataCustom('subscription.overdue', 'subscriptionWebhookDataForAuthFailureOverdue');
+        $this->mockAndTestWebhookDataCustom('subscription.pending', 'subscriptionWebhookDataForAuthFailurePending');
         // First failure
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
@@ -957,13 +965,13 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testCaptureFailureOverdueWebhookEventData()
+    public function testCaptureFailurePendingWebhookEventData()
     {
         $this->createWebhook(
             [
                 'events' => [
                     'subscription.activated' => '1',
-                    'subscription.overdue'   => '1',
+                    'subscription.pending'   => '1',
                     'subscription.halted'    => '1',
                 ]
             ]);
@@ -981,15 +989,15 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $subscription['paid_count']);
 
         $this->failOnCapture();
-        // subscription.overdue event fired after
+        // subscription.pending event fired after
         // first failed charge attempts
         $this->mockAndTestWebhookDataCustom(
-            'subscription.overdue', 'subscriptionWebhookDataForCaptureFailureOverdue');
+            'subscription.pending', 'subscriptionWebhookDataForCaptureFailurePending');
         // First failure
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals('capture_failure', $subscription['error_status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
@@ -997,13 +1005,13 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSuccessAfterOverdueActivateWebhookEventData()
+    public function testSuccessAfterPendingActivateWebhookEventData()
     {
         $this->createWebhook(
             [
                 'events' => [
                     'subscription.activated' => '1',
-                    'subscription.overdue'   => '1',
+                    'subscription.pending'   => '1',
                     'subscription.halted'    => '1',
                 ]
             ]);
@@ -1026,13 +1034,13 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at'] + 10);
         $this->assertEquals(1, $result['invoices_created']);
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals('capture_failure', $subscription['error_status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
         $this->clearMock();
 
-        $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForSuccessAfterOverdue');
+        $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForSuccessAfterPending');
 
         $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
         Carbon::setTestNow($chargeAt);

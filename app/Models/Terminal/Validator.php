@@ -222,6 +222,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingIciciTerminalRules = [
+        Entity::TYPE                 => 'required',
         Entity::GATEWAY              => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
@@ -411,7 +412,8 @@ class Validator extends Base\Validator
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getType() === $existing->getType()) and
             ($new->getCurrency() === $existing->getCurrency()) and
-            ($new->getNetworkCategory() === $existing->getNetworkCategory()))
+            ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
+            ($new->getEmiSubvention() === $existing->getEmiSubvention()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

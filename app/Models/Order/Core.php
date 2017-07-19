@@ -12,12 +12,16 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
     /**
-     * @param $input
-     * @param $merchant
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param boolean         $partialPayment
      *
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant)
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        bool $partialPayment = false)
     {
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
@@ -31,6 +35,11 @@ class Core extends Base\Core
         $order->merchant()->associate($merchant);
 
         $order->build($input);
+
+        if ($partialPayment === true)
+        {
+            $order->allowPartialPayment();
+        }
 
         $order->getValidator()->validateMerchantSpecificData();
 
@@ -69,7 +78,7 @@ class Core extends Base\Core
         $order = $this->repo->order->findByPublicIdAndMerchant($id, $merchant);
 
         $data = [
-            Entity::PARTIAL_PAYMENT => $order->hasPartialPaymentEnabled(),
+            Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
             Entity::AMOUNT          => $order->getAmount(),
             Entity::AMOUNT_PAID     => $order->getAmountPaid(),
             Entity::AMOUNT_DUE      => $order->getAmountDue(),
