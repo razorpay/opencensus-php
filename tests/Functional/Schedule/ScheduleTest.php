@@ -364,7 +364,7 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addDay(31);
+        $time->addDay(32);
 
         Carbon::setTestNow($time);
 
@@ -386,9 +386,13 @@ class ScheduleTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($activationRequest);
 
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], 1000);
+
         $request = $this->testData['testExpireCredits'];
 
-        $time->addDay(31);
+        $time->addDay(32);
 
         Carbon::setTestNow($time);
 
