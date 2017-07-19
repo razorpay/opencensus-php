@@ -52,6 +52,8 @@ return [
                 'pending'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'halted'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'cancelled'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'completed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ]
         ],
         'live' => [
@@ -79,6 +81,8 @@ return [
                 'pending'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'halted'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'cancelled'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'completed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ]
         ],
     ],
