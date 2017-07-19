@@ -336,9 +336,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT                => 'int',
         self::AMOUNT_PAID           => 'int',
         self::AMOUNT_DUE            => 'int',
-        self::DATE                  => 'int',
-        self::EXPIRE_BY             => 'int',
-        self::EXPIRED_AT            => 'int',
         self::GROUP_TAXES_DISCOUNTS => 'bool',
     ];
 
@@ -372,7 +369,9 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS,
     ];
 
-    protected $reportDates = [
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::DATE,
         self::EXPIRE_BY,
         self::ISSUED_AT,

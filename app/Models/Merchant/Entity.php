@@ -200,8 +200,9 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
     ];
 
-    protected $reportDates = [
+    protected $dates = [
         self::CREATED_AT,
+        self::UPDATED_AT,
         self::ACTIVATED_AT,
     ];
 

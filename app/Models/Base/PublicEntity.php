@@ -28,16 +28,6 @@ class PublicEntity extends UniqueIdEntity
     protected $hiddenInReport   = [];
 
     /**
-     * Fields which gets formatted as date time
-     * (eg. 06/07/17 12:21:26) in reports
-     *
-     * @var array
-     */
-    protected $reportDates      = [
-        self::CREATED_AT,
-    ];
-
-    /**
      * Fields which will get formatted as amount (e.g. 1.01) in reports
      *
      * @var array
@@ -70,11 +60,17 @@ class PublicEntity extends UniqueIdEntity
         self::ENTITY,
     ];
 
+    public function getAmounts(): array
+    {
+        return $this->amounts;
+    }
+
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
 
         $relations = $this->relationsToArrayPublic();
+
         $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);
@@ -128,7 +124,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected function formatReportAmountFields(array & $report)
     {
-        foreach ($this->amounts as $key)
+        foreach ($this->getAmounts() as $key)
         {
             if (isset($report[$key]) === true)
             {
@@ -139,7 +135,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected function formatReportDateFields(array & $report)
     {
-        foreach ($this->reportDates as $key)
+        foreach ($this->getDates() as $key)
         {
             if (isset($report[$key]) === true)
             {
