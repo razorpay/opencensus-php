@@ -52,11 +52,15 @@ trait WorkflowTrait
             'name'   => 'Test workflow',
             'org_id' => 'org_'.Org::RZP_ORG,
             'levels' => [
-                'level'   => 1,
-                'op_type' => 'and',
-                'steps'   => [
-                    'reviewer_count' => 1,
-                    'role_id'        => 'role_' . Org::ADMIN_ROLE,
+                [
+                    'level'   => 1,
+                    'op_type' => 'and',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => 'role_' . Org::ADMIN_ROLE,
+                        ],
+                    ],
                 ],
             ],
         ];

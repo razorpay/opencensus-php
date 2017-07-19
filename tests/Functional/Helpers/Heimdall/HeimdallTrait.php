@@ -111,24 +111,24 @@ trait HeimdallTrait
         return $content;
     }
 
-    public function getAssignablePermissions()
+    public function getPermissions($type = 'assignable')
     {
         $permissions = Config::get('heimdall.permissions');
 
-        $assignablePermissions = [];
+        $specificPermissions = [];
 
         foreach ($permissions as $permCategory)
         {
             foreach ($permCategory as $permission => $permissionValue)
             {
-                if (isset($permissionValue['assignable']) and $permissionValue['assignable'])
+                if (isset($permissionValue[$type]) and $permissionValue[$type])
                 {
-                    $assignablePermissions[] = $permission;
+                    $specificPermissions[] = $permission;
                 }
             }
         }
 
-        return $assignablePermissions;
+        return $specificPermissions;
     }
 
     public function getTotalPermissionCount()
@@ -148,9 +148,9 @@ trait HeimdallTrait
         return $permissionCount;
     }
 
-    public function getAssignablePermissionsByIds()
+    public function getPermissionsByIds($type = 'assignable')
     {
-        $perms = $this->getAssignablePermissions();
+        $perms = $this->getPermissions($type);
 
         $permissions = (new Permission\Repository)->retrieveIdsByNames($perms);
 
@@ -166,10 +166,25 @@ trait HeimdallTrait
 
     public function addAssignablePermissionsToOrg($org)
     {
-        $perms = $this->getAssignablePermissionsByIds();
+        $perms = $this->getPermissionsByIds('assignable');
 
         Permission\Entity::verifyIdAndStripSignMultiple($perms);
 
         $org->permissions()->sync($perms);
+    }
+
+    public function addWorkflowPermissionsToOrg($org)
+    {
+        $perms = $this->getPermissionsByIds('workflow');
+
+        Permission\Entity::verifyIdAndStripSignMultiple($perms);
+
+        $org->permissions()->sync($perms);
+
+        (new Permission\Repository)->toggleWorkflowOnOrgForPermissions(
+            $org->getId(),
+            $perms,
+            true
+            );
     }
 }
