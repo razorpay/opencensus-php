@@ -87,6 +87,10 @@ app
 
               if (!$scope.gatewayRules.length) {
                 $scope.noResults = true;
+
+                $scope.gatewayRules['iins'] = $scope.gatewayRules['iins']
+                  ? $scope.gatewayRules['iins'].join(',')
+                  : null;
               } else {
                 $scope.noResults = false;
               }
@@ -305,8 +309,8 @@ app
 
       $scope.editMode = false;
 
-      $scope.updateGatewayList = function(method, gatewayRule) {
-        gatewayRule.gateway == null && delete gatewayRule.gateway; // reset gateway as the value is dependent on method type
+      $scope.updateGatewayList = function(method) {
+        $scope.current.gateway == null && delete $scope.current.gateway; // reset gateway as the value is dependent on method type
 
         switch (method) {
           case 'card':
@@ -341,7 +345,14 @@ app
         $scope.updateGatewayList(current.method);
       }
 
+      function cleanFields(currentRule) {
+        if (currentRule['iins']) {
+          currentRule['iins'] = currentRule['iins'].split(','); // Convert command separate values to array
+        }
+      }
+
       $scope.ok = function(currentRule) {
+        cleanFields(currentRule);
         $modalInstance.close(currentRule);
       };
       $scope.cancel = function() {

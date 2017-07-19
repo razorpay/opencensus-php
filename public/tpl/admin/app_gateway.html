@@ -60,7 +60,7 @@
 
 
         <div class="gateway-search-element" ng-if="gatewayRuleSearch.method">
-          <gatewayRuleSearch for="gateway">Gateway:</gatewayRuleSearch>
+          <label for="gateway">Gateway:</label>
           <select id="gateway" ng-model="gatewayRuleSearch.gateway" class="form-control">
             <option value=""></option>
             <option
@@ -219,8 +219,7 @@
                   ng-model="current.filter_type"
                   ng-init="current.filter_type = current.filter_type"
                   class="form-control"
-                  ng-required="!editMode"
-                  ng-disabled="editMode">
+                  ng-required="!editMode">
             <option value="select">Select</option>
             <option value="reject">Reject</option>
           </select>
@@ -235,7 +234,7 @@
           Load:
         </label>
         <div class="col-lg-10" >
-          <input type="number" class="form-control m-b" name="merchant_id"
+          <input type="number" step="0.001" class="form-control m-b" name="merchant_id"
                  placeholder="Load value must be 0-100. Example: 45.3"
                  min="0"
                  max="100"
@@ -275,7 +274,7 @@
 
         <div class="col-lg-10" >
           <select name="method" ng-model="current.method" class="form-control"
-                  ng-change="updateGatewayList(current.method, current)"
+                  ng-change="updateGatewayList(current.method)"
                   ng-disabled="editMode" ng-required="!editMode" >
             <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
           </select>
@@ -452,11 +451,11 @@
       </div>
 
       <!-- Iins ....... -->
-      <div class="form-group" ng-if="[card, emi].indexof(current.method) > -1">
+      <div class="form-group" ng-if="['card', 'emi'].indexOf(current.method) > -1">
         <label class="col-lg-2 control-label">Iins:</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="iins"
-                 placeholder="Enter comma separate values. Example: 12342,3452"
+                 placeholder="Enter comma(,) separated values. Each value must be 6 digit. Example: 123422,345244"
                  ng-model="current.iins"
                  ng-readonly="editMode">
         </div>
@@ -473,7 +472,7 @@
 
       <!-- Terminal Type ........ -->
       <div class="form-group">
-        <label class="col-lg-2 control-label">International:</label>
+        <label class="col-lg-2 control-label">Terminal Type:</label>
         <div class="col-lg-10" >
           <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
           <select name="terminal_type"
