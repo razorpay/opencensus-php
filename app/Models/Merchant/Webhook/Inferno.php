@@ -55,10 +55,6 @@ class Inferno
 
     public function __construct()
     {
-        $app = App::getFacadeRoot();
-
-        $this->trace = $app['trace'];
-
         $this->repo = new Repository;
     }
 
@@ -68,6 +64,13 @@ class Inferno
      */
     public function fire($job, $data)
     {
+        $app = App::getFacadeRoot();
+
+        // initialising trace here, as inferno is bound as singleton
+        // to app container and we want fresh instance of trace to log
+        // request metadata
+        $this->trace = $app['trace'];
+
         $this->job = $job;
 
         $this->mode = $data['mode'];

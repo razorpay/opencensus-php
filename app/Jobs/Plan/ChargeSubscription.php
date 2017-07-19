@@ -43,6 +43,8 @@ class ChargeSubscription extends Job implements ShouldQueue
      */
     public function handle()
     {
+        parent::handle();
+
         try
         {
             (new Subscription\Charge)->fireCharge($this->payload);
