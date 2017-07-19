@@ -1988,7 +1988,8 @@ class Entity extends Base\PublicEntity
             self::STATUS,
             self::AMOUNT,
             self::AUTO_CAPTURED,
-            self::ERROR_CODE);
+            self::ERROR_CODE,
+            self::GATEWAY);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
