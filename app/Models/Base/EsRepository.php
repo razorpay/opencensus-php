@@ -116,9 +116,9 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->setIndexNameByValue($indexName);
     }
 
-    public function getFields(): array
+    public function getIndexedFields(): array
     {
-        return $this->fields;
+        return $this->indexedFields;
     }
 
     public function getCommonFetchParams(): array
