@@ -31,5 +31,9 @@ return [
     'invoice_bucket'        => env('AWS_S3_INVOICES_BUCKET'),
     'test_bucket'           => env('AWS_S3_TEST_BUCKET'),
 
+    'sns_target_arn'        => [
+        'sms'               => env('SNS_TARGET_ARN'),
+    ],
+
     'mock' => env('AWS_S3_MOCK')
 ];
