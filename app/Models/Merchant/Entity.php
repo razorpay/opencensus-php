@@ -51,6 +51,9 @@ class Entity extends Base\PublicEntity
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
 
+    // Coupon Related Data for display only
+    const COUPON_CODE               = 'coupon_code';
+
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
@@ -288,7 +291,7 @@ class Entity extends Base\PublicEntity
     {
         $subvention = Emi\Subvention::CUSTOMER;
 
-        if ($this->isFeatureEnabled(Feature\Constants::MERCHANT_SUBVENTION))
+        if ($this->isFeatureEnabled(Feature\Constants::EMI_MERCHANT_SUBVENTION))
         {
             $subvention = Emi\Subvention::MERCHANT;
         }
@@ -449,6 +452,11 @@ class Entity extends Base\PublicEntity
     public function setSettlementSchedule($settlementSchedule)
     {
         $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
+    }
+
+    public function setMaxPaymentAmount(int $maxAmount)
+    {
+        $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
     protected function setBrandColorAttribute($brandColor)

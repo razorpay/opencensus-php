@@ -35,6 +35,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
 
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
+    const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ROUTE_DISABLED                                            = 'The requested route is disabled.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
@@ -115,6 +116,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
     const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';
+    const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY                              = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_WALLET_PAYMENT_PAGE                  = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED                              = 'Refund is currently not supported for this payment method';
     const BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED                      = 'Partial refund is currently not supported for this payment method';
@@ -488,4 +490,11 @@ class PublicErrorDescription
 
     const BAD_REQUEST_GATEWAY_RULE_EXISTS                                       = 'Gateway rule already exists for the given criteria';
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
+
+    const BAD_REQUEST_COUPON_LIMIT_REACHED                                      = 'Coupon code limit reached';
+    const BAD_REQUEST_COUPON_ALREADY_USED                                       = 'Coupon code already used';
+    const BAD_REQUEST_INVALID_COUPON_CODE                                       = 'Coupon code not found';
+    const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon code not valid for this merchant';
+    const BAD_REQUEST_COUPON_NOT_APPLICABLE                                     = 'Coupon code is not applicable right now';
+    const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
 }

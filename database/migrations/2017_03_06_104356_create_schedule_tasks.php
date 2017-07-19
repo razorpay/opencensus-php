@@ -45,6 +45,9 @@ class CreateScheduleTasks extends Migration
 
             $table->integer(ScheduleTask::UPDATED_AT);
 
+            $table->integer(ScheduleTask::DELETED_AT)
+                  ->nullable();
+
             $table->index(ScheduleTask::ENTITY_ID);
             $table->index(ScheduleTask::NEXT_RUN_AT);
             $table->index(ScheduleTask::LAST_RUN_AT);

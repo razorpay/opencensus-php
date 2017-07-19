@@ -156,5 +156,22 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+
+    'testExpireCredits' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/process_tasks',
+        'content' => [
+            'type'      => 'promotion',
+        ],
+    ],
+
+    'applyCouponOnMerchant' => [
+        'method' => 'POST',
+        'url'    => '/coupons/apply',
+        'content' => [
+            'merchant_id' => '10000000000000',
+            'code' =>  'RANDOM',
+        ],
+    ],
 ];

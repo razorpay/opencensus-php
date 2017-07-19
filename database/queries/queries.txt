@@ -2238,6 +2238,30 @@ ALTER TABLE transfers
 ALTER TABLE terminals
     ADD COLUMN corporate TINYINT(1) NOT NULL DEFAULT 0 AFTER mode;
 
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_caps_payment_id_index` (`caps_payment_id`);
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_gateway_transaction_id_index` (`gateway_transaction_id`);
+
+ALTER TABLE `first_data`
+    ADD INDEX `first_data_action_index` (`action`);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_reference1_index (`reference1`);
+
+DROP TABLE coupons;
+DELETE FROM migrations WHERE migration = '2016_11_29_101058_create_coupons';
+
+ALTER TABLE credits
+    ADD COLUMN promotion_id varchar(14) DEFAULT NULL after merchant_id,
+    ADD COLUMN used INTEGER DEFAULT 0 AFTER type,
+    ADD COLUMN expired_at INT(11) DEFAULT NULL AFTER used,
+    ADD INDEX credits_expired_at_index (expired_at);
+
+ALTER TABLE schedule_tasks
+    ADD COLUMN deleted_at INT(11) DEFAULT NULL AFTER updated_at;
+
 # Removes emi_subvention from methods
 ALTER TABLE merchant_banks
     DROP COLUMN emi_subvention;

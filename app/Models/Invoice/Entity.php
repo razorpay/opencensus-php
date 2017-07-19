@@ -453,7 +453,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
-    public function hasPartialPaymentEnabled()
+    public function isPartialPaymentAllowed()
     {
         return $this->getAttribute(self::PARTIAL_PAYMENT);
     }

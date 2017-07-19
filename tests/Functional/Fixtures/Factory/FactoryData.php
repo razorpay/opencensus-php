@@ -706,6 +706,18 @@ final class FactoryData
             'deleted_at'  => null,
         ]);
 
+        $factory(\RZP\Models\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
+
+        $factory(\RZP\Models\Coupon\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
+
+        $factory(\RZP\Models\Merchant\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\FileStore\Entity::class, [
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',

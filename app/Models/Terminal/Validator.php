@@ -108,6 +108,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::CURRENCY                    => 'sometimes|alpha|size:3',
     ];
 
@@ -120,6 +121,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
@@ -222,6 +224,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingIciciTerminalRules = [
+        Entity::TYPE                 => 'required',
         Entity::GATEWAY              => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
@@ -411,7 +414,8 @@ class Validator extends Base\Validator
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getType() === $existing->getType()) and
             ($new->getCurrency() === $existing->getCurrency()) and
-            ($new->getNetworkCategory() === $existing->getNetworkCategory()))
+            ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
+            ($new->getEmiSubvention() === $existing->getEmiSubvention()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

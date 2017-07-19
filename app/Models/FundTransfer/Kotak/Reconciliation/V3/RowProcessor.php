@@ -4,6 +4,8 @@ namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Entity;
+use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
@@ -11,6 +13,8 @@ use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
 
 class RowProcessor extends Base\RowProcessor
 {
+    protected $source = null;
+
     public function __construct($row)
     {
         parent::__construct($row);
@@ -51,24 +55,35 @@ class RowProcessor extends Base\RowProcessor
                                   ->findWithRelations(
                                         $this->reconEntityId,
                                         ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer']);
+
+        $this->source = $this->reconEntity->source;
     }
 
     protected function updateEntities()
     {
+        $this->updateReconEntity();
+
+        $this->updateSourceEntity();
+
+        $this->updateTransactionEntity();
+
+        return $this->source;
+    }
+
+    protected function updateReconEntity()
+    {
+        // Get values
         $utr = $this->parsedData['utr'];
-        $this->reconEntity->setUtr($utr);
-
         $status = $this->parsedData['status'];
-        $this->reconEntity->setStatus($status);
+        $bankStatusCode = $this->parsedData['bank_status_code'];
 
+        // Update values
+        $this->reconEntity->setUtr($utr);
+        $this->reconEntity->setStatus($status);
         $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);
         $this->reconEntity->setRemarks($this->parsedData['remarks']);
-
-        $bankStatusCode = $this->parsedData['bank_status_code'];
         $this->reconEntity->setBankStatusCode($bankStatusCode);
-
         $this->reconEntity->setDateTime($this->parsedData['date_time']);
-
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
 
         $dirtyAttributes = $this->reconEntity->getDirty();
@@ -83,28 +98,71 @@ class RowProcessor extends Base\RowProcessor
         }
 
         $this->reconEntity->saveOrFail();
+    }
 
-        $source = $this->reconEntity->source;
+    protected function updateSourceEntity()
+    {
+        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
-        $source->setUtr($utr);
-        $source->setFailureReason($this->parsedData['failure_reason']);
-        $source->setStatus($status);
-        $source->setRemarks($this->parsedData['remarks']);
+        $this->source->setStatus($sourceStatus);
+        $this->source->setUtr($this->parsedData['utr']);
+        $this->source->setFailureReason($this->parsedData['failure_reason']);
+        $this->source->setRemarks($this->parsedData['remarks']);
 
-        if (($status === Attempt\Status::PROCESSED) and
+        if (($this->parsedData['status'] === Attempt\Status::PROCESSED) and
             (empty($this->parsedData['instrument_date']) === false))
         {
             $settledOn = Carbon::createFromFormat(
                             'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
 
-            $source->setSettledOn($settledOn);
+            $this->source->setSettledOn($settledOn);
         }
 
-        $source->saveOrFail();
+        $this->source->saveOrFail();
+    }
 
-        $source->transaction->setReconciledAt($this->reconciledAt);
-        $source->transaction->saveOrFail();
+    protected function updateTransactionEntity()
+    {
+        $this->source->transaction->setReconciledAt($this->reconciledAt);
 
-        return $source;
+        $this->source->transaction->saveOrFail();
+    }
+
+    protected function getSourceStatusFromReconEntityStatus(): string
+    {
+        $sourceEntityName = $this->source->getEntity();
+
+        switch ($sourceEntityName)
+        {
+            case Entity::SETTLEMENT:
+            case Entity::PAYOUT:
+                return $this->getStatusForEntity($sourceEntityName);
+
+            default:
+                throw new Exception\LogicException('Unrecognized source entity: ' . $sourceEntityName);
+        }
+    }
+
+    protected function getStatusForEntity(string $sourceEntityName): string
+    {
+        $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
+
+        $attemptStatus = $this->parsedData['status'];
+
+        switch ($attemptStatus)
+        {
+            case Attempt\Status::CREATED:
+            case Attempt\Status::INITIATED:
+                return $this->source->getStatus();
+
+            case Attempt\Status::FAILED:
+                return $entityStatusClass::FAILED;
+
+            case Attempt\Status::PROCESSED:
+                return $entityStatusClass::PROCESSED;
+
+            default:
+                throw new Exception\LogicException('Unrecognized attempt status: ' . $attemptStatus);
+        }
     }
 }

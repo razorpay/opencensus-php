@@ -49,6 +49,7 @@ class Entity
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
+    const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const INVITATION            = 'invitation';
@@ -67,11 +68,13 @@ class Entity
     const LINE_ITEM_TAX         = 'line_item_tax';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const MERCHANT_PROMOTION    = 'merchant_promotion';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
@@ -159,7 +162,6 @@ class Entity
         self::ADDON                 => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
-        self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
         self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
@@ -186,6 +188,8 @@ class Entity
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
+        self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
+        self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,

@@ -482,11 +482,11 @@ class Entity extends Base\PublicEntity
 
     protected function modifyEmiSubvention(& $input)
     {
-        if ((empty($input[self::EMI]) === false) and
-            ($input[self::EMI] == true) and
-            (empty($input[self::EMI_SUBVENTION]) === true))
+        $isEmi = $input[self::EMI] ?? false;
+
+        if ($isEmi == true)
         {
-            $input[self::EMI_SUBVENTION] = EmiSubvention::CUSTOMER;
+            $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
         }
     }
 

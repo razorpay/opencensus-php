@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Schedule;
 
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
@@ -12,7 +13,8 @@ class ScheduleTest extends TestCase
 {
     use ScheduleTrait;
     use SubscriptionTrait;
-    use RequestResponseFlowTrait;
+   // use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -177,5 +179,157 @@ class ScheduleTest extends TestCase
         $this->ba->privateAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testExpireCredits()
+    {
+        $this->ba->appAuth();
+
+       $promotionAttributes = [
+            'credit_amount' => '1000',
+        ];
+
+        $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion['id'],
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->applyCouponOnMerchant($coupon['code']);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(32);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -1000);
+    }
+
+    public function testExpireAndAssignCredits()
+    {
+        $this->ba->appAuth();
+
+        $promotionAttributes = [
+            'credit_amount' => '1000',
+            'iterations'    => 2,
+        ];
+
+        $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion['id'],
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->applyCouponOnMerchant($coupon['code']);
+
+        $request = $this->testData['testExpireCredits'];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(32);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getEntities('credits', [], true);
+
+        $this->assertEquals($credits['items'][1]['value'], -1000);
+
+        $this->assertEquals($credits['items'][2]['value'], 1000);
+
+        $this->assertEquals(count($credits['items']), 3);
+
+        $time->addDay(32);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getEntities('credits', [], true);
+
+        $this->assertEquals(count($credits['items']), 4);
+    }
+
+    public function testExpireUsedCredits()
+    {
+        $this->ba->appAuth();
+
+        $promotionAttributes = [
+            'credit_amount' => '1000',
+        ];
+
+        $promotion1 = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $promotion2 = $this->fixtures->create('promotion:recurring', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion1['id'],
+            'entity_type' => 'promotion',
+            'code'        => 'RANDOM1',
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon1 = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion2['id'],
+            'entity_type' => 'promotion',
+            'code'        => 'RANDOM2',
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon2 = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->applyCouponOnMerchant($coupon1['code']);
+
+        $this->applyCouponOnMerchant($coupon2['code']);
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->ba->appAuth();
+
+        $request = $this->testData['testExpireCredits'];
+
+        $time = Carbon::now('Asia/Kolkata');
+
+        $time->addDay(32);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getEntities('credits', [], true);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -1000);
+    }
+
+
+    protected function applyCouponOnMerchant(string $code)
+    {
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['code'] = $code;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 }

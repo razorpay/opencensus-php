@@ -291,7 +291,7 @@ class TerminalSelectionTest extends TestCase
         $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->fixtures->merchant->enableEmi();
-        $this->fixtures->merchant->addFeatures('merchant_subvention');
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
         $this->mockTokenex();
 
         $payment = $this->getDefaultPaymentArray();
