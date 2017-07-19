@@ -106,23 +106,6 @@ trait ReconciliationTrait
         return $content;
     }
 
-    protected function initiatePayoutsAndAssertSuccess()
-    {
-        $content = $this->initiatePayouts();
-
-        $payoutEntities = $this->getEntities('payout', [], true);
-
-        foreach ($payoutEntities['items'] as $payout)
-        {
-            $this->assertEquals(PayoutStatus::INITIATED, $payout['status']);
-        }
-
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('payout_text_file', $content['kotak']);
-
-        return $content['kotak']['payout_text_file'];
-    }
-
     protected function initiateSettlementsAndAssertSuccess()
     {
         $content = $this->initiateSettlements();

@@ -12,7 +12,6 @@ use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
-use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -25,7 +24,6 @@ class ReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
-    use PayoutTrait;
     use ReconciliationTrait;
     use FileHandlerTrait;
     use HeimdallTrait;
@@ -290,34 +288,6 @@ class ReconciliationTest extends TestCase
         $data = $this->getLastEntity('adjustment', true);
 
         $this->assertArraySelectiveEquals($content, $data);
-    }
-
-    public function testPayoutReconciliation()
-    {
-        // Create payments and refunds with timestamps two days back
-        $payoutEntities = $this->createPayoutEntities();
-
-        // reconciliation
-        $txns = $this->matchTransactions($payoutEntities);
-
-        // Generate settlements for above transactions
-        $payoutFiles = $this->initiatePayoutsAndAssertSuccess();
-
-        // Generate reconciliation file, settlement and payout have common implementation
-        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
-
-        // Reconcile settlements, same route is being used as both are h2h
-        $data = $this->reconcileSettlements($payoutReconciliationFile);
-
-        $payoutEntities = $this->getEntities('payout', [], true);
-
-        foreach ($payoutEntities['items'] as $payout)
-        {
-            $this->assertEquals(PayoutStatus::PROCESSED, $payout['status']);
-        }
-
-        // Validate batch settlement entity
-        $this->fetchAndMatchBatchData('payout');
     }
 
     public function testReconciliationInTestMode()
