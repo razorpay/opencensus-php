@@ -33,6 +33,7 @@ class Gateway
     const NETBANKING_INDUSIND= 'netbanking_indusind';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
     const NETBANKING_RBL     = 'netbanking_rbl';
+    const NETBANKING_PNB     = 'netbanking_pnb';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_MINDGATE       = 'upi_mindgate';

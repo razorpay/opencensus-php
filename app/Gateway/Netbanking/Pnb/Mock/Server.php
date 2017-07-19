@@ -9,16 +9,6 @@ use RZP\Gateway\Netbanking\Pnb\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    /**
-     * Mock authorize
-     *
-     * The input array received here is similar to the response
-     * we expect to receive from the gateway.
-     * We run the decryption logic and return the post-response.
-     *
-     * @param  array $input
-     * @return array
-     */
     public function authorize($input)
     {
         parent::authorize($input);
@@ -45,14 +35,6 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
-    /**
-     * Mock verify
-     * The request-response flow of verify for Pnb
-     * is same as that of payment request-response
-     *
-     * @param  array $input
-     * @return array
-     */
     public function verify($input)
     {
         parent::verify($input);
@@ -73,13 +55,6 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    /**
-     * Sets the data expected from the callback.
-     * Attrs set are 'BankStatus', 'BankTransID', 'CIN'
-     *
-     * @param  array $input
-     * @return array $data
-     */
     protected function getCallbackResponseData(array $input)
     {
         $data = [
@@ -91,13 +66,6 @@ class Server extends Base\Mock\Server
         return $data;
     }
 
-    /**
-     * Converts data array to encrypted string
-     * as expected to be returned by bank
-     *
-     * @param array $data
-     * @param ['encdata' => $encryptedString];
-     */
     protected function getEncryptedData(array $data)
     {
         $dataString = http_build_query($data, null, '|');
@@ -108,20 +76,9 @@ class Server extends Base\Mock\Server
         return [ResponseFields::ENCDATA => $encryptedString];
     }
 
-    /**
-     * Converts decrypted data to array
-     * Follows the logic of 'formatDecryptedResponseString' in Pnb Gateway
-     *
-     * @param  string $decryptedString
-     * @return array  $decryptedData
-     */
     protected function getDecryptedData(string $decryptedString): array
     {
-        $search = '|';
-
-        $replace = '&';
-
-        $decryptedString = str_replace($search, $replace, $decryptedString);
+        $decryptedString = str_replace('|', '&', $decryptedString);
 
         parse_str($decryptedString, $decryptedData);
 
