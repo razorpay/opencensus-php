@@ -57,28 +57,17 @@ class Nodal
             'auth'=> $this->getAuthHeaders(),
         ];
 
-        if ($this->config['mock'] === false)
-        {
-            $request['url'] = $this->config['url'] . self::GET_BALANCE . $data['account_number'];
+        $request['url'] = $this->config['url'] . self::GET_BALANCE . $data['account_number'];
 
-            $request['method'] = 'get';
+        $request['method'] = 'get';
 
-            $request['content'] = [];
+        $request['content'] = [];
 
-            $request['options'] = $options;
+        $request['options'] = $options;
 
-            $response = $this->sendRequest($request);
+        $response = $this->sendRequest($request);
 
-            return json_decode($response->body, true);
-        }
-        else
-        {
-            return [
-                'account_number' => $data['account_number'],
-                'mock'           => true,
-                'balance'        => 1000,
-            ];
-        }
+        return json_decode($response->body, true);
     }
 
     protected function sendRequest($request)
