@@ -914,7 +914,7 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount(500000);
 
-        $this->fixtures->merchant->addFeatures('merchant_subvention');
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
