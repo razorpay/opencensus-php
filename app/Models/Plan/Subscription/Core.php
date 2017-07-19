@@ -220,7 +220,7 @@ class Core extends Base\Core
         //
         // Currently, we allow a 2FA txn to be done only if
         // it's a new subscription or if the card needs to be
-        // changed because subscription is in overdue or in
+        // changed because subscription is in pending or in
         // halted state.
         // Going forward, we can change this to allow change
         // of card even if there's no issue with the current

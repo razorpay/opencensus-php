@@ -33,4 +33,14 @@ class Repository extends Base\Repository
             $query->withTrashed();
         }
     }
+
+    public function getScheduleByPeriodIntervalAndAnchor(string $period, int $interval, int $anchor)
+    {
+         return $this->newQuery()
+                     ->where(Entity::PERIOD, '=', $period)
+                     ->merchantId(Merchant::SHARED_ACCOUNT)
+                     ->where(Entity::INTERVAL, '=', $interval)
+                     ->where(Entity::ANCHOR, '=', $anchor)
+                     ->first();
+    }
 }

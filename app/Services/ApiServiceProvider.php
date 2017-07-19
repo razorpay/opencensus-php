@@ -19,6 +19,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
+use RZP\Models\Promotion;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Batch;
@@ -279,6 +280,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'bank_account'    => BankAccount\Entity::class,
 
             'subscription'    => Subscription\Entity::class,
+            'promotion'       => Promotion\Entity::class,
         ]);
     }
 

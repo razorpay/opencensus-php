@@ -8,7 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::INTERVAL        => 'required|integer|min:1|max:365',
+        Entity::INTERVAL        => 'required|integer|min:1',
         Entity::PERIOD          => 'required|string|custom',
         Entity::NOTES           => 'sometimes|notes',
         Entity::ITEM_ID         => 'required_without:item|public_id',
@@ -38,12 +38,13 @@ class Validator extends Base\Validator
         if ($interval > $maxAllowedInterval)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Exceeds the maximum interval allowed for the given interval',
-                null,
+                'Interval provided exceed the maximum interval (' . $maxAllowedInterval . ') allowed for the given period (' . $period . ')',
+                'interval',
                 [
                     'interval'      => $interval,
                     'period'        => $period,
-                    'max_allowed'   => $maxAllowedInterval
+                    'max_allowed'   => $maxAllowedInterval,
+                    'input'         => $input
                 ]);
         }
     }

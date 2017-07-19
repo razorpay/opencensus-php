@@ -38,6 +38,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const INVITATION            = 'invitations';
     const FILE_STORE            = 'files';
@@ -59,6 +60,8 @@ class Table
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';

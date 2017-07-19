@@ -115,7 +115,7 @@ class RowProcessor extends BaseCore
 
         $failureReason = null;
 
-        $class = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
+        $class = $this->getEntityStatusNamespace($this->reconEntity->getEntityName());
 
         $status = $class::FAILED;
 
@@ -205,5 +205,10 @@ class RowProcessor extends BaseCore
         }
 
         return true;
+    }
+
+    protected function getEntityStatusNamespace(string $entityName): string
+    {
+        return Entity::getEntityNamespace($entityName) . '\\Status';
     }
 }

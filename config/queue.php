@@ -49,7 +49,7 @@ return [
             ],
             'subscription' => [
                 'activated'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'overdue'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'pending'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'halted'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ]
@@ -76,7 +76,7 @@ return [
             ],
             'subscription' => [
                 'activated'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'overdue'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'pending'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'halted'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ]

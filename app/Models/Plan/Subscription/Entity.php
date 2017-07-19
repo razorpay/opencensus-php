@@ -151,6 +151,8 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_AUTH_AMOUNT = 500;
 
+    const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 10;
+
     // --------------------- GETTERS ---------------------
 
     public function getChargeableAmount(): int
@@ -274,9 +276,9 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
     }
 
-    public function isOverDue()
+    public function isPending()
     {
-        return ($this->getAttribute(self::STATUS) === Status::OVERDUE);
+        return ($this->getAttribute(self::STATUS) === Status::PENDING);
     }
 
     public function isHalted()
@@ -563,5 +565,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $anchor;
+    }
+
+    public function isMoreThanOneYear()
+    {
+        $plan = $this->plan;
+
+        $totalCount = $this->getTotalCount();
+
+        $totalCountForOneYear = Plan\Cycle::getTotalCountForOneYear($plan);
+
+        return ($totalCount > $totalCountForOneYear);
     }
 }
