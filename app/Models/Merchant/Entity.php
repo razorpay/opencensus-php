@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 use RZP\Models\User;
 use RZP\Models\Base;
+use RZP\Models\Emi;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
@@ -284,6 +285,18 @@ class Entity extends Base\PublicEntity
         return $this->features
                     ->pluck(Feature\Entity::NAME)
                     ->toArray();
+    }
+
+    public function getEmiSubvention()
+    {
+        $subvention = Emi\Subvention::CUSTOMER;
+
+        if ($this->isFeatureEnabled(Feature\Constants::EMI_MERCHANT_SUBVENTION))
+        {
+            $subvention = Emi\Subvention::MERCHANT;
+        }
+
+        return $subvention;
     }
 
     public function activate()

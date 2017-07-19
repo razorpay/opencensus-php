@@ -62,9 +62,6 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::EMI)
                   ->default(0);
 
-            $table->string(Methods::EMI_SUBVENTION)
-                  ->nullable();
-
             $table->boolean(Methods::FREECHARGE)
                   ->default(0);
 

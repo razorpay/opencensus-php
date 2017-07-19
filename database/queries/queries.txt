@@ -2261,3 +2261,7 @@ ALTER TABLE credits
 
 ALTER TABLE schedule_tasks
     ADD COLUMN deleted_at INT(11) DEFAULT NULL AFTER updated_at;
+
+# Removes emi_subvention from methods
+ALTER TABLE merchant_banks
+    DROP COLUMN emi_subvention;
