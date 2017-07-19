@@ -14,10 +14,11 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FileStore;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Payout\Status as PayoutStatus;
+use RZP\Models\Settlement;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class ReconciliationTest extends TestCase
@@ -68,7 +69,8 @@ class ReconciliationTest extends TestCase
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
 
-        $notNullKeys = ['utr', 'settled_on'];
+        $notNullKeys = [Settlement\Entity::UTR, Settlement\Entity::SETTLED_ON, Settlement\Entity::STATUS];
+
         foreach ($notNullKeys as $key)
         {
             $this->assertNotNull($setl[$key]);
@@ -120,10 +122,16 @@ class ReconciliationTest extends TestCase
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
-        $this->assertEquals($batchFundTransfer['id'], $settlement['batch_fund_transfer_id']);
+        $this->assertEquals(
+            $batchFundTransfer['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
 
-        $this->assertNotNull($settlement['utr']);
-        $this->assertNull($settlement['settled_on']);
+        $notNullKeys = [Settlement\Entity::UTR, Settlement\Entity::STATUS];
+        foreach ($notNullKeys as $key)
+        {
+            $this->assertNotNull($settlement[$key]);
+        }
+
+        $this->assertNull($settlement[Settlement\Entity::SETTLED_ON]);
 
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -301,6 +309,13 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements, same route is being used as both are h2h
         $data = $this->reconcileSettlements($payoutReconciliationFile);
 
+        $payoutEntities = $this->getEntities('payout', [], true);
+
+        foreach ($payoutEntities['items'] as $payout)
+        {
+            $this->assertEquals(PayoutStatus::PROCESSED, $payout['status']);
+        }
+
         // Validate batch settlement entity
         $this->fetchAndMatchBatchData('payout');
     }
@@ -331,7 +346,6 @@ class ReconciliationTest extends TestCase
 
         $attemptsWithUtr = $attemptsWithoutUtr = 0;
 
-        // s($ftas);
         foreach ($ftas['items'] as $attempt)
         {
             if ($attempt['utr'] === null)
@@ -346,79 +360,6 @@ class ReconciliationTest extends TestCase
 
         $this->assertEquals(2, $attemptsWithoutUtr);
         $this->assertEquals(3, $attemptsWithUtr);
-    }
-
-    protected function createSettlementsAndSettlementFile(
-        $settlementCount = 2,
-        $setlAttemptTimestamp = null): FileStore\Creator
-    {
-        $timestamp = $setlAttemptTimestamp ?: Carbon::today("Asia/Kolkata")->timestamp;
-
-        // Create merchant
-        $merchant = $this->fixtures->create('merchant');
-        $merchantId = $merchant->getId();
-
-        $bankAccount = $this->fixtures->create('bank_account', ['entity_id' => $merchantId]);
-
-        // Create settlements
-        $settlements = $this->fixtures->times($settlementCount)->create(
-            'settlement',
-            [
-                'merchant_id' => $merchantId,
-                'utr' => null,
-                'created_at' => $timestamp,
-            ]);
-
-        // Create batch of settlement
-        $batchTransferEntity = $this->fixtures->create(
-            'batch_fund_transfer',
-            [
-                'total_count' => 1,
-                'transaction_count' => $settlementCount,
-                'created_at' => $timestamp
-            ]);
-
-        // Create fund transfer attempts
-        $textData = $allAttempts = [];
-
-        foreach ($settlements as $settlement)
-        {
-            // Create transaction
-            $transaction = $this->fixtures->create(
-                                'transaction',
-                                [
-                                    'merchant_id'   => $merchantId,
-                                    'type'          => 'settlement',
-                                    'entity_id'     => $settlement->getId()
-                                ]);
-
-            $this->fixtures->edit('settlement', $settlement->getId(), ['transaction_id' => $transaction->getId()]);
-
-            $fta = $this->fixtures->create(
-                'fund_transfer_attempt',
-                [
-                    'source_id'                 => $settlement->getId(),
-                    'created_at'                => $timestamp,
-                    'batch_fund_transfer_id'    => $batchTransferEntity->getId(),
-                    'merchant_id'               => $merchantId
-                ]
-            );
-
-            $allAttempts[] = $fta;
-        }
-
-        list($textFile, $excelFile) = (new Kotak\NodalAccount)->generateSettlementFile(
-                                                                        $allAttempts, false);
-
-        // Update batch with generated settlement file id
-        $batchTransferEntity->setTxtFileId(($textFile->get())['id']);
-        $this->fixtures->edit(
-            'batch_fund_transfer',
-            $batchTransferEntity->getId(),
-            ['txt_file_id' => ($textFile->get())['id']]
-        );
-
-        return $textFile;
     }
 
     protected function setAdminForInternalAuth()

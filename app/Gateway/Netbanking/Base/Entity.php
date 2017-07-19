@@ -95,6 +95,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::CREDIT_ACCOUNT_NUMBER, $creditAccountNumber);
     }
 
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
     public function isTpv()
     {
         $accountNumber = $this->getAttribute(self::ACCOUNT_NUMBER);
@@ -140,5 +145,15 @@ class Entity extends Base\Entity
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getReceived()
+    {
+        return $this->getAttribute(self::RECEIVED);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
     }
 }

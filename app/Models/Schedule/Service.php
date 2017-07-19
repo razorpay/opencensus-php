@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Schedule;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Service extends Base\Service
 {
@@ -69,5 +73,21 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCHEDULE_EDITED, $schedule->toArray());
 
         return $schedule->toArrayPublic();
+    }
+
+    public function processTasks(array $input): array
+    {
+        $this->trace->info(TraceCode::SCHEDULE_TASKS_PROCESS_REQUEST, $input);
+
+        (new ScheduleTask\Validator)->validateInput('processTasks', $input);
+
+        //all tasks which are due and less than time
+        $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
+
+        $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
+
+        return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
     }
 }

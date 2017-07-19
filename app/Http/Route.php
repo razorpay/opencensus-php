@@ -139,7 +139,6 @@ final class Route
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
-        'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -205,6 +204,7 @@ final class Route
         'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
         'schedule_migration'                      => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
+        'schedule_process_tasks'                  => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -558,7 +558,13 @@ final class Route
         'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
         'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
         'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
-
+        //promotion routes
+        'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
+        'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
+        //coupon routes
+        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -948,6 +954,12 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'schedule_process_tasks',
+        'promotion_create',
+        'promotion_update',
+        'coupon_create',
+        'coupon_apply',
+        'coupon_delete',
         'merchant_fetch_users',
         'invitation_fetch_by_token',
         'invitation_action',
@@ -975,7 +987,6 @@ final class Route
         'merchant_edit_config',
         'merchant_edit_config_logo',
         'merchant_delete_config_logo',
-        'merchant_fetch_balance',
         'merchant_fetch_config',
         'merchant_sub_create',
         'customer_delete',
@@ -1293,6 +1304,7 @@ final class Route
             'payment_update_on_hold',
             'refund_retry_failed',
             'reports_transaction_dsp',
+            'schedule_process_tasks',
         ],
 
         'kotak' => [
@@ -1642,7 +1654,7 @@ final class Route
         $this->router
              ->any('{all}',
                    [
-                       'as' => 'api_root',
+                       'as' => 'api_catch_all',
                        'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
                    ])
              ->where('all', '.*');
