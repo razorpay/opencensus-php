@@ -11,4 +11,7 @@ return [
             ]
         ]
     ],
+    'testDeleteWorkflow' => [
+        "name" => "Test workflow",
+    ],
 ];

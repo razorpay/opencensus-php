@@ -26,6 +26,21 @@ trait WorkflowTrait
         return $response;
     }
 
+    private function deleteWorkflow($workflowId, $orgId)
+    {
+        $this->ba->adminAuth('test', null, $orgId);
+
+        $request = [
+            'method' => 'DELETE',
+            'url'    => '/workflows/' . $workflowId,
+            'content' => [],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     public function getWorkflowPermissions($orgId)
     {
         $request = [

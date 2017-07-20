@@ -15,6 +15,8 @@ class WorkflowTest extends TestCase
     use RequestResponseFlowTrait;
     use HeimdallTrait;
 
+    protected $input = [];
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WorkflowTestData.php';
@@ -28,11 +30,8 @@ class WorkflowTest extends TestCase
 
         $this->addWorkflowPermissionsToOrg($this->org);
 
-        $this->ba->adminAuth();
-    }
+        $this->ba->adminAuth('test', null, $this->org->getPublicId());
 
-    public function testCreateWorkflow()
-    {
         $permissions = $this->getWorkflowPermissions($this->org->getPublicId());
 
         $permissionIds = array_map(function ($permission)
@@ -40,11 +39,26 @@ class WorkflowTest extends TestCase
             return $permission['id'];
         }, $permissions['items']);
 
-        $input = [
+        $this->input = [
             'permissions' => array_slice($permissionIds, 0, 2),
         ];
 
-        $response = $this->createWorkflow($input);
+    }
+
+    public function testCreateWorkflow()
+    {
+        $response = $this->createWorkflow($this->input);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testDeleteWorkflow()
+    {
+        $workflow = $this->createWorkflow($this->input);
+
+        $response = $this->deleteWorkflow($workflow['id'], $this->org->getPublicId());
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
