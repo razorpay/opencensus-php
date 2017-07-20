@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Billdesk;
+use RZP\Gateway\Billdesk\AuthStatus;
 use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
@@ -52,7 +53,7 @@ class Server extends Base\Mock\Server
             'SecurityID'        => 'NA',
             'SecurityPassword'  => 'NA',
             'TxnDate'           => $date,
-            'AuthStatus'        => '0300',
+            'AuthStatus'        => AuthStatus::SUCCESS,
             'SettlementType'    => 'NA',
             'AdditionalInfo1'   => 'NA',
             'AdditionalInfo2'   => 'NA',
@@ -64,6 +65,11 @@ class Server extends Base\Mock\Server
             'ErrorStatus'       => 'NA',
             'ErrorDescription'  => 'NA',
         );
+
+        if ($gatewayPayment->getBankId() === 'ICO')
+        {
+            $content['AuthStatus'] = AuthStatus::PENDING;
+        }
 
         $msg = $this->getGatewayInstance()
                     // ->setInput($gatewayInput)
@@ -122,6 +128,8 @@ class Server extends Base\Mock\Server
             if (isset($payment[$key]) === true)
                 $content[$key] = $payment[$key];
         }
+
+        $content['AuthStatus'] = AuthStatus::SUCCESS;
 
         $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
 

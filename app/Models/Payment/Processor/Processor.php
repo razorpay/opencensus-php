@@ -55,10 +55,6 @@ class Processor
      */
     const MAX_RETRY_ATTEMPTS = 5;
 
-    // Make sure that this is below 900 (seconds) because SQS doesn't support
-    // delay over 15 minutes.
-    const CAPTURE_QUEUE_DELAY = 180;
-
     /**
      * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
      * we do not send a notification to the customer.
@@ -724,6 +720,8 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
+        $this->validateBankTransferDetailsIfApplicable($payment);
+
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
         $metadata = $payment->getMetadata();
@@ -941,6 +939,16 @@ class Processor
         $invoice->getValidator()->validateInvoicePayable();
 
         $payment->invoice()->associate($invoice);
+    }
+
+    protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
+    {
+        if (($payment->isBankTransfer() === true) and
+            ($this->app['basicauth']->isAppAuth() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $payment->getMethod());
+        }
     }
 
     protected function tracePaymentFailed($error, string $traceCode)

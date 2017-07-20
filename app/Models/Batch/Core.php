@@ -17,6 +17,8 @@ class Core extends Base\Core
 
     public function create(array $input): Entity
     {
+        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
+
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);
@@ -165,10 +167,10 @@ class Core extends Base\Core
         {
             $this->trace->traceException(
                 $e,
-                Trace::ERROR,
+                null,
                 TraceCode::BATCH_PROCESSING_ERROR,
                 [
-                    'batch' => $batch->toArrayPublic(),
+                    'batch' => $batch->toArray(),
                 ]);
 
             // Even if there is any error during processing of batch

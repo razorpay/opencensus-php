@@ -232,6 +232,7 @@ class Processor extends Base\Core
     protected function getSummary(): array
     {
         $failureEntityIds = $successEntityIds = $allEntityIds = [];
+        $failureEntities = new Base\PublicCollection;
 
         foreach ($this->allEntities as $entity)
         {
@@ -241,7 +242,7 @@ class Processor extends Base\Core
 
             if ($entity->isStatusFailed())
             {
-                $failureEntityIds[] = $entityId;
+                $failureEntities[] = $entity;
             }
             else
             {
@@ -254,7 +255,21 @@ class Processor extends Base\Core
         // Ideally there shouldn't be duplicates in success, but we do a defensive unique
         $allEntityIds = array_unique($allEntityIds);
         $successEntityIds = array_unique($successEntityIds);
-        $failureEntityIds = array_unique($failureEntityIds);
+
+        $failureEntities = $failureEntities->uniqueStrict(function ($entity) {
+            return $entity->getId();
+        });
+
+        $failureAmount = 0;
+
+        foreach ($failureEntities as $entity)
+        {
+            $failureEntityIds[] = $entity->getId();
+
+            $failureAmount += $entity->getAmount();
+        }
+
+        $failureAmount = $failureAmount / 100;
 
         // If multiple, let's say 2, attempts were made, on the same day for a settlement,
         // the recon file would have both failure and success rows corresponding to each
@@ -263,12 +278,48 @@ class Processor extends Base\Core
         // settlement, we do this
         $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
 
-        return [
-            'total_count'               => count($allEntityIds),
-            'failures_count'            => count($failureEntityIds),
-            'failure ids'               => implode(',', $failureEntityIds),
-            'processing failed ids'     => implode(',', $this->unprocessedIds),
+        $totalCount = count($allEntityIds);
+        $failureCount = count($failureEntityIds);
+
+        $summary = [
+            'total_count'               => $totalCount,
+            'unprocessed_ids'           => implode(', ', $this->unprocessedIds),
+            'failures_count'            => $failureCount,
+            'failure_amount (in Rs.)'   => $failureAmount,
+            'failure ids'               => $failureEntityIds,
         ];
+
+        $this->trace->error(
+            TraceCode::SETTLEMENT_RECONCILIATION_FAILED, $summary);
+
+        if ($failureCount > 0)
+        {
+            if ($totalCount === $failureCount)
+            {
+                $failureRemark = 'All settlements failed.';
+            }
+            else
+            {
+                $failureRemark = $failureCount . ' settlement(s) failed.';
+            }
+
+            if ($failureCount > 5)
+            {
+                $failureEntityIds = array_slice($failureEntityIds, 0, 5, true);
+
+                $failureIdMsg = ' A few failed settlement IDs: ';
+            }
+            else
+            {
+                $failureIdMsg = ' Settlement IDs: ';
+            }
+
+            $summary['failure remarks'] = $failureRemark;
+
+            $summary['failure ids'] = $failureIdMsg . implode(', ', $failureEntityIds);
+        }
+
+        return $summary;
     }
 
     protected function sendReconciliationSummaryMail($response)
@@ -287,7 +338,7 @@ class Processor extends Base\Core
 
         if ($failureCount !== 0)
         {
-            $msg .= 'Failed settlement ids: ' . $response['failure ids'];
+            $msg .= $response['failure ids'];
         }
 
         $data['date'] = $this->date;

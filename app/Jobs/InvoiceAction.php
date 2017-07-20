@@ -5,11 +5,11 @@ namespace RZP\Jobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Models\Invoice;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
-use RZP\Models\Invoice;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * @deprecated
@@ -45,7 +45,8 @@ class InvoiceAction extends Job implements ShouldQueue
 
     public function __construct(string $mode, string $event, string $id)
     {
-        $this->mode  = $mode;
+        parent::__construct($mode);
+
         $this->event = $event;
         $this->id    = $id;
     }
@@ -72,22 +73,13 @@ class InvoiceAction extends Job implements ShouldQueue
 
             $timeTaken = microtime(true) - $timeStarted;
 
-            $tracePayload = $this->getTracePayload(
-                                    [
-                                        'time_taken'     => $timeTaken,
-                                        'handler_result' => $handlerResult,
-                                    ]);
-
-            if ($handlerResult === false)
-            {
-                $this->trace->error(
-                    TraceCode::INVOICE_ACTION_JOB_ERROR, $tracePayload);
-            }
-            else
-            {
-                $this->trace->debug(
-                    TraceCode::INVOICE_ACTION_JOB_HANDLED, $tracePayload);
-            }
+            $this->trace->debug(
+                TraceCode::INVOICE_ACTION_JOB_HANDLED,
+                $this->getTracePayload(
+                    [
+                        'time_taken'     => $timeTaken,
+                        'handler_result' => $handlerResult,
+                    ]));
 
             $this->delete();
         }
@@ -152,10 +144,9 @@ class InvoiceAction extends Job implements ShouldQueue
     {
         $this->core->createInvoicePdf($this->invoice);
 
-        //
         // Unless it throws exception, above is assumed to be successful, hence
         // returning true.
-        //
+
         return true;
     }
 
@@ -163,13 +154,16 @@ class InvoiceAction extends Job implements ShouldQueue
 
     private function handleException(\Throwable $e)
     {
-        //
         // By default job gets deleted
-        //
 
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
+        // Delete the job if max attempt has exhausted or
+        // if it's bad request validation exception (which will
+        // never get corrected on subsequent retries also).
+
+        if (($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS) or
+            ($e instanceof BadRequestValidationFailureException))
         {
             $this->delete();
         }
@@ -182,7 +176,7 @@ class InvoiceAction extends Job implements ShouldQueue
 
         $this->trace->traceException(
             $e,
-            Trace::ERROR,
+            null,
             TraceCode::INVOICE_ACTION_JOB_ERROR,
             $this->getTracePayload(['job_action' => $jobAction])
         );
@@ -191,9 +185,10 @@ class InvoiceAction extends Job implements ShouldQueue
     private function getTracePayload(array $with = [])
     {
         $payload = [
-            'handler'        => $this->handler,
-            'job_attempts'   => $this->attempts(),
-            'invoice_id'     => $this->id,
+            'job_attempts' => $this->attempts(),
+            'invoice_id'   => $this->id,
+            'mode'         => $this->mode,
+            'event'        => $this->event,
         ];
 
         //

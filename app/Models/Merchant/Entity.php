@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 use RZP\Models\User;
 use RZP\Models\Base;
+use RZP\Models\Emi;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
@@ -49,6 +50,9 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT              = 'suspended_at';
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
+
+    // Coupon Related Data for display only
+    const COUPON_CODE               = 'coupon_code';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -283,6 +287,18 @@ class Entity extends Base\PublicEntity
                     ->toArray();
     }
 
+    public function getEmiSubvention()
+    {
+        $subvention = Emi\Subvention::CUSTOMER;
+
+        if ($this->isFeatureEnabled(Feature\Constants::EMI_MERCHANT_SUBVENTION))
+        {
+            $subvention = Emi\Subvention::MERCHANT;
+        }
+
+        return $subvention;
+    }
+
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
@@ -436,6 +452,11 @@ class Entity extends Base\PublicEntity
     public function setSettlementSchedule($settlementSchedule)
     {
         $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
+    }
+
+    public function setMaxPaymentAmount(int $maxAmount)
+    {
+        $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
     protected function setBrandColorAttribute($brandColor)

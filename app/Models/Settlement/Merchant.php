@@ -366,7 +366,7 @@ class Merchant
         $values = [
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::INITIATED,
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);

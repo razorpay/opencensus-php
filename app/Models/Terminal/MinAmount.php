@@ -11,7 +11,7 @@ class MinAmount
     /**
      * Map of min amount for network categories.
      *
-     * The map uses a gateway level seperation for
+     * The map uses a gateway level separation for
      * netbanking and a network level segregation
      * for cards.
      *
@@ -48,21 +48,25 @@ class MinAmount
     ];
 
     /**
-    * Accepts array of key-val pair
-    * with keys : category, method, network, gateway
-    * All keys should be present
-    * A more specific combination will override a
-    * less specific combination.
-    * Corresponding values can be null
-    *
-    * @param $filterParams array
-    * @return $minAmount from constant(MIN_AMOUNT)
-    */
+     * Accepts array of key-val pair
+     * with keys : category, method, network, gateway
+     * All keys should be present
+     * A more specific combination will override a
+     * less specific combination.
+     * Corresponding values can be null
+     *
+     * @param $method
+     * @param $gateway
+     * @param $network
+     * @param $category
+     *
+     * @return int $minAmount from constant(MIN_AMOUNT)
+     */
     public static function getMinAmount($method, $gateway, $network, $category)
     {
         $key = '';
 
-        $minAmount = 0 ;
+        $minAmount = 0;
 
         // set category if not available
         if (empty($category) === true)

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5289bb7fbe23581195aa508b629d2aff",
+    "content-hash": "894d97f6ddab4479746c4d6c0a921925",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -144,16 +144,16 @@
         },
         {
             "name": "bjeavons/zxcvbn-php",
-            "version": "0.2.0",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bjeavons/zxcvbn-php.git",
-                "reference": "e9e242d76fc32de68af3b7e360b7179af05ced9e"
+                "reference": "331a88932d1a399c989967d3399a4a40eb182fd5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bjeavons/zxcvbn-php/zipball/e9e242d76fc32de68af3b7e360b7179af05ced9e",
-                "reference": "e9e242d76fc32de68af3b7e360b7179af05ced9e",
+                "url": "https://api.github.com/repos/bjeavons/zxcvbn-php/zipball/331a88932d1a399c989967d3399a4a40eb182fd5",
+                "reference": "331a88932d1a399c989967d3399a4a40eb182fd5",
                 "shasum": ""
             },
             "require": {
@@ -185,7 +185,7 @@
                 "password",
                 "zxcvbn"
             ],
-            "time": "2016-09-08T17:29:46+00:00"
+            "time": "2017-01-06T15:43:33+00:00"
         },
         {
             "name": "box/spout",
@@ -1131,16 +1131,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.5.1",
+            "version": "8.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "ab23498bb5b787ae108f5fba3e50134ce3635503"
+                "reference": "dd9cf2a10a8671d3934a7a315e927df46548bcc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/ab23498bb5b787ae108f5fba3e50134ce3635503",
-                "reference": "ab23498bb5b787ae108f5fba3e50134ce3635503",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/dd9cf2a10a8671d3934a7a315e927df46548bcc9",
+                "reference": "dd9cf2a10a8671d3934a7a315e927df46548bcc9",
                 "shasum": ""
             },
             "require": {
@@ -1195,7 +1195,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-06-06T14:19:18+00:00"
+            "time": "2017-07-18T13:07:45+00:00"
         },
         {
             "name": "giggsey/locale",

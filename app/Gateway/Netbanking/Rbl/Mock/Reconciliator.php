@@ -84,7 +84,8 @@ class Reconciliator extends Base\RefundFile
                 ClaimFields::PGI_REFERENCE      => $row[self::GATEWAY_ENTITY][Entity::BANK_PAYMENT_ID],
                 ClaimFields::BANK_REFERENCE     => $row[self::PAYMENT_ENTITY][Payment\Entity::ID],
                 ClaimFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
-                ClaimFields::PGI_STATUS         => $this->getGatewayStatus($row),
+                //As recon payments will always be success in gateway
+                ClaimFields::PGI_STATUS         => 'Success',
                 ClaimFields::ERROR_DESCRIPTION  => $this->getErrorMessage($row),
             ];
 
@@ -94,16 +95,6 @@ class Reconciliator extends Base\RefundFile
         $this->content($data, 'claims_data');
 
         return [$totalAmount, $data];
-    }
-
-    protected function getGatewayStatus(array $row)
-    {
-        if ($row[self::GATEWAY_ENTITY][Entity::STATUS] === Status::SUCCESS)
-        {
-            return 'Success';
-        }
-
-        return 'Failed';
     }
 
     protected function getErrorMessage(array $row)

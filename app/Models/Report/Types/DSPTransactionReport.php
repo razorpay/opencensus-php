@@ -63,7 +63,7 @@ class DSPTransactionReport extends BasicEntityReport
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $filename = $this->generateFilename($now);
+        $filename = $this->generateFilename($now) . '_' . strtoupper($this->mode);
 
         $fullpath = $this->writeDataToCsv($input, $filename);
 
@@ -141,7 +141,7 @@ class DSPTransactionReport extends BasicEntityReport
                 self::ACCOUNT_NUMBER        => 'NA',
                 self::ACCOUNT_TYPES         => 'NA',
                 self::TRANSACTION_DATE      => $this->getTxnDate($txn),
-                self::AMOUNT                => $txn->getAmount(),
+                self::AMOUNT                => ($txn->getAmount() / 100),
                 self::STATUS                => 'SUCCESS',
                 self::CREDIT_ACCOUNT_NUMBER => $this->getCreditAccountNumber($txn)
             ];

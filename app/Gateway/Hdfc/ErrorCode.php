@@ -60,6 +60,8 @@ class ErrorCode
     const GW00850   = 'GW00850';
     const GW00854   = 'GW00854';
     const GW00856   = 'GW00856';
+    const GW00876   = 'GW00876';
+    const GW02016   = 'GW02016';
 
     /**
      * All codes in GV000** series
@@ -103,6 +105,7 @@ class ErrorCode
     const PY20001   = 'PY20001';
     const PY20002   = 'PY20002';
     const PY20006   = 'PY20006';
+    const PY20007   = 'PY20007';
     const PY20085   = 'PY20085';
 
     //
@@ -242,6 +245,8 @@ class ErrorCode
         self::GW00850   => 'Missing Required data',
         self::GW00854   => 'Invalid Expiration Date',
         self::GW00856   => 'Invalid cvv',
+        self::GW00876   => 'Invalid cvv',
+        self::GW02016   => 'Locale text not found',
 
         self::GV00001   => 'Unknown VPAS version',
         self::GV00002   => 'Cardholder not enrolled',
@@ -266,7 +271,8 @@ class ErrorCode
         self::PY20001   => 'Invalid Action Type',
         self::PY20002   => 'Invalid amount',
         self::PY20006   => 'Invalid Brand',
-        self::PY20085   => 'Payment failed',
+        self::PY20007   => 'Invalid Order status',
+        self::PY20085   => 'Invalid payment status',
 
         self::CM90000   => 'Database error',
         self::CM90001   => 'Database configuration error',
@@ -288,7 +294,7 @@ class ErrorCode
         self::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on RuPay 3dsecure page.',
         self::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
         self::RP00013   => 'Operation timed out while making the request',
-        self::RP00014   => 'Gatewqy request failed due to some issue.',
+        self::RP00014   => 'Gateway request failed due to some issue.',
     );
 
     /**
@@ -332,6 +338,8 @@ class ErrorCode
         self::GW00850   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GW00854   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::GW00856   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        self::GW00876   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        self::GW02016   => Error\ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
 
         self::GV00001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GV00002   => Error\ErrorCode::GATEWAY_ERROR_CARD_NOT_ENROLLED,
@@ -355,6 +363,7 @@ class ErrorCode
         self::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         self::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
         self::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
+        self::PY20007   => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         self::PY20085   => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
         self::CM90000   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,

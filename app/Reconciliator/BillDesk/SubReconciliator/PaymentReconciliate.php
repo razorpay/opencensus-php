@@ -50,7 +50,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGst(array $row)
     {
-        $gst = floatval($row[self::COLUMN_GST]) * 100;
+        $columnGst = null;
+
+        if (isset($row[self::COLUMN_GST]) === true)
+        {
+            $columnGst = $row[self::COLUMN_GST];
+        }
+
+        $gst = floatval($columnGst) * 100;
 
         return $gst;
     }

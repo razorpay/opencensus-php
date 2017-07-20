@@ -244,6 +244,8 @@ class SubscriptionCreateTest extends TestCase
 
         $addonLi = $lineItems['items'][0];
         $this->assertEquals(300, $addonLi['amount']);
+        $this->assertEquals(300, $addonLi['gross_amount']);
+        $this->assertEquals(1, $addonLi['quantity']);
         $this->assertEquals('Sample Upfront Amount', $addonLi['name']);
         $this->assertEquals($addon['id'], $addonLi['ref_id']);
         $this->assertEquals('addon', $addonLi['ref_type']);
@@ -265,6 +267,37 @@ class SubscriptionCreateTest extends TestCase
     public function testCreateSubscriptionWithNoStartAtAndWithAddonItemId()
     {
 
+    }
+
+    public function testCreateSubscriptionWithMultipleQuantityAddon()
+    {
+        $this->createSubscriptionPreRequisiteEntities();
+
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $items = $this->getEntities('item', [], true);
+        $addon = $this->getLastEntity('addon', true);
+        $lineItems = $this->getEntities('line_item', [], true);
+
+        $this->assertEquals(2, $items['count']);
+
+        $addonItem = $items['items'][0];
+        $this->assertEquals('addon', $addonItem['type']);
+        $this->assertEquals('Sample Upfront Amount', $addonItem['name']);
+        $this->assertEquals(300, $addonItem['amount']);
+
+        $this->assertEquals(2, $lineItems['count']);
+
+        $addonLi = $lineItems['items'][0];
+        $this->assertEquals(300, $addonLi['amount']);
+        $this->assertEquals(1200, $addonLi['gross_amount']);
+        $this->assertEquals(4, $addonLi['quantity']);
+        $this->assertEquals($addon['id'], $addonLi['ref_id']);
+        $this->assertEquals($addonItem['id'], $addonLi['item_id']);
+
+        // (4 * 300)[addon amount] + 2000 [plan amount]
+        $this->assertEquals(3200, $invoice['amount']);
     }
 
     public function testCreateSubscriptionWithStartAtAndAddon()

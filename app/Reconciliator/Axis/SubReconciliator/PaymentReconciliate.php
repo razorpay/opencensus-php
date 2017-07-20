@@ -298,41 +298,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $cardType;
     }
 
-    protected function forceAuthorizeFailed($row)
+    protected function getInputForForceAuthorize($row)
     {
-        $paymentService = new PaymentService();
-
-        $paymentId = $this->payment->getPublicId();
-
-        $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                'message'         => 'Payment status is still failed after verify. Doing force authorize now.',
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => get_called_class()
-            ]);
-
-        // If there's any issue during authorize, the function throws an exception.
-        $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
-
-        $this->app['trace']->info(
-            TraceCode::RECON_INFO,
-            [
-                'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
-                'message'   => 'Response received from force authorization',
-                'response'  => $response
-            ]
-        );
-
-        if ((empty($response['status']) === false) and
-            ($response['status'] === PaymentStatus::AUTHORIZED))
-        {
-            return true;
-        }
-
-        return false;
+        return [
+            'vpc_TransactionNo' => $row[self::COLUMN_ORDER_ID]
+        ];
     }
 
     protected function getCardLocale($cardLocale, $row)
@@ -347,8 +317,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             return null;
         }
@@ -371,8 +340,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // It's as good as no card locale present in the row.
             return null;
@@ -408,6 +376,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $gatewaySettledAt;
     }
 
+
     protected function isCybersource(array $row)
     {
         $msgType = $mid = null;
@@ -429,5 +398,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return false;
+    }
+
+    protected function shouldAttemptForceAuthorizeFailed()
+    {
+        return true;
     }
 }

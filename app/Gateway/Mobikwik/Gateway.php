@@ -169,16 +169,17 @@ class Gateway extends Base\Gateway
     {
         // Hardcoding these refunds for processing
         $unprocessedRefunds = [
-            '87oeRch7kWWLw6',
-            '84gO6KWf1qRCgy',
-            '87oeOJoJ98KTVR',
-            '7zzIk6t8YRUbMV',
+            '8CMFDlZ5x1sJDN',
+            '8B1MhtiNTqpHrn',
+            '8CxbIDA3apzC7m',
+            '8DuOKuF693LLDo',
+            '89zzrne0Zfn0rt',
+            '8AkhBJga32H9cR'
         ];
 
         $processedRefund = [
-            '7mWcjUCj5WpY1f',
-            '84gQUiSDbfMInm',
-            '84gOn3uk4nsihk',
+            '8CZ3IfaFiHEGKv',
+            '8ACvGwyP8NMJu4',
         ];
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
