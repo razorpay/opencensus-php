@@ -201,6 +201,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAID, $amountPaid);
     }
 
+    public function setPartialPayment(bool $partialPayment)
+    {
+        $this->setAttribute(self::PARTIAL_PAYMENT, $partialPayment);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -281,6 +286,13 @@ class Entity extends Base\PublicEntity
     public function allowPartialPayment()
     {
         $this->setAttribute(self::PARTIAL_PAYMENT, true);
+    }
+
+    public function togglePartialPayment()
+    {
+        $value = ! $this->isPartialPaymentAllowed();
+
+        $this->setPartialPayment($value);
     }
 
     public function incrementAttempts()
