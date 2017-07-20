@@ -72,8 +72,6 @@ class MerchantFilter extends Terminal\Filter
      * */
     public function billdeskCategoryFilter(Terminal\Entity $terminal, array $input) : bool
     {
-        $allDisallowedBanks = $this->getAllDisallowedBanks();
-
         $bank = $input['payment']->getBank();
 
         $gateway = $terminal->getGateway();
@@ -82,12 +80,12 @@ class MerchantFilter extends Terminal\Filter
 
         $networkCategory = $terminal->getNetworkCategory();
 
+        $disAllowedBanks = self::CATEGORY_DISALLOWED_IFSC[$category2] ?? [];
+
         if (($input['payment']->isNetbanking() === true) and
             ($gateway === Gateway::BILLDESK) and
-            ($this->isBankDisallowed($bank, $allDisallowedBanks) === true))
+            ($this->isBankDisallowed($bank, $disAllowedBanks) === true))
         {
-            $disAllowedBanks = self::CATEGORY_DISALLOWED_IFSC[$category2] ?? [];
-
             // Two rules to be checked
             switch ($category2)
             {
@@ -96,27 +94,20 @@ class MerchantFilter extends Terminal\Filter
                 // i.e on the shared terminal return false.
                 case Category::SECURITIES :
                 case Category::COMMODITIES:
-                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
-                    {
-                        return ($terminal->isShared() === false);
-                    }
-
+                    return ($terminal->isShared() === false);
                     break;
 
                 // For corporate merchants,
                 // In case of ICICI,
                 // disallow - shared terminal with same category
                 case Category::CORPORATE:
-                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
-                    {
-                        // on the shared terminal with a different
-                        // network category is allowed
-                         if (($terminal->isShared() === true) and
-                             ($networkCategory === $category2))
-                         {
-                            return false;
-                         }
-                    }
+                    // on the shared terminal with a different
+                    // network category is allowed
+                     if (($terminal->isShared() === true) and
+                         ($networkCategory === $category2))
+                     {
+                        return false;
+                     }
 
                     break;
 
@@ -124,10 +115,7 @@ class MerchantFilter extends Terminal\Filter
                 // axis transactions, they are to be routed through our
                 // shared directly integrated terminals
                 case Category::HOUSING:
-                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
-                    {
-                        return false;
-                    }
+                    return false;
                     break;
 
                 // For insurance and mutual funds merchants, the billdesk
@@ -156,18 +144,6 @@ class MerchantFilter extends Terminal\Filter
     protected function isBankDisallowed($bank, $disAllowedBanks)
     {
         return (in_array($bank, $disAllowedBanks, true) === true);
-    }
-
-    protected function getAllDisallowedBanks()
-    {
-        $allDisallowedBanks = [];
-
-        foreach (self::CATEGORY_DISALLOWED_IFSC as $category2 => $ifscsForCategory)
-        {
-            $allDisallowedBanks = array_merge($allDisallowedBanks, $ifscsForCategory);
-        }
-
-        return array_unique($allDisallowedBanks);
     }
 
     /**
