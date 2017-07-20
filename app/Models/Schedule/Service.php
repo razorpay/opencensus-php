@@ -90,6 +90,8 @@ class Service extends Base\Service
         foreach ($scheduleTasks as $scheduleTask)
         {
             $scheduleTask->updateNextRunAt($timestamp);
+
+            $this->repo->saveOrFail($scheduleTask);
         }
 
         return [
