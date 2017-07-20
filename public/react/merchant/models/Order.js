@@ -17,7 +17,7 @@ export default class Order extends GenericEntity {
 
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Payment().deserialize(item)
+        new Payment(item).deserialize()
       );
       return response;
     });

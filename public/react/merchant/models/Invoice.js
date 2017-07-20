@@ -71,7 +71,7 @@ export default class Invoice extends GenericEntity {
         }),
       },
     }).then(response => {
-      return new Invoice().deserialize(response.data);
+      return new Invoice(response.data).deserialize();
     });
   }
 
@@ -85,7 +85,7 @@ export default class Invoice extends GenericEntity {
         }),
       },
     }).then(response => {
-      return new Invoice().deserialize(response.data);
+      return new Invoice(response.data).deserialize();
     });
   }
 

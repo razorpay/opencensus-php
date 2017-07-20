@@ -21,7 +21,7 @@ export default class Customer extends GenericEntity {
   fetchForAutocomplete(data = {}) {
     return ajax('/customers/autocomplete', { data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Customer().deserialize(item)
+        new Customer(item).deserialize()
       );
       return response;
     });

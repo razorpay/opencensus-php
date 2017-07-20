@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import Activation from 'merchant/models/Activation';
 import { set, merge, push } from 'rzp/utils/immutable';
 
 export const ACTIVATION_FETCH = 'ACTIVATION_FETCH';
@@ -7,28 +8,21 @@ export const ACTIVATION_SAVE_FILE = 'ACTIVATION_SAVE_FILE';
 export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT';
 
 export const fetchActivationDetails = (accountId = '') => {
+  let activation = new Activation({ accountId });
   return {
     type: ACTIVATION_FETCH,
-    payload: ajax({
-      url: `/activation/details/${accountId}`,
-      appendModeInURL: false,
-    }).then(response => {
-      response.data.bank_account_number_confirmation =
-        response.data.bank_account_number;
-      return response;
-    }),
+    payload: activation.fetch(),
   };
 };
 
 export const saveStep = ({ step, data, accountId = '' }) => {
+  let activation = new Activation({
+    ...data,
+    accountId,
+  });
   return {
     type: ACTIVATION_SAVE_STEP,
-    payload: ajax({
-      url: `/activation/save/step/${step}/${accountId}`,
-      method: 'post',
-      appendModeInURL: false,
-      data,
-    }),
+    payload: activation.saveStep(step),
     step,
     data,
   };
@@ -55,14 +49,13 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
 };
 
 export const submitForm = ({ step, data, accountId = '' }) => {
+  let activation = new Activation({
+    ...data,
+    accountId,
+  });
   return {
     type: ACTIVATION_FORM_SUBMIT,
-    payload: ajax({
-      url: `/activation/${accountId}`,
-      method: 'post',
-      appendModeInURL: false,
-      data,
-    }),
+    payload: activation.submit(),
     step,
     data,
   };
@@ -91,7 +84,7 @@ export default function(state = initialState, action) {
       return set(state, 'loading', true);
 
     case `${ACTIVATION_FETCH}::SUCCESS`:
-      let data = action.payload.data;
+      let data = action.payload;
       let stepsFinished = data.steps_finished;
       let steps = Object.keys(initialState.steps).reduce((prev, key) => {
         if (stepsFinished.indexOf(+key) !== -1) {

@@ -29,6 +29,7 @@ class Alert extends Component {
   render() {
     let props = this.props;
     let msgs = makeArray(props.message);
+    msgs = msgs.filter(msg => msg.indexOf('Status Code') === -1);
 
     if (!(!this.state.close && msgs.length)) {
       return null;
@@ -49,7 +50,7 @@ class Alert extends Component {
 
         <ul
           class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
-          style={{ paddingLeft: '15px' }}
+          style={{ paddingLeft: msgs.length === 1 ? 5 : 15 }}
         >
           {msgs.map((msg, index) => (
             <li key={index}>

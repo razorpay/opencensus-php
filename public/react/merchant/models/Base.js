@@ -15,11 +15,14 @@ import { objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 */
 
 export default class BaseModel {
+  // The unique identifier for the resource/model. Usually, it will be `id` for most cases
   resourceIdField = 'id';
 
   constructor(props = {}) {
     Object.assign(this, props);
-    this.stashPayload(props);
+
+    // Stash the raw payload which can be used to diff the request body on PATCH requests
+    this._stashPayload(props);
   }
 
   get isNew() {
@@ -73,13 +76,14 @@ export default class BaseModel {
   /*
     Converts the raw JSON payload to a Model
    */
-  deserialize(json) {
-    for (let prop in json) {
-      this.deserializeProperty(prop, json[prop], json);
+  deserialize() {
+    for (let prop in this) {
+      if (this.hasOwnProperty(prop)) {
+        this.deserializeProperty(prop, this[prop], this);
+      }
     }
 
     this.didDeserialize();
-    this.stashPayload(json);
     return this;
   }
 
@@ -91,22 +95,18 @@ export default class BaseModel {
     this[prop] = value;
   }
 
-  stashPayload(json) {
-    if (!this.isNew && isBlank(this.__stashed__)) {
-      this.__stashed__ = json;
-    }
-  }
-
-  getPayload() {
-    return this.__stashed__;
-  }
-
   /*
     Hook to that gets invoked after the deserialization is done.
   */
   didDeserialize() {}
 
-  toString() {
-    return 'model';
+  getPayload() {
+    return this.__stashed__;
+  }
+
+  _stashPayload(json) {
+    if (!this.isNew && isBlank(this.__stashed__)) {
+      this.__stashed__ = json;
+    }
   }
 }

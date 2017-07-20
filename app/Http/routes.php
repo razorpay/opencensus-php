@@ -26,9 +26,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/auth', 'AdminController@initiateAuth');
         Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
-
-        Route::post('/password/reset', 'PasswordController@forgotAdminPassword');
-        Route::post('/password/reset/{token}', 'PasswordController@resetAdminPassword');
     });
 
     Route::group(['prefix' => 'user'], function()
@@ -48,7 +45,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/pre_signup', 'MerchantController@getSignup');
         Route::get('/keepalive', 'UserController@getKeepAlive');
         Route::get('/logout', 'UserController@getLogout');
-
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
@@ -73,7 +69,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
-
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
 
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
@@ -82,7 +77,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // This is a sensitive route
         Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
-
         // Team Administration
         Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember', 'team_users_update');
         Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember', 'team_users_delete');
@@ -106,11 +100,13 @@ Route::group(['middleware' => ['web']], function () {
 
         // Upgrades a standard invited user to a merchant
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
-
         // Registers a sub-merchant account
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
         Route::post('/tags', 'MerchantController@postTagMerchant');
+
+        // Send Feedback Mail to support@razorpay.com
+        Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()

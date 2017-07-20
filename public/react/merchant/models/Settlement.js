@@ -17,7 +17,7 @@ export default class Settlement extends GenericEntity {
 
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
+        new Klass(item).deserialize()
       );
       return response;
     });
