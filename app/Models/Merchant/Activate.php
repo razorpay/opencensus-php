@@ -329,6 +329,12 @@ class Activate extends Base\Core
                 continue;
             }
 
+            // Don't include marketplace transfer method (for now)
+            if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::TRANSFER)
+            {
+                continue;
+            }
+
             // Don't add international rule if merchant international not active
             if (($merchant->isInternational() === false) and
                  ($rule[Pricing\Entity::INTERNATIONAL] === true))
