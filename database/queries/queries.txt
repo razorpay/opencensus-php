@@ -2265,3 +2265,6 @@ ALTER TABLE schedule_tasks
 # Removes emi_subvention from methods
 ALTER TABLE merchant_banks
     DROP COLUMN emi_subvention;
+
+ALTER TABLE addons
+    ADD COLUMN quantity INTEGER DEFAULT 1 AFTER invoice_id;

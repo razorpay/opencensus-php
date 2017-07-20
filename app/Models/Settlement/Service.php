@@ -153,7 +153,10 @@ class Service extends Base\Service
         return $report->getReport($input);
     }
 
-    public function postInitiateTransfer($input)
+    /**
+     * Initiates transfer from ICICI Nodal account
+     */
+    public function postInitiateTransfer($input): array
     {
         if (isset($input[Payment\Entity::GATEWAY]) === true)
         {
@@ -174,6 +177,9 @@ class Service extends Base\Service
 
             // amount to be transferred in paisa
             $amount = $paymentAmount - $refundAmount;
+
+            // Transfer 99% of the derived amount
+            $amount = 0.99 * $amount;
         }
         else
         {
@@ -184,7 +190,7 @@ class Service extends Base\Service
 
         if ($amount > 0)
         {
-            $amount = $amount/100;
+            $amount = number_format($amount / 100, 2, '.', '');
 
             $response = (new Icici\NodalAccount)->generateTransferFile($amount);
         }

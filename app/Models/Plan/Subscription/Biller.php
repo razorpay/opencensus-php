@@ -210,8 +210,9 @@ class Biller extends Base\Core
             // or item_input also to be sent in its input.
             //
             $addonLineItem = [
-                LineItem\Entity::ITEM_ID  => $addon->item->getPublicId(),
-                LineItem\Entity::REF      => $addon,
+                LineItem\Entity::QUANTITY   => $addon->getQuantity(),
+                LineItem\Entity::ITEM_ID    => $addon->item->getPublicId(),
+                LineItem\Entity::REF        => $addon,
             ];
 
             $lineItems[] = $addonLineItem;
