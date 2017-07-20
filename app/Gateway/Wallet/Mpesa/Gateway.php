@@ -614,7 +614,7 @@ class Gateway extends Base\Gateway
 
         $contentToSave = [
             Base\Entity::RESPONSE_CODE        => $content[ResponseFields::S2S_STATUS_CODE],
-            Base\Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER],
+            Base\Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER] ?? null,
             Base\Entity::RESPONSE_DESCRIPTION => $errorMessage
         ];
 
