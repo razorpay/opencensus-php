@@ -96,23 +96,26 @@ class MerchantFilter extends Terminal\Filter
 
                     break;
 
-                // On the corporate terminal, all other banks are allowed
-                // except ICICI. For ICICI, allow the direct terminals only
-                // Likely to change if corporate integration allowed from
-                // netbanking_icici
+                // For corporate merchants,
+                // In case of ICICI,
+                // disallow - shared terminal with same category
                 case Category::CORPORATE:
                     if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
                     {
-                        // Allow if the terminal has corporate
-                        // return ($terminal->isShared() === false);
+                        // on the shared terminal with a different
+                        // network category is allowed
+                         if (($terminal->isShared() === true) and
+                             ($networkCategory === $category2))
+                         {
+                            return false;
+                         }
                     }
 
-                    // else allow the non category terminal
                     break;
 
                 // On the housing terminal, we do not pass the icici and
                 // axis transactions, they are to be routed through our
-                // direct terminals
+                // shared directly integrated terminals
                 case Category::HOUSING:
                     if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
                     {
