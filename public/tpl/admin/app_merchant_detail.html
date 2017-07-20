@@ -1466,7 +1466,7 @@
                     ng-model="offer.payment_method_type">
               <option value="">All</option>
               <option value="credit">Credit</option>
-              <option value="dedit">Dedit</option>
+              <option value="debit">Debit</option>
             </select>
           </div>
         </div>
@@ -1474,7 +1474,7 @@
       <div class="form-group" ng-if="offer.payment_method && offer.payment_method !== 'upi'">
         <label for="payment_network" class="col-lg-3 control-label">Payment Network:</label>
         <div class="col-lg-9" >
-          <select name="merchant-features"  class="form-control m-b" ng-model="payment_network"
+          <select name="payment_network" class="form-control m-b" ng-model="offer.payment_network"
                   ng-if="['card', 'emi', 'wallet'].indexOf(offer.payment_method) !== -1">
             {{paymentNetworkMap}}
             <option ng-repeat="(value, network) in paymentNetworkMap" ng-value="value">{{network}}</option>
