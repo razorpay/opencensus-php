@@ -102,11 +102,16 @@ class ViewDataSerializer extends Base\Core
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
-        $isInvoicePaid = $this->invoice->isPaid();
+        $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();
 
-        $invoiceData += [
-            'is_paid' => $isInvoicePaid,
-        ];
+        // Gets public view attributes of all payments against this invoice
+        // in desc order.
+
+        $invoiceData[Entity::PAYMENTS] = $this->invoice
+                                              ->load(Entity::PAYMENTS)
+                                              ->payments
+                                              ->sortByDesc(Entity::CREATED_AT)
+                                              ->toArrayPublicView();
 
         foreach (self::$amounts as $key)
         {

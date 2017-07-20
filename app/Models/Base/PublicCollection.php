@@ -63,6 +63,17 @@ class PublicCollection extends Collection
         return $this->itemsToArrayPublic();
     }
 
+    public function toArrayPublicView()
+    {
+        return $this->map(
+                        function (Entity $entity)
+                        {
+                            return $entity->toArrayPublicView();
+                        })
+                        ->values()
+                        ->all();
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)

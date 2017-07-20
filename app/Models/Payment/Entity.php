@@ -1791,6 +1791,35 @@ class Entity extends Base\PublicEntity
 
         return $data;
     }
+
+    /**
+     * Returns attributes to be used in public views.
+     * E.g. Invoice hosted page, Subscription pages etc.
+     *
+     * @return array
+     */
+    public function toArrayPublicView()
+    {
+        $attributes = $this->getAttributes();
+
+        $data = array_only(
+                    $attributes,
+                    [
+                        self::ID,
+                        self::STATUS,
+                        self::METHOD,
+                        self::AMOUNT,
+                        self::CREATED_AT,
+                    ]);
+
+        $data['formatted_amount'] = $this->getFormattedAmount();
+
+        $data['formatted_created_at'] = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata')
+                                              ->format('j M Y');
+
+        return $data;
+    }
+
 // --------------- Relation to other entities ----------------------------------
 
     public function card()

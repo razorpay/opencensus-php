@@ -114,6 +114,7 @@ class Entity extends Base\PublicEntity
     const EMAIL                    = 'email';
     const SMS                      = 'sms';
     const ITEMS                    = 'items';
+    const IS_PAID                  = 'is_paid';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -126,6 +127,7 @@ class Entity extends Base\PublicEntity
     // ------------------------ Relation Keys ------------------------
 
     const ORDER                    = 'order';
+    const PAYMENTS                 = 'payments';
 
     protected static $sign         = 'inv';
 
