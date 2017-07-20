@@ -138,6 +138,7 @@ export default class AddWebhook extends Component {
                     <WebhookEventCheckbox eventName="subscription.pending" />
                     <WebhookEventCheckbox eventName="subscription.halted" />
                     <WebhookEventCheckbox eventName="subscription.cancelled" />
+                    <WebhookEventCheckbox eventName="subscription.completed" />
                   </div>
                 </ShowWhen>
               </div>
