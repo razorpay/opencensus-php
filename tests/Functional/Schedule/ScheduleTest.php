@@ -162,6 +162,42 @@ class ScheduleTest extends TestCase
         $this->createAndAssignSchedule();
     }
 
+    public function testUpdateNextRunAt()
+    {
+        // Basic T2 assigned to merchant
+        $task = $this->fixtures->create('merchant:schedule_task',
+                [
+                    'merchant_id' => '10000000000000',
+                    'schedule'    => [
+                        'interval'          => 1,
+                        'delay'             => 2,
+                        'hour'              => 0,
+                    ],
+                ]);
+
+        // next_run_at for task is right now set to something that isn't 12
+        $time = Carbon::createFromTimestamp($task->getNextRunAt(), 'Asia/Kolkata');
+        $this->assertNotEquals(12, $time->hour);
+
+        // Update schedule hour to 12
+        $schedule = $this->getLastEntity('schedule', true);
+        $this->ba->adminAuth();
+        $res = $this->editSchedule($schedule['id'], ['hour' => 12]);
+
+        // Update all next_run_at values
+        $this->ba->appAuth();
+        $request = $this->testData[__FUNCTION__];
+        $res = $this->makeRequestAndGetContent($request);
+
+        // Task is updated
+        $this->assertContains($task->getId(), $res['ids']);
+
+        // next_run_at for task is now set to 12
+        $task = $this->getEntityById('schedule_task', $task->getId(), true);
+        $time = Carbon::createFromTimestamp($task['next_run_at'], 'Asia/Kolkata');
+        $this->assertEquals(12, $time->hour);
+    }
+
     protected function createSubscriptionToSync()
     {
         $this->fixtures->base->connection('test');
