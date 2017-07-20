@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const SUBSCRIPTION_ID  = 'subscription_id';
     const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
+    const QUANTITY         = 'quantity';
     const INVOICE_ID       = 'invoice_id';
     const DELETED_AT       = 'deleted_at';
 
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
+        self::QUANTITY,
         self::SUBSCRIPTION_ID,
         self::ITEM_ID,
         self::ITEM,
@@ -45,17 +47,9 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
     ];
 
-    //
-    // This array should not ideally be required. But, if we don't define
-    // this array (with at least one attribute), `fill`
-    // takes all attributes as fillable by default.
-    //
-    // protected $fillable = [
-    //     self::ID,
-    // ];
-
-    // Haven't *yet* understood how this works :|
-    protected $guarded = [self::ITEM];
+    protected $fillable = [
+        self::QUANTITY,
+    ];
 
     protected $public = [
         self::ID,
@@ -67,6 +61,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::QUANTITY      => 1,
         self::DELETED_AT    => null,
         self::INVOICE_ID    => null,
     ];
@@ -79,13 +74,22 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
     ];
 
+    protected $casts = [
+        self::QUANTITY => 'int',
+    ];
+
     protected $relations = [
         self::ITEM,
     ];
 
-    // -------------------------- Setters --------------------------
+    // -------------------------- Getters --------------------------
 
-    // -------------------------- Setters Ends --------------------------
+    public function getQuantity()
+    {
+        return $this->getAttribute(self::QUANTITY);
+    }
+
+    // -------------------------- Getters Ends --------------------------
 
     // -------------------------- Public Setters --------------------------
 
