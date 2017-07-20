@@ -38,6 +38,7 @@ class Constants
     const INVOICE_PARTIAL_PAYMENTS = 'invoice_partial_payments';
     const HIDE_DOWNTIMES           = 'hide_downtimes';
     const OLD_CREDITS_FLOW         = 'old_credits_flow';
+    const CHARGE_AT_WILL           = 'charge_at_will';
     const EMI_MERCHANT_SUBVENTION  = 'emi_merchant_subvention';
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -74,6 +75,7 @@ class Constants
         self::INVOICE_PARTIAL_PAYMENTS => true,
         self::HIDE_DOWNTIMES           => true,
         self::OLD_CREDITS_FLOW         => true,
+        self::CHARGE_AT_WILL           => true,
         self::EMI_MERCHANT_SUBVENTION  => true,
     ];
 
