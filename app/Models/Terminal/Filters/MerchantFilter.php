@@ -18,16 +18,28 @@ class MerchantFilter extends Terminal\Filter
     // Banks that are to be removed for each of
     // the following caetgories are listed below
     const CATEGORY_DISALLOWED_IFSC = [
+        Category::COMMODITIES => [
+            IFSC::ICIC
+        ],
+        Category::SECURITIES => [
+            IFSC::ICIC
+        ],
         Category::CORPORATE => [
             IFSC::ICIC
         ],
         Category::INSURANCE => [
             IFSC::ICIC,
             IFSC::UTIB,
+            IFSC::CNRB,
+            Netbanking::PUNB_R,
+            Netbanking::PUNB_C,
         ],
         Category::MUTUAL_FUNDS => [
             IFSC::ICIC,
             IFSC::UTIB,
+            IFSC::CNRB,
+            Netbanking::PUNB_R,
+            Netbanking::PUNB_C,
         ],
         Category::HOUSING => [
             IFSC::ICIC,
@@ -65,40 +77,46 @@ class MerchantFilter extends Terminal\Filter
 
         if (($input['payment']->isNetbanking() === true) and
             ($gateway === Gateway::BILLDESK) and
-            (in_array($bank, $allDisallowedBanks, true) === true))
+            ($this->isBankDisallowed($bank, $allDisallowedBanks) === true))
         {
             $disAllowedBanks = self::CATEGORY_DISALLOWED_IFSC[$category2] ?? [];
 
             // Two rules to be checked
             switch ($category2)
             {
-                // If securities or commodities then the shared terminal
-                // should not be used, i.e on the shared terminal return
-                // false.
+                // If securities or commodities, no check required for other banks
+                // the shared terminal should not be used for icici ,
+                // i.e on the shared terminal return false.
                 case Category::SECURITIES :
                 case Category::COMMODITIES:
-                    return ($terminal->isShared() === false);
+                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
+                    {
+                        return ($terminal->isShared() === false);
+                    }
+
                     break;
 
                 // On the corporate terminal, all other banks are allowed
-                // except ICICI. For ICICI, allow the non category billdesk
-                // terminals.
+                // except ICICI. For ICICI, allow the direct terminals only
+                // Likely to change if corporate integration allowed from
+                // netbanking_icici
                 case Category::CORPORATE:
-                    if (in_array($bank, $disAllowedBanks, true) === false)
+                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
                     {
-                        return true;
+                        // Allow if the terminal has corporate
+                        // return ($terminal->isShared() === false);
                     }
 
-                    return ($networkCategory !== $category2);
+                    // else allow the non category terminal
                     break;
 
                 // On the housing terminal, we do not pass the icici and
                 // axis transactions, they are to be routed through our
                 // direct terminals
                 case Category::HOUSING:
-                    if (in_array($bank, $disAllowedBanks, true) === false)
+                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
                     {
-                        return true;
+                        return false;
                     }
                     break;
 
@@ -108,22 +126,29 @@ class MerchantFilter extends Terminal\Filter
                 // icici and axis transactions through these either.
                 case Category::INSURANCE:
                 case Category::MUTUAL_FUNDS:
-                    if ($terminal->isShared() === true)
+                    // The direct terminal allows more banks and hence these
+                    // are removed from here.
+                    if ($terminal->isShared() === false)
                     {
                         $disAllowedSharedBanks = [Netbanking::PUNB_R,Netbanking::PUNB_C,IFSC::CNRB];
 
-                        $disAllowedBanks = array_merge($disAllowedBanks, Netbanking::STATE_BANK_IFSC, $disAllowedSharedBanks);
+                        $disAllowedBanks = array_diff($disAllowedBanks, $disAllowedSharedBanks);
                     }
 
-                    if (in_array($bank, $disAllowedBanks, true) === false)
+                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
                     {
-                        return true;
+                        return false;
                     }
                     break;
             }
         }
 
         return true;
+    }
+
+    protected function isBankDisallowed($bank, $disAllowedBanks)
+    {
+        return (in_array($bank, $disAllowedBanks, true) === true);
     }
 
     protected function getAllDisallowedBanks()

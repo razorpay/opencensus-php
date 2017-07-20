@@ -694,8 +694,14 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('DrctNbKtkTmnl3', $payment1['terminal_id']);
     }
 
+    /**
+     * Skipped as with now we want to allow the direct corporate terminal
+     * to be picked up by the terminal.
+     * */
     public function testCorporateMerchantsBilldeskICICI()
     {
+        // $this->markTestSkipped('Corporate is now allowed on direct terminal');
+
         $this->fixtures->merchant->editCategory2('corporate');
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
