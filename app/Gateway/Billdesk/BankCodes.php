@@ -7,7 +7,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {
-    public static $bankCodeMap = array(
+    public static $bankCodeMap = [
         IFSC::ALLA => 'ALB',                    // Allahabad Bank
         IFSC::BKID => 'BOI',                    // Bank of India
         IFSC::CIUB => 'CUB',                    // City Union Bank
@@ -66,7 +66,23 @@ class BankCodes
         Netbanking::PUNB_R => 'PNB',            // Punjab National Bank - Retail
         Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
         Netbanking::LAVB_R => 'LVR',            // Laxmi Vilas Bank - Retail
-    );
+    ];
+
+    public static $corporateBankCodeMap  = [
+        IFSC::ICIC => 'ICO',
+    ];
 
     // We are not using Deusctche Bank corporate net-banking currently.
+
+    public static function getBankCode($ifsc, $corporate = false)
+    {
+        $bankId = self::$bankCodeMap[$ifsc];
+
+        if ($corporate === true)
+        {
+            $bankId = self::$corporateBankCodeMap[$ifsc] ?? $bankId;
+        }
+
+        return $bankId;
+    }
 }

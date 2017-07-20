@@ -38,11 +38,33 @@ return [
         'terminal_id'     => '100VodaMpesaTl',
     ],
 
+    'testAuthFloatPayment' => [
+        'merchant_id'     => '10000000000000',
+        'amount'          => 50050,
+        'currency'        => 'INR',
+        'base_amount'     => 50050,
+        'status'          => 'captured',
+        'two_factor_auth' => 'passed',
+        'method'          => 'wallet',
+        'wallet'          => 'mpesa',
+        'gateway'         => 'wallet_mpesa',
+        'terminal_id'     => '100VodaMpesaTl',
+    ],
+
     'testAuthPaymentWalletEntity' => [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
         'amount'               => 500,
+        'response_code'        => '100',
+        'response_description' => 'SUCCESS'
+    ],
+
+    'testAuthFloatPaymentWalletEntity' => [
+        'action'               => 'authorize',
+        'received'             => true,
+        'wallet'               => 'mpesa',
+        'amount'               => 500.5,
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],

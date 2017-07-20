@@ -40,7 +40,7 @@ class Charge extends Base\Core
      *
      * TODO: Make this merchant configurable.
      */
-    const MAX_AUTH_ATTEMPTS = 3;
+    const MAX_AUTH_ATTEMPTS = 4;
 
     const MUTEX_LOCK_TIMEOUT = 120;
 
@@ -236,6 +236,11 @@ class Charge extends Base\Core
 
         $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
+        if ($subscription->isCompleted() === true)
+        {
+            $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
+        }
+
         //
         // This must be sent after saving the invoice and subscription
         // to ensure that we don't send an email when we were not able
@@ -269,7 +274,7 @@ class Charge extends Base\Core
 
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
-            $subscription->setStatus(Status::OVERDUE);
+            $subscription->setStatus(Status::PENDING);
             $this->incrementChargeAtByOneDay($subscription);
             $this->updateScheduleTask($subscription->task, true);
         }
@@ -285,7 +290,7 @@ class Charge extends Base\Core
         else
         {
             throw new LogicException(
-                'Should not have reached here. Auth Attempts cannot be greater than 3.',
+                'Should not have reached here. Auth Attempts cannot be greater than ' . self::MAX_AUTH_ATTEMPTS,
                 null,
                 [
                     'subscription_id'   => $subscription->getId(),

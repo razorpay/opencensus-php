@@ -9,6 +9,7 @@ use Mail;
 use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Kotak\Headings;
@@ -114,7 +115,7 @@ class RowProcessor extends BaseCore
 
         $failureReason = null;
 
-        $class = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
+        $class = $this->getEntityStatusNamespace($this->reconEntity->getEntityName());
 
         $status = $class::FAILED;
 
@@ -204,5 +205,10 @@ class RowProcessor extends BaseCore
         }
 
         return true;
+    }
+
+    protected function getEntityStatusNamespace(string $entityName): string
+    {
+        return Entity::getEntityNamespace($entityName) . '\\Status';
     }
 }

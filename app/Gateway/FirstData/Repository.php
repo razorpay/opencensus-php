@@ -11,6 +11,11 @@ class Repository extends Base\Repository
 {
     protected $entity = 'first_data';
 
+    protected $appFetchParamRules = [
+        Entity::CAPS_PAYMENT_ID        => 'sometimes|alpha_num|size:14',
+        Entity::GATEWAY_TRANSACTION_ID => 'sometimes|integer|max:20',
+    ];
+
     public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()

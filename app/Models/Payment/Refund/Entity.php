@@ -322,8 +322,19 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants and PolicyBazaar merchant ID's
-        $merchantIds = ['10000000000000', '6gn7Xc2gqK40c9'];
+        //
+        // 'test merchant', 'ABOF', 'Nykaa',
+        // '1mg', 'Playo', 'Nestaway',
+        // 'RailYatri', 'Treebo', 'Goibibo',
+        // 'Goeventz', 'RentoMojo', Voonik
+        //
+
+        $merchantIds = [
+            '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
+            '6e9vU1F6c16Wgy', '6LCgLZgRjTI8ws', '4IAipsLXQZ8HfL',
+            '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
+            '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
+        ];
 
         $currentMerchantId = $this->getMerchantId();
 

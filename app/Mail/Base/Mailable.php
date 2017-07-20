@@ -5,8 +5,9 @@ namespace RZP\Mail\Base;
 use App;
 use Config;
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable as BaseMailable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
+use Illuminate\Contracts\Queue\Factory as Queue;
+use Illuminate\Mail\Mailable as BaseMailable;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -19,6 +20,8 @@ class Mailable extends BaseMailable
 
     public $timeout = 120;
 
+    public $taskId;
+
     public function __construct()
     {
         $queueMock = Config::get('queue.mock');
@@ -28,6 +31,10 @@ class Mailable extends BaseMailable
         $queueConnection = ($queueMock === true) ? 'queue.default' : 'queue.mail.connection';
 
         $this->connection = Config::get($queueConnection);
+
+        $app = App::getFacadeRoot();
+
+        $this->taskId = $app['request']->getTaskId();
     }
 
     public function build()
@@ -69,6 +76,23 @@ class Mailable extends BaseMailable
             // retry mechanism for mails is triggerred
             throw $e;
         }
+    }
+
+    /**
+     * Queue the message for sending.
+     *
+     * @param  \Illuminate\Contracts\Queue\Factory  $queue
+     * @return mixed
+     */
+    public function queue(Queue $queue)
+    {
+        $connection = property_exists($this, 'connection') ? $this->connection : null;
+
+        $queueName = property_exists($this, 'queue') ? $this->queue : null;
+
+        return $queue->connection($connection)->pushOn(
+            $queueName ?: null, new SendQueuedMailable($this)
+        );
     }
 
     /**

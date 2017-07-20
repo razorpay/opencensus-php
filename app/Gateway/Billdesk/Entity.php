@@ -85,16 +85,21 @@ class Entity extends Base\Entity
         return $this->getAttribute('RefAmount');
     }
 
+    public function getBankId()
+    {
+        return $this->getAttribute('BankID');
+    }
+
     public function getAuthStatus()
     {
         return $this->getAttribute('AuthStatus');
     }
-    
+
     public function getProcessStatus()
     {
         return $this->getAttribute('ProcessStatus');
     }
-    
+
     public function getRefStatus()
     {
         return $this->getAttribute('RefStatus');

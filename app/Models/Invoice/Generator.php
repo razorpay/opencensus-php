@@ -2,24 +2,21 @@
 
 namespace RZP\Models\Invoice;
 
-use App;
-use Mail;
 use Config;
 
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\LogicException;
-use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
-use RZP\Models\Item;
 use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use RZP\Models\Plan\Subscription;
 use RZP\Services\Elfin\Service as Elfin;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Generator extends Base\Core
 {
@@ -343,23 +340,23 @@ class Generator extends Base\Core
 
     protected function createAndAssociateOrderForInvoice()
     {
-        $orderAmount = $this->invoice->getAmount();
-
+        $orderAmount   = $this->invoice->getAmount();
         $orderCurrency = $this->invoice->getCurrency();
-
-        $allowPartialPayment = $this->invoice->hasPartialPaymentEnabled();
-
-        $orderReceipt = 'Invoice Order';
+        $orderReceipt  = 'Invoice Order';
 
         $orderInput = [
-            Order\Entity::AMOUNT            => $orderAmount,
-            Order\Entity::CURRENCY          => $orderCurrency,
-            Order\Entity::RECEIPT           => $orderReceipt,
-            Order\Entity::PAYMENT_CAPTURE   => true,
-            Order\Entity::PARTIAL_PAYMENT   => $allowPartialPayment,
+            Order\Entity::AMOUNT          => $orderAmount,
+            Order\Entity::CURRENCY        => $orderCurrency,
+            Order\Entity::RECEIPT         => $orderReceipt,
+            Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
-        $order = (new Order\Core)->create($orderInput, $this->merchant);
+        $partialPayment = $this->invoice->isPartialPaymentAllowed();
+
+        $order = (new Order\Core)->create(
+                                    $orderInput,
+                                    $this->merchant,
+                                    $partialPayment);
 
         $this->invoice->order()->associate($order);
     }

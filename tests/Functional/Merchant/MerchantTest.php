@@ -401,10 +401,10 @@ class MerchantTest extends TestCase
         $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
 
         // We check that the merchant balance is just zero in live mode
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuth('rzp_live_1cXSLlUU8V9sXl');
 
         $testData = $this->testData['testGetBalance'];
-        $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
+        $testData['request']['url'] = '/balance';
         $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
         $testData['response']['content']['balance'] = 0;
 
@@ -1051,15 +1051,6 @@ class MerchantTest extends TestCase
     }
 
     public function testPutEmiMethod()
-    {
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
-
-        $this->ba->appAuth();
-
-        $content = $this->startTest();
-    }
-
-    public function testPutEmiWithMerchantSubventionMethod()
     {
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 

@@ -5,11 +5,11 @@ namespace RZP\Models\Invoice;
 use Config;
 use Carbon\Carbon;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant\Checkout;
-use RZP\Models\LineItem;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\LineItem;
+use RZP\Models\Merchant\Checkout;
 
 class ViewDataSerializer extends Base\Core
 {

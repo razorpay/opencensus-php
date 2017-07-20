@@ -82,7 +82,7 @@ trait Authorize
         {
             $this->repo->saveOrFail($payment);
 
-            return;
+            return null;
         }
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
@@ -99,6 +99,8 @@ trait Authorize
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
+        
+        return null;
     }
 
     protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
@@ -1673,9 +1675,11 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
+        $subvention = $payment->merchant->getEmiSubvention();
+
         // Set emi plan id
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration);
+                                            $iinEntity, $emiDuration, $subvention);
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
