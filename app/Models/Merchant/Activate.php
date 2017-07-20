@@ -12,6 +12,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
+use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Payment;
@@ -54,6 +55,26 @@ class Activate extends Base\Core
         (new Merchant\Validator)->validateBeforeActivate($merchant);
 
         $oldMerchant = clone $merchant;
+
+        $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
+
+        $merchantPromotionCore = (new Merchant\Promotion\Core);
+
+        foreach ($merchantPromotions as $merchantPromotion)
+        {
+            try
+            {
+                $merchantPromotionCore->activate($merchantPromotion);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::PROMOTION_ACTIVATION_FAILED,
+                    ['merchant_promotion_id' => $merchantPromotion->getId()]);
+            }
+        }
 
         $merchant->enableReceiptEmails();
 

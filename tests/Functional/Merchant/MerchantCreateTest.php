@@ -188,6 +188,17 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkedAccountMaxPaymentLimit()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 6000]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testLinkedAccountDefaultSchedule()
     {
         $this->fixtures->create('merchant',

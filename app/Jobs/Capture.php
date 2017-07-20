@@ -3,39 +3,44 @@
 namespace RZP\Jobs;
 
 use App;
+
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Payment;
 
-class Capture
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class Capture extends Job implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 300;
+
+    // Make sure that this is below 900 (seconds) because SQS doesn't support
+    // delay over 15 minutes.
+    public $delay = 100;
 
     protected $trace;
 
     protected $data;
 
-    protected $job;
 
-    protected $app;
-
-    public function __construct()
+    public function __construct(array $data)
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct($data['mode']);
 
-        $this->trace = $this->app['trace'];
+        $this->data = $data;
     }
 
-    public function fire($job, $data)
+    public function handle()
     {
-        $this->data = $data['data'];
-
-        $this->job = $job;
+        parent::handle();
 
         $this->trace->info(
             TraceCode::PAYMENT_QUEUE_CAPTURE_REQUEST,
-            $data
+            $this->data
         );
 
         try
@@ -47,7 +52,7 @@ class Capture
                 $this->data
             );
 
-            $job->delete();
+            $this->delete();
         }
         catch (Exception\GatewayTimeoutException $ex)
         {
@@ -65,13 +70,11 @@ class Capture
 
     protected function runCaptureFlowForQueue()
     {
-        $mode = $this->data['mode'];
+        $basicAuth = App::getFacadeRoot()['basicauth'];
 
-        \Database\DefaultConnection::set($mode);
+        $basicAuth->setMode($this->mode);
 
-        $this->app['basicauth']->setMode($mode);
-
-        $payment = $this->app['repo']->payment->findOrFail($this->data['payment']['id']);
+        $payment = $this->repoManager->payment->findOrFail($this->data['payment']['id']);
 
         $merchant = $payment->merchant;
 
@@ -82,7 +85,7 @@ class Capture
 
     protected function handleCaptureException($traceCode, $ex)
     {
-        $this->data['job_attempts'] = $this->job->attempts();
+        $this->data['job_attempts'] = $this->attempts();
 
         $this->trace->error(
             $traceCode,
@@ -96,24 +99,24 @@ class Capture
 
     protected function handleCaptureJobRelease()
     {
-        if ($this->job->attempts() > self::MAX_JOB_ATTEMPTS)
+        if ($this->attempts() > self::MAX_JOB_ATTEMPTS)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_QUEUE_CAPTURE_DELETE,
                 [
                     'data'         => $this->data,
-                    'job_attempts' => $this->job->attempts(),
+                    'job_attempts' => $this->attempts(),
                     'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
                 ]
             );
 
-            $this->job->delete();
+            $this->delete();
         }
         else
         {
             // When queue_driver is sync, there's no release and
             // hence it's as good as deleting the job.
-            $this->job->release(self::JOB_RELEASE_WAIT);
+            $this->release(self::JOB_RELEASE_WAIT);
         }
     }
 }

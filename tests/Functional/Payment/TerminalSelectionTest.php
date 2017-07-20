@@ -282,6 +282,35 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
     }
 
+    public function testHDFCEmiTerminalWithMerchantSubvention()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_merchant_subvention_terminal');
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['method'] = 'emi';
+
+        $payment['emi_duration'] = 9;
+
+        $payment['amount'] = 500000;
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through shared terminl of correct category
+        // $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('ShrdEmiMrSubTr', $payment['terminal_id']);
+    }
+
     public function testKotakEmisFlowThroughCardTerminal()
     {
         // Disable particular hdfc terminal, enable shared hdfc and shared hdfc emi terminal

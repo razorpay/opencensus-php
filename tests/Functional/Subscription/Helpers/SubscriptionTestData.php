@@ -120,7 +120,7 @@ return [
             'method'  => 'post',
             'content' => [
                 'period'    => 'monthly',
-                'interval'  => 14,
+                'interval'  => 140,
                 'item_id'   => 'item_1000000000item',
             ],
         ],
@@ -128,7 +128,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Exceeds the maximum interval allowed for the given interval',
+                    'description' => 'Interval provided exceed the maximum interval (120) allowed for the given period (monthly)',
                 ],
             ],
             'status_code' => 400,
@@ -145,7 +145,7 @@ return [
             'method'  => 'post',
             'content' => [
                 'period'    => 'yearly',
-                'interval'  => 2,
+                'interval'  => 12,
                 'item_id'   => 'item_1000000000item',
             ],
         ],
@@ -153,7 +153,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Exceeds the maximum interval allowed for the given interval',
+                    'description' => 'Interval provided exceed the maximum interval (10) allowed for the given period (yearly)',
                 ],
             ],
             'status_code' => 400,
@@ -539,7 +539,7 @@ return [
                 'customer_id'   => 'cust_100000customer',
                 'plan_id'       => 'plan_1000000000plan',
                 'quantity'      => 1,
-                'start_at'      => 1800383400, // 1-20-2027, 12:00:00 AM
+                'start_at'      => 2116002600, // 1-20-2037, 12:00:00 AM
                 'total_count'   => 6, // Every two months
                 'customer_notify' => 0,
             ],
@@ -548,7 +548,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'start_at must be less than one year from now.',
+                    'description' => 'start_at must be less than 10 year/s from now.',
                 ],
             ],
             'status_code' => 400,
@@ -717,7 +717,7 @@ return [
                 'customer_id'   => 'cust_100000customer',
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
-                'end_at'        => 1579458600, // 1-20-2020, 12:00:00 AM
+                'end_at'        => 2116002600, // 1-20-2020, 12:00:00 AM
                 'customer_notify' => 0,
             ]
         ],
@@ -725,7 +725,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'end_at should be within 1 year/s of start_at.',
+                    'description' => 'end_at should be within 10 year/s of start_at.',
                 ],
             ],
             'status_code' => 400,
@@ -1122,5 +1122,37 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'subscriptionWebhookDataForCancel' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event'  => 'subscription.cancelled',
+            'contains' => [
+                'subscription',
+            ],
+            'payload' => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'        => 'subscription',
+                        'plan_id'       => 'plan_1000000000plan',
+                        'customer_id'   => 'cust_100000customer',
+                        'status'        => 'cancelled',
+                        'current_start' => 1516386600,
+                        'current_end'   => 1521484200,
+                        'ended_at'      => 1516386601,
+                        'quantity'      => 1,
+                        'notes'         => [],
+                        'charge_at'     => null,
+                        'start_at'      => 1516386600,
+                        'end_at'        => 1542652200,
+                        'auth_attempts' => 0,
+                        'total_count'   => 6,
+                        'paid_count'    => 1,
+                    ]
+                ]
+            ]
+        ]
     ]
 ];

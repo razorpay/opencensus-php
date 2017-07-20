@@ -451,6 +451,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($subscription);
 
+                $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
+
                 return $subscription;
             },
             self::MUTEX_LOCK_TIMEOUT,

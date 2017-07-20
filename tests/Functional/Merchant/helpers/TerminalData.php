@@ -76,6 +76,7 @@ return [
                 'gateway_acquirer'    => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
+                'emi_subvention'      => 'customer',
                 'category'            => 4567,
                 'enabled'             => true
             ]

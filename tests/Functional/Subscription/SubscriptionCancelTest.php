@@ -70,6 +70,13 @@ class SubscriptionCancelTest extends TestCase
 
         $this->makeSubscriptionChargeCronRequest();
 
+        $this->createWebhook(
+            [
+                'events' => ['subscription.cancelled' => '1']
+            ]);
+
+        $this->mockAndTestWebhookDataCustom('subscription.cancelled', 'subscriptionWebhookDataForCancel');
+
         $this->makeCancelRequest($subscription['id']);
 
         $subscription = $this->getLastEntity('subscription', true);
