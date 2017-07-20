@@ -88,6 +88,7 @@ app
               if (!$scope.gatewayRules.length) {
                 $scope.noResults = true;
 
+                // 1. Iins: Convert iins from array to comma supported to dispay in input field
                 $scope.gatewayRules['iins'] = $scope.gatewayRules['iins']
                   ? $scope.gatewayRules['iins'].join(',')
                   : null;
@@ -117,6 +118,7 @@ app
             ? null
             : gatewayRule.issuer;
 
+          // Delete null, undefined or empty string keys
           if (!gatewayRule[key]) {
             delete gatewayRule[key];
           }
@@ -262,7 +264,7 @@ app
       };
 
       $scope.updateGatewayList = function(method, gatewayRule) {
-        gatewayRule.gateway == null && delete gatewayRule.gateway; // reset gateway as the value is dependent on method type
+        delete gatewayRule.gateway; // reset gateway whenever method value changes as user has to select fresh gateway value
 
         switch (method) {
           case 'card':
@@ -359,8 +361,17 @@ app
       }
 
       function cleanFields(currentRule) {
+        //1. Iins: Convert to array
         if (currentRule['iins']) {
           currentRule['iins'] = currentRule['iins'].split(','); // Convert command separate values to array
+        }
+
+        //2. Convert rupees values to paisa
+        if (currentRule.max_amount) {
+          currentRule.max_amount *= 100;
+        }
+        if (currentRule.min_amount) {
+          currentRule.min_amount *= 100;
         }
       }
 
