@@ -75,7 +75,7 @@ class CouponsTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
 
-        $tomorrowTimestamp = Carbon::now()->addDay(3)->timestamp;
+        $tomorrowTimestamp = Carbon::now()->addDays(3)->timestamp;
 
         $this->testData[__FUNCTION__]['request']['content']['start_at'] = $tomorrowTimestamp;
 
