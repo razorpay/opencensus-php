@@ -488,6 +488,17 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRPPTransactionReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\RPPTransactionReport(E::PAYMENT);
+
+        $data = $report->getReportUrl($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
