@@ -27,24 +27,31 @@ class MerchantFilter extends Terminal\Filter
         Category::CORPORATE => [
             IFSC::ICIC
         ],
-        Category::INSURANCE => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::CNRB,
-            Netbanking::PUNB_R,
-            Netbanking::PUNB_C,
-        ],
-        Category::MUTUAL_FUNDS => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::CNRB,
-            Netbanking::PUNB_R,
-            Netbanking::PUNB_C,
-        ],
+        Category::INSURANCE =>
+            self::DISALLOWED_COMMON_BANKS
+        ,
+        Category::MUTUAL_FUNDS =>
+            self::DISALLOWED_COMMON_BANKS
+        ,
         Category::HOUSING => [
             IFSC::ICIC,
             IFSC::UTIB,
         ],
+    ];
+
+    const DISALLOWED_COMMON_BANKS = [
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::SBTR,
+        IFSC::STBP,
+        IFSC::STCB,
+        IFSC::ICIC,
+        IFSC::UTIB,
+        IFSC::CNRB,
+        Netbanking::PUNB_R,
+        Netbanking::PUNB_C,
     ];
 
     protected $properties = [
@@ -125,17 +132,14 @@ class MerchantFilter extends Terminal\Filter
 
                 // For insurance and mutual funds merchants, the billdesk
                 // shared terminals support only limited banks. They are
-                // disallowed. Apart from these we do not want to send
-                // icici and axis transactions through these either.
+                // disallowed.
                 case Category::INSURANCE:
                 case Category::MUTUAL_FUNDS:
-                    // The direct terminal allows more banks and hence these
-                    // are removed from here.
+                    // The direct terminal allows other banks, however we
+                    // wont send icici and axis terminal even in this case.
                     if ($terminal->isShared() === false)
                     {
-                        $disAllowedSharedBanks = [Netbanking::PUNB_R,Netbanking::PUNB_C,IFSC::CNRB];
-
-                        $disAllowedBanks = array_diff($disAllowedBanks, $disAllowedSharedBanks);
+                        $disAllowedBanks = [IFSC::ICIC, IFSC::UTIB];
                     }
 
                     if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
