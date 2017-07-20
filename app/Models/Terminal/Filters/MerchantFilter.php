@@ -15,11 +15,31 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class MerchantFilter extends Terminal\Filter
 {
-    const CORPORATE_IFSC = [
-        IFSC::ICIC
+    // Banks that are to be removed for each of
+    // the following caetgories are listed below
+    const CATEGORY_DISALLOWED_IFSC = [
+        Category::COMMODITIES => [
+            IFSC::ICIC
+        ],
+        Category::SECURITIES => [
+            IFSC::ICIC
+        ],
+        Category::CORPORATE => [
+            IFSC::ICIC
+        ],
+        Category::INSURANCE =>
+            self::DISALLOWED_COMMON_BANKS
+        ,
+        Category::MUTUAL_FUNDS =>
+            self::DISALLOWED_COMMON_BANKS
+        ,
+        Category::HOUSING => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+        ],
     ];
 
-    const MUTUAL_FUNDS_IFSC = [
+    const DISALLOWED_COMMON_BANKS = [
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
@@ -27,9 +47,11 @@ class MerchantFilter extends Terminal\Filter
         IFSC::SBTR,
         IFSC::STBP,
         IFSC::STCB,
-        Netbanking::PUNB_C,
-        Netbanking::PUNB_R,
+        IFSC::ICIC,
+        IFSC::UTIB,
         IFSC::CNRB,
+        Netbanking::PUNB_R,
+        Netbanking::PUNB_C,
     ];
 
     protected $properties = [
@@ -50,8 +72,6 @@ class MerchantFilter extends Terminal\Filter
      * */
     public function billdeskCategoryFilter(Terminal\Entity $terminal, array $input) : bool
     {
-        $bankIfsc = array_merge(self::CORPORATE_IFSC, self::MUTUAL_FUNDS_IFSC);
-
         $bank = $input['payment']->getBank();
 
         $gateway = $terminal->getGateway();
@@ -60,45 +80,70 @@ class MerchantFilter extends Terminal\Filter
 
         $networkCategory = $terminal->getNetworkCategory();
 
-        if (($input['payment']->isNetbanking()) and
-            (in_array($bank, $bankIfsc, true) === true) and
-            ($gateway === Gateway::BILLDESK))
+        $disAllowedBanks = self::CATEGORY_DISALLOWED_IFSC[$category2] ?? [];
+
+        if (($input['payment']->isNetbanking() === true) and
+            ($gateway === Gateway::BILLDESK) and
+            ($this->isBankDisallowed($bank, $disAllowedBanks) === true))
         {
             // Two rules to be checked
             switch ($category2)
             {
-                // If securities or commodities then the shared terminal
-                // should not be used, i.e on the shared terminal return
-                // false.
+                // If securities or commodities, no check required for other banks
+                // the shared terminal should not be used for icici ,
+                // i.e on the shared terminal return false.
                 case Category::SECURITIES :
                 case Category::COMMODITIES:
                     return ($terminal->isShared() === false);
                     break;
 
-                // If corporate or mutual_funds then the corresponding
-                // terminal should not be used, as ICIC is not being allowed
-                // on that terminal
+                // For corporate merchants,
+                // In case of ICICI,
+                // disallow - shared terminal with same category
                 case Category::CORPORATE:
-                    if (in_array($bank, self::CORPORATE_IFSC, true) === false)
-                    {
-                        return true;
-                    }
+                    // on the shared terminal with a different
+                    // network category is allowed
+                     if (($terminal->isShared() === true) and
+                         ($networkCategory === $category2))
+                     {
+                        return false;
+                     }
 
-                    return ($networkCategory !== $category2);
                     break;
 
+                // On the housing terminal, we do not pass the icici and
+                // axis transactions, they are to be routed through our
+                // shared directly integrated terminals
+                case Category::HOUSING:
+                    return false;
+                    break;
+
+                // For insurance and mutual funds merchants, the billdesk
+                // shared terminals support only limited banks. They are
+                // disallowed.
+                case Category::INSURANCE:
                 case Category::MUTUAL_FUNDS:
-                    if (in_array($bank, self::MUTUAL_FUNDS_IFSC, true) === false)
+                    // The direct terminal allows other banks, however we
+                    // wont send icici and axis terminal even in this case.
+                    if ($terminal->isShared() === false)
                     {
-                        return true;
+                        $disAllowedBanks = [IFSC::ICIC, IFSC::UTIB];
                     }
 
-                    return ($networkCategory !== $category2);
+                    if ($this->isBankDisallowed($bank, $disAllowedBanks) === true)
+                    {
+                        return false;
+                    }
                     break;
             }
         }
 
         return true;
+    }
+
+    protected function isBankDisallowed($bank, $disAllowedBanks)
+    {
+        return (in_array($bank, $disAllowedBanks, true) === true);
     }
 
     /**
