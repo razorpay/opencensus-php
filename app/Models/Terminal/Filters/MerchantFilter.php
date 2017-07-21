@@ -125,6 +125,14 @@ class MerchantFilter extends Terminal\Filter
                 case Category::MUTUAL_FUNDS:
                     // The direct terminal allows other banks, however we
                     // wont send icici and axis terminal even in this case.
+
+                    // Banks are disallowed only on the corresponding category terminal
+                    // the shared ecommerce terminal is to be allowed
+                    if ($networkCategory !== $category2)
+                    {
+                        $disAllowedBanks = [];
+                    }
+
                     if ($terminal->isShared() === false)
                     {
                         $disAllowedBanks = [IFSC::ICIC, IFSC::UTIB];
