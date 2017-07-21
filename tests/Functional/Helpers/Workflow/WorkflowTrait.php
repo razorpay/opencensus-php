@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\Workflow;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Permission;
 
 trait WorkflowTrait
 {
@@ -74,6 +75,19 @@ trait WorkflowTrait
         return $response;
     }
 
+    private function createAdminWorkflow()
+    {
+        $permission = (new Permission\Repository)
+                        ->retrieveIdsByNames([Permission\Name::EDIT_ADMIN])[0];
+
+        $input = [
+            'permissions' => [$permission->getPublicId()],
+        ];
+
+        $workflow = $this->createWorkflow($input);
+
+        return $workflow;
+    }
     /**
      * getDefaultWorkflowArray default workflow
      *

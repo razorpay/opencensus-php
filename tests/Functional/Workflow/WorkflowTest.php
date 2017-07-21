@@ -8,15 +8,12 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
-use RZP\Models\Admin\Permission;
 
 class WorkflowTest extends TestCase
 {
     use WorkflowTrait;
     use RequestResponseFlowTrait;
     use HeimdallTrait;
-
-    const PERMISSION_WORKFLOW_TEST = 'edit_admin';
 
     protected $input = [];
 
@@ -90,14 +87,7 @@ class WorkflowTest extends TestCase
      */
     public function testDeleteWorkflowProgress()
     {
-        $permission = (new Permission\Repository)
-                        ->retrieveIdsByNames([self::PERMISSION_WORKFLOW_TEST])[0];
-
-        $input = [
-            'permissions' => [$permission->getPublicId()],
-        ];
-
-        $workflow = $this->createWorkflow($input);
+        $workflow = $this->createAdminWorkflow();
 
         $response = $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
 
@@ -120,5 +110,10 @@ class WorkflowTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testEditWorkflowInProgress()
+    {
+
     }
 }
