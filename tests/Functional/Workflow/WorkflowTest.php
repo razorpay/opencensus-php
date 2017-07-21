@@ -127,4 +127,15 @@ class WorkflowTest extends TestCase
             $response = $this->editWorkflow($workflow['id'], $this->org->getPublicId(), $input);
         });
     }
+
+    public function testGetWorkflow()
+    {
+        $workflow = $this->createWorkflow($this->input);
+
+        $response = $this->getWorkflow($workflow['id'], $this->org->getPublicId());
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
 }

@@ -75,6 +75,20 @@ trait WorkflowTrait
         return $response;
     }
 
+    private function getWorkflow($workflowId, $orgId)
+    {
+        $this->ba->adminAuth('test', null, $orgId);
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/workflows/' . $workflowId,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function createEditAdminWorkflow()
     {
         $permission = (new Permission\Repository)

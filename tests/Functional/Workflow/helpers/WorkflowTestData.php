@@ -65,4 +65,13 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED,
         ],
     ],
+    'testGetWorkflow' => [
+        'name'   => "Test workflow",
+        'levels' => [
+            [
+                'op_type' => 'and',
+                'level'   => 1
+            ]
+        ]
+    ],
 ];
