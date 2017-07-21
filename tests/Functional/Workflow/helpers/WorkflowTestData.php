@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
     'testCreateWorkflow' => [
@@ -13,5 +15,21 @@ return [
     ],
     'testDeleteWorkflow' => [
         "name" => "Test workflow",
+    ],
+    'testCreateWorkflowWithPermissionWorkflow' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One of the permissions already has' .
+                                     ' a workflow defined',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS,
+        ],
     ],
 ];

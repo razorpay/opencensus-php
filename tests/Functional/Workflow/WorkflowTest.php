@@ -64,4 +64,19 @@ class WorkflowTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
+
+    /**
+     * Test create workflow with permissions already have worklow.
+     *
+     */
+    public function testCreateWorkflowWithPermissionWorkflow()
+    {
+        $workflow = $this->createWorkflow($this->input);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createWorkflow($this->input);
+        });
+    }
 }
