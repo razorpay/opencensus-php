@@ -38,6 +38,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const INVITATION            = 'invitations';
     const FILE_STORE            = 'files';
@@ -59,10 +60,18 @@ class Table
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
+
+    // This table does not belong to api service but is stored in api db.
+    // API Service should be owner of its DB and all the migrations for other
+    // services have to be stored in API source only
+    // Entity and Business logic is part of another codebase
+    const NODAL_STATEMENT       = 'nodal_statements';
 
     // organization roles permissions
     const ORG                   = 'orgs';

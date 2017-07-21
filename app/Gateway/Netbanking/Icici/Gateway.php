@@ -173,6 +173,7 @@ class Gateway extends Base\Gateway
         $data = $this->createDefaultRequestData($input);
 
         $data[RequestFields::ENCRYPTED_STRING] = $encryptedString;
+        $data[RequestFields::SPID]             = $this->getSpid();
 
         return $data;
     }
@@ -253,9 +254,8 @@ class Gateway extends Base\Gateway
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         $data = [
-            RequestFields::MODE       => Action::PAY,
-            RequestFields::PAYEE_ID   => $this->getPid(),
-            RequestFields::SPID       => $this->getSpid(),
+            RequestFields::MODE     => Action::PAY,
+            RequestFields::PAYEE_ID => $this->getPid(),
         ];
 
         return $data;

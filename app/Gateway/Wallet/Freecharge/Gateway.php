@@ -1085,7 +1085,7 @@ class Gateway extends Base\Gateway
         }
         else if (($payment['received'] === false) and
                  (($payment['status_code'] === null) or
-                  ($payment['status_code'] !== Status::SUCCESS)))
+                  ($payment['status_code'] !== Status::TRANSACTION_SUCCESS)))
         {
             $verify->apiSuccess = false;
         }

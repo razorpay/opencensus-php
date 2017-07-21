@@ -3,6 +3,8 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
+use RZP\Models\Payout\Status as PayoutStatus;
 
 return [
     'testCreatePayout' => [
@@ -246,5 +248,30 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT,
         ],
+    ],
+
+    'testPayoutAttemptSuccess' => [
+        'channel' => 'kotak',
+        'version' => 'V3',
+        'status' => FundTransferAttemptStatus::INITIATED,
+        'utr' => NULL,
+        'remarks' => NULL,
+        'failure_reason' => NULL,
+    ],
+
+    'testPayoutInitiateSuccess' => [
+        'channel' => 'kotak',
+        'status' => PayoutStatus::INITIATED,
+        'utr' => NULL,
+        'remarks' => NULL,
+        'failure_reason' => NULL,
+        'processed_at' => NULL,
+        'settled_on' => NULL,
+    ],
+
+    'testPayoutAttemptReconSuccess' => [
+        'channel' => 'kotak',
+        'version' => 'V3',
+        'bank_status_code'  => 'P',
     ],
 ];

@@ -178,6 +178,7 @@ trait Callback
         if ($payment->hasCard())
         {
             $card = $this->repo->card->fetchForPayment($payment);
+
             $input['card'] = $card->toArray();
         }
 
@@ -237,6 +238,8 @@ trait Callback
         if ((isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp'))
         {
+            $this->validateCallbackInputIfApplicable($input);
+
             // TODO: Better name suggestions
             $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
 
@@ -395,6 +398,19 @@ trait Callback
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+    }
+
+    protected function validateCallbackInputIfApplicable(array $input)
+    {
+        if ((isset($input['gateway']['type']) === true) and
+            ($input['gateway']['type'] === 'otp'))
+        {
+            if (empty($input['gateway']['otp']) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Please enter a valid OTP.', 'otp', $input['gateway']);
+            }
+        }
     }
 
     protected function checkForMerchantCallbackUrl($payment)

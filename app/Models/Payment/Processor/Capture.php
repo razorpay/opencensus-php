@@ -2,19 +2,21 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\Capture as CaptureJob;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\PublicCollection;
 
 trait Capture
 {
@@ -427,7 +429,9 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
+        $job = new CaptureJob($data);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::CAPTURE);
     }
 
     /**

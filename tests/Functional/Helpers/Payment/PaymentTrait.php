@@ -11,6 +11,9 @@ use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Account;
 
 trait PaymentTrait
 {
@@ -732,7 +735,18 @@ trait PaymentTrait
 
     protected function refundAuthorizedPayment($id, array $input = [])
     {
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
+
+        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
+
+        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
+
+        $admin = $this->ba->getAdmin();
+
+        // Linking merchant with admin because admins can access only linked merchants.
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->addAccountAuth($merchant->getId());
 
         $request = array(
             'method'  => 'POST',

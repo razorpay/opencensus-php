@@ -55,4 +55,98 @@ class Repository extends Base\Repository
                 'Credits Id: ' . $creditsLog->getId());
         }
     }
+
+    /**
+     * SELECT *
+     * FROM   `credits`
+     * WHERE  `credits`.`merchant_id` = $merchantId
+     *   AND `type` = $type
+     *   AND value > used
+     *   AND ( `expired_at` > $timestamp
+     *       OR `expired_at` IS NULL )
+     *   ORDER  BY -`expired_at` DESC
+     */
+    public function getCreditsSortedByExpiry(int $timestamp, string $merchantId, string $type)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->whereRaw(Entity::VALUE . '>' . Entity::USED)
+                    ->where(function ($query) use ($timestamp)
+                        {
+                            $query->where(Entity::EXPIRED_AT, '>', $timestamp)
+                                  ->orWhereNull(Entity::EXPIRED_AT);
+                        }
+                    )
+                    // This is done because we want to keep the null EXPIRED at the bottom
+                    ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+                    ->get();
+    }
+
+    public function findCreditsToExpire(string $merchantId, string $promotionId, int $timestamp)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::PROMOTION_ID, '=', $promotionId)
+                    ->where(Entity::EXPIRED_AT, '<' , $timestamp)
+                    ->whereRaw(Entity::VALUE . '>' . Entity::USED)
+                    ->first();
+    }
+
+    public function getMerchantCreditsOfType(string $merchantId, string $type): int
+    {
+        $query = $this->newQuery()
+                      ->selectRaw('SUM(value - used) as sum')
+                      ->merchantId($merchantId)
+                      ->where(Entity::VALUE, '>', 0)
+                      ->where(function ($query)
+                            {
+                                $query->where(Entity::EXPIRED_AT, '>', time())
+                                      ->orWhereNull(Entity::EXPIRED_AT);
+                            }
+                        )
+                      ->where(Entity::TYPE, '=', $type)
+                      ->first();
+
+        return $query->getAttribute('sum');
+    }
+
+    /**
+     * Returns the sum of unused, non-expired credits for a merchant, for each credit type
+     *
+     * Sample return array:
+     * [
+     *  'amount' => 1000
+     *  'fee'    => 550
+     * ]
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getTypeAggregatedMerchantCredits(string $merchantId): array
+    {
+        $query = $this->newQuery()
+                      ->selectRaw(
+                          Entity::TYPE . ', ' .
+                          'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+                      ->where(Entity::VALUE, '>', 0)
+                      ->merchantId($merchantId)
+                      ->where(function ($query)
+                          {
+                              $query->where(Entity::EXPIRED_AT, '>', time())
+                                    ->orWhereNull(Entity::EXPIRED_AT);
+                          })
+                      ->groupBy(Entity::TYPE)
+                      ->get();
+
+        $data = [];
+
+        foreach ($query as $record)
+        {
+            $data[$record[Entity::TYPE]] = $record['sum'];
+        }
+
+        return $data;
+    }
 }

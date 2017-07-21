@@ -340,23 +340,23 @@ class Generator extends Base\Core
 
     protected function createAndAssociateOrderForInvoice()
     {
-        $orderAmount = $this->invoice->getAmount();
-
+        $orderAmount   = $this->invoice->getAmount();
         $orderCurrency = $this->invoice->getCurrency();
-
-        $allowPartialPayment = $this->invoice->hasPartialPaymentEnabled();
-
-        $orderReceipt = 'Invoice Order';
+        $orderReceipt  = 'Invoice Order';
 
         $orderInput = [
-            Order\Entity::AMOUNT            => $orderAmount,
-            Order\Entity::CURRENCY          => $orderCurrency,
-            Order\Entity::RECEIPT           => $orderReceipt,
-            Order\Entity::PAYMENT_CAPTURE   => true,
-            Order\Entity::PARTIAL_PAYMENT   => $allowPartialPayment,
+            Order\Entity::AMOUNT          => $orderAmount,
+            Order\Entity::CURRENCY        => $orderCurrency,
+            Order\Entity::RECEIPT         => $orderReceipt,
+            Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
-        $order = (new Order\Core)->create($orderInput, $this->merchant);
+        $partialPayment = $this->invoice->isPartialPaymentAllowed();
+
+        $order = (new Order\Core)->create(
+                                    $orderInput,
+                                    $this->merchant,
+                                    $partialPayment);
 
         $this->invoice->order()->associate($order);
     }

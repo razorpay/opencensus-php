@@ -43,6 +43,7 @@ class TransactionFilter extends Terminal\Filter
         'amount',
         'maestro',
         'recurring',
+        'subscription',
         'iin',
     ];
 
@@ -287,9 +288,48 @@ class TransactionFilter extends Terminal\Filter
         return ($terminal->isNonRecurring() === true);
     }
 
+    protected function subscriptionFilter(Terminal\Entity $terminal, array $input)
+    {
+        $payment = $input['payment'];
+
+        //
+        // If it's NOT a subscription payment,
+        // don't do any filtering.
+        //
+        if ($payment->hasSubscription() === false)
+        {
+            return true;
+        }
+
+        $subscription = $payment->subscription;
+
+        if ($subscription->isMoreThanOneYear() === false)
+        {
+            //
+            // If subscription is not for more than a year,
+            // there's no filtering required.
+            //
+            return true;
+        }
+
+        $currentGateway = $terminal->getGateway();
+        $allowedGateways = Gateway::$subscriptionOverOneYearGateways;
+
+        // return (in_array($currentGateway, $allowedGateways, true) === true);
+
+        //
+        // For now, not filtering based on gateway.
+        // Assuming that all gateways work without
+        // one year limitation. /cc @shk
+        //
+        return true;
+    }
+
     protected function isValidEmiTerminal($terminal, $input)
     {
-        $bank = $input['payment']->getBank();
+        $payment = $input['payment'];
+
+        $bank = $payment->getBank();
 
         // check if banks emi transactions can be processed from any card terminal
         if ((empty($bank) === false) and
@@ -299,7 +339,7 @@ class TransactionFilter extends Terminal\Filter
         }
 
         // validate terminal using the gateway and emi duration
-        $network = $input['payment']->card->getNetworkCode();
+        $network = $payment->card->getNetworkCode();
 
         if ($network === Network::AMEX)
         {
@@ -310,9 +350,11 @@ class TransactionFilter extends Terminal\Filter
             $gateway = Gateway::$emiBankToGatewayMap[$bank];
         }
 
-        $emiDuration = $input['payment']->emiPlan->getDuration();
+        $emiDuration = $payment->emiPlan->getDuration();
 
-        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+        $subvention = $payment->emiPlan->getSubvention();
+
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
     }
 
     public function amountFilter(Terminal\Entity $terminal, array $input)

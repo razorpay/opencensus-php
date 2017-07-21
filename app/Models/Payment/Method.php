@@ -42,7 +42,7 @@ class Method
 
     public static function isValid($method)
     {
-        return defined(__CLASS__ . '::' . strtoupper($method));
+        return in_array($method, self::getAllPaymentMethods(), true);
     }
 
     public static function validateMethod($method)

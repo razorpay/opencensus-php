@@ -185,7 +185,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
-            'status' => 'created',
+            'status' => 'initiated',
             'channel' => 'kotak',
             'version' => 'V3',
         ]);
@@ -704,6 +704,18 @@ final class FactoryData
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
             'deleted_at'  => null,
+        ]);
+
+        $factory(\RZP\Models\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
+
+        $factory(\RZP\Models\Coupon\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
+
+        $factory(\RZP\Models\Merchant\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid,
         ]);
 
         $factory(\RZP\Models\FileStore\Entity::class, [

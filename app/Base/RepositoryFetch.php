@@ -3,7 +3,6 @@
 namespace RZP\Base;
 
 use RZP\Constants;
-use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\Trace;
@@ -11,7 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\EsRepository;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
+use RZP\Exception\BadRequestValidationFailureException;
 
 trait RepositoryFetch
 {
@@ -23,7 +24,7 @@ trait RepositoryFetch
         'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
-    protected $originalFetchParamRules;
+    protected $defaultFetchParamRules;
 
     /**
      * Ids which have signed prefix.
@@ -80,7 +81,7 @@ trait RepositoryFetch
      * @param string|null $merchantId
      *
      * @return PublicCollection
-     * @throws Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
@@ -94,7 +95,7 @@ trait RepositoryFetch
 
         // validateFetchParams modifies fetchParamRules.
         // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
-        $this->originalFetchParamRules = $this->fetchParamRules;
+        $this->defaultFetchParamRules = $this->fetchParamRules;
 
         $this->validateFetchParams($params);
 
@@ -121,13 +122,22 @@ trait RepositoryFetch
     }
 
     /**
-     * Splits params into two sets - esParams, mysqlParams. Corresponding EsRepo
-     * has list of fields indexed, we use that to form esParams. Rest prams goes
-     * to mysqlParams.
+     * Returns [$mysqlParams, $esParams] pair. Only one of it would get used
+     * in fetch() method.
+     *
+     * We find it with following simple logic:
+     * - Most of the fields are queried from MySQL.
+     * - There are few fields which can only be queried from ES e.g. notes.
+     * - There are some fields which we index in ES just to assist with fetches
+     *   for es only fields.
+     *   E.g. we index invoice.type as well so that when notes
+     *   is search along with type filter it works via ES. So all these fields will
+     *   be in common. That means when just queried type, it'll not go to ES.
      *
      * @param array $params
      *
      * @return array
+     * @throws BadRequestValidationFailureException
      */
     protected function getMysqlAndEsParams(array $params): array
     {
@@ -138,32 +148,57 @@ trait RepositoryFetch
             return [$params, []];
         }
 
-        // Gets the params which are to be searched from ES.
-        // Note: This doesn't include the commons(which has count, skip etc).
-        $esParams = array_intersect_key($params, array_flip($this->esRepo->getPossibleFieldsInParam()));
+        //
+        // Following is list of keys common to Es & MySQL, only in ES, only in
+        // MySQL respectively.
+        // These do not include default keys(e.g. skip, count).
+        //
 
-        if (count($esParams) === 0)
+        $commonFetchKeys = $this->esRepo->getCommonFetchParams();
+        $esFetchKeys     = $this->esRepo->getEsFetchParams();
+        $mysqlFetchKeys  = array_values(array_diff(
+                                array_keys($this->fetchParamRules),
+                                array_keys($this->defaultFetchParamRules),
+                                $esFetchKeys,
+                                $commonFetchKeys));
+
+        //
+        // Get the keys send as part of $params.
+        // This is filtered list (defaults and common keys removed).
+        // Now this list has to be subset of MySQL keys or Es Keys exclusively,
+        // otherwise raises error.
+        //
+
+        $filteredParamsKeys = array_values(array_diff(
+                                    array_keys($params),
+                                    array_keys($this->defaultFetchParamRules),
+                                    $commonFetchKeys));
+
+        if (empty(array_diff($filteredParamsKeys, $mysqlFetchKeys)) === true)
         {
             return [$params, []];
         }
-
-        // Gets the rest params and assign it to mysqlParams. This will obviously include commons.
-        $mysqlParams = array_diff_key($params, $esParams);
-
-        // Currently, we don't handle/support mysql + es params fetch. Here getting
-        // the mysql params(excluding the commons) and if there are any we throw bad request error.
-        $mysqlParamsWithoutDefaults = array_diff_key($mysqlParams, $this->originalFetchParamRules);
-
-        if (count($mysqlParamsWithoutDefaults) > 0)
+        else if (empty(array_diff($filteredParamsKeys, $esFetchKeys)) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                implode(', ', array_keys($mysqlParamsWithoutDefaults)) . ' not expected with other params sent');
+            return [[], $params];
         }
+        else
+        {
+            $extraKeys = array_values(array_diff($filteredParamsKeys, $esFetchKeys));
 
-        // Adding the common params (eg. skip, count etc) to esParam too.
-        $esParams += array_intersect_key($params, $this->originalFetchParamRules);
+            $message = implode(', ', $extraKeys) . ' not expected with other params sent';
 
-        return [$mysqlParams, $esParams];
+            throw new BadRequestValidationFailureException(
+                        $message,
+                        null,
+                        [
+                            'params_keys'       => array_keys($params),
+                            'common_fetch_keys' => $commonFetchKeys,
+                            'es_fetch_keys'     => $esFetchKeys,
+                            'mysql_fetch_keys'  => $mysqlFetchKeys,
+                            'extra_keys'        => $extraKeys,
+                        ]);
+        }
     }
 
     /**
@@ -413,13 +448,16 @@ trait RepositoryFetch
 
     protected function addQueryParamDefault($query, $params, $key)
     {
-        if ($params[$key] === 'null')
+        $attribute = $this->dbColumn($key);
+        $value     = $params[$key];
+
+        if ($value === 'null')
         {
-            $query->whereNull($key);
+            $query->whereNull($attribute);
         }
         else
         {
-            $query = $query->where($key, '=', $params[$key]);
+            $query->where($attribute, $value);
         }
     }
 
@@ -444,8 +482,7 @@ trait RepositoryFetch
         {
             if ($merchantId === null)
             {
-                throw new Exception\InvalidArgumentException(
-                    'Merchant Id is required for fetch query');
+                throw new InvalidArgumentException('Merchant Id is required for fetch query');
             }
         }
     }

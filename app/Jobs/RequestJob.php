@@ -31,6 +31,8 @@ class RequestJob extends Job implements ShouldQueue
      */
     public function __construct(array $request)
     {
+        parent::__construct();
+
         $this->request = $request;
     }
 
