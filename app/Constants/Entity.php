@@ -147,6 +147,10 @@ class Entity
     const TAX_GROUP             = 'tax_group';
 
 
+    // Risk and Fraud
+    const RISK                  = 'risk';
+
+
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::P2P                   => \RZP\Models\P2p::class,
@@ -253,6 +257,8 @@ class Entity
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
+
+        self::RISK                  => \RZP\Models\Risk::class,
     ];
 
     protected static $repository = [

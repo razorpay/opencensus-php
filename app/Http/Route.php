@@ -579,6 +579,10 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
+        'risk_update'                             => ['put',      'risk/{id}',                                      'RiskController@putRiskEntry'                                       ],
+        'risk_create'                             => ['post',     'risk/payments/{payment_id}',                     'RiskController@postRiskEntry'                                      ],
+        'risk_fetch_all_payments'                 => ['get',      'risk/payments',                                  'RiskController@getRiskForAllPayments'                              ],
+        'risk_fetch_for_payment'                  => ['get',      'risk/payments/{payment_id}',                     'RiskController@getRiskForPayment'                                  ],
     ];
 
     public static $public = [
@@ -974,6 +978,10 @@ final class Route
         'mock_generate_reconciliation',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
+        'risk_create',
+        'risk_update',
+        'risk_fetch_all_payments',
+        'risk_fetch_for_payment',
     ];
 
     public static $proxy = [

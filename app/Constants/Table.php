@@ -135,6 +135,8 @@ class Table
     const TAX_GROUP             = 'tax_groups';
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
 
+    const RISK                  = 'risk';
+
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,
