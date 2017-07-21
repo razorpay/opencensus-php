@@ -26,7 +26,7 @@ use RZP\Models\Customer;
 use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Payment\Processor;
+use RZP\Models\Payment\Processor\Processor;
 
 class Core extends Base\Core
 {
@@ -161,7 +161,7 @@ class Core extends Base\Core
     {
         $this->repo->transaction(function() use ($txn, $merchant)
         {
-            $payment = $txn->source();
+            $payment = $txn->source;
 
             $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
@@ -177,11 +177,22 @@ class Core extends Base\Core
             $txn->setServiceTax($serviceTax);
             $txn->setFeeModel('postpaid');
             $txn->setGratis(false);
-            $transaction->setCreditType(Credit\Type::DEFAULT);
+            $txn->setCreditType(Transaction\CreditType::DEFAULT);
+            $txn->setPricingRule(null);
+
+            $payment->setServiceTax($serviceTax);
+
+            if ($merchant->isFeeBearerCustomer() === false)
+            {
+                //set and fee values from txn
+                $payment->setFee($fee);
+            }
+
+            $this->repo->saveOrFail($payment);
 
             $this->repo->saveOrFail($txn);
 
-            (new Processor/Processor)->saveFeeDetails($txn, $feesSplit);
+            (new Processor($merchant))->saveFeeDetails($txn, $feesSplit);
         });
     }
 

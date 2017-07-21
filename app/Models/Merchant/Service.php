@@ -1022,16 +1022,29 @@ class Service extends Base\Service
 
         $from = $input['from'];
 
+        $successIds = [];
+
+        $failedIds = [];
+
         foreach ($merchantIds as $merchantId) {
             try
             {
                 (new Merchant\Core)->markGratisTransactionPostpaid($merchantId, $from);
+
+                $successIds[] = $merchantId;
             }
             catch (\Exception $e)
             {
                 $this->trace->traceException($e);
+
+                $failedIds[] = $merchantId;
             }
         }
+
+        return [
+            'success_ids' => $successIds,
+            'failed_ids'  => $failedIds,
+        ];
     }
 
     protected function updateHoldFunds(string $merchantId, bool $holdFunds)
