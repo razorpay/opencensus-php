@@ -26,6 +26,7 @@ use RZP\Models\Customer;
 use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Payment\Processor;
 
 class Core extends Base\Core
 {
@@ -154,6 +155,34 @@ class Core extends Base\Core
         $this->updateBalances($txn, false);
 
         return [$txn, $feesSplit];
+    }
+
+    public function markGratisTransactionPostpaid(Entity $txn, Merchant\Entity $merchant)
+    {
+        $this->repo->transaction(function() use ($txn, $merchant)
+        {
+            $payment = $txn->source();
+
+            $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+
+            $this->merchantBalance = $merchantBalance;
+
+            $feesSplit = new Base\PublicCollection;
+
+            list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($payment, $txn, $merchantBalance);
+
+            $txn->setCredit($credit);
+            $txn->setDebit(0);
+            $txn->setFee($fee);
+            $txn->setServiceTax($serviceTax);
+            $txn->setFeeModel('postpaid');
+            $txn->setGratis(false);
+            $transaction->setCreditType(Credit\Type::DEFAULT);
+
+            $this->repo->saveOrFail($txn);
+
+            (new Processor/Processor)->saveFeeDetails($txn, $feesSplit);
+        });
     }
 
     public function updateReconciliationData(Entity $transaction)

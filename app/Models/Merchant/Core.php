@@ -351,4 +351,29 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+
+    public function markGratisTransactionPostpaid(string $merchantId, int $from)
+    {
+        $merchant =  $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $transactions = $this->repo->fetchGratisTransactions($merchantId, $from);
+
+        foreach($transactions as $txn)
+        {
+            try
+            {
+                (new Transaction\Core)->markGratisTransactionPostpaid($txn, $merchant);
+            }
+            catch (\Exception $e)
+            {
+                 $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::GRATIS_TO_POSTPAID_FAILED,
+                    ['transaction_id' => $txn->getId()]
+                );
+            }
+        }
+    }
 }

@@ -474,4 +474,17 @@ class Repository extends Base\Repository
 
         return $transaction;
     }
+
+    public function fetchGratisTransactions($merchantId, $timestamp)
+    {
+        return $this->newQuery()
+                    ->where(Transaction\Entity::TYPE, Type::PAYMENT)
+                    ->where(Transaction\Entity::CREATED_AT, '>', $timestamp)
+                    ->where(Transaction\Entity::GRATIS, '=', 1)
+                    ->merchantId($merchantId)
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                       ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->orderBy(Transaction\Entity::ID)
+                    ->get();
+    }
 }
