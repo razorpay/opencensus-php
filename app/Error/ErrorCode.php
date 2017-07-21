@@ -481,6 +481,7 @@ class ErrorCode
     const SERVER_ERROR_PERIOD_NOT_ANCHORED                                          = 'SERVER_ERROR_PERIOD_NOT_ANCHORED';
     const SERVER_ERROR_LOG_RISK                                                     = 'SERVER_ERROR_LOG_RISK';
     const SERVER_ERROR_ES_OPERATION_ERRORED                                         = 'SERVER_ERROR_ES_OPERATION_ERRORED';
+    const SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR                                = 'SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';

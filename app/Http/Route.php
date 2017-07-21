@@ -378,6 +378,8 @@ final class Route
         'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
+        'gateway_create_file'                     => ['post',     'gateway/files',                                  'GatewayController@createGatewayFile'                               ],
+        'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayController@retryGatewayFile'                                ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -987,6 +989,8 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
+        'gateway_create_file',
+        'gateway_file_retry',
     ];
 
     public static $proxy = [

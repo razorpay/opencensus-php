@@ -821,6 +821,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST      = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
+    const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

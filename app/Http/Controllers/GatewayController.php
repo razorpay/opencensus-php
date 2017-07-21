@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\Rule;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Gateway\Priority as GatewayPriority;
@@ -388,6 +389,22 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = $service->update($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createGatewayFile(File\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function retryGatewayFile(File\Service $service, string $id)
+    {
+        $data = $service->retry($id);
 
         return ApiResponse::json($data);
     }

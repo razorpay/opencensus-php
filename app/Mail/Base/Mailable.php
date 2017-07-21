@@ -63,6 +63,7 @@ class Mailable extends BaseMailable
         }
         catch (\Throwable $e)
         {
+            sd('h1');
             $trace->traceException($e,
                                    Trace::ERROR,
                                    TraceCode::MAILER_JOB_ERROR,

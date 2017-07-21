@@ -14,13 +14,13 @@ class Base extends Mailable
 
     protected $data;
 
-    protected $email;
+    protected $emails;
 
     protected $template;
 
     public function __construct(array $data,
                                 string $type,
-                                string $email = null,
+                                array $emails = [],
                                 string $template = 'emails.message')
     {
         parent::__construct();
@@ -29,7 +29,7 @@ class Base extends Mailable
 
         $this->type = $type;
 
-        $this->email = $email;
+        $this->emails = $emails;
 
         $this->template = $template;
     }
@@ -47,7 +47,9 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $emails = $this->email ?? Constants::RECIPIENT_EMAILS_MAP[$this->type];
+        $emails = (empty($this->emails) === true) ?
+                    Constants::RECIPIENT_EMAILS_MAP[$this->type] :
+                    $this->emails;
 
         $this->to($emails);
 

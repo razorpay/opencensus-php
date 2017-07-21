@@ -31,7 +31,7 @@ class CreateGatewayFiles extends Migration
             $table->string(GatewayFile::FILE_ID, GatewayFile::ID_LENGTH)
                   ->nullable();
 
-            $table->text(GatewayFile::SENDERS);
+            $table->string(GatewayFile::SENDER);
 
             $table->text(GatewayFile::RECIPIENTS);
 
@@ -42,7 +42,7 @@ class CreateGatewayFiles extends Migration
             $table->string(GatewayFile::STATUS, 20)
                   ->default('created');
 
-            $table->string(GatewayFile::FAILURE_CODE, 25)
+            $table->string(GatewayFile::FAILURE_CODE, 50)
                   ->nullable();
 
             $table->tinyInteger(GatewayFile::SCHEDULED)
