@@ -3,15 +3,44 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
-import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import ListToggler from 'rzp/ui/ListToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import TableBody from 'rzp/ui/TableBody';
+import { Link } from 'react-router-dom';
+
+const ListItem = ({ item, value }) => {
+  return (
+    <tr>
+      <td>
+        {item}
+      </td>
+      <td class="text-right">
+        {value}
+      </td>
+    </tr>
+  );
+};
+
+const RefundsListItem = ({ refund }) => {
+  return (
+    <tr>
+      <td>
+        <Link to={`/refunds/${refund.id}`}>
+          <code>{refund.id}</code>
+        </Link>
+      </td>
+      <td>
+        <Amount value={refund.amount} />
+      </td>
+    </tr>
+  );
+};
 
 const shownByDefault = [
   'amount',
@@ -79,7 +108,7 @@ export default props => {
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
-                <div class="list-group details-row-container">
+                <div class="list-group pair-row-container">
                   <EntityDetailRow
                     label="Amount"
                     value={() => <Amount value={payment.amount} />}
@@ -110,18 +139,28 @@ export default props => {
                     ? <EntityDetailRow label="Wallet" value={payment.wallet} />
                     : null}
                   {payment.method === 'card'
-                    ? <ListGroupToggler
+                    ? <ListToggler
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        {Object.keys(card.details).map(key => (
-                          <EntityDetailRow
-                            key={key}
-                            label={titleCase(key)}
-                            value={card.details[key]}
-                          />
-                        ))}
-                      </ListGroupToggler>
+                        <div class="table-responsive">
+                          <table class="table table-hover">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={card.loading}
+                              rows={Object.keys(card.details)}
+                            >
+                              {Object.keys(card.details).map(key => (
+                                <ListItem
+                                  key={key}
+                                  item={titleCase(key)}
+                                  value={card.details[key]}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
+                      </ListToggler>
                     : null}
 
                   <EntityDetailRow
@@ -135,7 +174,6 @@ export default props => {
                   />
 
                   <EntityDetailRow label="Email" value={payment.email} />
-
                   <EntityDetailRow label="Contact" value={payment.contact} />
 
                   <EntityDetailRow
@@ -198,17 +236,28 @@ export default props => {
                     )}
                   />
                   {payment.refund_status
-                    ? <ListGroupToggler
+                    ? <ListToggler
                         label="Refunds"
+                        totalItems={refunds.items.length}
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
-                        <DataTable
-                          columns={[refundId, amount, createdAt]}
-                          items={refunds.items}
-                          loading={refunds.loading}
-                          showHeaders={false}
-                        />
-                      </ListGroupToggler>
+                        <div class="table-responsive">
+                          <table class="table table-hover table-striped">
+                            <TableBody
+                              colSpan={2}
+                              isLoading={refunds.loading}
+                              rows={refunds.items}
+                            >
+                              {refunds.items.map(refund => (
+                                <RefundsListItem
+                                  key={refund.id}
+                                  refund={refund}
+                                />
+                              ))}
+                            </TableBody>
+                          </table>
+                        </div>
+                      </ListToggler>
                     : <EntityDetailRow label="Refunds" value="No Refunds" />}
                 </div>
                 <ShowWhen myRole="owner manager operations admin">

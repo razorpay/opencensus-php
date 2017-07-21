@@ -1,6 +1,11 @@
 // Only page layout styles should reside in this file.
 // This will be moved under `rzp` later
 
+$primary-color = #5f73cf;
+a, .btn-link {
+  color: $primary-color;
+}
+
 html, body {
   background-color: #f0f3f4;
   overflow-x: hidden;
@@ -427,7 +432,7 @@ body.ReactModal__Body--open {
 .quick-create {
   padding: 2px 5px;
   background-color: rgba(195, 195, 195, 0.23);
-  color: #337ab7;
+  color: $primary-color;
   cursor: pointer;
   font-size: 12px;
 }
@@ -445,6 +450,69 @@ tr:hover .row-action.btn-group {
 .panel-detail-container {
   .text-warning {
     color: #d8b617;
+  }
+}
+
+.pair-group-item {
+  display: table;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: -1px;
+
+  .pair {
+    &-label, &-value, &-separator {
+      display: table-cell;
+    }
+    &-label {
+      width: 39%;
+      //color: #afafaf;
+      color: rgb(96, 104, 130);
+    }
+    /*
+    &-separator {
+      padding: 0 4px;
+      color: #afafaf;
+    }
+    */
+    &-value {
+      width: 60%;
+      padding-left: 8px;
+
+      span {
+        vertical-align: top;
+      }
+
+      // For nested values
+      .table-responsive {
+        margin-top: 8px;
+
+        .pair-list-item {
+          .item-label {
+            font-weight: bold;
+            margin: 4px 0;
+            text-transform: capitalize;
+          }
+        }
+      }
+    }
+  }
+}
+
+.primary-link {
+  color: $primary-color;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.list-table {
+  padding: 8px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8ea;
+
+  .list-label {
+    color: #58666e;
   }
 }
 
@@ -486,7 +554,7 @@ tr:hover .row-action.btn-group {
 
     > .panel-heading {
       background-color: #fff;
-      line-height: 74px;
+      line-height: 72px;
       vertical-align: middle;
       padding-top: 0;
       padding-bottom: 0;
