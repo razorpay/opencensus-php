@@ -8,12 +8,15 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Models\Admin\Permission;
 
 class WorkflowTest extends TestCase
 {
     use WorkflowTrait;
     use RequestResponseFlowTrait;
     use HeimdallTrait;
+
+    const PERMISSION_WORKFLOW_TEST = 'edit_admin';
 
     protected $input = [];
 
@@ -77,6 +80,31 @@ class WorkflowTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() {
             $this->createWorkflow($this->input);
+        });
+    }
+
+    /**
+     * Delete workflow which is in progress.
+     * will create workflow for edit admin and tests to delete it.
+     *
+     */
+    public function testDeleteWorkflowProgress()
+    {
+        $permission = (new Permission\Repository)
+                        ->retrieveIdsByNames([self::PERMISSION_WORKFLOW_TEST])[0];
+
+        $input = [
+            'permissions' => [$permission->getPublicId()],
+        ];
+
+        $workflow = $this->createWorkflow($input);
+
+        $response = $this->editAdmin($this->org->getPublicId(), 'admin_'.Org::SUPER_ADMIN);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use($workflow) {
+            $this->deleteWorkflow($workflow['id'], $this->org->getPublicId());
         });
     }
 }

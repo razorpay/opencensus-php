@@ -41,6 +41,23 @@ trait HeimdallTrait
         return $response;
     }
 
+    protected function editAdmin($orgId, $adminId)
+    {
+        $request = [
+            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'method' => 'PUT',
+            'content' => [
+                'name' => "Test Name",
+            ],
+        ];
+
+        $this->ba->adminAuth('test', null, $orgId);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function getAuthTokenForOrg($org, $role = 'admin')
     {
         $now = Carbon::now();
