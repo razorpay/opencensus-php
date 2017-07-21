@@ -41,7 +41,7 @@ trait WorkflowTrait
         return $response;
     }
 
-    public function getWorkflowPermissions($orgId)
+    private function getWorkflowPermissions($orgId)
     {
         $request = [
             'method'  => 'GET',
@@ -54,12 +54,32 @@ trait WorkflowTrait
         return $response;
     }
 
+    public function editWorkflow($workflowId, $orgId, $input)
+    {
+        $this->ba->adminAuth('test', null, $orgId);
+
+        $defaultValues = $this->getDefaultWorkflowArray();
+
+        // Permissions list should be sent in input.
+        $attributes = array_merge($defaultValues, $input);
+
+        $request = [
+            'method' => 'PUT',
+            'url'    => '/workflows/' . $workflowId,
+            'content' => $attributes,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     /**
      * getDefaultWorkflowArray default workflow
      *
      * @return array()
      */
-    public function getDefaultWorkflowArray()
+    private function getDefaultWorkflowArray()
     {
         //permissions are not included in default array cause only only workflow can be created for a permission.
 

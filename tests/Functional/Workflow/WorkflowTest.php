@@ -99,12 +99,26 @@ class WorkflowTest extends TestCase
 
         $workflow = $this->createWorkflow($input);
 
-        $response = $this->editAdmin($this->org->getPublicId(), 'admin_'.Org::SUPER_ADMIN);
+        $response = $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use($workflow) {
+        $this->runRequestResponseFlow($data, function() use($workflow)
+        {
             $this->deleteWorkflow($workflow['id'], $this->org->getPublicId());
         });
+    }
+
+    public function testEditWorkflow()
+    {
+        $workflow = $this->createWorkflow($this->input);
+
+        $input = array_merge($this->input, ['name' => 'editing workflow']);
+
+        $response = $this->editWorkflow($workflow['id'], $this->org->getPublicId(), $input);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 }

@@ -48,4 +48,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED,
         ],
     ],
+    'testEditWorkflow' => [
+        'name' => 'editing workflow'
+    ],
 ];
