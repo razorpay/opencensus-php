@@ -75,7 +75,7 @@ trait WorkflowTrait
         return $response;
     }
 
-    private function createAdminWorkflow()
+    private function createEditAdminWorkflow()
     {
         $permission = (new Permission\Repository)
                         ->retrieveIdsByNames([Permission\Name::EDIT_ADMIN])[0];

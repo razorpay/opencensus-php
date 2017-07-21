@@ -87,9 +87,9 @@ class WorkflowTest extends TestCase
      */
     public function testDeleteWorkflowProgress()
     {
-        $workflow = $this->createAdminWorkflow();
+        $workflow = $this->createEditAdminWorkflow();
 
-        $response = $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
+        $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -114,6 +114,17 @@ class WorkflowTest extends TestCase
 
     public function testEditWorkflowInProgress()
     {
+        $workflow = $this->createEditAdminWorkflow();
 
+        $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
+
+        $input = array_merge($this->input, ['name' => 'editing workflow']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use($workflow, $input)
+        {
+            $response = $this->editWorkflow($workflow['id'], $this->org->getPublicId(), $input);
+        });
     }
 }
