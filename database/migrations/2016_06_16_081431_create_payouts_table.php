@@ -29,8 +29,7 @@ class CreatePayoutsTable extends Migration
 
             $table->char(Payout::MERCHANT_ID, Payout::ID_LENGTH);
 
-            $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
-                  ->nullable();
+            $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH);
 
             $table->string(Payout::METHOD);
 

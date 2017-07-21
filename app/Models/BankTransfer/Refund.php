@@ -14,6 +14,7 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 // use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base\Core
@@ -24,7 +25,7 @@ class Refund extends Base\Core
 
         $bankAccount = $this->createPayerBankAccount($bankTransfer);
 
-        $this->createPayoutWithoutTransaction($input, $bankAccount);
+        $this->createRefundAttemptEntity($input, $bankAccount);
     }
 
     protected function getBankTransfer(array $payment)
@@ -55,13 +56,26 @@ class Refund extends Base\Core
         return $bankAccount;
     }
 
-    protected function createPayoutWithoutTransaction(array $input, BankAccount\Entity $bankAccount)
+    protected function createRefundAttemptEntity(array $input, BankAccount\Entity $bankAccount)
     {
-        $payoutInput = $this->getPayoutInput($input, $bankAccount);
+        $fundTransferAttempt = new FundTransferAttempt\Entity;
 
-        $payout = (new Payout\Core)->createPayoutEntity($payoutInput, $this->merchant);
+        $fundTransferAttempt->fillAndGenerateId([
+            FundTransferAttempt\Entity::CHANNEL => 'kotak',
+            FundTransferAttempt\Entity::VERSION => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS  => FundTransferAttempt\Status::CREATED,
+        ]);
 
-        $this->repo->saveOrFail($payout);
+        $fundTransferAttempt->setSourceType(FundTransferAttempt\Type::REFUND);
+        $fundTransferAttempt->setSourceId($input['refund']['id']);
+
+        $fundTransferAttempt->merchant()->associate($this->merchant);
+
+        $fundTransferAttempt->bankAccount()->associate($bankAccount);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
     }
 
     protected function getBankAccountInput(Entity $bankTransfer)
@@ -71,24 +85,5 @@ class Refund extends Base\Core
             BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
             BankAccount\Entity::BENEFICIARY_NAME => 'beneficiary name',
         ];
-    }
-
-    protected function getPayoutInput(array $input, BankAccount\Entity $bankAccount)
-    {
-        $payoutArray = [
-            Payout\Entity::METHOD          => Payout\Method::BANK_TRANSFER,
-            Payout\Entity::AMOUNT          => $input['refund']['amount'],
-            Payout\Entity::CURRENCY        => Currency::INR,
-            Payout\Entity::DESTINATION     => $bankAccount->getPublicId(),
-        ];
-
-        if ($this->virtualAccount->hasCustomer() === true)
-        {
-            $customer = $this->virtualAccount->customer;
-
-            $payoutArray[Payment::CUSTOMER_ID] = $customer->getPublicId();
-        }
-
-        return $payoutArray;
     }
 }

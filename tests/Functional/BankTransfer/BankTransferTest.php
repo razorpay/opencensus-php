@@ -61,36 +61,36 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id'], 4000000);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
 
         // Refund is processed
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('processed', $refund['status']);
-        $this->assertEquals(5000000, $refund['amount']);
+        $this->assertEquals(4000000, $refund['amount']);
 
         // Transaction is created for refund
         $transaction = $this->getLastEntity('transaction', true);
         $this->assertEquals('refund', $transaction['type']);
         $this->assertEquals($refund['id'], $transaction['entity_id']);
 
-        // Customer bank account created for payout
+        // Customer bank account created for refund
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
-        // Payout is created without a transaction
-        $payout = $this->getLastEntity('payout', true);
-        $this->assertNull($payout['payment_id']);
-        $this->assertNull($payout['transaction_id']);
-        $this->assertEquals('bank_transfer', $payout['method']);
-        $this->assertEquals($bankAccount['id'], $payout['destination']);
-        $this->assertEquals(5000000, $payout['amount']);
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
     }
 
     public function testBankTransferProcessAndFetchDetails()
@@ -201,6 +201,36 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->refundAuthorizedPayment($payment['id']);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        // Refund is processed
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(5000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        // Customer bank account created for refund
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
     }
 
     public function testBankTransferProcessFailure()

@@ -8,16 +8,13 @@ use RZP\Constants;
 class Method
 {
     const FUND_TRANSFER  = 'fund_transfer';
-    const BANK_TRANSFER  = 'bank_transfer';
 
     protected static $methods = [
         self::FUND_TRANSFER     => 'Fund Transfer',
-        self::BANK_TRANSFER     => 'Bank Transfer',
     ];
 
     protected static $methodToEntityMap = [
-        self::FUND_TRANSFER     => Constants\Entity::BANK_ACCOUNT,
-        self::BANK_TRANSFER     => Constants\Entity::BANK_ACCOUNT,
+        self::FUND_TRANSFER     => Constants\Entity::BANK_ACCOUNT
     ];
 
     public static function formatted($method)

@@ -332,10 +332,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        if ($customerId !== null)
-        {
-            $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
-        }
+        $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 
     public function getPricingFeatures()
