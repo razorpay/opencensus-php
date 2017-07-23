@@ -54,7 +54,7 @@ export default class Key extends GenericEntity {
       data,
     }).then(response => {
       if (this.isNew) {
-        return new Klass().deserialize(response.data);
+        return new Klass(response.data);
       } else {
         return {
           new: new Klass(response.data.new),
