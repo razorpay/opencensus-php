@@ -226,6 +226,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

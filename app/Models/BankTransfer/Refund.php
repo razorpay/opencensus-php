@@ -3,19 +3,11 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
-// use RZP\Constants\Mode;
-// use RZP\Trace\TraceCode;
-// use RZP\Models\Payment\Method;
-// use RZP\Models\VirtualAccount;
-// use RZP\Models\Merchant\Account;
-// use RZP\Models\Currency\Currency;
-// use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-// use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base\Core
 {
