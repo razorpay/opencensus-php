@@ -711,4 +711,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function markGratisTransactionPostpaid()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->markGratisTransactionPostpaid($input);
+
+        return ApiResponse::json($response);
+    }
 }

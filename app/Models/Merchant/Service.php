@@ -1012,6 +1012,49 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function markGratisTransactionPostpaid($input)
+    {
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_INPUT,
+            $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $from = $input['from'];
+
+        $successIds = [];
+
+        $failedIds = [];
+
+        $merchantCore = (new Merchant\Core);
+
+        foreach ($merchantIds as $merchantId) {
+            try
+            {
+                $merchantCore->markGratisTransactionPostpaid($merchantId, $from);
+
+                $successIds[] = $merchantId;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success_ids' => $successIds,
+            'failed_ids'  => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_RESPONSE,
+            $response);
+
+        return $response;
+    }
+
     protected function updateHoldFunds(string $merchantId, bool $holdFunds)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
