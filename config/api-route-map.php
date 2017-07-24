@@ -66,6 +66,9 @@ return [
         // Admin Change Password
         'admin_change_password'             => 'orgs/admin/change_password',
 
+        // Get Admin File
+        'admin_get_file'                    => 'files/{fileId}/signed-url',
+
         // Workflows
         'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
@@ -554,9 +557,6 @@ return [
 
         // Edit IIN
         'iin_edit'                          => 'iins/{id}',
-
-        // Get Admin File
-        'admin_get_file'                    => 'files/{fileId}/signed-url',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',
