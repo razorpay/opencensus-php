@@ -531,3 +531,8 @@ UPDATE billdesk SET RefundId = 'JSBI54543766931' WHERE id = 1714165;
 
 # sets emi_subvention in terminals
 UPDATE terminals set emi_subvention = 'customer' where emi = 1;
+
+# sets expired at for saved cards
+UPDATE tokens
+    JOIN cards ON tokens.card_id = cards.id
+    SET expired_at = UNIX_TIMESTAMP(DATE_ADD(MAKEDATE(cards.expiry_year, 1), INTERVAL cards.expiry_month MONTH))-19800;
