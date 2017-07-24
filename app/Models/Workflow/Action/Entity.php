@@ -219,16 +219,15 @@ class Entity extends Base\Entity
 
         $data['workflow_steps'] = [];
 
-        if ($this->workflow)
+        $workflow = $this->workflow()->withTrashed()->first();
+
+        foreach ($this->workflow->steps as $step)
         {
-            foreach ($this->workflow->steps as $step)
-            {
-                $thisStep = $step->toArrayPublic();
+            $thisStep = $step->toArrayPublic();
 
-                $thisStep['role'] = $step->role->toArrayPublic();
+            $thisStep['role'] = $step->role->toArrayPublic();
 
-                $data['workflow_steps'][] = $thisStep;
-            }
+            $data['workflow_steps'][] = $thisStep;
         }
 
         unset($data['workflow']['steps']);
