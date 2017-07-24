@@ -1225,6 +1225,7 @@ final class Route
         'merchant_activation_details'      => '*',
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
+        'admin_get_file'                   => '*',
     ];
 
     public static $direct = [
