@@ -221,7 +221,7 @@ class Entity extends Base\Entity
 
         $workflow = $this->workflow()->withTrashed()->first();
 
-        foreach ($this->workflow->steps as $step)
+        foreach ($workflow->steps as $step)
         {
             $thisStep = $step->toArrayPublic();
 
