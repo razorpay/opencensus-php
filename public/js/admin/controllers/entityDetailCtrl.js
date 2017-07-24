@@ -551,8 +551,8 @@ app
         gateway_access_code: current.gateway_access_code,
         gateway_merchant_id: current.gateway_merchant_id,
         gateway_terminal_id: current.gateway_terminal_id,
+        merchant_id: current.merchant_id,
         id: current.id,
-        card: current.card,
         gateway: current.gateway,
       };
       $scope.ok = function(terminal) {
