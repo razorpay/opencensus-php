@@ -109,7 +109,7 @@ app
 
         request.success(function(data) {
           if (data.success) {
-            windowRef.location.href = data.data;
+            windowRef.location.href = data.data.url;
           } else {
             windowRef.close();
             $scope.alerts.resetAlerts();
