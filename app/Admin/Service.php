@@ -981,33 +981,6 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
-    public function getUploadedFile($id)
-    {
-        $error = null;
-        $url = null;
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $file = $this->api
-                         ->admin
-                         ->getFileByAdmin($id);
-            $url = $file->headers->offsetGet('location');
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured while getting requested file from API",
-                    'exception' => $error,
-            ]);
-        }
-
-        return array($error, $url);
-    }
-
     /**
      * Fires off a queue worker to start capturing screenshots
      * @param  string $id merchant id

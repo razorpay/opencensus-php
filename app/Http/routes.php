@@ -104,7 +104,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
         Route::post('/tags', 'MerchantController@postTagMerchant');
-
         // Send Feedback Mail to support@razorpay.com
         Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
     });
@@ -128,11 +127,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/activity', 'AdminController@getAdminActivity');
         Route::delete('/admin/activity', 'AdminController@deleteOtherAdminActivity');
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
-
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
-        Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
-
         Route::get('admin/{mode}/merchants/aggregations', 'AdminController@getMerchantAggregations');
         Route::get('admin/{mode}/merchants/{merchant_id}/aggregations', 'AdminController@getSingleMerchantAggregations');
 
