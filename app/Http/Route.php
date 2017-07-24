@@ -156,6 +156,7 @@ final class Route
         'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
+        'gratis_postpaid_transactions'            => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
@@ -966,6 +967,7 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'gratis_postpaid_transactions',
     ];
 
     public static $proxy = [

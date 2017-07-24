@@ -768,6 +768,10 @@ class TraceCode
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
 
+    const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
+    const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
+    const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
+
     const DUMMY_JOB = 'DUMMY_JOB';
 
     protected static $messages = array(
@@ -913,6 +917,10 @@ class TraceCode
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
+
+        self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
+        self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
+        self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
     );
 
     /**
