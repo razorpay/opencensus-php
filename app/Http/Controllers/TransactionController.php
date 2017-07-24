@@ -142,6 +142,10 @@ class TransactionController extends Controller
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
 
+            $gst = $merchantDetails['gstin'] ?? $merchantDetails['p_gstin'] ?? '';
+
+            $data['gst'] = $gst;
+
             $data['merchant_details'] = $merchantDetails;
 
             // return PDF::url('http://google.com');
