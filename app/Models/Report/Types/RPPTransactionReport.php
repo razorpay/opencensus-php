@@ -37,6 +37,11 @@ class RPPTransactionReport extends BasicEntityReport
     const USER_EMAIL  = "Customer Email";
     const USER_MOBILE = "Customer Mobile";
 
+    // As per the requirement from RPP, the report should contain only only entry for each order
+    // Case 1: Order is paid, we add the payment only if its captured
+    // Case 2: Order is attempeted, then we add the first payment entity for that order.
+    //         A list of $attemptedOrderIds is maintained to make sure only 1 payment is added for that order
+    // Case 3: Order is created, we do not add anything as payment won't be created.
     protected function fetchFormattedDataForReport($entities): array
     {
         $data = [];
@@ -47,6 +52,7 @@ class RPPTransactionReport extends BasicEntityReport
         {
             $order = $payment->order;
 
+            // Just an addtional check. RPP is on orders api via hosted
             if ($order === null)
             {
                 continue;

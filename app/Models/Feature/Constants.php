@@ -22,6 +22,7 @@ class Constants
     const REVERSE                  = 'reverse';
     const BROKING_REPORT           = 'broking_report';
     const DSP_REPORT               = 'dsp_report';
+    const RPP_REPORT               = 'rpp_report';
     const AGGREGATOR_REPORT        = 'aggregator_report';
     const PAYMENT_EMAIL_FETCH      = 'payment_email_fetch';
     const CREATED_FLOW             = 'created_flow';
@@ -58,6 +59,7 @@ class Constants
         self::REVERSE                  => true,
         self::BROKING_REPORT           => true,
         self::DSP_REPORT               => true,
+        self::RPP_REPORT               => true,
         self::AGGREGATOR_REPORT        => true,
         self::PAYMENT_EMAIL_FETCH      => true,
         self::CREATED_FLOW             => true,
