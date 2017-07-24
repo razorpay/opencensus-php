@@ -107,7 +107,9 @@ app
         });
 
         request.success(function(data) {
-          if (!data.success) {
+          if (data.success) {
+            window.open(data.data, '_blank');
+          } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
