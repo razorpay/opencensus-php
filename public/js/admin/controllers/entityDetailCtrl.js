@@ -95,6 +95,7 @@ app
 
       // Used for download file action
       $scope.downloadFile = function() {
+        var windowRef = window.open('', '_blank');
         var data = {
           route_name: 'admin_get_file',
           url_params: {
@@ -108,8 +109,9 @@ app
 
         request.success(function(data) {
           if (data.success) {
-            window.open(data.data, '_blank');
+            windowRef.location.href = data.data;
           } else {
+            windowRef.close();
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
