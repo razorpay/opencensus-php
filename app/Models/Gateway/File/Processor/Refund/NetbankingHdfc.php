@@ -20,13 +20,13 @@ class NetbankingHdfc extends Processor\Base
 
     protected $gatewayCode = IFSC::HDFC;
 
-    protected function formatData(array & $data)
+    protected function formatDataForFile()
     {
          $i = 1;
 
          $formattedData = [];
 
-        foreach ($data as $row)
+        foreach ($this->data as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
@@ -42,6 +42,25 @@ class NetbankingHdfc extends Processor\Base
             ];
         }
 
-        $data = $formattedData;
+        return $formattedData;
+    }
+
+    protected function formatDataForMail()
+    {
+        $mailData = [];
+
+        $files = $this->gatewayFile->files;
+
+        foreach ($files as $file)
+        {
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+            $mailData['files'][] = [
+                'file_name' => $file->getLocation(),
+                'signed_url' => $signedUrl,
+            ];
+        }
+
+        return $mailData;
     }
 }

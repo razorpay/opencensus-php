@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY    => 'required|string|custom',
         Entity::TYPE       => 'required|string',
         Entity::SENDER     => 'sometimes|email',
-        Entity::RECIPIENTS => 'required|array|custom',
+        Entity::RECIPIENTS => 'sometimes|array|custom',
         Entity::FROM       => 'required|epoch',
         Entity::TO         => 'required|epoch',
         Entity::SCHEDULED  => 'filled|boolean'

@@ -9,12 +9,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\FailureCode;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\RefundFile\V2 as RefundFileMailV2;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 trait GenerateRefundFile
 {
-    public function generateFileData()
+    public function generateData()
     {
         $refunds = $this->fetchRefunds();
 
@@ -26,20 +26,16 @@ trait GenerateRefundFile
 
         try
         {
-            $data = $this->fetchAdditionalDataForFileGeneration($refunds);
-
-            $this->formatData($data);
+            $this->data = $this->fetchAdditionalDataForFileGeneration($refunds);
         }
         catch (\Throwable $e)
         {
             throw new GatewayFileException(
                 FailureCode::ERROR_GENERATING_FILE_DATA);
         }
-
-        return $data;
     }
 
-    public function createFile(array $data)
+    public function createFile()
     {
         if ($this->gatewayFile->isFileGenerated() === true)
         {
@@ -48,6 +44,8 @@ trait GenerateRefundFile
 
         try
         {
+            $data = $this->formatDataForFile();
+
             $fileName = $this->getFileToWriteNameWithoutExt();
 
             $creator = new FileStore\Creator;
@@ -57,6 +55,7 @@ trait GenerateRefundFile
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->type(static::FILE_TYPE)
+                    ->entity($this->gatewayFile)
                     ->save();
 
             $file = $creator->getFileInstance();
@@ -64,8 +63,6 @@ trait GenerateRefundFile
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-
-            $this->gatewayFile->file()->associate($file);
 
         }
         catch (\Throwable $e)
@@ -84,20 +81,13 @@ trait GenerateRefundFile
 
         try
         {
-            $file = $this->gatewayFile->file;
-
             $gateway = $this->gatewayFile->getGateway();
 
             $recipients = $this->gatewayFile->getRecipients();
 
-            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+            $data = $this->formatDataForMail();
 
-            $mailData = [
-                'file_name' => $file->getLocation(),
-                'signed_url' => $signedUrl,
-            ];
-
-            $refundFileMail = new RefundFileMail($mailData, $gateway, $recipients);
+            $refundFileMail = new RefundFileMailV2($data, $gateway, $recipients);
 
             Mail::send($refundFileMail);
 
@@ -107,7 +97,6 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
-            sd('h2');
             throw new GatewayFileException(
                 FailureCode::ERROR_SENDING_MAIL);
         }

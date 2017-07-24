@@ -19,6 +19,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Models\Promotion;
+use RZP\Models\Gateway\File;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Batch;
@@ -269,6 +270,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
             'batch'           => Batch\Entity::class,
+            'gateway_file'    => Gateway\File\Entity::class,
 
             // transaction
             'adjustment'      => Adjustment\Entity::class,

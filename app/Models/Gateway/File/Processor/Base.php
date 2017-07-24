@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\File\Status;
@@ -10,6 +11,8 @@ use RZP\Models\Gateway\File\Status;
 class Base extends Core
 {
     protected $gatewayFile;
+
+    protected $data;
 
     public function __construct(File\Entity $gatewayFile)
     {
@@ -22,14 +25,15 @@ class Base extends Core
     {
         if ($this->canProcess() === false)
         {
-            return;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
         }
 
         try
         {
-            $fileData = $this->generateFileData();
+            $this->generateData();
 
-            $this->createFile($fileData);
+            $this->createFile();
 
             $this->sendMail();
         }
@@ -56,6 +60,8 @@ class Base extends Core
 
     protected function performPostProcessingTasks()
     {
+        $this->gatewayFile->incrementAttempts();
+
         $this->repo->saveOrFail($this->gatewayFile);
     }
 }

@@ -28,12 +28,10 @@ class CreateGatewayFiles extends Migration
 
             $table->string(GatewayFile::TYPE, 20);
 
-            $table->string(GatewayFile::FILE_ID, GatewayFile::ID_LENGTH)
-                  ->nullable();
-
             $table->string(GatewayFile::SENDER);
 
-            $table->text(GatewayFile::RECIPIENTS);
+            $table->text(GatewayFile::RECIPIENTS)
+                  ->nullable();
 
             $table->integer(GatewayFile::FROM);
 
@@ -69,11 +67,6 @@ class CreateGatewayFiles extends Migration
             $table->integer(GatewayFile::CREATED_AT);
 
             $table->integer(GatewayFile::UPDATED_AT);
-
-            $table->foreign(GatewayFile::FILE_ID)
-                  ->references(FileStore::ID)
-                  ->on(Table::FILE_STORE)
-                  ->on_delete('restrict');
         });
     }
 

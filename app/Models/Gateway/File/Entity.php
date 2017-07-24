@@ -74,9 +74,9 @@ class Entity extends Base\PublicEntity
         self::SENDER              => 'refunds@razorpay.com'
     ];
 
-    public function file()
+    public function files()
     {
-        return $this->belongsTo(FileStore\Entity::class);
+        return $this->morphMany(FileStore\Entity::class, 'entity');
     }
 
     public function getType()
@@ -122,7 +122,7 @@ class Entity extends Base\PublicEntity
     public function isFileGenerated(): bool
     {
         return (($this->isAttributeNotNull(self::FILE_GENERATED_AT) === true) and
-                ($this->file !== null));
+                ($this->files !== null));
     }
 
     public function isMailSent(): bool
@@ -134,6 +134,11 @@ class Entity extends Base\PublicEntity
     {
         return (($this->getStatus() === Status::FAILED) and
                 ($this->isAttributeNotNull(self::FAILED_AT)));
+    }
+
+    public function getFailureCode()
+    {
+        return $this->getAttribute(self::FAILURE_CODE);
     }
 
     public function setStatus(string $status)
@@ -159,5 +164,22 @@ class Entity extends Base\PublicEntity
     public function setFailureCode(string $failureCode)
     {
         $this->setAttribute(self::FAILURE_CODE, $failureCode);
+    }
+
+    public function incrementAttempts()
+    {
+        $this->increment(self::ATTEMPTS);
+    }
+
+    public function getRecipientsAttribute()
+    {
+        $recipients = $this->attributes[self::RECIPIENTS];
+
+        if (empty($recipients) === true)
+        {
+            return [];
+        }
+
+        return json_decode($recipients, true);
     }
 }

@@ -21,4 +21,11 @@ class Service extends Base\Service
 
         return $gatewayFile->toArrayAdmin();
     }
+
+    public function generateGatewayRefundFiles()
+    {
+        $gatewayFiles = (new Core)->generateGatewayRefundFiles();
+
+        return $gatewayFiles->toArrayAdmin();
+    }
 }

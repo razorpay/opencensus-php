@@ -408,4 +408,11 @@ class GatewayController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function generateGatewayRefundFiles(File\Service $service)
+    {
+        $data = $service->generateGatewayRefundFiles();
+
+        return ApiResponse::json($data);
+    }
 }
