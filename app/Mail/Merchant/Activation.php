@@ -15,6 +15,8 @@ class Activation extends Mailable
 
     public function __construct(array $data, array $org)
     {
+        parent::__construct();
+
         $this->data = $data;
 
         $this->org = $org;

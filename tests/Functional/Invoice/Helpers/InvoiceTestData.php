@@ -2497,6 +2497,8 @@ return [
             'content' => [
                 'customer_id' => 'cust_100000customer',
                 'user_id'     => '1000000000user',
+                'skip'        => 0,
+                'count'       => 100,
             ],
         ],
         'response' => [
@@ -2518,6 +2520,49 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesByOnlyCommonFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'issued',
+                'type'   => 'link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndMysqlFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'status'     => 'issued',
+                'payment_id' => 'pay_1000000payment',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndEsFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'type'    => 'link',
+                'status'  => 'issued',
+                'receipt' => 'xyz',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testGetMultipleInvoicesMixedFields' => [
         'request' => [
             'url'     => '/invoices',
@@ -2533,7 +2578,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'type, customer_id, user_id not expected with other params sent',
+                    'description' => 'customer_id, user_id not expected with other params sent',
                 ],
             ],
             'status_code' => 400,
@@ -3177,6 +3222,71 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'type' => [
+                                            'value' => 'link',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'status' => [
+                                            'value' => 'issued',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'must' => [
+                        [
+                            'match' => [
+                                'receipt' => [
+                                    'query' =>'xyz',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchResponse' => [
         'hits' => [
             'hits' => [],
         ],
