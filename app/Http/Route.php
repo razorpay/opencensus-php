@@ -932,7 +932,6 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
-        'admin_get_file',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
@@ -1081,6 +1080,7 @@ final class Route
         'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
+        'admin_get_file',
         // workflows
         'workflow_create',
         'workflow_get',
