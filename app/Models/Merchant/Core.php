@@ -360,11 +360,13 @@ class Core extends Base\Core
 
         $transactions = $this->repo->transaction->fetchGratisTransactions($merchantId, $from);
 
+        $transactionCore = (new Transaction\Core);
+
         foreach($transactions as $txn)
         {
             try
             {
-                (new Transaction\Core)->markGratisTransactionPostpaid($txn, $merchant);
+                $transactionCore->markGratisTransactionPostpaid($txn, $merchant);
             }
             catch (\Exception $e)
             {

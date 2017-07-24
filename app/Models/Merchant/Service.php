@@ -1014,7 +1014,7 @@ class Service extends Base\Service
 
     public function markGratisTransactionPostpaid($input)
     {
-         $this->trace->info(
+        $this->trace->info(
             TraceCode::GRATIS_TO_POSTPAID_INPUT,
             $input);
 
@@ -1026,10 +1026,12 @@ class Service extends Base\Service
 
         $failedIds = [];
 
+        $merchantCore = (new Merchant\Core);
+
         foreach ($merchantIds as $merchantId) {
             try
             {
-                (new Merchant\Core)->markGratisTransactionPostpaid($merchantId, $from);
+                $merchantCore->markGratisTransactionPostpaid($merchantId, $from);
 
                 $successIds[] = $merchantId;
             }
@@ -1041,10 +1043,16 @@ class Service extends Base\Service
             }
         }
 
-        return [
+        $response = [
             'success_ids' => $successIds,
             'failed_ids'  => $failedIds,
         ];
+
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_RESPONSE,
+            $response);
+
+        return $response;
     }
 
     protected function updateHoldFunds(string $merchantId, bool $holdFunds)

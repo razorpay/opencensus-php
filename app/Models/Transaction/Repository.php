@@ -475,16 +475,22 @@ class Repository extends Base\Repository
         return $transaction;
     }
 
-    public function fetchGratisTransactions($merchantId, $timestamp)
+    public function fetchGratisTransactions(string $merchantId, int $timestamp)
     {
+        $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $transactionData = $this->dbColumn('*');
+
         return $this->newQuery()
-                    ->where(Transaction\Entity::TYPE, Type::PAYMENT)
-                    ->where('transactions.created_at', '>', $timestamp)
+                    ->where(Entity::TYPE, Type::PAYMENT)
+                    ->where($createdAt, '>=', $timestamp)
                     ->where(Transaction\Entity::GRATIS, '=', 1)
                     ->merchantId($merchantId)
-                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
-                       ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->select('transactions.*')
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentId)
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->select($transactionData)
                     ->get();
     }
 }
