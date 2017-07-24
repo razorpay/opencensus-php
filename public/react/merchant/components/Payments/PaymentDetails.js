@@ -3,6 +3,7 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
+import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import ListToggler from 'rzp/ui/ListToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
@@ -22,21 +23,6 @@ const ListItem = ({ item, value }) => {
       </td>
       <td class="text-right">
         {value}
-      </td>
-    </tr>
-  );
-};
-
-const RefundsListItem = ({ refund }) => {
-  return (
-    <tr>
-      <td>
-        <Link to={`/refunds/${refund.id}`}>
-          <code>{refund.id}</code>
-        </Link>
-      </td>
-      <td>
-        <Amount value={refund.amount} />
       </td>
     </tr>
   );
@@ -241,22 +227,12 @@ export default props => {
                         totalItems={refunds.items.length}
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
-                        <div class="table-responsive">
-                          <table class="table table-hover table-striped">
-                            <TableBody
-                              colSpan={2}
-                              isLoading={refunds.loading}
-                              rows={refunds.items}
-                            >
-                              {refunds.items.map(refund => (
-                                <RefundsListItem
-                                  key={refund.id}
-                                  refund={refund}
-                                />
-                              ))}
-                            </TableBody>
-                          </table>
-                        </div>
+                        <DataTable
+                          columns={[refundId, amount]}
+                          items={refunds.items}
+                          loading={refunds.loading}
+                          showHeaders={false}
+                        />
                       </ListToggler>
                     : <EntityDetailRow label="Refunds" value="No Refunds" />}
                 </div>
