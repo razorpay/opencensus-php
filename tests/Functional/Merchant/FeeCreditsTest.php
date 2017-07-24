@@ -27,14 +27,14 @@ class FeeCreditsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreditsLogAlreadyExists()
+    /*public function testCreditsLogAlreadyExists()
     {
         $this->fixtures->create('credits', [Credits\Entity::TYPE => Credits\Type::FEE]);
 
         $this->testData[__FUNCTION__]['request']['content']['type'] = Credits\Type::FEE;
 
         $this->startTest();
-    }
+    }*/
 
     public function testGetCreditsLog()
     {

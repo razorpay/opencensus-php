@@ -115,5 +115,14 @@ return array(
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
         ]
-    ]
+    ],
+
+    'nodal' => [
+        'mock' => env('NODAL_MOCK', false),
+        'auth' => [
+            'username' => env('NODAL_USERNAME'),
+            'password' => env('NODAL_PASSWORD'),
+        ],
+        'url' => env('NODAL_BASE_URL'),
+    ],
 );

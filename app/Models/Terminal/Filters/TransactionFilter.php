@@ -327,7 +327,9 @@ class TransactionFilter extends Terminal\Filter
 
     protected function isValidEmiTerminal($terminal, $input)
     {
-        $bank = $input['payment']->getBank();
+        $payment = $input['payment'];
+
+        $bank = $payment->getBank();
 
         // check if banks emi transactions can be processed from any card terminal
         if ((empty($bank) === false) and
@@ -337,7 +339,7 @@ class TransactionFilter extends Terminal\Filter
         }
 
         // validate terminal using the gateway and emi duration
-        $network = $input['payment']->card->getNetworkCode();
+        $network = $payment->card->getNetworkCode();
 
         if ($network === Network::AMEX)
         {
@@ -348,9 +350,11 @@ class TransactionFilter extends Terminal\Filter
             $gateway = Gateway::$emiBankToGatewayMap[$bank];
         }
 
-        $emiDuration = $input['payment']->emiPlan->getDuration();
+        $emiDuration = $payment->emiPlan->getDuration();
 
-        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+        $subvention = $payment->emiPlan->getSubvention();
+
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
     }
 
     public function amountFilter(Terminal\Entity $terminal, array $input)

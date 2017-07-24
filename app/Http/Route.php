@@ -202,8 +202,10 @@ final class Route
         'schedule_fetch_multiple'                 => ['get',      'schedules',                                      'ScheduleController@getSchedules'                                   ],
         'schedule_delete'                         => ['delete',   'schedules/{id}',                                 'ScheduleController@deleteSchedule'                                 ],
         'schedule_update'                         => ['put',      'schedules/{id}',                                 'ScheduleController@putSchedule'                                    ],
+        'schedule_update_next_run'                => ['post',     'schedules/update_next_run',                      'ScheduleController@updateNextRun'                                  ],
         'schedule_migration'                      => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                         => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
+        'schedule_process_tasks'                  => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
@@ -228,7 +230,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'batch_setl_calc_previous_fees'           => ['post',     'batchfundtransfers/fees/previous',               'SettlementController@postBatchFundTransferCalculatePreviousFees'   ],
-        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                         'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -557,7 +559,13 @@ final class Route
         'tax_group_create'                        => ['post',     'tax_groups',                                     'TaxGroupController@create'                                         ],
         'tax_group_update'                        => ['patch',    'tax_groups/{id}',                                'TaxGroupController@update'                                         ],
         'tax_group_delete'                        => ['delete',   'tax_groups/{id}',                                'TaxGroupController@delete'                                         ],
-
+        //promotion routes
+        'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
+        'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
+        //coupon routes
+        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -929,6 +937,7 @@ final class Route
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_migration',
+        'schedule_update_next_run',
         'internal_dummy_account_test',
         'user_create',
         'user_confirm_by_data',
@@ -947,6 +956,12 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'schedule_process_tasks',
+        'promotion_create',
+        'promotion_update',
+        'coupon_create',
+        'coupon_apply',
+        'coupon_delete',
         'merchant_fetch_users',
         'invitation_fetch_by_token',
         'invitation_action',
@@ -1256,6 +1271,7 @@ final class Route
             'setl_reconcile_generate',
             'setl_reconcile_test',
             'setl_return_generate',
+            'nodal_initiate_transfer',
             'payment_auth_notify',
             'payment_timeout',
             'scorecard',
@@ -1291,6 +1307,7 @@ final class Route
             'payment_update_on_hold',
             'refund_retry_failed',
             'reports_transaction_dsp',
+            'schedule_process_tasks',
         ],
 
         'kotak' => [
@@ -1338,13 +1355,13 @@ final class Route
     public static $routeNameToFeaturesMap = [
         'feature_dummy'                     => [Feature::DUMMY],
         'merchant_sub_create'               => [Feature::AGGREGATOR, Feature::MARKETPLACE],
-        'customer_delete'                   => [Feature::TOKENS],
-        'customer_delete_token'             => [Feature::TOKENS],
-        'customer_fetch_tokens'             => [Feature::TOKENS],
+        'customer_delete'                   => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
+        'customer_delete_token'             => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
+        'customer_fetch_tokens'             => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'payment_create_wallet'             => [Feature::S2SWALLET],
         'payment_create_upi'                => [Feature::S2SUPI],
         'payment_create_openwallet'         => [Feature::OPENWALLET],
-        'payment_create_recurring'          => [Feature::RECURRING],
+        'payment_create_recurring'          => [Feature::RECURRING, Feature::CHARGE_AT_WILL],
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
@@ -1640,7 +1657,7 @@ final class Route
         $this->router
              ->any('{all}',
                    [
-                       'as' => 'api_root',
+                       'as' => 'api_catch_all',
                        'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
                    ])
              ->where('all', '.*');

@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Schedule\Task;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Library;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
     const ENTITY_ID         = 'entity_id';
@@ -17,6 +21,7 @@ class Entity extends Base\PublicEntity
     const SCHEDULE_ID       = 'schedule_id';
     const NEXT_RUN_AT       = 'next_run_at';
     const LAST_RUN_AT       = 'last_run_at';
+    const DELETED_AT        = 'deleted_at';
 
     const SCHEDULE_NAME     = 'schedule_name';
 
@@ -43,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::LAST_RUN_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     protected $public = [
@@ -180,7 +186,11 @@ class Entity extends Base\PublicEntity
         $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
 
         $this->setNextRunAt($nextRun->timestamp);
-        $this->setLastRunAt($lastRun->timestamp);
+
+        if ($lastRun !== null)
+        {
+            $this->setLastRunAt($lastRun->timestamp);
+        }
     }
 
     /**

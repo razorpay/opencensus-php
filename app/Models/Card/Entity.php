@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Card;
 
+use Carbon\Carbon;
+
 use RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -308,6 +310,17 @@ class Entity extends Base\PublicEntity
     public function getExpiryYear()
     {
         return $this->getAttribute(self::EXPIRY_YEAR);
+    }
+
+    public function getExpiryTimestamp()
+    {
+        $year = $this->getExpiryYear();
+
+        $month = $this->getExpiryMonth();
+
+        return Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                        ->endOfMonth()
+                        ->timestamp;
     }
 
     public function getTypeElseDefault()

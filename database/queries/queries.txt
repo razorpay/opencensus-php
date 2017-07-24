@@ -2252,3 +2252,19 @@ ALTER TABLE refunds
 
 DROP TABLE coupons;
 DELETE FROM migrations WHERE migration = '2016_11_29_101058_create_coupons';
+
+ALTER TABLE credits
+    ADD COLUMN promotion_id varchar(14) DEFAULT NULL after merchant_id,
+    ADD COLUMN used INTEGER DEFAULT 0 AFTER type,
+    ADD COLUMN expired_at INT(11) DEFAULT NULL AFTER used,
+    ADD INDEX credits_expired_at_index (expired_at);
+
+ALTER TABLE schedule_tasks
+    ADD COLUMN deleted_at INT(11) DEFAULT NULL AFTER updated_at;
+
+# Removes emi_subvention from methods
+ALTER TABLE merchant_banks
+    DROP COLUMN emi_subvention;
+
+ALTER TABLE addons
+    ADD COLUMN quantity INTEGER DEFAULT 1 AFTER invoice_id;

@@ -45,7 +45,8 @@ class InvoiceAction extends Job implements ShouldQueue
 
     public function __construct(string $mode, string $event, string $id)
     {
-        $this->mode  = $mode;
+        parent::__construct($mode);
+
         $this->event = $event;
         $this->id    = $id;
     }

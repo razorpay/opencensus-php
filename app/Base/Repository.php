@@ -501,7 +501,7 @@ class Repository extends \Razorpay\Spine\Repository
         // toArray. The result from toArray is directly passed to es client for
         // indexing.
 
-        $fields = $this->esRepo->getFields();
+        $fields = $this->esRepo->getIndexedFields();
 
         $serialized = $entity->setVisible($fields)->toArray();
 
@@ -580,7 +580,7 @@ class Repository extends \Razorpay\Spine\Repository
      */
     public function isEsSyncNeeded(string $action, array $dirty): bool
     {
-        $esFields = $this->esRepo->getFields();
+        $esFields = $this->esRepo->getIndexedFields();
 
         // Fields merchant_id and created_at never comes in dirty
         // as they are not update-able. But keeping this filter here
