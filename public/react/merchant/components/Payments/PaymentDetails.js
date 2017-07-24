@@ -4,6 +4,7 @@ import Spinner from 'rzp/ui/Spinner';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
 import DataTable from 'rzp/ui/Table/DataTable';
+import ObjectTable from 'rzp/ui/Table/ObjectTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import ListToggler from 'rzp/ui/ListToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
@@ -12,21 +13,7 @@ import OtherDetail from 'merchant/components/OtherDetail';
 import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import TableBody from 'rzp/ui/TableBody';
 import { Link } from 'react-router-dom';
-
-const ListItem = ({ item, value }) => {
-  return (
-    <tr>
-      <td>
-        {item}
-      </td>
-      <td class="text-right">
-        {value}
-      </td>
-    </tr>
-  );
-};
 
 const shownByDefault = [
   'amount',
@@ -129,23 +116,10 @@ export default props => {
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        <div class="table-responsive">
-                          <table class="table table-hover">
-                            <TableBody
-                              colSpan={2}
-                              isLoading={card.loading}
-                              rows={Object.keys(card.details)}
-                            >
-                              {Object.keys(card.details).map(key => (
-                                <ListItem
-                                  key={key}
-                                  item={titleCase(key)}
-                                  value={card.details[key]}
-                                />
-                              ))}
-                            </TableBody>
-                          </table>
-                        </div>
+                        <ObjectTable
+                          objDetails={card.details}
+                          loading={card.loading}
+                        />
                       </ListToggler>
                     : null}
 
