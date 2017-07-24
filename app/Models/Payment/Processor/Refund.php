@@ -1052,7 +1052,7 @@ trait Refund
 
         try
         {
-            (new BankTransfer\Refund)->process($data);
+            (new BankTransfer\Refund)->process($data, $this->merchant);
 
             $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 

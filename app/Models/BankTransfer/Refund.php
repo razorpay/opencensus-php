@@ -10,20 +10,20 @@ use RZP\Models\Base;
 // use RZP\Models\Merchant\Account;
 // use RZP\Models\Currency\Currency;
 // use RZP\Models\Payment\Entity as Payment;
-// use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 // use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base\Core
 {
-    public function process(array $input)
+    public function process(array $input, Merchant $merchant)
     {
         $bankTransfer = $this->getBankTransfer($input['payment']);
 
-        $bankAccount = $this->createPayerBankAccount($bankTransfer);
+        $bankAccount = $this->createPayerBankAccount($bankTransfer, $merchant);
 
         $this->createRefundAttemptEntity($input, $bankAccount);
     }
@@ -39,7 +39,7 @@ class Refund extends Base\Core
         return $bankTransfer;
     }
 
-    protected function createPayerBankAccount(Entity $bankTransfer)
+    protected function createPayerBankAccount(Entity $bankTransfer, Merchant $merchant)
     {
         $bankAccount = new BankAccount\Entity;
 
@@ -47,7 +47,7 @@ class Refund extends Base\Core
 
         $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
-        $bankAccount->merchant()->associate($this->merchant);
+        $bankAccount->merchant()->associate($merchant);
 
         // $bankAccount->associateVirtualAccount($virtualAccount);
 
@@ -69,7 +69,7 @@ class Refund extends Base\Core
         $fundTransferAttempt->setSourceType(FundTransferAttempt\Type::REFUND);
         $fundTransferAttempt->setSourceId($input['refund']['id']);
 
-        $fundTransferAttempt->merchant()->associate($this->merchant);
+        $fundTransferAttempt->merchant()->associate($bankAccount->merchant);
 
         $fundTransferAttempt->bankAccount()->associate($bankAccount);
 
