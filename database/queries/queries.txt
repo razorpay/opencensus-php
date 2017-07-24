@@ -2268,3 +2268,9 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE addons
     ADD COLUMN quantity INTEGER DEFAULT 1 AFTER invoice_id;
+
+# batch fund transfers for refunds
+ALTER TABLE refunds
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT refunds_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;

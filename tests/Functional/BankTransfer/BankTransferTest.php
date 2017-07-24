@@ -7,11 +7,13 @@ use Mockery;
 use Closure;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BankTransferTest extends TestCase
 {
     use PaymentTrait;
+    use PayoutTrait;
 
     public function setUp()
     {
@@ -91,6 +93,13 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+
+        $content = $this->initiatePayouts();
+        $this->assertNotNull($content['kotak']['payout_text_file']);
+        $this->assertEquals(1, $content['kotak']['count']);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('initiated', $attempt['status']);
     }
 
     public function testBankTransferProcessAndFetchDetails()

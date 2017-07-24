@@ -62,11 +62,8 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->select($columns)
-                      ->join(Constants\Table::PAYOUT, Entity::SOURCE_ID, '=', $payoutIdCol)
-                      ->where(Payout\Entity::METHOD, '=', Payout\Method::FUND_TRANSFER)
                       ->where($statusCol, '=', Status::CREATED)
-                      ->where($createdAtCol, '<', $timestamp)
-                      ->where(Entity::SOURCE_TYPE, '=', Constants\Entity::PAYOUT)
+                      ->where($createdAtCol, '<=', $timestamp)
                       ->orderBy($idCol);
 
         if (count($relations) > 0)
