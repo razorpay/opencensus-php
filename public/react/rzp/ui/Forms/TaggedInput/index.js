@@ -7,7 +7,7 @@ export default class TaggedInput extends Component {
     if (value.length > 1 && value.charAt(value.length - 1) === ',') {
       let data = this.props.input.value.slice();
       let result = value.slice(0, -1)
-      if (this.props.isUrl(result)) {
+      if (this.props.validate(result)) {
         data.push(result);
 
         this.props.input.onChange(data);

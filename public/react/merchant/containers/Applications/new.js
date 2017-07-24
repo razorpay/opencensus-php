@@ -1,20 +1,16 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { PowerSelect } from 'react-power-select'
-
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { Link, withRouter } from 'react-router-dom';
+import { required, isUrl } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { required, isUrl } from 'rzp/utils/validators';
-
-import { Link, withRouter } from 'react-router-dom';
-import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
-import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
+import * as ApplicationActions from 'merchant/modules/applications';
 
 const INFO = {
   icon: 'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
@@ -39,12 +35,6 @@ const selector = formValueSelector('newApplicationForm');
 })
 
 class NewApplicationForm extends Component {
-  constructor() {
-    super();
-    this.openPreviewPage = this.openPreviewPage.bind(this)
-    this.showDevSecret = this.showDevSecret.bind(this)
-    this.showProdSecret = this.showProdSecret.bind(this)
-  }
   state = {
     edit: false,
     details: {},
@@ -63,9 +53,6 @@ class NewApplicationForm extends Component {
       return
     }
     this.props.fetchApplication(id).then((data)=>{
-      // todo : remove
-      data.clients.dev.secret = 'ajsdhfkajshdfkjashdfkjsadhfkhjsdf'
-      data.clients.prod.secret = 'ajsdhfkajshdfkjashdfkjsadhfkhjsdf'
       this.initForm(data)
     }).catch((err)=>{
       this.props.showNotification({
@@ -77,14 +64,13 @@ class NewApplicationForm extends Component {
   }
 
   initForm(data) {
-    this.state.details = data
-    this.props.initialize(this.state.details)
+    this.props.initialize(data)
   }
   componentWillUnmount () {
     // remove details from state
   }
 
-  openPreviewPage() {
+  openPreviewPage = () => {
     // open in a popup
     const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this.state.details.clients.prod.id}&redirect_uri=http://localhost&scope=read_only`
     window.open(popupUrl, "PopupPreview");
@@ -95,7 +81,7 @@ class NewApplicationForm extends Component {
   save = props => {
     if (!this.state.edit){
       return this.props.createApplication(props).then(application => {
-        this.state.edit = true;
+        this.setState({edit: true});
         this.initForm(application)
         this.props.history.replace(`/applications/${application.id}`)
         this.props.showNotification({
@@ -192,8 +178,17 @@ class NewApplicationForm extends Component {
               <div class="form-group">
                 <div class="col-md-offset-2 upload-container col-md-1">
                   <div class="upload-inner">
-                    <i class="fa fa-folder-open"></i>
-                    <span>Upload App Icon</span>
+                    <label htmlFor="logo-upload">
+                      <i class="fa fa-folder-open"></i>
+                      <span style={{fontWeight: "normal"}}>Upload App Icon</span>
+                      <Field
+                        name="app_logo"
+                        component="input"
+                        id="logo-upload"
+                        type="file"
+                        class="hide"
+                      />
+                    </label>
                   </div>
                 </div>
                 <small class="col-md-8 help-block">
@@ -248,7 +243,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      isUrl={isUrl}
+                      validate={isUrl}
                     />
                   </div>
                   <div class="clearfix"></div>
@@ -303,7 +298,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      isUrl={isUrl}
+                      validate={isUrl}
                     />
                   </div>
                   <div class="clearfix"></div>
@@ -342,4 +337,15 @@ class NewApplicationForm extends Component {
   }
 }
 
+function FileInput(props) {
+  return 
+    (<input
+      {...props}
+      type="file"
+      value={null}
+      onChange={(e) => {
+        console.log()
+      }}
+    />)
+}
 export default NewApplicationForm;
