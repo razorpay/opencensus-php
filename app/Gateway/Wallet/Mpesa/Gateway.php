@@ -365,7 +365,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
-            RequestFields::AMOUNT                => $amount,
+            RequestFields::AMOUNT                => (string) $amount,
             RequestFields::RETURN_URL            => $input['callbackUrl'],
             RequestFields::NARRATION             => Constants::NARRATION
         ];
@@ -614,7 +614,6 @@ class Gateway extends Base\Gateway
 
         $contentToSave = [
             Base\Entity::RESPONSE_CODE        => $content[ResponseFields::S2S_STATUS_CODE],
-            Base\Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER],
             Base\Entity::RESPONSE_DESCRIPTION => $errorMessage
         ];
 

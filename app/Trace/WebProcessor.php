@@ -73,8 +73,9 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $headers = $this->request->headers;
 
-        $serverData = array(
+        $serverData = [
             'request_id'    => $this->request->getId(),
+            'task_id'       => $this->request->getTaskId(),
             'uri'           => $this->request->path(),
             'url'           => $this->request->fullUrl(),
             'method'        => $this->request->method(),
@@ -88,7 +89,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
             'console'       => $this->console,
             'merchant_id'   => null,
-        );
+        ];
 
         $this->unsetUrlForSensitiveUrls($serverData);
 

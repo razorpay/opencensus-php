@@ -54,7 +54,7 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC               => ['payoutreport@hdfcbank.com'],
-        self::AXIS               => [],
+        self::AXIS               => ['pg.estatements@axisbank.com'],
         self::BILLDESK           => [],
         self::PAYZAPP            => [],
         self::MOBIKWIK           => [],
@@ -68,7 +68,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
         self::JIOMONEY           => [],
         self::EBS                => [],
-        self::FIRST_DATA         => [],
+        self::FIRST_DATA         => ['customer.care@icici.mailserv.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN              => ['prashanth.yv@razorpay.com'],
@@ -79,9 +79,11 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_EMAIL_VALIDATION = [
         self::HDFC,
+        self::AXIS,
         self::KOTAK,
         self::OLAMONEY,
         self::FREECHARGE,
+        self::FIRST_DATA,
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL

@@ -18,6 +18,8 @@ class WebHook extends Job implements ShouldQueue
      */
     public function __construct($data)
     {
+        parent::__construct();
+
         $this->data = $data;
     }
 
@@ -28,6 +30,8 @@ class WebHook extends Job implements ShouldQueue
      */
     public function handle()
     {
+        parent::handle();
+
         $app = App::getFacadeRoot();
 
         $app['webhook.inferno']->fire($this, $this->data);

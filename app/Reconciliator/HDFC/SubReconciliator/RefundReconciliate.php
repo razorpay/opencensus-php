@@ -89,7 +89,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
                 $arn = trim(str_replace("'", '', $arn));
 
-                if (strpos($arn, 'onus') !== false)
+                if (stripos($arn, 'onus') !== false)
                 {
                     $arn = 'NA';
                 }

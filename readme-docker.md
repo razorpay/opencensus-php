@@ -16,6 +16,7 @@ First install Brew on your MAC
 - `brew tap homebrew/dupes`
 - `brew tap homebrew/php`
 - Install PHP 7.0.+ `brew install php70`
+- Install gmp : `brew install php70-gmp`
 - Install `mcrypt`: `brew install mcrypt php70-mcrypt`
 - Finally, install composer: `brew install composer`
 
@@ -80,6 +81,14 @@ Note: Docker for Mac suffers from heavy performance implications due to the natu
 ```
 $ make init
 ```
+[Optional Step] : If this fails saying certain files are missing, you can add the folloring in your docker container location : 
+```
+cd <PATH_TO_CONTAINERS>/Containers/com.docker.docker/Data/database/com.docker.driver.amd64-linux/
+mkdir disk
+touch disk/full-sync-on-flush
+touch disk/on-flush
+```
+For Mac Users, PATH_TO_CONTAINERS is by default ~/Library/
 
 Now, build the containers:
 

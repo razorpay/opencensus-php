@@ -81,6 +81,11 @@ class TraceCode
     const PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION        = 'PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE         = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_AMOUNT_CREDITS                    = 'TRANSACTION_AMOUNT_CREDITS';
+    const CREDITS_EXPIRED                               = 'CREDITS_EXPIRED';
+    const CREDITS_ADDED                                 = 'CREDITS_ADDED';
+    const SCHEDULE_TASKS_PROCESS_REQUEST                = 'SCHEDULE_TASKS_PROCESS_REQUEST';
+    const SCHEDULE_TASKS_PROCESSED                      = 'SCHEDULE_TASKS_PROCESSED';
+    const SCHEDULE_TASK_PROCESSING_FAILED               = 'SCHEDULE_TASK_PROCESSING_FAILED';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION       = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                       = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED                 = 'PAYMENT_ANALYTICS_SAVE_FAILED';
@@ -254,6 +259,15 @@ class TraceCode
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
     const INVOICE_PDF_GEN_SYNC                          = 'INVOICE_PDF_GEN_SYNC';
+
+    const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
+    const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
+    const PROMOTION_ACTIVATION_FAILED                   = 'PROMOTION_ACTIVATION_FAILED';
+
+    const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
+    const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';
+    const COUPON_DELETE_REQUEST                         = 'COUPON_DELETE_REQUEST';
+    const COUPON_DELETED                                = 'COUPON_DELETED';
 
     const ITEM_CREATE_REQUEST                           = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                           = 'ITEM_UPDATE_REQUEST';
@@ -495,6 +509,7 @@ class TraceCode
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
+    const MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED     = 'MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED';
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
@@ -532,6 +547,8 @@ class TraceCode
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
+    const NODAL_INTEGRATION_ERROR                   = 'NODAL_INTEGRATION_ERROR';
+
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
 
@@ -540,6 +557,7 @@ class TraceCode
     const ERROR_INVALID_ARGUMENT                    = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
+    const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -750,6 +768,12 @@ class TraceCode
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
 
+    const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
+    const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
+    const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
+
+    const DUMMY_JOB = 'DUMMY_JOB';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -848,6 +872,7 @@ class TraceCode
         self::IIN_INSERT_FAILED                         => 'Inserting into Iin failed for given Iin',
         self::RECON_INFO                                => 'General recon info',
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
+        self::CREDITS_TRANSACTION_FAILED                => 'Credits transaction failed on payment capture',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
         self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',
@@ -892,6 +917,10 @@ class TraceCode
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
+
+        self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
+        self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
+        self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
     );
 
     /**

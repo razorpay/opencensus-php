@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\AdminLead;
+use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
@@ -74,6 +75,8 @@ class Core extends Base\Core
             // Use Startup Plan as the default for linked accounts
             // where transfer method pricing is 0
             $subMerchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+
+            $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
 
             $subMerchant->parent()->associate($aggregatorMerchant);
         }
@@ -348,5 +351,32 @@ class Core extends Base\Core
         $this->logActionToSlack($merchant, $action);
 
         return $merchant;
+    }
+
+
+    public function markGratisTransactionPostpaid(string $merchantId, int $from)
+    {
+        $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+        $transactions = $this->repo->transaction->fetchGratisTransactions($merchantId, $from);
+
+        $transactionCore = (new Transaction\Core);
+
+        foreach($transactions as $txn)
+        {
+            try
+            {
+                $transactionCore->markGratisTransactionPostpaid($txn, $merchant);
+            }
+            catch (\Exception $e)
+            {
+                 $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::GRATIS_TO_POSTPAID_FAILED,
+                    ['transaction_id' => $txn->getId()]
+                );
+            }
+        }
     }
 }

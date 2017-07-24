@@ -132,6 +132,28 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals($payments['count'], 0);
     }
 
+    public function testRetrievePaymentWithEmailAndLast4()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['email' => 'test@test.test']);
+
+        $this->ba->appAuth();
+
+        $params = [
+            'email' => 'test@test.test',
+            'last4' => '1112',
+        ];
+
+        $payments = $this->getEntities('payment', $params, true);
+
+        $this->assertEquals(0, $payments['count']);
+
+        $params['last4'] = '1111';
+
+        $payments = $this->getEntities('payment', $params, true);
+
+        $this->assertEquals(1, $payments['count']);
+    }
+
     /**
      * @group testRetrievePaymentWithCreateAt
      */

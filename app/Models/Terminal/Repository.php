@@ -120,7 +120,6 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->whereNotNull(Terminal\Entity::GATEWAY_RECON_PASSWORD)
-                    ->enabled()
                     ->first();
     }
 

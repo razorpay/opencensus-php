@@ -114,7 +114,6 @@ class Creator extends Base\Core
 
         $this->file->generate([]);
 
-
         $this->setDefaults();
     }
 
@@ -555,6 +554,8 @@ class Creator extends Base\Core
     {
         $extension = $this->file->getExtension();
 
+        $this->createDirectory();
+
         switch($extension)
         {
             case Format::TXT:
@@ -580,6 +581,7 @@ class Creator extends Base\Core
             $this->compressFile();
         }
 
+        $this->updateFilePermission();
     }
 
     /*
@@ -589,6 +591,8 @@ class Creator extends Base\Core
      */
     protected function compressFile()
     {
+        $unzippedFilePath = $this->getFullFilePath();
+
         $compressionCommand = $this->compressionCommand;
 
         if (empty($this->file->getPassword()) === false)
@@ -601,7 +605,7 @@ class Creator extends Base\Core
             " " .
             escapeshellarg($this->getCompressedFileFullPath()) .
             " " .
-            escapeshellarg($this->getFullFilePath())
+            escapeshellarg($unzippedFilePath)
         );
 
         $this->extension($this->compressionFormat);
@@ -611,10 +615,8 @@ class Creator extends Base\Core
         $this->mime($this->localFile->getMimeType());
     }
 
-    protected function writeTextFile()
+    protected function createDirectory()
     {
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
-
         $fullPath = $this->getFullFilePath();
 
         $dir = dirname($fullPath);
@@ -623,32 +625,17 @@ class Creator extends Base\Core
         {
             (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
+    }
+
+    protected function writeTextFile()
+    {
+        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $fullPath = $this->getFullFilePath();
 
         $file = fopen($fullPath, 'w');
         fwrite($file, $this->content);
         fclose($file);
-
-        try
-        {
-            //
-            // This step is important because file can be created
-            // via different users (www-data or ubuntu (via queue))
-            //
-            if (substr(sprintf('%o', fileperms($fullPath)), -3) !== '777')
-            {
-                (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::WARNING,
-                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
-                [
-                    'path' => $fullPath
-                ]);
-        }
 
         $this->createUploadedFile($fullPath, $fileName);
     }
@@ -665,6 +652,37 @@ class Creator extends Base\Core
             $this->getStorageDir());
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
+    }
+
+    /**
+     * Updates permission to 777 on any local files generated via filestore, so that
+     * delete operations can be performed successfully on them
+     */
+    protected function updateFilePermission()
+    {
+        try
+        {
+            //
+            // This step is important because file can be created
+            // via different users (www-data or ubuntu (via queue))
+            //
+            $filePermission = substr(sprintf('%o', fileperms($this->filePath)), -3);
+
+            if ($filePermission !== '777')
+            {
+                (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+             $this->trace->traceException(
+                 $e,
+                 Trace::WARNING,
+                 TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                 [
+                     'path' => $fullPath
+                 ]);
+        }
     }
 
     protected function createUploadedFile($filePath, $fileName)

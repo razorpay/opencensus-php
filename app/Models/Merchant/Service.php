@@ -14,6 +14,7 @@ use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\User;
 use RZP\Models\Offer;
+use RZP\Models\Coupon;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
@@ -37,6 +38,8 @@ use RZP\Models\Merchant\SlackActions as SlackActions;
 class Service extends Base\Service
 {
     use Notify;
+
+    const COUPON_RESPONSE = 'apply_coupon';
 
     /**
      * Creates a merchant and saves in database
@@ -71,9 +74,9 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
-        $this->repo->saveOrFail($merchant);
+        $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
-        return $merchant->toArrayPublic();
+        return $merchantData;
     }
 
     public function createSubMerchant(array $input)
@@ -89,9 +92,46 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
-        $this->repo->saveOrFail($subMerchant);
+        $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
-        return $subMerchant->toArrayPublic();
+        return $subMerchantData;
+    }
+
+    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+    {
+        $this->repo->saveOrFail($merchant);
+
+        $merchantData = $merchant->toArrayPublic();
+
+        $couponResponse = $this->applyCouponOnSignUp($input, $merchant);
+
+        $merchantData[self::COUPON_RESPONSE] = $couponResponse;
+
+        return $merchantData;
+    }
+
+    protected function applyCouponOnSignUp(array $input, Entity $merchant)
+    {
+        $result = [];
+
+        if (isset($input[Entity::COUPON_CODE]) === true)
+        {
+            $couponInput = [
+                Coupon\Entity::CODE        => $input[Entity::COUPON_CODE],
+                Coupon\Entity::MERCHANT_ID => $merchant->getId()
+            ];
+
+            try
+            {
+                $result = (new Coupon\Service)->apply($couponInput);
+            }
+            catch (\Throwable $e)
+            {
+                $result = ['message'=> $e->getMessage()];
+            }
+        }
+
+        return $result;
     }
 
     public function edit($id, array $input)
@@ -972,6 +1012,49 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function markGratisTransactionPostpaid($input)
+    {
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_INPUT,
+            $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $from = $input['from'];
+
+        $successIds = [];
+
+        $failedIds = [];
+
+        $merchantCore = (new Merchant\Core);
+
+        foreach ($merchantIds as $merchantId) {
+            try
+            {
+                $merchantCore->markGratisTransactionPostpaid($merchantId, $from);
+
+                $successIds[] = $merchantId;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success_ids' => $successIds,
+            'failed_ids'  => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_RESPONSE,
+            $response);
+
+        return $response;
+    }
+
     protected function updateHoldFunds(string $merchantId, bool $holdFunds)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -988,6 +1071,23 @@ class Service extends Base\Service
         $users = (new Merchant\Core)->getUsers($merchant);
 
         return $users;
+    }
+
+    /**
+     * Return all submerchants of the master merchant (for aggregator model only)
+     *
+     * 1. We do not want all the aggregator merchant to download the complete report
+     *    so its behind aggregator_report feature
+     * 2. We will have to write the logic to fetch all its submerchants based on tags
+     * 3. Currently feature will be enabled only for e-Mitra, and merchants will be hard coded.
+     *
+     * @return array
+     */
+    public function getSubmerchants(): array
+    {
+        $merchant = $this->merchant;
+
+        return [ $merchant->getId() ];
     }
 
     /**

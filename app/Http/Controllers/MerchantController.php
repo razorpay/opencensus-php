@@ -323,13 +323,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getBalance($id)
-    {
-        $data = (new Merchant\Service)->fetchBalance($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function getAccountBalance()
     {
         $data = (new Merchant\Service)->fetchBalance();
@@ -715,6 +708,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Merchant\Service)->editGSTDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function markGratisTransactionPostpaid()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->markGratisTransactionPostpaid($input);
 
         return ApiResponse::json($response);
     }
