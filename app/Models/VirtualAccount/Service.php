@@ -163,7 +163,10 @@ class Service extends Base\Service
 
                 $failure++;
 
-                $failures[] = $paymentToRefund->getPublicId();
+                $failures[] = [
+                    'payment_id'         => $paymentToRefund->getPublicId(),
+                    'virtual_account_id' => $virtualAccount->getPublicId(),
+                ];
             }
         }
 

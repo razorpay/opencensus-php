@@ -34,8 +34,6 @@ class Refund extends Base\Core
                              ->bank_transfer
                              ->findByPaymentId($payment['id']);
 
-        $this->virtualAccount = $bankTransfer->virtualAccount;
-
         return $bankTransfer;
     }
 
@@ -49,7 +47,7 @@ class Refund extends Base\Core
 
         $bankAccount->merchant()->associate($merchant);
 
-        // $bankAccount->associateVirtualAccount($virtualAccount);
+        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
 
         $this->repo->saveOrFail($bankAccount);
 

@@ -108,7 +108,7 @@ class Core extends Base\Core
         {
             $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
 
-            $attempts = $this->repo->fund_transfer_attempt->getCreatedPayoutAttemptsBeforeTimestamp(
+            $attempts = $this->repo->fund_transfer_attempt->getCreatedAttemptsBeforeTimestamp(
                 FundTransferAttempt\Status::CREATED, $timestamp, ['source']);
 
             $method = 'processBankPayoutsFor' . ucfirst($channel);

@@ -49,22 +49,13 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getCreatedPayoutAttemptsBeforeTimestamp(
+    public function getCreatedAttemptsBeforeTimestamp(
         string $status, int $timestamp, array $relations = [])
     {
-        $payoutIdCol = $this->repo->payout->dbColumn(Payout\Entity::ID);
-
-        $statusCol = $this->repo->fund_transfer_attempt->dbColumn(Entity::STATUS);
-        $createdAtCol = $this->repo->fund_transfer_attempt->dbColumn(Entity::CREATED_AT);
-        $idCol = $this->repo->fund_transfer_attempt->dbColumn(Entity::ID);
-
-        $columns = $this->dbColumn('*');
-
         $query = $this->newQuery()
-                      ->select($columns)
-                      ->where($statusCol, '=', Status::CREATED)
-                      ->where($createdAtCol, '<=', $timestamp)
-                      ->orderBy($idCol);
+                      ->where(Entity::STATUS, '=', Status::CREATED)
+                      ->where(Entity::CREATED_AT, '<=', $timestamp)
+                      ->orderBy(Entity::ID);
 
         if (count($relations) > 0)
         {

@@ -675,6 +675,10 @@ trait Refund
         {
             return $this->refundBankTransfer($payment, $data);
         }
+        else
+        {
+            throw new Exception\LogicException('Should not have reached here');
+        }
     }
 
     protected function callGatewayRefundFunction($payment, $data)
@@ -1046,7 +1050,7 @@ trait Refund
         return $this->callGatewayForRefundValidation($data);
     }
 
-    protected function refundBankTransfer($payment, $data)
+    protected function refundBankTransfer(Payment\Entity $payment, array $data)
     {
         $refunded = false;
 

@@ -65,6 +65,10 @@ class Processor extends Base\Core
         }
         else
         {
+            // The transfer is an expected one, i.e. it is made to a valid account
+            // but the UTR is a duplicate, indicating that a payment is being processed
+            // for a second time. In this case, we do not create anything but a
+            // bank_transfer entity, marked as unexpected.
             $bankTransfer->setExpected(false);
 
             $this->repo->saveOrFail($bankTransfer);
@@ -122,7 +126,7 @@ class Processor extends Base\Core
 
         $this->setDefaultMerchant();
 
-        $this->createAndSetVirtualAccount($bankTransfer);
+        $this->createAndSetVirtualAccount($bankTransfer->getAmount());
 
         $this->processBankTransferForMerchant($bankTransfer, $this->merchant);
     }
@@ -216,9 +220,9 @@ class Processor extends Base\Core
         $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
     }
 
-    protected function createAndSetVirtualAccount(Entity $bankTransfer)
+    protected function createAndSetVirtualAccount(int $amount)
     {
-        $data = $this->virtualAccountCreationArray($bankTransfer);
+        $data = $this->virtualAccountCreationArray($amount);
 
         $virtualAccount = (new VirtualAccount\Core)->create($data, $this->merchant);
 
@@ -265,10 +269,10 @@ class Processor extends Base\Core
         return $bankAccount;
     }
 
-    protected function virtualAccountCreationArray(Entity $bankTransfer): array
+    protected function virtualAccountCreationArray(int $amount): array
     {
         return [
-            VirtualAccount\Entity::AMOUNT_EXPECTED => $bankTransfer->getAmount(),
+            VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
         ];
     }
 
