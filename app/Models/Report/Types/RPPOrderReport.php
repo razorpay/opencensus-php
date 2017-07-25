@@ -42,14 +42,12 @@ class RPPOrderReport extends BasicEntityReport
     {
         $data = [];
 
-        $attemptedOrderIds = [];
-
         foreach ($entities as $order)
         {
             switch ($order->getStatus())
             {
                 case Order\Status::CREATED:
-                    $row = $this->createFailureEntry('Razorpay Payment does not exists');
+                    $row = $this->createFailureEntry($order, 'Razorpay Payment does not exists');
                     break;
 
                 case Order\Status::ATTEMPTED:
@@ -58,12 +56,7 @@ class RPPOrderReport extends BasicEntityReport
                     break;
             }
 
-            $baseRow = [
-                self::RPP_TXN_ID  => $order->getReceipt(),
-                self::AMOUNT      => ($order->getAmount() / 100),
-            ];
-
-            $data[] = array_merge($baseRow, $row);
+            $data[] = $row;
         }
 
         return $data;
@@ -89,6 +82,8 @@ class RPPOrderReport extends BasicEntityReport
         list($status, $statusDescription) = $this->getPaymentStatus($payment);
 
         $row = [
+            self::RPP_TXN_ID  => $order->getReceipt(),
+            self::AMOUNT      => ($order->getAmount() / 100),
             self::TXN_ID      => $payment->getPublicId(),
             self::TXN_DATE    => $this->getPaymentDate($payment),
             self::FEES        => $this->getFees($payment),
@@ -107,9 +102,11 @@ class RPPOrderReport extends BasicEntityReport
         return $row;
     }
 
-    protected function createFailureEntry(string $statusDescription): array
+    protected function createFailureEntry(Order\Entity $order, string $statusDescription): array
     {
          $row = [
+            self::RPP_TXN_ID  => $order->getReceipt(),
+            self::AMOUNT      => ($order->getAmount() / 100),
             self::TXN_ID      => '',
             self::TXN_DATE    => '',
             self::FEES        => '',

@@ -48,6 +48,8 @@ class Repository extends Base\Repository
                        ->merchantId($merchantId)
                        ->betweenTime($from, $to)
                        ->with('payments')
+                       ->take($count)
+                       ->skip($skip)
                        ->latest()
                        ->get();
 
