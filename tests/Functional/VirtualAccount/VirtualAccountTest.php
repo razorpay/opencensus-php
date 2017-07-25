@@ -146,10 +146,10 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(11000, $payment['amount']);
         $this->assertEquals(1000, $payment['amount_refunded']);
 
-        // Refund is processed
+        // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1000, $refund['amount']);
     }
 

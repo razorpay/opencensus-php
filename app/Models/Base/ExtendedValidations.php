@@ -286,4 +286,26 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         return true;
     }
+
+    /**
+     * Checks if the value is a supported utf8 encoded string
+     * Currently we don't support utf8mb4 encoding and this method checks the same
+     *
+     * @param  string $attribute
+     * @param  mixed $value
+     * @return bool           validation result
+     */
+    protected function validateUtf8(string $attribute, $value)
+    {
+        if ((empty($value) === false) and (is_string($value) === true))
+        {
+            if (is_valid_utf8($value) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    "$attribute contains invalid characters");
+            }
+        }
+
+        return true;
+    }
 }

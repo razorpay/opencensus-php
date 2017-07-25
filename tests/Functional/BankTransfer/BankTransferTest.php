@@ -71,7 +71,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(4000000, $payment['amount_refunded']);
 
-        // Refund is processed
+        // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('created', $refund['status']);
@@ -218,7 +218,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
 
-        // Refund is processed
+        // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('created', $refund['status']);
