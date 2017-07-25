@@ -35,7 +35,8 @@
     "style-loader": "^0.18.2",
     "stylus-loader": "^3.0.1",
     "through2": "^2.0.3",
-    "webpack": "^3.3.0"
+    "webpack": "^3.3.0",
+    "webpack-merge": "^4.1.0"
   },
   "dependencies": {
     "autoprefixer-stylus": "^0.14.0",

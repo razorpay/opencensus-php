@@ -121,6 +121,7 @@ const concatJs = lazypipe().pipe(concatMulti, {
   ],
 
   'js/generated/admin.js': [
+    'public/js/angular/ng-react.js',
     'public/js/admin/**/*.js',
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
@@ -177,13 +178,13 @@ const runWebpack = (webpackConfig, cb) => {
 };
 
 gulp.task('webpack', cb => {
-  runWebpack(Object.create(webpackConfig), cb);
+  runWebpack(webpackConfig, cb);
 });
 
 var webpackCompiler = null;
 gulp.task('webpack:watch', cb => {
   if (!webpackCompiler) {
-    webpackCompiler = webpack(Object.assign({}, webpackConfig('development')));
+    webpackCompiler = webpack(webpackConfig('development'));
   }
   webpackCompiler.run(function(err, stats) {
     console.log(
@@ -197,9 +198,7 @@ gulp.task('webpack:watch', cb => {
 });
 
 gulp.task('webpack:prod', cb => {
-  let config = Object.create(webpackConfig('production'));
-
-  runWebpack(config, cb);
+  runWebpack(webpackConfig('production'), cb);
 });
 
 gulp.task('dev:setENV', cb => {
@@ -216,7 +215,7 @@ gulp.task('dev', cb => {
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], cb => {
-  run('webpack:watch', 'dev', cb);
+  run('dev', 'webpack:watch', cb);
 });
 
 gulp.task('watch:full', ['dev:webpack'], () => {
