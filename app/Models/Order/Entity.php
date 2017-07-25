@@ -285,12 +285,12 @@ class Entity extends Base\PublicEntity
 
     public function allowPartialPayment()
     {
-        $this->setAttribute(self::PARTIAL_PAYMENT, true);
+        $this->setPartialPayment(true);
     }
 
     public function togglePartialPayment()
     {
-        $value = ! $this->isPartialPaymentAllowed();
+        $value = ($this->isPartialPaymentAllowed() === false);
 
         $this->setPartialPayment($value);
     }

@@ -109,6 +109,10 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
 
+    const FORMATTED_AMOUNT                  = 'formatted_amount';
+    const FORMATTED_CREATED_AT              = 'formatted_created_at';
+    const DEFAULT_TIME_FORMAT               = 'j M Y';
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
@@ -241,6 +245,20 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::CREATED_AT,
+    ];
+
+    /**
+     * Fields exposed to hosted page(invoice, subscriptions etc)
+     * where there would mostly be no authentication.
+     *
+     * @var array
+     */
+    protected $hosted = [
+        self::ID,
+        self::STATUS,
+        self::METHOD,
+        self::AMOUNT,
         self::CREATED_AT,
     ];
 
@@ -1792,30 +1810,15 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    /**
-     * Returns attributes to be used in public views.
-     * E.g. Invoice hosted page, Subscription pages etc.
-     *
-     * @return array
-     */
-    public function toArrayPublicView()
+    public function toArrayHosted()
     {
-        $attributes = $this->getAttributes();
+        $data = parent::toArrayHosted();
 
-        $data = array_only(
-                    $attributes,
-                    [
-                        self::ID,
-                        self::STATUS,
-                        self::METHOD,
-                        self::AMOUNT,
-                        self::CREATED_AT,
-                    ]);
+        $data[self::FORMATTED_AMOUNT] = $this->getFormattedAmount();
 
-        $data['formatted_amount'] = $this->getFormattedAmount();
+        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata');
 
-        $data['formatted_created_at'] = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata')
-                                              ->format('j M Y');
+        $data[self::FORMATTED_CREATED_AT] = $createdAt->format(self::DEFAULT_TIME_FORMAT);
 
         return $data;
     }

@@ -38,7 +38,15 @@ class PublicEntity extends UniqueIdEntity
      *
      * @var array
      */
-    protected $public = array();
+    protected $public = [];
+
+    /**
+     * Fields exposed to hosted page(invoice, subscriptions etc)
+     * where there would mostly be no authentication.
+     *
+     * @var array
+     */
+    protected $hosted = [];
 
     protected $publicSetters = array(self::ID, self::ENTITY);
 
@@ -103,6 +111,19 @@ class PublicEntity extends UniqueIdEntity
         $array[self::CREATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
 
         return $array;
+    }
+
+    /**
+     * Returns attributes to be used in public views.
+     * E.g. Invoice hosted page, Subscription pages etc.
+     *
+     * @return array
+     */
+    public function toArrayHosted()
+    {
+        $attributes = $this->getAttributes();
+
+        return array_only($attributes, $this->hosted);
     }
 
     /**
