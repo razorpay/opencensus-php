@@ -1036,6 +1036,7 @@ class DatabaseSeeder extends Seeder
         $this->createCybersourceTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
+        $this->createNetbankingCorporationTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
@@ -1057,6 +1058,41 @@ class DatabaseSeeder extends Seeder
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
         $this->createEbsTerminal();
+    }
+
+    protected function createNetbankingCorporationTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '22nP3sEf2tQco1',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_CORPORATION,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_corporation',
+                'gateway_terminal_id'       => 'test_terminal_netbanking_corporation',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_corporation_terminal_pass'),
+                'recurring'                 => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_CORPORATION_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_CORPORATION,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_corporation',
+                'gateway_terminal_id'   => 'demo_terminal_netbanking_corporation',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_corporation_terminal_pass'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                )
+            );
     }
 
     protected function createNetbankingHdfcTerminals()
