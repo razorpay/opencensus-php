@@ -4,9 +4,9 @@ import Spinner from 'rzp/ui/Spinner';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
 import DataTable from 'rzp/ui/Table/DataTable';
-import ObjectTable from 'rzp/ui/Table/ObjectTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import ListToggler from 'rzp/ui/ListToggler';
+import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
 import OtherDetail from 'merchant/components/OtherDetail';
@@ -112,15 +112,18 @@ export default props => {
                     ? <EntityDetailRow label="Wallet" value={payment.wallet} />
                     : null}
                   {payment.method === 'card'
-                    ? <ListToggler
+                    ? <ListGroupToggler
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        <ObjectTable
-                          objDetails={card.details}
-                          loading={card.loading}
-                        />
-                      </ListToggler>
+                        {Object.keys(card.details).map(key => (
+                          <EntityDetailRow
+                            key={key}
+                            label={titleCase(key)}
+                            value={card.details[key]}
+                          />
+                        ))}
+                      </ListGroupToggler>
                     : null}
 
                   <EntityDetailRow

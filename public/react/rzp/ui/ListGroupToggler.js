@@ -1,6 +1,11 @@
 import { Component } from 'react';
 import AsyncButton from 'react-async-button';
 
+/*
+ // USAGE: Check PaymentDetails
+ // Eg: Card Details
+ */
+
 export default class ListGroupToggler extends Component {
   constructor() {
     super(...arguments);
@@ -26,10 +31,10 @@ export default class ListGroupToggler extends Component {
 
   render() {
     return (
-      <div class="row detail-row">
-        <label class="col-sm-4">{this.props.label}</label>
+      <div class="pair-group-item">
+        <div class="col-sm-4 pair-label">{this.props.label}</div>
 
-        <div class="col-sm-8">
+        <div class="col-sm-8 pair-value">
           <AsyncButton
             class="btn btn-xs btn-default"
             text="Show/Hide"
