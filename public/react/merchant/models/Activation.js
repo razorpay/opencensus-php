@@ -72,20 +72,28 @@ export default class Activation extends Entity {
   saveStep(step) {
     let data = this.serialize();
     return ajax({
-      url: `/activation/save/step/${step}/${this.accountId}`,
+      url: '/user/generic',
       method: 'post',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'merchant_activation_save',
+        body: data,
+      },
     });
   }
 
   submit() {
-    let data = this.serialize();
+    let data = {
+      submit: true,
+    };
     return ajax({
-      url: `/activation/${this.accountId}`,
+      url: '/user/generic',
       method: 'post',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'merchant_activation_save',
+        body: data,
+      },
     });
   }
 
