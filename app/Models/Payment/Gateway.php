@@ -445,6 +445,7 @@ class Gateway
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
+        IFSC::INDB,
     ];
 
     /**

@@ -105,6 +105,7 @@ class DailyFiles
             Payment\Status::REFUNDED
         ];
 
+
         $claims= $this->repo->payment->fetchPaymentsWithStatus($from, $to,
                                                                $this->gateway,
                                                                $status);
