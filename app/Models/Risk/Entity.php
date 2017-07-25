@@ -3,9 +3,12 @@
 namespace RZP\Models\Risk;
 
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use RevisionableTrait;
+
     const ID            = 'id';
     const PAYMENT_ID    = 'payment_id';
     const MERCHANT_ID   = 'merchant_id';
@@ -13,6 +16,11 @@ class Entity extends Base\PublicEntity
     const SOURCE        = 'source';
     const MAXMIND_SCORE = 'maxmind_score';
     const COMMENTS      = 'comments';
+
+    protected $revisionEnabled = true;
+
+    // We need not store creations, just edits
+    protected $revisionCreationsEnabled = false;
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -22,6 +30,7 @@ class Entity extends Base\PublicEntity
         self::MAXMIND_SCORE,
         self::COMMENTS,
     ];
+
 
     protected $visible = [
         self::PAYMENT_ID,

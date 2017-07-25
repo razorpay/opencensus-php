@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::FRAUD_TYPE    => 'required|string|max:20|filled',
         Entity::SOURCE        => 'required|string|max:20|filled',
         Entity::MAXMIND_SCORE => 'sometimes|integer',
-        Entity::COMMENTS      => 'sometimes|string|max:255', # adding a soft validation
+        Entity::COMMENTS      => 'required|string|max:255', # adding a soft validation
     ];
 
     protected static $editRules = [
@@ -21,6 +21,6 @@ class Validator extends Base\Validator
         Entity::FRAUD_TYPE    => 'sometimes|string|max:20',
         Entity::SOURCE        => 'sometimes|string|max:20',
         Entity::MAXMIND_SCORE => 'sometimes|integer',
-        Entity::COMMENTS      => 'sometimes|string|max:255',
+        Entity::COMMENTS      => 'required|string|max:255',
     ];
 }

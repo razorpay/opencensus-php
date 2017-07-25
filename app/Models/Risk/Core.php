@@ -6,15 +6,26 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function create()
-    {}
+    public function create(array $input)
+    {
+        $risk = new Entity;
 
-    public function edit()
-    {}
+        $risk->build($input);
 
-    public function delete()
-    {}
+        $this->repo->saveOrFail($risk);
 
-    public function get()
-    {}
+        return $risk;
+    }
+
+    public function edit(Entity $risk, array $input)
+    {
+        $risk->edit($input);
+
+        return $this->repo->saveOrFail($risk);
+    }
+
+    public function get(string $id)
+    {
+        return $this->repo->risk->findOrFailPublic($id);
+    }
 }

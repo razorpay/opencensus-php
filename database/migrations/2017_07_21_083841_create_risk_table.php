@@ -37,8 +37,8 @@ class CreateRiskTable extends Migration
 
             $table->text(Risk::COMMENTS);
 
-            $table->integer(Admin::CREATED_AT);
-            $table->integer(Admin::UPDATED_AT);
+            $table->integer(Risk::CREATED_AT);
+            $table->integer(Risk::UPDATED_AT);
 
             $table->index(Risk::PAYMENT_ID);
             $table->index(Risk::MERCHANT_ID);
