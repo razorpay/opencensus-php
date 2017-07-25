@@ -60,11 +60,6 @@ class PublicEntity extends UniqueIdEntity
         self::ENTITY,
     ];
 
-    public function getAmounts(): array
-    {
-        return $this->amounts;
-    }
-
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
@@ -124,7 +119,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected function formatReportAmountFields(array & $report)
     {
-        foreach ($this->getAmounts() as $key)
+        foreach ($this->amounts as $key)
         {
             if (isset($report[$key]) === true)
             {
@@ -135,7 +130,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected function formatReportDateFields(array & $report)
     {
-        foreach ($this->getDates() as $key)
+        foreach ($this->dates as $key)
         {
             if (isset($report[$key]) === true)
             {

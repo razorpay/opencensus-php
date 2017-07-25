@@ -102,6 +102,23 @@ class Entity extends \RZP\Base\EloquentEx
         return $value;
     }
 
+    /**
+     * @override
+     *
+     * Ref: Illuminate/Database/Eloquent/Concerns/HasAttributes.php
+     *
+     * Laravel internally does some mutation, formatting and assumes
+     * stuffs based on returned field list of this method. We haven't
+     * been using any of those and so returning empty on this method call
+     * intentionally.
+     *
+     * We do have $dates attribute and we use that in following two places:
+     * - Base/EloquentEx.php: to serialize attributes with $dates fields casted to int,
+     * - Base/PublicEntity.php: formatReportDateFields(): to format $dates fields
+     *   converted to a uniform string format across reports.
+     *
+     * @return array
+     */
     public function getDates()
     {
         return [];

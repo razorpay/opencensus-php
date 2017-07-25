@@ -387,7 +387,7 @@ class Entity extends Base\PublicEntity
 
     public function setDateAttribute($date)
     {
-        if (empty($date))
+        if (empty($date) === true)
         {
             $date = null;
         }
