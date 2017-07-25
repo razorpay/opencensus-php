@@ -1,10 +1,10 @@
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import PairListGroupToggler from 'rzp/ui/PairListGroupToggler';
+import NestedEntityDetailToggler from 'rzp/ui/NestedEntityDetailToggler';
 
 export default ({ label, value = {} }) => {
   if (Object.keys(value).length) {
     return (
-      <PairListGroupToggler label={label} show={false}>
+      <NestedEntityDetailToggler label={label} show={false}>
         {Object.keys(value).length
           ? <div class="table-responsive">
               {Object.keys(value).map(key => (
@@ -15,7 +15,7 @@ export default ({ label, value = {} }) => {
               ))}
             </div>
           : null}
-      </PairListGroupToggler>
+      </NestedEntityDetailToggler>
     );
   }
 

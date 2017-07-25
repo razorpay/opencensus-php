@@ -2,7 +2,13 @@ import { Component } from 'react';
 import AsyncButton from 'react-async-button';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
-export default class PairListGroupToggler extends Component {
+/*
+ // Description: To be used where Key has array of objects and each object has key-value pair
+ // USAGE: Check NestedEntityDetailRow
+ // Eg: Notes and Acquirer Data
+*/
+
+export default class NestedEntityDetailToggler extends Component {
   constructor() {
     super(...arguments);
     this.state = {
@@ -45,6 +51,6 @@ export default class PairListGroupToggler extends Component {
   }
 }
 
-PairListGroupToggler.defaultProps = {
+NestedEntityDetailToggler.defaultProps = {
   show: false,
 };
