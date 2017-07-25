@@ -22,7 +22,7 @@ export const saveStep = ({ step, data, accountId = '' }) => {
   });
   return {
     type: ACTIVATION_SAVE_STEP,
-    payload: activation.saveStep(step),
+    payload: activation.saveStep(),
     step,
     data,
   };
