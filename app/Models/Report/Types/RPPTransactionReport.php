@@ -21,28 +21,28 @@ class RPPTransactionReport extends BasicEntityReport
         E::PAYMENT
     ];
 
-    const RPP_TXN_ID  = "RPP Transaction Id";
-    const AMOUNT      = "Amount";
-    const TXN_ID      = "Razorpay Payment Id";
-    const TXN_DATE    = "Transaction Date";
-    const FEES        = "Fees";
-    const STATUS      = "Status";
-    const DESCRIPTION = "Status Description";
-    const MODE        = "Mode";
-    const TYPE        = "Type";
-    const BANK_NAME   = "Bank Name";
-    const BANK_BID    = "Bank Ref No.";
-    const CARD_TYPE   = "Card Type";
-    const USERNAME    = "Customer Name";
-    const USER_EMAIL  = "Customer Email";
-    const USER_MOBILE = "Customer Mobile";
+    const RPP_TXN_ID  = 'RPP Transaction Id';
+    const AMOUNT      = 'Amount';
+    const TXN_ID      = 'Razorpay Payment Id';
+    const TXN_DATE    = 'Transaction Date';
+    const FEES        = 'Fees';
+    const STATUS      = 'Status';
+    const DESCRIPTION = 'Status Description';
+    const MODE        = 'Mode';
+    const TYPE        = 'Type';
+    const BANK_NAME   = 'Bank Name';
+    const BANK_BID    = 'Bank Ref No.';
+    const CARD_TYPE   = 'Card Type';
+    const USERNAME    = 'Customer Name';
+    const USER_EMAIL  = 'Customer Email';
+    const USER_MOBILE = 'Customer Mobile';
 
-    // As per the requirement from RPP, the report should contain only only entry for each order
+    // As per the requirement from RPP, the report should contain only one entry for each order
     // Case 1: Order is paid, we add the payment only if its captured
     // Case 2: Order is attempeted, then we add the first payment entity for that order.
     //         A list of $attemptedOrderIds is maintained to make sure only 1 payment is added for that order
     // Case 3: Order is created, we do not add anything as payment won't be created.
-    protected function fetchFormattedDataForReport($entities): array
+    protected function fetchFormattedDataForReport(array $entities): array
     {
         $data = [];
 
@@ -79,7 +79,7 @@ class RPPTransactionReport extends BasicEntityReport
         return $data;
     }
 
-    protected function createEntry(Payment\Entity $payment)
+    protected function createEntry(Payment\Entity $payment): array
     {
         $order = $payment->order;
 
@@ -106,7 +106,7 @@ class RPPTransactionReport extends BasicEntityReport
         return $row;
     }
 
-    protected function getFees(Payment\Entity $payment)
+    protected function getFees(Payment\Entity $payment): float
     {
         $order = $payment->order;
 
@@ -115,7 +115,7 @@ class RPPTransactionReport extends BasicEntityReport
         return $fees/100;
     }
 
-    protected function getPaymentStatus(Payment\Entity $payment)
+    protected function getPaymentStatus(Payment\Entity $payment): array
     {
         $status = ($payment->hasBeenCaptured() === true) ? 'success' : 'failure';
 
@@ -124,11 +124,11 @@ class RPPTransactionReport extends BasicEntityReport
         return [$status, $statusDescription];
     }
 
-    protected function getType(Payment\Entity $payment)
+    protected function getType(Payment\Entity $payment): string
     {
         $cardType = '';
 
-        if ($payment->isCard())
+        if ($payment->isCard() === true)
         {
             $cardType = $payment->card->getNetwork();
         }
@@ -136,15 +136,15 @@ class RPPTransactionReport extends BasicEntityReport
         return $cardType;
     }
 
-    protected function getBank(Payment\Entity $payment)
+    protected function getBank(Payment\Entity $payment): string
     {
         $bank = null;
 
-        if ($payment->isCard())
+        if ($payment->isCard() === true)
         {
             $bank = $payment->card->getIssuer();
         }
-        else if ($payment->isNetbanking())
+        else if ($payment->isNetbanking() === true)
         {
             $bank = $payment->getBank();
         }
@@ -152,7 +152,7 @@ class RPPTransactionReport extends BasicEntityReport
         return $bank;
     }
 
-    protected function getPaymentDate(Payment\Entity $payment)
+    protected function getPaymentDate(Payment\Entity $payment): string
     {
         $ts = $payment->getCreatedAt();
 
@@ -163,18 +163,18 @@ class RPPTransactionReport extends BasicEntityReport
         return $paymentDate;
     }
 
-    protected function getTxnBankReferenceNo(Payment\Entity $payment)
+    protected function getTxnBankReferenceNo(Payment\Entity $payment): string
     {
         $bankTxnNumber = $payment->getNetbankingReferenceId() ?? '';
 
         return $bankTxnNumber;
     }
 
-    protected function getCardType(Payment\Entity $payment)
+    protected function getCardType(Payment\Entity $payment): string
     {
         $cardType = '';
 
-        if ($payment->isCard())
+        if ($payment->isCard() === true)
         {
             $cardType = ($payment->card->isInternational() === true) ? 'International' : 'National';
         }
@@ -182,11 +182,11 @@ class RPPTransactionReport extends BasicEntityReport
         return $cardType;
     }
 
-    protected function getUsername(Payment\Entity $payment)
+    protected function getUsername(Payment\Entity $payment): string
     {
         $name = '';
 
-        if ($payment->isCard())
+        if ($payment->isCard() === true)
         {
             $name = $payment->card->getFirstName();
         }
