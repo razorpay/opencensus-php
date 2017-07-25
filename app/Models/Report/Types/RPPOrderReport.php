@@ -37,7 +37,7 @@ class RPPOrderReport extends BasicEntityReport
     // As per the requirement from RPP, the report should contain only one entry for each order
     // Case 1: Order is created, We add a row stating that the rzp payment is not created
     // Case 2: Order is attempted, then we add the first payment entity for that order.
-    // Case 1: Order is paid, we add the payment only if its captured
+    // Case 3: Order is paid, we add the payment only if its captured
     protected function fetchFormattedDataForReport($entities): array
     {
         $data = [];
