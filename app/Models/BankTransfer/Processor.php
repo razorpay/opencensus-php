@@ -45,23 +45,23 @@ class Processor extends Base\Core
 
         $this->setUtrInTestMode($bankTransfer);
 
+        $isTransferExpected = $this->isTransferExpected($bankTransfer);
+
         if (($this->utrCheck($bankTransfer) === true) and
-            ($this->isTransferExpected($bankTransfer) === true))
+            ($isTransferExpected === true))
         {
             $bankTransfer->setExpected(true);
 
             $this->setMerchant();
-
-            $this->processBankTransferForMerchant($bankTransfer, $this->merchant);
-
-            $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
-                $bankTransfer->toArrayPublic()
-            );
         }
-        else if ($this->isTransferExpected($bankTransfer) === false)
+        else if ($isTransferExpected === false)
         {
-            $this->processUnexpectedBankTransfer($bankTransfer);
+            if ($this->checkReservedAccount($bankTransfer) === true)
+            {
+                return;
+            }
+
+            $this->preProcessUnexpectedBankTransfer($bankTransfer);
         }
         else
         {
@@ -72,19 +72,27 @@ class Processor extends Base\Core
             $bankTransfer->setExpected(false);
 
             $this->repo->saveOrFail($bankTransfer);
+
+            return $bankTransfer;
         }
+
+        $this->processBankTransfer($bankTransfer);
+
+        $this->trace->info(
+                TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
+                $bankTransfer->toArrayPublic()
+            );
 
         return $bankTransfer;
     }
 
-    protected function processBankTransferForMerchant(Entity $bankTransfer, Merchant $merchant)
+    protected function processBankTransfer(Entity $bankTransfer)
     {
-        $paymentProcessor = new PaymentProcessor($merchant);
+        $paymentProcessor = new PaymentProcessor($this->merchant);
 
         $this->repo->transaction(function() use (
             $bankTransfer,
-            $paymentProcessor,
-            $merchant)
+            $paymentProcessor)
         {
             $paymentInput = $this->bankTransferPaymentArray($bankTransfer);
 
@@ -96,7 +104,7 @@ class Processor extends Base\Core
 
             $bankTransfer->payment()->associate($payment);
 
-            $bankTransfer->merchant()->associate($merchant);
+            $bankTransfer->merchant()->associate($this->merchant);
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
@@ -111,24 +119,13 @@ class Processor extends Base\Core
         });
     }
 
-    protected function processUnexpectedBankTransfer(Entity $bankTransfer)
+    protected function preProcessUnexpectedBankTransfer(Entity $bankTransfer)
     {
-        $payeeAccount = $bankTransfer->getPayeeAccount();
-
-        // Ignore payments made to reserved accounts, i.e. accounts that use the
-        // reserved roots. We will use this for other cool stuff.
-        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $this->provider) === true)
-        {
-            return;
-        }
-
         $bankTransfer->setExpected(false);
 
         $this->setDefaultMerchant();
 
         $this->createAndSetVirtualAccount($bankTransfer->getAmount());
-
-        $this->processBankTransferForMerchant($bankTransfer, $this->merchant);
     }
 
     protected function setUtrInTestMode(Entity $bankTransfer)
@@ -236,6 +233,25 @@ class Processor extends Base\Core
         $this->virtualAccount->incrementAmountReceived($bankTransfer->getAmount());
 
         $this->repo->saveOrFail($this->virtualAccount);
+    }
+
+    protected function checkReservedAccount(Entity $bankTransfer)
+    {
+        $payeeAccount = $bankTransfer->getPayeeAccount();
+
+        // Ignore payments made to reserved accounts, i.e. accounts that use the
+        // reserved roots. We will use this for other cool stuff.
+        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $this->provider) === true)
+        {
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT,
+                $bankTransfer->toArrayPublic()
+            );
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function getVirtualAccountFromBankTransfer(Entity $bankTransfer)

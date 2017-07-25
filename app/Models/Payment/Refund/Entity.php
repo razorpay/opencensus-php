@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Batch;
+use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -253,7 +254,7 @@ class Entity extends Base\PublicEntity
 
     public function getChannel()
     {
-        return $this->transaction->getChannel();
+        return Channel::KOTAK;
     }
 
     public function getFees()

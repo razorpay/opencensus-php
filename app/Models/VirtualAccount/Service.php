@@ -115,45 +115,17 @@ class Service extends Base\Service
             $virtualAccounts->toArrayPublic()
         );
 
-        $count = count($virtualAccounts);
-
         $success = $failure = 0;
 
         $failures = [];
 
         foreach ($virtualAccounts as $virtualAccount)
         {
-            $merchant = $virtualAccount->merchant;
-
-            $payments = $this->repo
-                             ->payment
-                             ->fetchBankTransferPaymentsByPublicVaIdAndMerchant(
-                                $virtualAccount->getPublicId(),
-                                $merchant
-                                );
-
-            $paymentToRefund = $payments->first();
-
-            $amountToRefund = $virtualAccount->getExcessAmount();
-
-            if ($paymentToRefund->getAmount() < $amountToRefund)
-            {
-                throw new Exception\LogicException('Last payment amount is less than VA excess');
-            }
+            list($paymentToRefund, $amountToRefund) = $this->fetchPaymentToRefund($virtualAccount);
 
             try
             {
-                $processor = $this->getNewProcessor($merchant);
-
-                $refund = $processor->refundPaymentViaMerchant(
-                                        $paymentToRefund->getPublicId(),
-                                        [
-                                            'amount' => $amountToRefund,
-                                        ]);
-
-                $virtualAccount->incrementAmountReversed($amountToRefund);
-
-                $this->repo->saveOrFail($virtualAccount);
+                $this->refundExcessPayment($paymentToRefund, $amountToRefund, $virtualAccount);
 
                 $success++;
             }
@@ -180,6 +152,47 @@ class Service extends Base\Service
         );
 
         return $virtualAccounts->toArrayPublic();
+    }
+
+    protected function fetchPaymentToRefund(Entity $virtualAccount)
+    {
+        $merchant = $virtualAccount->merchant;
+
+        $payments = $this->repo
+                         ->payment
+                         ->fetchBankTransferPaymentsByPublicVaIdAndMerchant(
+                            $virtualAccount->getPublicId(),
+                            $merchant
+                            );
+
+        $paymentToRefund = $payments->first();
+
+        $amountToRefund = $virtualAccount->getExcessAmount();
+
+        if ($paymentToRefund->getAmount() < $amountToRefund)
+        {
+            throw new Exception\LogicException('Last payment amount is less than VA excess');
+        }
+
+        return [$paymentToRefund, $amountToRefund];
+    }
+
+    protected function refundExcessPayment(
+        Payment\Entity $payment,
+        int $amount,
+        Entity $virtualAccount)
+    {
+        $processor = $this->getNewProcessor($payment->merchant);
+
+        $processor->refundPaymentViaMerchant(
+                        $payment->getPublicId(),
+                        [
+                            'amount' => $amount,
+                        ]);
+
+        $virtualAccount->incrementAmountReversed($amount);
+
+        $this->repo->saveOrFail($virtualAccount);
     }
 
     protected function getCustomerIfGiven(array $input)

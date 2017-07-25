@@ -168,7 +168,7 @@ class Entity extends Base\PublicEntity
 
         $excessAmount = $this->getAmountReceived() - $amountDeducted;
 
-        return $excessAmount;
+        return max($excessAmount, 0);
     }
 
     public function getName()
