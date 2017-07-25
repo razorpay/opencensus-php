@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Customer;
 
+use App;
+use Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
@@ -9,25 +11,49 @@ class Raven
 {
     protected $raven = null;
 
+    protected $sns = null;
+
+    protected $env = null;
+
     public function __construct()
     {
-         $app = \App::getFacadeRoot();
+         $app = App::getFacadeRoot();
 
          $this->raven = $app['raven'];
+
+         $this->sns = $app['sns'];
+
+         $this->env = $this->app['env'];
     }
 
     public function sendOtp($input, $merchant)
     {
+        $success = true;
+
         $request = $this->getRavenSendOtpRequestInput($input, $merchant);
 
-        $response = $this->raven->sendOtp($request);
-
-        if (isset($response['sms_id']))
+        if (($merchant->getId() === '2aTeFCKTYWwfrF') or ($this->env !== 'production'))
         {
-            return ['success' => true];
+            try
+            {
+                $this->sns->publish(json_encode($request));
+            }
+            catch (Exception $e)
+            {
+                $success = false;
+            }
+        }
+        else
+        {
+            $response = $this->raven->sendOtp($request);
+
+            if (isset($response['sms_id']) === false)
+            {
+                $success = false;
+            }
         }
 
-        return ['success' => false];
+        return ['success' => $success];
     }
 
     public function verifyOtp($input, $merchant)
