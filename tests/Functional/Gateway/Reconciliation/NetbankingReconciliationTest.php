@@ -105,6 +105,33 @@ class NetbankingReconcilationTest extends TestCase
         $this->assertEquals($paymentEnttiy['status'], 'authorized');
     }
 
+    public function testIndusindManualReconciliation()
+    {
+        $this->gateway = 'netbanking_indusind';
+
+        $payment = $this->createPayment('netbanking_indusind');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'INDB', 'Y');
+
+        $this->mockReconContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'claims_data')
+            {
+                $content['0']['account_number'] = '309002069863';
+            }
+        });
+
+        $fileContents = $this->generateFile('indusind', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIndusind', $uploadedFile);
+
+        $gatewayEnttiy = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals('309002069863', $gatewayEnttiy['account_number']);
+    }
+
     protected function reconcile($gateway, $uploadedFile)
     {
         $input = [

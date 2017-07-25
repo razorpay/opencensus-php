@@ -3,15 +3,16 @@
 namespace RZP\Reconciliator\NetbankingIndusind;
 
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Netbanking\Indusind\ReconciliationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
     const PAYMENT_COLUMN_HEADER = [
-        'PID',
-        'Amount',
-        'account_number',
-        'PRN',
-        'Date',
+        ReconciliationFields::PAYEE_ID,
+        ReconciliationFields::AMOUNT,
+        ReconciliationFields::ACCOUNT_NUMBER,
+        ReconciliationFields::PAYMENT_ID,
+        ReconciliationFields::DATE,
     ];
 
     const TYPE_TO_COLUMN_HEADER_MAP = [
@@ -37,5 +38,10 @@ class Reconciliate extends Base\Reconciliate
     public function getColumnHeadersForType($type)
     {
         return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
+    }
+
+    public function getDelimiter()
+    {
+        return '^';
     }
 }
