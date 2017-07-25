@@ -35,7 +35,17 @@ class Workflow extends Base
     {
         $workflow = $this->fixtures->create('workflow', ['id' => self::DEFAULT_WORKFLOW_ID]);
 
+        // Attach permissions to the created workflow.
         $workflow->permissions()->sync($this->workflowDefaultPermissions);
+
+        $defaultWorkflowAttributes = $this->getDefaultWorkflowArray();
+
+        $levels = $defaultWorkflowAttributes['levels'];
+
+        foreach ($levels as $level)
+        {
+            $steps = $level['steps'];
+        }
 
         return $workflow;
 
