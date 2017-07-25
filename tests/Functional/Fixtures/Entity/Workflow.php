@@ -26,7 +26,7 @@ class Workflow extends Base
         $this->workflowDefaultPermissions = (new Permission\Repository)
                                                 ->retrieveIdsByNames([Permission\Name::EDIT_ADMIN]);
 
-        $this->fixtures->create('org:workflow_users');
+        $this->fixtures->create('org:workflow_users', ['org' => $this->org]);
 
         $this->fixtures->create('workflow:default_workflow');
     }

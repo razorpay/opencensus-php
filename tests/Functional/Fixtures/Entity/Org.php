@@ -111,8 +111,10 @@ class Org extends Base
         return $org;
     }
 
-    public function createWorkflowUsers($org)
+    public function createWorkflowUsers($attributes)
     {
+        $org = $attributes['org'];
+
         $now = Carbon::now()->timestamp;
 
         $makerRole = $this->fixtures->create('role', [
