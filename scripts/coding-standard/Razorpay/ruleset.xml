@@ -116,6 +116,7 @@
         <exclude-pattern>app/Error/*Description.php</exclude-pattern>
         <exclude-pattern>app/Http/Route.php</exclude-pattern>
         <exclude-pattern>tests/*Data.php</exclude-pattern>
+        <exclude-pattern>database/seeds/DatabaseSeeder.php</exclude-pattern>
     </rule>
 
     <!-- opening PHP tag is the first content in a file -->
