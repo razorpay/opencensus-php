@@ -91,18 +91,6 @@ class Org extends Base
             'name'   => 'Admin',
         ]);
 
-        $makerRole = $this->fixtures->create('role', [
-            'id'     => self::MAKER_ROLE,
-            'org_id' => self::RZP_ORG,
-            'name'   => 'Maker',
-        ]);
-
-        $checkerRole = $this->fixtures->create('role', [
-            'id'     => self::CHECKER_ROLE,
-            'org_id' => self::RZP_ORG,
-            'name'   => 'Checker',
-        ]);
-
         $adminRole->permissions()->attach($permissions);
 
         $admin = $this->fixtures->create('admin', [
@@ -111,23 +99,7 @@ class Org extends Base
             'email'  => 'superadmin@razorpay.com'
         ]);
 
-        $adminMaker = $this->fixtures->create('admin', [
-            'id'     => self::MAKER_ADMIN,
-            'org_id' => self::RZP_ORG,
-            'email'  => 'maker@razorpay.com',
-        ]);
-
-        $adminChecker = $this->fixtures->create('admin', [
-            'id'     => self::CHECKER_ADMIN,
-            'org_id' => self::RZP_ORG,
-            'email'  => 'checker@razorpay.com',
-        ]);
-
         $admin->roles()->attach($adminRole);
-
-        $adminMaker->roles()->attach($makerRole);
-
-        $adminChecker->roles()->attach($checkerRole);
 
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::SUPER_ADMIN,
@@ -135,6 +107,41 @@ class Org extends Base
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
+
+        return $org;
+    }
+
+    public function createWorkflowUsers($org)
+    {
+        $now = Carbon::now()->timestamp;
+
+        $makerRole = $this->fixtures->create('role', [
+            'id'     => self::MAKER_ROLE,
+            'org_id' => $org->getId(),
+            'name'   => 'Maker',
+        ]);
+
+        $checkerRole = $this->fixtures->create('role', [
+            'id'     => self::CHECKER_ROLE,
+            'org_id' => $org->getId(),
+            'name'   => 'Checker',
+        ]);
+
+        $adminMaker = $this->fixtures->create('admin', [
+            'id'     => self::MAKER_ADMIN,
+            'org_id' => $org->getId(),
+            'email'  => 'maker@razorpay.com',
+        ]);
+
+        $adminChecker = $this->fixtures->create('admin', [
+            'id'     => self::CHECKER_ADMIN,
+            'org_id' => $org->getId(),
+            'email'  => 'checker@razorpay.com',
+        ]);
+
+        $adminMaker->roles()->attach($makerRole);
+
+        $adminChecker->roles()->attach($checkerRole);
 
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::MAKER_ADMIN,

@@ -15,6 +15,8 @@ class Workflow extends Base
     protected $org = null;
     protected $workflowDefaultPermissions = null;
 
+    const DEFAULT_WORKFLOW_ID = 'workflowId1000';
+
     public function setUp()
     {
         $this->org = (new OrgRepository)->getRazorpayOrg();
@@ -24,12 +26,14 @@ class Workflow extends Base
         $this->workflowDefaultPermissions = (new Permission\Repository)
                                                 ->retrieveIdsByNames([Permission\Name::EDIT_ADMIN]);
 
+        $this->fixtures->create('org:workflow_users');
+
         $this->fixtures->create('workflow:default_workflow');
     }
 
     public function createDefaultWorkflow()
     {
-        $workflow = $this->fixtures->create('workflow', ['id' => 'workflowId1000']);
+        $workflow = $this->fixtures->create('workflow', ['id' => self::DEFAULT_WORKFLOW_ID]);
 
         $workflow->permissions()->sync($this->workflowDefaultPermissions);
 
