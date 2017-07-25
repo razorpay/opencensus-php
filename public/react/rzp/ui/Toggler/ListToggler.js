@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import AsyncButton from 'react-async-button';
-import BaseToggler from 'rzp/ui/BaseToggler';
+import BaseToggler from 'rzp/ui/Toggler/BaseToggler';
 
 /*
  // USAGE: Check PaymentDetails

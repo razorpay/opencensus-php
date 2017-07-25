@@ -1,7 +1,6 @@
 // Only page layout styles should reside in this file.
 // This will be moved under `rzp` later
 
-$primary-color = #5f73cf;
 a, .btn-link {
   color: $primary-color;
 }
@@ -460,49 +459,38 @@ tr:hover .row-action.btn-group {
   margin-bottom: -1px;
   position: relative;
 
-  .quote-vertical {
-    position: absolute;
-    border-left: 2px solid rgb(234, 239, 240);
-    top: 15px;
-    bottom: 40px;
-    left: 10px;
-    transform: translate(0, 28px);
+  .pair-label, .pair-value, .pair-separator {
+    display: table-cell;
   }
+  .pair-label {
+    width: 39%;
+    color: #8991AE;
+    padding: 0; // to override col- padding
+  }
+  /*
+  // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
+  .pair-separator {
+    padding: 0 4px;
+    color: #afafaf;
+  }
+  */
+  .pair-value {
+    width: 60%;
+    padding-left: 8px;
 
-  .pair {
-    &-label, &-value, &-separator {
-      display: table-cell;
+    span {
+      vertical-align: top;
     }
-    &-label {
-      width: 39%;
-      color: #8991AE;
-      padding: 0; // to override col- padding
-    }
-    /*
-    // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
-    &-separator {
-      padding: 0 4px;
-      color: #afafaf;
-    }
-    */
-    &-value {
-      width: 60%;
-      padding-left: 8px;
 
-      span {
-        vertical-align: top;
-      }
+    // For nested values
+    .table-responsive {
+      margin-top: 8px;
 
-      // For nested values
-      .table-responsive {
-        margin-top: 8px;
-
-        .pair-list-item {
-          .item-label {
-            font-weight: bold;
-            margin: 4px 0;
-            text-transform: capitalize;
-          }
+      .pair-list-item {
+        .item-label {
+          font-weight: bold;
+          margin: 4px 0;
+          text-transform: capitalize;
         }
       }
     }
@@ -565,7 +553,7 @@ tr:hover .row-action.btn-group {
 
     > .panel-heading {
       background-color: #fff;
-      line-height: 72px;
+      line-height: 74px;
       vertical-align: middle;
       padding-top: 0;
       padding-bottom: 0;
@@ -739,6 +727,7 @@ tr:hover .row-action.btn-group {
 
 .secondary-details {
   margin-top: 10px;
+  border-left: 2px solid rgb(234, 239, 240);
 
   .table-responsive {
     max-width: 475px;
