@@ -47,19 +47,17 @@ class NetbankingHdfc extends Processor\Base
 
     protected function formatDataForMail()
     {
-        $mailData = [];
+        $file = $this->gatewayFile
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                     ->first();
 
-        $files = $this->gatewayFile->files;
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
-        foreach ($files as $file)
-        {
-            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-
-            $mailData['files'][] = [
-                'file_name' => $file->getLocation(),
-                'signed_url' => $signedUrl,
-            ];
-        }
+        $mailData = [
+            'file_name' => $file->getLocation(),
+            'signed_url' => $signedUrl
+        ];
 
         return $mailData;
     }

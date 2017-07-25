@@ -8,6 +8,7 @@ class ProcessorFactory
     {
         $type = $gatewayFile->getType();
         $gateway = $gatewayFile->getGateway();
+        $bank = $gatewayFile->getBank();
 
         $processorClass = self::getProcessorClass($type, $gateway);
 
@@ -16,11 +17,21 @@ class ProcessorFactory
         return $processor;
     }
 
-    public static function getProcessorClass(string $type, string $gateway)
+    public static function getProcessorClass(string $type, $gateway = null, $bank = null)
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 
-        $processorNamespace = $baseNamespace . studly_case($type) . '\\' . studly_case($gateway);
+        $processorNamespace = $baseNamespace . studly_case($type) . '\\';
+
+        if (isset($gateway) === true)
+        {
+            $processorNamespace .= studly_case($gateway);
+        }
+
+        if (isset($bank) === true)
+        {
+            $processorNamespace .= '\\' . $bank;
+        }
 
         return $processorNamespace;
     }

@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const TYPE                = 'type';
     const GATEWAY             = 'gateway';
+    const BANK                = 'bank';
     const FILE_ID             = 'file_id';
     const SENDER              = 'sender';
     const RECIPIENTS          = 'recipients';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::GATEWAY,
+        self::BANK,
         self::FILE_ID,
         self::SENDER,
         self::RECIPIENTS,
@@ -67,7 +69,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::STATUS              => 'created',
+        self::STATUS              => Status::CREATED,
         self::SCHEDULED           => 1,
         self::PARTIALLY_PROCESSED => 0,
         self::ATTEMPTS            => 0,
@@ -87,6 +89,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getBank()
+    {
+        return $this->getAttribute(self::BANK);
     }
 
     public function getSender()
@@ -122,7 +129,7 @@ class Entity extends Base\PublicEntity
     public function isFileGenerated(): bool
     {
         return (($this->isAttributeNotNull(self::FILE_GENERATED_AT) === true) and
-                ($this->files !== null));
+                ($this->files->isNotEmpty() === true));
     }
 
     public function isMailSent(): bool

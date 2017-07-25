@@ -8,7 +8,7 @@ use RZP\Models\Base\Core;
 use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\File\Status;
 
-class Base extends Core
+abstract class Base extends Core
 {
     protected $gatewayFile;
 
@@ -39,7 +39,9 @@ class Base extends Core
         }
         catch (Exception\GatewayFileException $e)
         {
-            $failureCode = $e->getMessage();
+            $failureCode = $e->getFailureCode();
+
+            $this->trace->traceException($e);
 
             $this->handleFileGenerationFailure($failureCode);
         }
@@ -64,4 +66,12 @@ class Base extends Core
 
         $this->repo->saveOrFail($this->gatewayFile);
     }
+
+    abstract protected function canProcess(): bool;
+
+    abstract public function generateData();
+
+    abstract public function createFile();
+
+    abstract public function sendMail();
 }

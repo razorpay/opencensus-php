@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 
 class Validator extends Base\Validator
@@ -11,8 +12,9 @@ class Validator extends Base\Validator
     const TIME_RANGE = 'time_range';
 
     protected static $createRules = [
-        Entity::GATEWAY    => 'required|string|custom',
         Entity::TYPE       => 'required|string',
+        Entity::GATEWAY    => 'required_only_if:type,refund,claim,combined|string|custom',
+        Entity::BANK       => 'required_only_if:type,emi|string|custom',
         Entity::SENDER     => 'sometimes|email',
         Entity::RECIPIENTS => 'sometimes|array|custom',
         Entity::FROM       => 'required|epoch',
@@ -31,6 +33,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $gateway . ' is not a valid gateway');
+        }
+    }
+
+    protected function validateBank(string $attribute, string $bank)
+    {
+        if (IFSC::exists($bank) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid bank code');
         }
     }
 

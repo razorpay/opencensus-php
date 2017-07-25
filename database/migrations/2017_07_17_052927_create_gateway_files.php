@@ -24,7 +24,11 @@ class CreateGatewayFiles extends Migration
             $table->string(GatewayFile::ID, GatewayFile::ID_LENGTH)
                   ->primary();
 
-            $table->string(GatewayFile::GATEWAY, 50);
+            $table->string(GatewayFile::GATEWAY, 50)
+                  ->nullable();
+
+            $table->string(GatewayFile::BANK, 10)
+                  ->nullable();
 
             $table->string(GatewayFile::TYPE, 20);
 

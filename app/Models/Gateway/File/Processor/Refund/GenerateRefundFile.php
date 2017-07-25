@@ -4,12 +4,13 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Trace\Trace;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\FailureCode;
-use RZP\Mail\Gateway\RefundFile\V2 as RefundFileMailV2;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 trait GenerateRefundFile
@@ -27,9 +28,12 @@ trait GenerateRefundFile
         try
         {
             $this->data = $this->fetchAdditionalDataForFileGeneration($refunds);
+            sd($a);
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e, Trace::INFO);
+
             throw new GatewayFileException(
                 FailureCode::ERROR_GENERATING_FILE_DATA);
         }
@@ -37,7 +41,8 @@ trait GenerateRefundFile
 
     public function createFile()
     {
-        if ($this->gatewayFile->isFileGenerated() === true)
+        // Don't process further if file is already generated
+        if ($this->isRefundFileGenerated() === true)
         {
             return;
         }
@@ -67,6 +72,13 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e, Trace::INFO);
+
+            if (isset($file) === true)
+            {
+                $this->repo->deleteOrFail($file);
+            }
+
             throw new GatewayFileException(
                 FailureCode::ERROR_CREATING_FILE);
         }
@@ -74,11 +86,6 @@ trait GenerateRefundFile
 
     public function sendMail()
     {
-        if ($this->gatewayFile->isMailSent() === true)
-        {
-            return;
-        }
-
         try
         {
             $gateway = $this->gatewayFile->getGateway();
@@ -87,7 +94,7 @@ trait GenerateRefundFile
 
             $data = $this->formatDataForMail();
 
-            $refundFileMail = new RefundFileMailV2($data, $gateway, $recipients);
+            $refundFileMail = new RefundFileMail($data, $gateway, $recipients);
 
             Mail::send($refundFileMail);
 
@@ -97,12 +104,14 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e, Trace::INFO);
+
             throw new GatewayFileException(
                 FailureCode::ERROR_SENDING_MAIL);
         }
     }
 
-    public function fetchRefunds()
+    protected function fetchRefunds()
     {
         $from = $this->gatewayFile->getFrom();
         $to = $this->gatewayFile->getTo();
@@ -181,5 +190,20 @@ trait GenerateRefundFile
         }
 
         return true;
+    }
+
+    protected function isRefundFileGenerated(): bool
+    {
+        if ($this->gatewayFile->isFileGenerated() === true)
+        {
+            $refundFile = $this->gatewayFile
+                               ->files()
+                               ->where(FileStore\Type, static::FILE_TYPE)
+                               ->first();
+
+            return $refundFile !== null;
+        }
+
+        return false;
     }
 }
