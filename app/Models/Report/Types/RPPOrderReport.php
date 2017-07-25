@@ -46,24 +46,24 @@ class RPPOrderReport extends BasicEntityReport
 
         foreach ($entities as $order)
         {
-            $row = [
-                self::RPP_TXN_ID  => $order->getReceipt(),
-                self::AMOUNT      => ($order->getAmount() / 100),
-            ];
-
             switch ($order->getStatus())
             {
                 case Order\Status::CREATED:
-                    $row = array_merge($row, $this->createFailureEntry('Razorpay Payment does not exists'));
+                    $row = $this->createFailureEntry('Razorpay Payment does not exists');
                     break;
 
                 case Order\Status::ATTEMPTED:
                 case Order\Status::PAID:
-                    $row = array_merge($row, $this->createEntryForPaidOrder($order));
+                    $row = $this->createEntryForPaidOrder($order);
                     break;
             }
 
-            $data[] = $row;
+            $baseRow = [
+                self::RPP_TXN_ID  => $order->getReceipt(),
+                self::AMOUNT      => ($order->getAmount() / 100),
+            ];
+
+            $data[] = array_merge($baseRow, $row);
         }
 
         return $data;
@@ -89,8 +89,6 @@ class RPPOrderReport extends BasicEntityReport
         list($status, $statusDescription) = $this->getPaymentStatus($payment);
 
         $row = [
-            self::RPP_TXN_ID  => $order->getReceipt(),
-            self::AMOUNT      => ($order->getAmount() / 100),
             self::TXN_ID      => $payment->getPublicId(),
             self::TXN_DATE    => $this->getPaymentDate($payment),
             self::FEES        => $this->getFees($payment),
