@@ -2064,6 +2064,9 @@
             <!-- DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants -->
             <option value="dsp_report" ng-if="merchant.tags.indexOf('Dsp_Report') !== -1">DSP Transaction Report</option>
 
+            <!-- RPP Report is only for e-Mitra (RPP) Merchant. Should not be enabled for any other merchants -->
+            <option value="rpp_report" ng-if="merchant.tags.indexOf('Rpp_Report') !== -1">e-Mitra Report</option>
+
             <option value="invoice">Monthly Invoice</option>
 
             <optgroup label="Marketplace" ng-if="merchant.tags.indexOf('Marketplace') !== -1">

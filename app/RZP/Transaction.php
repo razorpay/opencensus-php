@@ -36,6 +36,10 @@ class Transaction extends Entity
         {
             $relativeUrl = "reports/transaction/dsp";
         }
+        else if ($entity === 'rpp_report')
+        {
+            $relativeUrl = "reports/order/rpp";
+        }
 
         return $this->longRequest('GET', $relativeUrl, $params);
     }
