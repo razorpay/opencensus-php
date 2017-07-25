@@ -42,6 +42,7 @@ export default class ListGroupToggler extends Component {
             onClick={this.toggle}
           />
         </div>
+        {this.state.show && <div class="quote-vertical" />}
         {this.state.show
           ? <section class="secondary-details col-sm-12">
               {this.props.children}

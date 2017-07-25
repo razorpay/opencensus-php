@@ -458,6 +458,16 @@ tr:hover .row-action.btn-group {
   width: 100%;
   padding: 8px;
   margin-bottom: -1px;
+  position: relative;
+
+  .quote-vertical {
+    position: absolute;
+    border-left: 4px solid rgba(114, 102, 186, 0.5);
+    top: 10px;
+    bottom: 35px;
+    left: 10px;
+    transform: translate(0, 28px);
+  }
 
   .pair {
     &-label, &-value, &-separator {
@@ -466,8 +476,10 @@ tr:hover .row-action.btn-group {
     &-label {
       width: 39%;
       color: #8991AE;
+      padding: 0; // to override col- padding
     }
     /*
+    // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
     &-separator {
       padding: 0 4px;
       color: #afafaf;
@@ -727,7 +739,6 @@ tr:hover .row-action.btn-group {
 
 .secondary-details {
   margin-top: 10px;
-  margin-left: 15px;
 
   .table-responsive {
     max-width: 475px;
