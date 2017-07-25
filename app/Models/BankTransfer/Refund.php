@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
+use RZP\Models\Transaction\Channel;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -51,7 +52,7 @@ class Refund extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $fundTransferAttempt->fillAndGenerateId([
-            FundTransferAttempt\Entity::CHANNEL => 'kotak',
+            FundTransferAttempt\Entity::CHANNEL => Channel::KOTAK,
             FundTransferAttempt\Entity::VERSION => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS  => FundTransferAttempt\Status::CREATED,
         ]);
@@ -73,7 +74,7 @@ class Refund extends Base\Core
         return [
             BankAccount\Entity::IFSC_CODE        => $bankTransfer->getPayerIfsc(),
             BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
-            BankAccount\Entity::BENEFICIARY_NAME => 'beneficiary name',
+            BankAccount\Entity::BENEFICIARY_NAME => $bankTransfer->merchant->getBillingLabel(),
         ];
     }
 }

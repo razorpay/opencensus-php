@@ -49,11 +49,21 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getCreatedAttemptsBeforeTimestamp(
-        string $status, int $timestamp, array $relations = [])
+    /**
+     * Fetches created attempts that are to be populated in the payouts file.
+     *
+     * This does not (and should not) include attempts of type settlement.
+     * Those are never in created state, but this may change in the future,
+     * so source_type filter is added anyway.
+     *
+     * @param  int    $timestamp Upper limit on created_at, usually set to now
+     * @param  array  $relations Relations required in the process
+     */
+    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, array $relations = [])
     {
         $query = $this->newQuery()
                       ->where(Entity::STATUS, '=', Status::CREATED)
+                      ->where(Entity::SOURCE_TYPE, '!=', Constants\Entity::SETTLEMENT)
                       ->where(Entity::CREATED_AT, '<=', $timestamp)
                       ->orderBy(Entity::ID);
 
