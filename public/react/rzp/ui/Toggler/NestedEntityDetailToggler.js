@@ -1,36 +1,14 @@
 import { Component } from 'react';
 import AsyncButton from 'react-async-button';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-
+import BaseToggler from 'rzp/ui/BaseToggler';
 /*
  // Description: To be used where Key has array of objects and each object has key-value pair
  // USAGE: Check NestedEntityDetailRow
  // Eg: Notes and Acquirer Data
 */
 
-export default class NestedEntityDetailToggler extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      show: false,
-    };
-    this.toggle = ::this.toggle;
-  }
-
-  componentWillMount() {
-    this.setState({ show: this.props.show });
-  }
-
-  toggle() {
-    this.setState({
-      show: !this.state.show,
-    });
-
-    if (!this.state.show && this.props.onToggleClick) {
-      return this.props.onToggleClick();
-    }
-  }
-
+export default class NestedEntityDetailToggler extends BaseToggler {
   render() {
     return (
       <EntityDetailRow
@@ -50,7 +28,3 @@ export default class NestedEntityDetailToggler extends Component {
     );
   }
 }
-
-NestedEntityDetailToggler.defaultProps = {
-  show: false,
-};

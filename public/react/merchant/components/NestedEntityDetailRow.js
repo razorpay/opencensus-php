@@ -1,5 +1,6 @@
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailToggler from 'rzp/ui/NestedEntityDetailToggler';
+import NestedEntityDetailToggler
+  from 'rzp/ui/Toggler/NestedEntityDetailToggler';
 
 export default ({ label, value = {} }) => {
   if (Object.keys(value).length) {

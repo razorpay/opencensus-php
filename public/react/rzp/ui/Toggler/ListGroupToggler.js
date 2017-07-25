@@ -1,34 +1,13 @@
 import { Component } from 'react';
 import AsyncButton from 'react-async-button';
+import BaseToggler from 'rzp/ui/BaseToggler';
 
 /*
  // USAGE: Check PaymentDetails
  // Eg: Card Details
- */
+*/
 
-export default class ListGroupToggler extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      show: false,
-    };
-    this.toggle = ::this.toggle;
-  }
-
-  componentWillMount() {
-    this.setState({ show: this.props.show });
-  }
-
-  toggle() {
-    this.setState({
-      show: !this.state.show,
-    });
-
-    if (!this.state.show && this.props.onToggleClick) {
-      return this.props.onToggleClick();
-    }
-  }
-
+export default class ListGroupToggler extends BaseToggler {
   render() {
     return (
       <div class="pair-group-item">
@@ -52,7 +31,3 @@ export default class ListGroupToggler extends Component {
     );
   }
 }
-
-ListGroupToggler.defaultProps = {
-  show: false,
-};

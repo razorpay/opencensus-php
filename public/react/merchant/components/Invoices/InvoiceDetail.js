@@ -8,7 +8,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import DetailRow from 'merchant/components/DetailRow';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import ListGroupToggler from 'rzp/ui/Toggler/Toggler/ListGroupToggler';
 import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 const notificationClassMap = {

@@ -1,29 +1,13 @@
 import { Component } from 'react';
 import AsyncButton from 'react-async-button';
+import BaseToggler from 'rzp/ui/BaseToggler';
 
-export default class ListToggler extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      show: false,
-    };
-    this.toggle = ::this.toggle;
-  }
+/*
+ // USAGE: Check PaymentDetails
+ // Eg: Refund list
+*/
 
-  componentWillMount() {
-    this.setState({ show: this.props.show });
-  }
-
-  toggle() {
-    this.setState({
-      show: !this.state.show,
-    });
-
-    if (!this.state.show && this.props.onToggleClick) {
-      return this.props.onToggleClick();
-    }
-  }
-
+export default class ListToggler extends BaseToggler {
   render() {
     return (
       <div class="list-table">
@@ -58,7 +42,3 @@ export default class ListToggler extends Component {
     );
   }
 }
-
-ListToggler.defaultProps = {
-  show: false,
-};
