@@ -156,6 +156,7 @@ final class Route
         'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
+        'gratis_postpaid_transactions'            => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
         'key_fetch_multiple'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
@@ -933,7 +934,6 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
-        'admin_get_file',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
@@ -968,6 +968,7 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'gratis_postpaid_transactions',
     ];
 
     public static $proxy = [
@@ -1083,6 +1084,7 @@ final class Route
         'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
+        'admin_get_file',
         // workflows
         'workflow_create',
         'workflow_get',
@@ -1227,6 +1229,7 @@ final class Route
         'merchant_activation_details'      => '*',
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
+        'admin_get_file'                   => '*',
     ];
 
     public static $direct = [

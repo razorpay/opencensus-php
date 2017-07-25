@@ -361,8 +361,6 @@ class ErrorCode
     const BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY                                     = 'BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                           = 'BAD_REQUEST_NOTES_KEY_TOO_LARGE';
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                         = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
-    const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING                                  = 'BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING';
-    const BAD_REQUEST_DESCRIPTION_TOO_LARGE                                         = 'BAD_REQUEST_DESCRIPTION_TOO_LARGE';
     const BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT                               = 'BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT';
 
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                              = 'BAD_REQUEST_UNKNOWN_SCHEDULE';
