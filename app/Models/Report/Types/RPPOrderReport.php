@@ -3,22 +3,19 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Entity as E;
 
-class RPPTransactionReport extends BasicEntityReport
+class RPPOrderReport extends BasicEntityReport
 {
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
-        E::PAYMENT  => [
-            E::NETBANKING,
-            E::BILLDESK,
-            E::ORDER
-        ],
+        E::ORDER => []
     ];
 
     protected $allowed = [
-        E::PAYMENT
+        E::ORDER
     ];
 
     const RPP_TXN_ID  = 'RPP Transaction Id';
@@ -38,51 +35,57 @@ class RPPTransactionReport extends BasicEntityReport
     const USER_MOBILE = 'Customer Mobile';
 
     // As per the requirement from RPP, the report should contain only one entry for each order
+    // Case 1: Order is created, We add a row stating that the rzp payment is not created
+    // Case 2: Order is attempted, then we add the first payment entity for that order.
     // Case 1: Order is paid, we add the payment only if its captured
-    // Case 2: Order is attempeted, then we add the first payment entity for that order.
-    //         A list of $attemptedOrderIds is maintained to make sure only 1 payment is added for that order
-    // Case 3: Order is created, we do not add anything as payment won't be created.
-    protected function fetchFormattedDataForReport(array $entities): array
+    protected function fetchFormattedDataForReport($entities): array
     {
         $data = [];
 
         $attemptedOrderIds = [];
 
-        foreach ($entities as $payment)
+        foreach ($entities as $order)
         {
-            $order = $payment->order;
+            $row = [
+                self::RPP_TXN_ID  => $order->getReceipt(),
+                self::AMOUNT      => ($order->getAmount() / 100),
+            ];
 
-            // Just an addtional check. RPP is on orders api via hosted
-            if ($order === null)
+            switch ($order->getStatus())
             {
-                continue;
+                case Order\Status::CREATED:
+                    $row = array_merge($row, $this->createFailureEntry('Razorpay Payment does not exists'));
+                    break;
+
+                case Order\Status::ATTEMPTED;
+                case Order\Status::PAID:
+                    $row = array_merge($row, $this->createEntryForPaidOrder($order));
+                    break;
             }
 
-            if ($order->isPaid() === true)
-            {
-                if ($payment->hasBeenCaptured() === true)
-                {
-                    $data[] = $this->createEntry($payment);
-                }
-            }
-            else
-            {
-                if (in_array($order->getId(), $attemptedOrderIds, true) === false)
-                {
-                    $data[] = $this->createEntry($payment);
-
-                    $attemptedOrderIds[] = $order->getId();
-                }
-            }
+            $data[] = $row;
         }
 
         return $data;
     }
 
-    protected function createEntry(Payment\Entity $payment): array
+    protected function createEntryForPaidOrder(Order\Entity $order): array
     {
-        $order = $payment->order;
+        $payments = $order->payments;
 
+        foreach ($payments as $payment)
+        {
+            if ($payment->hasBeenCaptured() === true)
+            {
+                return $this->createEntry($order, $payment);
+            }
+        }
+
+        return $this->createEntry($order, $payments[0]);
+    }
+
+    protected function createEntry(Order\Entity $order, Payment\Entity $payment): array
+    {
         list($status, $statusDescription) = $this->getPaymentStatus($payment);
 
         $row = [
@@ -101,6 +104,27 @@ class RPPTransactionReport extends BasicEntityReport
             self::USERNAME    => $this->getUsername($payment),
             self::USER_EMAIL  => $payment->getEmail(),
             self::USER_MOBILE => $payment->getContact(),
+        ];
+
+        return $row;
+    }
+
+    protected function createFailureEntry(string $statusDescription): array
+    {
+         $row = [
+            self::TXN_ID      => '',
+            self::TXN_DATE    => '',
+            self::FEES        => '',
+            self::STATUS      => 'failure',
+            self::DESCRIPTION => $statusDescription,
+            self::MODE        => '',
+            self::TYPE        => '',
+            self::BANK_NAME   => '',
+            self::BANK_BID    => '',
+            self::CARD_TYPE   => '',
+            self::USERNAME    => '',
+            self::USER_EMAIL  => '',
+            self::USER_MOBILE => '',
         ];
 
         return $row;
@@ -136,7 +160,7 @@ class RPPTransactionReport extends BasicEntityReport
         return $cardType;
     }
 
-    protected function getBank(Payment\Entity $payment): string
+    protected function getBank(Payment\Entity $payment)
     {
         $bank = null;
 
@@ -158,7 +182,7 @@ class RPPTransactionReport extends BasicEntityReport
 
         // Format dd/mm/yyyy hh:mm,
         $paymentDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
-                         ->format('d/m/Y H:i:s');
+                            ->format('d/m/Y H:i:s');
 
         return $paymentDate;
     }
