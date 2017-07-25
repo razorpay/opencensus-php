@@ -84,6 +84,7 @@ export default class GenericEntity extends Entity {
     method = 'get',
     appendModeInURL = false,
     appendModeInQueryParam = true,
+    ...params,
   }) {
     return ajax({
       url: this.resourceUrl,
@@ -91,6 +92,7 @@ export default class GenericEntity extends Entity {
       data,
       appendModeInQueryParam,
       appendModeInURL,
+      params,
     });
   }
 }

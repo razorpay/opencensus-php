@@ -7,15 +7,13 @@ export default class TaggedInput extends Component {
     if (value.length > 1 && value.charAt(value.length - 1) === ',') {
       let data = this.props.input.value.slice();
       let result = value.slice(0, -1)
-      if (this.props.validate(result)) {
+      if (this.props.validator(result)) {
         data.push(result);
 
         this.props.input.onChange(data);
 
         select.search('');
         select.focus();
-      } else {
-        // set field invalid
       }
     }
   };

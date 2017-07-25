@@ -130,7 +130,6 @@ class NewApplicationForm extends Component {
 
   render() {
     const { handleSubmit } = this.props;
-
     return (
       <div class="content-box new-application-form">
           <div class="content-header">
@@ -181,12 +180,14 @@ class NewApplicationForm extends Component {
                     <label htmlFor="logo-upload">
                       <i class="fa fa-folder-open"></i>
                       <span style={{fontWeight: "normal"}}>Upload App Icon</span>
-                      <Field
+                      <input
                         name="app_logo"
-                        component="input"
                         id="logo-upload"
                         type="file"
                         class="hide"
+                        onChange={(e) => {
+                          this.props.change('app_logo', e.target.files[0])
+                        }}
                       />
                     </label>
                   </div>
@@ -243,7 +244,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validate={isUrl}
+                      validator={isUrl}
                     />
                   </div>
                   <div class="clearfix"></div>
@@ -298,7 +299,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validate={isUrl}
+                      validator={isUrl}
                     />
                   </div>
                   <div class="clearfix"></div>
@@ -337,15 +338,4 @@ class NewApplicationForm extends Component {
   }
 }
 
-function FileInput(props) {
-  return 
-    (<input
-      {...props}
-      type="file"
-      value={null}
-      onChange={(e) => {
-        console.log()
-      }}
-    />)
-}
 export default NewApplicationForm;

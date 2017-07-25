@@ -27,7 +27,6 @@ export default class Key extends GenericEntity {
   }
 
   fetchConnected(params = {}) {
-    console.log('fetching connected apps')
     const Klass = this.constructor;
     let id = params.id;
 
@@ -44,16 +43,20 @@ export default class Key extends GenericEntity {
 
   create(params = {}) {
     const Klass = this.constructor;
-    let url = this.resourceUrl;
-    let method = 'post'
+    // let url = this.resourceUrl;
+    let formData = new FormData();
+    formData.append('route_name', 'oauth_application_create')
+    for (let key in params) {
+      formData.append(`body[${key}]`, params[key])
+    }
 
-    let data = {
-      route_name: 'oauth_application_create'
-    };
-    data.body = params;
-    return this.makeGenericAjaxCall({
-      method,
-      data,
+    return ajax({
+      url: '/user/generic',
+      method: 'post',
+      data: formData,
+      appendModeInURL: false,
+      processData: false,
+      contentType: false,
     }).then(response => {
       return new Klass().deserialize(response.data);
     });

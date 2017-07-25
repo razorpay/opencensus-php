@@ -56,7 +56,6 @@ export const revokeAccess = id => {
 };
 
 export const createApplication = params => {
-  console.log('save from module', params)
   let application = new Application();
 
   return {
@@ -65,7 +64,6 @@ export const createApplication = params => {
   };
 };
 export const updateApplication = params => {
-  console.log('save from module', params)
   let application = new Application();
 
   return {
