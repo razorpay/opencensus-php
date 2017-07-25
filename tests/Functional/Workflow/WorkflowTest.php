@@ -15,13 +15,14 @@ class WorkflowTest extends TestCase
     use HeimdallTrait;
 
     protected $input = [];
+    protected $authToken = null;
+    protected $org = null;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WorkflowTestData.php';
 
         parent::setUp();
-
         // Using default razorpay org because superadmin,maker,checker
         // are set already in org setup.
 
@@ -32,8 +33,6 @@ class WorkflowTest extends TestCase
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
-        $this->ba->setOrganisation($this->org->getPublicId());
 
         $workflowPermissionIds = $this->getPermissionsByIds('workflow');
 
@@ -73,7 +72,7 @@ class WorkflowTest extends TestCase
      */
     public function testCreateWorkflowWithPermissionWorkflow()
     {
-        $workflow = $this->createWorkflow($this->input);
+        $this->createWorkflow($this->input);
 
         $data = $this->testData[__FUNCTION__];
 

@@ -76,7 +76,8 @@ trait WorkflowTrait
      */
     private function getDefaultWorkflowArray()
     {
-        //permissions are not included in default array cause only only workflow can be created for a permission.
+        //permissions are not included in default array cause
+        //only only workflow can be created for a permission.
 
         return [
             'name'   => 'Test workflow',
