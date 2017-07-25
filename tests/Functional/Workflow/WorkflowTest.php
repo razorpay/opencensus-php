@@ -7,7 +7,6 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Admin\Org\Repository as OrgRepository;
 
 class WorkflowTest extends TestCase
 {
@@ -26,32 +25,35 @@ class WorkflowTest extends TestCase
         // Using default razorpay org because superadmin,maker,checker
         // are set already in org setup.
 
-        $this->org = (new OrgRepository)->getRazorpayOrg();
+        $this->org = $this->fixtures->create('org');
 
         $this->addWorkflowPermissionsToOrg($this->org);
 
-        $this->ba->adminAuth('test', null, $this->org->getPublicId());
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $permissions = $this->getWorkflowPermissions($this->org->getPublicId());
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
-        $permissionIds = array_map(function ($permission)
-        {
-            return $permission['id'];
-        }, $permissions['items']);
+        $this->ba->setOrganisation($this->org->getPublicId());
+
+        $workflowPermissionIds = $this->getPermissionsByIds('workflow');
 
         $this->input = [
-            'permissions' => array_slice($permissionIds, 0, 2),
+            'org_id'      => $this->org->getPublicId(),
+            'permissions' => array_slice($workflowPermissionIds, 0, 2),
         ];
-
     }
 
     public function testCreateWorkflow()
     {
-        $response = $this->createWorkflow($this->input);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
-        $expectedResponse = $this->testData[__FUNCTION__];
+        $defaultAttributes = $this->getDefaultWorkflowArray();
 
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $attributes = array_merge($defaultAttributes, $this->input);
+
+        $this->testData[__FUNCTION__]['request']['content'] = $attributes;
+
+        $this->startTest();
     }
 
     public function testDeleteWorkflow()

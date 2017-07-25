@@ -5,13 +5,24 @@ use RZP\Error\PublicErrorCode;
 
 return [
     'testCreateWorkflow' => [
-        'name'   => "Test workflow",
-        'levels' => [
-            [
-                'op_type' => 'and',
-                'level'   => 1
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows',
+            'content' => [
+                'name' => 'Test workflow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'   => "Test workflow",
+                'levels' => [
+                    [
+                        'op_type' => 'and',
+                        'level'   => 1
+                    ]
+                ]
             ]
-        ]
+        ],
     ],
     'testDeleteWorkflow' => [
         "name" => "Test workflow",

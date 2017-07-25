@@ -198,6 +198,7 @@ trait HeimdallTrait
 
         $org->permissions()->sync($perms);
 
+        // Enabling workflow permissions for that org.
         (new Permission\Repository)->toggleWorkflowOnOrgForPermissions(
             $org->getId(),
             $perms,
