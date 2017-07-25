@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Risk;
 use RZP\Trace\Trace;
 use RZP\Exception;
 use RZP\Models\Payment\Analytics\Metadata;
@@ -19,6 +20,10 @@ trait FraudDetector
         if (($payment->shouldFailOnRiskFailure() === true) and
             ($riskScore > 5))
         {
+            $this->repo->saveOrFail($payment);
+
+            (new Risk\Core)->createRiskEntryOnMaxmindFailure($payment, $riskScore);
+
             $e = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
 

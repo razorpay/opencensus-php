@@ -7,8 +7,8 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::PAYMENT_ID    => 'required|public_id',
-        Entity::MERCHANT_ID   => 'required|public_id',
+        Entity::PAYMENT_ID    => 'required|string|size:14',
+        Entity::MERCHANT_ID   => 'required|string|size:14',
         Entity::FRAUD_TYPE    => 'required|string|max:20|filled',
         Entity::SOURCE        => 'required|string|max:20|filled',
         Entity::MAXMIND_SCORE => 'sometimes|integer',

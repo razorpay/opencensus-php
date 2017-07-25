@@ -9,13 +9,23 @@ class Entity extends Base\PublicEntity
 {
     use RevisionableTrait;
 
-    const ID            = 'id';
     const PAYMENT_ID    = 'payment_id';
     const MERCHANT_ID   = 'merchant_id';
     const FRAUD_TYPE    = 'fraud_type';
     const SOURCE        = 'source';
     const MAXMIND_SCORE = 'maxmind_score';
     const COMMENTS      = 'comments';
+
+    // Fraud type constants
+    const SUSPECTED = 'suspected';
+    const CONFIRMED = 'confirmed';
+    const MAXMIND   = 'maxmind';
+
+    protected static $sign = 'rsk';
+
+    protected $entity = 'risk';
+
+    protected $generateIdOnCreate = true;
 
     protected $revisionEnabled = true;
 
@@ -45,8 +55,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MERCHANT_ID,
         self::FRAUD_TYPE,
-        self::SOURCE,
-        self::MAXMIND_SCORE,
         self::COMMENTS,
     ];
 
@@ -58,11 +66,11 @@ class Entity extends Base\PublicEntity
 
     public function payment()
     {
-        $this->belongsTo('RZP\Models\Payment\Entity');
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     public function merchant()
     {
-        $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 }
