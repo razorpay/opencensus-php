@@ -63,7 +63,7 @@ class Reconciliator extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         'Asia/Kolkata')
-                        ->format('m-d-y h:m:s');
+                        ->format('d/m/y');
 
             $data[] = [
                 ReconciliationFields::PAYEE_ID       => '23453',
