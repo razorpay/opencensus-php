@@ -6,31 +6,34 @@ use RZP\Models\Base;
 use RZP\Models\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Batch;
+use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const PAYMENT_ID        = 'payment_id';
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
-    const BASE_AMOUNT       = 'base_amount';
-    const STATUS            = 'status';
-    const NOTES             = 'notes';
-    const TRANSACTION_ID    = 'transaction_id';
-    const BATCH_ID          = 'batch_id';
+    const ID                     = 'id';
+    const MERCHANT_ID            = 'merchant_id';
+    const PAYMENT_ID             = 'payment_id';
+    const AMOUNT                 = 'amount';
+    const CURRENCY               = 'currency';
+    const BASE_AMOUNT            = 'base_amount';
+    const STATUS                 = 'status';
+    const NOTES                  = 'notes';
+    const TRANSACTION_ID         = 'transaction_id';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const BATCH_ID               = 'batch_id';
 
-    const GATEWAY_REFUNDED  = 'gateway_refunded';
-    const REFERENCE1        = 'reference1';
-    const REFERENCE2        = 'reference2';
-    const ATTEMPTS          = 'attempts';
-    const LAST_ATTEMPTED_AT = 'last_attempted_at';
+    const GATEWAY_REFUNDED       = 'gateway_refunded';
+    const REFERENCE1             = 'reference1';
+    const REFERENCE2             = 'reference2';
+    const ATTEMPTS               = 'attempts';
+    const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
-    const ACQUIRER_DATA     = 'acquirer_data';
-    const ARN               = 'arn';
+    const ACQUIRER_DATA          = 'acquirer_data';
+    const ARN                    = 'arn';
+
 
     protected static $sign = 'rfnd';
 
@@ -133,6 +136,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
+    public function batchFundTransfer()
+    {
+        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+    }
+
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
@@ -219,6 +227,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -237,6 +250,21 @@ class Entity extends Base\PublicEntity
     public function getAcquirerData()
     {
         return $this->getAttribute(self::ACQUIRER_DATA);
+    }
+
+    public function getChannel()
+    {
+        return Channel::KOTAK;
+    }
+
+    public function getFees()
+    {
+        return 0;
+    }
+
+    public function getServiceTax()
+    {
+        return 0;
     }
 
     protected function getAcquirerDataAttribute()

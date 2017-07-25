@@ -126,6 +126,33 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
     }
 
+    public function testVirtualAccountExcess()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 110]);
+
+        // Account is paid in excess
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(11000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $response = $this->refundVirtualAccountExcessPayments();
+
+        // Payment is partially refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(11000, $payment['amount']);
+        $this->assertEquals(1000, $payment['amount_refunded']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(1000, $refund['amount']);
+    }
+
     public function testFetchPaymentsForVirtualAccount()
     {
         $virtualAccount = $this->createVirtualAccount();

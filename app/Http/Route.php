@@ -174,6 +174,7 @@ final class Route
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'          => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
+        'virtual_account_refund_excess'           => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -968,6 +969,7 @@ final class Route
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
         'gratis_postpaid_transactions',
+        'virtual_account_refund_excess',
     ];
 
     public static $proxy = [
@@ -1311,6 +1313,7 @@ final class Route
             'refund_retry_failed',
             'reports_transaction_dsp',
             'schedule_process_tasks',
+            'virtual_account_refund_excess',
         ],
 
         'kotak' => [

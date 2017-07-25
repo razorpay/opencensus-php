@@ -1093,10 +1093,10 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
-        // Bank transfers are customer-initiated, and so are auto-captured.
+        // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
         {
-            return true;
+            return false;
         }
 
         //
@@ -1456,5 +1456,15 @@ class Processor
         }
 
         return $merchant->methods;
+    }
+
+    protected function shouldHitGateway(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

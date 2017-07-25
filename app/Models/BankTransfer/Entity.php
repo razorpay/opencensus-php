@@ -230,6 +230,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTIFIED);
     }
 
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setExpected(bool $expected)
