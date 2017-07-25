@@ -114,6 +114,8 @@ class NetbankingIndusindGatewayTest extends TestCase
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForNB($this->bank);
 
+        $this->checkRefundFileData($data);
+
         $this->checkMailQueue();
     }
 
@@ -178,6 +180,35 @@ class NetbankingIndusindGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['id']);
             });
+    }
+
+    protected function checkRefundFileData($data)
+    {
+        $filePath = $data['netbanking_indusind']['refunds'];
+
+        $this->assertTrue(file_exists($filePath));
+
+        $refundsFileContents = file($filePath);
+
+        $refundAmounts = ['500.00', '100.00', '400.00'];
+
+        foreach ($refundsFileContents as $row)
+        {
+            $refundsFileRow = explode('|', $row);
+
+            // Asserting that the file contains 5 columns
+            assert(count($refundsFileRow) === 6);
+
+            // Asserting Bank Payment Id
+            assert(trim($refundsFileRow[5]) === '9999999999');
+
+            // Asserting that the refund amounts are correct
+            $rowRefundAmount = $refundsFileRow[4];
+
+            assert(in_array($rowRefundAmount, $refundAmounts));
+        }
+
+        unlink($filePath);
     }
 
     protected function createRefundsForExcel()

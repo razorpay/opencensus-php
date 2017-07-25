@@ -67,14 +67,13 @@ class Orchestrator extends Base\Core
         self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
+        self::NETBANKING_INDUSIND => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['prashanth.yv@razorpay.com'],
-
-        self::NETBANKING_INDUSIND => [],
     ];
 
     /**

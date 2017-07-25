@@ -12,6 +12,8 @@ class NetbankingReconcilationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
+    const ACCOUNT_NUMBER = '309002069863';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/NetbankingReconciliationTestData.php';
@@ -35,7 +37,7 @@ class NetbankingReconcilationTest extends TestCase
         {
             if ($action === 'claims_data')
             {
-                $content['0']['Debit Account'] = '309002069863';
+                $content['0']['Debit Account'] = self::ACCOUNT_NUMBER;
 
                 $content['0']['Credit Account'] = '309001141935';
             }
@@ -117,7 +119,7 @@ class NetbankingReconcilationTest extends TestCase
         {
             if ($action === 'claims_data')
             {
-                $content['0']['account_number'] = '309002069863';
+                $content['0']['account_number'] = self::ACCOUNT_NUMBER;
             }
         });
 

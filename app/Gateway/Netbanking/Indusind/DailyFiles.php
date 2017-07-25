@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Indusind;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
