@@ -57,7 +57,7 @@ class RPPOrderReport extends BasicEntityReport
                     $row = array_merge($row, $this->createFailureEntry('Razorpay Payment does not exists'));
                     break;
 
-                case Order\Status::ATTEMPTED;
+                case Order\Status::ATTEMPTED:
                 case Order\Status::PAID:
                     $row = array_merge($row, $this->createEntryForPaidOrder($order));
                     break;
