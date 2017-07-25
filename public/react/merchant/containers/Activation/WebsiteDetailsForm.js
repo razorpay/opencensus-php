@@ -107,7 +107,7 @@ export default class WebsiteDetailsForm extends Component {
                 Download a &nbsp;
                 <a
                   class="highlight"
-                  href="https://docs.google.com/document/d/1wYq6CULlAtBdYrcjEVygQ3uYOplqU-kT1wrxguUKHcI/edit?usp=sharing"
+                  href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
                   target="_blank"
                 >
                   template here
@@ -159,7 +159,7 @@ export default class WebsiteDetailsForm extends Component {
                 Any page with product prices in INR. May display a range of prices if not actual price as part of a static pricing policy. Download a &nbsp;
                 <a
                   class="highlight"
-                  href="https://docs.google.com/document/d/1pcgpjZyeV9fGB-fjo9p9xx4992QeymEMi8oFllcbXsw/edit?usp=sharing"
+                  href="https://docs.google.com/document/d/1uibf_AW9DDfNylWgDgCT8EpyWzRF7dZtV8mbEMeP7gs/pub"
                   target="_blank"
                 >
                   template here
