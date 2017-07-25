@@ -100,6 +100,16 @@ class RawApiRequest
             case 'proxy':
                 $merchantId = $this->resolveMerchantId($input, $adminToken);
 
+                $accountId = $input['account_id'] ?? null;
+
+                /**
+                 * Setting X-Razorpay-Account header in case of market place routes.
+                 * The handling of this header is already taken care in api
+                 */
+                if ($accountId) {
+                    $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+                }
+
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 

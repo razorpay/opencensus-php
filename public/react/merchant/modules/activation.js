@@ -42,6 +42,9 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
   formData.append('route_name', 'merchant_activation_upload_file');
   formData.append('file', file);
   formData.append('file_name', fieldNameMapping[fieldName]);
+  if (accountId) {
+    formData.append('account_id', accountId);
+  }
 
   return {
     type: ACTIVATION_SAVE_FILE,
