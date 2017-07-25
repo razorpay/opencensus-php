@@ -55,6 +55,15 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '85009'
         ],
+        [
+            'id'                => '10101010101111',
+            'duration'          => '9',
+            'rate'              => '1300',
+            'methods'           => 'debitcard',
+            'bank'              => 'SCBL',
+            'min_amount'        => '300000',
+            'issuer_plan_id'    => '850092'
+        ],
     ];
 
     public function createDefaultEmiPlans()
