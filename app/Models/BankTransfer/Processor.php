@@ -209,7 +209,7 @@ class Processor extends Base\Core
     {
         $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
 
-        if ($this->mode === Mode::TEST)
+        if ($this->env !== 'production')
         {
             $defaultMerchantId = Account::TEST_ACCOUNT;
         }
