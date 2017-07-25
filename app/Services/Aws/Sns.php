@@ -2,6 +2,9 @@
 
 namespace RZP\Services\Aws;
 
+use Config;
+use Aws;
+
 class Sns
 {
     public function __construct($app)

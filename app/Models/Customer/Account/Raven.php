@@ -23,7 +23,7 @@ class Raven
 
          $this->sns = $app['sns'];
 
-         $this->env = $this->app['env'];
+         $this->env = $app['env'];
     }
 
     public function sendOtp($input, $merchant)

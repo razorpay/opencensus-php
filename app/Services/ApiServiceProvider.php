@@ -130,6 +130,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerDrip();
 
+        $this->registerSns();
+
         $this->registerWorkflow();
 
         $this->registerHttplugMockClient();
@@ -161,6 +163,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'exchange',
             'pigeon',
             'workflow',
+            'sns',
         ];
     }
 
