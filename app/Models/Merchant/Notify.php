@@ -22,11 +22,18 @@ trait Notify
         return "<$link|$label> ($id)";
     }
 
-    protected function logActionToSlack($merchant, $action, $data = [])
+    protected function logActionToSlack($merchant, $action, $data = [], $link = '')
     {
         $admin = (new Merchant\Core)->getInternalUsernameOrEmail();
 
-        $text = $this->getMerchantDashboardSlackText($merchant);
+        if (empty($link) === true)
+        {
+            $text = $this->getMerchantDashboardSlackText($merchant);
+        }
+        else
+        {
+            $text = $link;
+        }
 
         $textAction = SlackActions::$actionMsgMap[$action];
 
@@ -79,6 +86,10 @@ trait Notify
     {
         switch ($action) {
             case SlackActions::ACTIVATED:
+                return $this->app->config->get('slack.channels.activations');
+                break;
+
+            case SlackActions::SUBMIT_ACTIVATION:
                 return $this->app->config->get('slack.channels.activations');
                 break;
 
