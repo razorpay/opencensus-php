@@ -432,7 +432,6 @@ var reactTemplateProvider = function(template) {
         if (!calledOnce) {
           calledOnce = true;
           injectScript('<%=REACT_REV_PLACEHOLDER=%>', function() {
-            debugger;
             deferred.resolve(template);
           });
         }

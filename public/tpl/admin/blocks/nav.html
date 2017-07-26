@@ -97,13 +97,6 @@
     </a>
   </li>
 
-  <li dynamic-tooltip="view_all_admin" ng-if="admin.permissions && admin.permissions.indexOf('view_all_admin') !== -1">
-    <a ui-sref="app.zusers.list">
-      <i class="fa fa-user icon text-warning-lter"></i>
-      <span>ZUsers</span>
-    </a>
-  </li>
-
   <li dynamic-tooltip="view_all_role" ng-if="admin.permissions && admin.permissions.indexOf('view_all_role') !== -1">
     <a id="rolesNav" ui-sref="app.roles.list">
       <i class="fa fa-address-book icon text-warning-lter"></i>
