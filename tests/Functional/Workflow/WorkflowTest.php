@@ -9,6 +9,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Permission;
+use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
 
 class WorkflowTest extends TestCase
 {
@@ -19,6 +20,7 @@ class WorkflowTest extends TestCase
     protected $input = [];
     protected $authToken = null;
     protected $org = null;
+    protected $workflowPermissionIds = [];
 
     public function setUp()
     {
@@ -29,6 +31,10 @@ class WorkflowTest extends TestCase
         // are set already in org setup.
 
         $this->org = $this->fixtures->create('org');
+
+        $permissions = (new PermissionEntity)->getAllPermissions();
+
+        $this->org->permissions()->attach($permissions);
 
         $this->addWorkflowPermissionsToOrg($this->org);
 
