@@ -16,7 +16,7 @@ class Gateway extends Billdesk\Gateway
         return $this->authorizeMock($input);
     }
 
-    protected function sendGatewayRequestForBilldeskAuthorize($request, $error=false)
+    protected function sendGatewayRequestForBilldeskAuthorize($request, $error = false)
     {
         $response = new Requests_Response();
 
@@ -50,7 +50,7 @@ class Gateway extends Billdesk\Gateway
         return $txt;
     }
 
-    protected function getContentAfterChecksumVerification($responseBody)
+    protected function getContentAfterChecksumVerification($responseBody, $action = null)
     {
         /**
          *  Check if Bank is Andhra Bank, if yes make the response invalid
@@ -61,6 +61,7 @@ class Gateway extends Billdesk\Gateway
         {
             $responseBody = $this->getInvalidVerifyData();
         }
+
         return parent::getContentAfterChecksumVerification($responseBody);
     }
 

@@ -50,6 +50,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->makeRequestAndGetFormData($request);
 
+        $this->checkForErrors($input, $request);
+
         return $request;
     }
 
@@ -74,6 +76,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
+                'gateway' => 'billdesk',
                 'payment_id' => $input['payment']['id'],
             ]
         );
@@ -821,6 +824,38 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function checkForErrors($input, $request)
+    {
+        if ($input['callbackUrl'] === $request['url'])
+        {
+            $rawMsg = $request['content']['msg'];
+
+            $msg = $this->getContentAfterChecksumVerification($rawMsg, 'callback');
+
+            if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
+            {
+                /*
+                 * As seen from splunk some of error_code comes as ErrorStatus and some as ErrorCode.
+                 * Like: ERR_REF010 comes as ErrorCode
+                 *
+                 * Similarly, error_message sometimes comes as ErrorReason and other time as ErrorDescription.
+                 * Like: For ERR_REF010 comes as ErrorReason
+                 *
+                 * TODO: Should be take care of this dicrepency here or is there another source for the request
+                 *
+                 */
+                $errorCode = ErrorCode::getMappedCode(
+                                    $content['ErrorStatus'],
+                                    $content['ErrorDescription']);
+
+                throw new Exception\GatewayErrorException(
+                        $errorCode,
+                        $content['AuthStatus'],
+                        '');
+            }
+        }
+    }
+
     /**
      * This function only purpose is so that it can be overridden
      * during testing.
@@ -842,9 +877,14 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getContentAfterChecksumVerification($responseBody)
+    protected function getContentAfterChecksumVerification($responseBody, $action = null)
     {
-        $fields = $this->getFieldsForAction($this->action);
+        if ($action === null)
+        {
+            $action = $this->action;
+        }
+
+        $fields = $this->getFieldsForAction($action);
 
         $this->trace->info(
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
@@ -867,7 +907,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
-            [$content]);
+            [
+                'gateway' => 'billdesk',
+                'content' => $content
+            ]);
 
         $this->verifySecureHash($content);
 
