@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID   => 'required|string|size:14',
         Entity::FRAUD_TYPE    => 'required|string|max:20|filled|in:confirmed,suspected',
         Entity::SOURCE        => 'required|string|max:20|filled',
-        Entity::MAXMIND_SCORE => 'sometimes|integer',
+        Entity::RISK_SCORE    => 'sometimes|integer',
         Entity::COMMENTS      => 'required|string|max:255|filled', # soft validation
     ];
 
@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID   => 'sometimes|string|size:14',
         Entity::FRAUD_TYPE    => 'sometimes|string|max:20',
         Entity::SOURCE        => 'sometimes|string|max:20',
-        Entity::MAXMIND_SCORE => 'sometimes|integer',
+        Entity::RISK_SCORE    => 'sometimes|integer',
         Entity::COMMENTS      => 'required|string|filled',
     ];
 }

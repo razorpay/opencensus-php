@@ -16,7 +16,7 @@ class Repository extends Base\Repository
         Entity::FRAUD_TYPE    => 'sometimes|string|max:20',
         Entity::SOURCE        => 'sometimes|boolean',
         Entity::COMMENTS      => 'sometimes|string|max:255',
-        Entity::MAXMIND_SCORE => 'sometimes|integer',
+        Entity::RISK_SCORE    => 'sometimes|integer',
     ];
 
     // These are admin allowed params to search on.
@@ -25,7 +25,7 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID    => 'sometimes|string|size:14',
         Entity::FRAUD_TYPE    => 'sometimes|string|max:20',
         Entity::SOURCE        => 'sometimes|string|max:20',
-        Entity::MAXMIND_SCORE => 'sometimes|integer',
+        Entity::RISK_SCORE    => 'sometimes|integer',
         Entity::COMMENTS      => 'sometimes|string|max:255',
     ];
 

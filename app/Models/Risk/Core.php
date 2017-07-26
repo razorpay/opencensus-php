@@ -46,7 +46,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID   => $payment->getMerchantId(),
             Entity::PAYMENT_ID    => $payment->getId(),
             Entity::FRAUD_TYPE    => Type::SUSPECTED,
-            Entity::MAXMIND_SCORE => $riskScore,
+            Entity::RISK_SCORE    => $riskScore,
             Entity::SOURCE        => Source::MAXMIND,
             Entity::COMMENTS      => RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
         ];

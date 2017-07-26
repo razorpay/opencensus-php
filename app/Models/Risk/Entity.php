@@ -4,6 +4,8 @@ namespace RZP\Models\Risk;
 
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
@@ -13,7 +15,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID   = 'merchant_id';
     const FRAUD_TYPE    = 'fraud_type';
     const SOURCE        = 'source';
-    const MAXMIND_SCORE = 'maxmind_score';
+    const RISK_SCORE    = 'risk_score';
     const COMMENTS      = 'comments';
 
     protected static $sign = 'rsk';
@@ -31,7 +33,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FRAUD_TYPE,
         self::SOURCE,
-        self::MAXMIND_SCORE,
+        self::RISK_SCORE,
         self::COMMENTS,
     ];
 
@@ -41,7 +43,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FRAUD_TYPE,
         self::SOURCE,
-        self::MAXMIND_SCORE,
+        self::RISK_SCORE,
         self::COMMENTS,
     ];
 
@@ -57,6 +59,26 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MERCHANT_ID,
     ];
+
+    public function setPublicPaymentIdAttribute(array & $attributes)
+    {
+        $paymentId = $this->getAttribute(static::PAYMENT_ID);
+
+        if ($paymentId !== null)
+        {
+            $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
+        }
+    }
+
+    public function setPublicMerchantIdAttribute(array & $attributes)
+    {
+        $merchantId = $this->getAttribute(static::MERCHANT_ID);
+
+        if ($merchantId !== null)
+        {
+            $attributes[static::MERCHANT_ID] = Payment\Entity::getSignedId($merchantId);
+        }
+    }
 
     public function payment()
     {

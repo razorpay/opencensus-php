@@ -33,7 +33,8 @@ class CreateRiskTable extends Migration
 
             $table->string(Risk::SOURCE, 30);
 
-            $table->integer(Risk::MAXMIND_SCORE);
+            $table->integer(Risk::RISK_SCORE)
+                  ->unsigned();
 
             $table->text(Risk::COMMENTS);
 
