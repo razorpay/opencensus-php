@@ -116,12 +116,20 @@ return [
         ],
     ],
     'testGetWorkflow' => [
-        'name'   => "Test workflow",
-        'levels' => [
-            [
-                'op_type' => 'and',
-                'level'   => 1
-            ]
-        ]
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/workflows/%s',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'levels' => [
+                    [
+                        'op_type' => 'and',
+                        'level'   => 1
+                    ],
+                ],
+            ],
+        ],
     ],
 ];

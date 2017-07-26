@@ -9,40 +9,6 @@ use RZP\Models\Admin\Permission;
 
 trait WorkflowTrait
 {
-    public function editWorkflow($workflowId, $orgId, $input)
-    {
-        $this->ba->adminAuth('test', null, $orgId);
-
-        $defaultValues = $this->getDefaultWorkflowArray();
-
-        // Permissions list should be sent in input.
-        $attributes = array_merge($defaultValues, $input);
-
-        $request = [
-            'method' => 'PUT',
-            'url'    => '/workflows/' . $workflowId,
-            'content' => $attributes,
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
-    private function getWorkflow($workflowId, $orgId)
-    {
-        $this->ba->adminAuth('test', null, $orgId);
-
-        $request = [
-            'method' => 'GET',
-            'url'    => '/workflows/' . $workflowId,
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
     private function createWorkflow(array $input)
     {
         $defaultAttributes = $this->getDefaultWorkflowArray();

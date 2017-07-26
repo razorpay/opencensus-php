@@ -13,8 +13,8 @@ use RZP\Models\Admin\Permission;
 class WorkflowTest extends TestCase
 {
     use WorkflowTrait;
-    use RequestResponseFlowTrait;
     use HeimdallTrait;
+    use RequestResponseFlowTrait;
 
     protected $input = [];
     protected $authToken = null;
@@ -176,14 +176,12 @@ class WorkflowTest extends TestCase
      */
     public function testEditWorkflowInProgress()
     {
+        $this->ba->adminAuth('test', null, 'org_' . ORG::RZP_ORG);
 
-        $this->ba->adminAuth('test', null, ORG::RZP_ORG);
-
+        // Default workflow has edit admin permission and editing default org user.
         $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::SUPER_ADMIN);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        // Default workflow has edit admin permission and editing default org user.
 
         $url = sprintf($url, 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID);
 
@@ -199,12 +197,19 @@ class WorkflowTest extends TestCase
 
     public function testGetWorkflow()
     {
-        $workflow = $this->createWorkflow($this->input);
+        $workflowId = 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID;
 
-        $response = $this->getWorkflow($workflow['id'], $this->org->getPublicId());
+        $this->ba->adminAuth('test', null, 'org_' . ORG::RZP_ORG);
 
-        $expectedResponse = $this->testData[__FUNCTION__];
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $url = sprintf($url, $workflowId);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $workflowId;
+
+        $this->startTest();
     }
 }

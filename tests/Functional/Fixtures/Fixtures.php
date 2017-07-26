@@ -47,45 +47,45 @@ class Fixtures
      */
     public function setUp()
     {
-//        $this->base->connection('test');
-//
-//        $this->org->setUp();
-//
-//        $this->merchant->setUp();
-//
-//        $merchantData = [
-//            'id' => '1cXSLlUU8V9sXl',
-//            'pricing_plan_id' => '1hDYlICobzOCYt',
-//            'international' => 1
-//        ];
-//
-//        $apiMerchant = $this->create('merchant', $merchantData);
-//        $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
-//
-//        $this->create('pricing:default_plan');
-//        $this->create('pricing:zero_pricing_plan');
-//
-//        $this->create('org:default_test_organization');
-//
-//        $entities = $this->create('merchant:default_test_merchant');
-//
-//        $this->create('iin:default_iins');
-//
-//        $this->create('card:default_cards');
-//
-//        $this->customer->setUp();
-//
-//        $this->create('device', [
-//            'id' => 'RazorpayDevice',
-//            'verification_token' => 'sample_verification_token',
-//            'auth_token' => 'authentication_token',
-//        ]);
-//
-//        $this->create('vpa:default');
+        $this->base->connection('test');
+
+        $this->org->setUp();
+
+        $this->merchant->setUp();
+
+        $merchantData = [
+            'id' => '1cXSLlUU8V9sXl',
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+            'international' => 1
+        ];
+
+        $apiMerchant = $this->create('merchant', $merchantData);
+        $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
+
+        $this->create('pricing:default_plan');
+        $this->create('pricing:zero_pricing_plan');
+
+        $this->create('org:default_test_organization');
+
+        $entities = $this->create('merchant:default_test_merchant');
+
+        $this->create('iin:default_iins');
+
+        $this->create('card:default_cards');
+
+        $this->customer->setUp();
+
+        $this->create('device', [
+            'id' => 'RazorpayDevice',
+            'verification_token' => 'sample_verification_token',
+            'auth_token' => 'authentication_token',
+        ]);
+
+        $this->create('vpa:default');
 
         $this->workflow->setUp();
 
-//        $this->entities = $entities;
+        $this->entities = $entities;
     }
 
     public function generateUniqueId()
