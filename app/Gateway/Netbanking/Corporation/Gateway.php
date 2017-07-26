@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Corporation;
 
+use RZP\Constants\Mode;
+use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Gateway extends Base\Gateway
@@ -17,7 +19,6 @@ class Gateway extends Base\Gateway
         'CustID'    => NetbankingEntity::CUSTOMER_ID,
         'MerCD'     => NetbankingEntity::MERCHANT_CODE,
         'AMT'       => NetbankingEntity::AMOUNT,
-        'OTC'       => NetbankingEntity::INT_PAYMENT_ID,
     ];
 
     public function authorize(array $input)
@@ -40,7 +41,8 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData($input)
     {
-        $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
+        // Hardcoding the client code for now
+        $clientCode = '123';
 
         $data = array(
             'CustID'            => $clientCode,
