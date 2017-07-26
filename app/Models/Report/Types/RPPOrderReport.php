@@ -29,6 +29,7 @@ class RPPOrderReport extends BasicEntityReport
     const TYPE        = 'Type';
     const BANK_NAME   = 'Bank Name';
     const BANK_BID    = 'Bank Ref No.';
+    const LAST4       = 'Last4';
     const CARD_TYPE   = 'Card Type';
     const USERNAME    = 'Customer Name';
     const USER_EMAIL  = 'Customer Email';
@@ -47,10 +48,13 @@ class RPPOrderReport extends BasicEntityReport
             switch ($order->getStatus())
             {
                 case Order\Status::CREATED:
-                    $row = $this->createFailureEntry($order, 'Razorpay Payment does not exists');
+                    $row = $this->createFailureEntry($order, 'failure', 'Razorpay Payment does not exists');
                     break;
 
                 case Order\Status::ATTEMPTED:
+                    $row = $this->createFailureEntry($order, 'pending', 'Status pending from Gateway');
+                    break;
+
                 case Order\Status::PAID:
                     $row = $this->createEntryForPaidOrder($order);
                     break;
@@ -73,8 +77,6 @@ class RPPOrderReport extends BasicEntityReport
                 return $this->createEntry($order, $payment);
             }
         }
-
-        return $this->createEntry($order, $payments[0]);
     }
 
     protected function createEntry(Order\Entity $order, Payment\Entity $payment): array
@@ -93,6 +95,7 @@ class RPPOrderReport extends BasicEntityReport
             self::TYPE        => $this->getType($payment),
             self::BANK_NAME   => $this->getBank($payment),
             self::BANK_BID    => $this->getTxnBankReferenceNo($payment),
+            self::LAST4       => $this->getLast4($payment),
             self::CARD_TYPE   => $this->getCardType($payment),
             self::USERNAME    => $this->getUsername($payment),
             self::USER_EMAIL  => $payment->getEmail(),
@@ -102,7 +105,7 @@ class RPPOrderReport extends BasicEntityReport
         return $row;
     }
 
-    protected function createFailureEntry(Order\Entity $order, string $statusDescription): array
+    protected function createFailureEntry(Order\Entity $order, string $status, string $statusDescription): array
     {
          $row = [
             self::RPP_TXN_ID  => $order->getReceipt(),
@@ -110,12 +113,13 @@ class RPPOrderReport extends BasicEntityReport
             self::TXN_ID      => '',
             self::TXN_DATE    => '',
             self::FEES        => '',
-            self::STATUS      => 'failure',
+            self::STATUS      => $status,
             self::DESCRIPTION => $statusDescription,
             self::MODE        => '',
             self::TYPE        => '',
             self::BANK_NAME   => '',
             self::BANK_BID    => '',
+            self::LAST4       => '',
             self::CARD_TYPE   => '',
             self::USERNAME    => '',
             self::USER_EMAIL  => '',
@@ -211,5 +215,17 @@ class RPPOrderReport extends BasicEntityReport
         }
 
         return $name;
+    }
+
+    protected function getLast4(Payment\Entity $payment): string
+    {
+        $last4 = '';
+
+        if ($payment->isCard() === true)
+        {
+            $last4 = $payment->card->getLast4();
+        }
+
+        return $last4;
     }
 }
