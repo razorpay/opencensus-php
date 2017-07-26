@@ -43,20 +43,6 @@ trait WorkflowTrait
         return $response;
     }
 
-    private function createEditAdminWorkflow()
-    {
-        $permission = (new Permission\Repository)
-                        ->retrieveIdsByNames([Permission\Name::EDIT_ADMIN])[0];
-
-        $input = [
-            'permissions' => [$permission->getPublicId()],
-        ];
-
-        $workflow = $this->createWorkflow($input);
-
-        return $workflow;
-    }
-
     private function createWorkflow(array $input)
     {
         $defaultAttributes = $this->getDefaultWorkflowArray();

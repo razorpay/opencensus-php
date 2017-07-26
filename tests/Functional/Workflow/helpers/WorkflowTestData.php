@@ -81,7 +81,18 @@ return [
         ],
     ],
     'testEditWorkflow' => [
-        'name' => 'editing workflow'
+        'request' => [
+            'method' => 'PUT',
+            'url'    => '/workflows/%s',
+            'content' => [
+                'name' => 'editing workflow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'editing workflow',
+            ],
+        ],
     ],
     'testEditWorkflowInProgress' => [
         'response' => [

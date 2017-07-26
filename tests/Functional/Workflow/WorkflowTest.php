@@ -147,15 +147,28 @@ class WorkflowTest extends TestCase
 
     public function testEditWorkflow()
     {
-        $workflow = $this->createWorkflow($this->input);
+        $defaultAttributes = $this->getDefaultWorkflowArray();
 
-        $input = array_merge($this->input, ['name' => 'editing workflow']);
+        $attributes = array_merge($defaultAttributes, $this->input);
 
-        $response = $this->editWorkflow($workflow['id'], $this->org->getPublicId(), $input);
+        $attributes['org_id'] = $this->org->getPublicId();
 
-        $expectedResponse = $this->testData[__FUNCTION__];
+        $attributes['permissions'] = array_slice($this->workflowPermissionIds, 0, 2);
 
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $attributes['name'] = 'just changing name';
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content'] = $attributes;
+
+        $this->testData[__FUNCTION__]['response']['content']['name'] = $attributes['name'];
+
+        $this->startTest();
     }
 
     public function testEditWorkflowInProgress()
