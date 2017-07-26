@@ -26,8 +26,8 @@ return [
     ],
     'testDeleteWorkflow' => [
         'request' => [
-            'method' => 'DELETE',
-            'url'    => '/workflows/%s',
+            'method'  => 'DELETE',
+            'url'     => '/workflows/%s',
             'content' => [],
         ],
         'response' => [
@@ -55,14 +55,14 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS,
         ],
     ],
     'testDeleteWorkflowProgress' => [
         'request' => [
-            'method' => 'DELETE',
-            'url'    => '/workflows/%s',
+            'method'  => 'DELETE',
+            'url'     => '/workflows/%s',
             'content' => [],
         ],
         'response' => [
@@ -76,14 +76,14 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED,
         ],
     ],
     'testEditWorkflow' => [
         'request' => [
-            'method' => 'PUT',
-            'url'    => '/workflows/%s',
+            'method'  => 'PUT',
+            'url'     => '/workflows/%s',
             'content' => [
                 'name' => 'editing workflow',
             ],
@@ -105,20 +105,20 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED,
         ],
     ],
     'testGetWorkflow' => [
         'request' => [
-            'method' => 'GET',
-            'url'    => '/workflows/%s',
+            'method'  => 'GET',
+            'url'     => '/workflows/%s',
             'content' => [],
         ],
         'response' => [
