@@ -53,12 +53,12 @@ class EmiFile extends Base\EmiFile
                 'CARD_NUMBER'                  => $this->getCardNumber($emiPayment->card),
                 'MID'                          => $emiPayment->getId(),
                 'MERCHANT_NAME'                => 'Razorpay Payments',
-                'TRXN_AMOUNT'                  => number_format($emiPayment->getAmount()/100, 2),
-                'TRXN_DATE'                    => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'SETTLEMENT_DATE'              => $this->formattedDateFromTimestamp($txn->getSettledAt()),
+                'TRXN_AMOUNT'                  => $this->getFormattedAmount($emiPayment->getAmount()),
+                'TRXN_DATE'                    => $this->getFormattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
+                'SETTLEMENT_DATE'              => $this->getFormattedDateFromTimestamp($txn->getSettledAt()),
                 'AUTH_CODE'                    => $this->getAuthCode($emiPayment),
                 'TENOR'                        => $emiTenure,
-                'REDUCING_INTEREST_RATE_P_A'   => '0.' . $emiRate,
+                'REDUCING_INTEREST_RATE_P_A'   => $this->getFormattedEmiRate($emiRate),
                 'PROCESSING_FEE'               => '',
                 'FORCLOSURE_FEE'               => '',
                 'MIN_AMT'                      => '',
@@ -70,8 +70,18 @@ class EmiFile extends Base\EmiFile
         return $data;
     }
 
-    private function formattedDateFromTimestamp($timestamp)
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount/100, 2);
+    }
+
+    protected function getFormattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
+    }
+
+    protected function getFormattedEmiRate($emiRate)
+    {
+        return '0.' . $emiRate;
     }
 }
