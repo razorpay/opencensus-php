@@ -132,6 +132,11 @@ export default class ReportsContainer extends Component {
                       <option value="dsp_report">
                         DSP Transaction Report
                       </option>}
+                    // RPP Report is only for e-Mitra (RPP) Merchant. Should not be enabled for any other merchants
+                    {user.tags.indexOf('Rpp_Report') === -1 ||
+                      <option value="rpp_report">
+                        e-Mitra Report
+                      </option>}
                     <option value="invoice">Monthly Invoice</option>
                     {user.tags.indexOf('Marketplace') === -1 ||
                       <optgroup label="Route">

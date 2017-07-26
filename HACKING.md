@@ -31,3 +31,4 @@ We have an aggregator model using which a merchant can register other merchants 
 # Reports
 
 We have a feature `dsp_report`which is only for the DSP Blackrock Merchant. They required customized reports. This should not be enabled for other merchants.
+We have a feature `rpp_report`which is only for the e-Mitra (RPP) Merchant. They required customized reports. This should not be enabled for other merchants.
