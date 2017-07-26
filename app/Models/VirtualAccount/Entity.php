@@ -157,6 +157,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_RECEIVED);
     }
 
+    public function getAmountReversed()
+    {
+        return $this->getAttribute(self::AMOUNT_REVERSED);
+    }
+
+    public function getExcessAmount()
+    {
+        $amountDeducted = ($this->getAmountReversed() + $this->getAmountExpected());
+
+        $excessAmount = $this->getAmountReceived() - $amountDeducted;
+
+        return max($excessAmount, 0);
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -226,5 +240,10 @@ class Entity extends Base\PublicEntity
     public function incrementAmountReceived(int $amount)
     {
         $this->increment(self::AMOUNT_RECEIVED, $amount);
+    }
+
+    public function incrementAmountReversed(int $amount)
+    {
+        $this->increment(self::AMOUNT_REVERSED, $amount);
     }
 }

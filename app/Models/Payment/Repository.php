@@ -839,6 +839,7 @@ class Repository extends Base\Repository
                     ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
                     ->where($paymentMethod, '=', Method::BANK_TRANSFER)
+                    ->orderByCreatedAt()
                     ->get();
     }
 

@@ -9,7 +9,7 @@ use RZP\Models\Terminal\Shared;
 class Channel
 {
     const KOTAK = 'kotak';
-    const ATOM = 'atom';
+    const ATOM  = 'atom';
 
     public static $gateways = array(
         self::KOTAK => array(

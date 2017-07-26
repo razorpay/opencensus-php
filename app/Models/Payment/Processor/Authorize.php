@@ -202,16 +202,6 @@ trait Authorize
         return $request;
     }
 
-    protected function shouldHitGateway(Payment\Entity $payment)
-    {
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function logAndCheckForAuthRetry($e, $payment): bool
     {
         $traceData = array(
@@ -2771,7 +2761,7 @@ trait Authorize
             ($merchantMethods->isWalletEnabled($paymentWallet) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 
@@ -2783,7 +2773,7 @@ trait Authorize
             ($merchantMethods->isEmiEnabled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENABLED_FOR_MERCHANT);
         }
 
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $payment->card);
@@ -2842,7 +2832,7 @@ trait Authorize
         if ($merchantMethods->isCardEnabled() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENABLED_FOR_MERCHANT);
         }
 
         $type = $card->getType();

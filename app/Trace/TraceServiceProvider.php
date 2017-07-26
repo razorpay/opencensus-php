@@ -36,8 +36,6 @@ class TraceServiceProvider extends BaseServiceProvider
 
         $this->registerRequestGetTaskIdMacro();
 
-        $this->registerRequestGetClientIpMacro();
-
         $this->app->bind('trace', function($app)
         {
             $trace = new Trace($app);
@@ -56,21 +54,6 @@ class TraceServiceProvider extends BaseServiceProvider
     public function provides()
     {
         return ['trace'];
-    }
-
-    protected function registerRequestGetClientIpMacro()
-    {
-        $this->app['request']->macro('getRealClientIp', function()
-        {
-            $clientIp = $this->headers->get('X_FORWARDED_FOR');
-
-            if ($clientIp === null)
-            {
-                $clientIp = $this->getClientIp();
-            }
-
-            return $clientIp;
-        });
     }
 
     /**
