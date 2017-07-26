@@ -144,7 +144,8 @@ export default class IssueInvoiceConfirmModal extends Component {
                       . So, only test payments can be made for this
                       {' '}
                       {entityName}
-                      . Also, SMS will not be sent in test mode.
+                      .
+                      {/* Also, SMS will not be sent in test mode.*/}
                     </div>}
 
                   <div class="Modal__actions">

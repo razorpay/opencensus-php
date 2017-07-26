@@ -303,7 +303,7 @@ export default class CreatePaymentLink extends Component {
                     {' '}
                     <b>Test Mode</b>
                     . So, only test payments can be made for this link.
-                    Also, SMS will not be sent in test mode
+                    {/* Also, SMS will not be sent in test mode */}
                   </div>
                 </div>
               </div>}
