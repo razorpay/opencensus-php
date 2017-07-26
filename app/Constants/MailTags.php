@@ -65,6 +65,10 @@ class MailTags
 
     const MERCHANT_INVITATION_MAIL         = 'merchant_invitation_mail';
 
+    // Merchant Activation Email Tags
+    const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
+    const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

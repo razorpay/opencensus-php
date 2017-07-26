@@ -17,6 +17,7 @@ class Constants
     const ALERTS        = 'alerts';
     const EMI           = 'emi';
     const ADMIN         = 'admin';
+    const ACTIVATION    = 'activation';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT       => 'support@razorpay.com',
@@ -32,6 +33,7 @@ class Constants
         self::ALERTS        => 'alerts@razorpay.com',
         self::EMI           => 'emifiles@razorpay.com',
         self::ADMIN         => 'admin@razorpay.com',
+        self::ACTIVATION    => 'activationsteam@razorpay.com',
     ];
 
     const HEADERS = [
