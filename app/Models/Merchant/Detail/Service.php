@@ -117,6 +117,8 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
+            $merchantDetails->getValidator()->validateFileType($value);
+
             $fileName = 'api/' . $merchant->getId() .'/' .$key;
 
             $file = $this->createFile(
