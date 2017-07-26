@@ -488,6 +488,17 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRPPOrderReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\RPPOrderReport(E::ORDER);
+
+        $data = $report->getReportUrl($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
