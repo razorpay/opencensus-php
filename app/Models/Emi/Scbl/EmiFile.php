@@ -18,23 +18,6 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::SCBL_EMI_FILE;
 
-    protected static $headers = [
-        'CARD_NUMBER',
-        'MID',
-        'MERCHANT_NAM',
-        'TRXN_AMOUNT',
-        'TRXN_DATE',
-        'SETTLEMENT_DATE',
-        'AUTH_CODE',
-        'TENOR',
-        'REDUCING_INTEREST_RATE_P_A',
-        'PROCESSING_FEE',
-        'FORCLOSURE_FEE',
-        'MIN_AMT',
-        'MAX_AMT',
-        'REDUCING_INTEREST_RATE_P_A_1',
-    ];
-
     protected function getEmiData($input)
     {
         $data = [];
@@ -43,11 +26,11 @@ class EmiFile extends Base\EmiFile
         {
             $emiTenure = $emiPayment->emiPlan['duration'];
 
-            $merchant = $this->repo->merchant->fetchMerchantFromEntity($emiPayment);
+            $merchant = $emiPayment->merchant;
 
-            $txn = $this->repo->transaction->fetchForPayment($emiPayment);
+            $txn = $emiPayment->transaction;
 
-            $emiRate = $emiPayment->emiPlan['rate']/100;
+            $emiRate = $emiPayment->emiPlan['rate'];
 
             $data[] = [
                 'CARD_NUMBER'                  => $this->getCardNumber($emiPayment->card),
@@ -82,6 +65,6 @@ class EmiFile extends Base\EmiFile
 
     protected function getFormattedEmiRate($emiRate)
     {
-        return '0.' . $emiRate;
+        return rtrim(number_format($emiRate/10000,4), '0');
     }
 }
