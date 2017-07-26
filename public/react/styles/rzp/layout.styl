@@ -1,6 +1,10 @@
 // Only page layout styles should reside in this file.
 // This will be moved under `rzp` later
 
+a, .btn-link {
+  color: $primary-color;
+}
+
 html, body {
   background-color: #f0f3f4;
   overflow-x: hidden;
@@ -427,7 +431,7 @@ body.ReactModal__Body--open {
 .quick-create {
   padding: 2px 5px;
   background-color: rgba(195, 195, 195, 0.23);
-  color: #337ab7;
+  color: $primary-color;
   cursor: pointer;
   font-size: 12px;
 }
@@ -445,6 +449,69 @@ tr:hover .row-action.btn-group {
 .panel-detail-container {
   .text-warning {
     color: #d8b617;
+  }
+}
+
+.pair-group-item {
+  display: table;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: -1px;
+  position: relative;
+
+  .pair-label, .pair-value, .pair-separator {
+    display: table-cell;
+  }
+  .pair-label {
+    width: 39%;
+    color: #8991AE;
+    padding: 0; // to override col- padding
+  }
+  /*
+  // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
+  .pair-separator {
+    padding: 0 4px;
+    color: #afafaf;
+  }
+  */
+  .pair-value {
+    width: 60%;
+    padding-left: 8px;
+
+    span {
+      vertical-align: top;
+    }
+
+    // For nested values
+    .table-responsive {
+      margin-top: 8px;
+
+      .pair-list-item {
+        .item-label {
+          font-weight: bold;
+          margin: 4px 0;
+          text-transform: capitalize;
+        }
+      }
+    }
+  }
+}
+
+.primary-link {
+  color: $primary-color;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.list-table {
+  padding: 8px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8ea;
+
+  .list-label {
+    color: #58666e;
   }
 }
 
@@ -660,7 +727,7 @@ tr:hover .row-action.btn-group {
 
 .secondary-details {
   margin-top: 10px;
-  margin-left: 15px;
+  border-left: 2px solid rgb(234, 239, 240);
 
   .table-responsive {
     max-width: 475px;
