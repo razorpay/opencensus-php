@@ -37,6 +37,13 @@ return [
         ]
     ],
     'testCreateWorkflowWithPermissionWorkflow' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows',
+            'content' => [
+                'name' => 'Test workflow',
+            ],
+        ],
         'response' => [
             'content' => [
                 'error' => [

@@ -7,6 +7,7 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Permission;
 
 class WorkflowTest extends TestCase
 {
@@ -96,11 +97,29 @@ class WorkflowTest extends TestCase
 
         $this->createWorkflow($this->input);
 
-        $data = $this->testData[__FUNCTION__];
+        // To recreate the same workflow using request to test.
+        $permissions = (new Permission\Repository)->retrieveIdsByNames($this->input['permissions']);
 
-        $this->runRequestResponseFlow($data, function() {
-            $this->createWorkflow($this->input);
-        });
+        $permissionIds = [];
+        // Get public ids for the permissions.
+        foreach ($permissions as $permission)
+        {
+            $permissionIds[] = $permission->getPublicId();
+        }
+
+        $data = $this->testData[__FUNCTION__]['request']['content'];
+
+        $defaultAttributes = $this->getDefaultWorkflowArray();
+
+        $attributes = array_merge($defaultAttributes, $this->input);
+
+        $attributes['org_id'] = $this->org->getPublicId();
+
+        $attributes['permissions'] = $permissionIds;
+
+        $this->testData[__FUNCTION__]['request']['content'] = array_merge($attributes, $data);
+
+        $this->startTest();
     }
 
     /**
