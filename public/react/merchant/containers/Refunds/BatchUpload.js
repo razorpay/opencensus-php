@@ -14,7 +14,7 @@ export default class BatchUploadContainer extends Component {
     return (
       <BatchUpload
         batchType="refund"
-        docUrl="https://docs.razorpay.com/v1/page/batch-refunds"
+        docUrl="https://docs.razorpay.com/v1/page/batch-srefunds"
         sampleUrl="https://dashboard.razorpay.com/files/sample_batch_refund.xlsx"
         closeUrl="/refunds/batchuploads"
         title="refunds"

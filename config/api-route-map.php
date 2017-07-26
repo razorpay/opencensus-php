@@ -121,6 +121,10 @@ return [
             'url'       => 'payments/{id}/refunds',
             'routeName' => 'payment_get_refunds'
         ],
+        'payment_fetch_transfers'             => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'payment_get_transfers'
+        ],
         'payment_capture'                   => [
             'url'       => 'payments/{id}/capture',
             'routeName' => 'post_capture'

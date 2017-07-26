@@ -47,6 +47,7 @@ export default class Payment extends GenericEntity {
 
     data.body = {
       amount: params.amount,
+      reverse_all: params.reverse_all,
       notes: {
         comment: params.comment,
       },
@@ -66,6 +67,17 @@ export default class Payment extends GenericEntity {
       '{id}': this.id,
     });
     data.route_name = 'payment_fetch_card_details';
+    return this.makeGenericAjaxCall({ data });
+  }
+
+  fetchTransfers() {
+    let data = {};
+
+    data.url_params = JSON.stringify({
+      '{id}': this.id,
+    });
+
+    data.route_name = 'payment_fetch_transfers';
     return this.makeGenericAjaxCall({ data });
   }
 

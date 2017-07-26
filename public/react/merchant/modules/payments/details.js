@@ -4,6 +4,7 @@ import { set, merge } from 'rzp/utils/immutable';
 const PAYMENT_FETCH = 'PAYMENT_FETCH';
 const PAYMENT_FETCH_CARD_DETAILS = 'PAYMENT_FETCH_CARD_DETAILS';
 const PAYMENT_FETCH_REFUNDS = 'PAYMENT_FETCH_REFUNDS';
+const PAYMENT_FETCH_TRANSFERS = 'PAYMENT_FETCH_TRANSFERS';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 
@@ -27,6 +28,13 @@ export const fetchRefunds = payment => {
   return {
     type: PAYMENT_FETCH_REFUNDS,
     payload: payment.fetchRefunds(),
+  };
+};
+
+export const fetchTransfers = payment => {
+  return {
+    type: PAYMENT_FETCH_TRANSFERS,
+    payload: payment.fetchTransfers(),
   };
 };
 
@@ -55,6 +63,11 @@ let initialState = {
     error: null,
   },
   refunds: {
+    loading: true,
+    items: [],
+    error: null,
+  },
+  transfers: {
     loading: true,
     items: [],
     error: null,
@@ -122,6 +135,27 @@ export default function(state = initialState, action) {
 
     case `${PAYMENT_FETCH_REFUNDS}::ERROR`:
       return set(state, 'refunds', {
+        loading: false,
+        items: [],
+        error: action.payload.errors,
+      });
+
+    case `${PAYMENT_FETCH_TRANSFERS}::PENDING`:
+      return set(state, 'transfers', {
+        loading: true,
+        items: [],
+        error: null,
+      });
+
+    case `${PAYMENT_FETCH_TRANSFERS}::SUCCESS`:
+      return set(state, 'transfers', {
+        loading: false,
+        items: action.payload.data.items,
+        error: null,
+      });
+
+    case `${PAYMENT_FETCH_TRANSFERS}::ERROR`:
+      return set(state, 'transfers', {
         loading: false,
         items: [],
         error: action.payload.errors,
