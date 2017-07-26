@@ -130,9 +130,9 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->runRequestResponseFlow(
             $data,
             function() use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
+            {
+                $this->verifyPayment($payment['id']);
+            });
     }
 
     protected function mockFailedVerifyResponse()

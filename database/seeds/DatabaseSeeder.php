@@ -1341,15 +1341,15 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => Terminal\Shared::NETBANKING_PNB_TERMINAL,
-                'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => Gateway::NETBANKING_PNB,
-                'card'                  => '0',
-                'netbanking'            => '1',
-                'gateway_merchant_id'   => 'test_merchant_netbanking_pnb',
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
+                'id'                  => Terminal\Shared::NETBANKING_PNB_TERMINAL,
+                'merchant_id'         => Account::TEST_ACCOUNT,
+                'gateway'             => Gateway::NETBANKING_PNB,
+                'card'                => '0',
+                'netbanking'          => '1',
+                'gateway_merchant_id' => 'test_merchant_netbanking_pnb',
+                'recurring'           => 0,
+                'created_at'          =>  time(),
+                'updated_at'          =>  time(),
             )
         );
     }

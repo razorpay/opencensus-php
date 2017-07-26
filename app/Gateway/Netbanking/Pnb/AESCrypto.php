@@ -8,15 +8,6 @@ use phpseclib\Crypt\AES;
 
 class AESCrypto extends Base\AESCrypto
 {
-    /**
-     * Note :
-     * The key provided by bank was in the form of a binary file.
-     * In order to store the key, we read the file &
-     * stored string in a base64 encoded format.
-     * To be able to use it, we will have to decode the string.
-     * This is done in the constructor while setting $masterKey
-     */
-
     const IV = '1234567890123456';
 
     protected $aes;
@@ -25,9 +16,9 @@ class AESCrypto extends Base\AESCrypto
 
     protected $masterKey;
 
-    public function __construct(string $masterKey)
+    public function __construct(string $key)
     {
-        $this->masterKey = base64_decode($masterKey);
+        $this->masterKey = base64_decode($key);
 
         $this->iv = self::IV;
 

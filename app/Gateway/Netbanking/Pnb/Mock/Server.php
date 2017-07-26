@@ -20,6 +20,8 @@ class Server extends Base\Mock\Server
 
         $decryptedData = $this->getDecryptedData($decryptedString);
 
+        $this->validateActionInput($decryptedData);
+
         $callbackDataArray = $this->getCallbackResponseData($decryptedData);
 
         $this->content($callbackDataArray, 'authorize');

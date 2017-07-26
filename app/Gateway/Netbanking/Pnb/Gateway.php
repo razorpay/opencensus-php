@@ -52,15 +52,16 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'gateway_response' => $input[Payment\Entity::GATEWAY],
-                'payment_id'       => $input['payment'][Payment\Entity::ID],
+                'gateway_response'  => $input[Payment\Entity::GATEWAY],
+                'payment_id'        => $input['payment'][Payment\Entity::ID],
+                'decrypted_content' => $content,
             ]
         );
-
-        $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY]);
 
         $this->assertPaymentId($input['payment'][Payment\Entity::ID],
              $content[ResponseFields::CHALLAN_NUMBER]);
@@ -102,8 +103,6 @@ class Gateway extends Base\Gateway
                 'payment_id' => $verify->input['payment'][Payment\Entity::ID],
             ]
         );
-
-        $response = json_decode($response->body, true);
 
         $verify->verifyResponseContent = $this->parseVerifyResponse($response);
     }
@@ -187,18 +186,16 @@ class Gateway extends Base\Gateway
 
         $paymentId = $input['payment']['id'];
 
-        $merchantDetail = $input['merchant']->merchantDetail;
-
         $data = [
-            RequestFields::USER_NAME       => $merchantDetail->getContactName(),
-            RequestFields::EMAIL           => $merchantDetail->getContactEmail(),
-            RequestFields::ADDRESS         => $merchantDetail->getBusinessRegisteredAddress() ?: '',
-            RequestFields::PHONE_NUMBER    => $merchantDetail->getContactMobile(),
             RequestFields::CHALLAN_NUMBER  => $paymentId,
             RequestFields::MERCHANT_DATE   => $date,
             RequestFields::MERCHANT_AMOUNT => $amount,
             RequestFields::ITEM_CODE       => strtoupper($paymentId),
-            RequestFields::REMARK          => '',
+            RequestFields::USER_NAME       => Constants::RZP_NAME,
+            RequestFields::EMAIL           => Constants::RZP_EMAIL,
+            RequestFields::ADDRESS         => Constants::RZP_ADDRESS,
+            RequestFields::PHONE_NUMBER    => Constants::RZP_PHONE,
+            RequestFields::REMARK          => Constants::RZP_REMARK,
         ];
 
         if ($this->action === Action::AUTHORIZE)
@@ -302,8 +299,10 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function parseVerifyResponse(array $encryptedResponse): array
+    protected function parseVerifyResponse($response): array
     {
+        $encryptedResponse = json_decode($response->body, true);
+
         $encryptedString = $encryptedResponse[ResponseFields::ENCDATA];
 
         $decryptedString = $this->decryptString($encryptedString);
@@ -330,7 +329,7 @@ class Gateway extends Base\Gateway
 
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $response);
+        $this->checkGatewaySuccess($verify);
 
         $status = VerifyResult::STATUS_MATCH;
 
