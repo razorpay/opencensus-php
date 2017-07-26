@@ -37,7 +37,9 @@ class RPPOrderReport extends BasicEntityReport
 
     // As per the requirement from RPP, the report should contain only one entry for each order
     // Case 1: Order is created, We add a row stating that the rzp payment is not created
-    // Case 2: Order is attempted, then we add the first payment entity for that order.
+    // Case 2: Order is attempted, we add a row with status as pending/failure
+    //         2.a. order is authorized, status is pending
+    //         2.b  order is not authorized, status is failure
     // Case 3: Order is paid, we add the payment only if its captured
     protected function fetchFormattedDataForReport($entities): array
     {
@@ -48,11 +50,11 @@ class RPPOrderReport extends BasicEntityReport
             switch ($order->getStatus())
             {
                 case Order\Status::CREATED:
-                    $row = $this->createFailureEntry($order, 'failure', 'Razorpay Payment does not exists');
+                    $row = $this->createFailureEntry($order, 'pending', 'Razorpay Payment does not exists');
                     break;
 
                 case Order\Status::ATTEMPTED:
-                    $row = $this->createFailureEntry($order, 'pending', 'Status pending from Gateway');
+                    $row = $this->createEntryForAttemptedOrder($order);
                     break;
 
                 case Order\Status::PAID:
@@ -64,6 +66,18 @@ class RPPOrderReport extends BasicEntityReport
         }
 
         return $data;
+    }
+
+    protected function createEntryForAttemptedOrder(Order\Entity $order): array
+    {
+        if ($order->isAuthorized() === true)
+        {
+            return $this->createFailureEntry($order, 'pending', 'Status pending from Gateway');
+        }
+        else
+        {
+            return $this->createFailureEntry($order, 'failure', 'Razorpay Payment failed');
+        }
     }
 
     protected function createEntryForPaidOrder(Order\Entity $order): array
