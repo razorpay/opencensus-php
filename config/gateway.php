@@ -24,6 +24,7 @@ return [
         'mobikwik',
         'paytm',
         'netbanking_hdfc',
+        'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
         'netbanking_airtel',
@@ -285,6 +286,14 @@ return [
         'test_hash_secret'  => '123456',
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
+        'test_hash_secret_tpv' => '12345',
+    ],
+
+    'netbanking_corporation' => [
+        'live_hash_secret'  => env('NETBANKING_CORPORATION_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'  => '123456',
+        // tpv
+        'live_hash_secret_tpv' => env('NETBANKING_CORPORATION_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
     ],
 
