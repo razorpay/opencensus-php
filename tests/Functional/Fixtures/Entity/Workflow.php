@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Models\Workflow\Entity;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 
@@ -40,14 +41,8 @@ class Workflow extends Base
 
         $defaultWorkflowAttributes = $this->getDefaultWorkflowArray();
 
-        $levels = $defaultWorkflowAttributes['levels'];
-
-        foreach ($levels as $level)
-        {
-            $steps = $level['steps'];
-        }
+        $this->createWorkflowSteps($workflow->getId(), $defaultWorkflowAttributes[Entity::LEVELS]);
 
         return $workflow;
-
     }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers\Workflow;
 
+use RZP\Models\Workflow\Step;
+use RZP\Models\Workflow\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Permission;
 
@@ -69,6 +71,28 @@ trait WorkflowTrait
 
         return $workflow;
     }
+
+    private function createWorkflowSteps($workflowId, array $levels)
+    {
+        foreach ($levels as $level)
+        {
+            $steps = $level[Entity::STEPS];
+
+            $data = [
+                Step\Entity::WORKFLOW_ID => $workflowId,
+                Step\Entity::LEVEL       => $level[Step\Entity::LEVEL],
+                Step\Entity::OP_TYPE     => $level[Step\Entity::OP_TYPE],
+            ];
+
+            foreach ($steps as $step)
+            {
+                $step = array_merge($data, $step);
+
+                $this->fixtures->create('workflow_step', $step);
+            }
+        }
+    }
+
     /**
      * getDefaultWorkflowArray default workflow
      *
@@ -88,7 +112,7 @@ trait WorkflowTrait
                     'steps'   => [
                         [
                             'reviewer_count' => 1,
-                            'role_id'        => 'role_' . Org::ADMIN_ROLE,
+                            'role_id'        => Org::ADMIN_ROLE,
                         ],
                     ],
                 ],
