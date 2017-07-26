@@ -25,7 +25,16 @@ return [
         ],
     ],
     'testDeleteWorkflow' => [
-        "name" => "Test workflow",
+        'request' => [
+            'method' => 'DELETE',
+            'url'    => '/workflows/%s',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'Test workflow',
+            ]
+        ]
     ],
     'testCreateWorkflowWithPermissionWorkflow' => [
         'response' => [

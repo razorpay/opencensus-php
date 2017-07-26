@@ -9,21 +9,6 @@ use RZP\Models\Admin\Permission;
 
 trait WorkflowTrait
 {
-    private function deleteWorkflow($workflowId, $orgId)
-    {
-        $this->ba->adminAuth('test', null, $orgId);
-
-        $request = [
-            'method' => 'DELETE',
-            'url'    => '/workflows/' . $workflowId,
-            'content' => [],
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
     public function editWorkflow($workflowId, $orgId, $input)
     {
         $this->ba->adminAuth('test', null, $orgId);
@@ -70,6 +55,28 @@ trait WorkflowTrait
         $workflow = $this->createWorkflow($input);
 
         return $workflow;
+    }
+
+    private function createWorkflow(array $input)
+    {
+        $defaultAttributes = $this->getDefaultWorkflowArray();
+
+        $attributes = array_merge($input, $defaultAttributes);
+
+        $workflow = $this->fixtures->create('workflow', [
+            'org_id' => $attributes['org_id'],
+            'name'   => $attributes['name']
+            ]);
+
+        $permissions = (new Permission\Repository)
+            ->retrieveIdsByNames($attributes['permissions']);
+
+        $workflow->permissions()->sync($permissions);
+
+        $this->createWorkflowSteps($workflow->getId(), $attributes['levels']);
+
+        return $workflow;
+
     }
 
     private function createWorkflowSteps($workflowId, array $levels)

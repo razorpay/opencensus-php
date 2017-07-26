@@ -34,11 +34,13 @@ class WorkflowTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
-        $workflowPermissionIds = $this->getPermissionsByIds('workflow');
+        $workflowPermissions = $this->getPermissions('workflow');
+
+        $this->workflowPermissionIds = $this->getPermissionsByIds('workflow');
 
         $this->input = [
-            'org_id'      => $this->org->getPublicId(),
-            'permissions' => array_slice($workflowPermissionIds, 0, 2),
+            'org_id'      => $this->org->getId(),
+            'permissions' => array_slice($workflowPermissions, 0, 2),
         ];
     }
 
@@ -50,6 +52,10 @@ class WorkflowTest extends TestCase
 
         $attributes = array_merge($defaultAttributes, $this->input);
 
+        $attributes['org_id'] = $this->org->getPublicId();
+
+        $attributes['permissions'] = array_slice($this->workflowPermissionIds, 0, 2);
+
         $this->testData[__FUNCTION__]['request']['content'] = $attributes;
 
         $this->startTest();
@@ -57,13 +63,27 @@ class WorkflowTest extends TestCase
 
     public function testDeleteWorkflow()
     {
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
         $workflow = $this->createWorkflow($this->input);
 
-        $response = $this->deleteWorkflow($workflow['id'], $this->org->getPublicId());
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $expectedResponse = $this->testData[__FUNCTION__];
+        $url = sprintf($url, $workflow->getPublicId());
 
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $content = $this->testData[__FUNCTION__]['response']['content'];
+
+        $expectedResponse = [
+            'id' => $workflow->getPublicId(),
+            'name' => $workflow->getName(),
+        ];
+
+        $this->testData[__FUNCTION__]['response']['content'] = array_merge($expectedResponse, $content);
+
+        $this->startTest();
     }
 
     /**
@@ -72,6 +92,8 @@ class WorkflowTest extends TestCase
      */
     public function testCreateWorkflowWithPermissionWorkflow()
     {
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
         $this->createWorkflow($this->input);
 
         $data = $this->testData[__FUNCTION__];
