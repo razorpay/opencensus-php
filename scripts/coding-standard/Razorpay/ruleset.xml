@@ -69,7 +69,11 @@
     </rule>
     <rule ref="Squiz.Classes.ClassDeclaration"/>
     <rule ref="Squiz.Classes.LowercaseClassKeywords"/>
-    <rule ref="Generic.NamingConventions.CamelCapsFunctionName"/>
+    <rule ref="Generic.NamingConventions.CamelCapsFunctionName">
+        <properties>
+            <property name="strict" value="false" />
+        </properties>
+    </rule>
     <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
 
     <!-- all uses of true, false and null are lowerrcase -->
