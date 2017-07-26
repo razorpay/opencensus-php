@@ -363,13 +363,6 @@ class AdminController extends Controller
         $file->download('xlsx');
     }
 
-    public function getUploadedFile($id)
-    {
-        list($error, $url) = (new Admin\Service)->getUploadedFile($id);
-
-        return Redirect::to($url);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);

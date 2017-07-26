@@ -2,7 +2,7 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import ListGroupToggler from 'rzp/ui/Toggler/ListGroupToggler';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import SettlementBreakupTable from './BreakupTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';

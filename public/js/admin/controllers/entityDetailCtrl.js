@@ -93,6 +93,33 @@ app
           });
       }
 
+      // Used for download file action
+      $scope.downloadFile = function() {
+        var windowRef = window.open('', '_blank');
+        var data = {
+          route_name: 'admin_get_file',
+          url_params: {
+            '{fileId}': $scope.entity.id,
+          },
+        };
+
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request.success(function(data) {
+          if (data.success) {
+            windowRef.location.href = data.data.url;
+          } else {
+            windowRef.close();
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        });
+      };
+
       // Offer Specific actions
       $scope.offer = {
         edit: function(offer) {

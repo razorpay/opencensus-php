@@ -5,13 +5,15 @@ import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import ListToggler from 'rzp/ui/Toggler/ListToggler';
+import ListGroupToggler from 'rzp/ui/Toggler/ListGroupToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import { Link } from 'react-router-dom';
 
 const shownByDefault = [
   'amount',
@@ -79,7 +81,7 @@ export default props => {
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
-                <div class="list-group details-row-container">
+                <div class="list-group pair-row-container">
                   <EntityDetailRow
                     label="Amount"
                     value={() => <Amount value={payment.amount} />}
@@ -135,7 +137,6 @@ export default props => {
                   />
 
                   <EntityDetailRow label="Email" value={payment.email} />
-
                   <EntityDetailRow label="Contact" value={payment.contact} />
 
                   <EntityDetailRow
@@ -198,17 +199,18 @@ export default props => {
                     )}
                   />
                   {payment.refund_status
-                    ? <ListGroupToggler
+                    ? <ListToggler
                         label="Refunds"
+                        totalItems={refunds.items.length}
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
                         <DataTable
-                          columns={[refundId, amount, createdAt]}
+                          columns={[refundId, amount]}
                           items={refunds.items}
                           loading={refunds.loading}
                           showHeaders={false}
                         />
-                      </ListGroupToggler>
+                      </ListToggler>
                     : <EntityDetailRow label="Refunds" value="No Refunds" />}
                 </div>
                 <ShowWhen myRole="owner manager operations admin">

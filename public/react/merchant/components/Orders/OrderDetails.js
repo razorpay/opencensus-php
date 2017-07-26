@@ -4,7 +4,7 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import DataTable from 'rzp/ui/Table/DataTable';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import ListGroupToggler from 'rzp/ui/Toggler/ListGroupToggler';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { paymentId, amount, status, createdAt } from 'rzp/ui/item/pair';

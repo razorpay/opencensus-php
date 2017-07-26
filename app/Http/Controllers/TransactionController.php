@@ -133,6 +133,12 @@ class TransactionController extends Controller
 
         list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
 
+        $month = intval($input['month']);
+        $year = intval($input['year']);
+
+        // GST is applicable from 1st July 2017
+        $isGstApplicable = (($year >= 2017) and ($month >= 7));
+
         if ($error === null)
         {
             $merchantId = $data['merchant_id'];
@@ -141,6 +147,12 @@ class TransactionController extends Controller
             $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+
+            $gst = (empty($merchantDetails['gstin'])=== false) ? $merchantDetails['gstin'] :
+                    (empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '';
+
+            $data['gst'] = $gst;
+            $data['isGstApplicable'] = $isGstApplicable;
 
             $data['merchant_details'] = $merchantDetails;
 
