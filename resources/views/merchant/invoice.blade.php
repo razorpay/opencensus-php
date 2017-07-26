@@ -441,7 +441,7 @@ td
  <tr height=157 style='mso-height-source:userset;height:118.0pt'>
   <td colspan=2 height=157 class=xl85 width=370 style='height:118.0pt;
   width:278pt'>{{{$merchant['name']}}} [{{{$merchant['id']}}}]<br>
-  {{{$merchant_details['business_registered_address']}}}<br>
+  {{{$merchant_details['business_dba']}}}<br>
   {{{$merchant_details['business_registered_city']}}} -
   {{{$merchant_details['business_registered_pin']}}}<br>
   {{{$merchant_details['business_registered_state']}}}<br>
