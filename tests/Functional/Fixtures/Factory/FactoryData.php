@@ -738,14 +738,14 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Workflow\Step\Entity::class,[
-            'id'       => $faker->uniqueid,
-            'role_id' => 'factory:RZP\Models\Admin\Role\Entity',
-            'workflow_id' => 'factory:RZP\Models\Workflow\Entity',
-            'reviewer_count' => 1,
-            'op_type' => 'or',
-            'level' => 1,
-            'created_at' => $faker->timestamp,
-            'updated_at'  => $faker->timestamp,
+            'id'               => $faker->uniqueid,
+            'role_id'          => 'factory:RZP\Models\Admin\Role\Entity',
+            'workflow_id'      => 'factory:RZP\Models\Workflow\Entity',
+            'reviewer_count'   => 1,
+            'op_type'          => 'or',
+            'level'            => 1,
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
         ]);
     }
 }

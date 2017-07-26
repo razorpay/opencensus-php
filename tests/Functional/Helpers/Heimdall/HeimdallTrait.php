@@ -44,8 +44,8 @@ trait HeimdallTrait
     protected function editAdmin($orgId, $adminId)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
-            'method' => 'PUT',
+            'url'     => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'method'  => 'PUT',
             'content' => [
                 'name' => "Test Name",
             ],

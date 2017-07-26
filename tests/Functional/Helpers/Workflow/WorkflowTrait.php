@@ -61,7 +61,6 @@ trait WorkflowTrait
     {
         //permissions are not included in default array cause
         //only only workflow can be created for a permission.
-
         return [
             'name'   => 'Test workflow',
             'levels' => [

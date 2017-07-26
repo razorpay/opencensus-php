@@ -6,8 +6,6 @@ use Carbon\Carbon;
 use Config;
 use DB;
 
-use RZP\Constants\Table;
-
 class Org extends Base
 {
     const HDFC_ORG       = 'HDFCbankOrgnId';
@@ -16,12 +14,16 @@ class Org extends Base
     const ADMIN_ROLE     = 'RzpAdminRoleId';
     const MANAGER_ROLE   = 'RzpMngerRoleId';
     const SUPER_ADMIN    = 'RzrpySprAdmnId';
+
+    // Workflow related roles
     const MAKER_ROLE     = 'RzpMakerRoleId';
     const MAKER_ADMIN    = 'RzpMakerAdmnId';
     const CHECKER_ROLE   = 'RzpChekrRoleId';
     const CHECKER_ADMIN  = 'RzpChekrAdmnId';
 
     const DEFAULT_TOKEN  = 'SecretTokenForRazorpayAdminAuthentication';
+
+    //Workflow related role tokens
     const MAKER_TOKEN    = 'SecretTokenForRazorpayMAKERAdminAuthentic';
     const CHECKER_TOKEN  = 'SecretTokenForRazorpayCHECKERAdminAuthent';
 
