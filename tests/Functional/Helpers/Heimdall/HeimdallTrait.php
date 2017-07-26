@@ -196,8 +196,6 @@ trait HeimdallTrait
 
         Permission\Entity::verifyIdAndStripSignMultiple($perms);
 
-        $org->permissions()->sync($perms);
-
         // Enabling workflow permissions for that org.
         (new Permission\Repository)->toggleWorkflowOnOrgForPermissions(
             $org->getId(),
