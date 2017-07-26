@@ -8,7 +8,7 @@ use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
-    public function createRiskEntry(string $paymentId, array $input)
+    public function create(string $paymentId, array $input)
     {
         $input[Entity::PAYMENT_ID] = $paymentId;
 
@@ -44,6 +44,15 @@ class Service extends Base\Service
         $entities = $this->repo->risk->fetchByPaymentId($paymentId);
 
         return $entities->toArrayPublic();
+    }
+
+    public function getRiskPaymentsForMerchant(string $merchantId)
+    {
+        Merchant\Entity::verifyIdAndStripSign($merchantId);
+
+        $risk = $this->repo->risk->fetchByMerchantId($merchantId);
+
+        return $risk->toArrayPublic();
     }
 
     private function cleanPublicIds(array & $input)

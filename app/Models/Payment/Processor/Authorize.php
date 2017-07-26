@@ -222,11 +222,16 @@ trait Authorize
 
     protected function updatePaymentAuthFailedAndThrowException($e)
     {
+        $this->updatePaymentAuthFailed($e);
+
+        throw $e;
+    }
+
+    protected function updatePaymentAuthFailed($e)
+    {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
-
-        throw $e;
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)

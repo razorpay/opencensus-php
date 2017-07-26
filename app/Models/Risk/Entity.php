@@ -16,11 +16,6 @@ class Entity extends Base\PublicEntity
     const MAXMIND_SCORE = 'maxmind_score';
     const COMMENTS      = 'comments';
 
-    // Fraud type constants
-    const SUSPECTED = 'suspected';
-    const CONFIRMED = 'confirmed';
-    const MAXMIND   = 'maxmind';
-
     protected static $sign = 'rsk';
 
     protected $entity = 'risk';
@@ -29,8 +24,7 @@ class Entity extends Base\PublicEntity
 
     protected $revisionEnabled = true;
 
-    // We need not store creations, just edits
-    protected $revisionCreationsEnabled = false;
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -72,5 +66,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function getComments() : string
+    {
+        return $this->getAttribute(self::COMMENTS);
     }
 }

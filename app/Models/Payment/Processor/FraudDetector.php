@@ -20,16 +20,14 @@ trait FraudDetector
         if (($payment->shouldFailOnRiskFailure() === true) and
             ($riskScore > 5))
         {
-            // The payment is not yet saved. We need to save it to associate
-            // payment with risk entity
-            $this->repo->saveOrFail($payment);
-
-            (new Risk\Core)->createRiskEntryOnMaxmindFailure($payment, $riskScore);
-
             $e = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $this->updatePaymentAuthFailed($e);
+
+            (new Risk\Core)->createRiskEntryOnMaxmindFailure($payment, $riskScore);
+
+            throw $e;
         }
     }
 

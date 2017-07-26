@@ -12,7 +12,7 @@ class Repository extends Base\Repository
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
-        Entity::PAYMENT_ID    => 'sometimes|public_id',
+        Entity::PAYMENT_ID    => 'sometimes|string|size:14',
         Entity::FRAUD_TYPE    => 'sometimes|string|max:20',
         Entity::SOURCE        => 'sometimes|boolean',
         Entity::COMMENTS      => 'sometimes|string|max:255',
@@ -21,8 +21,8 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID   => 'sometimes|public_id',
-        Entity::PAYMENT_ID    => 'sometimes|public_id',
+        Entity::MERCHANT_ID   => 'sometimes|string|size:14',
+        Entity::PAYMENT_ID    => 'sometimes|string|size:14',
         Entity::FRAUD_TYPE    => 'sometimes|string|max:20',
         Entity::SOURCE        => 'sometimes|string|max:20',
         Entity::MAXMIND_SCORE => 'sometimes|integer',
@@ -37,13 +37,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByPaymentIdAndMerchantId(
-        string $paymentId,
-        string $merchantId)
+    public function fetchByMerchantId(string $merchantId)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->get();
     }
 }

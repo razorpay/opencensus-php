@@ -20,6 +20,15 @@ class Core extends Base\Core
 
     public function edit(Entity $risk, array $input)
     {
+        $oldComment = $risk->getComments();
+
+        // If not set, editRules validator will throw an exception
+        if (empty($input[Entity::COMMENTS]) === false)
+        {
+            $newComment = $input[Entity::COMMENTS];
+            $input[Entity::COMMENTS] = $oldComment + " || " + $newComment;
+        }
+
         $risk->edit($input);
 
         return $this->repo->saveOrFail($risk);
@@ -36,10 +45,10 @@ class Core extends Base\Core
         $input = [
             Entity::MERCHANT_ID   => $payment->getMerchantId(),
             Entity::PAYMENT_ID    => $payment->getId(),
-            Entity::FRAUD_TYPE    => Entity::SUSPECTED,
+            Entity::FRAUD_TYPE    => Type::SUSPECTED,
             Entity::MAXMIND_SCORE => $riskScore,
-            Entity::SOURCE        => Entity::MAXMIND,
-            Entity::COMMENTS      => ErrorCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
+            Entity::SOURCE        => Source::MAXMIND,
+            Entity::COMMENTS      => RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
         ];
 
         $risk = $this->create($input);

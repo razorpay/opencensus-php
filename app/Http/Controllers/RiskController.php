@@ -11,7 +11,7 @@ class RiskController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('risk')->createRiskEntry($paymentId, $input);
+        $data = $this->service('risk')->create($paymentId, $input);
 
         return ApiResponse::json($data);
     }
@@ -20,7 +20,7 @@ class RiskController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('risk')->editRiskEntry($id, $input);
+        $data = $this->service('risk')->edit($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -28,6 +28,13 @@ class RiskController extends Controller
     public function getRiskForAllPayments()
     {
         $data = $this->service('risk')->getRiskForAllPayments();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getRiskPaymentsForMerchant(string $merchantId)
+    {
+        $data = $this->service('risk')->getRiskPaymentsForMerchant($merchantId);
 
         return ApiResponse::json($data);
     }

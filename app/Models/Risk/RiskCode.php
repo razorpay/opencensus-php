@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Risk;
 
-class ErrorCode
+class RiskCode
 {
     const PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND = 'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND';
 }
