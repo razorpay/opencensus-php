@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const execSync = require('child_process').execSync;
 const gulp = require('gulp');
 const webpack = require('webpack');
 const through = require('through2').obj;
@@ -53,6 +54,10 @@ function handleError(err) {
   console.log(err.toString());
   this.emit('end');
 }
+
+gulp.task('clean', () => {
+  execSync('rm -rf public/dist public/js/generated public/css/generated');
+});
 
 gulp.task('css', () => {
   gulp
@@ -200,7 +205,7 @@ gulp.task('dev:setENV', cb => {
   cb();
 });
 
-gulp.task('default', cb => {
+gulp.task('default', ['clean'], cb => {
   run('compileThemes', ['css:prod', 'js:prod'], 'webpack:prod', 'tmpl', cb);
 });
 
@@ -230,5 +235,5 @@ const watch = () => {
   );
 };
 
-gulp.task('watch:full', ['dev:webpack'], watch);
-gulp.task('watch', ['dev:webpack'], watch);
+gulp.task('watch:full', ['clean', 'dev:webpack'], watch);
+gulp.task('watch', ['clean', 'dev:webpack'], watch);
