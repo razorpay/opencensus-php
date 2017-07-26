@@ -119,9 +119,7 @@ export default class ReportsContainer extends Component {
                     <option value="refund">Refund</option>
                     <option value="order">Order</option>
                     {/*Api must give this flag. Currently hard coded for uber*/}
-                    {['82LK42BGTN2bOe', '7SVOQZGZuwHr4I'].indexOf(
-                      user.current
-                    ) > -1 &&
+                    {user.tags.indexOf('Payment_Link_Export') === -1 ||
                       <option value="payment_link">Payment Link</option>}
                     <option value="settlement">Settlement</option>
                     <option value="transaction">Combined</option>
