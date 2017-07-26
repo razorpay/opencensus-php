@@ -171,20 +171,30 @@ class WorkflowTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing Edit Workflow which is in progress.
+     */
     public function testEditWorkflowInProgress()
     {
-        $workflow = $this->createEditAdminWorkflow();
 
-        $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
+        $this->ba->adminAuth('test', null, ORG::RZP_ORG);
 
-        $input = array_merge($this->input, ['name' => 'editing workflow']);
+        $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::SUPER_ADMIN);
 
-        $data = $this->testData[__FUNCTION__];
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $this->runRequestResponseFlow($data, function() use($workflow, $input)
-        {
-            $response = $this->editWorkflow($workflow['id'], $this->org->getPublicId(), $input);
-        });
+        // Default workflow has edit admin permission and editing default org user.
+
+        $url = sprintf($url, 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID);
+
+        $attributes['name'] = 'name change';
+
+        $this->testData[__FUNCTION__]['request']['content'] = $attributes;
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 
     public function testGetWorkflow()

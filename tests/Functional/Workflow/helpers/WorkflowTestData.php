@@ -95,6 +95,13 @@ return [
         ],
     ],
     'testEditWorkflowInProgress' => [
+        'request' => [
+            'method' => 'PUT',
+            'url'    => '/workflows/%s',
+            'content' => [
+                'name' => 'editing workflow',
+            ],
+        ],
         'response' => [
             'content' => [
                 'error' => [
