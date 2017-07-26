@@ -331,14 +331,16 @@ var app = angular
         })
         // React Routes
 
-        .state('app.zusers', {
-          url: '/zusers',
+        .state('app.zroles', {
+          url: '/zroles',
           template: '<div ui-view class="fade-in-down"></div>',
         })
-        .state('app.zusers.list', {
+        .state('app.zroles.list', {
           url: '/list',
-          templateProvider: reactTemplateProvider('<users-list />'),
+          templateProvider: reactTemplateProvider('<roles-list />'),
         })
+        // End of React Routes
+
         //Guest Routes
         .state('access', {
           url: '/access',

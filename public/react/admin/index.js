@@ -9,7 +9,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import store from './store';
 
-import Users from 'admin/containers/Users/List';
+import Roles from 'admin/containers/Roles/List';
 
 // This is required for ngReact. Remove this finally
 window.React = React;
@@ -73,4 +73,4 @@ function createNgDirective(directiveName, component, ...args) {
   ]);
 }
 
-createNgDirective('usersList', Users);
+createNgDirective('rolesList', Roles);

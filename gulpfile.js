@@ -159,10 +159,6 @@ gulp.task('tmpl', () => {
     .pipe(gulp.dest('resources/views'));
 });
 
-gulp.task('dev', () => {
-  run('compileThemes', ['css', 'js'], 'tmpl');
-});
-
 const runWebpack = (webpackConfig, cb) => {
   webpack(webpackConfig, (err, stats) => {
     console.log(
@@ -177,22 +173,20 @@ const runWebpack = (webpackConfig, cb) => {
   });
 };
 
-gulp.task('webpack', cb => {
-  runWebpack(webpackConfig, cb);
-});
-
 var webpackCompiler = null;
 gulp.task('webpack:watch', cb => {
   if (!webpackCompiler) {
     webpackCompiler = webpack(webpackConfig('development'));
   }
   webpackCompiler.run(function(err, stats) {
-    console.log(
-      stats.toString({
-        colors: true,
-        chunks: false,
-      })
-    );
+    if (stats.hasErrors()) {
+      console.log(
+        stats.toString({
+          colors: true,
+          chunks: false,
+        })
+      );
+    }
     cb();
   });
 });
@@ -207,24 +201,26 @@ gulp.task('dev:setENV', cb => {
 });
 
 gulp.task('default', cb => {
-  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', cb);
+  run('compileThemes', ['css:prod', 'js:prod'], 'webpack:prod', 'tmpl', cb);
 });
 
 gulp.task('dev', cb => {
-  run(['css', 'js'], 'tmpl', cb);
+  run('compileThemes', ['css', 'js'], cb);
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], cb => {
-  run('dev', 'webpack:watch', cb);
+  run('dev', 'webpack:watch', 'tmpl', cb);
 });
 
-gulp.task('watch:full', ['dev:webpack'], () => {
+const watch = () => {
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
+  gulp.watch('public/css/*.styl', ['css']);
+  gulp.watch(
+    ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
+    ['js']
+  );
   gulp.watch(
     [
-      'public/js/*.js',
-      'public/js/admin/**/*.js',
-      'public/js/merchant/**/*.js',
       'public/react/merchant/**/*',
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
@@ -232,12 +228,7 @@ gulp.task('watch:full', ['dev:webpack'], () => {
     ],
     ['dev:webpack']
   );
-});
+};
 
-gulp.task('watch', ['dev'], () => {
-  gulp.watch('public/css/*.styl', ['css']);
-  gulp.watch(
-    ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
-    ['js']
-  );
-});
+gulp.task('watch:full', ['dev:webpack'], watch);
+gulp.task('watch', ['dev:webpack'], watch);
