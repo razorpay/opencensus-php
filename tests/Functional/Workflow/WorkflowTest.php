@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
+use RZP\Tests\Functional\Fixtures\Entity\Workflow;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -124,21 +125,24 @@ class WorkflowTest extends TestCase
 
     /**
      * Delete workflow which is in progress.
-     * will create workflow for edit admin and tests to delete it.
+     * Using default workflow which was created in entity
      *
      */
     public function testDeleteWorkflowProgress()
     {
-        $workflow = $this->createEditAdminWorkflow();
+        $this->ba->adminAuth('test', null, ORG::RZP_ORG);
 
-        $this->editAdmin($this->org->getPublicId(), 'admin_' . Org::SUPER_ADMIN);
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $data = $this->testData[__FUNCTION__];
+        // Default workflow has edit admin permission and editing default org user.
+        $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::SUPER_ADMIN);
 
-        $this->runRequestResponseFlow($data, function() use($workflow)
-        {
-            $this->deleteWorkflow($workflow['id'], $this->org->getPublicId());
-        });
+        $url = sprintf($url, 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 
     public function testEditWorkflow()

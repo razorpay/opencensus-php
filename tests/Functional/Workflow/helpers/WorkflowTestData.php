@@ -60,6 +60,11 @@ return [
         ],
     ],
     'testDeleteWorkflowProgress' => [
+        'request' => [
+            'method' => 'DELETE',
+            'url'    => '/workflows/%s',
+            'content' => [],
+        ],
         'response' => [
             'content' => [
                 'error' => [
