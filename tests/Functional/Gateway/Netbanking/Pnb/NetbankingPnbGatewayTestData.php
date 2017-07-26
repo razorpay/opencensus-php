@@ -16,7 +16,7 @@ return [
         'currency'          => 'INR',
         'description'       => 'random description',
         'card_id'           => null,
-        'bank'              => 'RATN',
+        'bank'              => 'PUNB',
         'error_code'        => null,
         'error_description' => null,
         'email'             => 'a@b.com',
@@ -25,73 +25,18 @@ return [
         [
             'merchant_order_id' => 'random order id',
         ],
-        'gateway'           => 'netbanking_rbl',
+        'gateway'           => 'netbanking_pnb',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
-        'terminal_id'       => '100NbRblTermnl',
-    ],
-
-    'testTpvPayment' => [
-        'request' => [
-            'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'method'         => 'netbanking',
-                'bank'           => 'RATN',
-                'account_number' => '04030403040304',
-            ],
-            'method'    => 'POST',
-            'url'       => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-            ],
-        ],
+        'terminal_id'       => '100NbPunbTrmnl',
     ],
 
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
-        'bank'            => 'RATN',
-        'status'          => 'SUC',
-    ],
-
-    'testPaymentVerifySuccessEntity' => [
-        'bank_payment_id' => '99999999',
-        'received'        => true,
-        'bank'            => 'RATN',
-        'status'          => 'SUC'
-    ],
-
-    'testAuthFailedVerifySuccessEntity' => [
-        'bank_payment_id' => '99999999',
-        'received'        => true,
-        'bank'            => 'RATN',
-        'status'          => 'SUC'
-    ],
-
-    'testPaymentFailedNetbankingEntity' => [
-        'bank_payment_id' => '99999999',
-        'received'        =>  true,
-        'bank'            => 'RATN',
-        'status'          => 'FAL'
-    ],
-
-    'testAuthSuccessVerifyFailedNetbankingEntity' => [
-        'received'        => true,
-        'bank'            => 'RATN',
-        'status'          => 'SUC'
-    ],
-
-    'testAuthFailedVerifyFailedEntity' => [
-        'received'        => true,
-        'bank'            => 'RATN',
-        'status'          => 'FAL'
+        'bank'            => 'PUNB',
+        'status'          => 'S',
     ],
 
     'testAuthorizeFailed' => [
@@ -124,5 +69,63 @@ return [
             'class'                 => 'RZP\Exception\PaymentVerificationException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
+    ],
+
+    'testAuthFailedVerifyFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testAuthFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testPaymentFailedNetbankingEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        =>  true,
+        'bank'            => 'PUNB',
+        'status'          => 'F'
+    ],
+
+    'testPaymentVerifySuccessEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'S'
+    ],
+
+    'testAuthFailedVerifyFailedEntity' => [
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'F'
+    ],
+
+    'testAuthSuccessVerifyFailedNetbankingEntity' => [
+        'received'        => true,
+        'bank'            => 'PUNB',
+        'status'          => 'S'
     ],
 ];
