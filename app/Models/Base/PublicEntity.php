@@ -103,9 +103,9 @@ class PublicEntity extends UniqueIdEntity
 
         unset($array[self::ENTITY]);
 
-        $this->formatReportAmountFields($array);
+        $this->formatAmountFieldsForReport($array);
 
-        $this->formatReportDateFields($array);
+        $this->formatDateFieldsForReport($array);
 
         // Remove fields hidden in reports
 
@@ -117,7 +117,7 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
-    protected function formatReportAmountFields(array & $report)
+    protected function formatAmountFieldsForReport(array & $report)
     {
         foreach ($this->amounts as $key)
         {
@@ -128,7 +128,7 @@ class PublicEntity extends UniqueIdEntity
         }
     }
 
-    protected function formatReportDateFields(array & $report)
+    protected function formatDateFieldsForReport(array & $report)
     {
         foreach ($this->dates as $key)
         {

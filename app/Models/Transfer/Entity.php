@@ -102,10 +102,6 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL          => 'int',
     ];
 
-    protected $dates = [
-        self::ON_HOLD_UNTIL,
-    ];
-
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_REVERSED,
@@ -120,8 +116,9 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL     => null,
     ];
 
-    protected $reportDates = [
+    protected $dates = [
         self::CREATED_AT,
+        self::UPDATED_AT,
         self::ON_HOLD_UNTIL,
     ];
 

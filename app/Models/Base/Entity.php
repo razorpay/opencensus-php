@@ -114,7 +114,7 @@ class Entity extends \RZP\Base\EloquentEx
      *
      * We do have $dates attribute and we use that in following two places:
      * - Base/EloquentEx.php: to serialize attributes with $dates fields casted to int,
-     * - Base/PublicEntity.php: formatReportDateFields(): to format $dates fields
+     * - Base/PublicEntity.php: formatDateFieldsForReport(): to format $dates fields
      *   converted to a uniform string format across reports.
      *
      * @return array
