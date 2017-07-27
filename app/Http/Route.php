@@ -1369,7 +1369,7 @@ final class Route
         'payment_create_wallet'             => [Feature::S2SWALLET],
         'payment_create_upi'                => [Feature::S2SUPI],
         'payment_create_openwallet'         => [Feature::OPENWALLET],
-        'payment_create_recurring'          => [Feature::RECURRING, Feature::CHARGE_AT_WILL],
+        'payment_create_recurring'          => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],

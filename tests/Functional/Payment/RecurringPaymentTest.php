@@ -32,7 +32,7 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -59,7 +59,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -91,7 +91,7 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -116,7 +116,7 @@ class RecurringPaymentTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -179,7 +179,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment[Payment::CARD]['number'] = '4245126853998870';
 
@@ -194,7 +194,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment[Payment::CARD]['number'] = '341111111111111';
         $payment[Payment::CARD]['cvv'] = '8888';
@@ -210,7 +210,7 @@ class RecurringPaymentTest extends TestCase
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment[Payment::TOKEN] = '10000cardtoken';
 
@@ -229,7 +229,7 @@ class RecurringPaymentTest extends TestCase
 
         $payment[Payment::TOKEN] = '10000cardtoken';
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         unset($payment[Payment::CARD]);
 

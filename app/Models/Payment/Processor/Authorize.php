@@ -99,7 +99,7 @@ trait Authorize
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
-        
+
         return null;
     }
 
@@ -775,7 +775,6 @@ trait Authorize
                         $merchant,
                         [
                             Feature\Constants::SUBSCRIPTIONS,
-                            Feature\Constants::RECURRING,
                             Feature\Constants::CHARGE_AT_WILL,
                         ]);
                 }
@@ -786,7 +785,6 @@ trait Authorize
                     $this->verifyAtLeastOneFeatureEnabledForMerchant(
                         $merchant,
                         [
-                            Feature\Constants::RECURRING,
                             Feature\Constants::CHARGE_AT_WILL,
                         ]);
                 }
@@ -801,7 +799,6 @@ trait Authorize
                     $merchant,
                     [
                         Feature\Constants::SUBSCRIPTIONS,
-                        Feature\Constants::RECURRING,
                         Feature\Constants::CHARGE_AT_WILL,
                     ]);
 
