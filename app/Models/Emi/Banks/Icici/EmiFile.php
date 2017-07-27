@@ -7,11 +7,10 @@ use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class EmiFile extends Base\EmiFile
 {
-    protected static $fileToWriteName = 'Icici_Emi_File';
-
     protected $emailIdsToSendTo = [''];
 
     protected $bankName  = 'Icici';
@@ -51,11 +50,11 @@ class EmiFile extends Base\EmiFile
 
             $principalAmount = $emiPayment->getAmount()/100;
 
-            $rate = $emiPlan[Entity::RATE]/100;
+            $rate = $emiPlan->getRate()/100;
 
-            $tenure = $emiPlan[Entity::DURATION];
+            $tenure = $emiPlan->getDuration();
 
-            $issuerPlanId = $emiPlan[Entity::ISSUER_PLAN_ID];
+            $issuerPlanId = $emiPlan->getIssuerPlanId();
 
             $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
@@ -65,15 +64,15 @@ class EmiFile extends Base\EmiFile
                 Headers::CARD_NUMBER          => $this->getCardNumber($emiPayment->card),
                 Headers::AMOUNT               => $principalAmount,
                 Headers::AUTH_CODE            => 'Email/SFTP',
-                Headers::SCHEME_CODE          => '',
+                Headers::SCHEME_CODE          => $issuerPlanId,
                 Headers::TENURE               => $tenure,
                 Headers::MERCHANT_SUBVENTION  => '',
                 Headers::CUSTOMER_SUBVENTION  => '',
                 Headers::DISCOUNT_AMOUNT      => '',
                 Headers::DISCOUNT_PERCENTAGE  => '',
                 Headers::CASHBACK             => 'N',
-                Headers::MANUFACTURER         => 'Card Emi',
-                Headers::MERCHANT_NAME        => 'Razorpay',
+                Headers::MANUFACTURER         => '',
+                Headers::MERCHANT_NAME        => 'Razorpay Payments',
                 Headers::PINELAB_NAME         => '',
                 Headers::ISSUER               => 'ICICI Bank',
                 Headers::ACQUIRER             => '',
@@ -90,5 +89,56 @@ class EmiFile extends Base\EmiFile
     private function formattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-y');
+    }
+
+    protected function sendEmiFile(array $fileData)
+    {
+        return $fileData;
+    }
+
+    protected function generateEmiFile(array $emiData, $store = 's3')
+    {
+        $id = UniqueIdEntity::generateUniqueId();
+
+        $fileName = 'icici/outgoing/NRPSS_NRPSSUPLDNEW_' . $id;
+
+        $metadata = $this->getH2HMetadata();
+
+        $creator = new FileStore\Creator;
+
+        $creator->extension(static::EXTENSION)
+                ->content($emiData)
+                ->name($fileName)
+                ->store($store)
+                ->type(static::TYPE)
+                ->id($id)
+                ->metadata($metadata)
+                ->save();
+
+        $file = $creator->get();
+
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
+        $fileData = [
+            'signed_url' => $signedFileUrl,
+            'file_name'  => basename($file['local_file_path']),
+        ];
+
+        return $fileData;
+    }
+
+    protected function fetchAndSendPassword()
+    {
+        return;
+    }
+
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10002',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
+        ];
     }
 }

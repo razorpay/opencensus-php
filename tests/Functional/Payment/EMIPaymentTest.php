@@ -89,6 +89,9 @@ class EmiPaymentTest extends TestCase
         //RBL Card
         $this->makeEmiPaymentOnCard('5243730000000008', 9, $yesterdayAtTen);
 
+        //ICICI Card
+        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
+
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
@@ -98,7 +101,7 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 4);
+        $this->assertEquals(count($content), 5);
 
         $this->assertEquals(true, File::exists($this->zipFileName($content['KKBK'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));

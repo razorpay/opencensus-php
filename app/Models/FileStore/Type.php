@@ -132,6 +132,7 @@ class Type
         self::INDUSIND_EMI_FILE,
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
+        self::ICICI_EMI_FILE,
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
