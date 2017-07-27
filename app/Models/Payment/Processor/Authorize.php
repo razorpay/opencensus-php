@@ -99,7 +99,7 @@ trait Authorize
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
-        
+
         return null;
     }
 
