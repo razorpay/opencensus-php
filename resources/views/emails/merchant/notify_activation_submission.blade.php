@@ -28,7 +28,7 @@
                     <img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
                 </a>
             @elseif ($org['login_logo_url'] !== '')
-                <a href="{{ 'https://' .$org['hostname'] }}" target="_blank">
+                <a href="{{ 'https://'.$org['hostname'] }}" target="_blank">
                     <img style="width:200px; height:auto;" src="{{ $org['login_logo_url'] }}">
                 </a>
             @endif

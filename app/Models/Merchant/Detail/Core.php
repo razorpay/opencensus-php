@@ -59,7 +59,10 @@ class Core extends Base\Core
     {
         $customer['date'] = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
 
-        // $customer['contact_name'] = $this->merchant->name;
+        if ($this->merchant->users->isNotEmpty() === true)
+        {
+            $customer['contact_name'] = $this->merchant->users->first()->getAttribute('name');
+        }
 
         return $customer;
     }
@@ -90,6 +93,8 @@ class Core extends Base\Core
     public function confirmActivationSubmission($merchantDetails)
     {
         $org = $this->merchant->org->toArray();
+
+        $org['hostname'] = $this->merchant->org->getPrimaryHostName();
 
         $subject = $org['business_name'] . ' | Account pending approval for ' . $merchantDetails['business_name'];
 
