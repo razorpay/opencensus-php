@@ -56,6 +56,9 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
       contentType: false,
       appendModeInURL: false,
     }),
+    fileName: file.name,
+    fieldName,
+    step,
   };
 };
 
