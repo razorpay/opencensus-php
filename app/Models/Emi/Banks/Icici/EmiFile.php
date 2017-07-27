@@ -17,29 +17,6 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::ICICI_EMI_FILE;
 
-    protected static $headers = [
-        Headers::EMI_ID,
-        Headers::TRANSACTION_TIME,
-        Headers::AMOUNT,
-        Headers::AUTH_CODE,
-        Headers::SCHEME_CODE,
-        Headers::TENURE,
-        Headers::MERCHANT_SUBVENTION,
-        Headers::CUSTOMER_SUBVENTION,
-        Headers::DISCOUNT_AMOUNT,
-        Headers::DISCOUNT_PERCENTAGE,
-        Headers::CASHBACK,
-        Headers::MANUFACTURER,
-        Headers::MERCHANT_NAME,
-        Headers::PINELAB_NAME,
-        Headers::ISSUER,
-        Headers::ACQUIRER,
-        Headers::SETTLEMENT_TIME,
-        Headers::SUBVENTION_PAYABLE,
-        Headers::SUBVENTION_AMOUNT,
-        Headers::ADDITIONAL_CASHBACK,
-    ];
-
     protected function getEmiData($input)
     {
         $data = [];
@@ -59,27 +36,27 @@ class EmiFile extends Base\EmiFile
             $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
             $data[] = [
-                Headers::EMI_ID               => $emiPayment->getId(),
-                Headers::TRANSACTION_TIME     => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
-                Headers::CARD_NUMBER          => $this->getCardNumber($emiPayment->card),
-                Headers::AMOUNT               => $principalAmount,
-                Headers::AUTH_CODE            => $this->getAuthCode($emiPayment),
-                Headers::SCHEME_CODE          => $issuerPlanId,
-                Headers::TENURE               => $tenure,
-                Headers::MERCHANT_SUBVENTION  => '',
-                Headers::CUSTOMER_SUBVENTION  => $rate,
-                Headers::DISCOUNT_AMOUNT      => '',
-                Headers::DISCOUNT_PERCENTAGE  => '',
-                Headers::CASHBACK             => 'N',
-                Headers::MANUFACTURER         => '',
-                Headers::MERCHANT_NAME        => 'Razorpay Payments',
-                Headers::PINELAB_NAME         => '',
-                Headers::ISSUER               => 'ICICI Bank',
-                Headers::ACQUIRER             => '',
-                Headers::SETTLEMENT_TIME      => '',
-                Headers::SUBVENTION_PAYABLE   => '',
-                Headers::SUBVENTION_AMOUNT    => '',
-                Headers::ADDITIONAL_CASHBACK  => '',
+                'EMI ID'                       => $emiPayment->getId(),
+                'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
+                'Card No.'                     => $this->getCardNumber($emiPayment->card),
+                'Amount'                       => $principalAmount,
+                'Auth Code/ Approval Code'     => $this->getAuthCode($emiPayment),
+                'Scheme Code'                  => $issuerPlanId,
+                'Tenure'                       => $tenure,
+                'Merchant Subvention'          => '',
+                'Customer Subvention'          => $rate,
+                'Discount/ Cashback Amount'    => '',
+                'Discount/Cashback(%)'         => '',
+                'Cashback (Y/N)'               => 'N',
+                'Manufacturer'                 => '',
+                'Merchant Name'                => 'Razorpay Payments',
+                'Pinelabs Merchant Name'       => '',
+                'Issuer'                       => 'ICICI Bank',
+                'Acquirer'                     => '',
+                'Settlement Time'              => '',
+                'Subvention Payable to Issuer' => '',
+                'Subvention Amount (Rs.)'      => '',
+                'Addition Cashback'            => '',
             ];
         }
 
