@@ -16,8 +16,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
 
     // Details of the sender bank account
-    const PAYER_ACCOUNT      = 'payer_account';
-    const PAYER_IFSC         = 'payer_ifsc';
+    const PAYER_ACCOUNT         = 'payer_account';
+    const PAYER_IFSC            = 'payer_ifsc';
+    const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
+    const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
 
     // Details of the receiver bank account
     const PAYEE_ACCOUNT      = 'payee_account';
@@ -51,10 +53,6 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
-    // The IFSC we receive in the process bank_transfer API is often a mocked one.
-    // But we can get the bank name from it.
-    const PAYER_BANK         = 'payer_bank';
-
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_ACCOUNT,
@@ -69,15 +67,34 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
-        self::ID,
-        self::ENTITY,
-        self::UTR,
-        self::MODE,
-        self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
-        // This will be added later, upon request
-        // self::PAYER_ACCOUNT,
-        self::PAYER_BANK,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::AMOUNT,
+        self::PAYER_BANK_ACCOUNT,
+        // This can be added later, upon request
+        // self::MODE,
+        // self::UTR,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::PAYMENT_ID,
+        self::MERCHANT_ID,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::AMOUNT,
+        self::PAYER_ACCOUNT,
+        self::PAYER_IFSC,
+        self::PAYER_BANK_ACCOUNT_ID,
+        self::PAYEE_ACCOUNT,
+        self::PAYEE_IFSC,
+        self::DESCRIPTION,
+        self::MODE,
+        self::UTR,
+        self::TIME,
+        self::EXPECTED,
+        self::NOTIFIED,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $casts = [
@@ -104,8 +121,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
-        self::PAYER_ACCOUNT,
-        self::PAYER_BANK,
         self::MODE,
     ];
 
@@ -133,6 +148,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\VirtualAccount\Entity');
     }
 
+    public function payerBankAccount()
+    {
+        return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
     // ----------------------- Generators --------------------------------------
 
     // Kotak is sending us transaction_id instead of UTR
@@ -143,23 +163,6 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Public Setters ----------------------------------
-
-    public function setPublicPayerAccountAttribute(array & $array)
-    {
-        $ac = $array[self::PAYER_ACCOUNT];
-
-        // Get account number in redacted form\
-        $repeat = ceil((strlen($ac) - 4) / 4);
-
-        $array[self::PAYER_ACCOUNT] = str_repeat('XXXX-', $repeat) . substr($ac, -4);
-    }
-
-    public function setPublicPayerBankAttribute(array & $array)
-    {
-        $ifsc = $array[self::PAYER_IFSC];
-
-        $array[self::PAYER_BANK] = IFSC::getBankName($ifsc);
-    }
 
     public function setPublicVirtualAccountIdAttribute(array & $array)
     {
