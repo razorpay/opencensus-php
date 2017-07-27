@@ -378,9 +378,10 @@ final class Route
         'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
-        'gateway_create_file'                     => ['post',     'gateway/files',                                  'GatewayController@createGatewayFile'                               ],
+        'gateway_file_create'                     => ['post',     'gateway/files',                                  'GatewayController@createGatewayFile'                               ],
         'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayController@retryGatewayFile'                                ],
         'gateway_files_generate'                  => ['post',     'gateway/files/{type}/generate',                  'GatewayController@generateGatewayFiles'                            ],
+        'gateway_file_acknowledge'                => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayController@acknowledgeGatewayFile'                          ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -991,8 +992,10 @@ final class Route
         'merchant_create_invoice_entities',
         'merchant_payout',
         'gateway_create_file',
+        'gateway_file_create',
         'gateway_file_retry',
         'gateway_files_generate',
+        'gateway_file_acknowledge',
     ];
 
     public static $proxy = [

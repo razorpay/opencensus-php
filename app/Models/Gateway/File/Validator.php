@@ -22,6 +22,10 @@ class Validator extends Base\Validator
         Entity::SCHEDULED  => 'filled|boolean'
     ];
 
+    protected static $acknowledgeRules = [
+        Entity::PARTIALLY_PROCESSED => 'filled|in:1',
+    ];
+
     protected static $createValidators = [
         Entity::GATEWAY,
         Entity::BANK,

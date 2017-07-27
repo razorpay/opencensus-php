@@ -43,6 +43,31 @@ class Core extends Base\Core
         $procesor->process();
     }
 
+    public function acknowledge(string $id, array $data)
+    {
+        $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
+
+        // Only gateway_file entities for which we have sent a mail successfully
+        // can be acknowledged
+        if ($this->gatewayFile->isMailSent() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot acknoewledge given gateway_file entity');
+        }
+
+        $gatewayFile->getValidator()->validateInput('acknowledge', $data);
+
+        $gatewayFile->setStatus(Status::ACKNOWLEDGED);
+
+        $gatewayFile->setAcknowledgedAt(time());
+
+        $gatewayFile->fill($data);
+
+        $this->repo->saveOrFail($gatewayFile);
+
+        return $gatewayFile;
+    }
+
     public function generateGatewayFiles(string $type, array $data)
     {
         if (Type::isValidType($type) === false)
@@ -68,7 +93,7 @@ class Core extends Base\Core
         return $gatewayFiles;
     }
 
-    public function getGatewayFileCreationParams(string $type, string $gateway, string $bank): array
+    protected function getGatewayFileCreationParams(string $type, string $gateway, string $bank): array
     {
         // TODO: Change this later
         $from = Carbon::today('Asia/Kolkata')->timestamp;

@@ -154,6 +154,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setAcknowledgedAt(int $acknowledgedAt)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $acknowledgedAt);
+    }
+
     public function setFailedAt(int $failedAt)
     {
         $this->setAttribute(self::FAILED_AT, $failedAt);

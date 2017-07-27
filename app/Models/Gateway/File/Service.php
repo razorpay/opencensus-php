@@ -13,6 +13,13 @@ class Service extends Base\Service
         return $gatewayFile->toArrayAdmin();
     }
 
+    public function acknowledge(string $id, array $data)
+    {
+        $gatewayFile = (new Core)->acknowledge($id, $data);
+
+        return $gatewayFile->toArrayAdmin();
+    }
+
     public function retry(string $id)
     {
         $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
