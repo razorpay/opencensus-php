@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Mail\Merchant\ActivationSubmission;
+namespace RZP\Mail\Merchant;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Admin\Org;
 
-class NotifyMerchant extends Mailable
+class NotifyActivationSubmission extends Mailable
 {
     protected $data;
 
@@ -24,9 +24,13 @@ class NotifyMerchant extends Mailable
 
     protected function addRecipients()
     {
-       $this->to($this->data['to_email'], $this->data['to_name']);
+        $toEmail = $this->data['contact_email'];
 
-       return $this;
+        $toName = $this->data['contact_name'];
+
+        $this->to($toEmail, $toName);
+
+        return $this;
     }
 
     protected function addHtmlView()
@@ -48,14 +52,21 @@ class NotifyMerchant extends Mailable
 
     protected function addSubject()
     {
-        $this->subject($this->data['subject']);
+        $subject = $this->org['business_name'] . ' | Account pending approval for ' . $this->data['business_name'];
+
+        $this->subject($subject);
 
         return $this;
     }
 
     protected function addMailData()
     {
-        $this->with($this->data['mail_data']);
+        $mailData = [
+            'merchant_details' => $this->data,
+            'org'              => $this->org
+        ];
+
+        $this->with($mailData);
 
         return $this;
     }

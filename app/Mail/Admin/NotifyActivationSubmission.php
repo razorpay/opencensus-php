@@ -1,13 +1,12 @@
 <?php
 
-namespace RZP\Mail\Merchant\ActivationSubmission;
+namespace RZP\Mail\Admin;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
-use RZP\Models\Admin\Org;
 
-class NotifyAdmin extends Mailable
+class NotifyActivationSubmission extends Mailable
 {
     protected $data;
 
@@ -20,9 +19,13 @@ class NotifyAdmin extends Mailable
 
     protected function addRecipients()
     {
-       $this->to($this->data['to_email'], $this->data['to_name']);
+        $toEmail = Constants::MAIL_ADDRESSES[Constants::ACTIVATION];
 
-       return $this;
+        $toName = Constants::HEADERS[Constants::ACTIVATION];
+
+        $this->to($toEmail, $toName);
+
+        return $this;
     }
 
     protected function addHtmlView()
@@ -32,16 +35,33 @@ class NotifyAdmin extends Mailable
         return $this;
     }
 
+    protected function addSender()
+    {
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+
+        $fromName = Constants::HEADERS[Constants::SUPPORT];
+
+        $this->from($fromEmail, $fromName);
+
+        return $this;
+    }
+
     protected function addSubject()
     {
-        $this->subject($this->data['subject']);
+        $subject = "New activation form submitted for " . $this->data['business_name'];
+
+        $this->subject($subject);
 
         return $this;
     }
 
     protected function addMailData()
     {
-        $this->with($this->data['mail_data']);
+        $mailData = [
+            'merchant_details' => $this->data
+        ];
+
+        $this->with($mailData);
 
         return $this;
     }

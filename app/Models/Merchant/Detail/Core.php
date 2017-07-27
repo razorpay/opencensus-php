@@ -8,11 +8,10 @@ use Config;
 use RZP\Jobs\RequestJob;
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Mail\Base\Constants as Constants;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Mail\Merchant\ActivationSubmission\NotifyAdmin as NotifyAdmin;
-use RZP\Mail\Merchant\ActivationSubmission\NotifyMerchant as NotifyMerchant;
+use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
+use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Core extends Base\Core
@@ -40,10 +39,10 @@ class Core extends Base\Core
         // For marketplace linked accounts - skip sending this email
         if ($this->merchant->isLinkedAccount() === false)
         {
-            $this->confirmActivationSubmission($merchantDetails);
+            $this->merchantNotifyActivationSubmission($merchantDetails);
         }
 
-        $this->notifyActivationSubmission($merchantDetails);
+        $this->adminNotifyActivationSubmission($merchantDetails);
 
         // We also send over details to slack
         $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$merchantId}/activation|See activation form>";
@@ -90,56 +89,20 @@ class Core extends Base\Core
         $this->dispatch($job);
     }
 
-    public function confirmActivationSubmission($merchantDetails)
+    public function merchantNotifyActivationSubmission($merchantDetails)
     {
         $org = $this->merchant->org->toArray();
 
         $org['hostname'] = $this->merchant->org->getPrimaryHostName();
 
-        $subject = $org['business_name'] . ' | Account pending approval for ' . $merchantDetails['business_name'];
-
-        $toName = $merchantDetails['contact_name'];
-
-        $toEmail = $merchantDetails['contact_email'];
-
-        $mailData = [
-            'merchant_details' => $merchantDetails->toArray(),
-            'org'              => $org
-        ];
-
-        $data = [
-            'to_name'    => $toName,
-            'to_email'   => $toEmail,
-            'subject'    => $subject,
-            'mail_data'  => $mailData,
-        ];
-
-        $notifyMerchantMail = new NotifyMerchant($data, $org);
+        $notifyMerchantMail = new NotifyMerchant($merchantDetails->toArray(), $org);
 
         Mail::queue($notifyMerchantMail);
     }
 
-    public function notifyActivationSubmission($merchantDetails)
+    public function adminNotifyActivationSubmission($merchantDetails)
     {
-        $subject = "New activation form submitted for " . $merchantDetails['business_name'];
-
-        $to_name = 'Razorpay Activations Team';
-
-        $to_email = Constants::MAIL_ADDRESSES[Constants::ACTIVATION];
-
-        $mailData = [
-            'merchant_details' => $merchantDetails->toArray(),
-            'id'               => $this->merchant->id
-        ];
-
-        $data = [
-            'to_name'   => $to_name,
-            'to_email'  => $to_email,
-            'subject'   => $subject,
-            'mail_data' => $mailData,
-        ];
-
-        $notifyAdminMail = new NotifyAdmin($data);
+        $notifyAdminMail = new NotifyAdmin($merchantDetails->toArray());
 
         Mail::queue($notifyAdminMail);
     }
