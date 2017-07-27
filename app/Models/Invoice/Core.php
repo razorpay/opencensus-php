@@ -765,6 +765,7 @@ class Core extends Base\Core
             function () use ($invoice)
             {
                 $this->updateOrderOfIssuedInvoice($invoice);
+
                 $this->repo->saveOrFail($invoice);
             });
     }

@@ -111,7 +111,7 @@ class Entity extends Base\PublicEntity
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
-    const DEFAULT_TIME_FORMAT               = 'j M Y';
+    const HOSTED_TIME_FORMAT                = 'j M Y';
 
     protected static $sign      = 'pay';
 
@@ -1818,7 +1818,7 @@ class Entity extends Base\PublicEntity
 
         $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata');
 
-        $data[self::FORMATTED_CREATED_AT] = $createdAt->format(self::DEFAULT_TIME_FORMAT);
+        $data[self::FORMATTED_CREATED_AT] = $createdAt->format(self::HOSTED_TIME_FORMAT);
 
         return $data;
     }

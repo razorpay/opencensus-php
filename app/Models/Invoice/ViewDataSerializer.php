@@ -111,6 +111,7 @@ class ViewDataSerializer extends Base\Core
                                               ->load(Entity::PAYMENTS)
                                               ->payments
                                               ->sortByDesc(Entity::CREATED_AT)
+                                              ->values()
                                               ->toArrayHosted();
 
         foreach (self::$amounts as $key)

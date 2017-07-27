@@ -121,7 +121,7 @@ class PublicEntity extends UniqueIdEntity
      */
     public function toArrayHosted()
     {
-        $attributes = $this->getAttributes();
+        $attributes = $this->toArrayPublic();
 
         return array_only($attributes, $this->hosted);
     }
