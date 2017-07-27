@@ -107,7 +107,7 @@ class RawApiRequest
                      */
                     $accountId = $input['account_id'] ?? null;
 
-                    if ($accountId) {
+                    if (empty($accountId) === false) {
                         $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
                     }
                 }
