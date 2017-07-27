@@ -712,6 +712,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function sendOAuthNotification(string $type)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->sendOAuthMail($input, $type);
+
+        return ApiResponse::json($response);
+    }
+
     public function markGratisTransactionPostpaid()
     {
         $input = Request::all();

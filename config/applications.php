@@ -117,6 +117,10 @@ return array(
         ]
     ],
 
+    'oauth' => [
+        'secret'    => env('APP_OAUTH_SECRET'),
+    ],
+
     'nodal' => [
         'mock' => env('NODAL_MOCK', false),
         'auth' => [

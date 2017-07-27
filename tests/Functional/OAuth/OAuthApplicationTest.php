@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class OAuthApplicationTest extends OAuthTestCase

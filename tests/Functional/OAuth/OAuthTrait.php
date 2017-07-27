@@ -26,5 +26,7 @@ trait OAuthTrait
                 'redirect_url'   => ['https://www.example.com'],
                 'environment'    => 'prod'
             ]);
+
+        return $application;
     }
 }

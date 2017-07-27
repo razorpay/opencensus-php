@@ -6,6 +6,8 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Token as OAuthToken;
 
 use RZP\Exception;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -40,6 +42,7 @@ class Service extends Base\Service
     use Notify;
 
     const COUPON_RESPONSE = 'apply_coupon';
+    const OAUTH_MAIL      = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -1169,5 +1172,44 @@ class Service extends Base\Service
                 $this->repo->feature->delete($feature);
             }
         }
+    }
+
+    /**
+     * Sends a mail to the merchant when an action is taken
+     * on oauth access to his account
+     */
+    public function sendOAuthMail(array $input, string $type): array
+    {
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+
+        $user = $this->repo->user->findOrFail($input[User\Entity::USER_ID])->toArrayPublic();
+
+        $client = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+
+        $application = $client->application->toArrayPublic();
+
+        $data = [
+            'merchant' => $merchant->toArrayPublic(),
+            'user' => $user,
+            'application' => $application
+            ];
+
+        $mailer = 'RZP\\Mail\\OAuth\\'.studly_case($type);
+
+        if (class_exists($mailer) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE,
+                null,
+                ['type' => $type]);
+        }
+
+        $oauthMail = (new $mailer($data));
+
+        Mail::queue($oauthMail);
+
+        return ['success' => true];
     }
 }

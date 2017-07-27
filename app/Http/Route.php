@@ -590,6 +590,7 @@ final class Route
         'oauth_application_fetch_multiple'        => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
         'oauth_application_fetch'                 => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
         'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
+        'oauth_merchant_notify'                   => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
     ];
 
@@ -983,6 +984,7 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'oauth_merchant_notify',
         'gratis_postpaid_transactions',
     ];
 
@@ -1364,6 +1366,10 @@ final class Route
 
         'h2h' => [
             'setl_reconcile_h2h',
+        ],
+
+        'oauth' => [
+            'oauth_merchant_notify',
         ],
     ];
 
