@@ -1100,13 +1100,14 @@ angular
         walletMap: {
           payzapp: 'Payzapp',
           mobikwik: 'Mobikwik',
-          payumoney: 'Payumone',
+          payumoney: 'Payumoney',
           olamoney: 'Olamoney',
           airtelmoney: 'Airtelmoney',
           freecharge: 'Freecharge',
           jiomoney: 'Jiomoney',
           openwallet: 'Openwallet',
           mpesa: 'Mpesa',
+          paytm: 'Paytm',
         },
       };
 
