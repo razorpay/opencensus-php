@@ -107,6 +107,7 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['INDB'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
+        $this->assertEquals(true, File::exists($content['ICIC']));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
@@ -120,6 +121,8 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
 
         $this->deleteAlltheGenerateFiles($content);
+
+        unlink($content['ICIC']);
     }
 
     private function zipFileName($filePath)
