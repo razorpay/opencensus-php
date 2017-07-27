@@ -21,8 +21,17 @@ abstract class Base extends Core
         $this->gatewayFile = $gatewayFile;
     }
 
+    /**
+     * We perform the following steps to process the gateway_file entity
+     * 1. Generate the required data
+     * 2. Create the gateway_file entity
+     * 3. Send the mail to gateway
+     * Each of the steps needs to be implemented for respective child classes
+     */
     public function process()
     {
+        // We check if the gateway file entity is at a state where it can be processed
+        // again
         if ($this->canProcess() === false)
         {
             throw new Exception\BadRequestException(
@@ -39,11 +48,7 @@ abstract class Base extends Core
         }
         catch (Exception\GatewayFileException $e)
         {
-            $failureCode = $e->getFailureCode();
-
-            $this->trace->traceException($e);
-
-            $this->handleFileGenerationFailure($failureCode);
+            $this->handleProcessingFailure($e);
         }
         finally
         {
@@ -51,8 +56,18 @@ abstract class Base extends Core
         }
     }
 
-    protected function handleFileGenerationFailure(string $failureCode)
+    /**
+     * Handles any exception thrown during processing. Here we update the status as failed
+     * with appropriate failure_code.
+     *
+     * @param  Exception\GatewayFileException $e Exception object
+     */
+    protected function handleProcessingFailure(Exception\GatewayFileException $e)
     {
+        $failureCode = $e->getFailureCode();
+
+        $this->trace->traceException($e);
+
         $this->gatewayFile->setStatus(Status::FAILED);
 
         $this->gatewayFile->setFailureCode($failureCode);
@@ -60,6 +75,9 @@ abstract class Base extends Core
         $this->gatewayFile->setFailedAt(time());
     }
 
+    /**
+     * At this stage we finally save the updated gateway_file entity to the database
+     */
     protected function performPostProcessingTasks()
     {
         $this->gatewayFile->incrementAttempts();

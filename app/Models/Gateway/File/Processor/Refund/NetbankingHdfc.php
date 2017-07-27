@@ -20,6 +20,9 @@ class NetbankingHdfc extends Processor\Base
 
     protected $gatewayCode = IFSC::HDFC;
 
+    /**
+     * Formats the data fetched from database as per HDFC netbanking refund file format
+     */
     protected function formatDataForFile()
     {
          $i = 1;
@@ -45,6 +48,9 @@ class NetbankingHdfc extends Processor\Base
         return $formattedData;
     }
 
+    /**
+     * Fetches required data to be sent as part of the mail to HDFC
+     */
     protected function formatDataForMail()
     {
         $file = $this->gatewayFile

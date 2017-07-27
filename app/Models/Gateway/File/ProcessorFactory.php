@@ -10,27 +10,30 @@ class ProcessorFactory
         $gateway = $gatewayFile->getGateway();
         $bank = $gatewayFile->getBank();
 
-        $processorClass = self::getProcessorClass($type, $gateway);
+        $processorClass = self::getProcessorClass($type, $gateway, $bank);
 
         $processor = new $processorClass($gatewayFile);
 
         return $processor;
     }
 
-    public static function getProcessorClass(string $type, $gateway = null, $bank = null)
+    public static function getProcessorClass(string $type, string $gateway, string $bank)
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 
         $processorNamespace = $baseNamespace . studly_case($type) . '\\';
 
-        if (isset($gateway) === true)
+        // If type is not emi, we use only the gateway name to get the processor class name
+        // else for emi we use the bank name as gateway value will be ALL
+        // Hacky way but works for current scenario. Will need to evolve if different
+        // use case comes up
+        if ($type !== Type::EMI)
         {
             $processorNamespace .= studly_case($gateway);
         }
-
-        if (isset($bank) === true)
+        else
         {
-            $processorNamespace .= '\\' . $bank;
+             $processorNamespace .= $bank;
         }
 
         return $processorNamespace;

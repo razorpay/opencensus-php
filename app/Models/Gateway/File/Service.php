@@ -22,9 +22,9 @@ class Service extends Base\Service
         return $gatewayFile->toArrayAdmin();
     }
 
-    public function generateGatewayRefundFiles()
+    public function generateGatewayFiles(string $type, array $input)
     {
-        $gatewayFiles = (new Core)->generateGatewayRefundFiles();
+        $gatewayFiles = (new Core)->generateGatewayFiles($type, $input);
 
         return $gatewayFiles->toArrayAdmin();
     }

@@ -380,7 +380,7 @@ final class Route
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
         'gateway_create_file'                     => ['post',     'gateway/files',                                  'GatewayController@createGatewayFile'                               ],
         'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayController@retryGatewayFile'                                ],
-        'gateway_refund_file_generate'            => ['post',     'gateway/files/refund/generate',                  'GatewayController@generateGatewayRefundFiles'                      ],
+        'gateway_files_generate'                  => ['post',     'gateway/files/{type}/generate',                  'GatewayController@generateGatewayFiles'                            ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -992,7 +992,7 @@ final class Route
         'merchant_payout',
         'gateway_create_file',
         'gateway_file_retry',
-        'gateway_refund_file_generate',
+        'gateway_files_generate',
     ];
 
     public static $proxy = [

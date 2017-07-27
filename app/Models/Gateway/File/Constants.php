@@ -2,25 +2,42 @@
 
 namespace RZP\Models\Gateway\File;
 
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 
 class Constants
 {
-    const SUPPORTED_GATEWAYS = [
+    const ALL = 'ALL';
+
+    const GATEWAY_SUPPORTED_BANKS = [
         Type::REFUND => [
-            Gateway::NETBANKING_ICICI,
-            Gateway::NETBANKING_HDFC,
-            Gateway::NETBANKING_KOTAK,
-            Gateway::NETBANKING_AXIS,
-            Gateway::NETBANKING_FEDERAL,
-            Gateway::NETBANKING_RBL,
-            Gateway::NETBANKING_INDUSIND
+            Gateway::NETBANKING_ICICI    => [IFSC::ICIC],
+            Gateway::NETBANKING_HDFC     => [IFSC::HDFC],
+            Gateway::NETBANKING_KOTAK    => [IFSC::KKBK],
+            Gateway::NETBANKING_AXIS     => [IFSC::UTIB],
+            Gateway::NETBANKING_FEDERAL  => [IFSC::FDRL],
+            Gateway::NETBANKING_RBL      => [IFSC::RATN],
+            Gateway::NETBANKING_INDUSIND => [IFSC::INDB]
         ],
         Type::CLAIM => [
+            Gateway::NETBANKING_KOTAK   => [IFSC::KKBK],
+            Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
+            Gateway::NETBANKING_FEDERAL => [IFSC::FDRL],
+            Gateway::NETBANKING_RBL     => [IFSC::RATN],
         ],
         Type::EMI => [
+            self::ALL => [
+                IFSC::INDB,
+                IFSC::KKBK,
+                IFSC::RATN,
+                IFSC::UTIB,
+            ]
         ],
         Type::COMBINED => [
+            Gateway::NETBANKING_KOTAK   => [IFSC::KKBK],
+            Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
+            Gateway::NETBANKING_FEDERAL => [IFSC::FDRL],
+            Gateway::NETBANKING_RBL     => [IFSC::RATN],
         ],
     ];
 }

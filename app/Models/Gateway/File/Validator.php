@@ -12,60 +12,60 @@ class Validator extends Base\Validator
     const TIME_RANGE = 'time_range';
 
     protected static $createRules = [
-        Entity::TYPE       => 'required|string',
-        Entity::GATEWAY    => 'required_only_if:type,refund,claim,combined|string|custom',
-        Entity::BANK       => 'required_only_if:type,emi|string|custom',
-        Entity::SENDER     => 'sometimes|email',
-        Entity::RECIPIENTS => 'sometimes|array|custom',
+        Entity::TYPE       => 'required|string|custom',
+        Entity::GATEWAY    => 'required|string',
+        Entity::BANK       => 'required|string',
+        Entity::SENDER     => 'filled|email',
+        Entity::RECIPIENTS => 'filled|array|custom',
         Entity::FROM       => 'required|epoch',
         Entity::TO         => 'required|epoch',
         Entity::SCHEDULED  => 'filled|boolean'
     ];
 
     protected static $createValidators = [
-        Entity::TYPE,
+        Entity::GATEWAY,
+        Entity::BANK,
         self::TIME_RANGE,
     ];
 
-    protected function validateGateway(string $attribute, string $gateway)
+    protected function validateType(string $attribute, string $type)
     {
-        if (Gateway::isValidGateway($gateway) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $gateway . ' is not a valid gateway');
-        }
-    }
-
-    protected function validateBank(string $attribute, string $bank)
-    {
-        if (IFSC::exists($bank) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid bank code');
-        }
-    }
-
-    protected function validateType(array $input)
-    {
-        $type = $input[Entity::TYPE];
-
         if (Type::isValidType($type) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 "$type is not a valid gateway file type");
         }
+    }
+
+    protected function validateGateway(array $input)
+    {
+        $type = $input[Entity::TYPE];
 
         $gateway = $input[Entity::GATEWAY];
 
-        $this->validateGatewaySupportsFileType($gateway, $type);
-    }
+        $supportedGatewaysForType = array_keys(Constants::GATEWAY_SUPPORTED_BANKS[$type]);
 
-    protected function validateGatewaySupportsFileType(string $gateway, string $type)
-    {
-        if (in_array($gateway, Constants::SUPPORTED_GATEWAYS[$type], true) === false)
+        if (in_array($gateway, $supportedGatewaysForType, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "$type not supported for $gateway");
+                "$gateway  s not a supported gateway for type");
+        }
+    }
+
+    protected function validateBank(array $input)
+    {
+        $type = $input[Entity::TYPE];
+
+        $bank = $input[Entity::BANK];
+
+        $gateway = $input[Entity::GATEWAY];
+
+        $supportedBanks = Constants::GATEWAY_SUPPORTED_BANKS[$type][$gateway];
+
+        if (in_array($bank, $supportedBanks, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "$bank is not supported for $type and $gateway");
         }
     }
 

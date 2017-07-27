@@ -8,6 +8,12 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * Creates a gateway file entity with input provided
+     *
+     * @param  array        $input input data
+     * @param  bool|boolean $halt  flag to indicate if the entity created should be further processed or not
+     */
     public function create(array $input, bool $halt = false)
     {
         $this->trace->info(TraceCode::GATEWAY_FILE_CREATE_REQUEST, $input);
@@ -24,6 +30,12 @@ class Core extends Base\Core
         return $gatewayFile;
     }
 
+    /**
+     * Executines the steps required in generating and sending mail for
+     * a gateway_file entity
+     *
+     * @param  Entity $gatewayFile Gateway file entity to be processed
+     */
     public function process(Entity $gatewayFile)
     {
         $procesor = ProcessorFactory::getProcessor($gatewayFile);
@@ -31,17 +43,19 @@ class Core extends Base\Core
         $procesor->process();
     }
 
-    public function generateGatewayRefundFiles()
+    public function generateGatewayFiles(string $type, array $data)
     {
-        $type = Type::REFUND;
+        if (Type::isValidType($type) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "$type is not a supported type");
+        }
 
         $gatewayFiles = new Base\PublicCollection;
 
-        $gateways = Constants::SUPPORTED_GATEWAYS[$type];
-
-        foreach ($gateways as $gateway)
+        foreach ($data as $gateway => $bank)
         {
-            $params = $this->getGatewayFileCreationParams($gateway, $type);
+            $params = $this->getGatewayFileCreationParams($type, $gateway, $bank);
 
             $gatewayFile = $this->create($params, true);
 
@@ -54,7 +68,7 @@ class Core extends Base\Core
         return $gatewayFiles;
     }
 
-    public function getGatewayFileCreationParams(string $gateway, string $type): array
+    public function getGatewayFileCreationParams(string $type, string $gateway, string $bank): array
     {
         // TODO: Change this later
         $from = Carbon::today('Asia/Kolkata')->timestamp;
@@ -63,6 +77,7 @@ class Core extends Base\Core
         $params = [
             Entity::TYPE      => $type,
             Entity::GATEWAY   => $gateway,
+            Entity::BANK      => $bank,
             Entity::FROM      => $from,
             Entity::TO        => $to,
             Entity::SCHEDULED => 1,

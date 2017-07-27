@@ -8,6 +8,7 @@ use RZP\Trace\Trace;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\FailureCode;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -15,6 +16,10 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 trait GenerateRefundFile
 {
+    /**
+     * Fetches all necessary refund related data required for generating the file
+     * If no refunds are found, we throw an exception with the appropriate error message
+     */
     public function generateData()
     {
         $refunds = $this->fetchRefunds();
@@ -28,7 +33,6 @@ trait GenerateRefundFile
         try
         {
             $this->data = $this->fetchAdditionalDataForFileGeneration($refunds);
-            sd($a);
         }
         catch (\Throwable $e)
         {
@@ -39,6 +43,10 @@ trait GenerateRefundFile
         }
     }
 
+    /**
+     * We create the required file and associate it with the gateway_file entity
+     * Any exception during file generation etc is caught and handled accordingly
+     */
     public function createFile()
     {
         // Don't process further if file is already generated
@@ -128,7 +136,14 @@ trait GenerateRefundFile
         return $refunds;
     }
 
-    protected function fetchAdditionalDataForFileGeneration($refunds)
+    /**
+     * Fetches associated data for refunds (like terminal, payment, gateway entity)
+     * and serializes them for use in file generation
+     *
+     * @param  PublicCollection $refunds Set of refunds to process
+     * @return array                    Serialized data
+     */
+    protected function fetchAdditionalDataForFileGeneration(PublicCollection $refunds): array
     {
         $gateway = $this->gatewayFile->getGateway();
 
@@ -175,6 +190,15 @@ trait GenerateRefundFile
         return static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 
+    /**
+     * Checks if the given gateway file can be retried or not. Currently
+     * we consider that if the refund gateway_file entity is in acknowledged state
+     * then it cannot be retried further.
+     * Also if a gateway_file entity was marked as failed earlier as there was no data
+     * to process during that interval then also it cannot be retried again.
+     *
+     * @return bool Whether gateway_file entity can be processed again or not
+     */
     protected function canProcess(): bool
     {
         if ($this->gatewayFile->isAcknowledged() === true)

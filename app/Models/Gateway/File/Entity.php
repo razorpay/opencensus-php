@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::GATEWAY,
+        self::BANK,
         self::SENDER,
         self::RECIPIENTS,
         self::FROM,
@@ -180,13 +181,11 @@ class Entity extends Base\PublicEntity
 
     public function getRecipientsAttribute()
     {
-        $recipients = $this->attributes[self::RECIPIENTS];
-
-        if (empty($recipients) === true)
+        if (isset($this->attributes[self::RECIPIENTS]) === false)
         {
             return [];
         }
 
-        return json_decode($recipients, true);
+        return json_decode($this->attributes[self::RECIPIENTS], true);
     }
 }
