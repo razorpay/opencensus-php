@@ -926,11 +926,11 @@ class Terminal extends Base
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
         $defaultValues = [
-            'id'                        => Shared::NETBANKING_PNB_TERMINAL,
-            'merchant_id'               => $merchantId,
-            'gateway'                   => 'netbanking_pnb',
-            'netbanking'                => 1,
-            'shared'                    => 1
+            'id'          => Shared::NETBANKING_PNB_TERMINAL,
+            'merchant_id' => $merchantId,
+            'gateway'     => 'netbanking_pnb',
+            'netbanking'  => 1,
+            'shared'      => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -989,7 +989,7 @@ class Terminal extends Base
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
     {
         $attributes = [
-            'id'               =>  Shared::NETBANKING_RBL_TPV_TERMINAL,
+            'id'               => Shared::NETBANKING_RBL_TPV_TERMINAL,
             'network_category' => 'securities'
         ];
 

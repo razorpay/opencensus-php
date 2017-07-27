@@ -296,21 +296,6 @@ class Entity extends Base\PublicEntity
         $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 
-    public function getContactMobile()
-    {
-        return $this->getAttribute(self::CONTACT_MOBILE);
-    }
-
-    public function getContactName()
-    {
-        return $this->getAttribute(self::CONTACT_NAME);
-    }
-
-    public function getContactEmail()
-    {
-        return $this->getAttribute(self::CONTACT_EMAIL);
-    }
-
     public function toArrayGST()
     {
         return array_only($this->toArrayPublic(), self::GST_FIELDS);

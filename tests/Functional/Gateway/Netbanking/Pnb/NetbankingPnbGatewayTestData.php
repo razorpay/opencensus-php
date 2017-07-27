@@ -105,7 +105,7 @@ return [
 
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => '99999999',
-        'received'        =>  true,
+        'received'        => true,
         'bank'            => 'PUNB',
         'status'          => 'F'
     ],
