@@ -50,6 +50,11 @@ class VerifyUpiProviders extends Command
         // See http://www.rubular.com/r/cCMuz21dlX for regex
         foreach ($csv as $row)
         {
+            if (!isset($row[7]))
+            {
+                continue;
+            }
+
             $vpa = $row[7];
 
             $matches = null;
@@ -64,12 +69,20 @@ class VerifyUpiProviders extends Command
 
         $psps = array_unique($psps);
 
+        $error = false;
+
         foreach ($psps as $provider)
         {
             if (!ProviderCode::validate($provider))
             {
+                $error = true;
                 $this->error("Provider missing: @" . $provider);
             }
+        }
+
+        if (!$error)
+        {
+            $this->info("All providers are matching");
         }
     }
 }
