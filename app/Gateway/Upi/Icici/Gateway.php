@@ -682,13 +682,8 @@ class Gateway extends Base\Gateway
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'N',
+            Fields::ONLINE_REFUND                   => 'Y',
         ];
-
-        if ($input['payment']['merchant_id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $data[Fields::ONLINE_REFUND] = 'Y';
-        }
 
         $content = $this->transformRequestArrayToContent($data);
 
