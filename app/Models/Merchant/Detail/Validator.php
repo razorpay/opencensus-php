@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\FileType as FileType;
 
 class Validator extends Base\Validator
 {
@@ -192,6 +193,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
+        }
+    }
+
+    public function validateFileType($file)
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $mime = $file->getMimeType();
+
+        if ((in_array($extension, FileType::ALLOWED_EXTENSIONS) === false) or
+            (in_array($mime, FileType::ALLOWED_MIMES) === false))
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
         }
     }
 }
