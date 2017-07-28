@@ -32,10 +32,5 @@ class Validator extends Base\Validator
         RequestFields::RETURN_URL      => 'required|string',
         RequestFields::ITEM_CODE       => 'required|string|size:14',
         RequestFields::CHECKSUM        => 'required|string',
-        RequestFields::USER_NAME       => 'required|string',
-        RequestFields::EMAIL           => 'required|string',
-        RequestFields::REMARK          => 'required|string',
-        RequestFields::PHONE_NUMBER    => 'required|string',
-        RequestFields::ADDRESS         => 'required|string',
     ];
 }
