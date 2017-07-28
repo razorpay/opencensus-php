@@ -69,23 +69,33 @@ export default class Activation extends Entity {
     });
   }
 
-  saveStep(step) {
+  saveStep() {
     let data = this.serialize();
-    return ajax({
-      url: `/activation/save/step/${step}/${this.accountId}`,
-      method: 'post',
-      appendModeInURL: false,
-      data,
-    });
+    return this.saveActivation(data);
   }
 
   submit() {
-    let data = this.serialize();
+    let data = {
+      submit: 1,
+    };
+    return this.saveActivation(data);
+  }
+
+  saveActivation(data) {
+    let activationData = {
+      route_name: 'merchant_activation_save',
+      body: data,
+    };
+
+    if (this.accountId) {
+      activationData['account_id'] = this.accountId;
+    }
+
     return ajax({
-      url: `/activation/${this.accountId}`,
+      url: '/user/generic',
       method: 'post',
       appendModeInURL: false,
-      data,
+      data: activationData,
     });
   }
 

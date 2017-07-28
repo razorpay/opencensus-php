@@ -198,10 +198,6 @@ class Service extends Base\Service
             {
                 $error = [ "Some mandatory fields are required" ];
             }
-            else
-            {
-                $this->fireActivationTrigger($merchantDetails);
-            }
         }
 
         return $error;
@@ -335,74 +331,6 @@ class Service extends Base\Service
         }
 
         return $error;
-    }
-
-    /**
-     * On submission of activation form by user, send email
-     * to the customer and sales team notifying them about the activity
-     */
-    protected function fireActivationTrigger($merchantDetails)
-    {
-        $customer = [
-            'id'            => $this->merchant->id,
-            'name'          => $merchantDetails['contact_name'],
-            'email'         => $merchantDetails['contact_email'],
-            'business_name' => $merchantDetails['business_name'],
-            'dba'           => $merchantDetails['business_dba'],
-            'website'       => $merchantDetails['business_website']
-        ];
-
-        $user = Auth::user();
-
-        $mailer = new MerchantMailer($user->currentMerchant(), $merchantDetails);
-
-        // For marketplace linked accounts - skip sending this email
-        if ($this->isLinkedAccount() === false)
-        {
-            $mailer->confirmActivationSubmission()->queueAndDeliver();
-        }
-
-        $mailer->notifyActivationSubmission()->queueAndDeliver();
-
-        // Take screenshots as well
-        $urls = $this->getWebsiteUrls($merchantDetails);
-
-        Queue::push('App\Admin\Creevey', [
-            $customer['id'],
-            $urls,
-            $customer['business_name']
-        ]);
-
-        // We also send over details to slack
-        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
-
-        $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
-
-        $zapierData = $this->activationZapierData($customer);
-
-        Queue::push('App\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
-    }
-
-    protected function activationZapierData(array $customer)
-    {
-        $customer['date'] =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
-
-        $customer['contact_name'] = $this->user->name;
-
-        return $customer;
-    }
-
-    public function postFormSubmissionToZapier($job, $data)
-    {
-        if (Config::get('razorpay.zapier.mock'))
-        {
-            return;
-        }
-
-        $url = Config::get('razorpay.zapier.submissions');
-        Requests::post($url, [], $data);
-
-        $job->delete();
     }
 
     public function getDetailsFromAPI($merchantId = null)

@@ -22,7 +22,7 @@ export const saveStep = ({ step, data, accountId = '' }) => {
   });
   return {
     type: ACTIVATION_SAVE_STEP,
-    payload: activation.saveStep(step),
+    payload: activation.saveStep(),
     step,
     data,
   };
@@ -30,12 +30,26 @@ export const saveStep = ({ step, data, accountId = '' }) => {
 
 export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
   let formData = new FormData();
-  formData.append(fieldName, file);
+  let fieldNameMapping = {
+    business_proof: 'business_proof_url',
+    business_operation_proof: 'business_operation_proof_url',
+    business_pan_proof: 'business_pan_url',
+    address_proof: 'address_proof_url',
+    promoter_proof: 'promoter_proof_url',
+    promoter_pan_proof: 'promoter_pan_url',
+    promoter_address_proof: 'promoter_address_url',
+  };
+  formData.append('route_name', 'merchant_activation_upload_file');
+  formData.append('file', file);
+  formData.append('file_name', fieldNameMapping[fieldName]);
+  if (accountId) {
+    formData.append('account_id', accountId);
+  }
 
   return {
     type: ACTIVATION_SAVE_FILE,
     payload: ajax({
-      url: `/activation/save/file/${accountId}`,
+      url: '/user/generic',
       method: 'post',
       data: formData,
       processData: false,
