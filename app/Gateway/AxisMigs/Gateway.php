@@ -408,17 +408,21 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendVerifyRequest($input, 'refund');
 
+        // vpc_DRExists can be 'N' in two cases:
+        // 1. If refund is older than 5 days (MiGS doesn't allow txn query on txns older than 5 days)
+        //    We throw exception in this case as it has to be manually reviewed
+        // 2. If refund request didn't reach them (Host not found, Domain resolution failed etc.)
+        //    We return false here since the refund request didn't reach them and it needs to be
+        //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] < Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
             {
                 return false;
             }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Unable to verify migs refund');
-            }
+
+            throw new Exception\RuntimeException(
+                'Cannot verify old MiGS refunds');
         }
 
         if (($content['vpc_FoundMultipleDRs'] === 'N') and

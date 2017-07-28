@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Account;
@@ -108,6 +109,8 @@ class Processor extends Base\Core
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
+            $this->createAndAssociatePayerBankAccount($bankTransfer);
+
             $this->repo->saveOrFail($bankTransfer);
 
             $this->updateVirtualAccount($bankTransfer);
@@ -209,7 +212,7 @@ class Processor extends Base\Core
     {
         $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
 
-        if ($this->mode === Mode::TEST)
+        if ($this->env !== 'production')
         {
             $defaultMerchantId = Account::TEST_ACCOUNT;
         }
@@ -289,6 +292,39 @@ class Processor extends Base\Core
     {
         return [
             VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
+        ];
+    }
+
+    protected function createAndAssociatePayerBankAccount(Entity $bankTransfer)
+    {
+        $bankAccount = $this->createPayerBankAccount($bankTransfer);
+
+        $bankTransfer->payerBankAccount()->associate($bankAccount);
+    }
+
+    protected function createPayerBankAccount(Entity $bankTransfer)
+    {
+        $bankAccount = new BankAccount\Entity;
+
+        $bankAccountInput = $this->getBankAccountInput($bankTransfer);
+
+        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+        $bankAccount->merchant()->associate($bankTransfer->merchant);
+
+        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
+    }
+
+    protected function getBankAccountInput(Entity $bankTransfer)
+    {
+        return [
+            BankAccount\Entity::IFSC_CODE        => $bankTransfer->getPayerIfsc(),
+            BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
+            BankAccount\Entity::BENEFICIARY_NAME => $bankTransfer->merchant->getBillingLabel(),
         ];
     }
 

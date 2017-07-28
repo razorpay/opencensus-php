@@ -272,7 +272,7 @@ class AxisGatewayTest extends TestCase
     {
         $this->mockTokenex();
 
-        $this->fixtures->merchant->addFeatures('recurring');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $payment = $this->getDefaultRecurringPaymentArray();
 

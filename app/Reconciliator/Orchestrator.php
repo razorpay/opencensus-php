@@ -23,8 +23,18 @@ class Orchestrator extends Base\Core
      * It's all meta data.
      */
     const EXTRA_DETAILS    = 'extra_details';
-    const EMAIL_DETAILS    = 'email_details';
     const ATTACHMENT_COUNT = 'attachment_count';
+
+    /**************************
+     * Email details constants
+     **************************/
+    const EMAIL_DETAILS    = 'email_details';
+    const FROM             = 'from';
+    const TO               = 'to';
+    const SUBJECT          = 'subject';
+    const TIMESTAMP        = 'timestamp';
+    const BODY             = 'body';
+    const BODY_HTML_TEXT   = 'body_html_text';
 
     /******************
      * Bank constants
@@ -494,12 +504,12 @@ class Orchestrator extends Base\Core
         //
 
         $emailDetails = [
-            'from'              => $input['X-Original-Sender'] ?? $input['sender'],
-            'subject'           => $input['subject'],
-            'to'                => $input['recipient'],
-            'timestamp'         => $input['timestamp'],
-            'body'              => $input['stripped-text'],
-            'body_html_text'    => html_entity_decode(strip_tags($input['stripped-html'])),
+            self::FROM           => $input['X-Original-Sender'] ?? $input['sender'],
+            self::SUBJECT        => $input['subject'],
+            self::TO             => $input['recipient'],
+            self::TIMESTAMP      => $input['timestamp'],
+            self::BODY           => $input['stripped-text'],
+            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input['stripped-html'])),
         ];
 
         //
@@ -556,7 +566,7 @@ class Orchestrator extends Base\Core
 
         if ($gateway === self::ADMIN)
         {
-            $gateway = $this->emailDetails['subject'];
+            $gateway = $this->emailDetails[self::SUBJECT];
 
             assert(
                 in_array(
@@ -570,7 +580,7 @@ class Orchestrator extends Base\Core
 
     protected function getGatewayFromEmail()
     {
-        $fromEmailId = $this->emailDetails['from'];
+        $fromEmailId = $this->emailDetails[self::FROM];
 
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -584,9 +594,15 @@ class Orchestrator extends Base\Core
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
             ($this->gatewayEmailIsValid($gateway) === false))
         {
+            $formattedMailDetails = $this->emailDetails;
+            unset($formattedMailDetails[self::BODY]);
+            unset($formattedMailDetails[self::BODY_HTML_TEXT]);
+
             throw new Exception\ReconciliationException(
                 'Email content is invalid.',
-                ['email_details' => $this->emailDetails]);
+                [
+                    self::EMAIL_DETAILS => $formattedMailDetails
+                ]);
         }
 
         return $gateway;

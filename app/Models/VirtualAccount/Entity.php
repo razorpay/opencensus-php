@@ -114,7 +114,11 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NAME]) === false)
         {
-            $input[self::NAME] = $this->merchant->getBillingLabel();
+            $label = $this->merchant->getBillingLabel();
+
+            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+            $input[self::NAME] = $label;
         }
     }
 

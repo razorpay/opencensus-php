@@ -23,8 +23,10 @@ class ProviderCode
     const CENTRALBANK       = 'centralbank';
     const CNRB              = 'cnrb';
     const CSBPAY            = 'csbpay';
+    const DBS               = 'dbs';
     const DCB               = 'dcb';
     const DENABANK          = 'denabank';
+    const FBL               = 'fbl';
     const FEDERAL           = 'federal';
     const HDFCBANK          = 'hdfcbank';
     const HSBC              = 'hsbc';
@@ -77,8 +79,10 @@ class ProviderCode
         self::CENTRALBANK       => IFSC::CBIN,
         self::CNRB              => IFSC::CNRB,
         self::CSBPAY            => IFSC::CSBK,
+        self::DBS               => IFSC::DBSS,
         self::DCB               => IFSC::DCBL,
         self::DENABANK          => IFSC::BKDN,
+        self::FBL               => IFSC::FDRL,
         self::FEDERAL           => IFSC::FDRL,
         self::HDFCBANK          => IFSC::HDFC,
         self::HSBC              => IFSC::HSBC,

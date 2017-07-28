@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
 
     public function fundTransferAttempts()
     {
-        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity');
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source');
     }
 
     public function merchant()

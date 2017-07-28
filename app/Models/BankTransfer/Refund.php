@@ -16,9 +16,7 @@ class Refund extends Base\Core
     {
         $bankTransfer = $this->getBankTransfer($input['payment']);
 
-        $bankAccount = $this->createPayerBankAccount($bankTransfer, $merchant);
-
-        $this->createRefundAttemptEntity($input, $bankAccount);
+        $this->createRefundAttemptEntity($input, $bankTransfer->payerBankAccount);
     }
 
     protected function getBankTransfer(array $payment)
@@ -28,23 +26,6 @@ class Refund extends Base\Core
                              ->findByPaymentId($payment['id']);
 
         return $bankTransfer;
-    }
-
-    protected function createPayerBankAccount(Entity $bankTransfer, Merchant $merchant)
-    {
-        $bankAccount = new BankAccount\Entity;
-
-        $bankAccountInput = $this->getBankAccountInput($bankTransfer);
-
-        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
-
-        $bankAccount->merchant()->associate($merchant);
-
-        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
-
-        $this->repo->saveOrFail($bankAccount);
-
-        return $bankAccount;
     }
 
     protected function createRefundAttemptEntity(array $input, BankAccount\Entity $bankAccount)
@@ -67,14 +48,5 @@ class Refund extends Base\Core
         $this->repo->saveOrFail($fundTransferAttempt);
 
         return $fundTransferAttempt;
-    }
-
-    protected function getBankAccountInput(Entity $bankTransfer)
-    {
-        return [
-            BankAccount\Entity::IFSC_CODE        => $bankTransfer->getPayerIfsc(),
-            BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
-            BankAccount\Entity::BENEFICIARY_NAME => $bankTransfer->merchant->getBillingLabel(),
-        ];
     }
 }

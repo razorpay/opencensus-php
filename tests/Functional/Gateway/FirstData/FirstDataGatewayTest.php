@@ -30,7 +30,7 @@ class FirstDataGatewayTest extends TestCase
     public function testRecurringPayment()
     {
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
-        $this->fixtures->merchant->addFeatures('recurring');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
         $this->mockTokenex();
 
         $payment = $this->getDefaultRecurringPaymentArray();
