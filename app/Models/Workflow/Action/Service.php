@@ -139,9 +139,6 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
         }
 
-        $this->core()->executeAction($action);
-
-        return $this->getActionDetails($action->getPublicId());
-
+        return $this->core()->executeAction($action);
     }
 }

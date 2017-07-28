@@ -53,7 +53,7 @@ class WorkflowController extends Controller
     {
         $response = (new Action\Service)->executeAction($id);
 
-        return $response;
+        return $this->getActionDetails($id);
     }
 
     public function postActionChecker(string $id)

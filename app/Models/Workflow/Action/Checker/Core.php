@@ -133,7 +133,11 @@ class Core extends Base\Core
         });
 
         // Execute workflow after last approval
-
+        // Currently we can execute from both route and here, will remove route eventually.
+        if ($action->getApproved() === true)
+        {
+            (new Action\Service)->executeAction($action->getPublicId());
+        }
 
         return $checker;
     }
