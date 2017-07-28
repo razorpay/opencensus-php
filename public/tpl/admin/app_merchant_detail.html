@@ -1291,6 +1291,9 @@
           <option value="pharma">Pharma</option>
           <option value="cryptocurrency">Cryptocurrency</option>
           <option value="forex">Forex</option>
+          <option value="hospitality">Hospitality</option>
+          <option value="logistics">Logistics</option>
+          <option value="others">Others</option>
           </select>
         </div>
       </div>
@@ -2063,6 +2066,9 @@
             <option value="broking" ng-if="merchant.tags.indexOf('Broking_Report') !== -1">Broking Report</option>
             <!-- DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants -->
             <option value="dsp_report" ng-if="merchant.tags.indexOf('Dsp_Report') !== -1">DSP Transaction Report</option>
+
+            <!-- RPP Report is only for e-Mitra (RPP) Merchant. Should not be enabled for any other merchants -->
+            <option value="rpp_report" ng-if="merchant.tags.indexOf('Rpp_Report') !== -1">e-Mitra Report</option>
 
             <option value="invoice">Monthly Invoice</option>
 

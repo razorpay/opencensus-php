@@ -212,7 +212,7 @@ export default class App extends Component {
   };
 
   render() {
-    let { user, mode, modeFormatted } = this.props;
+    let { user, org, mode, modeFormatted } = this.props;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -230,7 +230,7 @@ export default class App extends Component {
           toggleMobileNav={this.toggleMobileNav}
           showMobileNav={this.state.showMobileNav}
         />
-        <Sidebar user={user} />
+        <Sidebar user={user} logoURL={org.main_logo_url} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
 

@@ -42,7 +42,7 @@ export default class ModalSlider extends Component {
         closeTimeoutMS={300}
         overlayClassName="ModalSlider__Overlay"
         class="ModalSlider__Content"
-        contentLabel="Modal"
+        contentLabel="SliderModal"
       >
         <button type="button" class="close" onClick={this.close}>
           <i class="icon icon-close" />

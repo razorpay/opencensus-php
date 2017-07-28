@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const execSync = require('child_process').execSync;
 const gulp = require('gulp');
 const webpack = require('webpack');
 const through = require('through2').obj;
@@ -53,6 +54,10 @@ function handleError(err) {
   console.log(err.toString());
   this.emit('end');
 }
+
+gulp.task('clean', () => {
+  execSync('rm -rf public/dist public/js/generated public/css/generated');
+});
 
 gulp.task('css', () => {
   gulp
@@ -121,6 +126,7 @@ const concatJs = lazypipe().pipe(concatMulti, {
   ],
 
   'js/generated/admin.js': [
+    'public/js/angular/ng-react.js',
     'public/js/admin/**/*.js',
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
@@ -158,10 +164,6 @@ gulp.task('tmpl', () => {
     .pipe(gulp.dest('resources/views'));
 });
 
-gulp.task('dev', () => {
-  run('compileThemes', ['css', 'js'], 'tmpl');
-});
-
 const runWebpack = (webpackConfig, cb) => {
   webpack(webpackConfig, (err, stats) => {
     console.log(
@@ -176,30 +178,26 @@ const runWebpack = (webpackConfig, cb) => {
   });
 };
 
-gulp.task('webpack', cb => {
-  runWebpack(Object.create(webpackConfig), cb);
-});
-
 var webpackCompiler = null;
 gulp.task('webpack:watch', cb => {
   if (!webpackCompiler) {
-    webpackCompiler = webpack(Object.assign({}, webpackConfig('development')));
+    webpackCompiler = webpack(webpackConfig('development'));
   }
   webpackCompiler.run(function(err, stats) {
-    console.log(
-      stats.toString({
-        colors: true,
-        chunks: false,
-      })
-    );
+    if (stats.hasErrors()) {
+      console.log(
+        stats.toString({
+          colors: true,
+          chunks: false,
+        })
+      );
+    }
     cb();
   });
 });
 
 gulp.task('webpack:prod', cb => {
-  let config = Object.create(webpackConfig('production'));
-
-  runWebpack(config, cb);
+  runWebpack(webpackConfig('production'), cb);
 });
 
 gulp.task('dev:setENV', cb => {
@@ -207,25 +205,27 @@ gulp.task('dev:setENV', cb => {
   cb();
 });
 
-gulp.task('default', cb => {
-  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', cb);
+gulp.task('default', ['clean'], cb => {
+  run('compileThemes', ['css:prod', 'js:prod'], 'webpack:prod', 'tmpl', cb);
 });
 
 gulp.task('dev', cb => {
-  run(['css', 'js'], 'tmpl', cb);
+  run('compileThemes', ['css', 'js'], cb);
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], cb => {
-  run('webpack:watch', 'dev', cb);
+  run('dev', 'webpack:watch', 'tmpl', cb);
 });
 
-gulp.task('watch:full', ['dev:webpack'], () => {
+const watch = () => {
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
+  gulp.watch('public/css/*.styl', ['css']);
+  gulp.watch(
+    ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
+    ['js']
+  );
   gulp.watch(
     [
-      'public/js/*.js',
-      'public/js/admin/**/*.js',
-      'public/js/merchant/**/*.js',
       'public/react/merchant/**/*',
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
@@ -233,12 +233,7 @@ gulp.task('watch:full', ['dev:webpack'], () => {
     ],
     ['dev:webpack']
   );
-});
+};
 
-gulp.task('watch', ['dev'], () => {
-  gulp.watch('public/css/*.styl', ['css']);
-  gulp.watch(
-    ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
-    ['js']
-  );
-});
+gulp.task('watch:full', ['clean', 'dev:webpack'], watch);
+gulp.task('watch', ['clean', 'dev:webpack'], watch);

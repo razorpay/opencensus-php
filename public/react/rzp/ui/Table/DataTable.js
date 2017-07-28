@@ -20,7 +20,12 @@ export default function DataTable(props) {
     <div>
       {error && <Alert type="error" message={error} />}
 
-      <Table rows={items} columns={columns} showHeaders={showHeaders} />
+      <Table
+        rows={items}
+        columns={columns}
+        showHeaders={showHeaders}
+        class="table-striped"
+      />
       {loading && <div style={{ padding: 77 }}><Spinner /></div>}
       {!loading &&
         !items.length &&

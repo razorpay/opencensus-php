@@ -18,6 +18,7 @@ var app = angular
     'angularFileUpload',
     'ngIdle',
     'ngBusy',
+    'react',
   ])
   .run([
     '$rootScope',
@@ -328,6 +329,18 @@ var app = angular
           url: '/:id/edit',
           templateUrl: 'tpl/admin/app_workflow_new.html',
         })
+        // React Routes
+        // Test routes
+        .state('app.zroles', {
+          url: '/zroles',
+          template: '<div ui-view class="fade-in-down"></div>',
+        })
+        .state('app.zroles.list', {
+          url: '/list',
+          templateProvider: reactTemplateProvider('<roles-list />'),
+        })
+        // End of React Routes
+
         //Guest Routes
         .state('access', {
           url: '/access',
@@ -418,9 +431,7 @@ var reactTemplateProvider = function(template) {
       if (!window.React) {
         if (!calledOnce) {
           calledOnce = true;
-          var url = "<% asset('js/generated/admin_react.js') %>";
-          url = url.indexOf('-') !== -1 ? url : 'js/generated/admin_react.js';
-          injectScript(url, function() {
+          injectScript('<%=REACT_REV_PLACEHOLDER=%>', function() {
             deferred.resolve(template);
           });
         }

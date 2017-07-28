@@ -82,7 +82,8 @@ export default class IssueAllLinksModal extends Component {
                 Payment links were created in
                 {' '}
                 <b>Test Mode</b>
-                . So, only test payments can be made. Also, SMS will not be sent in test mode.
+                . So, only test payments can be made.
+                {/* Also, SMS will not be sent in test mode. */}
               </div>}
 
             <div class="Modal__actions">

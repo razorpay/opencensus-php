@@ -8,6 +8,7 @@ import moment from 'moment';
 import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 let now = moment();
 let currentMonth = now.month();
@@ -119,25 +120,27 @@ export default class ReportsContainer extends Component {
                     <option value="refund">Refund</option>
                     <option value="order">Order</option>
                     {/*Api must give this flag. Currently hard coded for uber*/}
-                    {['82LK42BGTN2bOe', '7SVOQZGZuwHr4I'].indexOf(
-                      user.current
-                    ) > -1 &&
-                      <option value="payment_link">Payment Link</option>}
+                    <ShowWhen featureEnabled="Payment_Link_Report">
+                      <option value="payment_link">Payment Link</option>
+                    </ShowWhen>
                     <option value="settlement">Settlement</option>
                     <option value="transaction">Combined</option>
-                    {user.tags.indexOf('Broking_Report') === -1 ||
-                      <option value="broking">Broking Report</option>}
-                    // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
-                    {user.tags.indexOf('Dsp_Report') === -1 ||
-                      <option value="dsp_report">
-                        DSP Transaction Report
-                      </option>}
+                    <ShowWhen featureEnabled="Broking_Report">
+                      <option value="broking">Broking Report</option>
+                    </ShowWhen>
+                    <ShowWhen featureEnabled="Dsp_Report">
+                      <option value="dsp_report">DSP Transaction Report</option>
+                    </ShowWhen>
+                    <ShowWhen featureEnabled="Rpp_Report">
+                      <option value="rpp_report">e-Mitra Report</option>
+                    </ShowWhen>
                     <option value="invoice">Monthly Invoice</option>
-                    {user.tags.indexOf('Marketplace') === -1 ||
+                    <ShowWhen featureEnabled="Marketplace">
                       <optgroup label="Route">
                         <option value="transfer">Transfer</option>
                         <option value="reversal">Reversal</option>
-                      </optgroup>}
+                      </optgroup>
+                    </ShowWhen>
                   </Field>
                 </div>
               </div>
