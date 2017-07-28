@@ -67,6 +67,12 @@ class Table
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
+    // This table does not belong to api service but is stored in api db.
+    // API Service should be owner of its DB and all the migrations for other
+    // services have to be stored in API source only
+    // Entity and Business logic is part of another codebase
+    const NODAL_STATEMENT       = 'nodal_statements';
+
     // organization roles permissions
     const ORG                   = 'orgs';
     const ORG_HOSTNAME          = 'org_hostname';

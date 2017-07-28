@@ -97,6 +97,20 @@ trait VirtualAccountTrait
         return $response;
     }
 
+    private function refundVirtualAccountExcessPayments()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/refund/excess',
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function payVirtualAccount(string $virtualAccountId, array $paymentArray = [])
     {
         $defaultPaymentArray = $this->getDefaultBankTransferArray();

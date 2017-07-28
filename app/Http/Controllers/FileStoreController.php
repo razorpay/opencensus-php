@@ -18,7 +18,9 @@ class FileStoreController extends Controller
     {
         $signedUrl = (new FileStore\Service)->fetchFileSignedUrlById($fileId);
 
-        return Redirect::to($signedUrl);
+        $data = ['url' => $signedUrl];
+
+        return ApiResponse::json($data);
     }
 
     /**

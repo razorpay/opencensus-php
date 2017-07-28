@@ -41,4 +41,18 @@ class Repository extends Base\Repository
 
         return $order;
     }
+
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
+    {
+        $orders = $this->newQuery()
+                       ->merchantId($merchantId)
+                       ->betweenTime($from, $to)
+                       ->with('payments')
+                       ->take($count)
+                       ->skip($skip)
+                       ->latest()
+                       ->get();
+
+        return $orders;
+    }
 }

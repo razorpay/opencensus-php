@@ -75,6 +75,30 @@ class Service extends Base\Service
         return $schedule->toArrayPublic();
     }
 
+    public function updateNextRun($input)
+    {
+        $this->trace->info(TraceCode::SCHEDULE_MIGRATION_INITIATED);
+
+        (new ScheduleTask\Validator)->validateInput('updateNextRunAt', $input);
+
+        $timestamp = $input['next_run_at'] ?? Carbon::now('Asia/Kolkata')->timestamp;
+
+        $type = $input['type'];
+
+        $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks($type, $timestamp);
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $scheduleTask->updateNextRunAt($timestamp);
+
+            $this->repo->saveOrFail($scheduleTask);
+        }
+
+        return [
+            'ids' => $scheduleTasks->getIds(),
+        ];
+    }
+
     public function processTasks(array $input): array
     {
         $this->trace->info(TraceCode::SCHEDULE_TASKS_PROCESS_REQUEST, $input);

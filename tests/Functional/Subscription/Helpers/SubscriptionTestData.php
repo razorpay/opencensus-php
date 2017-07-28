@@ -487,6 +487,48 @@ return [
         ],
     ],
 
+    'testCreateSubscriptionWithMultipleQuantityAddon' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'customer_notify' => 0,
+                'addons'        => [
+                    [
+                        'quantity' => 4,
+                        'item' => [
+                            'amount' => 300,
+                            'currency' => 'INR',
+                            'name' => 'Sample Upfront Amount'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                // 'token_id' => null,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => null,
+                'end_at' => null,
+                // 'upfront_amount' => 300,
+                'total_count' => 6,
+                'paid_count' => 0,
+            ],
+        ],
+    ],
+
     'testCreateSubscriptionWithStartAtAndAddon' => [
         'request' => [
             'url' => '/subscriptions',
@@ -794,6 +836,30 @@ return [
                 'end_at'           => null,
                 'charge_at'        => null,
                 'ended_at'         => null,
+            ],
+        ],
+    ],
+
+    'testFetchMultipleSubscription' => [
+        'request' => [
+            'url'     => '/subscriptions',
+            'method' => 'get',
+            'content' => [
+                'plan_id' => 'plan_1000000000plan'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'        => 'subscription',
+                        'plan_id'       => 'plan_1000000000plan',
+                        'customer_id'   => 'cust_100000customer',
+                        'status'        => 'created'
+                    ]
+                ]
             ],
         ],
     ],

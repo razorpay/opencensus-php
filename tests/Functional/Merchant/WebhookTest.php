@@ -219,6 +219,29 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testWebhooksFeatureBasedEvents()
+    {
+        $this->createWebhook(['events' => ['payment.authorized' => '1', 'subscription.charged' => '1']]);
+
+        $testData = $this->testData['testGetWebhooks'];
+
+        $response = $this->startTest($testData);
+
+        $events = $response['items'][0]['events'];
+
+        $this->assertArrayNotHasKey('subscription.charged', $events);
+
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
+
+        $testData = $this->testData['testGetWebhooks'];
+
+        $response = $this->startTest($testData);
+
+        $events = $response['items'][0]['events'];
+
+        $this->assertArrayHasKey('subscription.charged', $events);;
+    }
+
     public function testOrderPaidWebhookEventData()
     {
         $this->createWebhook(['events' => ['order.paid' => "1"]]);

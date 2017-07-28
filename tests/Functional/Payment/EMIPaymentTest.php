@@ -89,6 +89,9 @@ class EmiPaymentTest extends TestCase
         //RBL Card
         $this->makeEmiPaymentOnCard('5243730000000008', 9, $yesterdayAtTen);
 
+        //Standard Chartered card
+        $this->makeEmiPaymentOnCard('4028740000000001', 9, $yesterdayAtTen);
+
         //ICICI Card
         $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
 
@@ -107,12 +110,14 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['INDB'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['SCBL'])));
         $this->assertEquals(true, File::exists($content['ICIC']));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['SCBL']));
 
         Mail::assertSent(EmiMail\File::class);
 

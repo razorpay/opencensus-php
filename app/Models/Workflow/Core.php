@@ -53,14 +53,14 @@ class Core extends Base\Core
     {
         $steps = $level[Entity::STEPS];
 
+        $data = [
+            Step\Entity::WORKFLOW_ID => $workflow->getId(),
+            Step\Entity::LEVEL       => $level[Step\Entity::LEVEL],
+            Step\Entity::OP_TYPE     => $level[Step\Entity::OP_TYPE],
+        ];
+
         foreach ($steps as $step)
         {
-            $data = [
-                Step\Entity::WORKFLOW_ID => $workflow->getId(),
-                Step\Entity::LEVEL       => $level[Step\Entity::LEVEL],
-                Step\Entity::OP_TYPE     => $level[Step\Entity::OP_TYPE],
-            ];
-
             $step = array_merge($step, $data);
 
             Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);

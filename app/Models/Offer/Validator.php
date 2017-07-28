@@ -48,7 +48,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME               => 'sometimes|filled|alpha_space_num|max:25',
+        Entity::NAME               => 'sometimes|filled|string|max:25',
         Entity::IINS               => 'sometimes|filled|array',
         Entity::MAX_PAYMENT_COUNT  => 'sometimes|filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'sometimes|filled|array',

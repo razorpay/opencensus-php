@@ -5,12 +5,52 @@ namespace RZP\Models\Plan\Subscription;
 use Carbon\Carbon;
 
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Task;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'subscription';
+
+    protected $entityFetchParamRules = [
+        Entity::PLAN_ID     => 'filled|string|min:14|max:19',
+        Entity::STATUS      => 'filled|string|max:16|custom',
+    ];
+
+    protected $proxyFetchParamRules = [
+        Entity::CUSTOMER_ID => 'filled|string|min:14|max:19',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::ERROR_STATUS    => 'filled|string|max:32',
+        Entity::SCHEDULE_ID     => 'filled|string|size:14',
+        Entity::MERCHANT_ID     => 'filled|string|size:14',
+        Entity::TOKEN_ID        => 'filled|string|min:14|max:20',
+        Entity::AUTH_ATTEMPTS   => 'filled|integer|min:1|max:5',
+    ];
+
+    protected $signedIds = [
+        Entity::PLAN_ID,
+        Entity::CUSTOMER_ID,
+        Entity::SCHEDULE_ID,
+        Entity::MERCHANT_ID,
+        Entity::TOKEN_ID,
+    ];
+
+    protected function validateStatus($attribute, $value)
+    {
+        if (Status::isStatusValid($value) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                Entity::STATUS,
+                [
+                    'status' => $value
+                ]);
+        }
+    }
 
     public function getSubscriptionsToCharge()
     {

@@ -36,6 +36,9 @@ class CreateAddOns extends Migration
             $table->char(Entity::INVOICE_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->integer(Entity::QUANTITY)
+                  ->default(1);
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)

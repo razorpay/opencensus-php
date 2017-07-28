@@ -321,3 +321,18 @@ if (! function_exists('isJson'))
         return (json_last_error() == JSON_ERROR_NONE);
     }
 }
+
+/**
+ * For each character in the string checks if the ascii value is
+ * greater than 240 or not. Any character with a value greater than 240
+ * indicates that it is a 4 byte sequence and hence cannot be considered
+ * valid UTF-8 as we don't support utf8mb4 encoding.
+ * Ref- https://stackoverflow.com/questions/16496554/can-php-detect-4-byte-encoded-utf8-chars/16496730#16496730
+ *
+ * @param  string $string value to check
+ * @return boolean
+ */
+function is_valid_utf8(String $string)
+{
+    return (max(array_map('ord', str_split($string))) < 240);
+}

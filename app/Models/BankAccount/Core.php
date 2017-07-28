@@ -9,6 +9,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\MailTags;
 use Mail;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail;
 
 class Core extends Base\Core
 {
@@ -77,14 +78,25 @@ class Core extends Base\Core
      */
     protected function changeBankAccount($input, $merchant, $oldBankAccount)
     {
+        $detail = $this->formatBankAccountForMerchantDetail($input);
+
         return $this->repo->transaction(
-            function() use ($merchant, $oldBankAccount, $input)
+            function() use ($merchant, $oldBankAccount, $input, $detail)
             {
                 $this->repo->delete($oldBankAccount);
 
                 $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
                 $this->sendBankAccountChangeEmail($ba, $merchant);
+
+                $merchantDetails = $merchant->merchantDetail;
+
+                if ($merchantDetails !== null)
+                {
+                    $merchantDetails->edit($detail);
+
+                    $this->repo->merchant_detail->saveOrFail($merchantDetails);
+                }
 
                 return $ba;
             });
@@ -177,5 +189,23 @@ class Core extends Base\Core
         $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant);
 
         Mail::queue($bankAccountChangeMail);
+    }
+
+    protected function formatBankAccountForMerchantDetail(array $input): array
+    {
+        $detail = [
+            Detail\Entity::BANK_BRANCH_IFSC          => $input[Entity::IFSC_CODE],
+            Detail\Entity::BANK_ACCOUNT_NUMBER       => $input[Entity::ACCOUNT_NUMBER],
+            Detail\Entity::BANK_ACCOUNT_NAME         => $input[Entity::BENEFICIARY_NAME],
+            Detail\Entity::BANK_BENEFICIARY_ADDRESS1 => $input[Entity::BENEFICIARY_ADDRESS1],
+            Detail\Entity::BANK_BENEFICIARY_ADDRESS2 => $input[Entity::BENEFICIARY_ADDRESS2] ?? null,
+            Detail\Entity::BANK_BENEFICIARY_ADDRESS3 => $input[Entity::BENEFICIARY_ADDRESS3] ?? null,
+            Detail\Entity::BANK_BENEFICIARY_CITY     => $input[Entity::BENEFICIARY_CITY],
+            Detail\Entity::BANK_BENEFICIARY_STATE    => $input[Entity::BENEFICIARY_STATE],
+            Detail\Entity::BANK_BENEFICIARY_PIN      => $input[Entity::BENEFICIARY_PIN],
+            Detail\Entity::BANK_ACCOUNT_TYPE         => 'current',
+        ];
+
+        return $detail;
     }
 }

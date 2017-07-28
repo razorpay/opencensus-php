@@ -1843,6 +1843,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
     }
 
+    public function bankTransfer()
+    {
+        return $this->hasOne('RZP\Models\BankTransfer\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');

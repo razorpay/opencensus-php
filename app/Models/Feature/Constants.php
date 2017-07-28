@@ -22,6 +22,7 @@ class Constants
     const REVERSE                  = 'reverse';
     const BROKING_REPORT           = 'broking_report';
     const DSP_REPORT               = 'dsp_report';
+    const RPP_REPORT               = 'rpp_report';
     const AGGREGATOR_REPORT        = 'aggregator_report';
     const PAYMENT_EMAIL_FETCH      = 'payment_email_fetch';
     const CREATED_FLOW             = 'created_flow';
@@ -38,7 +39,9 @@ class Constants
     const INVOICE_PARTIAL_PAYMENTS = 'invoice_partial_payments';
     const HIDE_DOWNTIMES           = 'hide_downtimes';
     const OLD_CREDITS_FLOW         = 'old_credits_flow';
+    const CHARGE_AT_WILL           = 'charge_at_will';
     const EMI_MERCHANT_SUBVENTION  = 'emi_merchant_subvention';
+    const FSS_RISK_UDF             = 'fss_risk_udf';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -58,6 +61,7 @@ class Constants
         self::REVERSE                  => true,
         self::BROKING_REPORT           => true,
         self::DSP_REPORT               => true,
+        self::RPP_REPORT               => true,
         self::AGGREGATOR_REPORT        => true,
         self::PAYMENT_EMAIL_FETCH      => true,
         self::CREATED_FLOW             => true,
@@ -74,7 +78,9 @@ class Constants
         self::INVOICE_PARTIAL_PAYMENTS => true,
         self::HIDE_DOWNTIMES           => true,
         self::OLD_CREDITS_FLOW         => true,
+        self::CHARGE_AT_WILL           => true,
         self::EMI_MERCHANT_SUBVENTION  => true,
+        self::FSS_RISK_UDF             => true,
     ];
 
     public static $visibleFeaturesMap = [

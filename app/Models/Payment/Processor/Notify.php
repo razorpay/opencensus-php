@@ -140,9 +140,10 @@ class Notify
     {
         // We don't send out a notification on capture
         $slackMessages = [
-            Payment\Event::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
-            Payment\Event::AUTHORIZED           => 'Payment Authorized',
-            Payment\Event::REFUNDED             => 'Payment Refunded'
+            Payment\Event::FAILED_TO_AUTHORIZED       => 'Failed Payment Authorized',
+            Payment\Event::AUTHORIZED                 => 'Payment Authorized',
+            Payment\Event::INVOICE_PAYMENT_AUTHORIZED => 'Payment Authorized',
+            Payment\Event::REFUNDED                   => 'Payment Refunded'
         ];
 
         $settings = [
@@ -335,6 +336,7 @@ class Notify
             // Both cases are the same
             case Payment\Event::FAILED_TO_AUTHORIZED:
             case Payment\Event::AUTHORIZED:
+            case Payment\Event::INVOICE_PAYMENT_AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
                 unset($data['method'], $data['public_id']);
@@ -342,6 +344,7 @@ class Notify
 
             // Capture is unused right now
             case Payment\Event::CAPTURED:
+            case Payment\Event::INVOICE_PAYMENT_CAPTURED:
                 $data = $this->template['payment'];
                 break;
 

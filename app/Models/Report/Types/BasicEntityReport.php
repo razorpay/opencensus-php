@@ -206,7 +206,7 @@ class BasicEntityReport extends BaseReport
             $count = $originalCount;
             $skip = $originalSkip;
 
-            list($totalCount, $fullPath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append);
+            list($totalCount, $fullpath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append);
 
             $totalEntries += $totalCount;
 

@@ -166,7 +166,7 @@ class Entity extends Base\Entity
     {
         if (empty($this->getId()) === true)
         {
-            return ;
+            return;
         }
 
         $state = (new State\Repository)->getLatestState($this->getId());
@@ -219,7 +219,9 @@ class Entity extends Base\Entity
 
         $data['workflow_steps'] = [];
 
-        foreach ($this->workflow->steps as $step)
+        $workflow = $this->workflow()->withTrashed()->first();
+
+        foreach ($workflow->steps as $step)
         {
             $thisStep = $step->toArrayPublic();
 
