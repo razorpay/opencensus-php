@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action;
 
-
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
