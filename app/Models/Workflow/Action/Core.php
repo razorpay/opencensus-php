@@ -473,15 +473,14 @@ class Core extends Base\Core
         return $actions;
     }
 
-    public function executeAction()
+    public function executeAction($action)
     {
-        list($actionCore, $stateCore, $differCore) = [
-            new Core,
+        list($stateCore, $differCore) = [
             new State\Core,
             new Differ\Core,
         ];
 
-        $diff = (new Differ\Service)->fetchRequest($id);
+        $diff = (new Differ\Service)->fetchRequest($action->getId());
 
         $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
 
@@ -502,7 +501,7 @@ class Core extends Base\Core
 
         // Auth details have to be initialized before
         // the actual code (Controller@action) runs.
-        $actionCore->initAuthDetails($authDetails);
+        $this->initAuthDetails($authDetails);
 
         $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
 
@@ -517,7 +516,7 @@ class Core extends Base\Core
 
         // Update states
 
-        $actionCore->updateState($action, $state);
+        $this->updateState($action, $state);
 
         $stateCore->changeActionState($action->getId(), $state, $adminId);
 
