@@ -375,7 +375,7 @@ class MerchantFeeTest extends TestCase
             ]);
 
          $pricingRuleCardRecurring = new Pricing\Entity([
-                'id'                  => '1nvp2XPMmaRLxx',
+                'id'                  => '1nvp2XPMmaabxy',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testCardRecurring',
                 'feature'             => 'recurring',
@@ -407,8 +407,8 @@ class MerchantFeeTest extends TestCase
             $pricingPlanWallet1,
             $pricingPlanWallet2,
             $pricingPlanWallet3,
-            $pricingPlanEmi,
             $pricingPlanEmiPlan,
+            $pricingPlanEmi,
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
         ];
@@ -592,7 +592,7 @@ class MerchantFeeTest extends TestCase
 
         $expectedPricingRules = [
                                     "payment"          => "4pmbgtgNVVDd7x",
-                                    "recurring"        => "1nvp2XPMmaRLxx",
+                                    "recurring"        => "1nvp2XPMmaabxy",
                                 ];
 
         $this->runMerchantFeeTest("100", "Visa", $expectedPricingRules, Card\Type::DEBIT, true);

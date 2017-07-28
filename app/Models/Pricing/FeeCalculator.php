@@ -351,6 +351,7 @@ class FeeCalculator
             [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
         ];
 
+
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
@@ -391,6 +392,8 @@ class FeeCalculator
 
         $issuer = $emiPlan->getIssuer();
 
+        //Emi duration and issuer filter is for merchant subvented model
+        //in normal emi it will be null where feature is payment
         $filters1 = array(
             [Pricing\Entity::PAYMENT_NETWORK, $network,     true, null ],
             [Pricing\Entity::PAYMENT_ISSUER,  $issuer,      true, null ],
