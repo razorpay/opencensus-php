@@ -165,7 +165,7 @@ class FeeCalculator
             if ((count($rules) > 0) and
                 $entityName === Pricing\Feature::PAYMENT)
             {
-                $rule = $this->getRelevantPaymentPricingRule($rules, $method, $feature);
+                $rule = $this->getRelevantPaymentPricingRule($rules, $method);
 
                 $this->pricingRules->push($rule);
             }
@@ -177,7 +177,7 @@ class FeeCalculator
         $method = $this->entity->getMethod();
 
         $filters = array(
-            [Pricing\Entity::FEATURE, $feature, false, null  ],
+            [Pricing\Entity::FEATURE,         $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
         );
 
@@ -226,7 +226,7 @@ class FeeCalculator
         $this->pricingRules->push($rule);
     }
 
-    protected function getRelevantPaymentPricingRule($rules, $method, $feature = Pricing\Feature::PAYMENT)
+    protected function getRelevantPaymentPricingRule($rules, $method)
     {
         $rule = null;
 
@@ -252,7 +252,7 @@ class FeeCalculator
         }
         else if ($method === Payment\Method::EMI)
         {
-            $rule = $this->getRelevantPricingRuleForEmi($rules, $feature);
+            $rule = $this->getRelevantPricingRuleForEmi($rules);
         }
         // else if ($method === Payment\Method::TRANSFER)
         // {
@@ -333,26 +333,6 @@ class FeeCalculator
         return $rule;
     }
 
-    protected function applyEmiDurationFilterAndReturnOneRule($rules)
-    {
-       $payment = $this->entity;
-
-       $merchant = $payment->merchant;
-
-       $emiPlan = $payment->emiPlan;
-
-       if ($merchant->getEmiSubvention() === Emi\Subvention::CUSTOMER)
-       {
-            return $rules;
-       }
-
-       $filters = [
-            [Pricing\Entity::EMI_DURATION, $emiPlan->getDuration(), false, false]
-        ];
-
-        return $this->applyFiltersOnRules($rules, $filters);
-    }
-
     protected function getRelevantPricingRuleForNBPayment($rules)
     {
         // All the rules for the current pricing plan will be put
@@ -400,23 +380,23 @@ class FeeCalculator
         return $this->validateAndGetOnePricingRule($rules);
     }
 
-    protected function getRelevantPricingRuleForEmi($rules, $feature = Pricing\Feature::PAYMENT)
+    protected function getRelevantPricingRuleForEmi($rules)
     {
         $payment = $this->entity;
+        $emiPlan = $payment->emiPlan;
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
+        $emiDuration = $emiPlan->getDuration();
+        $issuer = $emiPlan->getIssuer();
+
         $filters1 = array(
-            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+            [Pricing\Entity::PAYMENT_NETWORK, $network,     true, null ],
+            [Pricing\Entity::PAYMENT_ISSUER,  $issuer,      true, null ],
+            [Pricing\Entity::EMI_DURATION,    $emiDuration, true, null ]
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
-
-        //This is for including fee of merchant with merchant subvented model
-        if ($feature === Pricing\Feature::EMI)
-        {
-            $rules = $this->applyEmiDurationFilterAndReturnOneRule($rules);
-        }
 
         return $this->validateAndGetOnePricingRule($rules);
     }

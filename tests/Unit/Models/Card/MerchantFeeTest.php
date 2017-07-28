@@ -337,8 +337,8 @@ class MerchantFeeTest extends TestCase
 
          $pricingPlanEmiPlan = new Pricing\Entity([
                 'id'                  => '1fq0O3demix3tt',
-                'plan_id'             => '1hDYlICobzOCYt',
-                'plan_name'           => 'testDefaultPlan',
+                'plan_id'             => '1EmiSubPricing',
+                'plan_name'           => 'EmiSubPricingP',
                 'feature'             => 'emi',
                 'payment_method'      => 'emi',
                 'payment_method_type' => null,

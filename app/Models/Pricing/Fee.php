@@ -19,6 +19,8 @@ class Fee extends Base\Core
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
+    protected $emiSubPricingPlanId = '1EmiSubPricing';
+
     public function __construct()
     {
         parent::__construct();
@@ -53,6 +55,10 @@ class Fee extends Base\Core
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
+
+        $emiSubPricing = $this->repo->getPricingPlanId($emiSubPricingPlanId);
+
+        $pricing = $pricing->merge($emiSubPricing);
 
         return $calculator->calculate($pricing);
     }
