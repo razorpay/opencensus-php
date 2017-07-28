@@ -45,12 +45,18 @@ const selector = formValueSelector('refundModal');
       ...state.session,
       ...state.payment,
       user: state.session.user,
-      transfers: state.transfers,
+      transfers: state.payment.transfers,
       partial,
       payable_amount,
     };
   },
-  { closeModal, refundPayment, fetchPayment, fetchTransfers, ...NotificationsActions }
+  {
+    closeModal,
+    refundPayment,
+    fetchPayment,
+    fetchTransfers,
+    ...NotificationsActions,
+  }
 )
 @reduxForm({
   form: 'refundModal',
@@ -76,17 +82,39 @@ export default class RefundModal extends Component {
 
     this.props.initialize({
       comment: '',
-      parital: false,
+      partial: false,
       amount: (payment.amount - payment.amount_refunded) / 100 + '',
       reverse_all: false,
     });
   }
 
   save = props => {
+    // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
+    if (
+      props.partial &&
+      props.reverse_all &&
+      this.props.transfers.items &&
+      this.props.transfers.items.length > 1
+    ) {
+      var errorMsg =
+        'Reversals cannot be automated when partially refunding a payment that has more than 1 transfer.' +
+        ' Create reversals manually before attempting the refund.';
+
+      this.props.showNotification({
+        type: 'error',
+        message: errorMsg,
+        closeTimeout: 5000,
+      });
+
+      return;
+    }
+
     this.context
       .confirm({
         header: 'Are you sure you want to refund this payment?',
-        message: props.reverse_all ? 'Reversals will be automatically created for all transfers on this payment, before the refund' : null,
+        message: props.reverse_all
+          ? 'Reversals will be automatically created for all transfers on this payment, before the refund'
+          : null,
         affirmativeLabel: 'Yes, Refund',
         affirmativePendingLabel: 'Refunding...',
         abortLabel: "No, don't!",
@@ -95,7 +123,7 @@ export default class RefundModal extends Component {
           let data = {
             amount: props.amount * 100,
             comment: props.comment,
-            reverse_all: props.reverse_all ? '1' : '0'
+            reverse_all: props.reverse_all ? '1' : '0',
           };
 
           if (!props.partial) {
@@ -127,9 +155,7 @@ export default class RefundModal extends Component {
   };
 
   render() {
-    const { handleSubmit, payment } = this.props;
-
-    console.log(payment);
+    const { handleSubmit, payment, transfers } = this.props;
 
     return (
       <div>
@@ -180,7 +206,7 @@ export default class RefundModal extends Component {
                   </div>
                 </div>
               : null}
-            {this.props.payment.amount_transferred > 0
+            {transfers.items.length > 0
               ? <div class="form-group">
                   <label class="col-sm-4 control-label">
                     <div>Reverse All Transfers</div>
