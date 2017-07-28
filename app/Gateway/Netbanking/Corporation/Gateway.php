@@ -3,12 +3,12 @@
 namespace RZP\Gateway\Netbanking\Corporation;
 
 use RZP\Constants\Mode;
+use RZP\Models\Terminal;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Gateway extends Base\Gateway
 {
-
     protected $gateway = 'netbanking_corporation';
 
     protected $bank = 'corporation';
@@ -41,34 +41,33 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData($input)
     {
-        // Hardcoding the client code for now
-        $clientCode = '123';
-
         $data = array(
-            'CustID'            => $clientCode,
-            'MerCD'             => $input['terminal']['gateway_merchant_id'],
+            // Setting this as the merchant code shared with us
+            'CustID'            => $this->getMerchantId(),
+            'MerCD'             => $this->getMerchantId(),
             'AMT'               => $input['payment']['amount'] / 100,
             'OTC'               => $input['payment']['id'],
             'MD'                => 'P',
             'TT'                => 'T',
         );
 
-        if ($this->mode === Mode::TEST)
-        {
-            $data['MerchantCode'] = 'RAZORPAY';
-        }
-
         if ($input['merchant']->isTPVRequired())
         {
             $data['AcctNo'] = $input['order']['account_number'];
-
-            if ($this->mode === Mode::TEST)
-            {
-                $data['MerchantCode'] = 'RAZORPAY1';
-            }
         }
 
         return $data;
     }
 
+    protected function getMerchantId()
+    {
+        $mid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $mid = $this->getTestMerchantId();
+        }
+
+        return $mid;
+    }
 }
