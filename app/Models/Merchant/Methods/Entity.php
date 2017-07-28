@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
+    const SBIBUDDY          = 'sbibuddy';
     const OPENWALLET        = 'openwallet';
     const MPESA             = 'mpesa';
     const EMI               = 'emi';
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
         self::EMI,
@@ -75,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
         self::EMI,
@@ -99,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
         self::EMI,
@@ -121,6 +125,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY       => false,
         self::FREECHARGE     => false,
         self::JIOMONEY       => false,
+        self::SBIBUDDY       => false,
         self::OPENWALLET     => false,
         self::MPESA          => false,
         self::BANKS          => [],
@@ -142,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY,
         self::FREECHARGE,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
     );
@@ -178,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => 'bool',
         self::FREECHARGE    => 'bool',
         self::JIOMONEY      => 'bool',
+        self::SBIBUDDY      => 'bool',
         self::OPENWALLET    => 'bool',
         self::MPESA         => 'bool',
         self::EMI           => 'bool',
@@ -308,6 +315,11 @@ class Entity extends Base\PublicEntity
     public function isJiomoneyEnabled()
     {
         return $this->getAttribute(self::JIOMONEY);
+    }
+
+    public function isSbibuddyEnabled()
+    {
+        return $this->getAttribute(self::SBIBUDDY);
     }
 
     public function isEmiEnabled()
