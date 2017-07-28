@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Indusind;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
@@ -42,6 +43,24 @@ class DailyFiles extends Base\DailyFiles
                 $refundsFile,
                 $count,
                 $email
+            );
+        }
+
+        if (($amount['claims'] - $amount['refunds']) < 0)
+        {
+            $message = 'Claims Total Amount for Indusind is less than Refund Amount';
+
+            $data = [
+                'refundsData' => $refundsData,
+                'claimsData'  => $claimsData,
+            ];
+
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.settlements'),
+                ]
             );
         }
 

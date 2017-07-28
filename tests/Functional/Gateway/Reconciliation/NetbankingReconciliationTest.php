@@ -51,7 +51,7 @@ class NetbankingReconcilationTest extends TestCase
 
         $gatewayEnttiy = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('309002069863', $gatewayEnttiy['account_number']);
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEnttiy['account_number']);
 
         $this->assertEquals('309001141935', $gatewayEnttiy['credit_account_number']);
     }
@@ -131,7 +131,7 @@ class NetbankingReconcilationTest extends TestCase
 
         $gatewayEnttiy = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('309002069863', $gatewayEnttiy['account_number']);
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEnttiy['account_number']);
     }
 
     protected function reconcile($gateway, $uploadedFile)
