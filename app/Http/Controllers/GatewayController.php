@@ -171,6 +171,13 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackCorporation()
+    {
+        $input = Request::all();
+        // For testing in beta
+        sd($input);
+    }
+
     protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
