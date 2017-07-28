@@ -134,7 +134,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEmiPaymentsBetween($from, $to, $bank)
+    public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
         $tRepo = $this->repo->terminal;
 

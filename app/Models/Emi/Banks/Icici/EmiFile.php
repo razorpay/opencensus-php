@@ -3,10 +3,8 @@
 namespace RZP\Models\Emi\Banks\Icici;
 
 use Carbon\Carbon;
-use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
-use RZP\Models\Emi\Entity;
 use RZP\Models\Base\UniqueIdEntity;
 
 class EmiFile extends Base\EmiFile
@@ -77,7 +75,11 @@ class EmiFile extends Base\EmiFile
     {
         $id = UniqueIdEntity::generateUniqueId();
 
-        $fileName = 'icici/outgoing/NRPSS_NRPSSUPLDNEW_' . $id;
+        $count = count($emiData);
+
+        $date = Carbon::now('Asia/Kolkata')->format('dmY');
+
+        $fileName = 'Razorpay _ICICIEMI_' . $date . '_' . $count;
 
         $metadata = $this->getH2HMetadata();
 
