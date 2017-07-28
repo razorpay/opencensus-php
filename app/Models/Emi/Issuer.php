@@ -10,12 +10,14 @@ class Issuer
     const AXIS          = 'Axis';
     const INDUS_IND     = 'Indusind';
     const RBL           = 'Rbl';
+    const SCBL          = 'Scbl';
 
     public static $emiFileBanks = array(
         IFSC::KKBK  => self::KOTAK,
         IFSC::UTIB  => self::AXIS,
         IFSC::INDB  => self::INDUS_IND,
         IFSC::RATN  => self::RBL,
+        IFSC::SCBL  => self::SCBL,
     );
 
 }

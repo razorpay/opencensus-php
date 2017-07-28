@@ -521,13 +521,13 @@ class Gateway
         IFSC::KKBK,
         IFSC::RATN,
         IFSC::UTIB,
+        IFSC::SCBL,
     ];
 
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => Gateway::HDFC,
         IFSC::ICIC => Gateway::FIRST_DATA,
         IFSC::HSBC => Gateway::FIRST_DATA,
-        IFSC::SCBL => Gateway::FIRST_DATA,
     ];
 
     public static $subscriptionOverOneYearGateways = [

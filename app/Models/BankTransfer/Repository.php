@@ -26,6 +26,7 @@ class Repository extends Base\Repository
     {
         $bankTransfer = $this->newQuery()
                              ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                             ->with('payerBankAccount')
                              ->firstOrFail();
 
         return $bankTransfer;
