@@ -18,8 +18,6 @@ class NetbankingHdfc extends Processor\Base
 
     protected $type = Payment\Entity::BANK;
 
-    protected $gatewayCode = IFSC::HDFC;
-
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format
      */

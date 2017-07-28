@@ -124,10 +124,11 @@ trait GenerateRefundFile
         $from = $this->gatewayFile->getFrom();
         $to = $this->gatewayFile->getTo();
         $gateway = $this->gatewayFile->getGateway();
+        $bank = $this->gatewayFile->getBank();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                         $this->type,
-                        $this->gatewayCode,
+                        $bank,
                         $from,
                         $to,
                         $gateway
