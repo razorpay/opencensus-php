@@ -52,4 +52,16 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function fetchExcessPaidVirtualAccounts()
+    {
+        $excessCondition = 'amount_received > (amount_expected + amount_reversed)';
+
+        $query = $this->newQuery()
+                      ->where(Entity::STATUS, '=', Status::PAID)
+                      ->whereNotNull(Entity::AMOUNT_EXPECTED)
+                      ->whereRaw($excessCondition);
+
+        return $query->get();
+    }
 }

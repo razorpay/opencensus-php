@@ -49,25 +49,23 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getCreatedPayoutAttemptsBeforeTimestamp(
-        string $status, int $timestamp, array $relations = [])
+    /**
+     * Fetches created attempts that are to be populated in the payouts file.
+     *
+     * This does not (and should not) include attempts of type settlement.
+     * Those are never in created state, but this may change in the future,
+     * so source_type filter is added anyway.
+     *
+     * @param  int    $timestamp Upper limit on created_at, usually set to now
+     * @param  array  $relations Relations required in the process
+     */
+    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, array $relations = [])
     {
-        $payoutIdCol = $this->repo->payout->dbColumn(Payout\Entity::ID);
-
-        $statusCol = $this->repo->fund_transfer_attempt->dbColumn(Entity::STATUS);
-        $createdAtCol = $this->repo->fund_transfer_attempt->dbColumn(Entity::CREATED_AT);
-        $idCol = $this->repo->fund_transfer_attempt->dbColumn(Entity::ID);
-
-        $columns = $this->dbColumn('*');
-
         $query = $this->newQuery()
-                      ->select($columns)
-                      ->join(Constants\Table::PAYOUT, Entity::SOURCE_ID, '=', $payoutIdCol)
-                      ->where(Payout\Entity::METHOD, '=', Payout\Method::FUND_TRANSFER)
-                      ->where($statusCol, '=', Status::CREATED)
-                      ->where($createdAtCol, '<', $timestamp)
-                      ->where(Entity::SOURCE_TYPE, '=', Constants\Entity::PAYOUT)
-                      ->orderBy($idCol);
+                      ->where(Entity::STATUS, '=', Status::CREATED)
+                      ->where(Entity::SOURCE_TYPE, '!=', Constants\Entity::SETTLEMENT)
+                      ->where(Entity::CREATED_AT, '<=', $timestamp)
+                      ->orderBy(Entity::ID);
 
         if (count($relations) > 0)
         {

@@ -174,6 +174,7 @@ final class Route
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'          => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'          => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
+        'virtual_account_refund_excess'           => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -295,6 +296,7 @@ final class Route
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_transaction_dsp'                 => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
+        'reports_order_rpp'                       => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
@@ -695,6 +697,7 @@ final class Route
         'webhook_create',
         'webhook_edit',
         'webhook_fetch',
+        'webhook_fetch_multiple',
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_combined_report',
@@ -933,7 +936,6 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
-        'admin_get_file',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
@@ -969,6 +971,7 @@ final class Route
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
         'gratis_postpaid_transactions',
+        'virtual_account_refund_excess',
     ];
 
     public static $proxy = [
@@ -980,10 +983,10 @@ final class Route
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'card_fetch_multiple',
-        'webhook_fetch_multiple',
         'balance_fetch',
         'reports_transaction_broking',
         'reports_transaction_dsp',
+        'reports_order_rpp',
         'reports_monthly_invoice',
         'reports_public_entity',
         'reports_public_entity_file',
@@ -1083,6 +1086,7 @@ final class Route
         'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
+        'admin_get_file',
         // workflows
         'workflow_create',
         'workflow_get',
@@ -1227,6 +1231,7 @@ final class Route
         'merchant_activation_details'      => '*',
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
+        'admin_get_file'                   => '*',
     ];
 
     public static $direct = [
@@ -1310,6 +1315,7 @@ final class Route
             'refund_retry_failed',
             'reports_transaction_dsp',
             'schedule_process_tasks',
+            'virtual_account_refund_excess',
         ],
 
         'kotak' => [
@@ -1363,11 +1369,12 @@ final class Route
         'payment_create_wallet'             => [Feature::S2SWALLET],
         'payment_create_upi'                => [Feature::S2SUPI],
         'payment_create_openwallet'         => [Feature::OPENWALLET],
-        'payment_create_recurring'          => [Feature::RECURRING, Feature::CHARGE_AT_WILL],
+        'payment_create_recurring'          => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'           => [Feature::DSP_REPORT],
+        'reports_order_rpp'                 => [Feature::RPP_REPORT],
         'payment_payout'                    => [Feature::PAYOUT],
         'payout_create'                     => [Feature::PAYOUT],
         'payout_fetch_by_id'                => [Feature::PAYOUT],

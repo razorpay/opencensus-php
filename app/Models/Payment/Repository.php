@@ -780,9 +780,10 @@ class Repository extends Base\Repository
      * Fetches the number of times a payment has been made against each offer id in $offerIds
      * grouped by offerId
      *
-     * @param  array  $cardIds  Card ids to check
-     * @param  array  $offerIds Offer ids to check
-     * @return int              Count of payments
+     * @param  array $cardIds  Card ids to check
+     * @param  array $offerIds Offer ids to check
+     *
+     * @return array Count of payments
      */
     public function getPaymentCountForCardIdsAndOfferIds(array $cardIds, array $offerIds): array
     {
@@ -839,6 +840,7 @@ class Repository extends Base\Repository
                     ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
                     ->where($paymentMethod, '=', Method::BANK_TRANSFER)
+                    ->orderByCreatedAt()
                     ->get();
     }
 
