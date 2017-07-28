@@ -71,7 +71,7 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'ICIC',
             'min_amount'        => '300000',
-            'issuer_plan_id'    => '85008'
+            'issuer_plan_id'    => '1007773209'
         ],
     ];
 

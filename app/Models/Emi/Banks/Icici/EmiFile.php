@@ -25,6 +25,13 @@ class EmiFile extends Base\EmiFile
 
             $principalAmount = $emiPayment->getAmount()/100;
 
+            $merchantPayback = 'Na';
+
+            if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT)
+            {
+                $merchantPayback = $emiPlan->getMerchantPayback()/100;
+            }
+
             $rate = $emiPlan->getRate()/100;
 
             $tenure = $emiPlan->getDuration();
@@ -35,26 +42,26 @@ class EmiFile extends Base\EmiFile
 
             $data[] = [
                 'EMI ID'                       => $emiPayment->getId(),
-                'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
+                'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
                 'Card No.'                     => $this->getCardNumber($emiPayment->card),
                 'Amount'                       => $principalAmount,
                 'Auth Code/ Approval Code'     => $this->getAuthCode($emiPayment),
                 'Scheme Code'                  => $issuerPlanId,
                 'Tenure'                       => $tenure,
-                'Merchant Subvention'          => '',
+                'Merchant Subvention'          => $merchantPayback,
                 'Customer Subvention'          => $rate,
-                'Discount/ Cashback Amount'    => '',
-                'Discount/Cashback(%)'         => '',
+                'Discount/ Cashback Amount'    => 'Na',
+                'Discount/Cashback(%)'         => 'Na',
                 'Cashback (Y/N)'               => 'N',
-                'Manufacturer'                 => '',
+                'Manufacturer'                 => 'Na',
                 'Merchant Name'                => 'Razorpay Payments',
-                'Pinelabs Merchant Name'       => '',
+                'Pinelabs Merchant Name'       => 'Na',
                 'Issuer'                       => 'ICICI Bank',
-                'Acquirer'                     => '',
-                'Settlement Time'              => '',
-                'Subvention Payable to Issuer' => '',
-                'Subvention Amount (Rs.)'      => '',
-                'Addition Cashback'            => '',
+                'Acquirer'                     => 'Na',
+                'Settlement Time'              => 'Na',
+                'Subvention Payable to Issuer' => 'Na',
+                'Subvention Amount (Rs.)'      => 'Na',
+                'Addition Cashback'            => 'Na',
             ];
         }
 
