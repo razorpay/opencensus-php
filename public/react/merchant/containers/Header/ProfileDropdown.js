@@ -63,7 +63,7 @@ export default class ProfileDropdown extends Component {
                         class="btn btn-default btn-xs"
                         style={{ marginLeft: '5px' }}
                       >
-                        Copy <b>Merchant ID</b>
+                        Copy <b>Merchant Id</b>
                       </button>
                     </CustomClipboard>
                   </div>

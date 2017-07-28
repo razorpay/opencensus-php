@@ -38,16 +38,16 @@ export const attempts = { title: 'Attempts', value: item => item.attempts };
 export const receipt = { title: 'Receipt', value: item => item.receipt };
 export const totalCount = { title: 'Count', value: item => item.total_count };
 
-export const paymentId = { title: 'Payment ID', value: id.payment };
-export const orderId = { title: 'Order ID', value: id.order };
-export const rzpOrderId = { title: 'Razorpay Order ID', value: id.rzpOrder };
-export const refundId = { title: 'Refund ID', value: id.refund };
-export const settlementId = { title: 'Settlemt ID', value: id.settlement };
-export const transferId = { title: 'Transfer ID', value: id.transfer };
-export const reversalId = { title: 'Reversal ID', value: id.reversal };
+export const paymentId = { title: 'Payment Id', value: id.payment };
+export const orderId = { title: 'Order Id', value: id.order };
+export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
+export const refundId = { title: 'Refund Id', value: id.refund };
+export const settlementId = { title: 'Settlemt Id', value: id.settlement };
+export const transferId = { title: 'Transfer Id', value: id.transfer };
+export const reversalId = { title: 'Reversal Id', value: id.reversal };
 export const source = { title: 'Source', value: id.source };
 export const recipient = { title: 'Recipient', value: id.recipient };
-export const batchId = { title: 'Batch ID', value: id.batch };
+export const batchId = { title: 'Batch Id', value: id.batch };
 
 export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
@@ -61,7 +61,7 @@ export const rzpPaymentOrder = orders => mapValues(orders)(rzpOrderId.title);
 
 // Virtual Accounts
 export const virtualAccountId = {
-  title: 'Virtual Account ID',
+  title: 'Virtual Account Id',
   value: makeIdLink('virtual_account'),
 };
 export const accountDescription = {
@@ -76,12 +76,12 @@ export const amountPaid = {
 
 // Subscriptions
 export const subscriptionId = {
-  title: 'Subscription ID',
+  title: 'Subscription Id',
   value: makeIdLink('subscription'),
 };
 
 export const customerId = {
-  title: 'Customer ID',
+  title: 'Customer Id',
   value: item => item.customer_id,
 };
 
@@ -92,7 +92,7 @@ export const nextDueOn = {
 
 // Plans
 export const planId = {
-  title: 'Plan ID',
+  title: 'Plan Id',
   value: makeIdLink('plan'),
 };
 
