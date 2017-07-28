@@ -206,6 +206,16 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Activation
+        'merchant_activation_save'          => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'post_activation_save_step'
+        ],
+        'merchant_activation_upload_file'   => [
+            'url'       => 'merchant/activation/upload',
+            'routeName' => 'post_activation_save_file'
+        ],
+
         // Batches [Used for Refunds, Payment Links]
         'batch_fetch_multiple'              => [
             'url'       => 'batches',
