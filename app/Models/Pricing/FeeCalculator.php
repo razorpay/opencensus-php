@@ -388,6 +388,7 @@ class FeeCalculator
         $network = Card\Network::getCode($payment->card->getNetwork());
 
         $emiDuration = $emiPlan->getDuration();
+
         $issuer = $emiPlan->getIssuer();
 
         $filters1 = array(

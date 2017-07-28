@@ -681,6 +681,8 @@ class MerchantFeeTest extends TestCase
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
 
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
         $this->runMerchantFeeTestEmi("Visa", ["payment" => "1fq0O3demix3gf"]);
 
         $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
@@ -883,6 +885,8 @@ class MerchantFeeTest extends TestCase
 
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
 
+        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
+
         $payment = new Payment\Entity($paymentArray);
 
         $payment->card = (new Card\Entity)->build($this->card);
@@ -896,15 +900,13 @@ class MerchantFeeTest extends TestCase
 
     protected function runMerchantFeeTestEmiWithMerchantSubvention($network, array $expectedRules)
     {
-        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
-
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
         $paymentArray['amount'] = 500000;
 
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
 
-        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101000';
+        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
 
         $payment = new Payment\Entity($paymentArray);
 

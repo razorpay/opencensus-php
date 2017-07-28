@@ -56,7 +56,7 @@ class Fee extends Base\Core
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
-        $emiSubPricing = $this->repo->getPricingPlanId($emiSubPricingPlanId);
+        $emiSubPricing = $this->repo->getPricingPlanById($this->emiSubPricingPlanId);
 
         $pricing = $pricing->merge($emiSubPricing);
 
