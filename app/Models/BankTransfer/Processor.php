@@ -321,10 +321,14 @@ class Processor extends Base\Core
 
     protected function getBankAccountInput(Entity $bankTransfer)
     {
+        $label = $bankTransfer->merchant->getBillingLabel();
+
+        $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+
         return [
             BankAccount\Entity::IFSC_CODE        => $bankTransfer->getPayerIfsc(),
             BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
-            BankAccount\Entity::BENEFICIARY_NAME => $bankTransfer->merchant->getBillingLabel(),
+            BankAccount\Entity::BENEFICIARY_NAME => $label,
         ];
     }
 

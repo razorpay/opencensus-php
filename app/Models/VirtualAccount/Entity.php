@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
         {
             $label = $this->merchant->getBillingLabel();
 
-            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+            $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
 
             $input[self::NAME] = $label;
         }
