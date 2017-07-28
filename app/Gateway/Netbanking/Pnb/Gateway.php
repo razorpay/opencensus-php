@@ -170,7 +170,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($data): string
     {
-        $encdata = $this->encryptString($data);
+        $dataString = $this->computeAndAppendChecksumToRequestData($data);
 
         return $encdata;
     }
