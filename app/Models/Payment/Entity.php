@@ -1844,6 +1844,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
     }
 
+    public function bankTransfer()
+    {
+        return $this->hasOne('RZP\Models\BankTransfer\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -1989,7 +1994,8 @@ class Entity extends Base\PublicEntity
             self::STATUS,
             self::AMOUNT,
             self::AUTO_CAPTURED,
-            self::ERROR_CODE);
+            self::ERROR_CODE,
+            self::GATEWAY);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 

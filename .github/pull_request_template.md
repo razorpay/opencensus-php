@@ -13,7 +13,7 @@ __Description__
 
 __Dependencies__
 
-- Does this have depdencies on any other projects or other pull requests? (Yes/No)
+- Does this have dependencies on any other projects or other pull requests? (Yes/No)
 - Does this involve other teams?
     - [ ] Dashboard
     - [ ] Checkout

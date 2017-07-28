@@ -36,15 +36,6 @@ class Core extends Base\Core
 
         $merchantPromotion->promotion()->associate($promotion);
 
-        if ($promotion->doCreditsExpire() === true)
-        {
-            $scheduleTask = $this->createScheduleTask($merchant, $promotion);
-
-            $scheduleTask->updateNextRunAndLastRun(false);
-
-            $this->repo->saveOrFail($scheduleTask);
-        }
-
         $this->repo->saveOrFail($merchantPromotion);
 
         return $merchantPromotion;
@@ -154,6 +145,32 @@ class Core extends Base\Core
         $task = (new Task\Core)->create($merchant, $promotion, $input);
 
         return $task;
+    }
+
+
+    public function activate(Entity $merchantPromotion)
+    {
+        $this->repo->transaction(function() use ($merchantPromotion)
+        {
+            $merchant = $merchantPromotion->merchant;
+
+            $promotion = $merchantPromotion->promotion;
+
+            if ($promotion->doCreditsExpire() === true)
+            {
+                $scheduleTask = $this->createScheduleTask($merchant, $promotion);
+
+                $scheduleTask->updateNextRunAndLastRun(false);
+
+                $this->repo->saveOrFail($scheduleTask);
+            }
+
+            $this->applyCredits($merchant, $promotion);
+
+            $merchantPromotion->decrementRemainingIterations();
+
+            $this->repo->saveOrFail($merchantPromotion);
+        });
     }
 
     public function applyCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)

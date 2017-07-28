@@ -34,20 +34,25 @@ class Provider
         self::YESBANK   => [
             // Todo
             'default'  => '',
-            'standard' => ''
+            'standard' => '',
+            'reserved' => [],
         ],
         self::KOTAK     => [
             'default'  => 'RAZO',
             'standard' => 'RZRP',
-
-            // 'RAZR',
-            // This is to be used for our own nodal account,
-            // DO NOT REFUND PAYMENTS MADE HERE
-            // 'RZRN',
+            'reserved' => [
+                // This is to be used for our own nodal account,
+                // DO NOT REFUND PAYMENTS MADE HERE
+                'RAZR',
+                'RZRN',
+            ],
         ],
         self::DASHBOARD       => [
             'default'  => 'RAZO',
             'standard' => 'RZRP',
+            'reserved' => [
+                'RZRN',
+            ],
         ],
     ];
 
@@ -116,5 +121,18 @@ class Provider
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
 
         return (($mode === Mode::TEST) or $isLiveProvider);
+    }
+
+    public static function isReservedAccount(string $accountNumber, string $provider)
+    {
+        $reservedRoots = self::ROOT[$provider]['reserved'];
+
+        foreach ($reservedRoots as $root)
+        {
+            if (substr($accountNumber, 0, strlen($root)) === $root)
+            {
+                return true;
+            }
+        }
     }
 }

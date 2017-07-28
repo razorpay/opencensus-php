@@ -9,8 +9,13 @@ class Type
 {
     const SETTLEMENT = Entity::SETTLEMENT;
     const PAYOUT     = Entity::PAYOUT;
+    const REFUND     = Entity::REFUND;
 
-    protected static $validTypes = [self::SETTLEMENT, self::PAYOUT];
+    protected static $validTypes = [
+        self::SETTLEMENT,
+        self::PAYOUT,
+        self::REFUND,
+    ];
 
     public static function validateType(string $type)
     {

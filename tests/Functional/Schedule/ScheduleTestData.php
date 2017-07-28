@@ -41,6 +41,14 @@ return [
         'delay'      => 1,
     ],
 
+    'testUpdateNextRunAt' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/update_next_run/',
+        'content' => [
+            'type' => 'settlement',
+        ],
+    ],
+
     'testDeleteScheduleInUse' => [
         'response'  => [
             'content'     => [

@@ -26,11 +26,17 @@ class TraceServiceProvider extends BaseServiceProvider
         // in trace constructor
         //
 
+        $this->registerRequestGenerateIdMacro();
+
         $this->registerRequestGetIdMacro();
 
-        $this->registerRequestGetClientIpMacro();
+        $this->registerRequestSetTaskIdMacro();
 
-        $this->app->singleton('trace', function($app)
+        $this->registerRequestGenerateTaskIdMacro();
+
+        $this->registerRequestGetTaskIdMacro();
+
+        $this->app->bind('trace', function($app)
         {
             $trace = new Trace($app);
 
@@ -47,37 +53,18 @@ class TraceServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('trace');
+        return ['trace'];
     }
 
-    protected function registerRequestGetClientIpMacro()
-    {
-        $this->app['request']->macro('getRealClientIp', function()
-        {
-            $clientIp = $this->headers->get('X_FORWARDED_FOR');
-
-            if ($clientIp === null)
-            {
-                $clientIp = $this->getClientIp();
-            }
-
-            return $clientIp;
-        });
-
-    }
-
+    /**
+     * Registers getId macro on request to get a new request id to identify
+     * the given request in trace logs. Generates a new rquest id if not already set
+     */
     protected function registerRequestGetIdMacro()
     {
         $request = $this->app['request'];
 
-        $request->macro('generateId', function()
-        {
-            $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
-
-            return $this->requestId;
-        });
-
-        $request->macro('getId', function() use($request)
+        $request->macro('getId', function() use ($request)
         {
             if ($this->requestId === null)
             {
@@ -88,4 +75,66 @@ class TraceServiceProvider extends BaseServiceProvider
         });
     }
 
+    /**
+     * Generates a neew random id for logging
+     */
+    protected function registerRequestGenerateIdMacro()
+    {
+        $request = $this->app['request'];
+
+        $request->macro('generateId', function()
+        {
+            $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+
+            return $this->requestId;
+        });
+    }
+
+    /**
+     * Registers a getTaskId macro on request. It uses the X-Razorpay-TaskId header value
+     * if present, else generates a new one.If api is the source of new task id, then uses
+     * the request id value instead of generating new one
+     */
+    protected function registerRequestGetTaskIdMacro()
+    {
+        $request = $this->app['request'];
+
+        $request->macro('getTaskId', function () use ($request)
+        {
+            if ($this->taskId === null)
+            {
+                // For task id if nothing is set we check the X-Razorpay-TaskId header
+                // value before generating our own task id
+                $taskIdHeader = $this->headers->get('X-Razorpay-TaskId');
+
+                $this->taskId = $taskIdHeader ?? $this->generateTaskId();
+            }
+
+            return $this->taskId;
+        });
+    }
+
+    protected function registerRequestSetTaskIdMacro()
+    {
+        $request = $this->app['request'];
+
+        $request->macro('setTaskId', function ($taskId)
+        {
+            $this->taskId = $taskId;
+
+            return $this->taskId;
+        });
+    }
+
+    protected function registerRequestGenerateTaskIdMacro()
+    {
+        $request = $this->app['request'];
+
+        $request->macro('generateTaskId', function ()
+        {
+            $this->taskId = $this->getId();
+
+            return $this->taskId;
+        });
+    }
 }

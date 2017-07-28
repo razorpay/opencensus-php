@@ -28,7 +28,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->merchant->addFeatures('recurring');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->gateway = 'cybersource';
 

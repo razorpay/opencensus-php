@@ -17,26 +17,6 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::KOTAK_EMI_FILE;
 
-    protected static $headers = [
-        'EMI ID',
-        'Card Pan',
-        'Issuer',
-        'Auth Code',
-        'Tx Amount',
-        'Tenure',
-        'Manufacturer',
-        'Merchant Name',
-        'Address1',
-        'Acquirer',
-        'MID',
-        'TID',
-        'Tx Time',
-        'Settlement Time',
-        'Interest Rate',
-        'Discount / Cashback %',
-        'Discount / Cashback Amount',
-    ];
-
     protected function getEmiData($input)
     {
         $data = [];

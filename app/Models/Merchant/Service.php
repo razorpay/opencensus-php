@@ -1012,6 +1012,49 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function markGratisTransactionPostpaid($input)
+    {
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_INPUT,
+            $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $from = $input['from'];
+
+        $successIds = [];
+
+        $failedIds = [];
+
+        $merchantCore = (new Merchant\Core);
+
+        foreach ($merchantIds as $merchantId) {
+            try
+            {
+                $merchantCore->markGratisTransactionPostpaid($merchantId, $from);
+
+                $successIds[] = $merchantId;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success_ids' => $successIds,
+            'failed_ids'  => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_RESPONSE,
+            $response);
+
+        return $response;
+    }
+
     protected function updateHoldFunds(string $merchantId, bool $holdFunds)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -1028,6 +1071,23 @@ class Service extends Base\Service
         $users = (new Merchant\Core)->getUsers($merchant);
 
         return $users;
+    }
+
+    /**
+     * Return all submerchants of the master merchant (for aggregator model only)
+     *
+     * 1. We do not want all the aggregator merchant to download the complete report
+     *    so its behind aggregator_report feature
+     * 2. We will have to write the logic to fetch all its submerchants based on tags
+     * 3. Currently feature will be enabled only for e-Mitra, and merchants will be hard coded.
+     *
+     * @return array
+     */
+    public function getSubmerchants(): array
+    {
+        $merchant = $this->merchant;
+
+        return [ $merchant->getId() ];
     }
 
     /**

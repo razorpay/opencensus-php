@@ -236,6 +236,11 @@ class Charge extends Base\Core
 
         $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
+        if ($subscription->isCompleted() === true)
+        {
+            $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
+        }
+
         //
         // This must be sent after saving the invoice and subscription
         // to ensure that we don't send an email when we were not able

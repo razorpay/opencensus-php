@@ -181,7 +181,7 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('schedule_task', $attributes);
+        return $this->fixtures->create('schedule_task', $attributes);
     }
 
     public function activate($id = '10000000000000')

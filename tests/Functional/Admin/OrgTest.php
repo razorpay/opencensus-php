@@ -22,7 +22,7 @@ class OrgTest extends TestCase
 
     public function testCreateOrg()
     {
-        $permIds = $this->getAssignablePermissionsByIds();
+        $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
@@ -62,7 +62,7 @@ class OrgTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
-        $permissions = $this->getAssignablePermissionsByIds();
+        $permissions = $this->getPermissionsByIds('assignable');
 
         $newPermissions = array_slice($permissions, 0, 3);
 
@@ -128,7 +128,7 @@ class OrgTest extends TestCase
 
     public function testCreateOrgInvalidAuthType()
     {
-        $permIds = $this->getAssignablePermissionsByIds();
+        $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
@@ -137,7 +137,7 @@ class OrgTest extends TestCase
 
     public function testCreateOrgInvalidHostname()
     {
-        $permIds = $this->getAssignablePermissionsByIds();
+        $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
@@ -151,7 +151,7 @@ class OrgTest extends TestCase
         $firstOrgHost = $this->fixtures->create('org_hostname',
             ['org_id' => $org->getId(), 'hostname' => 'test1.com']);
 
-        $permIds = $this->getAssignablePermissionsByIds();
+        $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
@@ -209,7 +209,7 @@ class OrgTest extends TestCase
     // Test for an exception
     public function testCreateWithoutPassword()
     {
-        $permIds = $this->getAssignablePermissionsByIds();
+        $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 

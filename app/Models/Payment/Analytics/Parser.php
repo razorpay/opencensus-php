@@ -269,7 +269,7 @@ class Parser extends Base\Core
 
     protected function getIp(Entity $pa)
     {
-        $ip = $this->request->getRealClientIp();
+        $ip = $this->request->ip();
 
         if ($this->ba->isPrivateAuth() === true)
         {

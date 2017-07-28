@@ -185,7 +185,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
-            'status' => 'created',
+            'status' => 'initiated',
             'channel' => 'kotak',
             'version' => 'V3',
         ]);
@@ -741,6 +741,23 @@ final class FactoryData
             'merchant_id'              => $faker->uniqueid,
             'role'                     => 'manager',
             'token'                    => $faker->name(30),
+        ]);
+
+        $factory(\RZP\Models\Workflow\Entity::class, [
+           'id'      => $faker->uniqueid,
+            'org_id' => '100000razorpay',
+            'name'   => $faker->name,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Step\Entity::class,[
+            'id'               => $faker->uniqueid,
+            'role_id'          => 'factory:RZP\Models\Admin\Role\Entity',
+            'workflow_id'      => 'factory:RZP\Models\Workflow\Entity',
+            'reviewer_count'   => 1,
+            'op_type'          => 'or',
+            'level'            => 1,
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
         ]);
     }
 }

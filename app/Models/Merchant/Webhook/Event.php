@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Webhook;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -26,6 +27,8 @@ class Event
     const SUBSCRIPTION_CHARGED      = 'subscription.charged';
     const SUBSCRIPTION_PENDING      = 'subscription.pending';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
+    const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
+    const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 
     protected static $events = [
@@ -42,6 +45,8 @@ class Event
         self::SUBSCRIPTION_CHARGED,
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
+        self::SUBSCRIPTION_CANCELLED,
+        self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
     ];
 
@@ -58,7 +63,9 @@ class Event
         self::SUBSCRIPTION_PENDING      => 0x10,
         self::SUBSCRIPTION_HALTED       => 0x11,
         self::SUBSCRIPTION_CHARGED      => 0x12,
-        // self::SUBSCRIPTION_EXPIRED      => 0x13,
+        self::SUBSCRIPTION_CANCELLED    => 0x13,
+        self::SUBSCRIPTION_COMPLETED    => 0x14,
+        // self::SUBSCRIPTION_EXPIRED      => 0x15,
     ];
 
     /**
@@ -80,6 +87,8 @@ class Event
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_CANCELLED,
+        self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
     ];
 
@@ -97,7 +106,9 @@ class Event
         self::SUBSCRIPTION_PENDING      => 11,
         self::SUBSCRIPTION_HALTED       => 12,
         self::SUBSCRIPTION_CHARGED      => 13,
-        // self::SUBSCRIPTION_EXPIRED      => 14,
+        self::SUBSCRIPTION_CANCELLED    => 14,
+        self::SUBSCRIPTION_COMPLETED    => 15,
+        // self::SUBSCRIPTION_EXPIRED      => 15,
     ];
 
     /**
@@ -119,6 +130,8 @@ class Event
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_CANCELLED,
+        self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
     ];
 
@@ -138,7 +151,20 @@ class Event
         self::SUBSCRIPTION_PENDING      => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_HALTED       => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_CHARGED      => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+    ];
+
+    public static $eventsToFeatureMap = [
+        self::INVOICE_PAID              => Feature\Constants::INVOICE,
+        self::SUBSCRIPTION_ACTIVATED    => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_PENDING      => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_HALTED       => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CHARGED      => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
+        // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
     ];
 
     /**

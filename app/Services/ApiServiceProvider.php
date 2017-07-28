@@ -70,7 +70,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Models\Merchant\Webhook\Inferno;
         });
 
-        $this->app->singleton('exception.handler', function($app)
+        $this->app->bind('exception.handler', function($app)
         {
             return new \RZP\Exception\Handler($app);
         });
