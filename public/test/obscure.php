@@ -115,7 +115,9 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>
                 <option value="jiomoney">JioMoney</option>
+                <option value="sbibuddy">SBI Buddy</option>
                 <option value="openwallet">Openwallet (B2B)</option>
+                <option value="mpesa">Vodafone Mpesa</option>
                 <option value="mpesa">Vodafone Mpesa</option>
             </select>
         </td>
