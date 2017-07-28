@@ -339,7 +339,7 @@ class MerchantFeeTest extends TestCase
                 'id'                  => '1fq0O3demix3tt',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'emi_plan',
+                'feature'             => 'emi',
                 'payment_method'      => 'emi',
                 'payment_method_type' => null,
                 'payment_network'     => null,
@@ -686,7 +686,7 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
 
         $this->runMerchantFeeTestEmiWithMerchantSubvention("Visa", ["payment" => "1fq0O3demix3gf",
-            "emi_plan" => "1fq0O3demix3tt"]);
+            "emi" => "1fq0O3demix3tt"]);
     }
 
     public function testIntrastateGstForCard()

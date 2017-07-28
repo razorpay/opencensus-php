@@ -413,7 +413,7 @@ class FeeCalculator
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
         //This is for including fee of merchant with merchant subvented model
-        if ($feature === Pricing\Feature::EMI_PLAN)
+        if ($feature === Pricing\Feature::EMI)
         {
             $rules = $this->applyEmiDurationFilterAndReturnOneRule($rules);
         }

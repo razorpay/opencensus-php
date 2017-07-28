@@ -2039,7 +2039,7 @@ class Entity extends Base\PublicEntity
         if (($this->isEmi() === true) and
             ($this->merchant->getEmiSubvention() === Emi\Subvention::MERCHANT))
         {
-            $features[] = Pricing\Feature::EMI_PLAN;
+            $features[] = Pricing\Feature::EMI;
         }
 
         return $features;
