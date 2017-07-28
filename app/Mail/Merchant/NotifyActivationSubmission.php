@@ -46,6 +46,14 @@ class NotifyActivationSubmission extends Mailable
         {
             $this->from($this->org['from_email'], $this->org['display_name']);
         }
+        else
+        {
+            $fromEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+
+            $fromName = Constants::HEADERS[Constants::SUPPORT];
+
+            $this->from($fromEmail, $fromName);
+        }
 
         return $this;
     }

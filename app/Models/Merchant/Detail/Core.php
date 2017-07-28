@@ -95,14 +95,18 @@ class Core extends Base\Core
 
         $org['hostname'] = $this->merchant->org->getPrimaryHostName();
 
-        $notifyMerchantMail = new NotifyMerchant($merchantDetails->toArray(), $org);
+        $data = $merchantDetails->toArray();
+
+        $notifyMerchantMail = new NotifyMerchant($data, $org);
 
         Mail::queue($notifyMerchantMail);
     }
 
     public function adminNotifyActivationSubmission($merchantDetails)
     {
-        $notifyAdminMail = new NotifyAdmin($merchantDetails->toArray());
+        $data = $merchantDetails->toArray();
+
+        $notifyAdminMail = new NotifyAdmin($data);
 
         Mail::queue($notifyAdminMail);
     }
