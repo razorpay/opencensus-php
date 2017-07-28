@@ -2267,4 +2267,4 @@ ALTER TABLE merchant_banks
     DROP COLUMN emi_subvention;
 
 ALTER TABLE pricing
-    ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER max_fee;
+    ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER payment_issuer;

@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
+        Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
@@ -32,7 +33,6 @@ class Validator extends Base\Validator
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000',
-        Entity::EMI_DURATION        => 'sometimes|nullable|integer',
     ];
 
     protected static $addPlanRuleValidators = [

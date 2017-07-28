@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
     const PAYMENT_NETWORK_NAME = 'payment_network_name';
     const PAYMENT_ISSUER       = 'payment_issuer';
 
+    const EMI_DURATION         = 'emi_duration';
+
     // Amount Range Rule
     const AMOUNT_RANGE_ACTIVE  = 'amount_range_active';
     const AMOUNT_RANGE_MIN     = 'amount_range_min';
@@ -34,8 +36,6 @@ class Entity extends Base\PublicEntity
     // Min And Max Rate
     const MIN_FEE              = 'min_fee';
     const MAX_FEE              = 'max_fee';
-
-    const EMI_DURATION         = 'emi_duration';
 
     const EXPIRED_AT           = 'expired_at';
     const DELETED_AT           = 'deleted_at';
