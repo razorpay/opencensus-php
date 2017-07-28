@@ -33,6 +33,7 @@ export function isBlank(value) {
   }
   if (typeof value === 'string') {
     value = value.trim();
+    return !value;
   }
   return isNone(value);
 }
