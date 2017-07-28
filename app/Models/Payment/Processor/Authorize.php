@@ -99,7 +99,7 @@ trait Authorize
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
-        
+
         return null;
     }
 
@@ -200,16 +200,6 @@ trait Authorize
         }
 
         return $request;
-    }
-
-    protected function shouldHitGateway(Payment\Entity $payment)
-    {
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     protected function logAndCheckForAuthRetry($e, $payment): bool
@@ -767,52 +757,72 @@ trait Authorize
     {
         $authType = $this->app['basicauth']->getAuthType();
 
-        if ($authType === BasicAuth\Type::PRIVATE_AUTH)
+        switch ($authType)
         {
-            //
-            // Subscriptions can also actually make payments in private auth
-            // In case of manual retry, they can do it from either the dashboard
-            // or API directly. But, if it's from API directly, it would mean
-            // they are doing a S2S recurring payment. We cannot allow that.
-            // Hence, we are going to ensure that retry can happen only from the
-            // dashboard and not from the API.
-            //
-            if ($this->app['basicauth']->isProxyAuth() === true)
-            {
+            case BasicAuth\Type::PRIVATE_AUTH:
+
+                //
+                // Subscriptions can also actually make payments in private auth
+                // In case of manual retry, they can do it from either the dashboard
+                // or API directly. But, if it's from API directly, it would mean
+                // they are doing a S2S recurring payment. We cannot allow that.
+                // Hence, we are going to ensure that retry can happen only from the
+                // dashboard and not from the API.
+                //
+                if ($this->app['basicauth']->isProxyAuth() === true)
+                {
+                    $this->verifyAtLeastOneFeatureEnabledForMerchant(
+                        $merchant,
+                        [
+                            Feature\Constants::SUBSCRIPTIONS,
+                            Feature\Constants::CHARGE_AT_WILL,
+                        ]);
+                }
+                else
+                {
+                    // Merchants with subscriptions feature cannot make S2S calls
+                    // for recurring payments.
+                    $this->verifyAtLeastOneFeatureEnabledForMerchant(
+                        $merchant,
+                        [
+                            Feature\Constants::CHARGE_AT_WILL,
+                        ]);
+                }
+
+                break;
+
+            case BasicAuth\Type::PUBLIC_AUTH:
+
+                // Public payments can be made for recurring for merchants with either
+                // subscriptions or recurring features enabled.
                 $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                    $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
-            }
-            else
-            {
-                // Merchants with subscriptions feature cannot make S2S calls
-                // for recurring payments.
-                $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
-            }
-        }
-        else if ($authType === BasicAuth\Type::PUBLIC_AUTH)
-        {
-            // Public payments can be made for recurring for merchants with either
-            // subscriptions or recurring features enabled.
-            $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
-        }
-        else if ($authType === BasicAuth\Type::PRIVILEGE_AUTH)
-        {
-            // Privilege auth for recurring should be used only for merchants
-            // who have subscriptions.
-            // But, since it's privilege auth, it can be used for merchants with
-            // recurring feature also, but no requirement right now.
-            $this->verifyFeatureForMerchant($merchant, Feature\Constants::SUBSCRIPTIONS);
-        }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
-                null,
-                [
-                    'payment_id' => $payment->getId(),
-                    'auth_type' => $authType
-                ]);
+                    $merchant,
+                    [
+                        Feature\Constants::SUBSCRIPTIONS,
+                        Feature\Constants::CHARGE_AT_WILL,
+                    ]);
+
+                break;
+
+            case BasicAuth\Type::PRIVILEGE_AUTH:
+
+                // Privilege auth for recurring should be used only for merchants
+                // who have subscriptions.
+                // But, since it's privilege auth, it can be used for merchants with
+                // recurring feature also, but no requirement right now.
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::SUBSCRIPTIONS);
+
+                break;
+
+            default:
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+                    null,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'auth_type' => $authType
+                    ]);
         }
     }
 
@@ -1675,9 +1685,11 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
+        $subvention = $payment->merchant->getEmiSubvention();
+
         // Set emi plan id
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration);
+                                            $iinEntity, $emiDuration, $subvention);
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
@@ -2746,7 +2758,7 @@ trait Authorize
             ($merchantMethods->isWalletEnabled($paymentWallet) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 
@@ -2758,7 +2770,7 @@ trait Authorize
             ($merchantMethods->isEmiEnabled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENABLED_FOR_MERCHANT);
         }
 
         $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $payment->card);
@@ -2817,7 +2829,7 @@ trait Authorize
         if ($merchantMethods->isCardEnabled() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENABLED_FOR_MERCHANT);
         }
 
         $type = $card->getType();

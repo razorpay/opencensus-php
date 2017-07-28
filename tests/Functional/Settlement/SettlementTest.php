@@ -12,14 +12,12 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SettlementTest extends TestCase
 {
-    use RequestResponseFlowTrait;
     use SettlementTrait;
-    use EntityActionTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -284,6 +282,17 @@ class SettlementTest extends TestCase
     public function testMerchantSettlement()
     {
         $this->ba->appAuth();
+
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 50000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 50000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
 
         // $this->fixtures->merchant->createBankAccount();
         $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
@@ -614,7 +623,42 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 4);
     }
 
-    public function testIciciNodalTransfer()
+    public function testIciciNodalTransferWithGateway()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_first_data_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $p1=  $this->getLastEntity('payment', true);
+
+        $testTime = Carbon::tomorrow('Asia/Kolkata')->addHours(5);
+
+        Carbon::setTestNow($testTime);
+
+        $request = [
+            'url'     => '/nodal/transfer/icici',
+            'method'  => 'POST',
+            'content' => [
+                'gateway' => 'first_data'
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content['file']);
+
+        Mail::assertSent(IciciSettlementMail::class);
+
+        Carbon::setTestNow();
+    }
+
+    public function testIciciNodalTransferWithAmount()
     {
         Mail::fake();
 

@@ -271,7 +271,7 @@ class Entity extends Base\PublicEntity
 
     public function getBusinessStateCode()
     {
-        $gstin = $this->getGstin();
+        $gstin = $this->getGstin() ?? $this->getPGstin();
 
         if (empty($gstin) === true)
         {

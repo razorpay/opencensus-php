@@ -104,8 +104,13 @@ class MerchantCreateTest extends TestCase
 
         $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
 
-        $this->assertEquals($methods['mobikwik'], true);
-        $this->assertEquals($methods['paytm'], false);
+        $expectedMethods = [
+            'amex'     => false,
+            'mobikwik' => true,
+            'paytm'    => false
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methods);
     }
 
     protected function checkMerchantDetails()
@@ -182,6 +187,17 @@ class MerchantCreateTest extends TestCase
     public function testCreateMarketplaceLinkedAccount()
     {
         $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountMaxPaymentLimit()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 6000]);
 
         $this->ba->proxyAuth();
 

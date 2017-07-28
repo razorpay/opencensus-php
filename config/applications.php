@@ -41,6 +41,10 @@ return array(
         'mock'      => env('SLACK_MOCK'),
     ),
 
+    'zapier' => array(
+        'mock'      => env('ZAPIER_MOCK'),
+    ),
+
     'hosted' => array(
         'secret'    => env('APP_HOSTED_SECRET'),
     ),
@@ -115,5 +119,14 @@ return array(
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
         ]
-    ]
+    ],
+
+    'nodal' => [
+        'mock' => env('NODAL_MOCK', false),
+        'auth' => [
+            'username' => env('NODAL_USERNAME'),
+            'password' => env('NODAL_PASSWORD'),
+        ],
+        'url' => env('NODAL_BASE_URL'),
+    ],
 );

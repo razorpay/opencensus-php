@@ -15,6 +15,7 @@ class Service extends Base\Service
     protected $processor;
     protected $provider;
     protected $ip;
+    protected $mutex;
 
     public function __construct()
     {
@@ -28,7 +29,9 @@ class Service extends Base\Service
 
         $this->provider = $this->auth->getInternalApp();
 
-        $this->ip = $this->app['request']->getRealClientIp();
+        $this->ip = $this->app['request']->ip();
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function process(array $input): array
@@ -42,7 +45,14 @@ class Service extends Base\Service
 
         try
         {
-            $bankTransfer = $this->processor->process($input);
+            $this->mutex->acquireAndRelease(
+                $input[Entity::PAYEE_ACCOUNT],
+                function() use ($input)
+                {
+                    $bankTransfer = $this->processor->process($input);
+                },
+                60,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
             $valid = true;
         }

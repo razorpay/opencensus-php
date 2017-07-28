@@ -9,6 +9,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants as Feature;
 
 trait Enroll
 {
@@ -126,7 +127,7 @@ trait Enroll
         $data['trackid'] = $payment['id'];
 
         // Convert amount from integer to decimal
-        $data['amt'] = $payment['amount']/100;
+        $data['amt'] = $payment['amount'] / 100;
 
         // Collect udf fields
         $data['udf1'] = 'test';
@@ -138,6 +139,8 @@ trait Enroll
         $data['udf4'] = 'test';
 
         $data['udf5'] = 'test';
+
+        $this->populateRiskUdfIfApplicable($data, $input);
 
         $this->udfCheckAndMeetHdfcRequirements($data);
 
@@ -236,6 +239,22 @@ trait Enroll
 
                 $udf = substr($udf, $start);
             }
+        }
+    }
+
+    protected function populateRiskUdfIfApplicable(array & $data, $input)
+    {
+        // We are passing additional information in UDF for the marketplace TID
+        // for selected merchants on the basis of the feature flag.
+        if (($input['terminal']->isShared() === true) and
+            ($input['merchant']->isFeatureEnabled(Feature::FSS_RISK_UDF) === true))
+        {
+            // Collect udf fields
+            $data['udf1'] = $input['merchant']->getBillingLabel();
+
+            $data['udf4'] = $input['payment']['description'] ?: $data['udf4'];
+
+            $data['udf5'] = $this->request->ip();
         }
     }
 

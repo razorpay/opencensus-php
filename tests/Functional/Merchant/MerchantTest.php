@@ -11,8 +11,8 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Models\Transaction;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Methods;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -625,6 +625,35 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testAddBankAccountWithMerchantDetail()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail',
+                                                [
+                                                    'merchant_id' => '10000000000000',
+                                                ]);
+
+        $this->startTest();
+
+        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccount']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+
+        $detail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals('0002020000304030434', $detail['bank_account_number']);
+
+        $this->assertEquals('Test R4zorpay', $detail['bank_account_name']);
+
+        $this->assertEquals('ICIC0001206', $detail['bank_branch_ifsc']);
+    }
+
     public function testAddBankAccountWithInvalidIFSC()
     {
         $this->startTest();
@@ -1051,15 +1080,6 @@ class MerchantTest extends TestCase
     }
 
     public function testPutEmiMethod()
-    {
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
-
-        $this->ba->appAuth();
-
-        $content = $this->startTest();
-    }
-
-    public function testPutEmiWithMerchantSubventionMethod()
     {
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 

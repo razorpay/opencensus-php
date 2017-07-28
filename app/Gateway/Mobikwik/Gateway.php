@@ -171,7 +171,6 @@ class Gateway extends Base\Gateway
         $unprocessedRefunds = [
             '8CMFDlZ5x1sJDN',
             '8B1MhtiNTqpHrn',
-            '8ACvGwyP8NMJu4',
             '8CxbIDA3apzC7m',
             '8DuOKuF693LLDo',
             '89zzrne0Zfn0rt',
@@ -180,6 +179,7 @@ class Gateway extends Base\Gateway
 
         $processedRefund = [
             '8CZ3IfaFiHEGKv',
+            '8ACvGwyP8NMJu4',
         ];
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)

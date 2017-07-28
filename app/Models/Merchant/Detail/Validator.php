@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\FileType as FileType;
 
 class Validator extends Base\Validator
 {
@@ -34,7 +35,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'sometimes|string|size:15',
-        Entity::P_GSTIN                         => 'sometimes|string',
+        Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
@@ -98,7 +99,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'sometimes|string|size:15',
-        Entity::P_GSTIN                         => 'sometimes|string',
+        Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
@@ -192,6 +193,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
+        }
+    }
+
+    public function validateFileType($file)
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $mime = $file->getMimeType();
+
+        if ((in_array($extension, FileType::ALLOWED_EXTENSIONS) === false) or
+            (in_array($mime, FileType::ALLOWED_MIMES) === false))
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
         }
     }
 }

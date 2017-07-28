@@ -26,11 +26,11 @@ class AmountCreditsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreditsLogAlreadyExists()
+    /*public function testCreditsLogAlreadyExists()
     {
         $this->fixtures->create('credits');
         $this->startTest();
-    }
+    }*/
 
     public function testGetCreditsLog()
     {

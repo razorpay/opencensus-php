@@ -704,6 +704,29 @@ class Terminal extends Base
             'emi'                       => 1,
             'emi_duration'              => 9,
             'shared'                    => 1,
+            'emi_subvention'            => 'customer',
+        ];
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedHdfcEmiMerchantSubventionTerminal()
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $attributes = [
+            'id'                        => 'ShrdEmiMrSubTr',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                      => 1,
+            'emi'                       => 1,
+            'emi_duration'              => 9,
+            'emi_subvention'            => 'merchant',
+            'shared'                    => 1,
         ];
 
         return parent::create($attributes);

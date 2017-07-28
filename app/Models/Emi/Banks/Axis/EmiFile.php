@@ -18,19 +18,6 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::AXIS_EMI_FILE;
 
-    protected static $headers = [
-        'Card Number',
-        'Transaction Amount',
-        'Transaction Date',
-        'Settlement Date',
-        'Authorisation Id',
-        'Merchant Name',
-        'MCC (Merchant Category Code)',
-        'Tenure',
-        'Source',
-        'EMI ID',
-    ];
-
     protected function getEmiData($input)
     {
         $data = [];
@@ -39,9 +26,9 @@ class EmiFile extends Base\EmiFile
         {
             $emiTenure = $emiPayment->emiPlan['duration'];
 
-            $merchant = $this->repo->merchant->fetchMerchantFromEntity($emiPayment);
+            $merchant = $emiPayment->merchant;
 
-            $txn = $this->repo->transaction->fetchForPayment($emiPayment);
+            $txn = $emiPayment->transaction;
 
             $data[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),

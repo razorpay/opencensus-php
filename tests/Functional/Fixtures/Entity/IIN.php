@@ -163,6 +163,17 @@ class Iin extends Base
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
             ],
+            [
+                'iin'           => '402874',
+                'category'      => 'INFINITE',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STANDARD CHARTERED BANK',
+                'issuer'        => 'SCBL',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ],
         ];
 
     public function createDefaultIins()

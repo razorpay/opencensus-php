@@ -31,9 +31,8 @@ class Validator extends Base\Validator
 
     protected function validateReceiverTypes(array $input)
     {
-        $receiverTypes = $input[Entity::RECEIVER_TYPES];
-
-        if (Receiver::areTypesValid($receiverTypes) === false)
+        if ((isset($input[Entity::RECEIVER_TYPES]) === true) and
+            (Receiver::areTypesValid($input[Entity::RECEIVER_TYPES]) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,

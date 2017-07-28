@@ -21,6 +21,8 @@ class Core extends Base\Core
             $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
 
             $token->card()->associate($card);
+
+            $token->setExpiredAt($card->getExpiryTimestamp());
         }
 
         if (isset($input[Token\Entity::TERMINAL_ID]))

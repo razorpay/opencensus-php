@@ -2,6 +2,7 @@
 /vendor
 .env
 .env.*
+.idea/*
 !environment/.env.wercker
 !environment/.env.defaults
 !environment/.env.production

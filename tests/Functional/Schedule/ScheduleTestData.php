@@ -41,6 +41,14 @@ return [
         'delay'      => 1,
     ],
 
+    'testUpdateNextRunAt' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/update_next_run/',
+        'content' => [
+            'type' => 'settlement',
+        ],
+    ],
+
     'testDeleteScheduleInUse' => [
         'response'  => [
             'content'     => [
@@ -156,5 +164,22 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+
+    'testExpireCredits' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/process_tasks',
+        'content' => [
+            'type'      => 'promotion',
+        ],
+    ],
+
+    'applyCouponOnMerchant' => [
+        'method' => 'POST',
+        'url'    => '/coupons/apply',
+        'content' => [
+            'merchant_id' => '10000000000000',
+            'code' =>  'RANDOM',
+        ],
+    ],
 ];

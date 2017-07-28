@@ -69,22 +69,23 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $headers = $this->request->headers;
 
-        $serverData = array(
+        $serverData = [
             'request_id'    => $this->request->getId(),
+            'task_id'       => $this->request->getTaskId(),
             'uri'           => $this->request->path(),
             'url'           => $this->request->fullUrl(),
             'method'        => $this->request->method(),
             'ajax'          => $this->request->ajax(),
             'origin'        => $this->request->header('origin'),
             'application'   => $this->request->header('X-Razorpay-App'),
-            'client_ip'     => $this->request->getRealClientIp(),
+            'client_ip'     => $this->request->ip(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $headers->get('referer'),
             'content_type'  => $headers->get('content-type'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
             'console'       => $this->console,
             'merchant_id'   => null,
-        );
+        ];
 
         $this->unsetUrlForSensitiveUrls($serverData);
 

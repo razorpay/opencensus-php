@@ -219,9 +219,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
-    public function setUsedAt($time)
+    public function setUsedAt($timestamp)
     {
-        $this->setAttribute(self::USED_AT, $time);
+        $this->setAttribute(self::USED_AT, $timestamp);
+    }
+
+    public function setExpiredAt($timestamp)
+    {
+        $this->setAttribute(self::EXPIRED_AT, $timestamp);
     }
 
     public function incrementUsedCount()

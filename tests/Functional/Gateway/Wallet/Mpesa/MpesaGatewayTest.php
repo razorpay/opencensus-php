@@ -227,7 +227,6 @@ class MpesaGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedWallet, $wallet);
 
-        $this->assertNotEmpty($wallet['contact']);
         $this->assertNotEmpty($wallet['gateway_payment_id']);
     }
 

@@ -256,6 +256,11 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidUtf8InDescription()
+    {
+        $this->startTest();
+    }
+
     public function testFixAuthorizedAt()
     {
         $time = time();
