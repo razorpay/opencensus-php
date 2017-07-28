@@ -18,48 +18,6 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::RBL_EMI_FILE;
 
-    protected static $headers = [
-        'EMI ID',
-        'RBL Card no',
-        'Issuer',
-        'Acquirer',
-        'Aggregator Merchant Name',
-        'Manufacturer',
-        'Auth Code',
-        'Tx Amount',
-        'EMI Offer',
-        'EMI Plan ID',
-        'Customer Name',
-        'Mobile No',
-        'Store Name',
-        'Address1',
-        'Store City',
-        'Store State',
-        'MID',
-        'TID',
-        'Tx Time',
-        'Subvention payable to Issuer',
-        'Subvention Amount (Rs.)',
-        'Interest Rate',
-        'Customer Processing Fee',
-        'Customer Processing Amount (Rs.)',
-        'Tx Status',
-        'Status',
-        'Description',
-        'Product Category',
-        'Product Sub-Category 1',
-        'Product Sub-Category 2',
-        'Model Name',
-        'Merchant Name',
-        'EMI Amount',
-        'Loan Amount',
-        'Discount / Cashback %',
-        'Discount / Cashback Amount',
-        'Additional Cashback',
-        'Bonus Reward Points',
-        'EMI Model',
-    ];
-
     protected function getEmiData($input)
     {
         $data = [];
