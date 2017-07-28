@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
