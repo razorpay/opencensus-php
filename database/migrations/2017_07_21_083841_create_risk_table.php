@@ -25,16 +25,15 @@ class CreateRiskTable extends Migration
             $table->char(Risk::ID, Risk::ID_LENGTH)
                   ->primary();
 
-            $table->char(Risk::PAYMENT_ID, Risk::ID_LENGTH);
+            $table->char(Risk::PAYMENT_ID, Payment::ID_LENGTH);
 
-            $table->char(Risk::MERCHANT_ID, Risk::ID_LENGTH);
+            $table->char(Risk::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->string(Risk::FRAUD_TYPE, 30);
 
             $table->string(Risk::SOURCE, 30);
 
-            $table->integer(Risk::RISK_SCORE)
-                  ->unsigned();
+            $table->decimal(Risk::RISK_SCORE, 9, 2);
 
             $table->text(Risk::COMMENTS);
 
@@ -44,6 +43,7 @@ class CreateRiskTable extends Migration
             $table->index(Risk::PAYMENT_ID);
             $table->index(Risk::MERCHANT_ID);
             $table->index(Risk::FRAUD_TYPE);
+            $table->index(Risk::CREATED_AT);
 
             $table->foreign(Risk::PAYMENT_ID)
                   ->references(Payment::ID)

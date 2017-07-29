@@ -60,6 +60,10 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
     ];
 
+    protected $casts = [
+        self::RISK_SCORE => 'float',
+    ];
+
     public function setPublicPaymentIdAttribute(array & $attributes)
     {
         $paymentId = $this->getAttribute(static::PAYMENT_ID);
@@ -90,7 +94,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function getComments() : string
+    public function getComments(): string
     {
         return $this->getAttribute(self::COMMENTS);
     }

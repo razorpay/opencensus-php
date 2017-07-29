@@ -4,7 +4,7 @@ namespace RZP\Models\Risk;
 
 class Type
 {
-    // Risk types
+    // Fraud types
     const SUSPECTED = 'suspected';
     const CONFIRMED = 'confirmed';
 }
