@@ -1464,6 +1464,25 @@ return [
         ]
     ],
 
+    'testUpdateIssuedInvoiceWithOrderAttributes' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'         => 'inv_receipt_0001',
+                'partial_payment' => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'inv_1000000invoice',
+                'entity'          => 'invoice',
+                'receipt'         => 'inv_receipt_0001',
+                'partial_payment' => true,
+            ]
+        ]
+    ],
+
     'testUpdateIssuedInvoiceWithExtraFields' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
