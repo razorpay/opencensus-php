@@ -200,6 +200,12 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::ACTIVATED_AT,
+    ];
+
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
     protected function generateTransactionReportEmail($input)
@@ -1007,8 +1013,6 @@ class Entity extends Base\PublicEntity
         $data = array_only($data, $reportFields);
 
         $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
-
-        $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::ACTIVATED_AT);
 
         return $data;
     }

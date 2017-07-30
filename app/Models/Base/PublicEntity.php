@@ -21,11 +21,18 @@ class PublicEntity extends UniqueIdEntity
      */
     const IDS = 'ids';
 
-    protected static $sign = '';
+    protected static $sign      = '';
 
     protected static $delimiter = '_';
 
-    protected $hiddenInReport = [];
+    protected $hiddenInReport   = [];
+
+    /**
+     * Fields which will get formatted as amount (e.g. 1.01) in reports
+     *
+     * @var array
+     */
+    protected $amounts          = [];
 
     /**
      * For an entity which is being exposed outside,
@@ -38,7 +45,7 @@ class PublicEntity extends UniqueIdEntity
      *
      * @var array
      */
-    protected $public = [];
+    protected $public           = [];
 
     /**
      * Fields exposed to hosted page(invoice, subscriptions etc)
@@ -46,17 +53,19 @@ class PublicEntity extends UniqueIdEntity
      *
      * @var array
      */
-    protected $hosted = [];
+    protected $hosted           = [];
 
-    protected $publicSetters = array(self::ID, self::ENTITY);
-
-    protected $amounts = array();
+    protected $publicSetters    = [
+        self::ID,
+        self::ENTITY,
+    ];
 
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
 
         $relations = $this->relationsToArrayPublic();
+
         $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);
@@ -94,23 +103,40 @@ class PublicEntity extends UniqueIdEntity
 
         unset($array[self::ENTITY]);
 
-        foreach ($this->amounts as $key)
-        {
-            if (isset($array[$key]))
-            {
-                $array[$key] = $array[$key] / 100;
-            }
-        }
+        $this->formatAmountFieldsForReport($array);
+
+        $this->formatDateFieldsForReport($array);
 
         // Remove fields hidden in reports
+
         foreach ($this->getHiddenInReport() as $key)
         {
             unset($array[$key]);
         }
 
-        $array[self::CREATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
-
         return $array;
+    }
+
+    protected function formatAmountFieldsForReport(array & $report)
+    {
+        foreach ($this->amounts as $key)
+        {
+            if (isset($report[$key]) === true)
+            {
+                $report[$key] = $report[$key] / 100;
+            }
+        }
+    }
+
+    protected function formatDateFieldsForReport(array & $report)
+    {
+        foreach ($this->dates as $key)
+        {
+            if (isset($report[$key]) === true)
+            {
+                $report[$key] = $this->getDateInFormatDMYHMS($key);
+            }
+        }
     }
 
     /**
