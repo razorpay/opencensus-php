@@ -79,6 +79,7 @@ export default ({
                     >
                       <DataTable
                         columns={[subscriptionId, paidCount, status]}
+                        title="Subscriptions"
                         items={subscriptions.items}
                         loading={subscriptions.loading}
                         showHeaders={false}
