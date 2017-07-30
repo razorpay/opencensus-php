@@ -71,8 +71,7 @@ export default class Payment extends GenericEntity {
   }
 
   fetchTransfers() {
-    let data = {};
-
+    const data = {};
     data.url_params = JSON.stringify({
       '{id}': this.id,
     });

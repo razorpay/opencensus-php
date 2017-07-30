@@ -93,7 +93,6 @@ export default class RefundModal extends Component {
     if (
       props.partial &&
       props.reverse_all &&
-      this.props.transfers.items &&
       this.props.transfers.items.length > 1
     ) {
       var errorMsg =
@@ -103,7 +102,6 @@ export default class RefundModal extends Component {
       this.props.showNotification({
         type: 'error',
         message: errorMsg,
-        closeTimeout: 5000,
       });
 
       return;
@@ -209,7 +207,13 @@ export default class RefundModal extends Component {
             {transfers.items.length > 0
               ? <div class="form-group">
                   <label class="col-sm-4 control-label">
-                    <div>Reverse All Transfers</div>
+                    <div>
+                      Reverse All
+                      {' '}
+                      <a href="https://razorpay.com/docs/route/operations/#reversals">
+                        Route Transfers
+                      </a>
+                    </div>
                   </label>
                   <div class="col-sm-8">
                     <div class="checkbox">
