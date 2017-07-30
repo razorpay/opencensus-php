@@ -4,9 +4,19 @@ import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
-export default ({ plan, isLoading, statusMsg }) => {
+import { subscriptionId, paidCount, status } from 'rzp/ui/item/pair';
+
+export default ({
+  plan,
+  isLoading,
+  statusMsg,
+  subscriptions,
+  onToggleSusbsList,
+}) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -60,6 +70,25 @@ export default ({ plan, isLoading, statusMsg }) => {
                 />
 
                 <NestedEntityDetailRow label="Notes" value={plan.notes} />
+
+                {subscriptions.items
+                  ? <ListToggler
+                      label="Subscriptions"
+                      totalItems={subscriptions.items.length}
+                      onToggleClick={() => onToggleSusbsList(plan.id)}
+                    >
+                      <DataTable
+                        columns={[subscriptionId, paidCount, status]}
+                        items={subscriptions.items}
+                        loading={subscriptions.loading}
+                        showHeaders={false}
+                      />
+                    </ListToggler>
+                  : <EntityDetailRow
+                      label="Subscriptions"
+                      value="No Subscriptions"
+                    />}
+
               </div>
             </div>
           </div>}
