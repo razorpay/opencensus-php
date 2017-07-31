@@ -151,24 +151,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    // Not being used
-    public function createWorkflowStep(string $id)
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Step\Service)->create($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    // Not being used
-    public function getWorkflowStep(string $id, string $stepId)
-    {
-        $data = (new Workflow\Step\Service)->fetch($id, $stepId);
-
-        return ApiResponse::json($data);
-    }
-
     public function getWorkflowSteps(string $id)
     {
         $data = (new Workflow\Step\Service)->fetchMultiple($id);

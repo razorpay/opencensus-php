@@ -468,8 +468,6 @@ final class Route
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_step_get_multiple'              => ['get',      'workflows/{id}/steps',                           'WorkflowController@getWorkflowSteps'                               ],
-        // 'workflow_step_create'                    => ['post',     'workflows/{id}/steps',                           'WorkflowController@createWorkflowStep'                             ],
-        // 'workflow_step_get'                       => ['get',      'workflows/{id}/steps/{stepId}',                  'WorkflowController@getWorkflowStep'                                ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
         'workflow_action_update'                  => ['put',      'w-actions/{id}',                                 'WorkflowController@updateWorkflowAction'                           ],
         'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],

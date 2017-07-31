@@ -81,8 +81,6 @@ class Repository extends Base\Repository
 
         $wStep = Table::WORKFLOW_STEP;
 
-        $permission = Table::PERMISSION;
-
         return $this->getNewQueryWithPermissions()
                     ->join($wStep, function ($join) {
                         $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
@@ -118,7 +116,6 @@ class Repository extends Base\Repository
 
         // CLOSED is the absolute last state, We can expect unique entries.
         $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
-
 
         return $this->getNewQueryWithPermissions()
                     ->join($acsTable, $aId, '=', $acsActionId)
