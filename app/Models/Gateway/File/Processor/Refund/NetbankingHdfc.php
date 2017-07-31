@@ -24,17 +24,15 @@ class NetbankingHdfc extends Processor\Base
      */
     protected function formatDataForFile()
     {
-         $i = 1;
-
          $formattedData = [];
 
-        foreach ($this->data as $row)
+        foreach ($this->data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
 
             $formattedData[] = [
-                'Sr No'            => $i++,
+                'Sr No'            => $index + 1,
                 'Transaction date' => $date,
                 'Bank reference #' => $row['gateway']['bank_payment_id'],
                 'Order #'          => $row['payment']['id'],
