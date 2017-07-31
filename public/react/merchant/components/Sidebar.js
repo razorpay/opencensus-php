@@ -172,7 +172,7 @@ export default class Sidebar extends Component {
                     id="settings-nav"
                     icon="icon icon-settings text-warning"
                     to={routes.settings}
-                    myRole="owner admin"
+                    myRole="owner manager admin"
                   />
                 </div>;
               } else {
