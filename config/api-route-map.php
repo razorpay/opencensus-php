@@ -63,8 +63,13 @@ return [
         'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
 
-        // Workflows
+        // Admin Change Password
+        'admin_change_password'             => 'orgs/admin/change_password',
 
+        // Get Admin File
+        'admin_get_file'                    => 'files/{fileId}/signed-url',
+
+        // Workflows
         'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
@@ -89,6 +94,10 @@ return [
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
+
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
     ],
 
     // auth
@@ -111,6 +120,10 @@ return [
         'payment_fetch_refunds'             => [
             'url'       => 'payments/{id}/refunds',
             'routeName' => 'payment_get_refunds'
+        ],
+        'payment_fetch_transfers'             => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'payment_get_transfers'
         ],
         'payment_capture'                   => [
             'url'       => 'payments/{id}/capture',
@@ -197,6 +210,16 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Activation
+        'merchant_activation_save'          => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'post_activation_save_step'
+        ],
+        'merchant_activation_upload_file'   => [
+            'url'       => 'merchant/activation/upload',
+            'routeName' => 'post_activation_save_file'
+        ],
+
         // Batches [Used for Refunds, Payment Links]
         'batch_fetch_multiple'              => [
             'url'       => 'batches',
@@ -247,6 +270,10 @@ return [
         'invoice_issue_by_batch'            => [
             'url'       => 'invoices/batch/{batchId}/issue',
             'routeName' => 'invoice_issue_by_batch',
+        ],
+        'invoice_batches_issuable'          => [
+            'url'       => 'invoices/batches/issuable',
+            'routeName' => 'invoice_batches_issuable',
         ],
 
         // Customers
@@ -458,9 +485,6 @@ return [
             'routeName' => 'put_config'
         ],
 
-        // Admin Payment Actions
-        // Refund Authorized Payment
-        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
         // Refund Payment
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment

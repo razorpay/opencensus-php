@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import Activation from 'merchant/models/Activation';
 import { set, merge, push } from 'rzp/utils/immutable';
 
 export const ACTIVATION_FETCH = 'ACTIVATION_FETCH';
@@ -7,28 +8,21 @@ export const ACTIVATION_SAVE_FILE = 'ACTIVATION_SAVE_FILE';
 export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT';
 
 export const fetchActivationDetails = (accountId = '') => {
+  let activation = new Activation({ accountId });
   return {
     type: ACTIVATION_FETCH,
-    payload: ajax({
-      url: `/activation/details/${accountId}`,
-      appendModeInURL: false,
-    }).then(response => {
-      response.data.bank_account_number_confirmation =
-        response.data.bank_account_number;
-      return response;
-    }),
+    payload: activation.fetch(),
   };
 };
 
 export const saveStep = ({ step, data, accountId = '' }) => {
+  let activation = new Activation({
+    ...data,
+    accountId,
+  });
   return {
     type: ACTIVATION_SAVE_STEP,
-    payload: ajax({
-      url: `/activation/save/step/${step}/${accountId}`,
-      method: 'post',
-      appendModeInURL: false,
-      data,
-    }),
+    payload: activation.saveStep(),
     step,
     data,
   };
@@ -36,12 +30,26 @@ export const saveStep = ({ step, data, accountId = '' }) => {
 
 export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
   let formData = new FormData();
-  formData.append(fieldName, file);
+  let fieldNameMapping = {
+    business_proof: 'business_proof_url',
+    business_operation_proof: 'business_operation_proof_url',
+    business_pan_proof: 'business_pan_url',
+    address_proof: 'address_proof_url',
+    promoter_proof: 'promoter_proof_url',
+    promoter_pan_proof: 'promoter_pan_url',
+    promoter_address_proof: 'promoter_address_url',
+  };
+  formData.append('route_name', 'merchant_activation_upload_file');
+  formData.append('file', file);
+  formData.append('file_name', fieldNameMapping[fieldName]);
+  if (accountId) {
+    formData.append('account_id', accountId);
+  }
 
   return {
     type: ACTIVATION_SAVE_FILE,
     payload: ajax({
-      url: `/activation/save/file/${accountId}`,
+      url: '/user/generic',
       method: 'post',
       data: formData,
       processData: false,
@@ -55,14 +63,13 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
 };
 
 export const submitForm = ({ step, data, accountId = '' }) => {
+  let activation = new Activation({
+    ...data,
+    accountId,
+  });
   return {
     type: ACTIVATION_FORM_SUBMIT,
-    payload: ajax({
-      url: `/activation/${accountId}`,
-      method: 'post',
-      appendModeInURL: false,
-      data,
-    }),
+    payload: activation.submit(),
     step,
     data,
   };
@@ -91,7 +98,7 @@ export default function(state = initialState, action) {
       return set(state, 'loading', true);
 
     case `${ACTIVATION_FETCH}::SUCCESS`:
-      let data = action.payload.data;
+      let data = action.payload;
       let stepsFinished = data.steps_finished;
       let steps = Object.keys(initialState.steps).reduce((prev, key) => {
         if (stepsFinished.indexOf(+key) !== -1) {

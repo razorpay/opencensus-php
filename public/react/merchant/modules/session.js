@@ -53,6 +53,32 @@ export const logout = () => {
   };
 };
 
+export const enableOrDisableNewui = enableOrDisable => {
+  return () => {
+    return ajax({
+      url: `/tags`,
+      method: 'post',
+      appendModeInURL: false,
+      data: {
+        newui: enableOrDisable,
+      },
+    }).then(() => {
+      window.location.reload();
+    });
+  };
+};
+
+export const submitFeedback = data => {
+  return () => {
+    return ajax({
+      url: '/sendfeedback',
+      method: 'post',
+      appendModeInURL: false,
+      data,
+    });
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},

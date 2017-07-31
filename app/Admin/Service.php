@@ -64,49 +64,6 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
-    public function forgotPassword($input)
-    {
-        $error = $data = null;
-
-        $domain = \Request::server('SERVER_NAME');
-
-        $org = $this->getOrgFromCache($domain);
-
-        // `/access/resetpwd` is a hard-coded angular route
-        $input['reset_password_url'] = url('/admin#/access/resetpwd');
-
-        try
-        {
-            $data = $this->api->admin->forgotPassword($org['id'], $input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    public function resetPassword($input)
-    {
-        $error = $data = null;
-
-        $domain = \Request::server('SERVER_NAME');
-
-        $org = $this->getOrgFromCache($domain);
-
-        try
-        {
-            $data = $this->api->admin->resetPassword($org['id'], $input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
     public function passwordLogin($domain, array $input)
     {
         $error = $data = null;
@@ -277,56 +234,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Changes password oflogged in admin
-     *
-     * @param  $input input array
-     * @param  $admin Admin\Entity Object
-     * @return  Status
-     */
-    public function changePassword($input, $admin)
-    {
-        $error = $admin->changePassword($input);
-
-        if (empty($error))
-        {
-            $admin->password = Hash::make($admin->password);
-            $admin->saveOrFail();
-        }
-
-        return [$error, null];
-    }
-
-    public function editAdmin($input, $id)
-    {
-        $error = [];
-
-        try
-        {
-            $this->logAdminEdits($id, $input);
-
-            $error = array();
-
-            $admin = Admin\Entity::findorfail($id);
-
-            $error = $admin->edit($input);
-
-            $admin->saveOrFail();
-
-            if (empty($error) === true)
-            {
-                // Delete all existing sessions
-                $this->deleteAllAdminSessions($id);
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, []];
-    }
-
     public function listMerchants($input)
     {
         $user = Auth::guard('api')->user();
@@ -391,12 +298,6 @@ class Service extends Base\Service
         return $this->api->admin->fetchMerchants($orgId, $adminId, $input);
     }
 
-
-    public function getAdmins()
-    {
-        return Admin\Entity::get()->toArray();
-    }
-
     public function getAdminActivity($id)
     {
         $sessionsCollection = (new SessionTable\Entity)->getAllSessionsForAdmin($id);
@@ -436,50 +337,6 @@ class Service extends Base\Service
         $sessionId = Crypt::decrypt($sessionId);
 
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
-    }
-
-    public function deleteAllAdminSessions($adminId)
-    {
-        (new SessionTable\Entity)->deleteAllSessionsForAdmin($adminId);
-    }
-
-    /**
-     * Adds a new admin
-     * @param $data input array
-     * @return Status
-     */
-    public function add($input)
-    {
-        $admin = new Admin\Entity;
-        $error = $admin->build($input);
-
-        if (empty($error))
-        {
-            $admin->password = Hash::make($admin->password);
-            $admin->saveOrFail();
-        }
-
-        return array($error, $admin->toArray());
-    }
-
-    /**
-     * Adds a new admin
-     * @param $data input array
-     * @return Status
-     */
-    public function promote($id)
-    {
-        $admin = Admin\Entity::findorfail($id);
-
-        try
-        {
-            $admin = $admin->promote();
-            return [null];
-        }
-        catch(\Exception $e)
-        {
-            return [$e->getMessage()];
-        }
     }
 
     public function fetchMerchantActivationDetails($id)
@@ -556,6 +413,8 @@ class Service extends Base\Service
 
         $error = [];
 
+        $this->setAdminCredentials();
+
         if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
@@ -583,70 +442,51 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        try
+        $merchant = $this->api->merchant->fetch($id)->toArray();
+
+        $parentId = $merchant['parent_id'] ?? null;
+
+        // If parent_id is set, the merchant is a linked account under Marketplace
+        // and are marked confirmed, without email confirmation
+        if ($parentId !== null)
         {
-            $merchant = $this->api->merchant->fetch($id)->toArray();
-
-            $parentId = $merchant['parent_id'] ?? null;
-
-            // If parent_id is set, the merchant is a linked account under Marketplace
-            // and are marked confirmed, without email confirmation
-            if ($parentId !== null)
-            {
-                $merchant['confirmed'] = true;
-            }
-            else
-            {
-                $users = $this->api->merchant->getUsers($id)->toArray();
-
-                $genericUsers = (new Helper)->createGenericUsers($users);
-
-                $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
-                                                      ->where('confirmed', true)
-                                                      ->first();
-
-                $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
-            }
-
-            $tags = Merchant\Entity::select(['merchants.id'])
-                                    ->with('tagged')
-                                    ->where('merchants.id', $id)
-                                    ->get()
-                                    ->toArray();
-
-            $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
-
-            $merchant['merchant_details'] = $merchantDetail;
-
-            $response = [
-                'archived_at'         => $merchant['archived_at'],
-                'suspended_at'        => $merchant['suspended_at'],
-                'steps_finished'      => $merchantDetail['steps_finished'],
-                'locked'              => $merchantDetail['locked'],
-                'submitted'           => $merchantDetail['submitted'],
-                'tags'                => $tags[0]['tags'],
-                'submitted_at'        => $merchantDetail['submitted_at'],
-                'activated_dashboard' => $merchant['activated']
-            ] + $merchant;
+            $merchant['confirmed'] = true;
         }
-        catch (BadRequestError $e){
+        else
+        {
+            $users = $this->api->merchant->getUsers($id)->toArray();
 
+            $genericUsers = (new Helper)->createGenericUsers($users);
+
+            $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
+                                                  ->where('confirmed', true)
+                                                  ->first();
+
+            $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
         }
+
+        $tags = Merchant\Entity::select(['merchants.id'])
+                                ->with('tagged')
+                                ->where('merchants.id', $id)
+                                ->get()
+                                ->toArray();
+
+        $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
+
+        $merchant['merchant_details'] = $merchantDetail;
+
+        $response = [
+            'archived_at'         => $merchant['archived_at'],
+            'suspended_at'        => $merchant['suspended_at'],
+            'steps_finished'      => $merchantDetail['steps_finished'],
+            'locked'              => $merchantDetail['locked'],
+            'submitted'           => $merchantDetail['submitted'],
+            'tags'                => $tags[0]['tags'],
+            'submitted_at'        => $merchantDetail['submitted_at'],
+            'activated_dashboard' => $merchant['activated']
+        ] + $merchant;
 
         return $response;
-    }
-
-    public function fetchMerchantBalance($id)
-    {
-        $this->setApiCredentials(null, 'test');
-
-        $test = $this->api->merchant->setId($id)->fetchBalance()->toArray();
-
-        $this->setApiCredentials(null, 'live');
-
-        $live = $this->api->merchant->setId($id)->fetchBalance()->toArray();
-
-        return compact('test', 'live');
     }
 
     public function postEditMerchant($id, $input)
@@ -728,14 +568,6 @@ class Service extends Base\Service
             // This is always sent currently for every edit.
             unset($input['transaction_report_email']);
             $this->logActionToSlack($id, Actions::RISK_RATING_CHANGED, $input);
-        }
-    }
-
-    protected function logAdminEdits($id, $input)
-    {
-        if (isset($input['email']))
-        {
-            $this->logActionToSlack($id, Actions::ADMIN_EDIT);
         }
     }
 
@@ -1147,33 +979,6 @@ class Service extends Base\Service
         }
 
         return array($error, $response);
-    }
-
-    public function getUploadedFile($id)
-    {
-        $error = null;
-        $url = null;
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $file = $this->api
-                         ->admin
-                         ->getFileByAdmin($id);
-            $url = $file->headers->offsetGet('location');
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured while getting requested file from API",
-                    'exception' => $error,
-            ]);
-        }
-
-        return array($error, $url);
     }
 
     /**
@@ -1797,38 +1602,6 @@ class Service extends Base\Service
         try
         {
             $data = (new Admin\Mailgun)->getLogs($input);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function getEmailBounce($email)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->getBounce($email);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function deleteEmailBounce($email)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->deleteBounce($email);
         }
         catch (\Exception $e)
         {

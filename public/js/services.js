@@ -1014,6 +1014,11 @@ angular
               idParam: 'id',
               sign: '',
             },
+            feature: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
           };
 
           if (typeof entityMap[entityName] !== 'undefined') {
@@ -1095,13 +1100,14 @@ angular
         walletMap: {
           payzapp: 'Payzapp',
           mobikwik: 'Mobikwik',
-          payumoney: 'Payumone',
+          payumoney: 'Payumoney',
           olamoney: 'Olamoney',
           airtelmoney: 'Airtelmoney',
           freecharge: 'Freecharge',
           jiomoney: 'Jiomoney',
           openwallet: 'Openwallet',
           mpesa: 'Mpesa',
+          paytm: 'Paytm',
         },
       };
 

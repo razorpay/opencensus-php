@@ -3,7 +3,7 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedDetailRow from 'merchant/components/NestedDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
 export default ({ plan, isLoading, statusMsg }) => {
@@ -27,7 +27,9 @@ export default ({ plan, isLoading, statusMsg }) => {
 
                 <EntityDetailRow
                   label="Plan Description"
-                  value={plan.item.description}
+                  value={() => {
+                    return <span class="pre">{plan.item.description}</span>;
+                  }}
                 />
 
                 <EntityDetailRow
@@ -57,7 +59,7 @@ export default ({ plan, isLoading, statusMsg }) => {
                   )}
                 />
 
-                <NestedDetailRow label="Notes" value={plan.notes} />
+                <NestedEntityDetailRow label="Notes" value={plan.notes} />
               </div>
             </div>
           </div>}

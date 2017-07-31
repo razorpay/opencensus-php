@@ -1,6 +1,14 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
 
+/*
+  Abstract class for most CRUD entities. The base Entity has methods like
+  - instance.fetchAll(params)
+  - instance.fetch(params)
+  - instance.save()
+  - instance.delete()
+*/
+
 // `GenericEntity will replace the `Entity` when all routes are migrated to `/generic` routes
 export default class GenericEntity extends Entity {
   resourceUrl = '/user/generic';
@@ -25,7 +33,7 @@ export default class GenericEntity extends Entity {
     data.route_name = this.listRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
+        new Klass(item).deserialize()
       );
       return response;
     });
@@ -38,7 +46,7 @@ export default class GenericEntity extends Entity {
     });
     data.route_name = this.detailsRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
-      return new Klass().deserialize(response.data);
+      return new Klass(response.data).deserialize();
     });
   }
 
@@ -63,7 +71,7 @@ export default class GenericEntity extends Entity {
       method,
       data,
     }).then(response => {
-      return new Klass().deserialize(response.data);
+      return new Klass(response.data).deserialize();
     });
   }
 

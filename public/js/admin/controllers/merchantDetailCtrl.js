@@ -2421,15 +2421,20 @@ app
           delete offer['max_payment_count'];
         }
 
-        // 3. Convert to array
+        // 3. Payment method is not required for upi
+        if (offer['payment_method'] === 'upi') {
+          delete offer['payment_network'];
+        }
+
+        // 4. Convert to array
         if (offer['linked_offer_ids']) {
           offer['linked_offer_ids'] = offer['linked_offer_ids'].split(',');
         }
 
-        // 4. Percent rate has limit 0-10000 (view takes from 0-100)
+        // 5. Percent rate has limit 0-10000 (view takes from 0-100)
         offer['percent_rate'] = offer['percent_rate'] * 100;
 
-        // 5. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
+        // 6. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
         var startTime = new Date($scope.offer_time.starts);
         var endTime = new Date($scope.offer_time.ends);
 

@@ -13,7 +13,7 @@ app
     'organization',
     'transformRequestAsFormPost',
     '$window',
-    '$cookies',
+    '$localStorage',
     function(
       $scope,
       $timeout,
@@ -25,7 +25,8 @@ app
       user,
       organization,
       transformRequestAsFormPost,
-      $window
+      $window,
+      $localStorage
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -158,7 +159,7 @@ app
 
         // Get invitation details
         $http({
-          url: '/invitation',
+          url: '/admin/generic',
 
           method: 'GET',
 
@@ -228,6 +229,7 @@ app
         showSpinner();
         request.success(function(data) {
           if (data.success) {
+            $localStorage.new_user_signup = true;
             $scope.signup.account_type = $scope.signup.data.invitation
               ? 'team_member'
               : 'merchant';

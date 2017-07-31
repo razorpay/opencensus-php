@@ -34,11 +34,16 @@ export default class Settings extends Component {
         <Route path="/config" component={Configuration} />
         <Route path="/webhooks" component={Webhooks} />
         <Route path="/keys" component={ApiKeys} />
-        <Switch>
-          <Route exact path="/applications" component={Applications} />
-          <Route exact path="/applications/new" component={ApplicationsNew} />
-          <Route path="/applications/:id" component={ApplicationsNew} />
-        </Switch>
+        <content>
+          <Route path="/config" component={Configuration} />
+          <Route path="/webhooks" component={Webhooks} />
+          <Route path="/keys" component={ApiKeys} />
+          <Switch>
+            <Route exact path="/applications" component={Applications} />
+            <Route exact path="/applications/new" component={ApplicationsNew} />
+            <Route path="/applications/:id" component={ApplicationsNew} />
+          </Switch>
+        </content>
       </tabbed-container>
     );
   }

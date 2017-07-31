@@ -16,14 +16,4 @@ class Mailgun
     {
         return $this->mailgunClient->get($this->domain . "/events", $input)->http_response_body;
     }
-
-    public function getBounce($email)
-    {
-        return $this->mailgunClient->get($this->domain . "/bounces/$email")->http_response_body;
-    }
-
-    public function deleteBounce($email)
-    {
-        return $this->mailgunClient->delete($this->domain . "/bounces/$email")->http_response_body;
-    }
 }

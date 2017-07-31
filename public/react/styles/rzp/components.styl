@@ -241,8 +241,8 @@
 // Status label for transactions
 .status-label {
   display: inline-block;
-  min-width: 80px;
-  font-size: 13px;
+  min-width: 78 px;
+  font-size: 12px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -389,6 +389,12 @@ a.breadcrumb__backNav--link {
       .fa-check {
         color: #0b5;
       }
+    }
+
+    input[type="radio"]:disabled + label {
+      background: #F7F8FA;
+      color: #CCC;
+      cursor: not-allowed;
     }
 
     > label {

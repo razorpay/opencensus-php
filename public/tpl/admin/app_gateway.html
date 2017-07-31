@@ -165,7 +165,10 @@
           <select name="gateway" ng-model="current.gateway" class="form-control"
                   ng-readonly="editMode"
                   ng-required="!editMode">
-            <option ng-repeat="(key, option) in gatewayListMap" value={{key}}>{{option}}</option>
+            <option
+              ng-repeat="(key, option) in gatewayListMap"
+              ng-selected="{{key == current.gateway}}"
+              value={{key}}>{{option}}</option>
           </select>
 
         </div>

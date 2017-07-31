@@ -104,24 +104,6 @@ class PasswordController extends Controller
         return Response::json(['success' => true]);
     }
 
-    public function forgotAdminPassword()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->forgotPassword($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function resetAdminPassword()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->resetPassword($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     protected function generateToken($userId, $time)
     {
         return hash_hmac(self::SHA256, 'password.reset' . '_' . $userId . '_' . $time, env('APP_KEY'));

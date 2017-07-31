@@ -15,6 +15,7 @@ use App\Merchant;
 use App\Admin\Entity;
 use App\Http\AppResponse;
 use App\Http\SlackResponse;
+use Razorpay\Api\Request as ApiRequest;
 
 class AdminController extends Controller
 {
@@ -221,24 +222,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postPassword()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->changePassword($input, Auth::guard('api')->user());
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function putEdit($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->editAdmin($input, $id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantList()
     {
         $input = Input::all();
@@ -262,6 +245,8 @@ class AdminController extends Controller
 
     public function getMerchant($id)
     {
+        ApiRequest::addHeader('X-Razorpay-Account', $id);
+
         list($error, $data) = (new Admin\Service)->fetchFullMerchantDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
@@ -368,39 +353,6 @@ class AdminController extends Controller
         }
     }
 
-    public function getAdmins()
-    {
-        $admins = (new Admin\Service)->getAdmins();
-
-        return AppResponse::jsonResponse([], $admins);
-    }
-
-    public function getDeleteAdmin($id)
-    {
-        $error = (new Admin\Service)->deleteAdmin($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function postAddAdmin()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->add($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    /**
-     * Promotes a user to a superadmin
-     */
-    public function postPromoteAdmin($id)
-    {
-        list($error) = (new Admin\Service)->promote($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantHdfcExcel($id)
     {
         list($error, $file) = (new Admin\Service)->generateMerchantHdfcExcel($id);
@@ -409,13 +361,6 @@ class AdminController extends Controller
             return AppResponse::jsonResponse($error);
 
         $file->download('xlsx');
-    }
-
-    public function getUploadedFile($id)
-    {
-        list($error, $url) = (new Admin\Service)->getUploadedFile($id);
-
-        return Redirect::to($url);
     }
 
     public function passThrough($path = '')
@@ -553,25 +498,4 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
-
-    /**
-     * Check if email address exists in bounce list
-     */
-    public function getEmailBounce($email)
-    {
-        list($error, $response) = (new Admin\Service)->getEmailBounce($email);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    /**
-     * Delete email address from bounce list
-     */
-    public function deleteEmailBounce($email)
-    {
-        list($error, $response) = (new Admin\Service)->deleteEmailBounce($email);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
 }

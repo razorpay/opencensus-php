@@ -2,13 +2,19 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/Batch/ListFilter';
 import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-function batchActions({ mode, viewAll, issueAll, onDownloadClick }) {
+function batchActions({
+  mode,
+  viewAll,
+  issueAll,
+  onDownloadClick,
+  issuableIdList,
+}) {
   return {
     viewAll,
     issueAll,
@@ -33,7 +39,14 @@ function batchActions({ mode, viewAll, issueAll, onDownloadClick }) {
                 </button>;
               }
 
-              if (issueAll && item.status === 'processed') {
+              {
+                /*issuableIdList is present only in case of Payment Links*/
+              }
+              if (
+                issueAll &&
+                item.status === 'processed' &&
+                (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
+              ) {
                 <button
                   class="btn btn-default btn-xs"
                   onClick={_ => issueAll(item)}
@@ -81,18 +94,13 @@ export default class BatchList extends Component {
       uploadUrl,
       viewAll,
       issueAll,
+      issuableIdList,
     } = this.props;
     let handleDownloadClick = this.dowload;
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="tabbed-container > header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
+        <HeaderAction>
           <div class="btn-toolbar pull-right">
             {docUrl &&
               <a class="btn btn-link" href={docUrl} target="_blank">
@@ -104,7 +112,7 @@ export default class BatchList extends Component {
               Click here to upload
             </Link>
           </div>
-        </TetherComponent>
+        </HeaderAction>
 
         <BatchListFilter
           form="batchListFilter"
@@ -122,6 +130,7 @@ export default class BatchList extends Component {
               viewAll,
               issueAll,
               onDownloadClick: handleDownloadClick,
+              issuableIdList,
             }),
           ]}
           count={count}

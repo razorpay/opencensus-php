@@ -173,10 +173,14 @@ app
           });
       };
       function passwordChangeRequest(data) {
+        var passwordData = {
+          route_name: 'admin_change_password',
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/password',
-          data: data,
+          url: '/admin/generic',
+          data: passwordData,
         });
         request
           .success(function(data) {
@@ -210,6 +214,7 @@ app
 
       organization.fetchCurrentOrg().then(function(data) {
         $scope.logo_full = data.main_logo_url || 'img/logo_full.png';
+        $scope.auth_type = data.auth_type;
       });
     },
   ])

@@ -8,6 +8,7 @@ use App\Trace\TraceCode;
 use Input;
 use Config;
 use Auth;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class Service extends Base\Service
 {
@@ -127,7 +128,7 @@ class Service extends Base\Service
 
                 if (\Gate::has($routeName) and \Gate::denies($routeName))
                 {
-                    abort(403, 'Forbidden');
+                    throw new AuthorizationException("Unauthorized action");
                 }
             }
         }

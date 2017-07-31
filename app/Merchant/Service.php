@@ -18,7 +18,6 @@ use App\Mailers\UserMailer;
 use App\RZP\PublicCollection;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
-use App\Exceptions\EntityNotFoundException;
 
 class Service extends Base\Service
 {
@@ -500,17 +499,10 @@ class Service extends Base\Service
 
         $error = $response = null;
 
-        try
-        {
-            $response = $this->api
-                             ->merchant
-                             ->fetch($merchantId)
-                             ->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            throw new EntityNotFoundException("merchant");
-        }
+        $response = $this->api
+                         ->merchant
+                         ->fetch($merchantId)
+                         ->toArray();
 
         if (empty($response) === false)
         {
@@ -764,38 +756,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    /**
-     * Fetches merchant balance
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $merchantId Merchant Id
-     * @return array contains both test and live balances
-     */
-    public function fetchMerchantBalance($merchantId)
-    {
-        $test = $this->fetchProxyMerchantBalance($merchantId, 'test');
-        $live = $this->fetchProxyMerchantBalance($merchantId, 'live');
-
-        return compact('test', 'live');
-    }
-
-    protected function fetchProxyMerchantBalance($merchantId, $mode)
-    {
-        try
-        {
-            $this->setApiCredentials($merchantId, $mode);
-            return $this->api->merchant->fetchProxyBalance()->toArray();
-        }
-
-        catch(BadRequestError $e)
-        {
-            return [
-                'id'        =>  $merchantId,
-                'balance'   =>  0
-            ];
-        }
-    }
-
     public function fetchReferredMerchants($merchantId)
     {
         $tag = "ref-$merchantId";
@@ -924,5 +884,37 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUsers];
+    }
+
+    public function tagMerchant(array $input)
+    {
+        if ($this->currentUser === null)
+        {
+            return [[], []];
+        }
+
+        $currentMerchant = $this->currentUser->currentMerchant();
+
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
+
+        $merchantTags = $currentMerchant->tagNames;
+
+        $allTags = [];
+
+        if (empty($merchantTags) === false)
+        {
+            $allTags = explode(', ', strtolower($merchantTags));
+        }
+
+        $newAllTags = array_diff($allTags, ['newui']);
+
+        if ((isset($input['newui']) === true) and ($input['newui'] === 'true'))
+        {
+            $newAllTags[] = 'newui';
+        }
+
+        $currentMerchant->retag($newAllTags);
+
+        return [[], $currentMerchant->toArray()];
     }
 }

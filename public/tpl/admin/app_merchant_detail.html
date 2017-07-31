@@ -983,6 +983,7 @@
              <option value="netbanking_indusind">Netbanking Indusind</option>
              <option value="netbanking_rbl">Netbanking RBL</option>
              <option value="cybersource">Cybersource</option>
+             <option value="hitachi">Hitachi</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
         </div>
@@ -1151,11 +1152,12 @@
         </div>
       </div>
       <div class="form-group" >
-        <label for="shared" class="col-lg-3 control-label">Recurring Type</label>
+        <label for="type" class="col-lg-3 control-label">Type</label>
         <div class="col-lg-9" >
-          <select class="form-control m-b" ng-model="terminal.recurring">
-             <option value="0">Twofactor</option>
-             <option value="2">Non-twofactor</option>
+          <select class="form-control m-b" ng-model="terminal.type">
+            <option value="1">Non-recurring</option>
+            <option value="3">Recurring 3DS</option>
+            <option value="4">Recurring Non-3DS</option>
           </select>
         </div>
       </div>
@@ -1289,6 +1291,9 @@
           <option value="pharma">Pharma</option>
           <option value="cryptocurrency">Cryptocurrency</option>
           <option value="forex">Forex</option>
+          <option value="hospitality">Hospitality</option>
+          <option value="logistics">Logistics</option>
+          <option value="others">Others</option>
           </select>
         </div>
       </div>
@@ -1464,7 +1469,7 @@
                     ng-model="offer.payment_method_type">
               <option value="">All</option>
               <option value="credit">Credit</option>
-              <option value="dedit">Dedit</option>
+              <option value="debit">Debit</option>
             </select>
           </div>
         </div>
@@ -1472,7 +1477,7 @@
       <div class="form-group" ng-if="offer.payment_method && offer.payment_method !== 'upi'">
         <label for="payment_network" class="col-lg-3 control-label">Payment Network:</label>
         <div class="col-lg-9" >
-          <select name="merchant-features"  class="form-control m-b" ng-model="payment_network"
+          <select name="payment_network" class="form-control m-b" ng-model="offer.payment_network"
                   ng-if="['card', 'emi', 'wallet'].indexOf(offer.payment_method) !== -1">
             {{paymentNetworkMap}}
             <option ng-repeat="(value, network) in paymentNetworkMap" ng-value="value">{{network}}</option>
@@ -2061,6 +2066,9 @@
             <option value="broking" ng-if="merchant.tags.indexOf('Broking_Report') !== -1">Broking Report</option>
             <!-- DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants -->
             <option value="dsp_report" ng-if="merchant.tags.indexOf('Dsp_Report') !== -1">DSP Transaction Report</option>
+
+            <!-- RPP Report is only for e-Mitra (RPP) Merchant. Should not be enabled for any other merchants -->
+            <option value="rpp_report" ng-if="merchant.tags.indexOf('Rpp_Report') !== -1">e-Mitra Report</option>
 
             <option value="invoice">Monthly Invoice</option>
 

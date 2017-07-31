@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import VirtualAccountsListFilter
@@ -39,36 +40,40 @@ export default class VirtualAccountsListContainer extends ListContainer {
         <header id="#va-header">
           <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
 
-          <div class="btn-toolbar pull-right">
-            <button class="btn btn-primary" onClick={this.showCreateVAModal}>
-              <i class="icon icon-plus" />
-              <span>Create Virtual Account</span>
-            </button>
-          </div>
+          <HeaderAction>
+            <div class="btn-toolbar">
+              <button class="btn btn-primary" onClick={this.showCreateVAModal}>
+                <i class="icon icon-plus" />
+                <span>Create Virtual Account</span>
+              </button>
+            </div>
+          </HeaderAction>
         </header>
 
-        <div class="content-wrapper">
-          <VirtualAccountsListFilter
-            form="virtualAccountsListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+        <content>
+          <div class="content-wrapper">
+            <VirtualAccountsListFilter
+              form="virtualAccountsListFilter"
+              count={this.state.count}
+              onSubmit={this.search}
+            />
 
-          <DataTable
-            title="Virtual Accounts"
-            columns={[
-              virtualAccountId,
-              accountDescription,
-              amountPaid,
-              status,
-              createdAt,
-            ]}
-            count={this.state.count}
-            skip={this.state.skip}
-            paginate={this.paginate}
-            {...this.props}
-          />
-        </div>
+            <DataTable
+              title="Virtual Accounts"
+              columns={[
+                virtualAccountId,
+                accountDescription,
+                amountPaid,
+                status,
+                createdAt,
+              ]}
+              count={this.state.count}
+              skip={this.state.skip}
+              paginate={this.paginate}
+              {...this.props}
+            />
+          </div>
+        </content>
       </tabbed-container>
     );
   }

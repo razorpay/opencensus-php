@@ -10,6 +10,7 @@ use App\MerchantDetails;
 use App\Http\AppResponse;
 use Illuminate\Http\Request;
 use App\Mailers\ContactFormMailer;
+use App\Mailers\MiscMailer;
 
 class MerchantController extends Controller
 {
@@ -311,5 +312,25 @@ class MerchantController extends Controller
         list($error, $data) = (new Api\Service)->fetchCollectionForMarketplaceAccounts($input);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postTagMerchant()
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Merchant\Service)->tagMerchant($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function sendFeedback()
+    {
+        $input = Input::all();
+
+        $mailer = new MiscMailer();
+
+        $mailer->sendFeedbackToSupport($input['email'], $input['subject'], $input['message'])->queueAndDeliver();
+
+        return AppResponse::jsonResponse([], ['success' => true]);
     }
 }

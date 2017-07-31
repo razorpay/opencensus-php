@@ -406,7 +406,9 @@ angular
           element.select2(options);
 
           // Call custom function to attach event listener which performs action when an option is selected
-          scope.initRoleSelector(element);
+          if (typeof scope.initRoleSelector === 'function') {
+            scope.initRoleSelector(element);
+          }
         },
       };
     },
