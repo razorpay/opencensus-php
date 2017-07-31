@@ -82,7 +82,7 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '1007773209',
             'subvention'        => 'merchant',
-            'merchant_payback'  => 300
+            'merchant_payback'  => 549
         ],
     ];
 

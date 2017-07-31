@@ -306,7 +306,7 @@ class Pricing extends Base
                 'plan_name'      => 'EmiSubPricingP',
                 'feature'        => 'emi',
                 'payment_method' => 'card',
-                'percent_rate'   => 300,
+                'percent_rate'   => 549,
                 'fixed_rate'     => 0,
                 'emi_duration'   => 9,
                 'payment_issuer' => 'ICIC'

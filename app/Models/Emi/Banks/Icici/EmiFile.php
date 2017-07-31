@@ -26,7 +26,7 @@ class EmiFile extends Base\EmiFile
 
             $principalAmount = $emiPayment->getAmount()/100;
 
-            $merchantPayback = 'Na';
+            $merchantPayback = 'NA';
 
             if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT)
             {
@@ -51,18 +51,18 @@ class EmiFile extends Base\EmiFile
                 'Tenure'                       => $tenure,
                 'Merchant Subvention'          => $merchantPayback,
                 'Customer Subvention'          => $rate,
-                'Discount/ Cashback Amount'    => 'Na',
-                'Discount/Cashback(%)'         => 'Na',
+                'Discount/ Cashback Amount'    => 'NA',
+                'Discount/Cashback(%)'         => 'NA',
                 'Cashback (Y/N)'               => 'N',
-                'Manufacturer'                 => 'Na',
+                'Manufacturer'                 => 'NA',
                 'Merchant Name'                => 'Razorpay Payments',
-                'Pinelabs Merchant Name'       => 'Na',
+                'Pinelabs Merchant Name'       => 'NA',
                 'Issuer'                       => 'ICICI Bank',
-                'Acquirer'                     => 'Na',
-                'Settlement Time'              => 'Na',
-                'Subvention Payable to Issuer' => 'Na',
-                'Subvention Amount (Rs.)'      => 'Na',
-                'Addition Cashback'            => 'Na',
+                'Acquirer'                     => 'NA',
+                'Settlement Time'              => 'NA',
+                'Subvention Payable to Issuer' => 'NA',
+                'Subvention Amount (Rs.)'      => 'NA',
+                'Addition Cashback'            => 'NA',
             ];
         }
 
