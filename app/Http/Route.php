@@ -267,7 +267,7 @@ final class Route
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
-        'entity_tax_update'                       => ['patch',    'admin/{entity}/tax_update',                      'AdminController@updateEntityTax'                                   ],
+        'entity_tax_update'                       => ['put',      'admin/{entity}/tax_update',                      'AdminController@updateEntityTax'                                   ],
         'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
