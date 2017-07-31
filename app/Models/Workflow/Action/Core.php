@@ -520,6 +520,8 @@ class Core extends Base\Core
 
         $stateCore->changeActionState($action->getId(), $state, $adminId);
 
-        return $differCore->updateStateInEs($action->getId(), $state);
+        $differCore->updateStateInEs($action->getId(), $state);
+
+        return ['success' => true];
     }
 }
