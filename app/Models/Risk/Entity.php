@@ -80,7 +80,7 @@ class Entity extends Base\PublicEntity
 
         if ($merchantId !== null)
         {
-            $attributes[static::MERCHANT_ID] = Payment\Entity::getSignedId($merchantId);
+            $attributes[static::MERCHANT_ID] = Merchant\Entity::getSignedId($merchantId);
         }
     }
 

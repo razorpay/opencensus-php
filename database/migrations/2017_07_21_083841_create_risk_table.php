@@ -33,7 +33,11 @@ class CreateRiskTable extends Migration
 
             $table->string(Risk::SOURCE, 30);
 
-            $table->decimal(Risk::RISK_SCORE, 9, 2);
+            // If the risk log is created on confirmation from bank or
+            // chargeback or other purposes, we may not get a risk score.
+            // hence, it is nullable
+            $table->decimal(Risk::RISK_SCORE, 9, 2)
+                  ->nullable();
 
             $table->text(Risk::COMMENTS);
 

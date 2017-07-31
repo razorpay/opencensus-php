@@ -26,12 +26,15 @@ class Core extends Base\Core
         if (empty($input[Entity::COMMENTS]) === false)
         {
             $newComment = $input[Entity::COMMENTS];
-            $input[Entity::COMMENTS] = $oldComment + " || " + $newComment;
+
+            $input[Entity::COMMENTS] = $oldComment . " || " . $newComment;
         }
 
         $risk->edit($input);
 
-        return $this->repo->saveOrFail($risk);
+        $this->repo->saveOrFail($risk);
+
+        return $risk;
     }
 
     public function get(string $id)

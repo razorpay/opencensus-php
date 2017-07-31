@@ -10,7 +10,6 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 class RiskTest extends TestCase
 {
     use PaymentTrait;
-    use HeimdallTrait;
 
     public function setUp()
     {
@@ -23,9 +22,36 @@ class RiskTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
-    public function testCreateRiskEntry()
+    public function testAppendComments()
     {
+        // Running testFraudDetected test again till we can do
+        // runDependencyTest across test files
+        $this->mockMaxmind();
 
+        $this->fixtures->merchant->enableInternational();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012010000000007';
+
+        $data = $this->testData['testFraudDetected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $risk = $this->getLastEntity('risk', true);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $risk['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $risk = $this->getLastEntity('risk', true);
+
+        $this->assertEquals('internal', $risk['source']);
     }
 }
-
