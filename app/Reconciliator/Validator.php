@@ -52,8 +52,7 @@ class Validator
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
         Orchestrator::AXIS               => "/Please find attached the settlement file for today."
                                             . " You net amount settled is/",
-        Orchestrator::FIRST_DATA         => "/Please find attached herewith the statement of "
-                                            . "transactions for MID <razorpay.>./"
+        Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/"
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [

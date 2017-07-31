@@ -742,5 +742,22 @@ final class FactoryData
             'role'                     => 'manager',
             'token'                    => $faker->name(30),
         ]);
+
+        $factory(\RZP\Models\Workflow\Entity::class, [
+           'id'      => $faker->uniqueid,
+            'org_id' => '100000razorpay',
+            'name'   => $faker->name,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Step\Entity::class,[
+            'id'               => $faker->uniqueid,
+            'role_id'          => 'factory:RZP\Models\Admin\Role\Entity',
+            'workflow_id'      => 'factory:RZP\Models\Workflow\Entity',
+            'reviewer_count'   => 1,
+            'op_type'          => 'or',
+            'level'            => 1,
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
+        ]);
     }
 }

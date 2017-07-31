@@ -12,6 +12,8 @@ class NetbankingReconcilationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
+    const ACCOUNT_NUMBER = '309002069863';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/NetbankingReconciliationTestData.php';
@@ -35,7 +37,7 @@ class NetbankingReconcilationTest extends TestCase
         {
             if ($action === 'claims_data')
             {
-                $content['0']['Debit Account'] = '309002069863';
+                $content['0']['Debit Account'] = self::ACCOUNT_NUMBER;
 
                 $content['0']['Credit Account'] = '309001141935';
             }
@@ -49,7 +51,7 @@ class NetbankingReconcilationTest extends TestCase
 
         $gatewayEnttiy = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('309002069863', $gatewayEnttiy['account_number']);
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEnttiy['account_number']);
 
         $this->assertEquals('309001141935', $gatewayEnttiy['credit_account_number']);
     }
@@ -103,6 +105,33 @@ class NetbankingReconcilationTest extends TestCase
         $paymentEnttiy = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEnttiy['status'], 'authorized');
+    }
+
+    public function testIndusindManualReconciliation()
+    {
+        $this->gateway = 'netbanking_indusind';
+
+        $payment = $this->createPayment('netbanking_indusind');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'INDB', 'Y');
+
+        $this->mockReconContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'claims_data')
+            {
+                $content['0']['account_number'] = self::ACCOUNT_NUMBER;
+            }
+        });
+
+        $fileContents = $this->generateFile('indusind', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIndusind', $uploadedFile);
+
+        $gatewayEnttiy = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEnttiy['account_number']);
     }
 
     protected function reconcile($gateway, $uploadedFile)

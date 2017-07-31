@@ -13,6 +13,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -176,7 +177,7 @@ class FeeCalculator
         $method = $this->entity->getMethod();
 
         $filters = array(
-            [Pricing\Entity::FEATURE, $feature, false, null  ],
+            [Pricing\Entity::FEATURE,         $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
         );
 
@@ -350,6 +351,7 @@ class FeeCalculator
             [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
         ];
 
+
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
@@ -382,11 +384,20 @@ class FeeCalculator
     protected function getRelevantPricingRuleForEmi($rules)
     {
         $payment = $this->entity;
+        $emiPlan = $payment->emiPlan;
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
+        $emiDuration = $emiPlan->getDuration();
+
+        $issuer = $emiPlan->getIssuer();
+
+        //Emi duration and issuer filter is for merchant subvented model
+        //in normal emi it will be null where feature is payment
         $filters1 = array(
-            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+            [Pricing\Entity::PAYMENT_NETWORK, $network,     true, null ],
+            [Pricing\Entity::PAYMENT_ISSUER,  $issuer,      true, null ],
+            [Pricing\Entity::EMI_DURATION,    $emiDuration, true, null ]
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
