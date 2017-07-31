@@ -760,7 +760,7 @@ class Entity extends Base\PublicEntity
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
 
         // Just so there is no whitespace before or after the email
-        return array_map('trim', $emails);
+        return array_filter(array_map('trim', $emails));
     }
 
     protected function setEmailAttribute($email)
