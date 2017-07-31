@@ -12,6 +12,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
+use DOMDocument;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 
@@ -204,7 +205,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $data[RequestFields::RETURN_URL] = self::NA;
+            $data[RequestFields::RETURN_URL] = Constants::RZP_URL;
         }
 
         $dataString = urldecode(http_build_query($data, null, $glue));
@@ -301,9 +302,14 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($response): array
     {
-        $encryptedResponse = json_decode($response->body, true);
+        $htmlResponse = stripcslashes(html_entity_decode($response->body));
 
-        $encryptedString = $encryptedResponse[ResponseFields::ENCDATA];
+        $dom = new DOMDocument;
+
+        $dom->loadHTML($htmlResponse);
+
+        $encryptedString = $dom->getElementById(ResponseFields::ENCDATA)
+                               ->getAttribute('value');
 
         $decryptedString = $this->decryptString($encryptedString);
 
@@ -360,8 +366,8 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if ((isset($response[ResponseFields::BANK_PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::BANK_PAYMENT_STATUS] === Status::SUCCESS))
+        if ((isset($response[ResponseFields::BANK_PAYMENT_STATUS_VERIFY]) === true) and
+            ($response[ResponseFields::BANK_PAYMENT_STATUS_VERIFY] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -389,22 +395,23 @@ class Gateway extends Base\Gateway
 
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes[Base\Entity::STATUS] = $content[ResponseFields::BANK_PAYMENT_STATUS];
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::BANK_PAYMENT_STATUS_VERIFY];
         }
 
-        if (isset($content[ResponseFields::BANK_TRANSACTION_ID]) === true)
+        if (isset($content[ResponseFields::BANK_TRANSACTION_ID_VERIFY]) === true)
         {
             if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
             {
-                $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_TRANSACTION_ID];
+                $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_TRANSACTION_ID_VERIFY];
             }
-            else if ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::BANK_TRANSACTION_ID])
+            else if ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !==
+                     $content[ResponseFields::BANK_TRANSACTION_ID_VERIFY])
             {
                 $this->trace->error(
                     TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
                     [
                         'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
-                        'verify_bid'    => $content[ResponseFields::BANK_TRANSACTION_ID]
+                        'verify_bid'    => $content[ResponseFields::BANK_TRANSACTION_ID_VERIFY]
                     ]
                 );
             }
