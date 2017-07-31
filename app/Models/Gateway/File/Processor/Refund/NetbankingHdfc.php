@@ -12,9 +12,10 @@ class NetbankingHdfc extends Processor\Base
 {
     use GenerateRefundFile;
 
-    const FILE_NAME = 'HDFC_Netbanking_Refunds';
-    const EXTENSION = FileStore\Format::XLSX;
-    const FILE_TYPE = FileStore\Type::HDFC_NETBANKING_REFUND;
+    const FILE_NAME     = 'HDFC_Netbanking_Refunds';
+    const EXTENSION     = FileStore\Format::XLSX;
+    const FILE_TYPE     = FileStore\Type::HDFC_NETBANKING_REFUND;
+    const MAIL_TEMPLATE = 'emails.message';
 
     protected $type = Payment\Entity::BANK;
 

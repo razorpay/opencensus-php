@@ -102,7 +102,11 @@ trait GenerateRefundFile
 
             $data = $this->formatDataForMail();
 
-            $refundFileMail = new RefundFileMail($data, $gateway, $recipients);
+            $refundFileMail = new RefundFileMail(
+                                    $data,
+                                    $gateway,
+                                    $recipients,
+                                    static::MAIL_TEMPLATE);
 
             Mail::send($refundFileMail);
 
