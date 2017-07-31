@@ -173,20 +173,4 @@ class WorkflowController extends Controller
 
         return ApiResponse::json($result);
     }
-
-    public function getActionsByMaker()
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Service)->getActionsByDutyAndType($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionsChecked()
-    {
-        $data = (new Workflow\Manager)->getActionsCheckedByAdmin();
-
-        return ApiResponse::json($data);
-    }
 }

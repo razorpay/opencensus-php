@@ -32,7 +32,8 @@ class Service extends Base\Service
 
         $duty = $input['duty'] ?? 'org';
 
-        switch ($duty) {
+        switch ($duty)
+        {
             case 'maker':
                 $actions = $this->getActionsByMakerAndType($admin, $input);
                 break;
@@ -41,11 +42,24 @@ class Service extends Base\Service
                 $actions = $this->getActionsForChecker($admin);
                 break;
 
+            case 'admin_checked':
+                $actions = $this->getActionsCheckedByAdmin($admin);
+                break;
+
             case 'org':
             default:
                 $actions = $this->repo->workflow_action->findByOrgId($orgId);
                 break;
         }
+
+        return $actions->toArrayPublic();
+    }
+
+    public function getActionsCheckedByAdmin($admin)
+    {
+        $actions = $this->repo->workflow_action
+            ->getActionsCheckedByAdmin(
+                $admin->getId(), ['admin']);
 
         return $actions->toArrayPublic();
     }
@@ -180,20 +194,20 @@ class Service extends Base\Service
         switch ($type)
         {
             case 'all':
-                $actions = (new Manager)->getActionsByOrg($orgId, $type);
+                $actions = $this->getActionsByOrg($orgId, $type);
                 break;
 
             case 'closed':
-                $actions = (new Manager)->getClosedActionsByMaker($admin);
+                $actions = $this->getClosedActionsByMaker($admin);
                 break;
 
             case 'open':
-                $actions = (new Manager)->getActionsByOrg($orgId, $type);
+                $actions = $this->getActionsByOrg($orgId, $type);
                 break;
 
             case 'maker':
             default:
-                $actions = (new Manager)->getActionsByMaker($admin);
+                $actions = $this->getActionsByMaker($admin);
                 break;
         }
 
@@ -211,6 +225,25 @@ class Service extends Base\Service
 
         $actions = $this->repo->workflow_action->findByOrgId(
             $orgId, ['admin'], $type);
+
+        return $actions;
+    }
+
+    public function getClosedActionsByMaker($admin)
+    {
+        $actions = $this->repo->workflow_action
+            ->getClosedActionsByAdmin(
+                $admin->getId(), ['admin']);
+
+        return $actions;
+    }
+
+    public function getActionsByMaker($admin)
+    {
+        $relations = ['workflow', 'admin'];
+
+        $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
+            $admin->getId(), $admin->getOrgId(), $relations);
 
         return $actions;
     }

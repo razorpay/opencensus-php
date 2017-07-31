@@ -481,9 +481,6 @@ final class Route
         'action_request_execute'                  => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
-        'workflow_get_actions_for_checker'        => ['get',      'w-manager/get-actions-for-checker',              'WorkflowController@getActionsForChecker'                           ],
-        'workflow_get_actions_by_maker'           => ['get',      'w-manager/get-actions-by-maker',                 'WorkflowController@getActionsByMaker'                              ],
-        'workflow_get_actions_checked'            => ['get',      'w-manager/get-actions-checked',                  'WorkflowController@getActionsChecked'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -1104,9 +1101,6 @@ final class Route
         'workflow_action_details',
         'workflow_action_close',
         'workflow_action_get_multiple',
-        'workflow_get_actions_for_checker',
-        'workflow_get_actions_by_maker',
-        'workflow_get_actions_checked',
         'merchants_update_hold_funds',
         'adj_add',
         'payment_authorize_refund',
@@ -1175,8 +1169,6 @@ final class Route
         'action_request_execute'           => '*',
         'action_comment_create'            => '*',
         'action_comment_fetch'             => '*',
-        'workflow_get_actions_for_checker' => '*',
-        'workflow_get_actions_by_maker'    => '*',
         'workflow_action_close'            => '*',
         'workflow_action_update'           => '*',
         'workflow_action_states'           => '*',

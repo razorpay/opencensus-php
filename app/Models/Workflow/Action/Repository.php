@@ -32,7 +32,7 @@ class Repository extends Base\Repository
                     });
     }
 
-    public function findByOrgId(string $orgId, array $relations = [], $type)
+    public function findByOrgId(string $orgId, array $relations = [], $type = 'all')
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
