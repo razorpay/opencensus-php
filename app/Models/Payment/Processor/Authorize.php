@@ -33,7 +33,6 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
-use RZP\Models\Risk;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;

@@ -64,6 +64,10 @@ class Entity extends Base\PublicEntity
         self::RISK_SCORE => 'float',
     ];
 
+    protected $defaults = [
+        self::RISK_SCORE => 0,
+    ];
+
     public function setPublicPaymentIdAttribute(array & $attributes)
     {
         $paymentId = $this->getAttribute(static::PAYMENT_ID);
@@ -97,5 +101,10 @@ class Entity extends Base\PublicEntity
     public function getComments(): string
     {
         return $this->getAttribute(self::COMMENTS);
+    }
+
+    public function getFillableAttributes(): array
+    {
+        return $this->fillable;
     }
 }

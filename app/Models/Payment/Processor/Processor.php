@@ -630,9 +630,7 @@ class Processor
             return;
         }
 
-        $riskData = array_merge($riskData, $errorData);
-
-        (new Risk\Core)->logRiskDataOnPaymentFailure($payment, $riskData);
+        (new Risk\Core)->logRiskDataOnPaymentFailure($payment, $riskData, $errorData);
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
