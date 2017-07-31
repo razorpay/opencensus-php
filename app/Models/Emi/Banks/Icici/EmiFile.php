@@ -7,6 +7,7 @@ use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Emi;
+use RZP\Models\Payment;
 
 class EmiFile extends Base\EmiFile
 {
@@ -15,13 +16,6 @@ class EmiFile extends Base\EmiFile
     protected $bankName  = 'Icici';
 
     const TYPE = FileStore\Type::ICICI_EMI_FILE;
-
-    protected $acquirerMapping = [
-        'hdfc' => 'HDFC Bank',
-        'icic' => 'ICICI Bank',
-        'axis' => 'Axis Bank',
-        'amex' => 'Amex Bank',
-    ];
 
     protected function getEmiData($input)
     {
@@ -48,7 +42,7 @@ class EmiFile extends Base\EmiFile
 
             if (empty($emiPayment->terminal->getGatewayAcquirer()) === false)
             {
-                $acquirer = $this->acquirerMapping[$emiPayment->terminal->getGatewayAcquirer()];
+                $acquirer = Payment\Gateway::getAcquirerName($emiPayment->terminal->getGatewayAcquirer());
             }
 
             $rate = $emiPlan->getRate()/100;
