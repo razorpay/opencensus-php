@@ -7,6 +7,7 @@ use Lib\PhoneBook;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Emi;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
 use RZP\Models\Currency;
@@ -108,6 +109,10 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
+
+    const FORMATTED_AMOUNT                  = 'formatted_amount';
+    const FORMATTED_CREATED_AT              = 'formatted_created_at';
+    const HOSTED_TIME_FORMAT                = 'j M Y';
 
     protected static $sign      = 'pay';
 
@@ -241,6 +246,20 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::CREATED_AT,
+    ];
+
+    /**
+     * Fields exposed to hosted page(invoice, subscriptions etc)
+     * where there would mostly be no authentication.
+     *
+     * @var array
+     */
+    protected $hosted = [
+        self::ID,
+        self::STATUS,
+        self::METHOD,
+        self::AMOUNT,
         self::CREATED_AT,
     ];
 
@@ -1791,6 +1810,20 @@ class Entity extends Base\PublicEntity
 
         return $data;
     }
+
+    public function toArrayHosted()
+    {
+        $data = parent::toArrayHosted();
+
+        $data[self::FORMATTED_AMOUNT] = $this->getFormattedAmount();
+
+        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata');
+
+        $data[self::FORMATTED_CREATED_AT] = $createdAt->format(self::HOSTED_TIME_FORMAT);
+
+        return $data;
+    }
+
 // --------------- Relation to other entities ----------------------------------
 
     public function card()
@@ -2039,6 +2072,12 @@ class Entity extends Base\PublicEntity
         if ($this->isRecurring() === true)
         {
             $features[] = Pricing\Feature::RECURRING;
+        }
+
+        if (($this->isEmi() === true) and
+            ($this->merchant->getEmiSubvention() === Emi\Subvention::MERCHANT))
+        {
+            $features[] = Pricing\Feature::EMI;
         }
 
         return $features;

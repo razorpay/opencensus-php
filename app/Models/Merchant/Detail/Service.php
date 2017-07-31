@@ -57,6 +57,10 @@ class Service extends Base\Service
 
     public function saveMerchantDetails(array $input)
     {
+        $this->trace->info(
+                TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
+                ['input' => $input]);
+
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
         $merchantDetails->getValidator()->validateIsNotLocked();

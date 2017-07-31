@@ -335,6 +335,26 @@ class MerchantFeeTest extends TestCase
                 'max_fee'             => null,
             ]);
 
+         $pricingPlanEmiPlan = new Pricing\Entity([
+                'id'                  => '1fq0O3demix3tt',
+                'plan_id'             => '1EmiSubPricing',
+                'plan_name'           => 'EmiSubPricingP',
+                'feature'             => 'emi',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+                'min_fee'             => 0,
+                'max_fee'             => null,
+                'emi_duration'        => 9,
+            ]);
+
         $pricingPlanEmiAmex = new Pricing\Entity([
                 'id'                  => '1fq0O3demiamex',
                 'plan_id'             => '1hDYlICobzOCYt',
@@ -355,7 +375,7 @@ class MerchantFeeTest extends TestCase
             ]);
 
          $pricingRuleCardRecurring = new Pricing\Entity([
-                'id'                  => '1nvp2XPMmaRLxx',
+                'id'                  => '1nvp2XPMmaabxy',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testCardRecurring',
                 'feature'             => 'recurring',
@@ -387,6 +407,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanWallet1,
             $pricingPlanWallet2,
             $pricingPlanWallet3,
+            $pricingPlanEmiPlan,
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
@@ -571,7 +592,7 @@ class MerchantFeeTest extends TestCase
 
         $expectedPricingRules = [
                                     "payment"          => "4pmbgtgNVVDd7x",
-                                    "recurring"        => "1nvp2XPMmaRLxx",
+                                    "recurring"        => "1nvp2XPMmaabxy",
                                 ];
 
         $this->runMerchantFeeTest("100", "Visa", $expectedPricingRules, Card\Type::DEBIT, true);
@@ -660,9 +681,14 @@ class MerchantFeeTest extends TestCase
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
 
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
         $this->runMerchantFeeTestEmi("Visa", ["payment" => "1fq0O3demix3gf"]);
 
         $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
+
+        $this->runMerchantFeeTestEmiWithMerchantSubvention("Visa", ["payment" => "1fq0O3demix3gf",
+            "emi" => "1fq0O3demix3tt"]);
     }
 
     public function testIntrastateGstForCard()
@@ -859,11 +885,38 @@ class MerchantFeeTest extends TestCase
 
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
 
+        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
+
         $payment = new Payment\Entity($paymentArray);
 
         $payment->card = (new Card\Entity)->build($this->card);
 
         $payment->card->setNetwork($network);
+
+        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertPricingRules($expectedRules, $feesSplit);
+    }
+
+    protected function runMerchantFeeTestEmiWithMerchantSubvention($network, array $expectedRules)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = 500000;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
+
+        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->card = (new Card\Entity)->build($this->card);
+
+        $payment->card->setNetwork($network);
+
+        $payment->setBaseAmount(500000);
+
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 

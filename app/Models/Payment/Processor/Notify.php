@@ -562,7 +562,10 @@ class Notify
 
     protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
     {
-        return $this->isEnabled();
+        $merchantTransactionReportEmail = $this->payment->merchant->getTransactionReportEmail();
+
+        return (($this->isEnabled() === true) and
+                (empty($merchantTransactionReportEmail) === false));
     }
 
     /**
