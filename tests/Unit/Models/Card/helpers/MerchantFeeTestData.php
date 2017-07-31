@@ -8,7 +8,7 @@ return [
             'amount' => '1000',
             'card_type' => Card\Type::CREDIT,
             'fee' => 20,
-            'service_tax' => 0,
+            'tax' => 0,
             'fee_components' => [
                 'payment' => 20,
                 'igst' => 0            ],
@@ -17,7 +17,7 @@ return [
             'amount' => '300000',
             'card_type' => Card\Type::CREDIT,
             'fee' => 1180,
-            'service_tax' => 180,
+            'tax' => 180,
             'fee_components' => [
                 'payment' => 1000,
                 'igst' => 180
@@ -30,7 +30,7 @@ return [
             'amount' => '1000',
             'card_type' => Card\Type::CREDIT,
             'fee' => 20,
-            'service_tax' => 0,
+            'tax' => 0,
             'fee_components' => [
                 'payment' => 20,
                 'cgst' => 0,
@@ -41,7 +41,7 @@ return [
             'amount' => '225100',
             'card_type' => Card\Type::CREDIT,
             'fee' => 1180,
-            'service_tax' => 180,
+            'tax' => 180,
             'fee_components' => [
                 'payment' => 1000,
                 'cgst' => 90,
@@ -54,7 +54,7 @@ return [
         [
             'amount' => 60000,
             'fee' => 2124,
-            'service_tax' => 324,
+            'tax' => 324,
             'fee_components' => [
                 'payment' => 1800,
                 'igst' => 324
@@ -66,7 +66,7 @@ return [
         [
             'amount' => 66667,
             'fee' => 2360,
-            'service_tax' => 360,
+            'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
                 'igst' => 360,
@@ -75,7 +75,7 @@ return [
         [
             'amount' => 70000,
             'fee' => 2360,
-            'service_tax' => 360,
+            'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
                 'igst' => 360,
@@ -84,7 +84,7 @@ return [
         [
             'amount' => 80000,
             'fee' => 2360,
-            'service_tax' => 360,
+            'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
                 'igst' => 360,

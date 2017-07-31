@@ -83,7 +83,7 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    public function getIfServiceTaxIsNullOrZero()
+    public function getIfTaxIsNullOrZero()
     {
         return $this->newQuery()
                     ->where(Entity::SERVICE_TAX, '=', '0')

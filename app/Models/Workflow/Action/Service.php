@@ -3,7 +3,8 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Base;
-use RZP\Models\Workflow\Action\Differ;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -117,5 +118,26 @@ class Service extends Base\Service
         $action = $this->repo->workflow_action->findOrFailPublic($id);
 
         return $action->toArrayPublic();
+    }
+
+    public function executeAction(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $action = (new Repository)->findOrFailPublic($id);
+
+        if ($action->getApproved() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_NOT_APPROVED);
+        }
+
+        if ($action->isExecuted() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
+        }
+
+        return $this->core()->executeAction($action);
     }
 }

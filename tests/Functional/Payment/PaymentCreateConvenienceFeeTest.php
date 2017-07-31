@@ -41,6 +41,8 @@ class PaymentCreateConvenienceFeeTest extends TestCase
             $this->assertEquals($feesArray['input']['fee'], 1173);
 
             $this->assertEquals($feesArray['display']['service_tax'], 1.49);
+
+            $this->assertEquals($feesArray['display']['tax'], 1.49);
         }
 
         return $feesArray;

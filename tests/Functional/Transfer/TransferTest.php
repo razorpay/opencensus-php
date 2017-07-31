@@ -97,18 +97,18 @@ class TransferTest extends TestCase
 
         $transfer = $this->createTransfer('account');
 
-        $serviceTax = 4;
-        $expectedFee = 20 + $serviceTax;
+        $tax = 4;
+        $expectedFee = 20 + $tax;
 
         $transferData = [
             'fees'        => $expectedFee,
-            'service_tax' => $serviceTax
+            'service_tax' => $tax
         ];
 
         $txnData = [
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
-            'service_tax' => $serviceTax,
+            'service_tax' => $tax,
             'debit'       => $transfer['amount'] + $expectedFee
         ];
 
