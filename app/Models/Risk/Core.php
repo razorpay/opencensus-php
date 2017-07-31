@@ -55,4 +55,20 @@ class Core extends Base\Core
 
         return $risk;
     }
+
+    public function createRiskLogOnBlockedCard(Payment\Entity $payment)
+    {
+        $input = [
+            Entity::MERCHANT_ID   => $payment->getMerchantId(),
+            Entity::PAYMENT_ID    => $payment->getId(),
+            Entity::FRAUD_TYPE    => Type::CONFIRMED,
+            Entity::RISK_SCORE    => 0,
+            Entity::SOURCE        => Source::INTERNAL,
+            Entity::COMMENTS      => RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+        ];
+
+        $risk = $this->create($input);
+
+        return $risk;
+    }
 }

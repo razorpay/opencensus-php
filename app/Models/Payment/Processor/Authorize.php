@@ -33,6 +33,7 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Models\Risk;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
@@ -963,7 +964,7 @@ trait Authorize
         {
             $this->validateFraudDetection($payment);
 
-            $this->validateBlockedCard($payment->card);
+            $this->validateBlockedCard($payment);
         }
     }
 
@@ -980,14 +981,28 @@ trait Authorize
         }
     }
 
-    protected function validateBlockedCard(Card\Entity $card)
+    protected function validateBlockedCard(Payment\Entity $payment)
     {
+        // If it is not a card payment, do not run this validation
+        // Presently, EMI payments are offered through cards
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return;
+        }
+
+        $card = $payment->card;
+
         if ($card->isBlocked() === true)
         {
             $e = new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+                'payment_id', $payment->getPublicId());
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $this->updatePaymentAuthFailed($e);
+
+            (new Risk\Core)->createRiskLogOnBlockedCard($payment);
+
+            throw $e;
         }
     }
 
