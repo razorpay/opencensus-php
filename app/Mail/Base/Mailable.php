@@ -69,7 +69,8 @@ class Mailable extends BaseMailable
                                    [
                                         'from'    => $this->from,
                                         'to'      => $this->to,
-                                        'subject' => $this->subject
+                                        'subject' => $this->subject,
+                                        'mailable' => get_class($this)
                                    ]);
 
             // After logging the exception caught, we rethrw it so that the

@@ -54,7 +54,7 @@ trait Notify
         $this->slackPost($text, $data, $channel, '', $color);
     }
 
-    protected function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
+    protected function slackPost($headline, $postData, $channel, $pretext = '', $color = 'good')
     {
         if ($this->app->config->get('slack.is_slack_enabled') === true)
         {
@@ -64,21 +64,7 @@ trait Notify
             $settings['link_names'] = 1;
             $settings['channel'] =$channel;
 
-            $data = [];
-
-            /**
-             * Attach all the extra fields
-             */
-            foreach($postdata as $key => $value)
-            {
-                $data['fields'][] = [
-                    'title' => $key,
-                    'value' => $value,
-                    'short' => true
-                ];
-            }
-
-            $this->app['slack']->queue($headline, $data, $settings);
+            $this->app['slack']->queue($headline, $postData, $settings);
         }
     }
 
