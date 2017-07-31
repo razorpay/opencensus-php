@@ -53,8 +53,6 @@ class EmiFile extends Base\EmiFile
 
             $issuerPlanId = $emiPlan->getIssuerPlanId();
 
-            $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
-
             $data[] = [
                 'EMI ID'                       => $emiPayment->getId(),
                 'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
