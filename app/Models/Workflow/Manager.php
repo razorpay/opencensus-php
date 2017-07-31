@@ -39,22 +39,6 @@ class Manager
         $this->repo = $this->app['repo'];
     }
 
-    public function getActionsForChecker(Admin\Entity $admin)
-    {
-        //
-        // Get all the actions in the admin's org
-        // Based on current level, get the steps/roles in the workflow
-        // if the admin has the role, give the checker the action_id, step_id
-        //
-
-        $adminRoleIds = $admin->roles()->allRelatedIds()->toArray();
-
-        $actions = $this->repo->workflow_action->findActionsForChecker(
-            $adminRoleIds, ['admin']);
-
-        return $actions->toArrayPublic();
-    }
-
     public function getActionsByMaker(Admin\Entity $admin)
     {
         $relations = ['workflow', 'admin'];
