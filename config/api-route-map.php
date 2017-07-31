@@ -326,6 +326,11 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
+        'transfer_reversal'           => [
+            'url'       => 'transfers/{id}/reversals',
+            'routeName' => 'marketplace_read'
+        ],
+
         // Reversals
         'reversal_fetch_multiple'           => [
             'url'       => 'reversals',

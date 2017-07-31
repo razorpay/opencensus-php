@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom';
 import Spinner from 'rzp/ui/Spinner';
+import ListToggler from 'rzp/ui/Toggler/ListToggler';
+import DataTable from 'rzp/ui/Table/DataTable';
 import Alert from 'rzp/ui/Forms/Alert';
 import Time from 'rzp/ui/Time';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+
+import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
 
 // Below keys are not to be shown through OtherDetail component
 const shownByDefault = ['id', 'entity', 'source', 'notes', 'created_at'];
@@ -32,7 +36,14 @@ const keysNotShown = entity => {
   return keys;
 };
 
-export default ({ transfer, isLoading, statusMsg }) => {
+export default ({
+  transfer,
+  isLoading,
+  statusMsg,
+  openReversalModal,
+  reversals,
+  onToggleReversalsList,
+}) => {
   let otherKeys = keysNotShown(transfer);
 
   return (
@@ -87,6 +98,34 @@ export default ({ transfer, isLoading, statusMsg }) => {
                     />
                   )}
                 />
+
+                {reversals
+                  ? <ListToggler
+                      label="Reversals"
+                      totalItems={reversals.items.length}
+                      onToggleClick={() => onToggleReversalsList(transfer.id)}
+                    >
+                      <DataTable
+                        title="Reversals"
+                        columns={[reversalId, amount, createdAt]}
+                        items={reversals.items}
+                        loading={reversals.loading}
+                        showHeaders={false}
+                      />
+                    </ListToggler>
+                  : <EntityDetailRow label="Reversals" value="No Reversals" />}
+
+                <hr />
+                <div class="col-sm-offset-4 col-sm-8">
+                  <button
+                    class="btn btn-primary"
+                    onClick={() => {
+                      openReversalModal(transfer);
+                    }}
+                  >
+                    Reverse
+                  </button>
+                </div>
 
               </div>
             </div>
