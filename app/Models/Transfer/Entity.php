@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const NOTES                 = 'notes';
     const FEES                  = 'fees';
     const SERVICE_TAX           = 'service_tax';
+    const TAX                   = 'tax';
     const ON_HOLD               = 'on_hold';
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const TRANSACTION_ID        = 'transaction_id';
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::TAX,
     ];
 
     protected $public = [
@@ -98,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED        => 'int',
         self::FEES                   => 'int',
         self::SERVICE_TAX            => 'int',
+        self::TAX                    => 'int',
         self::ON_HOLD                => 'bool',
         self::ON_HOLD_UNTIL          => 'int',
     ];
@@ -107,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
     ];
 
     protected $defaults = [
@@ -203,6 +207,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
     public function getOnHold()
     {
         return $this->getAttribute(self::ON_HOLD);
@@ -267,6 +276,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax(int $serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setTax(int $tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
     }
 
     public function setOnHold(bool $onHold)

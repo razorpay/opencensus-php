@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use App;
+use Request;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
@@ -469,5 +471,57 @@ class Core extends Base\Core
                                    $entityId, $entityName, $permissionId);
 
         return $actions;
+    }
+
+    public function executeAction($action)
+    {
+        list($stateCore, $differCore) = [
+            new State\Core,
+            new Differ\Core,
+        ];
+
+        $diff = (new Differ\Service)->fetchRequest($action->getId());
+
+        $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
+
+        $payload = $diff[Differ\Entity::PAYLOAD];
+
+        $controller = $diff[Differ\Entity::CONTROLLER];
+
+        $functionName = $diff[Differ\Entity::FUNCTION_NAME];
+
+        $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
+
+        // Replace the current request's payload with the
+        // actual maker request payload.
+        Request::replace($payload);
+
+        // Create controller object
+        $controller = App::make($controller);
+
+        // Auth details have to be initialized before
+        // the actual code (Controller@action) runs.
+        $this->initAuthDetails($authDetails);
+
+        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
+
+        $state = State\Entity::EXECUTED;
+
+        if ($internalResponse->getStatusCode() !== 200)
+        {
+            $state = State\Entity::FAILED;
+        }
+
+        $adminId = $this->app['basicauth']->getAdmin()->getId();
+
+        // Update states
+
+        $this->updateState($action, $state);
+
+        $stateCore->changeActionState($action->getId(), $state, $adminId);
+
+        $differCore->updateStateInEs($action->getId(), $state);
+
+        return ['success' => true];
     }
 }

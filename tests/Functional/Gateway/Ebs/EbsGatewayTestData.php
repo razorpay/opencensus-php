@@ -29,6 +29,7 @@ return [
         'verified'                  => null,
         'fee'                       => 1475,
         'service_tax'               => 225,
+        'tax'                       => 225,
         'entity'                    => 'payment',
     ],
 
@@ -38,6 +39,7 @@ return [
         'amount'          => 50000,
         'fee'             => 0,
         'service_tax'     => 0,
+        'tax'             => 0,
         'pricing_rule_id' => null,
         'debit'           => 0,
         'credit'          => 0,
@@ -259,6 +261,7 @@ return [
         'api_fee'                   => 0,
         'fee'                       => 0,
         'service_tax'               => 0,
+        'tax'                       => 0,
 //        'escrow_balance'            => 998562,
         'channel'                   => 'kotak',
         'settled'                   => false,

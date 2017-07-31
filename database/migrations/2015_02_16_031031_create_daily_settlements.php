@@ -43,6 +43,10 @@ class CreateDailySettlements extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(BatchFundTransfer::TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(BatchFundTransfer::API_FEE);
 
             $table->integer(BatchFundTransfer::GATEWAY_FEE);

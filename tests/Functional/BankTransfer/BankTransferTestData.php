@@ -30,6 +30,7 @@ return [
         'content' => [
             'payee_account'  => null,
             'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
             'payer_account'  => '9876543210123456789',
             'payer_ifsc'     => 'HDFC0000001',
             'mode'           => 'neft',

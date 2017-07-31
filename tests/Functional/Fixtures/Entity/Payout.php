@@ -28,6 +28,8 @@ class Payout extends Base
 
         $payout->setServiceTax($txn->getServiceTax());
 
+        $payout->setTax($txn->getTax());
+
         $payout->saveOrFail();
 
         return $payout;

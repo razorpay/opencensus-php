@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use DB;
+
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
@@ -234,20 +236,20 @@ class Repository extends Base\Repository
                     ->betweenTime($from, $to)
                     ->sum('transactions.fee');
 
-        $serviceTax = $this->newQuery()
-                           ->where('transactions.merchant_id', $merchantId)
-                           ->where('type', 'payment')
-                           ->join('payments', 'transactions.entity_id', '=', 'payments.id')
-                           ->whereNotNull('payments.captured_at')
-                           ->betweenTime($from, $to)
-                           ->sum('transactions.service_tax');
+        $tax = $this->newQuery()
+                    ->where('transactions.merchant_id', $merchantId)
+                    ->where('type', 'payment')
+                    ->join('payments', 'transactions.entity_id', '=', 'payments.id')
+                    ->whereNotNull('payments.captured_at')
+                    ->betweenTime($from, $to)
+                    ->sum('transactions.service_tax');
 
-        // Total fee includes our cut + service tax
+        // Total fee includes our cut + tax
         return [
             'total_fee'         => $fee,
             // This is a combined tax column
             // and includes more than just service_tax (sb cess, kk cess)
-            'tax'               => $serviceTax
+            'tax'               => $tax
         ];
     }
 
@@ -473,6 +475,15 @@ class Repository extends Base\Repository
         $payment->setRelation('transaction', $transaction);
 
         return $transaction;
+    }
+
+    public function updateTax(int $limit = 10000)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::TAX)
+                    ->whereNotNull(Entity::SERVICE_TAX)
+                    ->limit($limit)
+                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
     }
 
     public function fetchGratisTransactions(string $merchantId, int $timestamp)

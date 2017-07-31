@@ -310,6 +310,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
+                ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {

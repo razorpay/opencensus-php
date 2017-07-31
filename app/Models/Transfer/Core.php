@@ -153,6 +153,8 @@ class Core extends Base\Core
 
         $transfer->setServiceTax($txn->getServiceTax());
 
+        $transfer->setTax($txn->getTax());
+
         $this->repo->saveOrFail($txn);
 
         $this->repo->saveOrFail($transfer);

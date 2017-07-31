@@ -84,6 +84,7 @@ class Entity extends Base\PublicEntity
     const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
+    const TAX                   = 'tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
@@ -139,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::FEE,
         self::SERVICE_TAX,
+        self::TAX,
         self::RECURRING,
         self::SAVE,
         self::ON_HOLD,
@@ -208,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
+        self::TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
@@ -335,6 +338,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAIDOUT,
         self::FEE,
         self::SERVICE_TAX,
+        self::TAX,
     ];
 
     protected $casts = [
@@ -352,6 +356,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT               => 'int',
         self::FEE                  => 'int',
         self::SERVICE_TAX          => 'int',
+        self::TAX                  => 'int',
         self::SAVE                 => 'bool',
         self::INTERNATIONAL        => 'bool',
         self::GATEWAY_CAPTURED     => 'bool',
@@ -649,6 +654,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setTax($tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
     }
 
     public function setFee($fee)
@@ -1349,6 +1359,11 @@ class Entity extends Base\PublicEntity
     public function getServiceTax()
     {
         return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
     }
 
     public function getTokenId()

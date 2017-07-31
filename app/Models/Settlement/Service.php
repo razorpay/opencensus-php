@@ -233,11 +233,11 @@ class Service extends Base\Service
         return ['fees' => $totalFees, 'count' => $totalCount];
     }
 
-    public function calculatePreviousSettlementServiceTax()
+    public function calculatePreviousSettlementTax()
     {
-        $settlements = $this->repo->settlement->getSettlementWithServiceTaxNullOrZero();
+        $settlements = $this->repo->settlement->getSettlementWithTaxNullOrZero();
 
-        $totalServiceTax = 0;
+        $totalTax = 0;
         $totalCount = 0;
 
         $this->repo->beginTransaction();
@@ -256,9 +256,11 @@ class Service extends Base\Service
 
                 $setl->setServiceTax($tax);
 
+                $setl->setTax($tax);
+
                 $this->repo->saveOrFail($setl);
 
-                $totalServiceTax += $tax;
+                $totalTax += $tax;
                 $totalCount ++;
             }
 
@@ -268,11 +270,11 @@ class Service extends Base\Service
        {
             $this->repo->rollback();
             throw new Exception\RuntimeException(
-                        'Failed generating Service Tax',
+                        'Failed generating Tax',
                        $e->getTrace());
        }
 
-        return ['tax' => $totalServiceTax, 'settlement_count' => $totalCount];
+        return ['tax' => $totalTax, 'settlement_count' => $totalCount];
 
     }
 }
