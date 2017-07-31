@@ -21,6 +21,7 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
+use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
@@ -596,12 +597,42 @@ class Processor
 
         $this->eventPaymentFailed();
 
+        $this->checkAndLogRiskFailures($payment, $exception);
+
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
         {
             $notifier = new Notify($this->payment);
 
             $notifier = $notifier->trigger(Payment\Event::FAILED);
         }
+    }
+
+
+    /**
+     * Checks for risk failues and creates logs in risk table
+     */
+    public function checkAndLogRiskFailures(
+        Payment\Entity $payment,
+        Exception\BaseException $exception)
+    {
+        $error = $exception->getError();
+
+        // Data send while raising the exception
+        $errorData = $error->getErrorData();
+
+        $internalCode = $error->getInternalErrorCode();
+
+        $riskData = Risk\FailureCodeMap::getRiskDataForError($internalCode);
+
+        // If it is not error raised due to fraud failure, ignore everything
+        if (empty($riskData) === true)
+        {
+            return;
+        }
+
+        $riskData = array_merge($riskData, $errorData);
+
+        (new Risk\Core)->logRiskDataOnPaymentFailure($payment, $riskData);
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)

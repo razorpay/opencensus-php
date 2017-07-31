@@ -20,14 +20,16 @@ trait FraudDetector
         if (($payment->shouldFailOnRiskFailure() === true) and
             ($riskScore > 5))
         {
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'risk_score' => $riskScore, // Needed for risk logging
+                'source'     => 'maxmind',
+            ];
+
             $e = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
+                    ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD, null, $data);
 
-            $this->updatePaymentAuthFailed($e);
-
-            (new Risk\Core)->createRiskEntryOnMaxmindFailure($payment, $riskScore);
-
-            throw $e;
+            $this->updatePaymentAuthFailedAndThrowException($e);
         }
     }
 

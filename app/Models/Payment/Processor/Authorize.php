@@ -223,16 +223,11 @@ trait Authorize
 
     protected function updatePaymentAuthFailedAndThrowException($e)
     {
-        $this->updatePaymentAuthFailed($e);
-
-        throw $e;
-    }
-
-    protected function updatePaymentAuthFailed($e)
-    {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
+
+        throw $e;
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -994,15 +989,17 @@ trait Authorize
 
         if ($card->isBlocked() === true)
         {
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'source'     => 'internal', // For risk logging purposes
+                'card_id'    => $card->getId(),
+                'gateway'    => $payment->getGateway(),
+            ];
+
             $e = new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
-                'payment_id', $payment->getPublicId());
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD, null, $data);
 
-            $this->updatePaymentAuthFailed($e);
-
-            (new Risk\Core)->createRiskLogOnBlockedCard($payment);
-
-            throw $e;
+            $this->updatePaymentAuthFailedAndThrowException($e);
         }
     }
 
