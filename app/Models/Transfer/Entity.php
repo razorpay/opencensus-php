@@ -102,10 +102,6 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL          => 'int',
     ];
 
-    protected $dates = [
-        self::ON_HOLD_UNTIL,
-    ];
-
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_REVERSED,
@@ -118,6 +114,12 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::ON_HOLD           => 0,
         self::ON_HOLD_UNTIL     => null,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::ON_HOLD_UNTIL,
     ];
 
     // -------------------- Relations ---------------------------
@@ -346,8 +348,6 @@ class Entity extends Base\PublicEntity
         $data = parent::toArrayReport();
 
         $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
-
-        $data[self::ON_HOLD_UNTIL] = $this->getDateInFormatDMYHMS(self::ON_HOLD_UNTIL);
 
         return $data;
     }

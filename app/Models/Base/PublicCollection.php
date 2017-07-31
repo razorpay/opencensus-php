@@ -63,6 +63,11 @@ class PublicCollection extends Collection
         return $this->itemsToArrayPublic();
     }
 
+    public function toArrayHosted()
+    {
+        return $this->itemsToArrayHosted();
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -156,6 +161,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayPublic();
+
+        }, $this->items);
+    }
+
+    public function itemsToArrayHosted()
+    {
+        return array_map(function ($item)
+        {
+            return $item->toArrayHosted();
 
         }, $this->items);
     }
