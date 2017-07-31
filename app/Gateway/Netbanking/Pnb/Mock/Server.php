@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Pnb\Mock;
 
+use DOMDocument;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Pnb\Status;
 use RZP\Gateway\Netbanking\Pnb\RequestFields;
@@ -30,7 +32,7 @@ class Server extends Base\Mock\Server
 
         $request = [
             'url'     => $decryptedData[RequestFields::RETURN_URL],
-            'content' => $response,
+            'content' => [RequestFields::ENCDATA => $response],
             'method'  => 'post',
         ];
 
@@ -48,13 +50,27 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($decryptedData);
 
-        $callbackDataArray = $this->getCallbackResponseData($decryptedData);
+        $callbackDataArray = $this->getVerifyResponseData($decryptedData);
 
         $this->content($callbackDataArray, 'verify');
 
-        $response = $this->getEncryptedData($callbackDataArray);
+        $encdata = $this->getEncryptedData($callbackDataArray);
 
-        return $this->makeResponse($response);
+        $html = $this->prepareVerifyResponseHtml($encdata);
+
+        return $this->prepareResponse($html);
+    }
+
+    protected function getVerifyResponseData(array $input)
+    {
+        $data = [
+            ResponseFields::BANK_PAYMENT_STATUS_VERIFY => Status::SUCCESS,
+            ResponseFields::BANK_TRANSACTION_ID_VERIFY => self::MOCK_TRANSACTION_ID,
+            ResponseFields::CHALLAN_NUMBER_VERIFY      => $input[RequestFields::CHALLAN_NUMBER],
+            ResponseFields::ITEM_CODE                  => $input[RequestFields::ITEM_CODE],
+        ];
+
+        return $data;
     }
 
     protected function getCallbackResponseData(array $input)
@@ -75,7 +91,7 @@ class Server extends Base\Mock\Server
         $encryptedString = $this->getGatewayInstance()
                                 ->encryptString($dataString);
 
-        return [ResponseFields::ENCDATA => $encryptedString];
+        return $encryptedString;
     }
 
     protected function getDecryptedData(string $decryptedString): array
@@ -85,5 +101,29 @@ class Server extends Base\Mock\Server
         parse_str($decryptedString, $decryptedData);
 
         return $decryptedData;
+    }
+
+    protected function prepareVerifyResponseHtml($content)
+    {
+        ob_start();
+
+        require ('VerifyResponseHtml.php');
+
+        $html = ob_get_clean();
+
+        $html = str_replace("{{encdata}}", $content, $html);
+
+        return $html;
+    }
+
+    protected function prepareResponse($html)
+    {
+        $response = \Response::make($html);
+
+        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+
     }
 }

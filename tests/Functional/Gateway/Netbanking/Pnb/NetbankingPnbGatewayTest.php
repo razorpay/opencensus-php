@@ -141,7 +141,7 @@ class NetbankingPnbGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content['bankstatus'] = 'F';
+                $content['BankStatus'] = 'F';
             }
         });
     }

@@ -13,7 +13,7 @@ class ResponseFields
     const ITEM_CODE           = 'ITC';
 
     // verify response fields
-    const CHALLAN_NUMBER_VERIFY      = 'cin';
+    const CHALLAN_NUMBER_VERIFY      = 'CIN';
     const BANK_TRANSACTION_ID_VERIFY = 'BankTransID';
     const BANK_PAYMENT_DATE_VERIFY   = 'BankDate';
     const BANK_AMOUNT_PAID_VERIFY    = 'BankAmount';
