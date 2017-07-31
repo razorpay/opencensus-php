@@ -60,15 +60,15 @@ class Service extends Base\Service
         return ['total_fees' => $totalFees, 'total_setl_count' => $totalSetlCount];
     }
 
-    public function computeBatchFundTransferServiceTax()
+    public function computeBatchFundTransferTax()
     {
         return $this->repo->transaction(function ()
         {
-            $batchFundTransfers = $this->repo->batch_fund_transfer->getIfServiceTaxIsNullOrZero();
+            $batchFundTransfers = $this->repo->batch_fund_transfer->getIfTaxIsNullOrZero();
 
             $setlRepo = $this->repo->settlement;
 
-            $totalServiceTax = 0;
+            $totalTax = 0;
             $totalSetlCount = 0;
 
             foreach ($batchFundTransfers as $batch)
@@ -83,26 +83,28 @@ class Service extends Base\Service
 
                 $settlements = $setlRepo->fetch(['from' => $from, 'to' => $to]);
 
-                $batchServiceTax = 0;
+                $batchTax = 0;
 
                 assertTrue($batch->getTotalCount() === $settlements->count());
 
                 foreach ($settlements as $setl)
                 {
-                    $batchServiceTax += $setl->getServiceTax();
+                    $batchTax += $setl->getServiceTax();
                 }
 
-                $batch->setServiceTax($batchServiceTax);
+                $batch->setServiceTax($batchTax);
+
+                $batch->setTax($batchTax);
 
                 $this->repo->saveOrFail($batch);
 
-                $totalServiceTax += $batchServiceTax;
+                $totalTax += $batchTax;
 
                 $totalSetlCount += $settlements->count();
             }
 
             return [
-                'total_service_tax'          => $totalServiceTax,
+                'total_tax'                  => $totalTax,
                 'total_batch_setl_count'     => $totalSetlCount,
                 'total_batch_fund_transfers' => $batchFundTransfers->count(),
             ];

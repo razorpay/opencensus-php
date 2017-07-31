@@ -188,14 +188,14 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
-            'razorpay_fee'      => $fee - $serviceTax,
-            'serviceTax'        => $serviceTax,
-            'amount'            => $input['amount'] + $fee
+            'razorpay_fee'      => $fee - $tax,
+            'serviceTax'        => $tax,
+            'amount'            => $input['amount'] + $fee,
         );
 
         // Converts all the amounts to rupees
@@ -857,7 +857,7 @@ class Processor
         if (abs($feeDifference) > 5)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment failed because fees or service tax was tampered');
+                'Payment failed because fees or tax was tampered');
         }
     }
 

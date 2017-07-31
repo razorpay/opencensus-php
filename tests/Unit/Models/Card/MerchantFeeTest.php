@@ -728,11 +728,11 @@ class MerchantFeeTest extends TestCase
 
             $payment->setBaseAmount($amount);
 
-            list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+            list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
-            $this->assertFeesAndServiceTax(
-                $fee, $serviceTax, $feesSplit->toArray(),
-                $data['fee'], $data['service_tax'], $data['fee_components']);
+            $this->assertFeesAndTax(
+                $fee, $tax, $feesSplit->toArray(),
+                $data['fee'], $data['tax'], $data['fee_components']);
         }
     }
 
@@ -745,7 +745,7 @@ class MerchantFeeTest extends TestCase
             $this->runFeeTestWithMaxFeeForCard($data['amount'],
                                                 $data['card_type'],
                                                 $data['fee'],
-                                                $data['service_tax'],
+                                                $data['tax'],
                                                 $data['fee_components']);
         }
     }
@@ -758,34 +758,34 @@ class MerchantFeeTest extends TestCase
         {
             $this->runFeeTestWithMaxFeeForWallet($data['amount'],
                                                   $data['fee'],
-                                                  $data['service_tax'],
+                                                  $data['tax'],
                                                   $data['fee_components']);
         }
     }
 
-    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $expectedFee, $expectedServiceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $expectedFee, $expectedTax, $feeComponents)
     {
-        list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
+        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
 
-        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $expectedFee, $expectedServiceTax, $feeComponents);
+        $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
-    protected function runFeeTestWithMaxFeeForWallet($amount, $expectedFee, $expectedServiceTax, $feeComponents)
+    protected function runFeeTestWithMaxFeeForWallet($amount, $expectedFee, $expectedTax, $feeComponents)
     {
-        list($fee, $serviceTax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
+        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
 
-        $this->assertFeesAndServiceTax($fee, $serviceTax, $feesSplit->toArray(), $expectedFee, $expectedServiceTax, $feeComponents);
+        $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
     protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
     {
         $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
 
-        return [$fee, $serviceTax, $feesSplit];
+        return [$fee, $tax, $feesSplit];
     }
 
     protected function runMerchantFeeTestWithException($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
@@ -851,7 +851,7 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount($amount);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
     }
@@ -870,11 +870,11 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount($amount);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
 
-        return [$fee, $serviceTax, $feesSplit];
+        return [$fee, $tax, $feesSplit];
     }
 
     protected function runMerchantFeeTestEmi($network, array $expectedRules)
@@ -893,7 +893,7 @@ class MerchantFeeTest extends TestCase
 
         $payment->card->setNetwork($network);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
     }
@@ -944,11 +944,11 @@ class MerchantFeeTest extends TestCase
        }
     }
 
-    protected function assertFeesAndServiceTax($fee, $serviceTax, $feeSplit, $expectedFee, $expectedServiceTax, $expectedFeeSplit)
+    protected function assertFeesAndTax($fee, $tax, $feeSplit, $expectedFee, $expectedTax, $expectedFeeSplit)
     {
         $this->assertEquals($expectedFee, $fee);
 
-        $this->assertEquals($expectedServiceTax, $serviceTax);
+        $this->assertEquals($expectedTax, $tax);
 
         foreach ($feeSplit as $feeSplitComponent)
         {

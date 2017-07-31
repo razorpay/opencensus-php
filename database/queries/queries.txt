@@ -2282,5 +2282,23 @@ ALTER TABLE bank_transfers
     ADD CONSTRAINT bank_transfer_payer_bank_account_id_foreign FOREIGN KEY(payer_bank_account_id)
     REFERENCES bank_accounts(id) ON DELETE RESTRICT;
 
+ALTER TABLE payments
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE transactions
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE settlements
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE payouts
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE transfers
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
 ALTER TABLE pricing
     ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER payment_issuer;

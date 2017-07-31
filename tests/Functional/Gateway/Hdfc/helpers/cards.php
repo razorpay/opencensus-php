@@ -46,6 +46,7 @@ return [
                 'captured' => false,
                 'fee' => null,
                 'service_tax' => null,
+                'tax' => null,
             ],
         ],
     ],

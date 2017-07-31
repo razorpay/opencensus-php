@@ -918,4 +918,13 @@ class Repository extends Base\Repository
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->sum(Entity::AMOUNT);
     }
+
+    public function updateTax(int $limit = 10000)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::TAX)
+                    ->whereNotNull(Entity::SERVICE_TAX)
+                    ->limit($limit)
+                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
+    }
 }
