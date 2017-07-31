@@ -42,6 +42,7 @@ class Shared
     const AEPS_ICICI_RAZORPAY_TERMINAL      = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
     const JIOMONEY_RAZORPAY_TERMINAL        = '1000JioMnyTmnl';
+    const SBIBUDDY_RAZORPAY_TERMINAL        = '1000SbibdyTmnl';
     const OPENWALLET_RAZORPAY_TERMINAL      = '100OpenwalltTl';
     const MPESA_RAZORPAY_TERMINAL           = '100VodaMpesaTl';
 
@@ -76,6 +77,7 @@ class Shared
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
         self::JIOMONEY_RAZORPAY_TERMINAL,
+        self::SBIBUDDY_RAZORPAY_TERMINAL,
         self::OPENWALLET_RAZORPAY_TERMINAL,
         self::MPESA_RAZORPAY_TERMINAL,
     );
@@ -108,6 +110,7 @@ class Shared
         self::AIRTELMONEY_RAZORPAY_TERMINAL => Gateway::WALLET_AIRTELMONEY,
         self::FREECHARGE_RAZORPAY_TERMINAL  => Gateway::WALLET_FREECHARGE,
         self::JIOMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_JIOMONEY,
+        self::SBIBUDDY_RAZORPAY_TERMINAL    => Gateway::WALLET_SBIBUDDY,
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL  => Gateway::FIRST_DATA,
         self::AEPS_ICICI_RAZORPAY_TERMINAL  => Gateway::AEPS_ICICI,
