@@ -9,12 +9,15 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
     /**
-     * Creates a gateway file entity with input provided
+     * Creates a gateway file entity with input provided and processes it.
+     * Here the halt flag represents if we should continue with processing the entity
+     * in sync or just create and return the entity to be processed later. This is
+     * used when we want to asynchronously process the entity via queue.
      *
      * @param  array        $input input data
      * @param  bool|boolean $halt  flag to indicate if the entity created should be further processed or not
      */
-    public function create(array $input, bool $halt = false)
+    public function create(array $input, bool $halt = false): Entity
     {
         $this->trace->info(TraceCode::GATEWAY_FILE_CREATE_REQUEST, $input);
 
@@ -43,7 +46,16 @@ class Core extends Base\Core
         $procesor->process();
     }
 
-    public function acknowledge(string $id, array $data)
+    /**
+     * Processes the input for acknowledging a gateway_file entity. This sets the
+     * status to acknowledged and also fills in additional details like acknowledgement
+     * timestamp and whether it is partially processed
+     *
+     * @param  string $id   gateway_file id to acknowledge
+     * @param  array  $data Additional data for ack requesyt
+     * @return [type]       [description]
+     */
+    public function acknowledge(string $id, array $data): Entity
     {
         $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
 
@@ -68,7 +80,17 @@ class Core extends Base\Core
         return $gatewayFile;
     }
 
-    public function generateGatewayFiles(string $type, array $data)
+    /**
+     * Generates multiple gateway files for given type and <gateway> => <bank>
+     * combination. Here we create the base gateway_file entities in created state
+     * and then process the files. Currently processing is happening in sync. We
+     * can later change this to push to a queue and process asynchronously
+     *
+     * @param  string $type Type of the gateway_file entitiss to be processed
+     * @param  array  $data Array containing gateway => bank mapping for
+     * @return PublicCollection     Collection of gateway_file entities created
+     */
+    public function generateGatewayFiles(string $type, array $data): Base\PublicCollection
     {
         if (Type::isValidType($type) === false)
         {
@@ -82,6 +104,8 @@ class Core extends Base\Core
         {
             $params = $this->getGatewayFileCreationParams($type, $gateway, $bank);
 
+            // We just create the entity here and process it in a separate state.
+            // Hence the "halt" flag is passed as true
             $gatewayFile = $this->create($params, true);
 
             $gatewayFiles->push($gatewayFile);

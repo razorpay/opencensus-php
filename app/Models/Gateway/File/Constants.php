@@ -9,6 +9,11 @@ class Constants
 {
     const ALL = 'ALL';
 
+    /**
+     * Stores a mapping of valid bank corresponding to each gateway, and also the list
+     * of gateways supported for a particular type. Here the value ALL represents that
+     * payments across all gateways need to be considered while generating the file
+     */
     const GATEWAY_SUPPORTED_BANKS = [
         Type::REFUND => [
             Gateway::NETBANKING_ICICI    => [IFSC::ICIC],
