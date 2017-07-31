@@ -295,6 +295,27 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createEmiMerchantSubventionPlan()
+    {
+        $pricingPlanId = '1EmiSubPricing';
+
+        $rows = [
+            [
+                'id'             => '1EmiSubPricing',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'EmiSubPricingP',
+                'feature'        => 'emi',
+                'payment_method' => 'card',
+                'percent_rate'   => 549,
+                'fixed_rate'     => 0,
+                'emi_duration'   => 9,
+                'payment_issuer' => 'ICIC'
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     protected function addPricingRulesToDb($rows)
     {
         $repo = new Models\Pricing\Repository;

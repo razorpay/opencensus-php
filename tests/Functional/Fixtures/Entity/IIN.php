@@ -174,6 +174,17 @@ class Iin extends Base
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
             ],
+            [
+                'iin'           => '407651',
+                'category'      => 'PLATINUM',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'ICICI Bank',
+                'issuer'        => 'ICIC',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ],
         ];
 
     public function createDefaultIins()

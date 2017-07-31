@@ -53,6 +53,7 @@ class Type
     const KOTAK_EMI_FILE                    = 'kotak_emi_file';
     const RBL_EMI_FILE                      = 'rbl_emi_file';
     const SCBL_EMI_FILE                     = 'scbl_emi_file';
+    const ICICI_EMI_FILE                    = 'icici_emi_file';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -95,6 +96,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::ICICI_EMI_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -133,6 +135,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SCBL_EMI_FILE,
+        self::ICICI_EMI_FILE,
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
@@ -171,6 +174,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::ICICI_EMI_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
         ],
