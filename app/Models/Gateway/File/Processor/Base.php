@@ -8,6 +8,11 @@ use RZP\Models\Base\Core;
 use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\File\Status;
 
+/**
+ * Base processor class defines the steps which need to be performed for processing
+ * any gateway file entity. It defines abstact methods for each step which needs to be
+ * implemented by child class
+ */
 abstract class Base extends Core
 {
     protected $gatewayFile;

@@ -96,6 +96,14 @@ class Validator extends Base\Validator
         $from = $input[Entity::FROM];
         $to = $input[Entity::TO];
 
+        $now = time();
+
+        if ($from > $now)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'from cannot be in the future');
+        }
+
         if ($from >= $to)
         {
             throw new Exception\BadRequestValidationFailureException(

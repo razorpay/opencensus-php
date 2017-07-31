@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use Mail;
 use Carbon\Carbon;
 use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
@@ -36,7 +37,13 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::INFO);
+            $this->trace->traceException(
+                            $e,
+                            Trace::INFO,
+                            TraceCode::GATEWAY_FILE_DATA_GENERATION_ERROR,
+                            [
+                                'id' => $this->gatewayFile->getId()
+                            ]);
 
             throw new GatewayFileException(
                 FailureCode::ERROR_GENERATING_FILE_DATA);
@@ -57,14 +64,14 @@ trait GenerateRefundFile
 
         try
         {
-            $data = $this->formatDataForFile();
+            $fileData = $this->formatDataForFile();
 
             $fileName = $this->getFileToWriteNameWithoutExt();
 
             $creator = new FileStore\Creator;
 
             $creator->extension(static::EXTENSION)
-                    ->content($data)
+                    ->content($fileData)
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->type(static::FILE_TYPE)
@@ -80,11 +87,19 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::INFO);
+            $this->trace->traceException(
+                            $e,
+                            Trace::INFO,
+                            TraceCode::GATEWAY_FILE_FILE_GEN_ERROR,
+                            [
+                                'id' => $this->gatewayFile->getId()
+                            ]);
 
+            // If the file has been saved and failure happened post that
+            // we delete the file
             if (isset($file) === true)
             {
-                $this->repo->deleteOrFail($file);
+                $this->repo->delete($file);
             }
 
             throw new GatewayFileException(
@@ -100,13 +115,9 @@ trait GenerateRefundFile
 
             $recipients = $this->gatewayFile->getRecipients();
 
-            $data = $this->formatDataForMail();
+            $mailData = $this->formatDataForMail();
 
-            $refundFileMail = new RefundFileMail(
-                                    $data,
-                                    $gateway,
-                                    $recipients,
-                                    static::MAIL_TEMPLATE);
+            $refundFileMail = new RefundFileMail($mailData, $gateway, $recipients);
 
             Mail::send($refundFileMail);
 
@@ -116,7 +127,13 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::INFO);
+            $this->trace->traceException(
+                            $e,
+                            Trace::INFO,
+                            TraceCode::GATEWAY_FILE_MAIL_SEND_ERROR,
+                            [
+                                'id' => $this->gatewayFile->getId()
+                            ]);
 
             throw new GatewayFileException(
                 FailureCode::ERROR_SENDING_MAIL);

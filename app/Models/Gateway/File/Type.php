@@ -11,6 +11,6 @@ class Type
 
     public static function isValidType(string $type)
     {
-        return (defined(__CLASS__ . '::' . strtoupper($type)));
+        return (defined(__CLASS__ . '::' . strtoupper($type)) === true);
     }
 }

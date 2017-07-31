@@ -41,6 +41,12 @@ class Core extends Base\Core
      */
     public function process(Entity $gatewayFile)
     {
+        $this->trace->info(TraceCode::GATEWAY_FILE_PROCESSING, [
+            'id'      => $gatewayFile->getId(),
+            'gateway' => $gatewayFile->getGateway(),
+            'bank'    => $gatewayFile->getBank()
+        ]);
+
         $procesor = ProcessorFactory::getProcessor($gatewayFile);
 
         $procesor->process();
@@ -57,6 +63,11 @@ class Core extends Base\Core
      */
     public function acknowledge(string $id, array $data): Entity
     {
+        $this->trace->info(TraceCode::GATEWAY_ACKNOWLEDGE_REQUEST, [
+            'id'   => $id,
+            'data' => $data,
+        ]);
+
         $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
 
         // Only gateway_file entities for which we have sent a mail successfully

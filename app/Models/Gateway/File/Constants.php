@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File;
 
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
+use RZP\Mail\Base\Constants as MailConstants;
 
 class Constants
 {
@@ -44,5 +45,12 @@ class Constants
             Gateway::NETBANKING_FEDERAL => [IFSC::FDRL],
             Gateway::NETBANKING_RBL     => [IFSC::RATN],
         ],
+    ];
+
+    const TYPE_SENDER_MAPPING = [
+        Type::REFUND   => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::CLAIM    => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::COMBINED => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::EMI      => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
     ];
 }

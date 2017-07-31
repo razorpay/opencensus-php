@@ -74,8 +74,21 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED           => 1,
         self::PARTIALLY_PROCESSED => 0,
         self::ATTEMPTS            => 0,
-        self::SENDER              => 'refunds@razorpay.com'
     ];
+
+    protected static $generators = [
+        self::SENDER
+    ];
+
+    protected function generateSender(array $input)
+    {
+        if (empty($input[self::SENDER]) === true)
+        {
+            $sender = Constants::TYPE_SENDER_MAPPING[$input[self::TYPE]];
+
+            $this->setAttribute(self::SENDER, $sender);
+        }
+    }
 
     public function files()
     {
