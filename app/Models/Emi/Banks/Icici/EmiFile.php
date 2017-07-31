@@ -16,6 +16,13 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::ICICI_EMI_FILE;
 
+    protected $acquirerMapping = [
+        'hdfc' => 'HDFC Bank',
+        'icic' => 'ICICI Bank',
+        'axis' => 'Axis Bank',
+        'amex' => 'Amex Bank',
+    ];
+
     protected function getEmiData($input)
     {
         $data = [];
@@ -41,7 +48,7 @@ class EmiFile extends Base\EmiFile
 
             if (empty($emiPayment->terminal->getGatewayAcquirer()) === false)
             {
-                $acquirer = $emiPayment->terminal->getGatewayAcquirer();
+                $acquirer = $this->acquirerMapping[$emiPayment->terminal->getGatewayAcquirer()];
             }
 
             $rate = $emiPlan->getRate()/100;
