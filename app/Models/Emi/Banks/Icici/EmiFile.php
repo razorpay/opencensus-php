@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Emi;
 
 class EmiFile extends Base\EmiFile
 {
