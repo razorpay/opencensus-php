@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
 
     // Details of the sender bank account
+    const PAYER_NAME            = 'payer_name';
     const PAYER_ACCOUNT         = 'payer_account';
     const PAYER_IFSC            = 'payer_ifsc';
     const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
