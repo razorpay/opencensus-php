@@ -28,9 +28,13 @@ class EmiFile extends Base\EmiFile
 
             $merchantPayback = 'NA';
 
+            $subventionAmount = 'NA';
+
             if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT)
             {
                 $merchantPayback = $emiPlan->getMerchantPayback()/100;
+
+                $subventionAmount = ($principalAmount * $merchantPayback)/100;
             }
 
             $rate = $emiPlan->getRate()/100;
@@ -43,25 +47,25 @@ class EmiFile extends Base\EmiFile
 
             $data[] = [
                 'EMI ID'                       => $emiPayment->getId(),
-                'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
+                'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
                 'Card No.'                     => $this->getCardNumber($emiPayment->card),
                 'Amount'                       => $principalAmount,
                 'Auth Code/ Approval Code'     => $this->getAuthCode($emiPayment),
                 'Scheme Code'                  => $issuerPlanId,
                 'Tenure'                       => $tenure,
                 'Merchant Subvention'          => $merchantPayback,
-                'Customer Subvention'          => $rate,
+                'Interest Rate'                => $rate,
                 'Discount/ Cashback Amount'    => 'NA',
                 'Discount/Cashback(%)'         => 'NA',
                 'Cashback (Y/N)'               => 'N',
                 'Manufacturer'                 => 'NA',
-                'Merchant Name'                => 'Razorpay Payments',
+                'Merchant Name'                => $emiPayment->merchant->getName(),
                 'Pinelabs Merchant Name'       => 'NA',
                 'Issuer'                       => 'ICICI Bank',
                 'Acquirer'                     => 'NA',
-                'Settlement Time'              => 'NA',
+                'Settlement Time'              => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
                 'Subvention Payable to Issuer' => 'NA',
-                'Subvention Amount (Rs.)'      => 'NA',
+                'Subvention Amount (Rs.)'      => $subventionAmount,
                 'Addition Cashback'            => 'NA',
             ];
         }
@@ -71,7 +75,7 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-y');
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-y H-i-s');
     }
 
     protected function sendEmiFile(array $fileData)
