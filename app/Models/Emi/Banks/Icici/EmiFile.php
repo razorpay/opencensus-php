@@ -37,7 +37,9 @@ class EmiFile extends Base\EmiFile
             {
                 $merchantPayback = $emiPlan->getMerchantPayback()/100;
 
-                $subventionAmount = ($principalAmount * $merchantPayback)/100;
+                $amount = ($principalAmount * $merchantPayback)/100;
+
+                $subventionAmount = number_format((float)$amount, 2, '.', '');
             }
 
             if (empty($emiPayment->terminal->getGatewayAcquirer()) === false)
@@ -50,7 +52,6 @@ class EmiFile extends Base\EmiFile
             $tenure = $emiPlan->getDuration();
 
             $issuerPlanId = $emiPlan->getIssuerPlanId();
-
 
             $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 

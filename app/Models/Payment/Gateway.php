@@ -365,7 +365,6 @@ class Gateway
         self::ACQUIRER_AXIS => IFSC::UTIB,
         self::ACQUIRER_AMEX => Network::AMEX,
     ];
-    //sd(Network::getFullName(Network::AMEX));
 
     /**
      * @deprecated
