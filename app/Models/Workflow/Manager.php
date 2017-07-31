@@ -49,15 +49,7 @@ class Manager
         return $actions;
     }
 
-    public function getAllActionsByOrg(string $orgId)
-    {
-        $this->validateSuperAdminAccess();
 
-        $actions = $this->repo->workflow_action->findByOrgId(
-            $orgId, ['admin']);
-
-        return $actions;
-    }
 
     public function getClosedActionsByMaker(Admin\Entity $admin)
     {
@@ -68,31 +60,6 @@ class Manager
         return $actions;
     }
 
-    public function getOpenActionsByOrg(string $orgId)
-    {
-        $this->validateSuperAdminAccess();
-
-        $actions = $this->repo->workflow_action
-                               ->findOpenActionsByOrgId(
-                                   $orgId, ['admin']);
-
-        return $actions;
-    }
-
-    protected function validateSuperAdminAccess()
-    {
-        $admin = $this->app['basicauth']->getAdmin();
-
-        if ($admin->isSuperAdmin() === false)
-        {
-            $data = ['admin_id' => $admin->getId()];
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
-                null,
-                $data);
-        }
-    }
 
     public function getActionsCheckedByAdmin()
     {

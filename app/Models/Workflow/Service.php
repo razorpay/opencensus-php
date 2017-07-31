@@ -82,56 +82,6 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    /**
-     * Get all the actions in the admin's org
-     * Based on current level, get the steps/roles in the workflow
-     * if the admin has the role, give the checker the action_id, step_id
-     *
-     * @return array
-     */
-    public function getActionsForChecker()
-    {
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $adminRoleIds = $admin->roles()->allRelatedIds()->toArray();
-
-        $actions = $this->repo->workflow_action->findActionsForChecker(
-            $adminRoleIds, ['admin']);
-
-        return $actions->toArrayPublic();
-    }
-
-    public function getActionsByMakerAndType(array $input)
-    {
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $orgId = $admin->getOrgId();
-
-        $type = $input['type'] ?? 'maker';
-
-        switch ($type)
-        {
-            case 'all':
-                $actions = (new Manager)->getAllActionsByOrg($orgId);
-                break;
-
-            case 'closed':
-                $actions = (new Manager)->getClosedActionsByMaker($admin);
-                break;
-
-            case 'open':
-                $actions = (new Manager)->getOpenActionsByOrg($orgId);
-                break;
-
-            case 'maker':
-            default:
-                $actions = (new Manager)->getActionsByMaker($admin);
-                break;
-        }
-
-        return $actions->toArrayPublic();
-    }
-
     public function permissionHasWorkflow(string $routePermission, string $orgId)
     {
         $permissionIds = $this->repo

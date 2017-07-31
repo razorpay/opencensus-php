@@ -30,9 +30,22 @@ class Service extends Base\Service
 
         $orgId = $admin->getOrgId();
 
-        $input[Entity::ORG_ID] = $orgId;
+        $duty = $input['duty'] ?? 'org';
 
-        $actions = $this->repo->workflow_action->findByOrgId($orgId);
+        switch ($duty) {
+            case 'maker':
+                $actions = $this->getActionsByMakerAndType($admin, $input);
+                break;
+
+            case 'checker':
+                $actions = $this->getActionsForChecker($admin);
+                break;
+
+            case 'org':
+            default:
+                $actions = $this->repo->workflow_action->findByOrgId($orgId);
+                break;
+        }
 
         return $actions->toArrayPublic();
     }
@@ -139,5 +152,66 @@ class Service extends Base\Service
         }
 
         return $this->core()->executeAction($action);
+    }
+
+    /**
+     * Get all the actions in the admin's org
+     * Based on current level, get the steps/roles in the workflow
+     * if the admin has the role, give the checker the action_id, step_id
+     *
+     * @return array
+     */
+    public function getActionsForChecker($admin)
+    {
+        $adminRoleIds = $admin->roles()->allRelatedIds()->toArray();
+
+        $actions = $this->repo->workflow_action->findActionsForChecker(
+            $adminRoleIds, ['admin']);
+
+        return $actions;
+    }
+
+    public function getActionsByMakerAndType($admin, array $input)
+    {
+        $orgId = $admin->getOrgId();
+
+        $type = $input['type'] ?? 'maker';
+
+        switch ($type)
+        {
+            case 'all':
+                $actions = (new Manager)->getActionsByOrg($orgId, $type);
+                break;
+
+            case 'closed':
+                $actions = (new Manager)->getClosedActionsByMaker($admin);
+                break;
+
+            case 'open':
+                $actions = (new Manager)->getActionsByOrg($orgId, $type);
+                break;
+
+            case 'maker':
+            default:
+                $actions = (new Manager)->getActionsByMaker($admin);
+                break;
+        }
+
+        return $actions;
+    }
+
+    /**
+     * @param string $orgId
+     * @param string $type  - all/open
+     * @return array
+     */
+    public function getActionsByOrg(string $orgId, $type)
+    {
+        $this->app['basicauth']->validateSuperAdminAccess();
+
+        $actions = $this->repo->workflow_action->findByOrgId(
+            $orgId, ['admin'], $type);
+
+        return $actions;
     }
 }
