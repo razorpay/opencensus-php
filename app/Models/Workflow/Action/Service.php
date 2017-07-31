@@ -61,7 +61,7 @@ class Service extends Base\Service
             ->getActionsCheckedByAdmin(
                 $admin->getId(), ['admin']);
 
-        return $actions->toArrayPublic();
+        return $actions;
     }
 
     public function getActionDetails(string $actionId)

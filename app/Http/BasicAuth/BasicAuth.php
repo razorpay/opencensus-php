@@ -1341,7 +1341,7 @@ class BasicAuth
         }
     }
 
-    protected function validateSuperAdminAccess()
+    public function validateSuperAdminAccess()
     {
         $admin = $this->getAdmin();
 
