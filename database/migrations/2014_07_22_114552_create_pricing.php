@@ -42,6 +42,10 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_ISSUER)
                   ->nullable();
 
+            $table->integer(Pricing::EMI_DURATION)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
 
