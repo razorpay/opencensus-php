@@ -93,20 +93,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getActivationDetails($accountId = null)
-    {
-        $service = new MerchantDetails\Service;
-
-        if ($accountId !== null)
-        {
-            $service->forAccount($accountId);
-        }
-
-        $response = $service->fetchDetails();
-
-        return AppResponse::jsonResponse([], $response);
-    }
-
     public function postActivation($accountId = null)
     {
         $service = new MerchantDetails\Service;
