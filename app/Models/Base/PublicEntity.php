@@ -35,6 +35,21 @@ class PublicEntity extends UniqueIdEntity
     protected $amounts          = [];
 
     /**
+     * Usage:
+     * - Base/EloquentEx.php: to serialize attributes with $dates fields casted to int,
+     * - Base/PublicEntity.php: formatDateFieldsForReport(): to format $dates fields
+     *   converted to a uniform string format across reports.
+     *
+     * Also refer Base/Entity.php::getDates().
+     *
+     * @var array
+     */
+    protected $dates            = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    /**
      * For an entity which is being exposed outside,
      * it is important to ensure that all the attributes
      * being sent are in the correct order, ie, id comes
