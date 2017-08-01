@@ -54,9 +54,7 @@ export default ({
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-refresh text-info" />
-              {' '}
-              <strong>{transfer.id}</strong>
+              Transfer ID: <strong>{transfer.id}</strong>
             </div>
 
             <div class="SliderPanel__Body">
