@@ -3,7 +3,7 @@
 namespace RZP\Models\Customer;
 
 use App;
-use Exception;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;

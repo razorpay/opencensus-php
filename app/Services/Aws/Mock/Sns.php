@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services\Mock\Aws;
+namespace RZP\Services\Aws\Mock;
 
 class Sns
 {
