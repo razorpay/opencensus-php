@@ -234,6 +234,21 @@
           <input type="number" class="form-control m-b" name="rate" ng-model="emi.rate" placeholder="1250">
         </div>
       </div>
+      <div class="form-group">
+        <label for="subvention" class="col-lg-2 control-label">Subvention</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="subvention" ng-model="emi.subvention">
+            <option value="customer">Customer</option>
+            <option value="merchant">Merchant</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="merchant_payback" class="col-lg-2 control-label">Merchant Payback</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="merchant_payback" ng-model="emi.merchant_payback" placeholder="1250">
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
