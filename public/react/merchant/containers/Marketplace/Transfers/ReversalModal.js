@@ -9,6 +9,7 @@ import Amount from 'rzp/ui/Amount';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import {
   fetchTransfer,
+  fetchReversals,
   reverseTransfer,
 } from 'merchant/modules/marketplace/transfer';
 
@@ -54,6 +55,7 @@ const selector = formValueSelector('reversalModal');
     closeModal,
     reverseTransfer,
     fetchTransfer,
+    fetchReversals,
     ...NotificationsActions,
   }
 )
@@ -108,6 +110,7 @@ export default class RefundModal extends Component {
                 closeTimeout: 5000,
               });
               this.props.fetchTransfer(transfer.id);
+              this.props.fetchReversals(transfer.id);
               this.props.closeModal();
             })
             .catch(({ errors }) => {
@@ -180,8 +183,12 @@ export default class RefundModal extends Component {
               <div class="col-sm-8 col-sm-offset-4">
                 The transfer amount will be
                 {' '}
-                {this.props.partial ? 'partially ' : 'completely '}
-                reversed with the reverse amount set to
+                {this.props.partial &&
+                  (transfer.amount - transfer.amount_reversed) / 100 !==
+                    Number(this.props.reversable_amount)
+                  ? 'partially '
+                  : 'completely '}
+                reversed if the reverse amount set to
                 {' '}
                 <b>
                   {(this.props.partial
