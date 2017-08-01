@@ -139,6 +139,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
     ];

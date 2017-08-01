@@ -295,7 +295,12 @@ class Entity extends Base\PublicEntity
         'metadata',
     ];
 
-    protected $dates = [self::AUTHORIZED_AT, self::CAPTURED_AT];
+    protected $dates = [
+        self::UPDATED_AT,
+        self::CREATED_AT,
+        self::AUTHORIZED_AT,
+        self::CAPTURED_AT
+    ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
 

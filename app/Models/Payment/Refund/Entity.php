@@ -117,6 +117,12 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT,
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::LAST_ATTEMPTED_AT,
+    ];
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');

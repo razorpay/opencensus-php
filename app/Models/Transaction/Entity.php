@@ -105,6 +105,8 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_ID);
 
     protected $dates = array(
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::SETTLED_AT,
     );
 
