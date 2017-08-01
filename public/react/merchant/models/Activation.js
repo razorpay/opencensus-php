@@ -107,10 +107,9 @@ export default class Activation extends Entity {
 
     let stepMap = this.getFieldsToStepMap();
     let steps = [];
-    for (let key in stepMap) {
-      steps.push(stepMap[key]);
+    for (let step in stepMap) {
+      steps.push(parseInt(step));
     }
-    steps = new Set(steps).toJSON();
     if (data.can_submit === true) {
       data.steps_finished = steps;
     } else {
@@ -122,13 +121,16 @@ export default class Activation extends Entity {
 
       for (let i = 0; i < requiredFields.length; i++) {
         let key = requiredFields[i];
-        if (stepMap.hasOwnProperty(key)) {
-          unfinishedSteps.push(stepMap[key]);
+        for (let step in stepMap) {
+          let fields = stepMap[step];
+          if (fields.indexOf(key) > -1) {
+            unfinishedSteps.push(parseInt(step));
+          }
         }
       }
+      unfinishedSteps = new Set(unfinishedSteps).toJSON();
 
       if (unfinishedSteps.length !== 0) {
-        unfinishedSteps = new Set(unfinishedSteps).toJSON();
         data.steps_finished = arrayDiff(steps, unfinishedSteps);
       }
     }
@@ -138,72 +140,74 @@ export default class Activation extends Entity {
 
   getFieldsToStepMap() {
     const stepMap = {
-      contact_name: 1,
-      contact_email: 1,
-      transaction_report_email: 1,
-      contact_mobile: 1,
-      contact_landline: 1,
-
-      business_type: 2,
-      business_name: 2,
-      business_dba: 2,
-      business_international: 2,
-      business_paymentdetails: 2,
-      business_model: 2,
-      business_registered_address: 2,
-      business_registered_state: 2,
-      business_registered_city: 2,
-      business_registered_pin: 2,
-      business_operation_address: 2,
-      business_operation_state: 2,
-      business_operation_city: 2,
-      business_operation_pin: 2,
-      business_doe: 2,
-      transaction_volume: 2,
-      transaction_value: 2,
-      gstin: 2,
-      p_gstin: 2,
-      promoter_pan: 2,
-      promoter_pan_name: 2,
-
-      business_website: 3,
-      website_about: 3,
-      website_contact: 3,
-      website_privacy: 3,
-      website_terms: 3,
-      website_refund: 3,
-      website_pricing: 3,
-
-      bank_branch_ifsc: 4,
-      bank_account_number: 4,
-      bank_account_type: 4,
-      bank_account_name: 4,
-      bank_beneficiary_address1: 4,
-      bank_beneficiary_address2: 4,
-      bank_beneficiary_address3: 4,
-      bank_beneficiary_city: 4,
-      bank_beneficiary_state: 4,
-      bank_beneficiary_pin: 4,
-
-      business_proof_url: 5,
-      business_pan_url: 5,
-      address_proof_url: 5,
-      promoter_address_url: 5,
+      1: [
+        'contact_name',
+        'contact_email',
+        'transaction_report_email',
+        'contact_mobile',
+        'contact_landline',
+      ],
+      2: [
+        'business_type',
+        'business_name',
+        'business_dba',
+        'business_international',
+        'business_paymentdetails',
+        'business_model',
+        'business_registered_address',
+        'business_registered_state',
+        'business_registered_city',
+        'business_registered_pin',
+        'business_operation_address',
+        'business_operation_state',
+        'business_operation_city',
+        'business_operation_pin',
+        'business_doe',
+        'transaction_volume',
+        'transaction_value',
+        'gstin',
+        'p_gstin',
+        'promoter_pan',
+        'promoter_pan_name',
+      ],
+      3: [
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing',
+      ],
+      4: [
+        'bank_branch_ifsc',
+        'bank_account_number',
+        'bank_account_type',
+        'bank_account_name',
+        'bank_beneficiary_address1',
+        'bank_beneficiary_address2',
+        'bank_beneficiary_address3',
+        'bank_beneficiary_city',
+        'bank_beneficiary_state',
+        'bank_beneficiary_pin',
+      ],
+      5: [
+        'business_proof_url',
+        'business_pan_url',
+        'address_proof_url',
+        'promoter_address_url',
+      ],
     };
 
     const stepMapAccount = {
-      business_type: 1,
-      business_name: 1,
-      company_pan: 1,
-      promoter_pan: 1,
-
-      bank_branch_ifsc: 2,
-      bank_account_number: 2,
-      bank_account_type: 2,
-      bank_account_name: 2,
-
-      address_proof_url: 3,
-      promoter_pan_url: 3,
+      1: ['business_type', 'business_name', 'company_pan', 'promoter_pan'],
+      2: [
+        'bank_branch_ifsc',
+        'bank_account_number',
+        'bank_account_type',
+        'bank_account_name',
+      ],
+      3: ['address_proof_url', 'promoter_pan_url'],
     };
 
     if (this.accountId) {
