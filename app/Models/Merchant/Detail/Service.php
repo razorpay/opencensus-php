@@ -82,7 +82,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchantDetails);
 
-        if ((isset($input['submit'])) and (intval($input['submit']) === 1))
+        if ($this->canSubmit($input, $response) === true)
         {
             (new Detail\Core)->fireActivationTrigger($merchantDetails);
         }
