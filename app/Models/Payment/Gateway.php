@@ -392,6 +392,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,

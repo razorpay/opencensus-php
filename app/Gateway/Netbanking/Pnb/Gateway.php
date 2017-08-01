@@ -58,6 +58,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
+                'gateway'           => $this->gateway,
                 'gateway_response'  => $input[Payment\Entity::GATEWAY],
                 'payment_id'        => $input['payment'][Payment\Entity::ID],
                 'decrypted_content' => $content,
