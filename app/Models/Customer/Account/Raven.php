@@ -6,24 +6,21 @@ use App;
 use Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Error\ErrorCode;
 
-class Raven
+class Raven extends Base\Core
 {
     protected $raven = null;
 
     protected $sns = null;
 
-    protected $env = null;
-
     public function __construct()
     {
-         $app = App::getFacadeRoot();
+        parent::__construct();
 
-         $this->raven = $app['raven'];
+        $this->raven = $this->app['raven'];
 
-         $this->sns = $app['sns'];
-
-         $this->env = $app['env'];
+        $this->sns = $this->app['sns'];
     }
 
     public function sendOtp($input, $merchant)
@@ -40,6 +37,9 @@ class Raven
             }
             catch (Exception $e)
             {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE);
+
                 $success = false;
             }
         }
