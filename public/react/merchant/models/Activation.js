@@ -82,6 +82,8 @@ const accountStepMap = {
   3: ['address_proof_url', 'promoter_pan_url'],
 };
 
+// We use only the first four keys from the activationStepMap
+// the fifth key consists the file fields
 const activationFields = Object.keys(activationStepMap).reduce((prev, curr) => {
   if (curr < 5) {
     prev.push(...activationStepMap[curr]);
@@ -118,7 +120,7 @@ export default class Activation extends Entity {
     };
 
     if (this.accountId) {
-      activationData['account_id'] = this.accountId;
+      activationData.account_id = this.accountId;
     }
 
     return ajax({
@@ -181,7 +183,7 @@ export default class Activation extends Entity {
     };
 
     if (this.accountId) {
-      activationData['account_id'] = this.accountId;
+      activationData.account_id = this.accountId;
     }
 
     return ajax({
