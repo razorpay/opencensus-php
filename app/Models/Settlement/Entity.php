@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::UTR,
         self::SETTLED_ON,
         self::CREATED_AT,

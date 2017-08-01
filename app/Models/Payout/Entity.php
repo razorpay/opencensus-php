@@ -105,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::UTR,
         self::SETTLED_ON,
