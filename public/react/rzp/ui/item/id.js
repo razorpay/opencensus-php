@@ -7,9 +7,9 @@ const baseUrl = {
   va: '/virtualaccounts/',
   plan: '/plans/',
   sub: '/subscriptions/',
-  // trf: '/marketplace/transfers/',
-  // acc: '/marketplace/accounts/',
-  // rvrsl: '/marketplace/reversals/',
+  trf: '/route/transfers/',
+  // acc: '/route/accounts/',
+  // rvrsl: '/route/reversals/',
 };
 
 const sources = {
