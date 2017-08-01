@@ -16,8 +16,6 @@ export default class Transfer extends GenericEntity {
           ...data,
         },
       },
-    }).then(response => {
-      return new Transfer(response.data);
     });
   }
 
