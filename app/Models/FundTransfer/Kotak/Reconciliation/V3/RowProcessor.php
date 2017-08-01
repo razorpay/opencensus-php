@@ -136,6 +136,7 @@ class RowProcessor extends Base\RowProcessor
         {
             case Entity::SETTLEMENT:
             case Entity::PAYOUT:
+            case Entity::REFUND:
                 return $this->getStatusForEntity($sourceEntityName);
 
             default:
