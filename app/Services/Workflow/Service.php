@@ -271,7 +271,7 @@ class Service
 
         if (($this->permissionHasWorkflow() === false) or
             ($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->app['api.route']->isWorkflowExecuteCall() === true))
+            ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true))
         {
             return;
         }
