@@ -94,6 +94,7 @@ class Converter
 
         $reader = ReaderFactory::create(Type::XLSX);
         $reader->setShouldPreserveEmptyRows(false);
+        $reader->setShouldFormatDates(true);
         $reader->open($filePath);
 
         if (empty($sheetNames) === false)
