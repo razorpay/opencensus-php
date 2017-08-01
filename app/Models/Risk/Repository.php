@@ -28,19 +28,4 @@ class Repository extends Base\Repository
         Entity::RISK_SCORE    => 'sometimes|integer',
         Entity::COMMENTS      => 'sometimes|string|max:255',
     ];
-
-
-    public function fetchByPaymentId(string $paymentId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->get();
-    }
-
-    public function fetchByMerchantId(string $merchantId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
-    }
 }

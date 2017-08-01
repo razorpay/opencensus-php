@@ -12,4 +12,15 @@ class Source
 
     // internal rzp employees
     const MANUAL   = 'manual';
+
+    public static function getAllSources(): array
+    {
+        return [
+            self::MAXMIND,
+            self::BANK,
+            self::GATEWAY,
+            self::INTERNAL,
+            self::MANUAL,
+        ];
+    }
 }
