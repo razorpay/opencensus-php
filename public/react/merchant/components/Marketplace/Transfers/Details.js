@@ -110,22 +110,24 @@ export default ({
                         columns={[reversalId, amount, createdAt]}
                         items={reversals.items}
                         loading={reversals.loading}
-                        showHeaders={false}
+                        showHeaders={true}
                       />
                     </ListToggler>
                   : <EntityDetailRow label="Reversals" value="No Reversals" />}
 
                 <hr />
-                <div class="col-sm-offset-4 col-sm-8">
-                  <button
-                    class="btn btn-primary"
-                    onClick={() => {
-                      openReversalModal(transfer);
-                    }}
-                  >
-                    Reverse
-                  </button>
-                </div>
+
+                {transfer.amount_reversed !== transfer.amount &&
+                  <div class="col-sm-offset-4 col-sm-8">
+                    <button
+                      class="btn btn-primary"
+                      onClick={() => {
+                        openReversalModal(transfer);
+                      }}
+                    >
+                      Reverse
+                    </button>
+                  </div>}
 
               </div>
             </div>
