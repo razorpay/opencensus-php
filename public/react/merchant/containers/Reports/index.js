@@ -197,9 +197,7 @@ export default class ReportsContainer extends Component {
 
     isMarketplace = true;
 
-    let merchantAccounts = this.props.accounts
-      ? Object.assign([], this.props.accounts)
-      : [];
+    let merchantAccounts = [];
 
     merchantAccounts.push({
       name: user.name,
@@ -208,6 +206,8 @@ export default class ReportsContainer extends Component {
       tag: 'My Account',
       tagIcon: 'icon-account',
     });
+
+    merchantAccounts = merchantAccounts.concat(this.props.accounts);
 
     return (
       <tabbed-container>
@@ -341,10 +341,6 @@ export default class ReportsContainer extends Component {
                   </div>
                 : <div class="account">
                     <strong>{user.name || user.user.name}</strong>
-                    {' '}
-                    -
-                    {' '}
-                    {user.email || user.user.email}
                   </div>}
             </div>
 
