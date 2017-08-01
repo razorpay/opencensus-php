@@ -29,6 +29,7 @@ class Raven extends Base\Core
 
         $request = $this->getRavenSendOtpRequestInput($input, $merchant);
 
+        // Enabling it for non-LIVE mode and for test merchant only
         if (($merchant->getId() === '2aTeFCKTYWwfrF') or ($this->env !== 'production'))
         {
             try
@@ -38,7 +39,7 @@ class Raven extends Base\Core
             catch (Exception $e)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE);
+                    ErrorCode::BAD_REQUEST_SNS_PUBLISH_FAILED);
 
                 $success = false;
             }

@@ -331,7 +331,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($snsMock === true)
             {
-                return new Mock\Aws\Sns($app);
+                return new Aws\Mock\Sns($app);
             }
 
             return new Aws\Sns($app);
