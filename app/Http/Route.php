@@ -1463,6 +1463,8 @@ final class Route
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
 
+    const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1695,11 +1697,12 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public function isWorkflowExecuteCall()
+    public function isWorkflowExecuteOrApproveCall()
     {
         $routeName = $this->router->currentRouteName();
 
-        if ($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME)
+        if (($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME) or
+            ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME))
         {
             return true;
         }
