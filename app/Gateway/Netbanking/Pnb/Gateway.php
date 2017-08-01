@@ -156,7 +156,9 @@ class Gateway extends Base\Gateway
 
     protected function getRequestData(array $input): array
     {
-        $encdata = $this->getHashOfArray($input);
+        $dataString = $this->getHashOfArray($input);
+
+        $encdata = $this->encryptString($dataString);
 
         return [RequestFields::ENCDATA => $encdata];
     }
@@ -165,8 +167,6 @@ class Gateway extends Base\Gateway
     {
         $dataString = $this->createDefaultRequestData($input, $glue);
 
-        $dataString = $this->computeAndAppendChecksumToRequestData($dataString);
-
         return $dataString;
     }
 
@@ -174,7 +174,7 @@ class Gateway extends Base\Gateway
     {
         $dataString = $this->computeAndAppendChecksumToRequestData($data);
 
-        return $encdata;
+        return $dataString;
     }
 
     protected function createDefaultRequestData(array $input, string $glue): string
@@ -193,16 +193,20 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_DATE   => $date,
             RequestFields::MERCHANT_AMOUNT => $amount,
             RequestFields::ITEM_CODE       => strtoupper($paymentId),
-            RequestFields::USER_NAME       => Constants::RZP_NAME,
-            RequestFields::EMAIL           => Constants::RZP_EMAIL,
-            RequestFields::ADDRESS         => Constants::RZP_ADDRESS,
-            RequestFields::PHONE_NUMBER    => Constants::RZP_PHONE,
-            RequestFields::REMARK          => Constants::RZP_REMARK,
         ];
 
         if ($this->action === Action::AUTHORIZE)
         {
-            $data[RequestFields::RETURN_URL] = $input['callbackUrl'];
+            $authData = [
+                RequestFields::USER_NAME    => Constants::RZP_NAME,
+                RequestFields::EMAIL        => Constants::RZP_EMAIL,
+                RequestFields::ADDRESS      => Constants::RZP_ADDRESS,
+                RequestFields::PHONE_NUMBER => Constants::RZP_PHONE,
+                RequestFields::REMARK       => Constants::RZP_REMARK,
+                RequestFields::RETURN_URL   => $input['callbackUrl'],
+            ];
+
+            $data = array_merge($data, $authData);
         }
         else
         {
