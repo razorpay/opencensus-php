@@ -219,6 +219,10 @@ return [
             'url'       => 'merchant/activation/upload',
             'routeName' => 'post_activation_save_file'
         ],
+        'merchant_activation_details'       => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'get_activation_details'
+        ],
 
         // Batches [Used for Refunds, Payment Links]
         'batch_fetch_multiple'              => [
