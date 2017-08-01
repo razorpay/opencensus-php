@@ -21,15 +21,12 @@ export default class Transfer extends GenericEntity {
 
   fetchReversals() {
     let data = {};
+
     data.url_params = JSON.stringify({
       '{id}': this.id,
     });
     data.route_name = 'transfer_reversal';
-    return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Transfer(item).deserialize()
-      );
-      return response;
-    });
+
+    return this.makeGenericAjaxCall({ data });
   }
 }

@@ -99,6 +99,7 @@ export default ({
 
                 {reversals
                   ? <ListToggler
+                      show={true}
                       label="Reversals"
                       totalItems={reversals.items.length}
                       onToggleClick={() => onToggleReversalsList(transfer.id)}
