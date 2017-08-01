@@ -318,6 +318,15 @@ class Gateway extends Base\Gateway
 
         $response = $this->formatDecryptedResponseString($decryptedString);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'decrypted'  => true,
+                'response'   => $response,
+            ]
+        );
+
         return $response;
     }
 
