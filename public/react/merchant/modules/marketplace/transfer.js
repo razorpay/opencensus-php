@@ -1,5 +1,6 @@
 import { set, merge, unshift } from 'rzp/utils/immutable';
 import Transfer from 'merchant/models/Transfer';
+import { makeEntityReducer } from 'rzp/modules/entity';
 
 const TRANSFER_FETCH = 'TRANSFER_FETCH';
 const TRANSFER_REVERSAL = 'TRANSFER_REVERSAL';
@@ -16,7 +17,6 @@ export const fetchTransfer = id => {
 
 export const reverseTransfer = (id, data) => {
   const transfer = new Transfer({ id });
-  console.log(data);
 
   return {
     type: TRANSFER_REVERSAL,
@@ -33,7 +33,7 @@ export const fetchReversals = id => {
   };
 };
 
-let initialState = {
+let defaultInitialState = {
   loading: true,
   error: null,
   entity: {},
@@ -45,49 +45,34 @@ let initialState = {
   },
 };
 
-export default function(state = initialState, action) {
-  switch (action.type) {
-    case `${TRANSFER_REVERSAL}::SUCCESS`:
-
-    case `${TRANSFER_FETCH}::PENDING`:
-      return set(state, 'loading', true);
-
-    case `${TRANSFER_FETCH}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        entity: action.payload,
-        error: null,
-      });
-
-    case `${TRANSFER_FETCH}::ERROR`:
-      return merge(state, {
-        loading: false,
-        error: action.error,
-        entity: initialState.accounts,
-      });
-
-    case `${TRANSFER_FETCH_REVERSAL}::PENDING`:
+const transferReducer = makeEntityReducer(
+  TRANSFER_FETCH,
+  {
+    [`${TRANSFER_FETCH_REVERSAL}::PENDING`]: (state, action) => {
       return set(state, 'reversals', {
         loading: true,
         items: [],
         error: null,
       });
+    },
 
-    case `${TRANSFER_FETCH_REVERSAL}::SUCCESS`:
+    [`${TRANSFER_FETCH_REVERSAL}::SUCCESS`]: (state, action) => {
       return set(state, 'reversals', {
         loading: false,
         items: action.payload.data.items,
         error: null,
       });
+    },
 
-    case `${TRANSFER_FETCH_REVERSAL}::ERROR`:
+    [`${TRANSFER_FETCH_REVERSAL}::ERROR`]: (state, action) => {
       return set(state, 'reversals', {
         loading: false,
         items: [],
         error: action.payload.errors,
       });
+    },
+  },
+  defaultInitialState
+);
 
-    default:
-      return state;
-  }
-}
+export default transferReducer;
