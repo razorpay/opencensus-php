@@ -23,7 +23,7 @@ trait FraudDetector
             $data = [
                 'payment_id' => $payment->getPublicId(),
                 'risk_score' => $riskScore, // Needed for risk logging
-                'source'     => 'maxmind',
+                'source'     => Risk\Source::MAXMIND,
             ];
 
             $e = new Exception\BadRequestException(

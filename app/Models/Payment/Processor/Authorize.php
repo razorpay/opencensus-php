@@ -34,6 +34,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
+use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\GatewayToken;
@@ -977,8 +978,10 @@ trait Authorize
 
     protected function validateBlockedCard(Payment\Entity $payment)
     {
+        //
         // If it is not a card payment, do not run this validation
         // Presently, EMI payments are offered through cards
+        //
         if ($payment->isMethodCardOrEmi() === false)
         {
             return;
@@ -990,9 +993,8 @@ trait Authorize
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
-                'source'     => 'internal', // For risk logging purposes
+                'source'     => Risk\Source::INTERNAL, // For risk logging purposes
                 'card_id'    => $card->getId(),
-                'gateway'    => $payment->getGateway(),
             ];
 
             $e = new Exception\BadRequestException(

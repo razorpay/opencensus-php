@@ -11,6 +11,10 @@ class Core extends Base\Core
     {
         $risk = new Entity;
 
+        $risk->payment()->associate($input[Entity::PAYMENT_ID]);
+
+        $risk->merchant()->associate($input[Entity::MERCHANT_ID]);
+
         $risk->build($input);
 
         $this->repo->saveOrFail($risk);
@@ -45,13 +49,15 @@ class Core extends Base\Core
     public function logRiskDataOnPaymentFailure(
         Payment\Entity $payment, array $riskData, $errorData)
     {
+        //
         // errorData can comprise of field and data or an array.
-        // presenlty only merging arrays
+        // presently only merging arrays
         // Data in the exception will propogate important information to create
-        // the risk entry. forexample: risk_score for maxmind failure
+        // the risk entry.For Example: risk_score for maxmind failure
+        //
         if (is_array($errorData) === true)
         {
-            $attributes = (new Entity)->getFillableAttributes();
+            $attributes = (new Entity)->getFillable();
 
             foreach ($attributes as $attribute)
             {

@@ -37,7 +37,6 @@ class Entity extends Base\PublicEntity
         self::COMMENTS,
     ];
 
-
     protected $visible = [
         self::PAYMENT_ID,
         self::MERCHANT_ID,
@@ -68,6 +67,22 @@ class Entity extends Base\PublicEntity
         self::RISK_SCORE => 0,
     ];
 
+
+    public function payment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity');
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    // -------------------------------------- Mutators ---------------
+
+    // Following 2 mutators are for converting '' (empty strings)
+    // input to null.
+
     public function setPublicPaymentIdAttribute(array & $attributes)
     {
         $paymentId = $this->getAttribute(static::PAYMENT_ID);
@@ -88,23 +103,20 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function payment()
-    {
-        return $this->belongsTo('RZP\Models\Payment\Entity');
-    }
+    // -------------------------------------- End Mutators -----------
 
-    public function merchant()
-    {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
-    }
+
+    // -------------------------------------- Getters ----------------
 
     public function getComments(): string
     {
         return $this->getAttribute(self::COMMENTS);
     }
 
-    public function getFillableAttributes(): array
-    {
-        return $this->fillable;
-    }
+    // -------------------------------------- End Getters ------------
+
+
+    // -------------------------------------- Setters ----------------
+
+    // -------------------------------------- End Setters ------------
 }

@@ -609,7 +609,10 @@ class Processor
 
 
     /**
-     * Checks for risk failues and creates logs in risk table
+     * Checks for risk failuers and creates logs in risk table
+     *
+     * @param $payment Payment\Entity
+     * @param $exception Exxception\BaseException
      */
     public function checkAndLogRiskFailures(
         Payment\Entity $payment,
@@ -618,7 +621,7 @@ class Processor
         $error = $exception->getError();
 
         // Data send while raising the exception
-        $errorData = $error->getErrorData();
+        $errorData = $error->getData();
 
         $internalCode = $error->getInternalErrorCode();
 
