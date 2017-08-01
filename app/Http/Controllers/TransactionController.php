@@ -148,8 +148,8 @@ class TransactionController extends Controller
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
 
-            $gst = (empty($merchantDetails['gstin'])=== false) ? $merchantDetails['gstin'] :
-                    (empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '';
+            $gst = (empty($merchantDetails['gstin']) === false) ? $merchantDetails['gstin'] :
+                    ((empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '');
 
             $data['gst'] = $gst;
             $data['isGstApplicable'] = $isGstApplicable;
