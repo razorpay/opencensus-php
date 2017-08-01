@@ -1,5 +1,5 @@
 import DetailRow from 'merchant/components/DetailRow';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
+import ListGroupToggler from 'rzp/ui/Toggler/ListGroupToggler';
 
 export default ({ label, value = {} }) => {
   if (Object.keys(value).length) {

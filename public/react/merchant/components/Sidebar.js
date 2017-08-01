@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LogoFullPNG from 'styles/assets/logo_full.png';
-import LogoPNG from 'styles/assets/logo.png';
+import RZPLogoFullPNG from 'styles/assets/logo_full.png';
+import RZPLogoPNG from 'styles/assets/logo.png';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
@@ -58,7 +58,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    let { user } = this.props;
+    let { user, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
     let isNewUIEnabled = user.isNewUIEnabled;
@@ -67,8 +67,8 @@ export default class Sidebar extends Component {
       <div class="sidebar">
         <section class="brand-logo">
           <Link to="/dashboard">
-            <img src={LogoFullPNG} class="hidden-xs" />
-            <img src={LogoPNG} class="visible-xs-block" />
+            <img src={logoURL || RZPLogoFullPNG} class="hidden-xs" />
+            <img src={logoURL || RZPLogoPNG} class="visible-xs-block" />
           </Link>
         </section>
         <nav>
@@ -172,7 +172,7 @@ export default class Sidebar extends Component {
                     id="settings-nav"
                     icon="icon icon-settings text-warning"
                     to={routes.settings}
-                    myRole="owner admin"
+                    myRole="owner manager admin"
                   />
                 </div>;
               } else {

@@ -418,11 +418,6 @@ class Service extends Base\Service
         if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
-
-            if (empty($details) === true)
-            {
-                return [["Merchant not found"], []];
-            }
         }
 
         $terminal = $this->fetchMerchantTerminal($id);
@@ -447,55 +442,49 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        try
+        $merchant = $this->api->merchant->fetch($id)->toArray();
+
+        $parentId = $merchant['parent_id'] ?? null;
+
+        // If parent_id is set, the merchant is a linked account under Marketplace
+        // and are marked confirmed, without email confirmation
+        if ($parentId !== null)
         {
-            $merchant = $this->api->merchant->fetch($id)->toArray();
-
-            $parentId = $merchant['parent_id'] ?? null;
-
-            // If parent_id is set, the merchant is a linked account under Marketplace
-            // and are marked confirmed, without email confirmation
-            if ($parentId !== null)
-            {
-                $merchant['confirmed'] = true;
-            }
-            else
-            {
-                $users = $this->api->merchant->getUsers($id)->toArray();
-
-                $genericUsers = (new Helper)->createGenericUsers($users);
-
-                $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
-                                                      ->where('confirmed', true)
-                                                      ->first();
-
-                $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
-            }
-
-            $tags = Merchant\Entity::select(['merchants.id'])
-                                    ->with('tagged')
-                                    ->where('merchants.id', $id)
-                                    ->get()
-                                    ->toArray();
-
-            $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
-
-            $merchant['merchant_details'] = $merchantDetail;
-
-            $response = [
-                'archived_at'         => $merchant['archived_at'],
-                'suspended_at'        => $merchant['suspended_at'],
-                'steps_finished'      => $merchantDetail['steps_finished'],
-                'locked'              => $merchantDetail['locked'],
-                'submitted'           => $merchantDetail['submitted'],
-                'tags'                => $tags[0]['tags'],
-                'submitted_at'        => $merchantDetail['submitted_at'],
-                'activated_dashboard' => $merchant['activated']
-            ] + $merchant;
+            $merchant['confirmed'] = true;
         }
-        catch (BadRequestError $e){
+        else
+        {
+            $users = $this->api->merchant->getUsers($id)->toArray();
 
+            $genericUsers = (new Helper)->createGenericUsers($users);
+
+            $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
+                                                  ->where('confirmed', true)
+                                                  ->first();
+
+            $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
         }
+
+        $tags = Merchant\Entity::select(['merchants.id'])
+                                ->with('tagged')
+                                ->where('merchants.id', $id)
+                                ->get()
+                                ->toArray();
+
+        $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
+
+        $merchant['merchant_details'] = $merchantDetail;
+
+        $response = [
+            'archived_at'         => $merchant['archived_at'],
+            'suspended_at'        => $merchant['suspended_at'],
+            'steps_finished'      => $merchantDetail['steps_finished'],
+            'locked'              => $merchantDetail['locked'],
+            'submitted'           => $merchantDetail['submitted'],
+            'tags'                => $tags[0]['tags'],
+            'submitted_at'        => $merchantDetail['submitted_at'],
+            'activated_dashboard' => $merchant['activated']
+        ] + $merchant;
 
         return $response;
     }
@@ -990,33 +979,6 @@ class Service extends Base\Service
         }
 
         return array($error, $response);
-    }
-
-    public function getUploadedFile($id)
-    {
-        $error = null;
-        $url = null;
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $file = $this->api
-                         ->admin
-                         ->getFileByAdmin($id);
-            $url = $file->headers->offsetGet('location');
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured while getting requested file from API",
-                    'exception' => $error,
-            ]);
-        }
-
-        return array($error, $url);
     }
 
     /**

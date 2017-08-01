@@ -4,12 +4,13 @@ export default ({ label, value, ...otherProps }) => {
   }
 
   return (
-    <div class="row detail-row" {...otherProps}>
-      <label class="col-sm-4">
-        {typeof label === 'function' ? label() : label}
-      </label>
-      <div class="col-sm-8">
-        {typeof value === 'function' ? value() : value + ''}
+    <div class="pair-group-item" {...otherProps}>
+      {typeof label === 'function'
+        ? label()
+        : <div class="pair-label">{label}</div>}
+      {/*<span class="pair-separator">:</span>*/}
+      <div class="pair-value">
+        {typeof value === 'function' ? value() : <span>{value + ''}</span>}
       </div>
     </div>
   );

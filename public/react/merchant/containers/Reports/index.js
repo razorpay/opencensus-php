@@ -51,6 +51,8 @@ export default class ReportsContainer extends Component {
   prepareEntityOptions() {
     const { user } = this.props;
 
+    console.log(user.tags);
+
     this.entityOptions = [
       {
         value: 'transaction',
@@ -79,7 +81,7 @@ export default class ReportsContainer extends Component {
       },
     ];
 
-    if (!user.tags.indexOf('Broking_Report') === -1) {
+    if (user.tags.indexOf('Broking_Report') !== -1) {
       this.entityOptions.push({
         value: 'broking',
         id: 'broking',
@@ -88,7 +90,7 @@ export default class ReportsContainer extends Component {
     }
 
     // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
-    if (!user.tags.indexOf('Dsp_Report') === -1) {
+    if (user.tags.indexOf('Dsp_Report') !== -1) {
       this.entityOptions.push({
         value: 'dsp_report',
         id: 'dsp_report',
@@ -96,7 +98,23 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    if (!user.tags.indexOf('Marketplace') === -1) {
+    if (user.tags.indexOf('Rpp_report') !== -1) {
+      this.entityOptions.push({
+        value: 'rpp_report',
+        id: 'rpp_report',
+        label: 'e-Mitra Report',
+      });
+    }
+
+    if (user.tags.indexOf('Payment_Link_Report') !== -1) {
+      this.entityOptions.push({
+        value: 'payment_link',
+        id: 'payment_link',
+        label: 'Payment Link',
+      });
+    }
+
+    if (user.tags.indexOf('Marketplace') !== -1) {
       this.entityOptions.push({
         value: 'transfer',
         id: 'transfer',

@@ -116,7 +116,7 @@
         aria-label="File Actions"
       >
         <button class="btn btn-info">
-        <a href="admin/file/{{entity.id}}" target="_blank">
+        <a ng-click="downloadFile()">
           Download File
         </a>
         </button>
@@ -204,6 +204,18 @@
     </strong></span>
     <form class="form-horizontal">
       <div class="form-group">
+        <label for="terminal_id" class="col-lg-4 control-label">Terminal Id:</label>
+        <div class="col-lg-8" >
+          <input disabled type="text" class="form-control m-b" name="id" ng-model="terminal.id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="merchant_id" class="col-lg-4 control-label">Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input disabled type="text" class="form-control m-b" name="id" ng-model="terminal.merchant_id" />
+        </div>
+      </div>
+      <div class="form-group">
         <label class="col-lg-4 control-label">Gateway:</label>
         <div class="col-lg-8" >
           <select disabled class="form-control m-b" ng-model="terminal.gateway">
@@ -253,6 +265,12 @@
         <label for="gateway_terminal_id" class="col-lg-4 control-label">Gateway Terminal Id:</label>
         <div class="col-lg-8" >
           <input type="text" class="form-control m-b" name="gateway_terminal_id" ng-model="terminal.gateway_terminal_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_terminal_password" class="col-lg-4 control-label">Network Category:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="network_category" ng-model="terminal.network_category" />
         </div>
       </div>
       <div class="form-group">

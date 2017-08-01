@@ -66,6 +66,9 @@ return [
         // Admin Change Password
         'admin_change_password'             => 'orgs/admin/change_password',
 
+        // Get Admin File
+        'admin_get_file'                    => 'files/{fileId}/signed-url',
+
         // Workflows
         'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
@@ -117,6 +120,10 @@ return [
         'payment_fetch_refunds'             => [
             'url'       => 'payments/{id}/refunds',
             'routeName' => 'payment_get_refunds'
+        ],
+        'payment_fetch_transfers'             => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'payment_get_transfers'
         ],
         'payment_capture'                   => [
             'url'       => 'payments/{id}/capture',
@@ -202,6 +209,20 @@ return [
         // Features
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
+
+        // Activation
+        'merchant_activation_save'          => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'post_activation_save_step'
+        ],
+        'merchant_activation_upload_file'   => [
+            'url'       => 'merchant/activation/upload',
+            'routeName' => 'post_activation_save_file'
+        ],
+        'merchant_activation_details'       => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'get_activation_details'
+        ],
 
         // Batches [Used for Refunds, Payment Links]
         'batch_fetch_multiple'              => [
