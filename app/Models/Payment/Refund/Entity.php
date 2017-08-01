@@ -395,6 +395,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFERENCE2, $value);
     }
 
+    public function setUtr(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
+    public function setRemarks(string $value)
+    {
+        $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
+    }
+
     public function getGateway()
     {
         return $this->relations['payment']->getGateway();

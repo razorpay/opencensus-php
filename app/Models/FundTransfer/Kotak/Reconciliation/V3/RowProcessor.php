@@ -106,16 +106,20 @@ class RowProcessor extends Base\RowProcessor
 
         $this->source->setStatus($sourceStatus);
         $this->source->setUtr($this->parsedData['utr']);
-        $this->source->setFailureReason($this->parsedData['failure_reason']);
         $this->source->setRemarks($this->parsedData['remarks']);
 
-        if (($this->parsedData['status'] === Attempt\Status::PROCESSED) and
-            (empty($this->parsedData['instrument_date']) === false))
+        if ($this->source->getEntity() !== Attempt\Type::REFUND)
         {
-            $settledOn = Carbon::createFromFormat(
-                            'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
+            $this->source->setFailureReason($this->parsedData['failure_reason']);
 
-            $this->source->setSettledOn($settledOn);
+            if (($this->parsedData['status'] === Attempt\Status::PROCESSED) and
+                (empty($this->parsedData['instrument_date']) === false))
+            {
+                $settledOn = Carbon::createFromFormat(
+                                'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
+
+                $this->source->setSettledOn($settledOn);
+            }
         }
 
         $this->source->saveOrFail();
