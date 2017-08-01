@@ -22,12 +22,12 @@ class Validator extends Base\Validator
     const SECONDS_IN_ONE_YEAR = 31536000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id',
+        Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id|nullable',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
-        Entity::QUANTITY        => 'sometimes|integer|min:1|max:500',
+        Entity::QUANTITY        => 'filled|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
         Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1',
-        Entity::START_AT        => 'sometimes|integer|custom',
+        Entity::START_AT        => 'sometimes|integer|custom|nullable',
         Entity::END_AT          => 'required_without:total_count|epoch',
         // This is just for backward compatibility. Later, we are going to make `1` as
         // default. Hence, making it compulsory for the merchant to send this as 0 now.

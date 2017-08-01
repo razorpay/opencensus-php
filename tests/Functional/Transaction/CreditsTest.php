@@ -46,6 +46,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
+        $this->assertEquals(0, $txn['tax']);
         $this->assertEquals(true, $txn['gratis']);
         $this->assertEquals('1ZeroPricingR1', $txn['pricing_rule_id']);
 
@@ -83,6 +84,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
+        $this->assertEquals(0, $txn['tax']);
         $this->assertEquals(false, $txn['gratis']);
         $this->assertEquals(null, $txn['pricing_rule_id']);
 
@@ -131,6 +133,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
+        $this->assertEquals(0, $txn['tax']);
         $this->assertEquals(true, $txn['gratis']);
         $this->assertEquals('1ZeroPricingR2', $txn['pricing_rule_id']);
 

@@ -46,6 +46,7 @@ return [
         'gateway_fee' => 1033,
         'api_fee' => 442,
         'service_tax' => 225,
+        'tax' => 225,
         'pricing_rule_id' => null,
         'debit' => 0,
         'credit' => 48525,

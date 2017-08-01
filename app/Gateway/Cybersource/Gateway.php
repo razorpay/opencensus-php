@@ -15,6 +15,7 @@ use RZP\Gateway\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
@@ -1087,6 +1088,11 @@ class Gateway extends Base\Gateway
             F::RUN => 'true'
         ];
 
+        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
+        {
+            $content[F::CC_AUTH_SERVICE][F::RECONCILIATION_ID] = $input['payment']['id'];
+        }
+
         $content[F::INVOICE_HEADER] = [
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
         ];
@@ -1204,6 +1210,11 @@ class Gateway extends Base\Gateway
             F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
         ];
 
+        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
+        {
+            $content[F::CC_CREDIT_SERVICE][F::RECONCILIATION_ID] = $input['refund']['id'];
+        }
+
         $content[F::INVOICE_HEADER] = [
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
         ];
@@ -1243,6 +1254,11 @@ class Gateway extends Base\Gateway
             F::AUTH_REQUEST_ID  => $gatewayPayment->getRequestId()
         ];
 
+        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
+        {
+            $content[F::CC_AUTH_REVERSAL_SERVICE][F::RECONCILIATION_ID] = $input['refund']['id'];
+        }
+
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
             F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
@@ -1277,6 +1293,11 @@ class Gateway extends Base\Gateway
             F::RUN => 'true',
             F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
         ];
+
+        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
+        {
+            $content[F::CC_CAPTURE_SERVICE][F::RECONCILIATION_ID] = $input['payment']['id'];
+        }
 
         $content[F::INVOICE_HEADER] = [
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])

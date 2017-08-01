@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const NOTES                  = 'notes';
     const FEES                   = 'fees';
     const SERVICE_TAX            = 'service_tax';
+    const TAX                    = 'tax';
     const PAYMENT_ID             = 'payment_id';
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
@@ -78,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::PAYMENT_ID,
         self::TRANSACTION_ID,
         self::BATCH_FUND_TRANSFER_ID,
@@ -103,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::UTR,
         self::SETTLED_ON,
@@ -126,7 +129,8 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
-        self::SERVICE_TAX
+        self::SERVICE_TAX,
+        self::TAX,
     ];
 
     protected $casts = [
@@ -136,6 +140,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
     ];
@@ -183,6 +189,11 @@ class Entity extends Base\PublicEntity
     public function getServiceTax()
     {
         return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
     }
 
     public function getMethod()
@@ -263,6 +274,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setTax($tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
     }
 
     public function setFees($fees)

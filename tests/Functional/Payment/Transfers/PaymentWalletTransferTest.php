@@ -158,7 +158,7 @@ class PaymentWalletTransferTest extends TestCase
         $expectedTransfer = [
             'amount'      => 50000,
             'fees'        => 1180,
-            'service_tax' => 180
+            'service_tax' => 180,
         ];
 
         $this->assertArraySelectiveEquals($expectedTransfer, $transfer);
@@ -170,6 +170,7 @@ class PaymentWalletTransferTest extends TestCase
             'amount'      => 50000,
             'fee'         => 1180,
             'service_tax' => 180,
+            'tax'         => 180,
             'debit'       => 51180,
             'credit'      => 0
         ];

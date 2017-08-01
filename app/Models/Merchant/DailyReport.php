@@ -144,7 +144,8 @@ class DailyReport extends Base\Core
      */
     public function send($merchant, $data)
     {
-        if ($this->isBlank($data) === false)
+        if (($this->isBlank($data) === false) and
+            (empty($data['email']) === false))
         {
             $this->sendDailyReport($merchant, $data);
 
@@ -164,15 +165,15 @@ class DailyReport extends Base\Core
         // Log merchant whose data has been computed
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
-            array(
-                    'merchant_id'   => $merchant->getId(),
-                    'merchant_name' => $merchant->getBillingLabel(),
-                    'captured'      => $data['captured']['count'],
-                    'authorized'    => $data['authorized']['count'],
-                    'refunds'       => $data['refunds']['count'],
-                    'settlement'    => $data['settlements']['sum'],
-                    'setl_count'    => $data['settlements']['count'],
-                    )
+            [
+                'merchant_id'    => $merchant->getId(),
+                'merchant_name'  => $merchant->getBillingLabel(),
+                'captured'       => $data['captured']['count'],
+                'authorized'     => $data['authorized']['count'],
+                'refunds'        => $data['refunds']['count'],
+                'settlement'     => $data['settlements']['sum'],
+                'setl_count'     => $data['settlements']['count'],
+            ]
         );
 
         $merchant = $merchant->toArrayPublic();

@@ -31,7 +31,9 @@ class Category
     const CRYPTOCURRENCY  = 'cryptocurrency';
     const FINANCE         = 'finance';
     const FOREX           = 'forex';
-
+    const HOSPITALITY     = 'hospitality';
+    const LOGISTICS       = 'logistics';
+    const OTHERS          = 'others';
 
     /**
      * Categories mapped to invalid will not find an
@@ -62,6 +64,9 @@ class Category
         self::LENDING,
         self::CRYPTOCURRENCY,
         self::FOREX,
+        self::HOSPITALITY,
+        self::LOGISTICS,
+        self::OTHERS,
     ];
 
 

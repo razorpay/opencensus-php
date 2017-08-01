@@ -118,7 +118,8 @@ class Core extends Base\Core
             {
                 $this->applyActionRejectionStateChanges($action, $checker);
             }
-            else {
+            else
+            {
                 // Once all the roles x reviewer_count have approved
                 // an action, we need to update the level so that
                 // we can show the action to next level/step checkers
@@ -130,6 +131,13 @@ class Core extends Base\Core
                 (new Action\Core)->checkAndMarkActionApproved($action);
             }
         });
+
+        // Execute workflow after last approval
+        // Currently we can execute from both route and here, will remove route eventually.
+        if ($action->getApproved() === true)
+        {
+            (new Action\Service)->executeAction($action->getPublicId());
+        }
 
         return $checker;
     }

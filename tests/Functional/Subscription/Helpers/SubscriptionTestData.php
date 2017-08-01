@@ -840,6 +840,30 @@ return [
         ],
     ],
 
+    'testFetchMultipleSubscription' => [
+        'request' => [
+            'url'     => '/subscriptions',
+            'method' => 'get',
+            'content' => [
+                'plan_id' => 'plan_1000000000plan'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'        => 'subscription',
+                        'plan_id'       => 'plan_1000000000plan',
+                        'customer_id'   => 'cust_100000customer',
+                        'status'        => 'created'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testSubscriptionCharge' => [
         'request' => [
             'url' => '/subscriptions/charge',

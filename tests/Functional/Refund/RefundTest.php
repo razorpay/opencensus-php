@@ -219,7 +219,6 @@ class RefundTest extends TestCase
         //          - 2 Captured and 2 Authorized payment exists
         //          - Payments NOT PICKED for refund
 
-
         $order1 = $this->fixtures->order->create(['partial_payment' => true]);
 
         $this->fixtures->times(2)->create(
@@ -566,11 +565,14 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
+        $actual = $rfnd->toArrayPublic();
+        $actual['acquirer_data'] = $actual['acquirer_data']->toArray();
+
         $refund = $this->getEntityById('refund', $rfnd['public_id']);
-        $this->assertArraySelectiveEquals($rfnd->toArrayPublic(), $refund);
+        $this->assertArraySelectiveEquals($actual, $refund);
 
         $refunds = $this->getEntities('refund');
-        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$rfnd->toArrayPublic()]];
+        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$actual]];
         $this->assertArraySelectiveEquals($rfnds, $refunds);
     }
 
@@ -655,7 +657,7 @@ class RefundTest extends TestCase
                     {
                         $testData = [
                             'payment' => [
-                                'amount'=>  'INR 500.00'
+                                'amount' => 'INR 500.00'
                             ],
                             'merchant' => [],
                             'customer' => [

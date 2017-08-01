@@ -193,7 +193,10 @@ return [
                     "setl_report",
                     "noflashcheckout",
                     "recurring",
-                    "s2s"
+                    "s2s",
+                    "invoice",
+                    "nozeropricing",
+                    "reverse",
                 ]
             ]
         ]

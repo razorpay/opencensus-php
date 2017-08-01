@@ -2274,3 +2274,31 @@ ALTER TABLE refunds
     ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT refunds_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
     REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE bank_transfers
+    ADD COLUMN payer_bank_account_id CHAR(14) AFTER virtual_account_id;
+
+ALTER TABLE bank_transfers
+    ADD CONSTRAINT bank_transfer_payer_bank_account_id_foreign FOREIGN KEY(payer_bank_account_id)
+    REFERENCES bank_accounts(id) ON DELETE RESTRICT;
+
+ALTER TABLE payments
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE transactions
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE settlements
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE payouts
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE transfers
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN tax INTEGER UNSIGNED DEFAULT NULL AFTER service_tax;
+
+ALTER TABLE pricing
+    ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER payment_issuer;
