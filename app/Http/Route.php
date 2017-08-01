@@ -583,9 +583,7 @@ final class Route
         // Risk Routes
         'risk_update'                             => ['put',      'risk/{id}',                                      'RiskController@putRiskEntity'                                       ],
         'risk_create'                             => ['post',     'risk/payments/{payment_id}',                     'RiskController@postRiskEntity'                                      ],
-        'risk_fetch_all_payments'                 => ['get',      'risk/payments',                                  'RiskController@getRiskForAllPayments'                              ],
-        'risk_fetch_for_payment'                  => ['get',      'risk/payments/{payment_id}',                     'RiskController@getRiskForPayment'                                  ],
-        'risk_fetch_for_merchant'                 => ['get',      'risk/merchants/{merchant_id}',                   'RiskController@getRiskPaymentsForMerchant'                         ],
+        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@getRiskEntityMultiple'                               ],
     ];
 
     public static $public = [
@@ -983,9 +981,7 @@ final class Route
         'virtual_account_refund_excess',
         'risk_create',
         'risk_update',
-        'risk_fetch_all_payments',
-        'risk_fetch_for_payment',
-        'risk_fetch_for_merchant',
+        'risk_fetch_multiple',
     ];
 
     public static $proxy = [

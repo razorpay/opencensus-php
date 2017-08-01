@@ -39,4 +39,18 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchMultiple' => [
+        'request' => [
+            'url' =>'/risk?',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+            ]
+        ]
+
+    ]
 ];

@@ -11,11 +11,9 @@ class Core extends Base\Core
     {
         $risk = new Entity;
 
-        $risk->payment()->associate($input[Entity::PAYMENT_ID]);
-
-        $risk->merchant()->associate($input[Entity::MERCHANT_ID]);
-
         $risk->build($input);
+
+        $risk->associateRelatedEntites($input);
 
         $this->repo->saveOrFail($risk);
 
@@ -35,6 +33,8 @@ class Core extends Base\Core
         }
 
         $risk->edit($input);
+
+        $risk->associateRelatedEntites($input);
 
         $this->repo->saveOrFail($risk);
 
@@ -69,8 +69,8 @@ class Core extends Base\Core
         }
 
         $input = [
-            Entity::MERCHANT_ID   => $payment->getMerchantId(),
-            Entity::PAYMENT_ID    => $payment->getId(),
+            Entity::MERCHANT_ID => $payment->getMerchantId(),
+            Entity::PAYMENT_ID  => $payment->getId(),
         ];
 
         $input = array_merge($riskData, $input);

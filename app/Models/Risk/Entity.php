@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
     ];
 
 
+    // ---------------------------------Relations -------------------
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -78,10 +80,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    // -------------------------------------- Mutators ---------------
+    // -------------------------------End Relations ------------------
 
-    // Following 2 mutators are for converting '' (empty strings)
-    // input to null.
+    // -------------------------------------- Mutators ---------------
 
     public function setPublicPaymentIdAttribute(array & $attributes)
     {
@@ -119,4 +120,17 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- Setters ----------------
 
     // -------------------------------------- End Setters ------------
+
+    public function associateRelatedEntites(array $input)
+    {
+        if (empty($input[self::PAYMENT_ID]) === false)
+        {
+            $this->payment()->associate($input[self::PAYMENT_ID]);
+        }
+
+        if (empty($input[self::MERCHANT_ID]) === false)
+        {
+            $this->merchant()->associate($input[self::MERCHANT_ID]);
+        }
+    }
 }

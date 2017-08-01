@@ -25,23 +25,11 @@ class RiskController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getRiskForAllPayments()
+    public function getRiskEntityMultiple()
     {
-        $data = $this->service('risk')->getRiskForAllPayments();
+        $input = Request::all();
 
-        return ApiResponse::json($data);
-    }
-
-    public function getRiskPaymentsForMerchant(string $merchantId)
-    {
-        $data = $this->service('risk')->getRiskPaymentsForMerchant($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getRiskForPayment(string $paymentId)
-    {
-        $data = $this->service('risk')->getRiskForPayment($paymentId);
+        $data = $this->service('risk')->getRiskForAllPayments($input);
 
         return ApiResponse::json($data);
     }

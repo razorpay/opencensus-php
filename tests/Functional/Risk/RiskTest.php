@@ -22,10 +22,12 @@ class RiskTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
-    public function testAppendComments()
+    private function makeFraudalentPayment()
     {
+        //
         // Running testFraudDetected test again till we can do
         // runDependencyTest across test files
+        //
         $this->mockMaxmind();
 
         $this->fixtures->merchant->enableInternational();
@@ -35,10 +37,19 @@ class RiskTest extends TestCase
 
         $data = $this->testData['testFraudDetected'];
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $result = $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        return $payment;
+    }
+
+    public function testAppendComments()
+    {
+        $this->makeFraudalentPayment();
 
         $risk = $this->getLastEntity('risk', true);
 
@@ -53,5 +64,18 @@ class RiskTest extends TestCase
         $risk = $this->getLastEntity('risk', true);
 
         $this->assertEquals('internal', $risk['source']);
+    }
+
+    public function testFetchMultiple()
+    {
+        $authPayment = $this->makeFraudalentPayment();
+
+        $content = $this->testData[__FUNCTION__]['request']['content'];
+
+        $content['payment_id'] = $authPayment['id'];
+
+        $this->testData[__FUNCTION__]['request']['content'] = $content;
+
+        $this->startTest();
     }
 }

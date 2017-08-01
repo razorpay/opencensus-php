@@ -30,29 +30,13 @@ class Service extends Base\Service
         return $risk->toArrayPublic();
     }
 
-    public function getRiskForAllPayments()
+    public function getRiskForAllPayments(array $input)
     {
-        $entities = $this->repo->risk->fetch();
+        $this->cleanPublicIds($input);
+
+        $entities = $this->repo->risk->fetch($input);
 
         return $entities->toArrayPublic();
-    }
-
-    public function getRiskForPayment(string $paymentId)
-    {
-        Payment\Entity::verifyIdAndStripSign($paymentId);
-
-        $entities = $this->repo->risk->fetchByPaymentId($paymentId);
-
-        return $entities->toArrayPublic();
-    }
-
-    public function getRiskPaymentsForMerchant(string $merchantId)
-    {
-        Merchant\Entity::verifyIdAndStripSign($merchantId);
-
-        $risk = $this->repo->risk->fetchByMerchantId($merchantId);
-
-        return $risk->toArrayPublic();
     }
 
     private function cleanPublicIds(array & $input)
