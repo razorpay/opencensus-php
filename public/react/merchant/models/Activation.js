@@ -114,8 +114,8 @@ export default class Activation extends Entity {
       data.steps_finished = steps;
     } else {
       let unfinishedSteps = [];
-      let requiredFields = typeof data['verification']['required_fields'] !==
-        'undefined'
+      let requiredFields = typeof data['verification'] !== 'undefined' &&
+        typeof data['verification']['required_fields'] !== 'undefined'
         ? data['verification']['required_fields']
         : [];
 
