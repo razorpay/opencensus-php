@@ -80,11 +80,11 @@
 }
 
 .report-wrapper {
-  border: 1px solid #e2e8ea;
   background-color: #fff;
   padding: 0;
   float: none;
-  margin: 48px auto;
+  padding-top: 8px;
+  margin: 0px auto;
 
   // This is only needed for desktop
   @media(min-width: 992px) {
@@ -120,15 +120,16 @@
     &--desktop {
       padding: 0;
       padding-top: 16px;
+      padding-bottom: 8px;
 
       .title {
-        padding: 0 0 8px 16px;
+        padding: 0 0 8px 24px;
       }
     }
   }
 
   .report-generate-panel {
-    padding: 16px;
+    padding: 11px 24px 24px;
 
     .title {
       color: #7f7f7f;
@@ -171,8 +172,24 @@
       padding-left: 32px;
     }
 
+    .form-heading {
+      font-weight: 600;
+      border-bottom: 1px solid #e2e8ea;
+      padding-bottom: 6px;
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
     .form-element {
       margin-bottom 16px;
+
+      //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
+      .fix-select {
+        background: transparent;
+        border: none;
+        margin-left: -5px;
+        width: 100%;
+      }
 
       &:last-child {
         margin-bottom: 4px;
@@ -318,7 +335,7 @@
 
   input[type=radio].report-type + label {
     width: 100%;
-    padding: 12px 16px;
+    padding: 12px 24px;
     margin: 0;
     color: #555555;
     font-size: 14px;
