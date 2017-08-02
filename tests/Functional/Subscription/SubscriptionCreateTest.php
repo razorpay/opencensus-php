@@ -428,6 +428,24 @@ class SubscriptionCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchMultipleSubscriptionWithEmailFilter()
+    {
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMultipleSubscriptionWithEmailFilterNegative()
+    {
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
     {
         $requestContent = $this->testData[$function];
