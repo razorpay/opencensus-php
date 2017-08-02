@@ -36,6 +36,11 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function callback(array $input)
+    {
+        sd($input);
+    }
+
     protected function getAuthRequest($input)
     {
         $payment = $input['payment'];
@@ -48,16 +53,16 @@ class Gateway extends Base\Gateway
     protected function getPayloadForAuth($payment, $callbackUrl)
     {
         $data = [
-            RequestFields::EXTERNAL_TRANSACTION_ID => $payment['id'],
-            RequestFields::ORDER_ID => $payment['id'],
-            RequestFields::AMOUNT => $payment[Payment::AMOUNT],
-            RequestFields::CURRENCY => $payment[Payment::CURRENCY],
-            RequestFields::CALLBACK_URL => $callbackUrl,
-            RequestFields::BACK_URL => $callbackUrl,
-            RequestFields::DESCRIPTION => "Test description",
-            // RequestFields::CATEGORY => 'Cat 1',
-            // RequestFields::SUBCATEGORY => 'Cat 2',
-            RequestFields::PROCESSOR_ID => 'ALL',
+            RequestFields::EXTERNAL_TRANSACTION_ID  => $payment[Payment::ID],
+            RequestFields::ORDER_ID                 => $payment[Payment::ID],
+            RequestFields::AMOUNT                   => $payment[Payment::AMOUNT],
+            RequestFields::CURRENCY                 => $payment[Payment::CURRENCY],
+            RequestFields::CALLBACK_URL             => $callbackUrl,
+            RequestFields::BACK_URL                 => $callbackUrl,
+            RequestFields::DESCRIPTION              => "WAPO",
+            // RequestFields::CATEGORY              => 'Cat 1',
+            // RequestFields::SUBCATEGORY           => 'Cat 2',
+            RequestFields::PROCESSOR_ID             => 'ALL',
         ];
 
         $encodedData = utf8_encode(http_build_query($data));
@@ -70,8 +75,8 @@ class Gateway extends Base\Gateway
 
         $request = [
             'content' => [
-                'merchantId'    => '123',
-                'encryptedData' => $encrypted
+                RequestFields::MERCHANT_ID    => '123',
+                RequestFields::ENCRYPTED_DATA => $encrypted
             ]
         ];
 
