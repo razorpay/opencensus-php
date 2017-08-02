@@ -680,7 +680,7 @@ class Creator extends Base\Core
                  Trace::WARNING,
                  TraceCode::FILE_PERMISSION_CHANGE_FAILED,
                  [
-                     'path' => $fullPath
+                     'path' => $this->filePath
                  ]);
         }
     }
