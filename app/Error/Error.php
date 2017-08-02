@@ -374,9 +374,4 @@ class Error extends Support\Fluent
 
         return in_array($code, $validationErrorCodes, true);
     }
-
-    public function getData()
-    {
-        return $this->getAttribute(self::DATA);
-    }
 }

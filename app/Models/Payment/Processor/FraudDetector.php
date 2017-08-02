@@ -22,14 +22,17 @@ trait FraudDetector
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
-                'risk_score' => $riskScore, // Needed for risk logging
-                'source'     => Risk\Source::MAXMIND,
             ];
 
-            $e = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD, null, $data);
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $e = new Exception\BadRequestException($errorCode, null, $data);
+
+            $this->updatePaymentAuthFailed($e);
+
+            (new Risk\Core)->logPaymentOnMaxmindFailure($payment, $riskScore);
+
+            throw $e;
         }
     }
 

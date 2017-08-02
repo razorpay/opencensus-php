@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Risk;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 
@@ -31,39 +32,30 @@ class Core extends Base\Core
         return $risk;
     }
 
-    public function logRiskDataOnPaymentFailure(
-        Payment\Entity $payment, array $riskData, $errorData)
+    public function logPaymentOnRiskFailure(
+        Payment\Entity $payment, array $riskData)
     {
-        $whitelistedFields = [
-            Entity::RISK_SCORE,
-        ];
-
-        //
-        // errorData can comprise of field and data or an array.
-        // presently only merging arrays
-        // Data in the exception will propogate important information to create
-        // the risk entry.For Example: risk_score for maxmind failure
-        //
-        if (is_array($errorData) === true)
-        {
-            $attributes = (new Entity)->getFillable();
-
-            foreach ($attributes as $attribute)
-            {
-                if ((isset($errorData[$attribute]) === true) and
-                    (in_array($attribute, $whitelistedFields, true) === true))
-                {
-                    $riskData[$attribute] = $errorData[$attribute];
-                }
-            }
-        }
-
         $input = [
             Entity::MERCHANT_ID => $payment->getMerchantId(),
             Entity::PAYMENT_ID  => $payment->getId(),
         ];
 
         $input = array_merge($riskData, $input);
+
+        return $this->create($input);
+    }
+
+    public function logPaymentOnMaxmindFailure(
+        Payment\Entity $payment, string $riskScore)
+    {
+        $input = [
+            Entity::MERCHANT_ID => $payment->getMerchantId(),
+            Entity::PAYMENT_ID  => $payment->getId(),
+            Entity::SOURCE      => Source::MAXMIND,
+            Entity::RISK_SCORE  => $riskScore,
+            Entity::REASON      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
+            Entity::FRAUD_TYPE  => Type::SUSPECTED,
+        ];
 
         return $this->create($input);
     }

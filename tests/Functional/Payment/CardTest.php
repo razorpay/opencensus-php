@@ -76,14 +76,16 @@ class CardTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $content = $this->doAuthPayment($payment);
-
-            $riskEntity = $this->getLastEntity('risk', true);
-
-            $this->assertEquals($content['razorpay_payment_id'], $riskEntity['payment_id']);
-
-            $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['comments']);
+            $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
     }
 
     public function testSupportedCardNetworks()

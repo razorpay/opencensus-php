@@ -17,7 +17,7 @@ class Repository extends Base\Repository
         Entity::SOURCE        => 'sometimes|boolean',
         Entity::COMMENTS      => 'sometimes|string|max:255',
         Entity::RISK_SCORE    => 'sometimes|integer',
-        Entity::REASON        => 'sometimes|string|max:30',
+        Entity::REASON        => 'sometimes|string|max:150',
     ];
 
     // These are admin allowed params to search on.
@@ -28,6 +28,6 @@ class Repository extends Base\Repository
         Entity::SOURCE        => 'sometimes|string|max:20',
         Entity::RISK_SCORE    => 'sometimes|integer',
         Entity::COMMENTS      => 'sometimes|string|max:255',
-        Entity::REASON        => 'sometimes|string|max:30',
+        Entity::REASON        => 'sometimes|string|max:150',
     ];
 }

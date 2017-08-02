@@ -46,6 +46,14 @@ class FraudDetectionTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
+
         $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
 
         $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
@@ -64,12 +72,17 @@ class FraudDetectionTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $content = $this->doAuthPayment($payment);
-
-            $riskEntity = $this->getLastEntity('risk', true);
-
-            $this->assertEquals($content['razorpay_payment_id'], $riskEntity['payment_id']);
+            $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD', $riskEntity['reason']);
     }
 
     public function testFraudNotDetected()

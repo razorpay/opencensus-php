@@ -620,9 +620,6 @@ class Processor
     {
         $error = $exception->getError();
 
-        // Data send while raising the exception
-        $errorData = $error->getData();
-
         $internalCode = $error->getInternalErrorCode();
 
         $riskData = Risk\FailureCodeMap::getRiskDataForError($internalCode);
@@ -633,7 +630,7 @@ class Processor
             return;
         }
 
-        (new Risk\Core)->logRiskDataOnPaymentFailure($payment, $riskData, $errorData);
+        (new Risk\Core)->logPaymentOnRiskFailure($payment, $riskData);
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)

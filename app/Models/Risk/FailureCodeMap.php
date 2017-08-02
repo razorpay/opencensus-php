@@ -30,12 +30,6 @@ class FailureCodeMap
             Entity::SOURCE     => Source::INTERNAL,
             Entity::FRAUD_TYPE => Type::CONFIRMED,
         ],
-
-        ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD => [
-            Entity::REASON     => RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
-            Entity::SOURCE     => Source::MAXMIND,
-            Entity::FRAUD_TYPE => Type::SUSPECTED,
-        ],
     ];
 
     public static function getRiskDataForError(string $errorCode): array
