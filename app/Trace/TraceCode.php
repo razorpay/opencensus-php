@@ -94,6 +94,7 @@ class TraceCode
     const TERMINAL_ANALYTICS_SAVE_FAILED                = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const TERMINAL_CREATE_REQUEST                       = 'TERMINAL_CREATE_REQUEST';
     const TERMINAL_REMOVE_FROM_MERCHANT                 = 'TERMINAL_REMOVE_FROM_MERCHANT';
+    const TERMINAL_ADD_MERCHANT                         = 'TERMINAL_ADD_MERCHANT';
     const TERMINAL_COPY                                 = 'TERMINAL_COPY';
     const TERMINAL_REASSIGN_MERCHANT                    = 'TERMINAL_REASSIGN_MERCHANT';
     const VERIFY_REFUND_TRANSACTION_CREATED             = 'VERIFY_REFUND_TRANSACTION_CREATED';
@@ -343,6 +344,7 @@ class TraceCode
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED             = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
+    const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
 
     const FILE_DELETING                                 = 'FILE_DELETING';
     const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';

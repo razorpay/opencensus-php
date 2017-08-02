@@ -361,6 +361,14 @@ trait Callback
                                                     ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
 
                 break;
+
+            case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE:
+                $this->trace->info(TraceCode::PAYMENT_WALLET_LOW_BALANCE, [
+                        'id'     => $payment->getId(),
+                        'wallet' => $payment->getWallet(),
+                        'amount' => $payment->getAmount()
+                    ]);
+                break;
         }
 
         throw $e;

@@ -47,6 +47,8 @@ class NetbankingIndusindGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
     }
 
     public function testPaymentVerify()

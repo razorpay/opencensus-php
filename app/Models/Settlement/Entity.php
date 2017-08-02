@@ -78,10 +78,10 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::FEES,
         self::SERVICE_TAX,
-        self::TAX,
         self::UTR,
         self::SETTLED_ON,
         self::CREATED_AT,
+        self::TAX,
     ];
 
     protected $defaults = [
@@ -204,11 +204,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
-    public function getVersion()
-    {
-        return $this->getAttribute(self::VERSION);
-    }
-
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
@@ -284,11 +279,6 @@ class Entity extends Base\PublicEntity
     public function setRemarks($remarks)
     {
         $this->setAttribute(self::REMARKS, $remarks);
-    }
-
-    public function setVersion($version)
-    {
-        $this->setAttribute(self::VERSION, $version);
     }
 
     public function setAttempts($count)
