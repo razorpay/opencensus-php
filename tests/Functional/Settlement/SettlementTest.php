@@ -84,7 +84,6 @@ class SettlementTest extends TestCase
         $urls = [
             '/settlements/reconcile/generate',
             '/settlements/reconcile',
-            '/settlements/return',
         ];
 
         $this->ba->appAuth();

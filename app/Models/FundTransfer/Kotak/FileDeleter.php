@@ -12,15 +12,15 @@ class FileDeleter
 {
     use FileHandlerTrait;
 
-    protected $fileType = array(
+    protected $fileType = [
         'setl_initiate',
         'reconcile',
-        'return');
+    ];
 
-    protected $fileTypeMapping = array(
+    protected $fileTypeMapping = [
         'setl_initiate' => 'ReconciliationGenerator2',
         'reconcile'     => 'Reconciliation\\Base\\Processor',
-        'return'        => 'ReturnTransactions');
+    ];
 
     public function deleteFileIfExists($setlFileType)
     {

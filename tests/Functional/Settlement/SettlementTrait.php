@@ -50,7 +50,6 @@ trait SettlementTrait
         $deleteUrls = [
             '/settlements/file/setl_initiate',
             '/settlements/file/reconcile',
-            '/settlements/file/return',
         ];
 
         $this->ba->appAuth();
@@ -174,51 +173,6 @@ trait SettlementTrait
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertFileNotExists($setlReconciliationFile);
-
-        return $content;
-    }
-
-    protected function generateSetlReturnFile($setlData)
-    {
-        $items = $setlData;
-
-        $content = [];
-
-        foreach ($items as $item)
-        {
-            $content[] = [
-                'id' => 'setl_' . $item['id'],
-                'refer_utr' => '1'
-            ];
-        }
-
-        $request = [
-            'url' => '/settlements/return/generate',
-            'content' => $content,
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('setlReturnFile', $content);
-
-        return $content['setlReturnFile'];
-    }
-
-    protected function processSetlReturns($setlReturnFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlReturnFile);
-
-        $request = [
-            'url' => '/settlements/return',
-            'files' => [
-//                'setlReturnFile' => $uploadedFile
-                'file' => $uploadedFile,
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertFileNotExists($setlReturnFile);
 
         return $content;
     }

@@ -131,11 +131,6 @@ class Service extends Base\Service
         return (new Kotak\Service)->generateSettlementReconciliation($input);
     }
 
-    public function returnSettlements($input)
-    {
-        return (new Kotak\Service)->returnSettlements($input);
-    }
-
     public function generateSettlementReturn($input)
     {
         return (new Kotak\Service)->generateSettlementReturn($input);
@@ -202,79 +197,5 @@ class Service extends Base\Service
         }
 
         return $response;
-    }
-
-    public function calculatePrevousSettlementFees()
-    {
-        $settlements = $this->repo->settlement->getSettlementWithFeesAsNullOrZero();
-
-        $totalFees = 0;
-        $totalCount = 0;
-
-        foreach ($settlements as $setl)
-        {
-            $txns = $setl->setlTransactions;
-
-            $fees = 0;
-
-            foreach ($txns as $txn)
-            {
-                $fees += $txn->getFee();
-            }
-
-            $setl->setFees($fees);
-
-            $this->repo->saveOrFail($setl);
-
-            $totalFees += $fees;
-            $totalCount += $setl->count();
-        }
-
-        return ['fees' => $totalFees, 'count' => $totalCount];
-    }
-
-    public function calculatePreviousSettlementTax()
-    {
-        $settlements = $this->repo->settlement->getSettlementWithTaxNullOrZero();
-
-        $totalTax = 0;
-        $totalCount = 0;
-
-        $this->repo->beginTransaction();
-
-        try
-        {
-            foreach ($settlements as $setl)
-            {
-                $txns = $setl->setlTransactions;
-                $tax = 0;
-
-                foreach ($txns as $txn)
-                {
-                    $tax += $txn->getServiceTax();
-                }
-
-                $setl->setServiceTax($tax);
-
-                $setl->setTax($tax);
-
-                $this->repo->saveOrFail($setl);
-
-                $totalTax += $tax;
-                $totalCount ++;
-            }
-
-            $this->repo->commit();
-       }
-       catch (\Exception $e)
-       {
-            $this->repo->rollback();
-            throw new Exception\RuntimeException(
-                        'Failed generating Tax',
-                       $e->getTrace());
-       }
-
-        return ['tax' => $totalTax, 'settlement_count' => $totalCount];
-
     }
 }
