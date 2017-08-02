@@ -759,7 +759,15 @@ class Gateway extends Base\Gateway
                 break;
 
             case Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE:
-                $exception = new Exception\GatewayRequestException;
+                // TODO: This is a hack. Fix this in a better way.
+                if ($this->action === Base\Action::AUTHORIZE)
+                {
+                    $exception = new Exception\GatewayRequestException;
+                }
+                else
+                {
+                    $exception = new Exception\GatewayErrorException($apiErrorCode);
+                }
                 break;
 
             default:
