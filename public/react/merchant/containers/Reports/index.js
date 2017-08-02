@@ -40,12 +40,15 @@ const selector = formValueSelector('generateReports');
 })
 export default class ReportsContainer extends Component {
   state = {};
-
   componentWillMount() {
     this.props.fetchAccounts();
     this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
 
     this.prepareEntityOptions();
+
+    this.setState({
+      entity: this.entityOptions[1],
+    });
   }
 
   getEntityLabel(value) {
@@ -203,8 +206,6 @@ export default class ReportsContainer extends Component {
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
     let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
-
-    isMarketplace = true;
 
     let merchantAccounts = [];
 
