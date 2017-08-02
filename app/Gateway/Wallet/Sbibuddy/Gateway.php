@@ -68,10 +68,9 @@ class Gateway extends Base\Gateway
 
             $this->handleCallbackFailure($data);
         }
-        // die("test");
 
         $this->callbackAuthSuccessFlow($input, $data);
-        // sd($this->getCallbackResponseData($input));
+
         return $this->getCallbackResponseData($input);
     }
 
@@ -119,6 +118,8 @@ class Gateway extends Base\Gateway
     protected function getEncryptor()
     {
         $secret = $this->getSecret();
+
+        assert($secret !== null);
 
         return new Encryptor($secret);
     }
