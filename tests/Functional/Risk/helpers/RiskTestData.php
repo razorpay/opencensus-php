@@ -21,25 +21,6 @@ return [
         ],
     ],
 
-    'testAppendComments' => [
-        'request' => [
-            'url' => '/risk/%s',
-            'method' => 'PUT',
-            'content' => [
-                'fraud_type' => 'confirmed',
-                'source' => 'internal',
-                'comments' => 'Confirmed with merchant',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'fraud_type' => 'confirmed',
-                'comments' => 'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND || Confirmed with merchant',
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testFetchMultiple' => [
         'request' => [
             'url' =>'/risk?',

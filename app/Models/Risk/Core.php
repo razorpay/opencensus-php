@@ -22,16 +22,6 @@ class Core extends Base\Core
 
     public function edit(Entity $risk, array $input)
     {
-        $oldComment = $risk->getComments();
-
-        // If not set, editRules validator will throw an exception
-        if (empty($input[Entity::COMMENTS]) === false)
-        {
-            $newComment = $input[Entity::COMMENTS];
-
-            $input[Entity::COMMENTS] = $oldComment . " || " . $newComment;
-        }
-
         $risk->edit($input);
 
         $risk->associateRelatedEntites($input);

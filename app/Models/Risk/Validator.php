@@ -31,10 +31,6 @@ class Validator extends Base\Validator
 
         if (in_array($value, $types, true) === false)
         {
-            $data = [
-                'fraud_type' => $value,
-            ];
-
             throw new Exception\BadRequestValidationFailureException(
                 'The fraud type for risk logging is invalid',
                 'fraud_type', $value);
@@ -47,13 +43,9 @@ class Validator extends Base\Validator
 
         if (in_array($value, $sources, true) === false)
         {
-            $data = [
-                'source' => $value,
-            ];
-
             throw new Exception\BadRequestValidationFailureException(
                 'The source for risk logging is invalid',
-                'risk', $value);
+                'source', $value);
         }
     }
 }

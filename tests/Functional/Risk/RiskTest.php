@@ -47,25 +47,6 @@ class RiskTest extends TestCase
         return $payment;
     }
 
-    public function testAppendComments()
-    {
-        $this->makeFraudalentPayment();
-
-        $risk = $this->getLastEntity('risk', true);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $risk['id']);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-
-        $risk = $this->getLastEntity('risk', true);
-
-        $this->assertEquals('internal', $risk['source']);
-    }
-
     public function testFetchMultiple()
     {
         $authPayment = $this->makeFraudalentPayment();
