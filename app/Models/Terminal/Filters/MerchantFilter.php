@@ -233,9 +233,9 @@ class MerchantFilter extends Terminal\Filter
 
             $method = $input['payment']->getMethod();
 
-            $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+            $gateway = $terminal->getGateway();
 
-            $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
+            $defaultCategory = Category::getDefaultForMethodAndGateway($method, $gateway);
 
             // If category is a defaultCategory don't allow,
             if ($category === $defaultCategory)
@@ -259,11 +259,11 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
+        $gateway = $terminal->getGateway();
+
         $method = $input['payment']->getMethod();
 
-        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
-
-        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
+        $defaultCategory = Category::getDefaultForMethodAndGateway($method, $gateway);
 
         // If category is a defaultCategory allow,
         // no need to compute merchant category
@@ -275,9 +275,9 @@ class MerchantFilter extends Terminal\Filter
         $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
-        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork(
+        $merchantTerminalCategory = Category::getCategoryForMethodAndGateway(
                                                                         $method,
-                                                                        $network,
+                                                                        $gateway,
                                                                         $category2);
 
         return ($category === $merchantTerminalCategory);
