@@ -1,0 +1,119 @@
+<?php
+
+namespace RZP\Reconciliator\VirtualAccKotak;
+
+use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+
+class PaymentReconciliate extends Base\PaymentReconciliate
+{
+    /*******************
+     * Row Header Names
+     ******************/
+
+    // Common fields
+    const TXN_DATE                = 'txn_date';
+    const E_COLL_AC_NO            = 'e_coll_ac_no';
+    const MASTER_AC_NO            = 'master_ac_no';
+    const DEALER_NAME             = 'dealer_name';
+    const AMOUNT                  = 'amount';
+    const SND_BRN_IFSC            = 'snd_brn_ifsc';
+    const REF1                    = 'ref1';
+    const REF2                    = 'ref2';
+    const REF3                    = 'ref3';
+
+    // RTGS fields
+    const UTR_NO                  = 'utr_no';
+    const BENEFICIARY_DETAILS     = 'beneficiary_details';
+    const ORDERING_CUSTOMER       = 'ordering_customer';
+    const DETAILS_OF_PAYMENT      = 'details_of_payment';
+    const SENDER_TO_RECEIVER_INFO = 'sender_to_receiver_info';
+    const SENDER_ADDRESS          = 'sender_address';
+
+    // NEFT fields
+    const TXN_REF_NO              = 'txn_ref_no';
+    const BENE_CUST_ACNAME        = 'bene_cust_acname';
+    const SEND_CUST_ACNAME        = 'send_cust_acname';
+    const SEND_CUST_AC_NO         = 'send_cust_ac_no';
+    const REMITT_INFO             = 'remitt_info';
+    const DYNAMIC_INFO            = 'dynamic_info';
+
+    /**
+     * Identify the bank transfer using UTR, and thus find payment
+     *
+     * @param array   $row
+     * @return string $paymentId
+     */
+    protected function getPaymentId($row)
+    {
+        if (isset($row[self::UTR_NO]) === true)
+        {
+            $utr = $row[self::UTR_NO];
+        }
+        else if (isset($row[self::TXN_REF_NO]) === true)
+        {
+            $utr = $row[self::TXN_REF_NO];
+        }
+        else
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'UTR not present in recon file',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return null;
+        }
+
+        $bankTransfer = $this->repo
+                             ->bank_transfer
+                             ->findByUtr($utr);
+
+        return $bankTransfer->getPaymentId();
+    }
+
+    /**
+     * Gets amount transferred.
+     *
+     * @param array $row
+     * @return integer $paymentAmount
+     */
+    protected function getGatewayPaymentAmount($row)
+    {
+        $paymentAmount = floatval($row[self::AMOUNT]) * 100;
+
+        // We are converting to int after casting to string as PHP randomly
+        // returns wrong int values due to differing floating point precisions
+        // So something like intval(31946.0) may give 31945 or 31946.
+        // Convering to string using number_format and then converting
+        // is a hack to avoid this issue
+        return intval(number_format($paymentAmount, 2, '.', ''));
+    }
+
+    /**
+     * Checks if payment amount is equal to amount from row
+     * raises alert in case of mismatch
+     *
+     * @param array $row
+     * @return bool
+     */
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Payment amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+}

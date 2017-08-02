@@ -54,6 +54,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_FEDERAL  = 'NetbankingFederal';
     const NETBANKING_RBL      = 'NetbankingRbl';
     const NETBANKING_INDUSIND = 'NetbankingIndusind';
+    const VIRTUAL_ACC_KOTAK   = 'VirtualAccKotak';
     const JIOMONEY            = 'Jiomoney';
     const EBS                 = 'Ebs';
     const FIRST_DATA          = 'FirstData';
@@ -81,6 +82,7 @@ class Orchestrator extends Base\Core
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
+        self::VIRTUAL_ACC_KOTAK   => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['prashanth.yv@razorpay.com'],
@@ -98,7 +100,8 @@ class Orchestrator extends Base\Core
         self::FIRST_DATA,
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
-        self::NETBANKING_FEDERAL
+        self::NETBANKING_FEDERAL,
+        self::VIRTUAL_ACC_KOTAK,
     ];
 
     /**
@@ -570,11 +573,16 @@ class Orchestrator extends Base\Core
         {
             $gateway = $this->emailDetails[self::SUBJECT];
 
-            assert(
-                in_array(
-                    $gateway,
-                    array_keys(self::GATEWAY_SENDER_MAPPING)),
-                '[Admin] Invalid/Unrecognized gateway sent in the subject line.');
+            if (in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
+            {
+                throw new Exception\LogicException(
+                    '[Admin] Invalid/Unrecognized gateway sent in the subject line.',
+                    null,
+                    [
+                        'gateway'        => $gateway,
+                        'valid_gateways' => array_keys(self::GATEWAY_SENDER_MAPPING),
+                    ]);
+            }
         }
 
         $this->setGatewayReconciliatorObject($gateway);

@@ -241,6 +241,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
     public function isNotified()
     {
         return $this->getAttribute(self::NOTIFIED);
