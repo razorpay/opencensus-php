@@ -12,4 +12,7 @@ class ResponseFields
     const STATUS_CODE               = 'statusCode';
     const ERROR_DESCRIPTION         = 'errorDescription';
     const PROCESSOR_ID              = 'processorId';
+
+    const MERCHANT_ID               = 'merchantId';
+    const ENCRYPTED_DATA            = 'encryptedData';
 }
