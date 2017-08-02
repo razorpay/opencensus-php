@@ -104,14 +104,16 @@ export default ({
                   value={subscription.notes}
                 />
 
-                {['cancelled', 'completed', 'expired'].indexOf(
-                  subscription.status
-                ) === -1
-                  ? <button class="btn btn-default" onClick={onCancelClick}>
-                      Cancel Subscription
-                    </button>
-                  : null}
-
+                <hr />
+                <div class="col-sm-offset-4 col-sm-8">
+                  {['cancelled', 'completed', 'expired'].indexOf(
+                    subscription.status
+                  ) === -1
+                    ? <button class="btn btn-primary" onClick={onCancelClick}>
+                        Cancel Subscription
+                      </button>
+                    : null}
+                </div>
               </div>
             </div>
           </div>}
