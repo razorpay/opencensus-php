@@ -1085,13 +1085,9 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::CC_AUTH_SERVICE] = [
-            F::RUN => 'true'
+            F::RUN => 'true',
+            F::RECONCILIATION_ID => $input['payment']['id'],
         ];
-
-        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $content[F::CC_AUTH_SERVICE][F::RECONCILIATION_ID] = $input['payment']['id'];
-        }
 
         $content[F::INVOICE_HEADER] = [
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
@@ -1176,7 +1172,8 @@ class Gateway extends Base\Gateway
             F::ECI_RAW            => $gatewayPayment->getEci(),
             F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
             F::VERES_ENROLLED     => $gatewayPayment->getVeresEnrolled(),
-            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator()
+            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator(),
+            F::RECONCILIATION_ID  => $input['payment']['id'],
         ];
 
         $cardNetwork = $input['card']['network_code'];
@@ -1207,13 +1204,9 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
-            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId(),
+            F::RECONCILIATION_ID  => $input['refund']['id'],
         ];
-
-        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $content[F::CC_CREDIT_SERVICE][F::RECONCILIATION_ID] = $input['refund']['id'];
-        }
 
         $content[F::INVOICE_HEADER] = [
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
@@ -1250,14 +1243,9 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_AUTH_REVERSAL_SERVICE] = [
-            F::RUN              => 'true',
-            F::AUTH_REQUEST_ID  => $gatewayPayment->getRequestId()
+            F::RUN                => 'true',
+            F::AUTH_REQUEST_ID    => $gatewayPayment->getRequestId()
         ];
-
-        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $content[F::CC_AUTH_REVERSAL_SERVICE][F::RECONCILIATION_ID] = $input['refund']['id'];
-        }
 
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
@@ -1291,13 +1279,9 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CAPTURE_SERVICE] = [
             F::RUN => 'true',
-            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
+            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId(),
+            F::RECONCILIATION_ID  => $input['payment']['id'],
         ];
-
-        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $content[F::CC_CAPTURE_SERVICE][F::RECONCILIATION_ID] = $input['payment']['id'];
-        }
 
         $content[F::INVOICE_HEADER] = [
             F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
