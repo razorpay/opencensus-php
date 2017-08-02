@@ -278,6 +278,10 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+      $scope.createDispute = function(data) {
+        console.log('CREATE DISPUTE....', data);
+      };
+
       $scope.refund = function(data) {
         data.amount = parseInt(data.amount);
         var unrefundedAmount =
@@ -325,6 +329,25 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+
+      $scope.openDisputeModal = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'disputeModalContent.html',
+          controller: 'DisputeModalCtrl',
+          resolve: {
+            currency: function() {
+              return $scope.entity.currency;
+            },
+            merchant_id: function() {
+              return $scope.entity.merchant_id;
+            },
+          },
+        });
+        modalInstance.result.then(function(data) {
+          $scope.createDispute(data);
+        }, $.noop);
+      };
+
       $scope.showRefunds = function() {
         if ($scope.isRefundsCollapsed === false) {
           $scope.isRefundsCollapsed = true;
@@ -454,6 +477,84 @@ app
           };
         }
         $modalInstance.close(data);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('DisputeModalCtrl', [
+    '$scope',
+    '$http',
+    'dateFactory',
+    '$modalInstance',
+    'currency',
+    'merchant_id',
+    function(
+      $scope,
+      $http,
+      dateFactory,
+      $modalInstance,
+      currency,
+      merchant_id
+    ) {
+      // This is displayed with 2 decimal places
+      $scope.currency = currency;
+      $scope.dispute = {};
+
+      // Date options
+      $scope.date = dateFactory.getHandler($scope);
+      $scope.date.dateOptions['showWeeks'] = false;
+      $scope.date.dateOptions['minDate'] = moment(); // Avoid selection of date before today
+
+      // Get offers of merchant to display in the list
+      function getReasonId() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'dispute',
+          },
+          mode: 'test',
+          query_params: {
+            merchant_id: merchant_id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success || true) {
+              console.log('DATA ITEMS...', data.data.items);
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      getReasonId();
+
+      function cleanFields() {
+        $scope.dispute.raised_on =
+          new Date($scope.dispute.raised_on).getTime() / 100;
+        $scope.dispute.expires_on =
+          new Date($scope.dispute.expires_on).getTime() / 100;
+        $scope.dispute.amount = $scope.dispute.amount * 100;
+        $scope.dispute.deduct_at_onset = $scope.dispute.deduct_at_onset ? 1 : 0;
+      }
+
+      $scope.ok = function() {
+        cleanFields();
+        console.log('DISPUTE...', $scope.dispute);
+        $modalInstance.close($scope.dispute);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
