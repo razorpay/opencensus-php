@@ -88,6 +88,11 @@ class Entity extends Base\Entity
         return (bool) $this->attributes['genius'];
     }
 
+    public function getAmexAttribute()
+    {
+        return (bool) $this->attributes['amex'];
+    }
+
     public function getVpcAmountAttribute()
     {
         return (int) $this->attributes['vpc_Amount'];

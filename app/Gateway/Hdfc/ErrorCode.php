@@ -303,7 +303,7 @@ class ErrorCode
      * @var array
      */
     public static $errorMap = array(
-        self::FSS0001   => Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+        self::FSS0001   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,
         self::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
 
         self::GW00150   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,

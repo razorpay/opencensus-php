@@ -1022,6 +1022,7 @@ class Gateway extends Base\Gateway
     protected function getApiErrorCode($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = $input['gateway']['vpc_Message'] ?? null;
 
         if ($this->isSessionExpired($input))
         {
@@ -1040,9 +1041,9 @@ class Gateway extends Base\Gateway
         }
 
         // Check for mapped TxnResponseCode value
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])))
+        if (AxisMigs\TxnResponseCode::isErrorCodeMapped($txnResponseCode))
         {
-            return AxisMigs\TxnResponseCode::$map[$txnResponseCode];
+            return AxisMigs\TxnResponseCode::getErrorCodeMapped($txnResponseCode, $message);
         }
         else
         {
@@ -1067,8 +1068,9 @@ class Gateway extends Base\Gateway
             ($txnResponseCode === 'Aborted') and
             ($message === 'Your Session has expired'))
         {
-                return true;
+            return true;
         }
+
         return false;
     }
 
