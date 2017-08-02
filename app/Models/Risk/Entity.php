@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const SOURCE        = 'source';
     const RISK_SCORE    = 'risk_score';
     const COMMENTS      = 'comments';
+    const REASON        = 'reason';
 
     protected static $sign = 'rsk';
 
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::RISK_SCORE,
         self::COMMENTS,
+        self::REASON,
     ];
 
     protected $visible = [
@@ -44,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::RISK_SCORE,
         self::COMMENTS,
+        self::REASON,
     ];
 
     protected $public = [
@@ -51,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FRAUD_TYPE,
         self::COMMENTS,
+        self::REASON,
     ];
 
     protected $publicSetters = [

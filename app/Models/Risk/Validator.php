@@ -13,7 +13,8 @@ class Validator extends Base\Validator
         Entity::FRAUD_TYPE    => 'required|string|max:30|filled|custom',
         Entity::SOURCE        => 'required|string|max:30|filled|custom',
         Entity::RISK_SCORE    => 'sometimes|numeric',
-        Entity::COMMENTS      => 'required|string|max:255|filled', # soft validation
+        Entity::COMMENTS      => 'sometimes|string|max:255|filled', # soft validation
+        Entity::REASON        => 'required|string|max:150',
     ];
 
     protected static $editRules = [
@@ -22,7 +23,8 @@ class Validator extends Base\Validator
         Entity::FRAUD_TYPE    => 'sometimes|string|max:30|custom',
         Entity::SOURCE        => 'sometimes|string|max:30|custom',
         Entity::RISK_SCORE    => 'sometimes|numeric',
-        Entity::COMMENTS      => 'required|string|filled',
+        Entity::COMMENTS      => 'sometimes|string|filled',
+        Entity::REASON        => 'required|string|max:150',
     ];
 
     protected function validateFraudType(string $attribute, string $value)

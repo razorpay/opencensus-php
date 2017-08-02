@@ -39,7 +39,10 @@ class CreateRiskTable extends Migration
             $table->decimal(Risk::RISK_SCORE, 9, 2)
                   ->nullable();
 
-            $table->text(Risk::COMMENTS);
+            $table->text(Risk::COMMENTS)
+                  ->nullable();
+
+            $table->string(Risk::REASON, 150);
 
             $table->integer(Risk::CREATED_AT);
             $table->integer(Risk::UPDATED_AT);

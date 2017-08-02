@@ -31,14 +31,13 @@ class Core extends Base\Core
         return $risk;
     }
 
-    public function get(string $id)
-    {
-        return $this->repo->risk->findOrFailPublic($id);
-    }
-
     public function logRiskDataOnPaymentFailure(
         Payment\Entity $payment, array $riskData, $errorData)
     {
+        $whitelistedFields = [
+            Entity::RISK_SCORE,
+        ];
+
         //
         // errorData can comprise of field and data or an array.
         // presently only merging arrays
@@ -51,7 +50,8 @@ class Core extends Base\Core
 
             foreach ($attributes as $attribute)
             {
-                if (isset($errorData[$attribute]) === true)
+                if ((isset($errorData[$attribute]) === true) and
+                    (in_array($attribute, $whitelistedFields, true) === true))
                 {
                     $riskData[$attribute] = $errorData[$attribute];
                 }
