@@ -15,4 +15,7 @@ class RequestFields
     const SUBCATEGORY               = 'subcategory';
     const PROCESSOR_ID              = 'processorId';
 
+    const MERCHANT_ID               = 'merchantId';
+    const ENCRYPTED_DATA            = 'encryptedData';
+
 }
