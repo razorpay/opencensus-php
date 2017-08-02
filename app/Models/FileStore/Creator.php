@@ -359,6 +359,7 @@ class Creator extends Base\Core
      * upload it to service specified and creates file store entity
      *
      * @return Creator object
+     * @throws Exception\LogicException
      */
     public function save()
     {
@@ -671,6 +672,13 @@ class Creator extends Base\Core
             if ($filePermission !== '777')
             {
                 (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
+
+                $this->trace->debug(
+                    TraceCode::CHANGING_FILE_PERMISSION,
+                    [
+                        'file_path'                 => $this->filePath,
+                        'current_file_permission'   => $filePermission,
+                    ]);
             }
         }
         catch (\Throwable $e)
