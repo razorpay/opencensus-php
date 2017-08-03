@@ -174,7 +174,6 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
-            self::ICICI_EMI_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
         ],
@@ -195,6 +194,7 @@ class Type
 
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
+            self::ICICI_EMI_FILE,
         ],
     ];
 

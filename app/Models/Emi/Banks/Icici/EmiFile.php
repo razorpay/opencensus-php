@@ -100,7 +100,7 @@ class EmiFile extends Base\EmiFile
 
         $date = Carbon::now('Asia/Kolkata')->format('dmY');
 
-        $fileName = 'Razorpay _ICICIEMI_' . $date . '_' . $count;
+        $fileName = 'Razorpay_ICICIEMI_' . $date . '_' . $count;
 
         $metadata = $this->getH2HMetadata();
 
