@@ -12,8 +12,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Server extends Base\Core
 {
-    const MOCK_TRANSACTION_ID = 99999999;
-
     protected $request;
 
     protected $validator;
