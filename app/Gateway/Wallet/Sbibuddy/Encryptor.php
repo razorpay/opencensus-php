@@ -2,17 +2,23 @@
 
 namespace RZP\Gateway\Wallet\Sbibuddy;
 
+use phpseclib\Crypt\AES;
+
 class Encryptor
 {
     protected $masterKey;
 
     protected $blockSize = 8;
 
-    protected $method = 'AES-128-ECB';
+    protected $method = 'aes-128-ecb';
 
     public function __construct($masterKey)
     {
-        $this->masterKey = $masterKey;
+        $this->aes = new AES(MCRYPT_MODE_ECB);
+
+        $this->aes->setKey($masterKey);
+
+        $this->aes->setKeyLength(128);
     }
 
     public function setBlockSize($blockSize)
@@ -27,9 +33,11 @@ class Encryptor
 
     public function encrypt($data)
     {
-        $padded = self::pkcs5Pad($data, $this->blockSize);
+        $encoded = utf8_encode($data);
 
-        $encryptedData = openssl_encrypt($padded, $this->method, $this->masterKey, OPENSSL_ZERO_PADDING);
+        $padded = self::pkcs5Pad($encoded, $this->blockSize);
+
+        $encryptedData = $this->aes->encrypt($data);
 
         return base64_encode($encryptedData);
     }
@@ -38,9 +46,11 @@ class Encryptor
     {
         $decoded = base64_decode($data);
 
-        $decryptedData = openssl_decrypt($decoded, $this->method, $this->masterKey, OPENSSL_ZERO_PADDING);
+        $decryptedData = $this->aes->decrypt($decoded);
 
-        return self::pkcs5Unpad($decryptedData);
+        $unpadded = self::pkcs5Unpad($decryptedData)?:$decryptedData;
+
+        return utf8_decode($unpadded);
     }
 
     public static function pkcs5Pad($text, $blocksize)
