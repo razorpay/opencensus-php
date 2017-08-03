@@ -40,6 +40,7 @@ class Server extends Base\Mock\Server
         '6073849700004947',
         '4111111111111111',
         '4012001037411127',
+        '5200000000000064',
     );
 
     protected $notEnrolledDebitCardNumbers = array(
@@ -193,6 +194,7 @@ class Server extends Base\Mock\Server
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
+
         $networkCode = Network::getCode($card['network']);
 
         if (in_array($networkCode, $this->onlyPurchaseCardNetworks))
@@ -200,7 +202,9 @@ class Server extends Base\Mock\Server
             $res['result'] = 'CAPTURED';
         }
 
-//        $this->copyUdfValues($res);
+        $this->content($res, 'auth_response');
+
+        // $this->copyUdfValues($res);
 
         return $res;
     }

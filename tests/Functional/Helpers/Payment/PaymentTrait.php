@@ -1045,7 +1045,7 @@ trait PaymentTrait
         }
     }
 
-    protected function replaceDefualtValues(array & $content)
+    protected function replaceDefaultValues(array & $content)
     {
         $data = $this->getDefaultPaymentArray();
 

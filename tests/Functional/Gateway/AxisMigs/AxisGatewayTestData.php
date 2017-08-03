@@ -273,5 +273,29 @@ return [
             'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         ],
-    ]
+    ],
+
+    'testInvalidAmaCaptureError' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
+            'gateway_error_code'  => '7',
+        ],
+    ],
 ];

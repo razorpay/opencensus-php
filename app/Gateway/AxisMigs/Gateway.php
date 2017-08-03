@@ -1102,9 +1102,9 @@ class Gateway extends Base\Gateway
         $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
         if (($txnResponseCode !== null) and
-            (isset(TxnResponseCode::$map[$txnResponseCode]) === true))
+            (TxnResponseCode::isErrorCodeMapped($txnResponseCode) === true))
         {
-            $code = TxnResponseCode::$map[$txnResponseCode];
+            $code = TxnResponseCode::getErrorCodeMapped($txnResponseCode, $msg);
         }
 
         if ($this->action === Base\Action::REFUND)

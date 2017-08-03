@@ -170,19 +170,44 @@ class AxisGatewayTest extends TestCase
 
         $this->fixtures->payment->edit($pid, ['status' => 'failed', 'authorized_at' => null]);
 
-        $server = $this->mockServer()
-                        ->shouldReceive('content')
-                        ->andReturnUsing(function (& $content)
+        $this->mockServerContentFunction(function (& $content)
                         {
                             $content['vpc_DRExists'] = 'Y';
-                        })->mock();
-
-        $this->setMockServer($server);
+                        });
 
         $data = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($data, function() use ($pid)
         {
             $this->verifyPayment($pid);
+        });
+    }
+
+    public function testInvalidAmaCaptureError()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                unset($content['vpc_AcqResponseCode'], $content['vpc_AuthorisedAmount'],
+                      $content['vpc_CapturedAmount'], $content['vpc_Card'],
+                      $content['vpc_ReceiptNo'], $content['vpc_ShopTransactionNo']);
+
+                $content['vpc_Amount']          = '0';
+                $content['vpc_BatchNo']         = '0';
+                $content['vpc_Currency']        = 'INR';
+                $content['vpc_Message']         = 'I5426-07060432: Invalid Permission : advanceMA';
+                $content['vpc_TransactionNo']   = '0';
+                $content['vpc_TxnResponseCode'] = '7';
+            }
+        });
+
+        $testData = $this->testData['testInvalidAmaCaptureError'];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthAndCapturePayment($testData['request']['content']);
         });
     }
 
