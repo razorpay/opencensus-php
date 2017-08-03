@@ -40,7 +40,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($entityAttrs);
 
-        $content = $this->getRequestData($input);
+        $content = $this->getAuthorizeRequestData($input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -120,6 +120,13 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContent($verify);
     }
 
+    protected function getEncryptedString(array $input, $glue = '|')
+    {
+        $str = urldecode(http_build_query($input, null, $glue));
+
+        return $this->encryptString($str);
+    }
+
     public function encryptString(string $queryString): string
     {
         $masterKey = $this->getSecret();
@@ -153,31 +160,34 @@ class Gateway extends Base\Gateway
         return $entityAttributes;
     }
 
-
-    protected function getRequestData(array $input): array
+    protected function getAuthorizeRequestData(array $input): array
     {
-        $dataString = $this->getHashOfArray($input);
+        $content = $this->getRequestContentData($input);
+        $content[RequestFields::USER_NAME]    = Constants::RZP_NAME;
+        $content[RequestFields::EMAIL]        = Constants::RZP_EMAIL;
+        $content[RequestFields::ADDRESS]      = Constants::RZP_ADDRESS;
+        $content[RequestFields::PHONE_NUMBER] = Constants::RZP_PHONE;
+        $content[RequestFields::REMARK]       = Constants::RZP_REMARK;
+        $content[RequestFields::RETURN_URL]   = $input['callbackUrl'];
 
-        $encdata = $this->encryptString($dataString);
+        $content[RequestFields::CHECKSUM]     = $this->getHashOfArray($content);
 
-        return [RequestFields::ENCDATA => $encdata];
+        $encrypted = $this->getEncryptedString($content);
+
+        return [RequestFields::ENCDATA => $encrypted];
     }
 
     protected function getStringToHash($input, $glue = '|'): string
     {
-        $dataString = $this->createDefaultRequestData($input, $glue);
-
-        return $dataString;
+        return parent::getStringToHash($input, $glue);
     }
 
-    protected function getHashOfString($data): string
+    protected function getHashOfString($str): string
     {
-        $dataString = $this->computeAndAppendChecksumToRequestData($data);
-
-        return $dataString;
+        return md5($str);
     }
 
-    protected function createDefaultRequestData(array $input, string $glue): string
+    protected function getRequestContentData(array $input): array
     {
         $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]);
 
@@ -195,27 +205,7 @@ class Gateway extends Base\Gateway
             RequestFields::ITEM_CODE       => strtoupper($paymentId),
         ];
 
-        if ($this->action === Action::AUTHORIZE)
-        {
-            $authData = [
-                RequestFields::USER_NAME    => Constants::RZP_NAME,
-                RequestFields::EMAIL        => Constants::RZP_EMAIL,
-                RequestFields::ADDRESS      => Constants::RZP_ADDRESS,
-                RequestFields::PHONE_NUMBER => Constants::RZP_PHONE,
-                RequestFields::REMARK       => Constants::RZP_REMARK,
-                RequestFields::RETURN_URL   => $input['callbackUrl'],
-            ];
-
-            $data = array_merge($data, $authData);
-        }
-        else
-        {
-            $data[RequestFields::RETURN_URL] = Constants::RZP_URL;
-        }
-
-        $dataString = urldecode(http_build_query($data, null, $glue));
-
-        return $dataString;
+        return $data;
     }
 
     protected function computeAndAppendChecksumToRequestData(string $data): string
