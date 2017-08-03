@@ -12,7 +12,6 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
-use DOMDocument;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 
@@ -88,7 +87,7 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getPaymentVerifyData($verify);
+        $content = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -210,17 +209,6 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function computeAndAppendChecksumToRequestData(string $data): string
-    {
-        $checksum = md5($data);
-
-        $checksumData = RequestFields::CHECKSUM . '=' . $checksum;
-
-        $data = $data . '|' . $checksumData;
-
-        return $data;
-    }
-
     protected function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
@@ -247,7 +235,8 @@ class Gateway extends Base\Gateway
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 [
-                    'encrypted_string' => $encryptedString
+                    'encrypted_string' => $encryptedString,
+                    'gateway'          => $this->gateway,
                 ]);
 
             throw new Exception\GatewayErrorException(
@@ -279,20 +268,13 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::BANK_PAYMENT_STATUS]) === false) or
             ($content[ResponseFields::BANK_PAYMENT_STATUS] !== Status::SUCCESS))
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                [
-                    'content'    => $content,
-                    'payment_id' => $content[ResponseFields::CHALLAN_NUMBER]
-                ]);
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED
             );
         }
     }
 
-    protected function getPaymentVerifyData(Verify $verify): array
+    protected function getVerifyRequestData(Verify $verify): array
     {
         $content = $this->getRequestContentData($verify->input);
 
