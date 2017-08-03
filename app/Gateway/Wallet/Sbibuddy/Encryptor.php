@@ -35,9 +35,7 @@ class Encryptor
     {
         $encoded = utf8_encode($data);
 
-        $padded = self::pkcs5Pad($encoded, $this->blockSize);
-
-        $encryptedData = $this->aes->encrypt($data);
+        $encryptedData = $this->aes->encrypt($encoded);
 
         return base64_encode($encryptedData);
     }
@@ -48,9 +46,7 @@ class Encryptor
 
         $decryptedData = $this->aes->decrypt($decoded);
 
-        $unpadded = self::pkcs5Unpad($decryptedData)?:$decryptedData;
-
-        return utf8_decode($unpadded);
+        return utf8_decode($decryptedData);
     }
 
     public static function pkcs5Pad($text, $blocksize)
