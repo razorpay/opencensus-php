@@ -224,7 +224,7 @@
         <label for="methods" class="col-lg-2 control-label">Methods</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="methods" ng-model="emi.methods">
-            <option value="card">Card</option>
+            <option value="card" selected="selected">Card</option>
           </select>
         </div>
       </div>
@@ -232,6 +232,33 @@
         <label for="rate" class="col-lg-2 control-label">Interest Rate</label>
         <div class="col-lg-10" >
           <input type="number" class="form-control m-b" name="rate" ng-model="emi.rate" placeholder="1250">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="subvention" class="col-lg-2 control-label">Subvention</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="subvention" ng-model="emi.subvention">
+            <option value="customer">Customer</option>
+            <option value="merchant">Merchant</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="merchant_payback" class="col-lg-2 control-label">Merchant Payback</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="merchant_payback" ng-model="emi.merchant_payback" placeholder="1250">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="issuer_plan_id" class="col-lg-2 control-label">Issuer Plan Id</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="issuer_plan_id" ng-model="emi.issuer_plan_id">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="min_amount" class="col-lg-2 control-label">Min Amount</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="min_amount" ng-model="emi.min_amount" placeholder="1250">
         </div>
       </div>
     </form>

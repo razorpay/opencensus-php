@@ -8,6 +8,7 @@ import OrderDetails from 'merchant/containers/Orders/Details';
 import VirtualAccountDetails from 'merchant/containers/VirtualAccounts/Details';
 import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
+import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
 const entityMap = {
   '/payments/:id': PaymentsDetails,
@@ -21,6 +22,7 @@ const entityMap = {
   '/virtualaccounts/:id': VirtualAccountDetails,
   '/plans/:id': PlanDetails,
   '/subscriptions/:id': SubscriptionDetails,
+  '/route/transfers/:id': TransferDetails,
 };
 
 export function matchDetail(pathname) {

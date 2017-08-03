@@ -21,6 +21,7 @@ import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
+import transferReducer from 'merchant/modules/marketplace/transfer';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
 import applicationsReducer from 'merchant/modules/applications';
@@ -90,6 +91,7 @@ export default combineReducers({
   accounts: mpAccountsReducer,
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,
+  transfer: transferReducer,
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,

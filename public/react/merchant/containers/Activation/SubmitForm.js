@@ -22,7 +22,11 @@ export default class SubmitForm extends Component {
                     name="agree_terms"
                     component="input"
                     type="checkbox"
-                    validate={[required()]}
+                    validate={value => {
+                      if (!value) {
+                        return 'Required';
+                      }
+                    }}
                   />
                   <i />
                   <div class="submit-label">
@@ -89,7 +93,7 @@ export default class SubmitForm extends Component {
                   class="btn btn-primary"
                   text="Click here to Submit"
                   pendingText="Submitting..."
-                  disabled={submitted || invalid}
+                  disabled={!!submitted || invalid}
                   onClick={handleSubmit(save)}
                 />
               </div>

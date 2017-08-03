@@ -53,15 +53,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
         Route::any('/user/generic', 'GenericController@handle');
-        Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
-        Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
         Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
         Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
-
         // ePOS => the routes which are being used by android ePOS app
         // Routes only used by ePOS
         Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys'); // ePOS
