@@ -24,6 +24,8 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'pnb';
 
+    protected $sortRequestContent = false;
+
     protected $map = [
         RequestFields::MERCHANT_AMOUNT => Base\Entity::AMOUNT,
         RequestFields::CHALLAN_NUMBER  => Base\Entity::PAYMENT_ID,
@@ -106,7 +108,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response);
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response, $request);
     }
 
     public function verifyPayment(Verify $verify)
@@ -179,7 +181,7 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($input, $glue = '|'): string
     {
-        return parent::getStringToHash($input, $glue);
+        return urldecode(http_build_query($input, null, $glue));
     }
 
     protected function getHashOfString($str): string
@@ -302,16 +304,11 @@ class Gateway extends Base\Gateway
         return [RequestFields::ENCDATA => $encrypted];
     }
 
-    protected function parseVerifyResponse($response): array
+    protected function parseVerifyResponse($response, $request): array
     {
-        $htmlResponse = stripcslashes(html_entity_decode($response->body));
+        $values = $this->getFormValues($response->body, $request['url']);
 
-        $dom = new DOMDocument;
-
-        $dom->loadHTML($htmlResponse);
-
-        $encryptedString = $dom->getElementById(ResponseFields::ENCDATA)
-                               ->getAttribute('value');
+        $encryptedString = $values[ResponseFields::ENCDATA];
 
         $decryptedString = $this->decryptString($encryptedString);
 
