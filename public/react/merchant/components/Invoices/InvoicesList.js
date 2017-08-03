@@ -4,9 +4,12 @@ import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
   let { invoice, isNewUIEnabled, onEditClick } = props;
+  let customer = invoice.customer_details;
+
   return (
     <EntityItemRow id={invoice.id}>
       <td>
@@ -38,9 +41,11 @@ const InvoiceListItem = props => {
       </td>
       <td>{invoice.receipt}</td>
       <td>
-        {invoice.customer_details.customer_contact ||
-          invoice.customer_details.customer_email ||
-          invoice.customer_details.customer_name}
+        {getCustomerDisplayName({
+          name: customer.customer_name,
+          contact: customer.customer_contact,
+          email: customer.customer_email,
+        })}
       </td>
       <td>{invoice.short_url}</td>
       {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
