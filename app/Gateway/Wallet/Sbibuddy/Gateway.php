@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Sbibuddy;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Wallet\Base\Action;
@@ -29,6 +30,8 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        $input['payment'][Payment::AMOUNT] = $this->formatAmount($input['payment'][Payment::AMOUNT]);
 
         $request = $this->getAuthRequest($input);
 
@@ -69,6 +72,13 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+    }
+
     //----------------Auth helper methods----------------------
 
     protected function getAuthRequest($input)
@@ -97,14 +107,15 @@ class Gateway extends Base\Gateway
 
         $cryptor = $this->getEncryptor();
 
-        $encrypted = $cryptor->encrypt($encodedData);
+        $encrypted = $cryptor->encryptString($encodedData);
 
-        $request = [
-            'content' => [
-                RequestFields::MERCHANT_ID    => $this->getMerchantId(),
-                RequestFields::ENCRYPTED_DATA => $encrypted
-            ]
+        $content = [
+            RequestFields::MERCHANT_ID    => $this->getMerchantId(),
+            RequestFields::ENCRYPTED_DATA => $encrypted
         ];
+
+        $request = $this->getStandardRequestArray($content);
+        // sd($request);
 
         return $request;
     }
@@ -150,7 +161,7 @@ class Gateway extends Base\Gateway
     {
         $cryptor = $this->getEncryptor();
 
-        $decryptedInput = $cryptor->decrypt($input[ResponseFields::ENCRYPTED_DATA]);
+        $decryptedInput = $cryptor->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
 
         $data = [];
 
@@ -159,13 +170,15 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getEncryptor()
+    public function getEncryptor()
     {
         $secret = $this->getSecret();
 
+        $secret = base64_decode($secret);
+
         assert($secret !== null);
 
-        return new Encryptor($secret);
+        return new Encryptor(AES::MODE_ECB, $secret);
     }
 
     protected function getMerchantId()
@@ -176,6 +189,16 @@ class Gateway extends Base\Gateway
         }
 
         return $this->terminal['gateway_merchant_id'];
+    }
+
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount formatted to 2 decimal places in INR (1.00)
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 
     //----------------General helper methods ends---------------
