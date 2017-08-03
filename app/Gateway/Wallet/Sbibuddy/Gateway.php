@@ -108,9 +108,7 @@ class Gateway extends Base\Gateway
 
         $data = [];
 
-        $input = utf8_decode($decryptedInput);
-
-        parse_str($input, $data);
+        parse_str($decryptedInput, $data);
 
         return $data;
     }
@@ -148,7 +146,7 @@ class Gateway extends Base\Gateway
             RequestFields::PROCESSOR_ID             => 'ALL',
         ];
 
-        $encodedData = utf8_encode(http_build_query($data));
+        $encodedData = http_build_query($data);
 
         $cryptor = $this->getEncryptor();
 
@@ -156,7 +154,7 @@ class Gateway extends Base\Gateway
 
         $request = [
             'content' => [
-                RequestFields::MERCHANT_ID    => '123',
+                RequestFields::MERCHANT_ID    => $this->getMerchantId(),
                 RequestFields::ENCRYPTED_DATA => $encrypted
             ]
         ];
