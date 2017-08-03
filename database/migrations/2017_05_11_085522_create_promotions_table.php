@@ -1,4 +1,4 @@
- <?php
+<?php
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -77,7 +77,7 @@ class CreatePromotionsTable extends Migration
         Schema::table(Table::CREDITS, function($table)
         {
             $table->dropForeign(
-                Table::PROMOTION.'_'.Credits::PROMOTION_ID.'_foreign');
+                Table::CREDITS.'_'.Credits::PROMOTION_ID.'_foreign');
         });
 
         Schema::drop(Table::PROMOTION);
