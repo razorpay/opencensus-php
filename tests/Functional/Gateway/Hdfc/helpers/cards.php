@@ -99,6 +99,30 @@ return [
         ],
     ],
 
+    'testCreditCardAuthNotAvailable3' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,
+            'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+        ],
+    ],
+
     'testCreditCardAuthNotApproved' => [
         'request' => [
             'content' => [
