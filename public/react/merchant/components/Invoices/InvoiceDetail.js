@@ -63,6 +63,10 @@ export default props => {
                     label="Amount"
                     value={() => <Amount value={invoice.amount} />}
                   />
+                  <DetailRow
+                    label="Amount Paid"
+                    value={() => <Amount value={invoice.amount_paid} />}
+                  />
                   <DetailRow label="Summary" value={invoice.description} />
                   <DetailRow
                     label="Invoice Date"
