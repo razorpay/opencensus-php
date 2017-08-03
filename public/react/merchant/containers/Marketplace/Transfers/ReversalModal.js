@@ -101,6 +101,13 @@ export default class ReversalModal extends Component {
             };
           }
 
+          if (props.comment) {
+            data = {
+              ...(data || {}),
+              notes: { comment: props.comment },
+            };
+          }
+
           return this.props
             .reverseTransfer(transfer.id, data)
             .then(() => {
@@ -202,6 +209,22 @@ export default class ReversalModal extends Component {
                 </b>
               </div>
             </div>
+
+            <div class="form-group">
+              <label class="col-sm-4 control-label">
+                <div>Comments</div>
+              </label>
+              <div class="col-sm-8">
+                <Field
+                  name="comment"
+                  component={InputField}
+                  class="form-control"
+                  placeholder="Add an optional comment"
+                />
+                <i />
+              </div>
+            </div>
+
           </div>
 
           <div class="modal-footer">

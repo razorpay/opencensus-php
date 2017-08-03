@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CheckIcon from 'rzp/ui/CheckIcon';
 import Spinner from 'rzp/ui/Spinner';
 import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import DataTable from 'rzp/ui/Table/DataTable';
@@ -78,7 +79,11 @@ export default ({
                   <OtherDetail
                     key={key}
                     label={key}
-                    value={transfer[key]}
+                    value={
+                      key === 'on_hold'
+                        ? () => <CheckIcon value={transfer[key]} />
+                        : transfer[key]
+                    }
                     entity={transfer}
                   />
                 ))}
