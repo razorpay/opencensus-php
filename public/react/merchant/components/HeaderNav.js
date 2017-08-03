@@ -85,7 +85,7 @@ export default ({
           id="headerNav"
         >
           <ul class="nav navbar-nav navbar-right">
-            <ShowWhen myRole="owner">
+            <ShowWhen myRole="owner finance">
               <li>
                 <a onClick={showGSTModal}>GST Details</a>
               </li>

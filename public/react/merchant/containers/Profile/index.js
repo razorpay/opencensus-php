@@ -145,7 +145,7 @@ export default class Profile extends Component {
             {user && user.current ? <MerchantDetails user={user} /> : null}
           </div>
 
-          <ShowWhen myRole="owner">
+          <ShowWhen myRole="owner finance">
             <GST />
           </ShowWhen>
 
