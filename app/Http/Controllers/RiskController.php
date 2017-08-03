@@ -5,31 +5,33 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 
+use RZP\Constants\Entity;
+
 class RiskController extends Controller
 {
-    public function postRiskEntity(string $paymentId)
+    public function post(string $paymentId)
     {
         $input = Request::all();
 
-        $data = $this->service('risk')->create($paymentId, $input);
+        $data = $this->service(Entity::RISK)->create($paymentId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function putRiskEntity(string $id)
+    public function put(string $id)
     {
         $input = Request::all();
 
-        $data = $this->service('risk')->edit($id, $input);
+        $data = $this->service(Entity::RISK)->edit($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getRiskEntityMultiple()
+    public function fetchMultiple()
     {
         $input = Request::all();
 
-        $data = $this->service('risk')->getRiskForAllPayments($input);
+        $data = $this->service(Entity::RISK)->getRiskForAllPayments($input);
 
         return ApiResponse::json($data);
     }

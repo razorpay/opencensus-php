@@ -60,7 +60,6 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::PAYMENT_ID,
-        self::MERCHANT_ID,
     ];
 
     protected $casts = [
@@ -94,17 +93,7 @@ class Entity extends Base\PublicEntity
 
         if ($paymentId !== null)
         {
-            $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
-        }
-    }
-
-    public function setPublicMerchantIdAttribute(array & $attributes)
-    {
-        $merchantId = $this->getAttribute(static::MERCHANT_ID);
-
-        if ($merchantId !== null)
-        {
-            $attributes[static::MERCHANT_ID] = Merchant\Entity::getSignedId($merchantId);
+            $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedIdOrNull($paymentId);
         }
     }
 
@@ -125,7 +114,7 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- End Setters ------------
 
-    public function associateRelatedEntites(array $input)
+    public function associateRelatedEntities(array $input)
     {
         if (empty($input[self::PAYMENT_ID]) === false)
         {

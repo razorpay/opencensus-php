@@ -45,11 +45,5 @@ class Service extends Base\Service
         {
             Payment\Entity::verifyIdAndStripSign($input[Entity::PAYMENT_ID]);
         }
-
-        if (isset($input[Entity::MERCHANT_ID]) === true)
-        {
-            Merchant\Entity::verifyIdAndStripSign(
-                $input[Entity::MERCHANT_ID]);
-        }
     }
 }

@@ -22,7 +22,7 @@ class RiskTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
-    private function makeFraudalentPayment()
+    private function makeFraudulentPayment()
     {
         //
         // Running testFraudDetected test again till we can do
@@ -49,13 +49,9 @@ class RiskTest extends TestCase
 
     public function testFetchMultiple()
     {
-        $authPayment = $this->makeFraudalentPayment();
+        $authPayment = $this->makeFraudulentPayment();
 
-        $content = $this->testData[__FUNCTION__]['request']['content'];
-
-        $content['payment_id'] = $authPayment['id'];
-
-        $this->testData[__FUNCTION__]['request']['content'] = $content;
+        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $authPayment['id'];
 
         $this->startTest();
     }

@@ -17,7 +17,7 @@ class Core extends Base\Core
 
         $risk->build($input);
 
-        $risk->associateRelatedEntites($input);
+        $risk->associateRelatedEntities($input);
 
         $this->repo->saveOrFail($risk);
 
@@ -28,20 +28,30 @@ class Core extends Base\Core
     {
         $risk->edit($input);
 
-        $risk->associateRelatedEntites($input);
+        $risk->associateRelatedEntities($input);
 
         $this->repo->saveOrFail($risk);
 
         return $risk;
     }
 
+    public function get(string $id)
+    {
+        return $this->repo->risk->findOrFail($id);
+    }
+
+    /**
+     * This function records riskScore by maxmind
+     * when the maxmind accepts the payment but gateway/bank rejects it
+     *
+     * @param Payment\Entity $payment
+     * @param array          $riskData
+     *
+     * @return Entity $risk
+     */
     public function logPaymentOnGatewayRiskFailure(
         Payment\Entity $payment, array $riskData)
     {
-        //
-        // This function records riskScore by maxmind
-        // when the maxmind accepts the payment but gateway/bank rejects it
-        //
         $input = [
             Entity::MERCHANT_ID => $payment->getMerchantId(),
             Entity::PAYMENT_ID  => $payment->getId(),
@@ -60,6 +70,7 @@ class Core extends Base\Core
 
         // If a payment is tagged as confirmed fraud, add its maxmind score
         $input[Entity::RISK_SCORE] = $this->getRiskScore($payment);
+        $input[Entity::MERCHANT_ID] = $payment->getMerchantId();
 
         if ($risk === null)
         {

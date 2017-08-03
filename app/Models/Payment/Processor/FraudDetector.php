@@ -22,6 +22,7 @@ trait FraudDetector
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
+                'risk_score' => $riskScore,
             ];
 
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;

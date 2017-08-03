@@ -609,7 +609,7 @@ class Processor
 
 
     /**
-     * Checks for risk failuers and creates logs in risk table
+     * Checks for risk failures and creates log in risk table
      *
      * @param $payment Payment\Entity
      * @param $exception Exxception\BaseException

@@ -257,8 +257,6 @@ class Entity
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
-
-        self::RISK                  => \RZP\Models\Risk::class,
     ];
 
     protected static $repository = [

@@ -983,11 +983,7 @@ trait Authorize
 
     protected function validateBlockedCard(Payment\Entity $payment)
     {
-        //
-        // If it is not a card payment, do not run this validation
-        // Presently, EMI payments are offered through cards
-        //
-        if ($payment->isMethodCardOrEmi() === false)
+        if ($payment->hasCard() === false)
         {
             return;
         }
