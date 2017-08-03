@@ -193,3 +193,11 @@ export const getIntervalCycle = (interval, period) => {
       return `Once in ${interval} ${periods[period]}s`;
   }
 };
+
+export const getCustomerDisplayName = ({ name, contact, email }) => {
+  let displayParts = [name, contact, email].filter(item => !isBlank(item));
+
+  return `${displayParts
+    .join(' / ')
+    .replace('\/ ', '(')}${displayParts.length > 1 ? ')' : ''}`;
+};

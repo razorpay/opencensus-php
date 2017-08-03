@@ -15,7 +15,7 @@ export default ({ refund, isLoading, statusMsg }) => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Refund ID: <b>{refund.id}</b>
+              Refund Id: <b>{refund.id}</b>
             </div>
 
             <div class="SliderPanel__Body">

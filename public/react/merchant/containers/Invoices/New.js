@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
+import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
@@ -518,7 +519,14 @@ export default class InvoicesNewContainer extends Component {
                           </div>
                           <div class="col-md-6 text-right">
                             <label>AMOUNT DUE</label>
-                            <h3 class="inv__amountdue">₹ {invoiceTotal}</h3>
+                            <h3 class="inv__amountdue">
+                              {invoice.amount_due
+                                ? <Amount
+                                    value={invoice.amount_due}
+                                    currency={invoice.currency}
+                                  />
+                                : <span>₹ {invoiceTotal}</span>}
+                            </h3>
                           </div>
                         </div>
 

@@ -73,7 +73,7 @@ export default class MerchantTour extends Component {
               {' '}
               <b>Orders</b>
               {' '}
-              are moved to Transactions.
+              have moved to Transactions.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link" onClick={this.closeTour}>
@@ -102,7 +102,7 @@ export default class MerchantTour extends Component {
               {' '}
               <b>Add Funds</b>
               {' '}
-              are moved to My Account.
+              are now under My Account.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link" onClick={this.closeTour}>
@@ -127,7 +127,7 @@ export default class MerchantTour extends Component {
               {' '}
               <b>Webhooks</b>
               {' '}
-              are moved to Settings.
+              have moved to Settings.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link" onClick={this.closeTour}>
@@ -150,11 +150,7 @@ export default class MerchantTour extends Component {
             arrowLeftPos="85%"
           >
             <p>
-              Your
-              {' '}
-              <b>Merchant ID</b>
-              {' '}
-              is here. Also, to revert to old design or to give feedback, click here.
+              Prefer the old design? Click here to switch or to give feedback.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link pull-right" onClick={this.closeTour}>

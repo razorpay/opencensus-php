@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { isBlank, getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 export default class Customer extends GenericEntity {
   listRouteName = 'customer_fetch_multiple';
@@ -28,16 +28,12 @@ export default class Customer extends GenericEntity {
   }
 
   didDeserialize() {
-    let displayParts = [this.name, this.contact, this.email].filter(
-      item => !isBlank(item)
-    );
-
-    let displayName = `${displayParts
-      .join(' / ')
-      .replace('\/ ', '(')}${displayParts.length > 1 ? ')' : ''}`;
-
     // This is used as option display value in the autocomplete
-    this.displayName = displayName;
+    this.displayName = getCustomerDisplayName({
+      name: this.name,
+      contact: this.contact,
+      email: this.email,
+    });
 
     // This is used as selected display value in the autocomplete
     this.selectedDisplayName = this.name || this.contact || this.email;
