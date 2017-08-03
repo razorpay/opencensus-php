@@ -35,7 +35,8 @@ return [
     ],
     'testPaymentWalletEntity' => [
         'action'               => 'authorize',
-        'amount'               => 50000,
+        // They give the response in Rupees
+        'amount'               => 500,
         'wallet'               => 'sbibuddy',
         'received'             => true,
         'email'                => 'a@b.com',
