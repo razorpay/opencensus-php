@@ -108,6 +108,6 @@ class TxnResponseCode
             return self::$map[$code][$msgCode];
         }
 
-        return self::$map['code'];
+        return self::$map[$code];
     }
 }
