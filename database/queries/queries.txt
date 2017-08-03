@@ -2266,6 +2266,12 @@ ALTER TABLE schedule_tasks
 ALTER TABLE merchant_banks
     DROP COLUMN emi_subvention;
 
+ALTER TABLE payments
+    ADD COLUMN disputed TINYINT(1) DEFAULT 0 NOT NULL AFTER convert_currency;
+
+ALTER TABLE payments
+    ADD INDEX payments_disputed_index (disputed);
+
 ALTER TABLE addons
     ADD COLUMN quantity INTEGER DEFAULT 1 AFTER invoice_id;
 

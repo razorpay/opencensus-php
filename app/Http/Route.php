@@ -574,6 +574,9 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
+
+        // Dispute routes
+        'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
     ];
 
     public static $public = [
@@ -961,6 +964,7 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'payment_dispute_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
     ];

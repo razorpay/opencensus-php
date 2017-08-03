@@ -776,6 +776,8 @@ class TraceCode
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
 
+    // Trace codes for dispute entity
+    const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';

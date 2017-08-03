@@ -743,6 +743,26 @@ final class FactoryData
             'token'                    => $faker->name(30),
         ]);
 
+        $factory(\RZP\Models\Dispute\Reason\Entity::class, [
+            'id'                  => $faker->uniqueid,
+            'gateway_code'        => '8393',
+            'gateway_description' => 'This was always a bad idea',
+            'code'                => 'BAD_IDEA',
+            'description'         => 'I told you so',
+        ]);
+
+        $factory(\RZP\Models\Dispute\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'phase'              => \RZP\Models\Dispute\Phase::CHARGEBACK,
+            'raised_on'          => $faker->timestamp,
+            'expires_on'         => $faker->timestamp,
+            'deduct_at_onset'    => 1,
+            'currency'           => 'INR',
+            'status'             => \RZP\Models\Dispute\Status::OPEN,
+            'reason_code'        => 'SOMETHING_BAD',
+            'reason_description' => 'Something went wrong'
+        ]);
+        
         $factory(\RZP\Models\Workflow\Entity::class, [
            'id'      => $faker->uniqueid,
             'org_id' => '100000razorpay',
