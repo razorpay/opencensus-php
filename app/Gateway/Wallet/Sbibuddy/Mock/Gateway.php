@@ -24,12 +24,9 @@ class Gateway extends Sbibuddy\Gateway
         );
 
         $request['url'] = $url;
+
         $request['method'] = 'post';
 
         return $request;
-    }
-
-    protected function prepareContent($input)
-    {
     }
 }
