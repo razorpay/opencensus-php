@@ -20,8 +20,6 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const NA = 'na';
-
     protected $gateway = 'netbanking_pnb';
 
     protected $bank = 'pnb';
@@ -68,11 +66,13 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment'][Payment\Entity::ID],
              $content[ResponseFields::CHALLAN_NUMBER]);
 
-        $this->saveCallbackResponse($content);
-
         $this->checkCallbackStatus($content);
 
-        return $this->getCallbackResponseData($input);
+        $gatewayPayment = $this->saveCallbackResponse($content);
+
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input): array
@@ -163,13 +163,13 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequestData(array $input): array
     {
         $content = $this->getRequestContentData($input);
+
         $content[RequestFields::USER_NAME]    = Constants::RZP_NAME;
         $content[RequestFields::EMAIL]        = Constants::RZP_EMAIL;
         $content[RequestFields::ADDRESS]      = Constants::RZP_ADDRESS;
         $content[RequestFields::PHONE_NUMBER] = Constants::RZP_PHONE;
         $content[RequestFields::REMARK]       = Constants::RZP_REMARK;
         $content[RequestFields::RETURN_URL]   = $input['callbackUrl'];
-
         $content[RequestFields::CHECKSUM]     = $this->getHashOfArray($content);
 
         $encrypted = $this->getEncryptedString($content);
@@ -268,6 +268,8 @@ class Gateway extends Base\Gateway
         $gatewayEntity->fill($attrs);
 
         $this->repo->saveOrFail($gatewayEntity);
+
+        return $gatewayEntity;
     }
 
     protected function checkCallbackStatus(array $content)
@@ -290,9 +292,14 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyData(Verify $verify): array
     {
-        $data = $this->getRequestData($verify->input);
+        $content = $this->getRequestContentData($verify->input);
 
-        return $data;
+        $content[RequestFields::RETURN_URL] = Constants::RZP_URL;
+        $content[RequestFields::CHECKSUM]   = $this->getHashOfArray($content);
+
+        $encrypted = $this->getEncryptedString($content);
+
+        return [RequestFields::ENCDATA => $encrypted];
     }
 
     protected function parseVerifyResponse($response): array

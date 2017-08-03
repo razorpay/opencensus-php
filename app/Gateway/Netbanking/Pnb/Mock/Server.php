@@ -11,6 +11,8 @@ use RZP\Gateway\Netbanking\Pnb\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    const MOCK_TRANSACTION_ID = 99999999;
+
     public function authorize($input)
     {
         parent::authorize($input);

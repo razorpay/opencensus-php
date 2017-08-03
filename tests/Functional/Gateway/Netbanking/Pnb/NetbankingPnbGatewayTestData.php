@@ -104,10 +104,10 @@ return [
     ],
 
     'testPaymentFailedNetbankingEntity' => [
-        'bank_payment_id' => '99999999',
-        'received'        => true,
+        'bank_payment_id' => null,
+        'received'        => false,
         'bank'            => 'PUNB',
-        'status'          => 'F'
+        'status'          => null
     ],
 
     'testPaymentVerifySuccessEntity' => [
@@ -118,7 +118,7 @@ return [
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
-        'received'        => true,
+        'received'        => false,
         'bank'            => 'PUNB',
         'status'          => 'F'
     ],
