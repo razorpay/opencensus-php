@@ -264,6 +264,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::P_GSTIN);
     }
 
+    public function getContactMobile()
+    {
+        return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
     public function getBusinessRegisteredAddress()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
