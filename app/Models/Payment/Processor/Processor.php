@@ -630,7 +630,7 @@ class Processor
             return;
         }
 
-        (new Risk\Core)->logPaymentOnRiskFailure($payment, $riskData);
+        (new Risk\Core)->logPaymentOnGatewayRiskFailure($payment, $riskData);
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)

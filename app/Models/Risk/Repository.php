@@ -30,4 +30,11 @@ class Repository extends Base\Repository
         Entity::COMMENTS      => 'sometimes|string|max:255',
         Entity::REASON        => 'sometimes|string|max:150',
     ];
+
+    public function fetchByPaymentId(string $paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->first();
+    }
 }

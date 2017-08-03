@@ -86,6 +86,8 @@ class CardTest extends TestCase
         $this->assertEquals($payment['id'], $riskEntity['payment_id']);
 
         $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
+
+        $this->assertNotNull($riskEntity['risk_score']);
     }
 
     public function testSupportedCardNetworks()

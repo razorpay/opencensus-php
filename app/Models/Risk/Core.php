@@ -5,9 +5,12 @@ namespace RZP\Models\Risk;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\FraudDetector;
 
 class Core extends Base\Core
 {
+    use FraudDetector;
+
     public function create(array $input)
     {
         $risk = new Entity;
@@ -32,17 +35,38 @@ class Core extends Base\Core
         return $risk;
     }
 
-    public function logPaymentOnRiskFailure(
+    public function logPaymentOnGatewayRiskFailure(
         Payment\Entity $payment, array $riskData)
     {
+        //
+        // This function records riskScore by maxmind
+        // when the maxmind accepts the payment but gateway/bank rejects it
+        //
         $input = [
             Entity::MERCHANT_ID => $payment->getMerchantId(),
             Entity::PAYMENT_ID  => $payment->getId(),
+            Entity::RISK_SCORE  => $this->getRiskScore($payment),
         ];
 
         $input = array_merge($riskData, $input);
 
         return $this->create($input);
+    }
+
+    public function logPaymentForRiskManual(
+        Payment\Entity $payment, array $input)
+    {
+        $risk = $this->repo->risk->fetchByPaymentId($payment->getId());
+
+        // If a payment is tagged as confirmed fraud, add its maxmind score
+        $input[Entity::RISK_SCORE] = $this->getRiskScore($payment);
+
+        if ($risk === null)
+        {
+            return $this->create($input);
+        }
+
+        return $this->edit($risk, $input);
     }
 
     public function logPaymentOnMaxmindFailure(

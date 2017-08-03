@@ -54,6 +54,8 @@ class FraudDetectionTest extends TestCase
 
         $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
 
+        $this->assertNotNull($riskEntity['risk_score']);
+
         $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
 
         $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);

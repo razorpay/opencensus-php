@@ -998,7 +998,6 @@ trait Authorize
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
-                'source'     => Risk\Source::INTERNAL, // For risk logging purposes
                 'card_id'    => $card->getId(),
             ];
 
