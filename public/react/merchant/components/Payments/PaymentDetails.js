@@ -35,7 +35,7 @@ const shownByDefault = [
   'notes',
   'refund_status',
   'refunds',
-  'service_tax',
+  'tax',
   'status',
   'wallet',
 ];
@@ -141,20 +141,18 @@ export default props => {
 
                   <EntityDetailRow
                     label="Fees"
-                    value={() => (
-                      <Amount value={payment.fee - payment.service_tax} />
-                    )}
+                    value={() => <Amount value={payment.fee - payment.tax} />}
                   />
 
                   <EntityDetailRow
-                    label="GST"
-                    value={() => <Amount value={payment.service_tax} />}
+                    label="Tax"
+                    value={() => <Amount value={payment.tax} />}
                   />
 
                   <EntityDetailRow
                     label="Total Fees"
                     value={() => (
-                      <span data-tip="Total Fees is inclusive of GST charges">
+                      <span data-tip="Total Fees is inclusive of Tax charges">
                         <Amount value={payment.fee} />
                         <i class="icon icon-info-circle info-tooltip" />
                       </span>
