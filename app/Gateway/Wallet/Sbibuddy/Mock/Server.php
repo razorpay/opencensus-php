@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Sbibuddy\Mock;
 
 use RZP\Gateway\Base;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
@@ -27,9 +28,9 @@ class Server extends Base\Mock\Server
 
     protected function parseAuthorizeInput($input)
     {
-        $encryptor = $this->getEncryptor();
+        $encryptor = $this->getGatewayInstance()->getEncryptor();
 
-        $decryptedInput = $encryptor->decrypt($input[RequestFields::ENCRYPTED_DATA]);
+        $decryptedInput = $encryptor->decryptString($input[RequestFields::ENCRYPTED_DATA]);
 
         $data = [];
 
@@ -50,11 +51,11 @@ class Server extends Base\Mock\Server
             ResponseFields::PROCESSOR_ID            => "ALL",
         ];
 
-        $encryptor = $this->getEncryptor();
+        $encryptor = $this->getGatewayInstance()->getEncryptor();
 
         $encodedData = http_build_query($content);
 
-        $encryptedData = $encryptor->encrypt($encodedData);
+        $encryptedData = $encryptor->encryptString($encodedData);
 
         return [
             ResponseFields::MERCHANT_ID     => $merchantId,
@@ -66,7 +67,7 @@ class Server extends Base\Mock\Server
     {
         $secret = $this->getSecret();
 
-        return new Encryptor($secret);
+        return new Encryptor(AES::MODE_ECB, $secret);
     }
 
     protected function getAuthorizeResponse(array $input)
