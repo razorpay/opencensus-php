@@ -28,6 +28,7 @@
           <th>International</th>
           <th>Amount Range Active</th>
           <th>Amount Range</th>
+          <th>Emi Duration</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
           <th>Minimum Fee</th>
@@ -50,6 +51,7 @@
                 None
               </span>
             </td>
+            <td>{{rule.emi_duration}}<td>
             <td>{{new_plan.percent_rate/100}} %</td>
             <td>{{new_plan.fixed_rate/100 | rupee:"INR "}}</td>
             <td>{{new_plan.min_fee?(new_plan.min_fee/100 | rupee:"INR ") : "None"}}</td>
@@ -62,6 +64,7 @@
                   <option value="recurring">Recurring</option>
                   <option value="payout">Payout</option>
                   <option value="transfer">Transfer</option>
+                  <option value="emi">Emi</option>
               </select>
             </td>
             <td>
@@ -96,6 +99,7 @@
               <select class="form-control" name="payment_issuer" ng-model="new_plan.payment_issuer">
                   <option value="">All</option>
                   <option value="HDFC">HDFC</option>
+                  <option value="ICIC">ICICI</option>
               </select>
             </td>
             <td>
@@ -116,6 +120,17 @@
                 <option value='100000-200000'>100000-200000</option>
                 <option value='0-200000'>0-200000</option>
                 <option value='200000-1000000000'>200000-1000000000</option>
+              </select>
+            </td>
+            <td>
+              <select class="form-control" name="emi_duration" ng-model="new_rule.emi_duration">
+                <option value="">All</option>
+                <option value='3'>3</option>
+                <option value='6'>6</option>
+                <option value='9'>9</option>
+                <option value='12'>12</option>
+                <option value='18'>18</option>
+                <option value='24'>24</option>
               </select>
             </td>
             <td>

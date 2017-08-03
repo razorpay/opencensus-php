@@ -27,12 +27,28 @@ export function makeArray(obj) {
   return Array.isArray(obj) ? obj : [obj];
 }
 
+export function arrayDiff(arr1, arr2) {
+  if (arr1.length < arr2.length) {
+    let tempArr = arr1;
+    arr1 = arr2;
+    arr2 = tempArr;
+  }
+
+  return arr1.reduce((prev, curr) => {
+    if (arr2.indexOf(curr) === -1) {
+      prev.push(curr);
+    }
+    return prev;
+  }, []);
+}
+
 export function isBlank(value) {
   if (value !== null && typeof value === 'object') {
     return !Object.keys(value).length;
   }
   if (typeof value === 'string') {
     value = value.trim();
+    return !value;
   }
   return isNone(value);
 }

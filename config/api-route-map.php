@@ -121,6 +121,10 @@ return [
             'url'       => 'payments/{id}/refunds',
             'routeName' => 'payment_get_refunds'
         ],
+        'payment_fetch_transfers'             => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'payment_get_transfers'
+        ],
         'payment_capture'                   => [
             'url'       => 'payments/{id}/capture',
             'routeName' => 'post_capture'
@@ -214,6 +218,10 @@ return [
         'merchant_activation_upload_file'   => [
             'url'       => 'merchant/activation/upload',
             'routeName' => 'post_activation_save_file'
+        ],
+        'merchant_activation_details'       => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'get_activation_details'
         ],
 
         // Batches [Used for Refunds, Payment Links]
@@ -319,6 +327,11 @@ return [
         ],
         'transfer_fetch'           => [
             'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_read'
+        ],
+
+        'transfer_reversal'           => [
+            'url'       => 'transfers/{id}/reversals',
             'routeName' => 'marketplace_read'
         ],
 

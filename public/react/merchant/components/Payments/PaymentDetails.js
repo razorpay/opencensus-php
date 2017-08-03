@@ -205,6 +205,7 @@ export default props => {
                         onToggleClick={() => props.onToggleRefundList(payment)}
                       >
                         <DataTable
+                          title="Refunds"
                           columns={[refundId, amount]}
                           items={refunds.items}
                           loading={refunds.loading}

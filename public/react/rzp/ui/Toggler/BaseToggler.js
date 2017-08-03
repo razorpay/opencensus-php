@@ -2,19 +2,11 @@ import { Component } from 'react';
 import AsyncButton from 'react-async-button';
 
 export default class BaseToggler extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      show: false,
-    };
-    this.toggle = ::this.toggle;
-  }
-
   componentWillMount() {
     this.setState({ show: this.props.show });
   }
 
-  toggle() {
+  toggle = () => {
     this.setState({
       show: !this.state.show,
     });
@@ -22,7 +14,7 @@ export default class BaseToggler extends Component {
     if (!this.state.show && this.props.onToggleClick) {
       return this.props.onToggleClick();
     }
-  }
+  };
 
   render() {
     return (
