@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
@@ -47,7 +48,7 @@ const InvoiceListItem = props => {
           email: customer.customer_email,
         })}
       </td>
-      <td>{invoice.short_url}</td>
+      <td><CopyLink url={invoice.short_url} /></td>
       {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
       <td>
         <InvoiceStatusLabel status={invoice.status} />
