@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Sbibuddy;
 
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
@@ -14,8 +15,16 @@ class Gateway extends Base\Gateway
     protected $gateway = 'wallet_sbibuddy';
 
     protected $map = [
-        RequestFields::MERCHANT_ID  => Entity::GATEWAY_MERCHANT_ID,
-        RequestFields::AMOUNT       => Entity::AMOUNT,
+        RequestFields::MERCHANT_ID          => Entity::GATEWAY_MERCHANT_ID,
+        RequestFields::AMOUNT               => Entity::AMOUNT,
+        ResponseFields::STATUS_CODE         => Entity::STATUS_CODE,
+        ResponseFields::ERROR_DESCRIPTION   => Entity::RESPONSE_DESCRIPTION,
+        ResponseFields::TRANSACTION_ID      => Entity::GATEWAY_PAYMENT_ID,
+        Entity::CONTACT                     => Entity::CONTACT,
+        Entity::RECEIVED                    => Entity::RECEIVED,
+        Entity::DATE                        => Entity::DATE,
+        Entity::EMAIL                       => Entity::EMAIL
+
     ];
 
     public function authorize(array $input)
@@ -26,14 +35,17 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+
         $contentToSave = [
-            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+            RequestFields::MERCHANT_ID  => $this->getMerchantId(),
             Entity::PAYMENT_ID          => $input['payment'][Payment::ID],
-            Entity::AMOUNT              => $input['payment'][Payment::AMOUNT],
+            RequestFields::AMOUNT       => $input['payment'][Payment::AMOUNT],
             Entity::EMAIL               => $input['payment'][Payment::EMAIL],
             Entity::CONTACT             => $this->getFormattedContact($input['payment'][Payment::CONTACT]),
             Entity::RECEIVED            => false
         ];
+        // sd($contentToSave);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
 
@@ -48,17 +60,14 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $data[ResponseFields::ORDER_ID]);
 
+        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+
         // If status code is not success code
         if ($data[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS_CODE)
         {
-
-            $contentToSave = [
-                Entity::STATUS_CODE             => $data[ResponseFields::STATUS_CODE],
-                Entity::RESPONSE_CODE           => $data[ResponseFields::STATUS_CODE],
-                Entity::RESPONSE_DESCRIPTION    => $data[ResponseFields::ERROR_DESCRIPTION],
-                Entity::ERROR_MESSAGE           => $data[ResponseFields::ERROR_DESCRIPTION],
-                Entity::GATEWAY_PAYMENT_ID      => $data[ResponseFields::TRANSACTION_ID],
-                Entity::RECEIVED                => true
+            $contentToSave = $data + [
+                Entity::RECEIVED                => true,
+                Entity::DATE                    => $date
             ];
 
             $wallet = $this->repo->findByPaymentIdAndAction(
@@ -78,15 +87,14 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $contentToSave = [
-            Entity::STATUS_CODE          => $data[ResponseFields::STATUS_CODE],
-            Entity::RESPONSE_CODE        => $data[ResponseFields::STATUS_CODE],
-            Entity::GATEWAY_PAYMENT_ID   => $data[ResponseFields::TRANSACTION_ID],
-            Entity::RECEIVED             => true
+        $contentToSave = $data + [
+            Entity::RECEIVED                => true,
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
     }
