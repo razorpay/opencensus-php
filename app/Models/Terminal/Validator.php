@@ -265,6 +265,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:netbanking_federal',
     ];
 
+    protected static $netbankingRblTerminalRules = [
+        Entity::GATEWAY                      => 'required|in:netbanking_rbl',
+        Entity::GATEWAY_MERCHANT_ID          => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE          => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2         => 'required|string',
+    ];
+
+    protected static $netbankingIndusindTerminalRules = [
+        Entity::GATEWAY                       => 'required|in:netbanking_indusind',
+        Entity::GATEWAY_MERCHANT_ID           => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET         => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)

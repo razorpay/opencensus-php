@@ -41,6 +41,8 @@ class NetbankingRblGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
     }
 
     public function testTpvPayment()

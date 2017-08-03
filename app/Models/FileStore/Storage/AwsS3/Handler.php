@@ -84,6 +84,7 @@ class Handler extends BaseHandler
      * @param string $filePath     File path where files should be saved
      *
      * @return void
+     * @throws \Exception
      */
     public function saveAs($bucketConfig, $key, $filePath)
     {

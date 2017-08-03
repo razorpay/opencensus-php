@@ -939,4 +939,47 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
         $this->assertEquals('ShrdNbBdkTmnl2', $payment1['terminal_id']);
     }
+
+    public  function testBilldeskCorporateChoiceForForexMerchant()
+    {
+        $this->fixtures->merchant->editCategory2(Category::FOREX);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkNoCat',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkEComm',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkCorpo',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'corporate']);
+
+        // Should not be picked. Not even allowed with the new config.
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkForex',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'forex']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Amount filter should have rejected the corporate terminal
+        $payment['bank'] = 'SBIN';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('ShrdNbBdkEComm', $payment1['terminal_id']);
+
+        // Amount filter will let the payment though for amount greater than 2K
+        $payment['amount'] = '300000';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('ShrdNbBdkCorpo', $payment1['terminal_id']);
+    }
 }

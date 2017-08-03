@@ -27,20 +27,6 @@ class Service extends Base\Service
         return ['setlReconciliationFile' => $filename];
     }
 
-    public function returnSettlements($input)
-    {
-        $data = (new ReturnTransactions)->process($input);
-
-        return $data;
-    }
-
-    public function generateSettlementReturn($input)
-    {
-        $filename = (new ReturnTransactionsGenerator)->generate($input);
-
-        return ['setlReturnFile' => $filename];
-    }
-
     public function generateSettlementFile($setlAttempts)
     {
         $fileDetails = (new NodalAccount)->generateSettlementFile($setlAttempts, false);

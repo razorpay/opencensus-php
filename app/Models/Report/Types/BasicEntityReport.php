@@ -511,7 +511,7 @@ class BasicEntityReport extends BaseReport
 
         $s3File = $creator->localFilePath($filePath)
                           ->extension(FileStore\Format::CSV)
-                          ->mime('text/csv')
+                          ->mime('application/octet-stream')
                           ->name('reports/' . $fileName)
                           ->store(FileStore\Store::S3)
                           ->type(FileStore\Type::REPORT)

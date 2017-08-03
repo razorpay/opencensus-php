@@ -66,12 +66,27 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $ref = $this->getColumnPaymentId($row);
 
-        $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
-                                                        Cybersource\Action::AUTHORIZE, $ref);
-
-        if ($gatewayPayment !== null)
+        //
+        // The newer files have the actual
+        // payment ID itself, like for FSS.
+        //
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
         {
-            $paymentId = $gatewayPayment->getPaymentId();
+            $paymentId = $ref;
+        }
+        else
+        {
+            //
+            // The older files send some ref instead of our payment_id in
+            // merchant_track_id column.
+            //
+            $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                Cybersource\Action::AUTHORIZE, $ref);
+
+            if ($gatewayPayment !== null)
+            {
+                $paymentId = $gatewayPayment->getPaymentId();
+            }
         }
 
         return $paymentId;

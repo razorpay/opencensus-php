@@ -533,11 +533,6 @@ class Server extends Base\Mock\Server
 
         switch ($cardNumber)
         {
-            case '4012001036275556':
-                sleep(Hdfc\Gateway::TIMEOUT);
-                exit(1);
-                break;
-
             case '4012001036853337':
                 $code = Hdfc\ErrorCode::GV00007;
                 break;
