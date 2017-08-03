@@ -18,13 +18,12 @@ class Gateway extends Base\Gateway
         RequestFields::MERCHANT_ID          => Entity::GATEWAY_MERCHANT_ID,
         RequestFields::AMOUNT               => Entity::AMOUNT,
         ResponseFields::STATUS_CODE         => Entity::STATUS_CODE,
-        ResponseFields::ERROR_DESCRIPTION   => Entity::RESPONSE_DESCRIPTION,
+        ResponseFields::ERROR_DESCRIPTION   => Entity::ERROR_MESSAGE,
         ResponseFields::TRANSACTION_ID      => Entity::GATEWAY_PAYMENT_ID,
         Entity::CONTACT                     => Entity::CONTACT,
         Entity::RECEIVED                    => Entity::RECEIVED,
         Entity::DATE                        => Entity::DATE,
         Entity::EMAIL                       => Entity::EMAIL
-
     ];
 
     public function authorize(array $input)
@@ -45,7 +44,6 @@ class Gateway extends Base\Gateway
             Entity::CONTACT             => $this->getFormattedContact($input['payment'][Payment::CONTACT]),
             Entity::RECEIVED            => false
         ];
-        // sd($contentToSave);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
 
@@ -60,39 +58,76 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $data[ResponseFields::ORDER_ID]);
 
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+        $this->saveWalletEntity($data);
 
-        // If status code is not success code
+        // If status code is not success code, throw exception
         if ($data[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS_CODE)
         {
-            $contentToSave = $data + [
-                Entity::RECEIVED                => true,
-                Entity::DATE                    => $date
-            ];
-
-            $wallet = $this->repo->findByPaymentIdAndAction(
-                $input['payment']['id'], Action::AUTHORIZE);
-
-            $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-
             $this->handleCallbackFailure($data);
         }
-
-        $this->callbackAuthSuccessFlow($input, $data);
 
         return $this->getCallbackResponseData($input);
     }
 
-    protected function callbackAuthSuccessFlow($input, $data)
+    //----------------Auth helper methods----------------------
+
+    protected function getAuthRequest($input)
     {
-        $content = $input['gateway'];
+        $payment = $input['payment'];
+
+        $request = $this->getPayloadForAuth($payment, $input['callbackUrl']);
+
+        return $request;
+    }
+
+    protected function getPayloadForAuth($payment, $callbackUrl)
+    {
+        $data = [
+            RequestFields::EXTERNAL_TRANSACTION_ID  => $payment[Payment::ID],
+            RequestFields::ORDER_ID                 => $payment[Payment::ID],
+            RequestFields::AMOUNT                   => $payment[Payment::AMOUNT],
+            RequestFields::CURRENCY                 => $payment[Payment::CURRENCY],
+            RequestFields::CALLBACK_URL             => $callbackUrl,
+            RequestFields::BACK_URL                 => $callbackUrl,
+            RequestFields::DESCRIPTION              => "WAPO",
+            RequestFields::PROCESSOR_ID             => 'ALL',
+        ];
+
+        $encodedData = http_build_query($data);
+
+        $cryptor = $this->getEncryptor();
+
+        $encrypted = $cryptor->encrypt($encodedData);
+
+        $request = [
+            'content' => [
+                RequestFields::MERCHANT_ID    => $this->getMerchantId(),
+                RequestFields::ENCRYPTED_DATA => $encrypted
+            ]
+        ];
+
+        return $request;
+    }
+
+    //----------------Auth helper methods ends------------------
+
+    //----------------Callback helper methods-------------------
+
+    /**
+     * If the callback gives a success status, update the wallet entity
+     */
+    protected function saveWalletEntity($data)
+    {
+        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
 
         $contentToSave = $data + [
             Entity::RECEIVED                => true,
+            Entity::DATE                    => $date
         ];
 
+        // Order ID in the wallet API is mapped to our payment ID
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
+            $data[ResponseFields::ORDER_ID],
             Action::AUTHORIZE
         );
 
@@ -107,6 +142,9 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::ERROR_DESCRIPTION]
         );
     }
+    //----------------Callback helper methods end--------------
+
+    //----------------General helper methods-------------------
 
     protected function parseResponse($input)
     {
@@ -130,46 +168,6 @@ class Gateway extends Base\Gateway
         return new Encryptor($secret);
     }
 
-    protected function getAuthRequest($input)
-    {
-        $payment = $input['payment'];
-
-        $request = $this->getPayloadForAuth($payment, $input['callbackUrl']);
-
-        return $request;
-    }
-
-    protected function getPayloadForAuth($payment, $callbackUrl)
-    {
-        $data = [
-            RequestFields::EXTERNAL_TRANSACTION_ID  => $payment[Payment::ID],
-            RequestFields::ORDER_ID                 => $payment[Payment::ID],
-            RequestFields::AMOUNT                   => $payment[Payment::AMOUNT],
-            RequestFields::CURRENCY                 => $payment[Payment::CURRENCY],
-            RequestFields::CALLBACK_URL             => $callbackUrl,
-            RequestFields::BACK_URL                 => $callbackUrl,
-            RequestFields::DESCRIPTION              => "WAPO",
-            // RequestFields::CATEGORY              => 'Cat 1',
-            // RequestFields::SUBCATEGORY           => 'Cat 2',
-            RequestFields::PROCESSOR_ID             => 'ALL',
-        ];
-
-        $encodedData = http_build_query($data);
-
-        $cryptor = $this->getEncryptor();
-
-        $encrypted = $cryptor->encrypt($encodedData);
-
-        $request = [
-            'content' => [
-                RequestFields::MERCHANT_ID    => $this->getMerchantId(),
-                RequestFields::ENCRYPTED_DATA => $encrypted
-            ]
-        ];
-
-        return $request;
-    }
-
     protected function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
@@ -179,4 +177,7 @@ class Gateway extends Base\Gateway
 
         return $this->terminal['gateway_merchant_id'];
     }
+
+    //----------------General helper methods ends---------------
+
 }
