@@ -70,7 +70,11 @@ export default class BaseModel {
     Make sure you return `super.serializeProperty(prop)` on the overriding method
    */
   serializeProperty(prop) {
-    return this[prop];
+    let value = this[prop];
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    return value;
   }
 
   /*
