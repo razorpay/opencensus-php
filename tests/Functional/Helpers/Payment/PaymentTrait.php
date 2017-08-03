@@ -143,7 +143,7 @@ trait PaymentTrait
         if ($payment !== null)
             $testData['request']['content'] = $payment;
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $testData['request']['method'] = 'POST';
         $testData['request']['url'] = '/payments';
