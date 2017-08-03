@@ -33,9 +33,7 @@ class Server extends Base\Mock\Server
 
         $data = [];
 
-        $input = utf8_decode($decryptedInput);
-
-        parse_str($input, $data);
+        parse_str($decryptedInput, $data);
 
         return $data;
     }
@@ -54,7 +52,7 @@ class Server extends Base\Mock\Server
 
         $encryptor = $this->getEncryptor();
 
-        $encodedData = utf8_encode(http_build_query($content));
+        $encodedData = http_build_query($content);
 
         $encryptedData = $encryptor->encrypt($encodedData);
 
