@@ -130,6 +130,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerDrip();
 
+        $this->registerSns();
+
         $this->registerWorkflow();
 
         $this->registerHttplugMockClient();
@@ -161,6 +163,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'exchange',
             'pigeon',
             'workflow',
+            'sns',
         ];
     }
 
@@ -317,6 +320,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Drip($app);
+        });
+    }
+
+    protected function registerSns()
+    {
+        $this->app->singleton('sns', function ($app)
+        {
+            $snsMock = $app['config']->get('applications.sns.mock');
+
+            if ($snsMock === true)
+            {
+                return new Aws\Mock\Sns($app);
+            }
+
+            return new Aws\Sns($app);
         });
     }
 

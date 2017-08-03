@@ -611,4 +611,6 @@ class ErrorCode
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                         = 'BAD_REQUEST_COUPON_NOT_APPLICABLE';
     const BAD_REQUEST_COUPON_EXPIRED                                                = 'BAD_REQUEST_COUPON_EXPIRED';
     const BAD_REQUEST_INVALID_COUPON_CODE                                           = 'BAD_REQUEST_INVALID_COUPON_CODE';
+
+    const BAD_REQUEST_SNS_PUBLISH_FAILED                                            = 'BAD_REQUEST_SNS_PUBLISH_FAILED';
 }

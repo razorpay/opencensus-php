@@ -2,32 +2,59 @@
 
 namespace RZP\Models\Customer;
 
+use App;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Error\ErrorCode;
 
-class Raven
+class Raven extends Base\Core
 {
     protected $raven = null;
 
+    protected $sns = null;
+
     public function __construct()
     {
-         $app = \App::getFacadeRoot();
+        parent::__construct();
 
-         $this->raven = $app['raven'];
+        $this->raven = $this->app['raven'];
+
+        $this->sns = $this->app['sns'];
     }
 
     public function sendOtp($input, $merchant)
     {
+        $success = true;
+
         $request = $this->getRavenSendOtpRequestInput($input, $merchant);
 
-        $response = $this->raven->sendOtp($request);
-
-        if (isset($response['sms_id']))
+        // Enabling it for non-LIVE mode and for test merchant only
+        if (($merchant->getId() === '2aTeFCKTYWwfrF') or ($this->env !== 'production'))
         {
-            return ['success' => true];
+            try
+            {
+                $this->sns->publish(json_encode($request));
+            }
+            catch (Exception $e)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SNS_PUBLISH_FAILED);
+
+                $success = false;
+            }
+        }
+        else
+        {
+            $response = $this->raven->sendOtp($request);
+
+            if (isset($response['sms_id']) === false)
+            {
+                $success = false;
+            }
         }
 
-        return ['success' => false];
+        return ['success' => $success];
     }
 
     public function verifyOtp($input, $merchant)
