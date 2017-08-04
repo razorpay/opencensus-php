@@ -16,7 +16,6 @@ export default class Application extends GenericEntity {
   }
 
   fetchConnected(params = {}) {
-    const Klass = this.constructor;
     let id = params.id;
 
     let data = {};
@@ -31,8 +30,6 @@ export default class Application extends GenericEntity {
   }
 
   create(params = {}) {
-    const Klass = this.constructor;
-    // let url = this.resourceUrl;
     let formData = new FormData();
     formData.append('route_name', 'oauth_application_create');
     for (let key in params) {
