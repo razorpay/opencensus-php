@@ -169,6 +169,7 @@ return array(
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
         GrahamCampbell\Throttle\ThrottleServiceProvider::class,
+        anlutro\LaravelSettings\ServiceProvider::class,
 
         /**
          * Application Service Providers...
@@ -254,6 +255,7 @@ return array(
         'Mail'          => RZP\Mail\Facade::class,
         'Workflow'      => RZP\Services\Workflow\Facade::class,
         'Throttle'      => GrahamCampbell\Throttle\Facades\Throttle::class,
+        'Setting'       => anlutro\LaravelSettings\Facade::class,
     ),
 
     'context' => env('CONTEXT'),
