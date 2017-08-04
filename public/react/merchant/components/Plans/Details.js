@@ -76,6 +76,7 @@ export default ({
                 {subscriptions.items
                   ? <ListToggler
                       label="Subscriptions"
+                      limit={tableLimit}
                       totalItems={subscriptions.items.length}
                       onToggleClick={() => onToggleSusbsList(plan.id)}
                     >

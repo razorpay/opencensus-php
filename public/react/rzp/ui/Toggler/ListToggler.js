@@ -9,6 +9,23 @@ import BaseToggler from 'rzp/ui/Toggler/BaseToggler';
 
 export default class ListToggler extends BaseToggler {
   render() {
+    let subText = null;
+    let statusMsg = null;
+
+    if (this.props.limit && this.props.totalItems) {
+      subText = <span>items <b>&gt;</b></span>;
+    } else if (this.props.totalItems) {
+      subText = <span>all <b>{this.props.totalItems} &gt;</b></span>;
+    }
+
+    if (this.state.show && this.props.limit && this.props.totalItems) {
+      statusMsg = (
+        <span class="text-muted clearix" style={{ float: 'right' }}>
+          Showing {this.props.limit} out of {this.props.totalItems}
+        </span>
+      );
+    }
+
     return (
       <div class="list-table">
         <span class="list-label">{this.props.label} • </span>
@@ -24,13 +41,12 @@ export default class ListToggler extends BaseToggler {
               {!isPending &&
                 <span>
                   {this.state.show ? 'Hide' : 'View'} {' '}
-                  {this.props.totalItems
-                    ? <span>all <b>{this.props.totalItems} &gt;</b></span>
-                    : null}
+                  {subText}
                 </span>}
             </span>
           )}
         </AsyncButton>
+        {statusMsg}
         {this.state.show
           ? <div class="panel-body" style={{ padding: '15px 0' }}>
               <div class="list-group detail-row-container">
