@@ -27,7 +27,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                     = 'Gateway experienced a communication error.';
-    const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                     = 'Cardholder did not return from RuPay.';
     const GATEWAY_ERROR_USER_INACTIVE                                           = 'User is inactive.';
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';

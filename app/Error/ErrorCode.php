@@ -55,10 +55,10 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
     const GATEWAY_ERROR_SYSTEM_BUSY                                                 = 'GATEWAY_ERROR_SYSTEM_BUSY';
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                         = 'GATEWAY_ERROR_COMMUNICATION_ERROR';
-    const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                         = 'GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY';
     const GATEWAY_ERROR_INVALID_CONFIGURATION                                       = 'GATEWAY_ERROR_INVALID_CONFIGURATION';
     const GATEWAY_ERROR_USER_INACTIVE                                               = 'GATEWAY_ERROR_USER_INACTIVE';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                           = 'GATEWAY_ERROR_CARD_NOT_ENROLLED';
+    const GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED                              = 'GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
