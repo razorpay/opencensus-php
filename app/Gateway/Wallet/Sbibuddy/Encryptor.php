@@ -2,9 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Sbibuddy;
 
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Base\AESCrypto;
 
-class Encryptor extends Base\AESCrypto
+class Encryptor extends AESCrypto
 {
 
     public function encryptString(string $data)
