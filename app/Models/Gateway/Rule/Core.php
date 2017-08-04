@@ -69,6 +69,12 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
+        // Checks if merchant specific rules are present. If present we only use them
+        // and discard other rules
+        $applicableRules = $this->getMerchantSpecificRules(
+                                            $applicableRules,
+                                            $input['merchant']);
+
         if ($input['payment']->isMethodCardOrEmi() === true)
         {
             $iins = (array) $input['payment']->card->getIin();
