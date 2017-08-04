@@ -2,13 +2,16 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Sbibuddy;
 
+use RZP\Http\Route;
+
+use RZP\Gateway\Wallet\Sbibuddy\StatusCode;
 use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseFields;
-use RZP\Gateway\Wallet\Sbibuddy\StatusCode;
-use RZP\Http\Route;
+
 use RZP\Models\Payment\Refund\Status as RefundStatus;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SbibuddyGatewayTest extends TestCase
 {
@@ -45,15 +48,14 @@ class SbibuddyGatewayTest extends TestCase
 
     protected function runPaymentCallbackFlowWalletSbibuddy($response, & $callback = null)
     {
-        $mock = $this->isGatewayMocked();
-
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $mock = $this->isGatewayMocked();
 
         if ($mock)
         {
             $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            // It's a redirect url. Jiomoney use callback flow for payment authorization.
             $request = ['url' => $requestUrl];
 
             return $this->submitPaymentCallbackRequest($request);
