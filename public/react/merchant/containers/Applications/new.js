@@ -5,10 +5,8 @@ import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
 import { required, isUrl } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
-import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import Spinner from 'rzp/ui/Spinner';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
 
@@ -45,7 +43,7 @@ class NewApplicationForm extends Component {
     let id = this.props.match.params.id
     if (!id) return;
     // fetch from state (or api)
-    this.setState({edit: true})
+    // this.setState({edit: true})
     var appDetails = this.props.applications.filter(app => app.id === id)
     if (appDetails.length) {
       const data = appDetails[0]
@@ -63,38 +61,42 @@ class NewApplicationForm extends Component {
     })
   }
 
-  initForm(data) {
-    this.props.initialize(data)
+  componentWillReceiveProps(nextProps) {
+    this.setState({edit: !!nextProps.match.params.id});
   }
-  componentWillUnmount () {
-    // remove details from state
+
+  initForm(data) {
+    this.setState({
+      details: data
+    });
+    this.props.initialize(data)
   }
 
   openPreviewPage = () => {
     // open in a popup
     const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this.state.details.clients.prod.id}&redirect_uri=http://localhost&scope=read_only`
     window.open(popupUrl, "PopupPreview");
-    // authorize?response_type=code&client_id=86KC3q506ytUPA&redirect_uri=http://localhost&scope=read_only
   }
 
   // save handler
-  save = props => {
-    if (!this.state.edit){
-      return this.props.createApplication(props).then(application => {
-        this.setState({edit: true});
-        this.initForm(application)
-        this.props.history.replace(`/applications/${application.id}`)
-        this.props.showNotification({
-          type: 'success',
-          message: 'Application created successfully',
-        });
-      }).catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Couldn\'t create application',
-        });
+  create = props => {
+    return this.props.createApplication(props).then(application => {
+      // this.setState({edit: true});
+      this.initForm(application)
+      this.props.history.replace(`/applications/${application.id}`)
+      this.props.showNotification({
+        type: 'success',
+        message: 'Application created successfully',
       });
-    }
+    }).catch(err => {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Couldn\'t create application',
+      });
+    });
+  }
+
+  update = props => {
     const payload = {
       name: props.name,
       website: props.website,
@@ -141,7 +143,7 @@ class NewApplicationForm extends Component {
           </div>
           <form 
             class="form-horizontal" 
-            onSubmit={handleSubmit(this.save)} 
+            onSubmit={handleSubmit(this.state.edit ? this.update : this.create)} 
           >
             <Fieldset>
 
@@ -319,7 +321,7 @@ class NewApplicationForm extends Component {
                       class="btn btn-primary pull-right"
                       text="Save"
                       pendingText="Saving..."
-                      onClick={handleSubmit(this.save)}
+                      onClick={handleSubmit(this.state.edit ? this.update : this.create)}
                     />
 
                     <AsyncButton

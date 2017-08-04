@@ -13,10 +13,8 @@ export default function NewAppLink (props) {
                   <div class="app-created-on">Created on: 00, 0000</div>
                 </div>
                 <div class="pull-right">
-                  <button
-                    class="btn btn-primary"
-                  >
-                    <span>Create Application</span>
+                  <button class="btn btn-primary" >
+                    Create Application
                   </button>
                 </div>
               </div>

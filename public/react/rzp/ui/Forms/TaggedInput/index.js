@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { PowerSelectMultiple } from 'react-power-select';
-import './TaggedInput.styl';
 
 export default class TaggedInput extends Component {
   handleOptionsChange = (value, select) => {
@@ -37,4 +36,8 @@ export default class TaggedInput extends Component {
       />
     );
   }
+}
+
+TaggedInput.propTypes = {
+  validator: PropTypes.func.isRequired
 }

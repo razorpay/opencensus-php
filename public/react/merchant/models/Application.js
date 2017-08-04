@@ -4,26 +4,15 @@ import ajax from 'merchant/utils/ajax';
 const editFields = ['id', 'delay_roll'];
 const newFields = ['name', 'website'];
 
-export default class Key extends GenericEntity {
+export default class Application extends GenericEntity {
   listRouteName = 'oauth_application_fetch_multiple';
   connectedListRouteName = 'oauth_token_fetch_multiple';
   deleteRouteName = 'oauth_application_delete';
   revokeRouteName = 'oauth_token_revoke';
   detailsRouteName = 'oauth_application_fetch';
 
-  fetchAll(params = {}) {
-    const Klass = this.constructor;
-    let id = params.id;
-
-    let data = {}
-
-    data.route_name = this.listRouteName;
-    return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
-      );
-      return response; 
-    });
+  getResourceMethod() {
+    return 'post';
   }
 
   fetchConnected(params = {}) {
@@ -35,7 +24,7 @@ export default class Key extends GenericEntity {
     data.route_name = this.connectedListRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
+        new Application(item)
       );
       return response; 
     });
@@ -58,37 +47,31 @@ export default class Key extends GenericEntity {
       processData: false,
       contentType: false,
     }).then(response => {
-      return new Klass().deserialize(response.data);
+      return new Application(response.data);
     });
   }
 
   update(params={}) {
     let url = this.resourceUrl;
-    let method = 'patch'
+    let method = 'post'
     let data = {
       route_name: 'oauth_application_update',
-      body: params
+      body: params,
+      url_params: JSON.stringify({
+        '{id}': this.id,
+      }),
     };
     return this.makeGenericAjaxCall({
       method,
       data,
     }).then(response => {
-      return new Klass().deserialize(response.data);
+      return new Application(response.data);
     });
   }
 
   delete() {
-    var id = this.id;
-    return this.makeGenericAjaxCall({
-      method: 'delete',
-      data: {
-        route_name: this.deleteRouteName,
-        url_params: JSON.stringify({
-          '{id}': this.id,
-        }),
-      },
-    }).then((data) => {
-      return {id, ...data}
+    return super.delete().then((data) => {
+      return {id: this.id, ...data}
     });
   }
 

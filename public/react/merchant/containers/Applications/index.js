@@ -1,6 +1,5 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import Spinner from 'rzp/ui/Spinner';
 import AppDetails from 'merchant/components/Applications/AppDetails'
 import NewAppLink from 'merchant/components/Applications/NewAppLink'
 import NoConnectedApps from 'merchant/components/Applications/NoConnectedApps'

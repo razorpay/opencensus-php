@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import FileUploadButton from 'rzp/ui/FileUpload/Button';
-import './LogoUploadButton.styl';
 
 export default class LogoUploadButton extends Component {
   componentDidMount() {
