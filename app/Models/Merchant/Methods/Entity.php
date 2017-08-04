@@ -3,8 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
-use RZP\Models\Feature;
-use RZP\Exception;
+use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
 {
@@ -505,25 +504,14 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::BANKS] = json_encode($banks);
     }
 
-    public function toArrayWithBankNames()
+    public function toArrayWithBankNames(): array
     {
         $banks = $this->getBanks();
 
-        $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
+        $names = NetbankingProcessor::getNames($banks);
 
         // Unsetting AIRP for now
         unset($names['AIRP']);
-
-        //
-        // Disabling HDFC netbanking for FxKart's two accounts
-        // Ref: https://razorpay.slack.com/archives/C0432SCD5/p1497018993519190
-        //
-        $fxKartMerchantIds = ['7dTJ1BmaZs62wG', '7b0Hl7t1Q5EnHo'];
-
-        if (in_array($this->getMerchantId(), $fxKartMerchantIds, true) === true)
-        {
-            unset($names['HDFC']);
-        }
 
         return $names;
     }
