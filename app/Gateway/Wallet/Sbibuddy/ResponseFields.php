@@ -13,6 +13,11 @@ class ResponseFields
     const ERROR_DESCRIPTION         = 'errorDescription';
     const PROCESSOR_ID              = 'processorId';
 
+    // For refunds
+    const TRACKING_ID               = 'trackingId';
+    const REFUND_ID                 = 'refundId';
+    const REFUNDED_AMOUNT           = 'refundedAmount';
+
     const MERCHANT_ID               = 'merchantId';
     const ENCRYPTED_DATA            = 'encryptedData';
 }
