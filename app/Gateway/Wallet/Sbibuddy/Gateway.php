@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Sbibuddy;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Entity;
@@ -82,7 +83,16 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->parseGatewayResponse($response);
+        $response = json_decode($response->body, true);
+
+        $content = $this->parseResponse($response);
+
+        $this->createWalletEntityFromRefundResponse($content, $input);
+
+        if ($content[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS_CODE)
+        {
+            $this->handleRefundFailure($content);
+        }
     }
 
     //----------------Auth helper methods----------------------
@@ -191,6 +201,45 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         return $request;
+    }
+
+    protected function createWalletEntityFromRefundResponse($data, $input)
+    {
+        $refundAttributes = $this->getWalletEntityAttributesFromRefundResponse($data, $input);
+
+        $this->createGatewayRefundEntity($refundAttributes);
+    }
+
+    protected function getWalletEntityAttributesFromRefundResponse($data, $input)
+    {
+        $contentToSave = [
+            Entity::PAYMENT_ID            => $input['payment']['id'],
+            Entity::ACTION                => $this->action,
+            Entity::AMOUNT                => $input['refund']['amount'],
+            Entity::WALLET                => $input['payment']['wallet'],
+            Entity::EMAIL                 => $input['payment']['email'],
+            Entity::RECEIVED              => true,
+            Entity::CONTACT               => $this->getFormattedContact($input['payment']['contact']),
+            Entity::GATEWAY_MERCHANT_ID   => $this->getMerchantId(),
+            Entity::STATUS_CODE           => $data[ResponseFields::STATUS_CODE],
+            Entity::REFUND_ID             => $input['refund']['id'],
+        ];
+
+        return $contentToSave;
+    }
+
+    /**
+     * Handles the failures by checking the response of refund call
+     *
+     * @param $data Parsed data from the response of transaction
+     */
+    protected function handleRefundFailure($data)
+    {
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_REFUND_FAILED,
+            $data[ResponseFields::STATUS_CODE],
+            $data[ResponseFields::ERROR_DESCRIPTION]
+        );
     }
 
     //----------------General helper methods-------------------
