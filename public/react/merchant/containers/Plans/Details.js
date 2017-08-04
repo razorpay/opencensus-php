@@ -2,18 +2,23 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PlanDetails from 'merchant/components/Plans/Details';
 import { fetchPlan as fetchItem } from 'merchant/modules/plans';
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
+import {
+  fetchSubscriptions,
+  resetSubscriptions,
+} from 'merchant/modules/subscriptions';
 
 @connect(
   state => ({
     ...state.plan,
     subscriptions: state.subscriptions,
   }),
-  { fetchItem, fetchSubscriptions }
+  { fetchItem, fetchSubscriptions, resetSubscriptions }
 )
 export default class PlanDetailsContainer extends Component {
   componentWillMount() {
-    this.props.fetchItem(this.props.id);
+    this.props
+      .fetchItem(this.props.id)
+      .then(() => this.props.resetSubscriptions());
   }
 
   fetchSubscriptionsByPlanId = planId => {

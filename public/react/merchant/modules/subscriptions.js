@@ -3,6 +3,7 @@ import Subscription from 'merchant/models/Subscription';
 import {
   makeActionCollectionReducer,
   fetchAll,
+  resetEntityInList,
   updateEntityInList,
 } from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
@@ -16,9 +17,17 @@ const SUBSCRIPTION_EDIT = 'SUBSCRIPTION_EDIT';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
+const RESET_SUBSCRIPTIONS = 'RESET_SUBSCRIPTIONS';
 
 export const fetchSubscriptions = params =>
   fetchAll(params, Subscription, 'SUBSCRIPTIONS');
+
+// Clears subscriptions when plan id is fetched (to prevent previous items count to display)
+export const resetSubscriptions = () => {
+  return {
+    type: RESET_SUBSCRIPTIONS,
+  };
+};
 
 export const fetchSubscription = id => {
   let subscription = new Subscription();
@@ -60,6 +69,7 @@ export const subscriptionsReducer = makeActionCollectionReducer(
   'SUBSCRIPTIONS',
   {
     [`${SUBSCRIPTION_CANCEL}::SUCCESS`]: updateEntityInList,
+    [RESET_SUBSCRIPTIONS]: resetEntityInList,
   }
 );
 
