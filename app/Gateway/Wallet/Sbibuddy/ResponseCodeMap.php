@@ -24,12 +24,12 @@ class ResponseCodeMap
     const SESSION_EXPIRED           = '40';
     const OPERATION_NOT_ALLOWED     = '41';
 
-    public $successCodes = [
+    public static $successCodes = [
         self::SUCCESS_CODE,
         self::TRANSACTION_REFUNDED
     ];
 
-    public $errorDescriptions = [
+    public static $errorDescriptions = [
         self::GENERAL_ERROR             => 'General error. Check error description.',
         self::PIN_AUTH_FAIL             => ErrorCode::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
         self::ACCOUNT_LOCKED            => 'Account locked.',
