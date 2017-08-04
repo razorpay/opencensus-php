@@ -1,4 +1,5 @@
 import { Component, PropTypes } from 'react';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 import { trimDeep } from 'rzp/utils/validators';
 
 export default class ListContainer extends Component {
@@ -16,11 +17,19 @@ export default class ListContainer extends Component {
     };
   }
 
+  // Do default search based on query params
   componentWillMount() {
-    this.fetchAll();
+    let params = null;
+
+    if (this.props.location.search) {
+      params = getURLQueryParams(this.props.location.search);
+    }
+
+    this.fetchAll(params);
   }
 
-  fetchAll = (params = this.getDefaultPageParams()) => {
+  fetchAll = (params = {}) => {
+    params = { ...params, ...this.getDefaultPageParams() };
     if (params) {
       this.setState(params);
     }
