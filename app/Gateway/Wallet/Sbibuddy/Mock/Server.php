@@ -15,7 +15,7 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        $data = $this->parseAuthorizeInput($input);
+        $data = $this->parseEncryptedInput($input);
 
         $redirectUrl = $data[RequestFields::CALLBACK_URL];
 
@@ -26,7 +26,20 @@ class Server extends Base\Mock\Server
         return \Redirect::to($redirectUrl . '?' . $params);
     }
 
-    protected function parseAuthorizeInput($input)
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $data = $this->parseEncryptedInput($input);
+
+        $content = $this->prepareRefundResponse($data, $input[RequestFields::MERCHANT_ID]);
+
+        $this->content($content, 'refund');
+
+        return $this->makeResponse($content);
+    }
+
+    protected function parseEncryptedInput($input)
     {
         $encryptor = $this->getGatewayInstance()->getEncryptor();
 
@@ -63,37 +76,28 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getEncryptor()
+    protected function prepareRefundResponse($input, $merchantId)
     {
-        $secret = $this->getSecret();
+        $content = [
+            ResponseFields::EXTERNAL_TRANSACTION_ID => $input[RequestFields::ORDER_ID],
+            ResponseFields::TRANSACTION_ID          => $input[RequestFields::TRANSACTION_ID],
+            ResponseFields::TRACKING_ID             => 123,
+            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
+            ResponseFields::FEE                     => 0.00,
+            ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE,
+            ResponseFields::REFUND_ID               => 234,
+            ResponseFields::REFUNDED_AMOUNT         => 456
+        ];
 
-        return new Encryptor(AES::MODE_ECB, $secret);
-    }
+        $encryptor = $this->getGatewayInstance()->getEncryptor();
 
-    protected function getAuthorizeResponse(array $input)
-    {
-        $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
-                        self::TXN_DATE_FORMAT);
+        $encodedData = http_build_query($content);
 
-        $paymentId = $input[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)];
-
-        $amount = $input[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::AMOUNT)];
+        $encryptedData = $encryptor->encryptString($encodedData);
 
         return [
-            ResponseFields::STATUS_CODE             => StatusCode::SUCCESS,
-            ResponseFields::CLIENT_ID               => $input[RequestFields::CLIENT_ID],
-            ResponseFields::MERCHANT_ID             => $input[RequestFields::MERCHANT_ID],
-            ResponseFields::CUSTOMER_ID             => 'NA',
-            ResponseFields::PAYMENT_ID              => $paymentId,
-            ResponseFields::GATEWAY_PAYMENT_ID      => $this->getJioMoneyTxnId(),
-            ResponseFields::AMOUNT                  => $amount,
-            ResponseFields::RESPONSE_CODE           => 'SUCCESS',
-            ResponseFields::RESPONSE_DESCRIPTION    => 'APPROVED',
-            ResponseFields::DATE                    => $date,
-            ResponseFields::CARD_NUMBER             => 'NA',
-            ResponseFields::CARD_TYPE               => 'JM',
-            ResponseFields::CARD_NETWORK            => 'NA'
+            ResponseFields::MERCHANT_ID     => $merchantId,
+            ResponseFields::ENCRYPTED_DATA  => $encryptedData
         ];
     }
 }
