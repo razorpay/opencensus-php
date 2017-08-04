@@ -2,15 +2,17 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use App;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Terminal\Category;
-use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class MerchantFilter extends Terminal\Filter
@@ -63,6 +65,7 @@ class MerchantFilter extends Terminal\Filter
         'cryptocurrency',
         'gateway',
         'wallet',
+        'shared_terminal',
     ];
 
     /**
@@ -452,6 +455,26 @@ class MerchantFilter extends Terminal\Filter
                 // direct terminals exists, do not use shared terminals
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    /**
+     * For certaiin specified merchants, removes shared terminals from list of
+     * terminals if the payment method is card.
+     */
+    public function sharedTerminalFilter(Terminal\Entity $terminal, array $input): bool
+    {
+        $merchantId = $input['payment']->getMerchantId();
+
+        $blackListedMerchants = Merchant\Preferences::$merchantSharedTerminalsBlackList;
+
+        if (($input['payment']->isCard() === true) and
+            ($terminal->isShared() === true) and
+            (in_array($merchantId,  $blackListedMerchants, true) === true))
+        {
+            return false;
         }
 
         return true;

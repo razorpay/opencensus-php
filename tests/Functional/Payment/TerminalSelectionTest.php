@@ -801,7 +801,6 @@ class TerminalSelectionTest extends TestCase
            $this->doAuthPayment($payment);
         });
 
-
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
@@ -940,7 +939,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShrdNbBdkTmnl2', $payment1['terminal_id']);
     }
 
-    public  function testBilldeskCorporateChoiceForForexMerchant()
+    public function testBilldeskCorporateChoiceForForexMerchant()
     {
         $this->fixtures->merchant->editCategory2(Category::FOREX);
 
@@ -981,5 +980,22 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkCorpo', $payment1['terminal_id']);
+    }
+
+    public function testSharedTerminalFilter()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        Merchant\Preferences::$merchantSharedTerminalsBlackList[] = '10000000000000';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+           $this->doAuthPayment();
+        });
+
+        array_pop(Merchant\Preferences::$merchantSharedTerminalsBlackList);
     }
 }

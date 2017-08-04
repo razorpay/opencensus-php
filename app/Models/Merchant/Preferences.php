@@ -8,9 +8,10 @@ use Symfony\Component\HttpFoundation\HeaderBag as Headers;
 
 class Preferences
 {
-    const MID_SOCH   = '6QGdVzDAIpBniU';
-    const MID_ZOMATO = '6H7N6hlcv29OMG';
-    const MID_IPAY   = '6VS1z0fmis8fn6';
+    const MID_SOCH         = '6QGdVzDAIpBniU';
+    const MID_ZOMATO       = '6H7N6hlcv29OMG';
+    const MID_IPAY         = '6VS1z0fmis8fn6';
+    const MID_DSPBLACKROCK = '7thBRSDflu7NHL';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -28,6 +29,10 @@ class Preferences
             Gateway::AXIS_MIGS,
             Gateway::FIRST_DATA,
         ],
+    ];
+
+    public static $merchantSharedTerminalsBlackList = [
+        self::MID_DSPBLACKROCK,
     ];
 
     /**
