@@ -13,7 +13,11 @@ class RequestFields
     const DESCRIPTION               = 'description';
     const CATEGORY                  = 'category';
     const SUBCATEGORY               = 'subcategory';
+    const TRANSACTION_ID            = 'transactionId';
     const PROCESSOR_ID              = 'processorId';
+
+    const REFUND_FEE                = 'refundFee';
+    const REFUND_REQUEST_ID         = 'refundRequestId';
 
     const MERCHANT_ID               = 'merchantId';
     const ENCRYPTED_DATA            = 'encryptedData';

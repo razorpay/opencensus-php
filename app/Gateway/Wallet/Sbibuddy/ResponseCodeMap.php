@@ -24,6 +24,9 @@ class ResponseCodeMap
     const SESSION_EXPIRED           = '40';
     const OPERATION_NOT_ALLOWED     = '41';
 
+    const REFUND_FEE                = '1';
+    const NO_REFUND_FEE             = '0';
+
     public static $successCodes = [
         self::SUCCESS_CODE,
         self::TRANSACTION_REFUNDED
