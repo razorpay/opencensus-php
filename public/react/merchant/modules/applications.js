@@ -38,7 +38,7 @@ export const fetchApplication = params => {
 };
 
 export const deleteApplication = id => {
-  let application = new Application({id});
+  let application = new Application({ id });
 
   return {
     type: DELETE_APPLICATION,
@@ -47,7 +47,7 @@ export const deleteApplication = id => {
 };
 
 export const revokeAccess = id => {
-  let application = new Application({id});
+  let application = new Application({ id });
 
   return {
     type: REVOKE_ACCESS_TOKEN,
@@ -76,7 +76,7 @@ let initialState = {
   loading: true,
   items: [],
   details: {},
-  tokens: []
+  tokens: [],
 };
 
 export default function(state = initialState, action) {
@@ -112,15 +112,15 @@ export default function(state = initialState, action) {
 
     case `${DELETE_APPLICATION}::SUCCESS`:
       return merge(state, {
-        items: remove(state.items, (item) => (item.id === action.payload.id)),
+        items: remove(state.items, item => item.id === action.payload.id),
         loading: false,
-      })
+      });
 
     case `${REVOKE_ACCESS_TOKEN}::SUCCESS`:
       return merge(state, {
-        tokens: remove(state.tokens, (item) => (item.id === action.payload.id)),
+        tokens: remove(state.tokens, item => item.id === action.payload.id),
         loading: false,
-      })
+      });
 
     case `${FETCH_APPLICATION_DETAILS}::SUCCESS`:
       return merge(state, {

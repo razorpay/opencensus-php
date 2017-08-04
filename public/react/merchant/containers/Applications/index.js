@@ -1,8 +1,8 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import AppDetails from 'merchant/components/Applications/AppDetails'
-import NewAppLink from 'merchant/components/Applications/NewAppLink'
-import NoConnectedApps from 'merchant/components/Applications/NoConnectedApps'
+import AppDetails from 'merchant/components/Applications/AppDetails';
+import NewAppLink from 'merchant/components/Applications/NewAppLink';
+import NoConnectedApps from 'merchant/components/Applications/NoConnectedApps';
 import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ModalActions from 'rzp/modules/modals';
@@ -14,7 +14,7 @@ import * as ModalActions from 'rzp/modules/modals';
       applications: state.applications,
     };
   },
-  { ...ApplicationActions, ...NotificationActions, ...ModalActions}
+  { ...ApplicationActions, ...NotificationActions, ...ModalActions }
 )
 export default class ApplicationContainer extends Component {
   static contextTypes = {
@@ -22,11 +22,11 @@ export default class ApplicationContainer extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchApplications()
-    this.props.fetchConnectedApplications()
+    this.props.fetchApplications();
+    this.props.fetchConnectedApplications();
   }
 
-  deleteApp = (application) => {
+  deleteApp = application => {
     this.context.confirm({
       message: `Are you sure you want to delete ${application.name}?`,
       affirmativeLabel: 'Delete',
@@ -49,7 +49,7 @@ export default class ApplicationContainer extends Component {
     });
   };
 
-  revokeAccess = (token) => {
+  revokeAccess = token => {
     this.context.confirm({
       message: `Are you sure you want to revoke access to ${token.application.name}?`,
       affirmativeLabel: 'Revoke Access',
@@ -74,8 +74,8 @@ export default class ApplicationContainer extends Component {
 
   render() {
     // let { config, features, loading } = this.props.configState;
-    let createdApps = this.props.applications.items
-    let tokens = this.props.applications.tokens
+    let createdApps = this.props.applications.items;
+    let tokens = this.props.applications.tokens;
 
     return (
       <div class="application-index-page">
@@ -84,9 +84,16 @@ export default class ApplicationContainer extends Component {
             <strong>Connected Applications</strong>
           </div>
           {tokens.length
-            ? tokens.map((data) => <AppDetails data={data} key={data.id} type={"connected"} onBtnClick={this.revokeAccess}/>)
+            ? tokens.map(data => (
+                <AppDetails
+                  data={data}
+                  key={data.id}
+                  type={'connected'}
+                  onBtnClick={this.revokeAccess}
+                />
+              ))
             : <NoConnectedApps />}
-          <div class="clearfix"></div>  
+          <div class="clearfix" />
         </div>
         <div class="content-box">
           <div class="content-header">
@@ -94,10 +101,14 @@ export default class ApplicationContainer extends Component {
           </div>
           <div class="text-center content-body">
             <NewAppLink />
-            {createdApps.map((data) => 
-              <AppDetails data={data} key={data.id} onBtnClick={this.deleteApp}/>
-            )}
-            <div class="clearfix"></div>
+            {createdApps.map(data => (
+              <AppDetails
+                data={data}
+                key={data.id}
+                onBtnClick={this.deleteApp}
+              />
+            ))}
+            <div class="clearfix" />
           </div>
         </div>
       </div>

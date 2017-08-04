@@ -19,14 +19,14 @@ export default class Application extends GenericEntity {
     const Klass = this.constructor;
     let id = params.id;
 
-    let data = {}
+    let data = {};
 
     data.route_name = this.connectedListRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Application(item)
+      response.data.items = response.data.items.map(
+        item => new Application(item)
       );
-      return response; 
+      return response;
     });
   }
 
@@ -34,9 +34,9 @@ export default class Application extends GenericEntity {
     const Klass = this.constructor;
     // let url = this.resourceUrl;
     let formData = new FormData();
-    formData.append('route_name', 'oauth_application_create')
+    formData.append('route_name', 'oauth_application_create');
     for (let key in params) {
-      formData.append(`body[${key}]`, params[key])
+      formData.append(`body[${key}]`, params[key]);
     }
 
     return ajax({
@@ -51,9 +51,9 @@ export default class Application extends GenericEntity {
     });
   }
 
-  update(params={}) {
+  update(params = {}) {
     let url = this.resourceUrl;
-    let method = 'post'
+    let method = 'post';
     let data = {
       route_name: 'oauth_application_update',
       body: params,
@@ -70,12 +70,12 @@ export default class Application extends GenericEntity {
   }
 
   delete() {
-    return super.delete().then((data) => {
-      return {id: this.id, ...data}
+    return super.delete().then(data => {
+      return { id: this.id, ...data };
     });
   }
 
-  revokeToken (params) {
+  revokeToken(params) {
     var id = this.id;
     return this.makeGenericAjaxCall({
       method: 'put',
@@ -85,8 +85,8 @@ export default class Application extends GenericEntity {
           '{id}': this.id,
         }),
       },
-    }).then((data) => {
-      return {id, ...data}
+    }).then(data => {
+      return { id, ...data };
     });
   }
 }
