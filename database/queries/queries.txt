@@ -2308,3 +2308,6 @@ ALTER TABLE daily_settlements
 
 ALTER TABLE pricing
     ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER payment_issuer;
+
+ALTER TABLE bank_transfers
+    ADD COLUMN payer_name VARCHAR(255) AFTER merchant_id;
