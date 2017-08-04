@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
 
         $input['payment'][Payment::AMOUNT] = $this->formatAmount($input['payment'][Payment::AMOUNT]);
 
-        $request = $this->getAuthRequest($input);
+        $request = $this->getPayloadForAuth($input);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -72,8 +72,17 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
+    public function refund(array $input)
+    {
+        sd($input);
+
+        parent::refund($input);
+    }
+
     public function verify(array $input)
     {
+        sd($input);
+
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
@@ -81,24 +90,17 @@ class Gateway extends Base\Gateway
 
     //----------------Auth helper methods----------------------
 
-    protected function getAuthRequest($input)
+    protected function getPayloadForAuth($input)
     {
         $payment = $input['payment'];
 
-        $request = $this->getPayloadForAuth($payment, $input['callbackUrl']);
-
-        return $request;
-    }
-
-    protected function getPayloadForAuth($payment, $callbackUrl)
-    {
         $data = [
             RequestFields::EXTERNAL_TRANSACTION_ID  => $payment[Payment::ID],
             RequestFields::ORDER_ID                 => $payment[Payment::ID],
             RequestFields::AMOUNT                   => $payment[Payment::AMOUNT],
             RequestFields::CURRENCY                 => $payment[Payment::CURRENCY],
-            RequestFields::CALLBACK_URL             => $callbackUrl,
-            RequestFields::BACK_URL                 => $callbackUrl,
+            RequestFields::CALLBACK_URL             => $input['callbackUrl'],
+            RequestFields::BACK_URL                 => $input['callbackUrl'],
             RequestFields::DESCRIPTION              => "WAPO",
             RequestFields::PROCESSOR_ID             => 'ALL',
         ];
@@ -115,7 +117,6 @@ class Gateway extends Base\Gateway
         ];
 
         $request = $this->getStandardRequestArray($content);
-        // sd($request);
 
         return $request;
     }
@@ -172,9 +173,7 @@ class Gateway extends Base\Gateway
 
     public function getEncryptor()
     {
-        $secret = $this->getSecret();
-
-        $secret = base64_decode($secret);
+        $secret = base64_decode($this->getSecret());
 
         assert($secret !== null);
 
