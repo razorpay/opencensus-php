@@ -70,7 +70,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // The newer files have the actual
         // payment ID itself, like for FSS.
         //
-        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === true)
         {
             $paymentId = $ref;
         }
