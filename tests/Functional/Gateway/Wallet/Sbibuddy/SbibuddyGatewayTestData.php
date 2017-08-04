@@ -44,4 +44,16 @@ return [
         'status_code'          => ResponseCodeMap::SUCCESS_CODE,
         'entity'               => 'wallet'
     ],
+    'testRefundPayment' => [
+        'action'               => 'refund',
+        'wallet'               => 'sbibuddy',
+        'email'                => 'a@b.com',
+        'amount'               => 50000,
+        'contact'              => '9918899029',
+        'gateway_merchant_id'  => 'random_id',
+        'status_code'          => '000',
+        'response_code'        => 'SUCCESS',
+        'response_description' => 'APPROVED',
+        'entity'               => 'wallet'
+    ],
 ];

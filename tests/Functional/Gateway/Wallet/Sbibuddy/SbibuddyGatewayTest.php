@@ -46,6 +46,19 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($capturePayment['id']);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund);
+    }
+
     protected function runPaymentCallbackFlowWalletSbibuddy($response, & $callback = null)
     {
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
