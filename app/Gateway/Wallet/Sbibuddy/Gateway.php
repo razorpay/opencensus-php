@@ -164,8 +164,6 @@ class Gateway extends Base\Gateway
 
         $decryptedInput = $cryptor->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
 
-        $data = [];
-
         parse_str($decryptedInput, $data);
 
         return $data;
