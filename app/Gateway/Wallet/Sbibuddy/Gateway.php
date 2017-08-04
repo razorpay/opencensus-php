@@ -74,18 +74,15 @@ class Gateway extends Base\Gateway
 
     public function refund(array $input)
     {
-        sd($input);
-
         parent::refund($input);
-    }
 
-    public function verify(array $input)
-    {
-        sd($input);
+        $request = $this->getRefundRequest($input);
 
-        parent::verify($input);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
-        $verify = new Verify($this->gateway, $input);
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->parseGatewayResponse($response);
     }
 
     //----------------Auth helper methods----------------------
@@ -155,6 +152,46 @@ class Gateway extends Base\Gateway
         );
     }
     //----------------Callback helper methods end--------------
+
+    //----------------Refund helper methods--------------------
+
+    protected function getRefundRequest($input)
+    {
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
+
+        $content = $this->getRefundRequestContent($input, $wallet);
+
+        return $content;
+    }
+
+    protected function getRefundRequestContent($input, $wallet)
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            RequestFields::ORDER_ID             => $payment[Payment::ID],
+            RequestFields::TRANSACTION_ID       => $wallet[Entity::GATEWAY_PAYMENT_ID],
+            RequestFields::AMOUNT               => $this->formatAmount($payment[Payment::AMOUNT]),
+            RequestFields::REFUND_FEE           => ResponseCodeMap::REFUND_FEE,
+            // This is optional
+            // RequestFields::REFUND_REQUEST_ID    => ResponseCodeMap::REFUND_FEE,
+        ];
+
+        $encodedData = http_build_query($data);
+
+        $cryptor = $this->getEncryptor();
+
+        $encrypted = $cryptor->encryptString($encodedData);
+
+        $content = [
+            RequestFields::MERCHANT_ID    => $this->getMerchantId(),
+            RequestFields::ENCRYPTED_DATA => $encrypted
+        ];
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
 
     //----------------General helper methods-------------------
 
