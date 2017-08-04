@@ -16,6 +16,8 @@ use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
 {
+    use \Conner\Tagging\Taggable;
+
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
