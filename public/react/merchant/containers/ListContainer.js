@@ -1,4 +1,5 @@
 import { Component, PropTypes } from 'react';
+import { trimDeep } from 'rzp/utils/validators';
 
 export default class ListContainer extends Component {
   static SKIP = 0;
@@ -44,10 +45,10 @@ export default class ListContainer extends Component {
   };
 
   search = params => {
-    this.searchFilters = params;
+    this.searchFilters = trimDeep(params);
     return this.fetchAll({
       ...this.getDefaultPageParams(),
-      ...params,
+      ...this.searchFilters,
     });
   };
 
