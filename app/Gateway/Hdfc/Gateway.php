@@ -315,7 +315,7 @@ class Gateway extends Base\Gateway
 
             if (empty($authResponse['data']) === true)
             {
-                throw new Exception\LogicException(
+                throw new Exception\BadRequestValidationFailureException(
                     'The gateway input is empty. This is unexpected.',
                     null,
                     ['network' => $network]);
