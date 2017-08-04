@@ -50,10 +50,8 @@ return [
         'email'                => 'a@b.com',
         'amount'               => 50000,
         'contact'              => '9918899029',
-        'gateway_merchant_id'  => 'random_id',
-        'status_code'          => '000',
-        'response_code'        => 'SUCCESS',
-        'response_description' => 'APPROVED',
+        'gateway_merchant_id'  => '123',
+        'status_code'          => '1',
         'entity'               => 'wallet'
     ],
 ];
