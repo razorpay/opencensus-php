@@ -211,7 +211,6 @@ return array(
     */
 
     'aliases' => array(
-
         'App'           => Illuminate\Support\Facades\App::class,
         'Artisan'       => Illuminate\Support\Facades\Artisan::class,
         'Auth'          => Illuminate\Support\Facades\Auth::class,
@@ -248,7 +247,7 @@ return array(
         'ApiResponse'   => RZP\Http\Response\Facade::class,
         'Trace'         => RZP\Trace\Facade::class,
 
-        // Custom Facade
+        // Custom Facades
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'           => Aws\Laravel\AwsFacade::class,
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
