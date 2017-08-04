@@ -264,6 +264,26 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                    $input['payment']['id'],
+                                    Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Constants::YES))
+        {
+            return true;
+        }
+
+        $gatewayPayment->setStatus(Constants::YES);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     public function getPid(): string
     {
         $pId = $this->getLiveMerchantId();
