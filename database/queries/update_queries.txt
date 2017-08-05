@@ -565,3 +565,5 @@ WHERE id IN ("84shD51i2CypDV", "85fm9FlMwhJpSd", "8KJZT8RZQVPOvd", "87FvldtTWZvs
 
 # Process ICICI UPI refunds
 UPDATE refunds SET status = "processed", gateway_refunded = 1 WHERE id IN ("81sMZtlsVc0dnR","7n14uolskYCR4b","7mXS3PjwHDXdap","7oeo9fveSwusps","7nKJKvF14OcUw0","7vIwFCinK1uVnn","7rp4eEAzhvUFMk","80bE1kIEtQQfmM","7vJHec0dqcfjq6","7vJCO0gr2eaCl8","7soe2X0rDd87gQ","7vLIw3t5dsBls4","7vJRw4hLTshJ4r","7vJ8pvnhE7Ek51","7xl5OVwTF7UaYZ","7xvOWcvbLq8x1v","7xkFVtR6Ix0tJ5","7y7ebSiYiaGxvd","7xgTG2ahByjFmN","7xh6BIsU9wsGyB","7xlu5QziPY6Uuo","7xwfAzgE7vuaw9","82u2juX0K59pZ8","82VVKNQxaXY9IH","80UbRz3SpMfkdI","82VVwCHg8Fzw3z","82NPrjC1TwVNb1","87Fw5ZvIAjBhd6","85cYRqDMFGgVn0","85dSNqGBSDrHAB","85cWhfXWIdgoqa","86gBu11A6pUQlo","87cu1HROns5gCT","8AFG6VrcRSiJe2","8BUz7OExYjijjy","8BUyt5sk7dKpjw","8BVGjIHdaE95ZI","8BVGowgbqDhMIR","8BVGwKiickrqBP","8BVH4CeQgJ1HS3");
+
+LOAD DATA LOCAL INFILE '/tmp/dispute_reasons.csv' INTO TABLE dispute_reasons FIELDS TERMINATED BY ',' ESCAPED BY '\b' OPTIONALLY ENCLOSED BY '"';
