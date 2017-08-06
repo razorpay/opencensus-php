@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Upi\Mindgate;
 
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Netbanking\Base\AESCrypto;
+use RZP\Gateway\Base\AESCrypto;
 
 /**
  * Mindgate Crypto class. See docs

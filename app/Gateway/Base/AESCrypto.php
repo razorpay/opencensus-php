@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Base;
+namespace RZP\Gateway\Base;
 
 use phpseclib\Crypt\AES;
 
