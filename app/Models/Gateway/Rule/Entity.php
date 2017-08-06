@@ -260,7 +260,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicLoadAttribute(array & $array)
     {
-        if (empty($this->getAttribute(self::LOAD)) === false)
+        if ($this->getAttribute(self::LOAD) !== null)
         {
             $load = round(($this->getAttribute(self::LOAD) / 100), 2);
 
@@ -294,7 +294,7 @@ class Entity extends Base\PublicEntity
 
     public function setLoadAttribute($load)
     {
-        if (empty($load) === false)
+        if ($load !== null)
         {
             $this->attributes[self::LOAD] = intval(round($load * 100));
         }
