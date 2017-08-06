@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Models\Payment\Entity as Payment;
@@ -71,6 +72,15 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getCallbackResponseData($input);
+    }
+
+    public function verify(array $input)
+    {
+        parent::refund($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     public function refund(array $input)
@@ -241,6 +251,37 @@ class Gateway extends Base\Gateway
             $data[ResponseFields::ERROR_DESCRIPTION]
         );
     }
+
+    //----------------Refund helper methods end-----------------
+
+    //-----------------Verify request helpers-------------------
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        sd($verify);
+        $data = $this->getVerifyRequestData($verify);
+
+        $verify->verifyResponse = $this->sendSoapRequest($data,
+                                                   SoapAction::QUERY_API,
+                                                   SoapMethod::QUERY_PAYMENT_TRANSACTION);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $verify->verifyResponse,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
+
+        $verify->verifyResponseContent = $verify->verifyResponse[ResponseFields::UCF_RESPONSE];
+    }
+
+    protected function getVerifyRequestData($verify)
+    {
+
+    }
+
+    //-----------------Verify request helpers end---------------
 
     //----------------General helper methods-------------------
 
