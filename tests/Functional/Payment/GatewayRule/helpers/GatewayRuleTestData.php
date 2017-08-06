@@ -461,45 +461,6 @@ return [
                 ],
             ],
         ],
-        // test duplicate rule creation
-        [
-            'fixtures' => [
-                [
-                    'method'      => 'card',
-                    'type'        => 'sorter',
-                    'merchant_id' => '10000000000000',
-                    'gateway'     => 'hdfc',
-                    'network'     => 'VISA',
-                    'min_amount'  => 0,
-                    'load'        => 50
-                ],
-            ],
-            'request' => [
-                'content' => [
-                    'method'      => 'card',
-                    'type'        => 'sorter',
-                    'merchant_id' => '10000000000000',
-                    'gateway'     => 'hdfc',
-                    'network'     => 'VISA',
-                    'load'        => 50
-                ],
-                'url' => '/gateway/rules',
-                'method' => 'post'
-            ],
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => PublicErrorDescription::BAD_REQUEST_GATEWAY_RULE_EXISTS
-                    ]
-                ],
-                'status_code' => 400
-            ],
-            'exception' => [
-                'class'               => \RZP\Exception\BadRequestException::class,
-                'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS,
-            ],
-        ],
         // test create sorter rule with total load less than 100
         [
             'fixtures' => [

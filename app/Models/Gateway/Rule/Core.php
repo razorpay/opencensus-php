@@ -18,8 +18,6 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        $this->checkDuplicateRule($input);
-
         $validatorMethod = $this->getValidatorMethod($rule);
 
         $this->$validatorMethod($rule);
@@ -71,15 +69,13 @@ class Core extends Base\Core
 
         // Checks if merchant specific rules are present. If present we only use them
         // and discard other rules
-        $applicableRules = $this->getMerchantSpecificRules(
+        $merchantSpecificRules = $this->getMerchantSpecificRules(
                                             $applicableRules,
                                             $input['merchant']);
 
-        if ($input['payment']->isMethodCardOrEmi() === true)
+        if ($merchantSpecificRules->isEmpty() === false)
         {
-            $iins = (array) $input['payment']->card->getIin();
-
-            $applicableRules = $this->getRulesWithOverLappingIins($iins, $applicableRules);
+            $applicableRules = $merchantSpecificRules;
         }
 
         return $applicableRules;
@@ -100,29 +96,6 @@ class Core extends Base\Core
         {
             return ($rule->getMerchantId() === $merchant->getId());
         });
-    }
-
-    /**
-     * Checks if there is already aexisting rule with the same attributes with
-     * which we are creating the new rule
-     *
-     * @param  array  $input request data
-     */
-    protected function checkDuplicateRule(array $input)
-    {
-        // Before checking for duplicate rules we remove load and iins from inout
-        // if present as rules with same load are not considered duplicate. iins are
-        // removed as it is serialized data and cannot be searched
-        unset($input[Entity::LOAD]);
-        unset($input[Entity::IINS]);
-
-        $existingRulesCount = $this->repo->gateway_rule->fetch($input)->count();
-
-        if ($existingRulesCount > 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS);
-        }
     }
 
     /**

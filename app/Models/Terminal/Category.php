@@ -157,10 +157,6 @@ class Category
         // get the values array and check in array
         $allCategories = array_combine(self::CATEGORIES_ALL, self::CATEGORIES_ALL);
 
-        $method = self::getMethod($input);
-
-        $gateway = $input[Entity::GATEWAY];
-
         if (isset(self::CATEGORIES[$method][$gateway]) === true)
         {
             foreach (self::CATEGORIES[$method][$gateway] as $category2 => $networkCategory)
@@ -229,40 +225,5 @@ class Category
         }
 
         return $networkCategory;
-    }
-
-    protected static function getMethod($input)
-    {
-        if ((isset($input[Entity::CARD]) === true) and
-            (empty($input[Entity::CARD]) === false))
-        {
-            return Method::CARD;
-        }
-
-        if ((isset($input[Entity::NETBANKING]) === true) and
-            (empty($input[Entity::NETBANKING]) === false))
-        {
-            return Method::NETBANKING;
-        }
-
-        if ((isset($input[Entity::EMI]) === true) and
-            (empty($input[Entity::EMI]) === false))
-        {
-            return Method::EMI;
-        }
-
-        return null;
-    }
-
-    protected static function getNetwork($input)
-    {
-        $network = null;
-
-        if ($input[Entity::GATEWAY] === Gateway::AMEX)
-        {
-            $network = Network::AMEX;
-        }
-
-        return $network;
     }
 }
