@@ -2,7 +2,8 @@
 
 namespace RZP\Models\Settings;
 
-use Settings;
+use Razorpay\Spine\DataTypes\Dictionary;
+use Setting;
 
 use RZP\Models\Base;
 
@@ -12,55 +13,66 @@ class Core extends Base\Core
 
     protected $id;
 
-    public function __construct(string $entityType, string $entityId)
+    public function __construct(Base\PublicEntity $entity)
     {
         parent::__construct();
 
-        $this->entity = $entityType;
+        $this->entity = $entity->getEntity();
 
-        $this->id = $entityId;
+        $this->id = $entity->getId();
     }
 
-    public static function for(string $entityType, string $entityId): self
+    public static function for(Base\PublicEntity $entity): self
     {
-        // Validate for allowed
+        // Validate for allowed entities
 
-        return new static($entityType, $entityId);
+        return new static($entity);
     }
 
-    public function create(string $key, string $value)
+    public function create($key, string $value = null)
     {
         $this->setColumns();
 
-        Settings::set($key, $value);
+        Setting::set($key, $value);
 
-        $this->save();
+        return $this;
     }
 
     public function get(string $key)
     {
         $this->setColumns();
 
-        Settings::get($key);
+        $settings = Setting::get($key);
+
+        return $this->serializeSettings($settings);
     }
 
-    public function update(string $key, string $value)
+    public function all()
     {
-        $this->create($key, $value);
+        $this->setColumns();
+
+        $settings = Setting::all();
+
+        return $this->serializeSettings($settings);
+    }
+
+    public function update($key, string $value = null)
+    {
+        return $this->create($key, $value);
     }
 
     public function delete(string $key)
     {
         $this->setColumns();
 
-        Settings::forget($key);
+        Setting::forget($key);
 
-        $this->save();
+        return $this;
     }
 
     public function save()
     {
-        Settings::save();
+        Setting::save();
     }
 
     protected function setColumns()
@@ -71,5 +83,16 @@ class Core extends Base\Core
         ];
 
         Setting::setExtraColumns($filterColumns);
+    }
+
+    protected function serializeSettings($settings)
+    {
+        if ((is_array($settings) === true) or
+            (is_null($settings) === true))
+        {
+            $settings = new Dictionary((array) $settings);
+        }
+
+        return $settings;
     }
 }

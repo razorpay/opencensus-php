@@ -562,9 +562,9 @@ final class Route
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         //coupon routes
-        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
-        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
+        'coupon_create'                           => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -577,6 +577,11 @@ final class Route
 
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
+
+        // Settings routes
+        'settings_fetch'                          => ['get',      'settings/{entity}/{id}/{key?}',                  'SettingsController@get'                                            ],
+        'settings_upsert'                         => ['post',     'settings/{entity}/{id}',                         'SettingsController@upsert'                                         ],
+        'settings_delete'                         => ['delete',   'settings/{entity}/{id}/{key}',                   'SettingsController@delete'                                         ],
     ];
 
     public static $public = [
@@ -967,6 +972,9 @@ final class Route
         'payment_dispute_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
+        'settings_fetch',
+        'settings_upsert',
+        'settings_delete',
     ];
 
     public static $proxy = [
