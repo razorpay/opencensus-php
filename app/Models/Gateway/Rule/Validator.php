@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
         Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
-        Entity::TERMINAL_TYPE    => 'sometimes_if:type,filter|in:shared,direct',
+        Entity::SHARED_TERMINAL  => 'sometimes_if:type,filter|boolean',
         Entity::METHOD           => 'required|string|max:30',
         Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
@@ -342,7 +342,7 @@ class Validator extends Base\Validator
     protected function validateFilterType(array $input)
     {
         if ((empty($input[Entity::FILTER_TYPE]) === false) and
-            ($this->entity->isTypeFilter() === false))
+            ($this->entity->isFilter() === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'filter_type is editable only for filter rules');
@@ -352,7 +352,7 @@ class Validator extends Base\Validator
     protected function validateLoad(array $input)
     {
         if ((empty($input[Entity::LOAD]) === false) and
-            ($this->entity->isTypeSorter() === false))
+            ($this->entity->isSorter() === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'load is editable only for sorter rules');

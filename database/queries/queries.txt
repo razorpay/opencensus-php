@@ -2329,7 +2329,7 @@ ALTER TABLE gateway_rules
     ADD COLUMN network_category VARCHAR(255) NULL AFTER gateway_acquirer;
 
 ALTER TABLE gateway_rules
-    ADD COLUMN terminal_type VARCHAR(20) NULL AFTER network_category;
+    ADD COLUMN shared_terminal TINYINT(4) NULL AFTER network_category;
 
 ALTER TABLE gateway_rules
     ADD COLUMN min_amount INT(11) UNSIGNED NOT NULL DEFAULT 0 AFTER issuer,

@@ -40,7 +40,7 @@ class Repository extends Base\Repository
     protected $filterQueryAttributes = [
         Entity::GATEWAY,
         Entity::FILTER_TYPE,
-        Entity::TERMINAL_TYPE,
+        Entity::SHARED_TERMINAL,
         Entity::NETWORK_CATEGORY,
         Entity::GATEWAY_ACQUIRER,
         Entity::CATEGORY2,
@@ -56,7 +56,7 @@ class Repository extends Base\Repository
         Entity::METHOD_TYPE      => 'sometimes|string',
         Entity::GATEWAY_ACQUIRER => 'sometimes|string',
         Entity::NETWORK_CATEGORY => 'sometimes|string',
-        Entity::TERMINAL_TYPE    => 'sometimes|in:shared,direct',
+        Entity::SHARED_TERMINAL  => 'sometimes|in:shared,direct',
         Entity::NETWORK          => 'sometimes|string',
         Entity::INTERNATIONAL    => 'sometimes|boolean',
         Entity::ISSUER           => 'sometimes|string',

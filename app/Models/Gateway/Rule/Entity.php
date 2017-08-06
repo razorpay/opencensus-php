@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
     // Terminal properties
     const GATEWAY_ACQUIRER = 'gateway_acquirer';
     const NETWORK_CATEGORY = 'network_category';
-    const TERMINAL_TYPE    = 'terminal_type';
+    const SHARED_TERMINAL  = 'shared_terminal';
 
     // Payment properties
     const METHOD           = 'method';
@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::NETWORK_CATEGORY,
-        self::TERMINAL_TYPE,
+        self::SHARED_TERMINAL,
         self::EMI_DURATION,
         self::CURRENCY,
     ];
@@ -81,7 +81,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::NETWORK_CATEGORY,
         self::CATEGORY2,
-        self::TERMINAL_TYPE,
+        self::SHARED_TERMINAL,
         self::INTERNATIONAL,
         self::IINS,
         self::EMI_DURATION,
@@ -93,11 +93,12 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $casts = [
-        self::INTERNATIONAL => 'boolean',
-        self::LOAD          => 'int',
-        self::MIN_AMOUNT    => 'int',
-        self::MAX_AMOUNT    => 'int',
-        self::IINS          => 'array',
+        self::INTERNATIONAL   => 'boolean',
+        self::SHARED_TERMINAL => 'boolean',
+        self::LOAD            => 'int',
+        self::MIN_AMOUNT      => 'int',
+        self::MAX_AMOUNT      => 'int',
+        self::IINS            => 'array',
     ];
 
     protected $fillable = [
@@ -110,7 +111,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::NETWORK_CATEGORY,
-        self::TERMINAL_TYPE,
+        self::SHARED_TERMINAL,
         self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
@@ -134,7 +135,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::NETWORK_CATEGORY,
-        self::TERMINAL_TYPE,
+        self::SHARED_TERMINAL,
         self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
@@ -215,12 +216,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
-    public function isTypeFilter(): bool
+    public function isFilter(): bool
     {
         return ($this->getAttribute(self::TYPE) === self::FILTER);
     }
 
-    public function isTypeSorter(): bool
+    public function isSorter(): bool
     {
         return ($this->getAttribute(self::TYPE) === self::SORTER);
     }
