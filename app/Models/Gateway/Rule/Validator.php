@@ -22,7 +22,7 @@ class Validator extends Base\Validator
         Entity::GROUP            => 'sometimes|filled|string|max:50',
         Entity::FILTER_TYPE      => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
         Entity::LOAD             => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
-        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
+        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|max:30',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
         Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
@@ -107,8 +107,7 @@ class Validator extends Base\Validator
         }
 
         // If it is a reject filter type  don't check if gateway supports method
-        if (($input[Entity::TYPE] === Entity::FILTER) and
-            ($input[Entity::FILTER_TYPE] === Entity::REJECT))
+        if (self::isRejectFilter($input) === true)
         {
             return;
         }
@@ -186,8 +185,7 @@ class Validator extends Base\Validator
     protected function validateNetbankingIssuer(array $input)
     {
         // If it is a reject filter type skip validation
-        if (($input[Entity::TYPE] === Entity::FILTER) and
-            ($input[Entity::FILTER_TYPE] === Entity::REJECT))
+        if (self::isRejectFilter($input) === true)
         {
             return;
         }
@@ -238,8 +236,7 @@ class Validator extends Base\Validator
         }
 
         // If it is a reject filter type don't check if gateway supports network
-        if (($input[Entity::TYPE] === Entity::FILTER) and
-            ($input[Entity::FILTER_TYPE] === Entity::REJECT))
+        if (self::isRejectFilter($input) === true)
         {
             return;
         }
@@ -305,7 +302,7 @@ class Validator extends Base\Validator
         if (empty($invalidIin) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'iins should equal to 6 characters');
+                'iins should be equal to 6 characters');
         }
     }
 
@@ -357,5 +354,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'load is editable only for sorter rules');
         }
+    }
+
+    protected static function isRejectFilter(array $input): bool
+    {
+        return(($input[Entity::TYPE] === Entity::FILTER) and
+            ($input[Entity::FILTER_TYPE] === Entity::REJECT));
     }
 }
