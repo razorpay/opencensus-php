@@ -705,7 +705,7 @@ return [
                 'content' => [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'iins should not be equal to 6 characters',
+                        'description' => 'iins should be equal to 6 characters',
                     ]
                 ],
                 'status_code' => 400

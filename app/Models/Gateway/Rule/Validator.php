@@ -305,7 +305,7 @@ class Validator extends Base\Validator
         if (empty($invalidIin) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'iins should not be equal to 6 characters');
+                'iins should equal to 6 characters');
         }
     }
 
