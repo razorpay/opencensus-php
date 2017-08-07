@@ -179,11 +179,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
     ];
 
-    protected $defaults = [
-        self::MIN_AMOUNT => 0,
-        self::MAX_AMOUNT => self::MAX_INT_VAL,
-    ];
-
     public function getLoad()
     {
         return $this->getAttribute(self::LOAD);
@@ -283,12 +278,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CURRENCY);
     }
-
-    public function getIins()
-    {
-        return $this->getAttribute(self::IINS);
-    }
-
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)

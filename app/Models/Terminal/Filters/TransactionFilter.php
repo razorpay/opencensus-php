@@ -278,7 +278,7 @@ class TransactionFilter extends Terminal\Filter
         return ($terminal->isNonRecurring() === true);
     }
 
-    protected function subscriptionFilter(Terminal\Entity $terminal, array $input)
+    protected function subscriptionFilter(Terminal\Entity $terminal)
     {
         //
         // For now, not filtering based on gateway.
@@ -287,7 +287,7 @@ class TransactionFilter extends Terminal\Filter
         //
         return true;
 
-        $payment = $input['payment'];
+        $payment = $this->input['payment'];
 
         //
         // If it's NOT a subscription payment,
@@ -315,9 +315,9 @@ class TransactionFilter extends Terminal\Filter
         return (in_array($currentGateway, $allowedGateways, true) === true);
     }
 
-    protected function isValidEmiTerminal($terminal, $input)
+    protected function isValidEmiTerminal($terminal)
     {
-        $payment = $input['payment'];
+        $payment = $this->input['payment'];
 
         $bank = $payment->getBank();
 
@@ -341,6 +341,8 @@ class TransactionFilter extends Terminal\Filter
         }
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();
+
+        $subvention = $this->input['payment']->emiPlan->getSubvention();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
     }

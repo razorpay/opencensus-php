@@ -33,7 +33,7 @@ class MerchantSorter extends Terminal\Sorter
 
         $method = $this->input['payment']->getMethod();
 
-        $category2 = $input['merchant']->getCategory2();
+        $category2 = $this->input['merchant']->getCategory2();
 
         // As the terminals are from the priority list
         // append to the terminal

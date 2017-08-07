@@ -168,7 +168,7 @@ class Selector extends Base\Core
     {
         return $rules->filter(function ($rule)
         {
-            return ($rule->isTypeFilter() === true);
+            return ($rule->isFilter() === true);
         });
     }
 
@@ -176,7 +176,7 @@ class Selector extends Base\Core
     {
         $sorterRules = $rules->filter(function ($rule)
         {
-            return ($rule->isTypeSorter() === true);
+            return ($rule->isSorter() === true);
         });
 
         $merchantSpecificRules = $rules->filter(function ($rule)

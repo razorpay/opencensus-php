@@ -67,17 +67,6 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
-        // Checks if merchant specific rules are present. If present we only use them
-        // and discard other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules(
-                                            $applicableRules,
-                                            $input['merchant']);
-
-        if ($merchantSpecificRules->isEmpty() === false)
-        {
-            $applicableRules = $merchantSpecificRules;
-        }
-
         return $applicableRules;
     }
 

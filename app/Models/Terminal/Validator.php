@@ -412,15 +412,7 @@ class Validator extends Base\Validator
 
         $networkCategory = $input[Entity::NETWORK_CATEGORY];
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         $method = self::getMethod($input);
-=======
-        $method = $this->getMethod($input);
->>>>>>> [gateway] adds logic for handling filter rules
-=======
-        $method = self::getMethod($input);
->>>>>>> [gateway] adds migration queries and other refactoring
 
         $gateway = $input[Entity::GATEWAY];
 

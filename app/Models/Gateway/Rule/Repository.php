@@ -86,13 +86,11 @@ class Repository extends Base\Repository
     */
     public function getRulesWithMatchingCriteria(Entity $rule)
     {
-        $input = $rule->toArray();
-
         $params = $this->getQueryParams($rule);
 
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $input);
+        $this->buildSelectionQuery($query, $params);
 
         // If the rule against which we are matching is an existing rule, we exclude
         // it in the query

@@ -77,7 +77,7 @@ class MerchantFilter extends Terminal\Filter
      * */
     public function billdeskCategoryFilter(Terminal\Entity $terminal) : bool
     {
-        $bank = $input['payment']->getBank();
+        $bank = $this->input['payment']->getBank();
 
         $gateway = $terminal->getGateway();
 
@@ -87,7 +87,7 @@ class MerchantFilter extends Terminal\Filter
 
         $disAllowedBanks = self::CATEGORY_DISALLOWED_IFSC[$category2] ?? [];
 
-        if (($input['payment']->isNetbanking() === true) and
+        if (($this->input['payment']->isNetbanking() === true) and
             ($gateway === Gateway::BILLDESK) and
             ($this->isBankDisallowed($bank, $disAllowedBanks) === true))
         {
@@ -266,7 +266,7 @@ class MerchantFilter extends Terminal\Filter
 
         $gateway = $terminal->getGateway();
 
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
         $defaultCategory = Category::getDefaultForMethodAndGateway($method, $gateway);
 
@@ -466,9 +466,9 @@ class MerchantFilter extends Terminal\Filter
      * For certaiin specified merchants, removes shared terminals from list of
      * terminals if the payment method is card.
      */
-    public function sharedTerminalFilter(Terminal\Entity $terminal, array $input): bool
+    public function sharedTerminalFilter(Terminal\Entity $terminal): bool
     {
-        $merchantId = $input['payment']->getMerchantId();
+        $merchantId = $this->input['payment']->getMerchantId();
 
         $blackListedMerchants = Merchant\Preferences::$merchantSharedTerminalsBlackList;
 
