@@ -49,7 +49,7 @@ return [
                 'fraud_type' => 'confirmed',
             ],
             'status_code' => 200,
-        ]
+        ],
     ],
 
     'testFailRiskEdit' => [
@@ -71,6 +71,25 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             'message' => 'Source is not manual. Edits are only allowed for manual sources',
+        ],
+    ],
+
+    'testCreate' => [
+        'request' => [
+            'url' =>'/risk',
+            'method'  => 'POST',
+            'content' => [
+                'fraud_type'  => 'confirmed',
+                'reason'      => 'CHARGEBACK_RESOLVED',
+                'source'      => 'manual',
+            ],
+
+        ],
+        'response' => [
+            'content' => [
+                'fraud_type' => 'confirmed',
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

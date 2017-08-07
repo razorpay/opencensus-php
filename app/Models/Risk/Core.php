@@ -37,22 +37,24 @@ class Core extends Base\Core
         return $risk;
     }
 
-    /**
-     * Tag payments as risky if gateway throws an error
-     *
-     *
-     * @param Payment\Entity $payment
-     * @param array          $riskData
-     *
-     * @return Entity $risk
-     */
-    public function logPaymentOnGatewayRiskFailure(
+    public function logPaymentForSource(
+        Payment\Entity $payment, string $source, array $data)
+    {
+        $func = 'logPaymentFor' . ucwords($source);
+
+        if (method_exists($this, $func) === true)
+        {
+            return $this->{$func}($payment, $data);
+        }
+    }
+
+    protected function logPaymentForGateway(
         Payment\Entity $payment, array $riskData)
     {
         return $this->create($payment, $riskData);
     }
 
-    public function logPaymentForRiskManual(
+    protected function logPaymentForManual(
         Payment\Entity $payment, array $input)
     {
         $risk = $this->repo->risk->fetchByPaymentId($payment->getId());
@@ -66,21 +68,21 @@ class Core extends Base\Core
         return $this->edit($risk, $input);
     }
 
-    public function logPaymentOnMaxmindFailure(
-        Payment\Entity $payment, string $riskScore)
+    protected function logPaymentForMaxmind(
+        Payment\Entity $payment, array $data)
     {
         $input = [
             Entity::SOURCE      => Source::MAXMIND,
             Entity::REASON      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
             Entity::FRAUD_TYPE  => Type::SUSPECTED,
-            Entity::RISK_SCORE  => $riskScore,
+            Entity::RISK_SCORE  => $data[Entity::RISK_SCORE],
         ];
 
         return $this->create($payment, $input);
     }
 
-    public function logPaymentOnBlockedCard(
-        Payment\Entity $payment)
+    protected function logPaymentForInternal(
+        Payment\Entity $payment, array $data)
     {
         $input = [
             Entity::SOURCE      => Source::INTERNAL,

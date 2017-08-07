@@ -9,11 +9,11 @@ use RZP\Constants\Entity;
 
 class RiskController extends Controller
 {
-    public function post(string $paymentId)
+    public function post()
     {
         $input = Request::all();
 
-        $data = $this->service(Entity::RISK)->create($paymentId, $input);
+        $data = $this->service(Entity::RISK)->create($input);
 
         return ApiResponse::json($data);
     }

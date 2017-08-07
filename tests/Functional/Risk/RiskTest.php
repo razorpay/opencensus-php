@@ -17,7 +17,7 @@ class RiskTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->publicAuth();
+        $this->ba->appAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
@@ -85,6 +85,23 @@ class RiskTest extends TestCase
         $url = sprintf($url, $risk['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreate()
+    {
+        $this->fixtures->merchant->enableInternational();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012010000000007';
+
+        // Do an international payment
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $authPayment['razorpay_payment_id'];
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }
