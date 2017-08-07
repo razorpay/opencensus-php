@@ -53,7 +53,7 @@ app.controller('WorkflowRequestsCtrl', [
 
       var duty = 'maker'; // Considering default duty as Maker since most requests are for maker.
 
-      if (type === 'checker') {
+      if (type === 'checker' || type === 'admin_checked') {
         duty = type;
       }
 
