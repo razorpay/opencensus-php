@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
@@ -12,10 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Plan;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
-use RZP\Constants;
 use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use RZP\Jobs\Plan\ChargeSubscription;
 
 class Core extends Base\Core
 {
@@ -431,33 +430,87 @@ class Core extends Base\Core
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
 
-    public function cancel(Entity $subscription)
+    public function cancel(Entity $subscription, array $input): Entity
     {
         $this->trace->info(
             TraceCode::SUBSCRIPTION_CANCEL,
             [
-                'subscription_id' => $subscription->getId()
+                'subscription_id'   => $subscription->getId(),
+                'input'             => $input,
             ]);
 
-        $subscription->getValidator()->validateSubscriptionCancellable();
+        $validator = $subscription->getValidator();
+
+        $validator->validateSubscriptionCancellable();
+
+        $validator->validateInput(Validator::CANCEL, $input);
 
         return $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function () use ($subscription)
+            function () use ($subscription, $input)
             {
-                $subscription->setStatus(Status::CANCELLED);
-
-                $this->setFieldsOnCancel($subscription);
-
-                $this->repo->saveOrFail($subscription);
-
-                $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
+                if (isset($input[Entity::CANCEL_AT_CYCLE_END]) === true)
+                {
+                    $cancelAtCycleEnd = $input[Entity::CANCEL_AT_CYCLE_END];
+                    $this->setupCancelAtCycleEnd($subscription, $cancelAtCycleEnd);
+                }
+                else
+                {
+                    $this->cancelImmediately($subscription);
+                }
 
                 return $subscription;
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
         );
+    }
+
+    protected function setupCancelAtCycleEnd(Entity $subscription, bool $cancelAtCycleEnd)
+    {
+        //
+        // TODO: Handle race conditions here.
+        // If the subscription is picked up by
+        // the cron to cancel it and the status is
+        // changed to false here, don't allow it.
+        //
+
+        if ($cancelAtCycleEnd === false)
+        {
+            $subscription->setCancelAt(null);
+        }
+        else
+        {
+            $currentCycleEnd = $subscription->getCurrentEnd();
+
+            if ($currentCycleEnd === null)
+            {
+                // TODO: Throw an exception since there is no cycle running right now.
+            }
+
+            $currentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
+
+            if ($currentCycleEnd < $currentTime)
+            {
+                // TODO: Throw an exception
+                // ideally should never reach here at all
+            }
+
+            $subscription->setCancelAt($currentCycleEnd);
+        }
+
+        $this->repo->saveOrFail($subscription);
+    }
+
+    public function cancelImmediately(Entity $subscription)
+    {
+        $subscription->setStatus(Status::CANCELLED);
+
+        $this->setFieldsOnCancel($subscription);
+
+        $this->repo->saveOrFail($subscription);
+
+        $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
     }
 
     protected function setFieldsOnCancel(Entity $subscription)
