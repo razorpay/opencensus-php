@@ -622,7 +622,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
-        $this->persistNbCustomerDetails($rowDetails, $gatewayPayment);
+        $this->persistCustomerDetails($rowDetails, $gatewayPayment);
 
         $gatewayPayment->saveOrFail();
     }
@@ -670,7 +670,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param array        $rowDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerDetails(array $rowDetails, PublicEntity $gatewayPayment)
+    protected function persistCustomerDetails(array $rowDetails, PublicEntity $gatewayPayment)
     {
         if (empty($rowDetails[BaseReconciliate::CUSTOMER_DETAILS]) === true)
         {
@@ -686,7 +686,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === false)
         {
-            $this->persistNbCustomerName($customerDetails, $gatewayPayment);
+            $this->persistCustomerName($customerDetails, $gatewayPayment);
         }
     }
 
@@ -709,7 +709,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param array        $customerDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerName(array $customerDetails, PublicEntity $gatewayPayment)
+    protected function persistCustomerName(array $customerDetails, PublicEntity $gatewayPayment)
     {
         $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 

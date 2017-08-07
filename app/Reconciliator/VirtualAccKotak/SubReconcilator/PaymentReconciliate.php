@@ -14,8 +14,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     // Common fields
     const TXN_DATE                = 'txn_date';
     const E_COLL_AC_NO            = 'e_coll_ac_no';
-    const MASTER_AC_NO            = 'master_ac_no';
     const DEALER_NAME             = 'dealer_name';
+    const MASTER_AC_NO            = 'master_ac_no';
     const AMOUNT                  = 'amount';
     const SND_BRN_IFSC            = 'snd_brn_ifsc';
     const REF1                    = 'ref1';
@@ -69,7 +69,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $bankTransfer = $this->repo
                              ->bank_transfer
-                             ->findByUtr($utr);
+                             ->findByUtrOrFail($utr);
 
         return $bankTransfer->getPaymentId();
     }
@@ -105,15 +105,55 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Payment amount mismatch',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getAmount(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class(),
                 ]);
 
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * No gateway payment entity for bank transfer payments,
+     * but bank_transfer entity is logically equivalent
+     *
+     * @param $paymentId
+     * @return  BankTransfer\Entity
+     */
+    protected function getGatewayPayment($paymentId)
+    {
+        $bankTransfer = $this->repo
+                             ->bank_transfer
+                             ->findByPaymentId($paymentId);
+
+        return $bankTransfer;
+    }
+
+    /**
+     * Customer info is just the name associated with the account
+     *
+     * @param  array $row
+     * @return array
+     */
+    protected function getNbCustomerDetails($row)
+    {
+        return [
+            Base\Reconciliate::CUSTOMER_NAME => $this->getCustomerName($row),
+        ];
+    }
+
+    protected function getCustomerName($row)
+    {
+        if (empty($row[self::SEND_CUST_ACNAME]) === false)
+        {
+            return $row[self::SEND_CUST_ACNAME];
+        }
+
+        return null;
     }
 }

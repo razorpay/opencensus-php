@@ -272,4 +272,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::NOTIFIED, $notified);
     }
+
+    public function setCustomerName(string $name)
+    {
+        $this->setAttribute(self::PAYER_NAME, $name);
+    }
 }
