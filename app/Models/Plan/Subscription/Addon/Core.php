@@ -36,6 +36,19 @@ class Core extends Base\Core
         return $addon;
     }
 
+    public function delete(Entity $addon)
+    {
+        $this->trace->info(
+            TraceCode::ADDON_DELETE_REQUEST,
+            [
+                'addon_id'     => $addon->getId(),
+            ]);
+
+        $addon->getValidator()->validateDelete();
+
+        return $this->repo->addon->deleteOrFail($addon);
+    }
+
     protected function createAddonAssociations(
         Entity $addon,
         Merchant\Entity $merchant,

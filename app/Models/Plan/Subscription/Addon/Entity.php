@@ -89,6 +89,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::QUANTITY);
     }
 
+    public function hasInvoice()
+    {
+        return $this->isAttributeNotNull(self::INVOICE_ID);
+    }
+
+    public function getInvoiceId()
+    {
+        return $this->getAttribute(self::INVOICE_ID);
+    }
+
     // -------------------------- Getters Ends --------------------------
 
     // -------------------------- Public Setters --------------------------

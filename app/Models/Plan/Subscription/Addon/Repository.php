@@ -12,19 +12,24 @@ class Repository extends Base\Repository
 {
     protected $entity = 'addon';
 
+    protected $entityFetchParamRules = [
+        // This is also used to fetch all
+        // addons of a subscription in processor
+        Entity::SUBSCRIPTION_ID     => 'filled|string|public_id',
+        Entity::INVOICE_ID          => 'filled|string|public_id',
+    ];
+
+    protected $signedIds = [
+        Entity::SUBSCRIPTION_ID,
+        Entity::INVOICE_ID,
+    ];
+
     public function getUnusedAddonsForSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()
                     ->whereNull(Entity::INVOICE_ID)
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->with(Constants\Entity::ITEM)
-                    ->get();
-    }
-
-    public function getAllAddonsOfSubscription(Subscription\Entity $subscription)
-    {
-        return $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->get();
     }
 }

@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Plan;
+use RZP\Constants\Entity;
 use Request;
 
 class SubscriptionController extends Controller
@@ -14,14 +14,14 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plan = $this->service('plan')->create($input);
+        $plan = $this->service(Entity::PLAN)->create($input);
 
         return ApiResponse::json($plan);
     }
 
     public function getPlan(string $id)
     {
-        $plan = $this->service('plan')->fetch($id);
+        $plan = $this->service(Entity::PLAN)->fetch($id);
 
         return ApiResponse::json($plan);
     }
@@ -30,12 +30,55 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plans = $this->service('plan')->fetchMultiple($input);
+        $plans = $this->service(Entity::PLAN)->fetchMultiple($input);
 
         return ApiResponse::json($plans);
     }
 
     // -------------------- Plan endpoints end --------------------
+
+    // -------------------- Addon endpoints start ---------------------
+
+    public function postAddon($subscriptionId)
+    {
+        $input = Request::all();
+
+        $addon = $this->service(Entity::ADDON)->create($subscriptionId, $input);
+
+        return ApiResponse::json($addon);
+    }
+
+    public function getAddon($id)
+    {
+        $addon = $this->service(Entity::ADDON)->fetch($id);
+
+        return ApiResponse::json($addon);
+    }
+
+    public function getAddons($subscriptionId)
+    {
+        $input = Request::all();
+
+        $addon = $this->service(Entity::ADDON)->fetchMultiple($input);
+
+        return ApiResponse::json($addon);
+    }
+
+    public function fetchDueAddons($subscriptionId)
+    {
+        $addons = $this->service(Entity::ADDON)->fetchDueAddons($subscriptionId);
+
+        return ApiResponse::json($addons);
+    }
+
+    public function deleteAddon($id)
+    {
+        $addon = $this->service(Entity::ADDON)->delete($id);
+
+        return ApiResponse::json($addon);
+    }
+
+    // -------------------- Addon endpoints start ---------------------
 
     public function postCreateSubscription()
     {
