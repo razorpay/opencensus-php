@@ -18,7 +18,7 @@ class TerminalLoadSorterTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers//TerminalLoadSorterTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/TerminalLoadSorterTestData.php';
 
         parent::setUp();
     }
