@@ -8,11 +8,10 @@ class Type
     const SUSPECTED = 'suspected';
     const CONFIRMED = 'confirmed';
 
-    public static function getAllTypes(): array
+    public static function isValidType(string $type): bool
     {
-        return [
-            self::SUSPECTED,
-            self::CONFIRMED,
-        ];
+        $type = strtoupper($type);
+
+        return (defined(__CLASS__."::".$type) === true);
     }
 }

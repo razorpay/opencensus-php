@@ -13,7 +13,7 @@ use RZP\Models\Payment\Analytics\Metadata;
 
 trait FraudDetector
 {
-    protected function validateFraudDetection($payment)
+    protected function validateFraudDetection(Payment\Entity $payment)
     {
         $riskScore = $this->getRiskScore($payment);
 
@@ -37,7 +37,7 @@ trait FraudDetector
         }
     }
 
-    public function getRiskScore($payment)
+    public function getRiskScore(Payment\Entity $payment)
     {
         $riskFields = $this->getRiskDetectionField($payment);
 
@@ -52,7 +52,7 @@ trait FraudDetector
         return 0;
     }
 
-    protected function getRiskDetectionField($payment)
+    protected function getRiskDetectionField(Payment\Entity $payment)
     {
         $response = null;
 

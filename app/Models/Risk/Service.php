@@ -10,20 +10,16 @@ class Service extends Base\Service
 {
     public function create(string $paymentId, array $input)
     {
-        $input[Entity::PAYMENT_ID] = $paymentId;
+        $payment = $this->repo->payment->findByPublicId($paymentId);
 
-        $this->cleanPublicIds($input);
-
-        $risk = (new Core)->create($input);
+        $risk = (new Core)->create($payment, $input);
 
         return $risk->toArrayPublic();
     }
 
     public function edit(string $id, array $input)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $risk = (new Core)->get($id);
+        $risk = $this->repo->risk->findByPublicId($id);
 
         $risk = (new Core)->edit($risk, $input);
 
@@ -32,27 +28,15 @@ class Service extends Base\Service
 
     public function fetch(string $id)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $risk = (new Core)->get($id);
+        $risk = $this->repo->risk->findByPublicId($id);
 
         return $risk->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        $this->cleanPublicIds($input);
-
         $entities = $this->repo->risk->fetch($input);
 
         return $entities->toArrayPublic();
-    }
-
-    private function cleanPublicIds(array & $input)
-    {
-        if (isset($input[Entity::PAYMENT_ID]) === true)
-        {
-            Payment\Entity::verifyIdAndStripSign($input[Entity::PAYMENT_ID]);
-        }
     }
 }

@@ -13,14 +13,10 @@ class Source
     // internal rzp employees
     const MANUAL   = 'manual';
 
-    public static function getAllSources(): array
+    public static function isValidSource(string $source): bool
     {
-        return [
-            self::MAXMIND,
-            self::BANK,
-            self::GATEWAY,
-            self::INTERNAL,
-            self::MANUAL,
-        ];
+        $source = strtoupper($source);
+
+        return (defined(__CLASS__."::".$source) === true);
     }
 }

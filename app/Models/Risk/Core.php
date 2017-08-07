@@ -11,13 +11,18 @@ class Core extends Base\Core
 {
     use FraudDetector;
 
-    public function create(array $input)
+    public function create(Payment\Entity $payment, array $input)
     {
         $risk = new Entity;
 
+        // Validator expects publicId
+        $input[Entity::PAYMENT_ID] = $payment->getPublicId();
+        $input[Entity::MERCHANT_ID] = $payment->getMerchantId();
+
         $risk->build($input);
 
-        $risk->associateRelatedEntities($input);
+        $risk->payment()->associate($payment);
+        $risk->merchant()->associate($payment->getMerchantId());
 
         $this->repo->saveOrFail($risk);
 
@@ -28,16 +33,9 @@ class Core extends Base\Core
     {
         $risk->edit($input);
 
-        $risk->associateRelatedEntities($input);
-
         $this->repo->saveOrFail($risk);
 
         return $risk;
-    }
-
-    public function get(string $id)
-    {
-        return $this->repo->risk->findOrFail($id);
     }
 
     /**
@@ -60,7 +58,7 @@ class Core extends Base\Core
 
         $input = array_merge($riskData, $input);
 
-        return $this->create($input);
+        return $this->create($payment, $input);
     }
 
     public function logPaymentForRiskManual(
@@ -70,11 +68,10 @@ class Core extends Base\Core
 
         // If a payment is tagged as confirmed fraud, add its maxmind score
         $input[Entity::RISK_SCORE] = $this->getRiskScore($payment);
-        $input[Entity::MERCHANT_ID] = $payment->getMerchantId();
 
         if ($risk === null)
         {
-            return $this->create($input);
+            return $this->create($payment, $input);
         }
 
         return $this->edit($risk, $input);
@@ -84,15 +81,13 @@ class Core extends Base\Core
         Payment\Entity $payment, string $riskScore)
     {
         $input = [
-            Entity::MERCHANT_ID => $payment->getMerchantId(),
-            Entity::PAYMENT_ID  => $payment->getId(),
             Entity::SOURCE      => Source::MAXMIND,
             Entity::RISK_SCORE  => $riskScore,
             Entity::REASON      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
             Entity::FRAUD_TYPE  => Type::SUSPECTED,
         ];
 
-        return $this->create($input);
+        return $this->create($payment, $input);
     }
 
     public function logPaymentOnBlockedCard(
@@ -101,14 +96,12 @@ class Core extends Base\Core
         $riskScore = $this->getRiskScore($payment);
 
         $input = [
-            Entity::MERCHANT_ID => $payment->getMerchantId(),
-            Entity::PAYMENT_ID  => $payment->getId(),
             Entity::SOURCE      => Source::INTERNAL,
             Entity::RISK_SCORE  => $riskScore,
             Entity::REASON      => RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
             Entity::FRAUD_TYPE  => Type::CONFIRMED,
         ];
 
-        return $this->create($input);
+        return $this->create($payment, $input);
     }
 }

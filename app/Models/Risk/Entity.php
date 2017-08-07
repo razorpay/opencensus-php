@@ -30,8 +30,6 @@ class Entity extends Base\PublicEntity
     protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
-        self::PAYMENT_ID,
-        self::MERCHANT_ID,
         self::FRAUD_TYPE,
         self::SOURCE,
         self::RISK_SCORE,
@@ -83,9 +81,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    // -------------------------------End Relations ------------------
+    // ----------------------End Relations --------------------------
 
-    // -------------------------------------- Mutators ---------------
+    // ----------------------Mutators -------------------------------
 
     public function setPublicPaymentIdAttribute(array & $attributes)
     {
@@ -94,33 +92,18 @@ class Entity extends Base\PublicEntity
         $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedIdOrNull($paymentId);
     }
 
-    // -------------------------------------- End Mutators -----------
+    // ----------------------End Mutators --------------------------
 
-
-    // -------------------------------------- Getters ----------------
+    // ----------------------Getters -------------------------------
 
     public function getComments(): string
     {
         return $this->getAttribute(self::COMMENTS);
     }
 
-    // -------------------------------------- End Getters ------------
+    // ----------------------End Getters ---------------------------
 
+    // ----------------------Setters -------------------------------
 
-    // -------------------------------------- Setters ----------------
-
-    // -------------------------------------- End Setters ------------
-
-    public function associateRelatedEntities(array $input)
-    {
-        if (empty($input[self::PAYMENT_ID]) === false)
-        {
-            $this->payment()->associate($input[self::PAYMENT_ID]);
-        }
-
-        if (empty($input[self::MERCHANT_ID]) === false)
-        {
-            $this->merchant()->associate($input[self::MERCHANT_ID]);
-        }
-    }
+    // ----------------------End Setters ---------------------------
 }
