@@ -32,7 +32,6 @@ class SbibuddyGatewayTest extends TestCase
 
     public function testPayment()
     {
-
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
 
         $this->doAuthAndCapturePayment($payment);
@@ -58,6 +57,19 @@ class SbibuddyGatewayTest extends TestCase
 
         $this->assertTestResponse($refund);
     }
+
+    public function testVerifyPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    //----------------------Helper methods-----------------------
 
     protected function runPaymentCallbackFlowWalletSbibuddy($response, & $callback = null)
     {
