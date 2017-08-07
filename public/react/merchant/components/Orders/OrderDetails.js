@@ -20,7 +20,7 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Order ID: <b>{order.id}</b>
+              Order Id: <b>{order.id}</b>
             </div>
 
             <div class="SliderPanel__Body">

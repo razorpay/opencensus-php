@@ -5,7 +5,7 @@ export default props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
-        <label>Account ID:</label>
+        <label>Account Id:</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 

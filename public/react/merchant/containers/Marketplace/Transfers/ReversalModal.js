@@ -62,7 +62,7 @@ const selector = formValueSelector('reversalModal');
 @reduxForm({
   form: 'reversalModal',
 })
-export default class RefundModal extends Component {
+export default class ReversalModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -170,9 +170,10 @@ export default class RefundModal extends Component {
                     <Field
                       name="amount"
                       component={InputField}
+                      autoComplete="off"
                       class="form-control"
                       validate={amountValidation}
-                      placeholder="Enter the refund amount"
+                      placeholder="Enter the reversal amount"
                     />
                     <i />
                   </div>
@@ -183,12 +184,14 @@ export default class RefundModal extends Component {
               <div class="col-sm-8 col-sm-offset-4">
                 The transfer amount will be
                 {' '}
-                {this.props.partial &&
-                  (transfer.amount - transfer.amount_reversed) / 100 !==
-                    Number(this.props.reversable_amount)
-                  ? 'partially '
-                  : 'completely '}
-                reversed if the reverse amount set to
+                <b>
+                  {this.props.partial &&
+                    (transfer.amount - transfer.amount_reversed) / 100 !==
+                      Number(this.props.reversable_amount)
+                    ? 'partially '
+                    : 'completely '}
+                  reversed{' '}
+                </b>if the reversal amount set to
                 {' '}
                 <b>
                   {(this.props.partial

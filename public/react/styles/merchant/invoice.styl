@@ -382,3 +382,18 @@ $muted = rgba(0, 0, 0, 0.27)
     font-size: 10px;
   }
 }
+
+.CopyLink > span {
+  margin-right: 5px
+}
+
+.table {
+  .CopyLink .btn {
+    visibility: hidden;
+  }
+  > tbody > tr:hover > td {
+    .CopyLink .btn {
+      visibility: visible;
+    }
+  }
+}

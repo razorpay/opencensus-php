@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
@@ -63,6 +64,10 @@ export default props => {
                     label="Amount"
                     value={() => <Amount value={invoice.amount} />}
                   />
+                  <DetailRow
+                    label="Amount Paid"
+                    value={() => <Amount value={invoice.amount_paid} />}
+                  />
                   <DetailRow label="Summary" value={invoice.description} />
                   <DetailRow
                     label="Invoice Date"
@@ -80,7 +85,10 @@ export default props => {
                   />
 
                   <DetailRow label="Receipt" value={invoice.receipt} />
-                  <DetailRow label="Payment Link" value={invoice.short_url} />
+                  <DetailRow
+                    label="Payment Link"
+                    value={() => <CopyLink url={invoice.short_url} />}
+                  />
                   <DetailRow
                     label="Status"
                     value={() => <InvoiceStatusLabel status={invoice.status} />}
