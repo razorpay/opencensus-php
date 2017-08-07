@@ -29,7 +29,7 @@ class Service extends Base\Service
 
         $this->provider = $this->auth->getInternalApp();
 
-        $this->ip = $this->app['request']->getRealClientIp();
+        $this->ip = $this->app['request']->ip();
 
         $this->mutex = $this->app['api.mutex'];
     }

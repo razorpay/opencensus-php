@@ -434,6 +434,13 @@ trait FileHandlerTrait
     {
         $fullpath = $this->getFullFilePath($name);
 
+        $dir = dirname($fullpath);
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777, true);
+        }
+
         $file = fopen($fullpath, 'w');
         fwrite($file, $txt);
         fclose($file);

@@ -235,7 +235,7 @@ class CardTest extends TestCase
 
         $testData = $this->testData[$func];
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         return $this->runRequestResponseFlow($testData);
     }

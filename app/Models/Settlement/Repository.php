@@ -62,7 +62,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getSettlementWithServiceTaxNullOrZero()
+    public function getSettlementWithTaxNullOrZero()
     {
         return $this->newQuery()
                     ->where(Entity::SERVICE_TAX, '=', '0')

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Webhook;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -153,6 +154,16 @@ class Event
         self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+    ];
+
+    public static $eventsToFeatureMap = [
+        self::SUBSCRIPTION_ACTIVATED    => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_PENDING      => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_HALTED       => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CHARGED      => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
+        // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
     ];
 
     /**

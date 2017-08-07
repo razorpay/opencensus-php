@@ -144,21 +144,16 @@ class InvoiceReport extends BaseReport
         $cgst = intval($fees[FeeName::CGST]['sum'] ?? 0);
         $sgst = intval($fees[FeeName::SGST]['sum'] ?? 0);
 
-        if (($cgst > 0) or ($sgst > 0))
-        {
-            $totalTax = $cgst + $sgst;
 
-            $taxes = [
-                self::CGST => $cgst,
-                self::SGST => $sgst,
-            ];
-        }
-        else
-        {
-            $totalTax = $igst;
+        // all 3 taxes might have been charged to merchant if merchant updated
+        // their GSTN number later
+        $totalTax = $cgst + $sgst + $igst;
 
-            $taxes = [self::IGST => $igst];
-        }
+        $taxes = [
+            self::IGST => $igst,
+            self::CGST => $cgst,
+            self::SGST => $sgst,
+        ];
 
         return ['taxes' => $taxes, 'total_tax' => $totalTax];
     }

@@ -6,31 +6,35 @@ use RZP\Models\Base;
 use RZP\Models\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Batch;
+use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const PAYMENT_ID        = 'payment_id';
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
-    const BASE_AMOUNT       = 'base_amount';
-    const STATUS            = 'status';
-    const NOTES             = 'notes';
-    const TRANSACTION_ID    = 'transaction_id';
-    const BATCH_ID          = 'batch_id';
+    const ID                     = 'id';
+    const MERCHANT_ID            = 'merchant_id';
+    const PAYMENT_ID             = 'payment_id';
+    const AMOUNT                 = 'amount';
+    const CURRENCY               = 'currency';
+    const BASE_AMOUNT            = 'base_amount';
+    const STATUS                 = 'status';
+    const NOTES                  = 'notes';
+    const TRANSACTION_ID         = 'transaction_id';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const BATCH_ID               = 'batch_id';
 
-    const GATEWAY_REFUNDED  = 'gateway_refunded';
-    const REFERENCE1        = 'reference1';
-    const REFERENCE2        = 'reference2';
-    const ATTEMPTS          = 'attempts';
-    const LAST_ATTEMPTED_AT = 'last_attempted_at';
+    const GATEWAY_REFUNDED       = 'gateway_refunded';
+    const REFERENCE1             = 'reference1';
+    const REFERENCE2             = 'reference2';
+    const ATTEMPTS               = 'attempts';
+    const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
-    const ACQUIRER_DATA     = 'acquirer_data';
-    const ARN               = 'arn';
+    const ACQUIRER_DATA          = 'acquirer_data';
+    const ARN                    = 'arn';
+
 
     protected static $sign = 'rfnd';
 
@@ -113,6 +117,12 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT,
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::LAST_ATTEMPTED_AT,
+    ];
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -131,6 +141,11 @@ class Entity extends Base\PublicEntity
     public function batch()
     {
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
+    }
+
+    public function batchFundTransfer()
+    {
+        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
 
     public function netbanking()
@@ -219,6 +234,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -239,6 +259,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACQUIRER_DATA);
     }
 
+    public function getChannel()
+    {
+        return Channel::KOTAK;
+    }
+
+    public function getFees()
+    {
+        return 0;
+    }
+
+    public function getServiceTax()
+    {
+        return 0;
+    }
+
+    public function getTax()
+    {
+        return 0;
+    }
+
     protected function getAcquirerDataAttribute()
     {
         $acquirerData = [];
@@ -254,13 +294,7 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
-        if (empty($acquirerData) === true)
-        {
-            // Show the field as an empty object on json_encoded response
-            $acquirerData = new \stdClass;
-        }
-
-        return $acquirerData;
+        return (new Dictionary($acquirerData));
     }
 
     public function setGatewayRefunded($gatewayRefunded)
@@ -359,6 +393,21 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setUtr(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
+    public function setRemarks(string $value)
+    {
+        $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function getGateway()

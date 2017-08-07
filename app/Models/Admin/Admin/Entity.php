@@ -512,7 +512,7 @@ class Entity extends Base\Entity
     {
         $app = App::getFacadeRoot();
 
-        if ($app['api.route']->isWorkflowExecuteCall() === true)
+        if ($app['api.route']->isWorkflowExecuteOrApproveCall() === true)
         {
             return true;
         }

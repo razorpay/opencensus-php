@@ -28,6 +28,13 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(array $input)
     {
         (new Validator)->validateInput('direct', $input);
@@ -647,61 +654,71 @@ class Service extends Base\Service
 
     public function retryFailedRefunds($input)
     {
-        $this->trace->info(TraceCode::REFUND_RETRY_INITIATED);
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_INITIATED,
+            $input);
 
-        $gateways = (array) ($input['gateways'] ?? Payment\Gateway::REFUND_RETRY_GATEWAYS);
-
-        $status = [];
-
-        $attempts = self::MAX_REFUND_RETRY_ATTEMPTS;
-
-        //
-        // Every combination of gateway / refund needs to be processed
-        // Get the appropriate refunds and pass them as part of the refund
-        // Get refunds that have failed and those that have not been
-        // retried more than 3. Post every retry update last retried at.
-        //
-        $refunds = $this->repo->refund->fetchRefundsByGatewayAndAttempts($gateways, $attempts);
-
-        $success = $failure = 0;
-
-        foreach ($refunds as $refund)
-        {
-            $refundId = $refund->getId();
-
-            try
+        // Adding a lock for 15 minutes to avoid race conditions on the cron.
+        // This cron is only executed once a day for now.
+        $summary = $this->mutex->acquireAndRelease(
+            'refund_retry_failed',
+            function() use ($input)
             {
-                $processor = $this->getNewProcessor($refund->merchant);
+                $gateways = (array) ($input['gateways'] ?? Payment\Gateway::REFUND_RETRY_GATEWAYS);
 
-                $status[$refundId] = $processor->processRefundRetry($refund);
+                //
+                // Every combination of gateway / refund needs to be processed
+                // Get the appropriate refunds and pass them as part of the refund
+                // Get refunds that have failed and those that have not been
+                // retried more than 3. Post every retry update last retried at.
+                //
+                $refunds = $this->repo
+                                ->refund
+                                ->fetchRefundsByGatewayAndAttempts($gateways, self::MAX_REFUND_RETRY_ATTEMPTS);
 
-                $success++;
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::DEBUG,
-                    TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
-                    [
-                        'refund_id' => $refundId,
-                        'refund_attempts' => $refund->getAttempts()
-                    ]);
+                $status = [];
 
-                $failure++;
-            }
-        }
+                $success = $failure = 0;
 
-        $summary = [
-            'successful'    => $success,
-            'failure'       => $failure,
-            'status'        => $status,
-        ];
+                foreach ($refunds as $refund)
+                {
+                    $refundId = $refund->getId();
+
+                    try
+                    {
+                        $processor = $this->getNewProcessor($refund->merchant);
+
+                        $status[$refundId] = $processor->processRefundRetry($refund);
+
+                        $success++;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::DEBUG,
+                            TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
+                            [
+                                'refund_id' => $refundId,
+                                'refund_attempts' => $refund->getAttempts()
+                            ]);
+
+                        $failure++;
+                    }
+                }
+
+                return [
+                    'successful'    => $success,
+                    'failure'       => $failure,
+                    'status'        => $status,
+                ];
+            },
+            900,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(
             TraceCode::REFUND_RETRY_RESULT,
             [
-                $status,
                 'summary' => $summary
             ]);
 

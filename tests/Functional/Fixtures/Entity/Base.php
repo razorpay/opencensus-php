@@ -43,6 +43,7 @@ class Base
         'webhook'           => \RZP\Models\Merchant\Webhook\Entity::class,
         'payment'           => \RZP\Models\Payment\Entity::class,
         'pricing'           => \RZP\Models\Pricing\Entity::class,
+        'dispute'           => \RZP\Models\Dispute\Entity::class,
         'customer'          => \RZP\Models\Customer\Entity::class,
         'merchant'          => \RZP\Models\Merchant\Entity::class,
         'terminal'          => \RZP\Models\Terminal\Entity::class,

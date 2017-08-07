@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
 
 class Status
@@ -119,11 +121,16 @@ class Status
         return (defined(__CLASS__ . '::' . strtoupper($status)));
     }
 
-    public static function checkStatus($status)
+    public static function validateStatus($status)
     {
         if (self::isStatusValid($status) === false)
         {
-            throw new \InvalidArgumentException('Not a valid status: ' . $status);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                Entity::STATUS,
+                [
+                    'status' => $status
+                ]);
         }
     }
 }

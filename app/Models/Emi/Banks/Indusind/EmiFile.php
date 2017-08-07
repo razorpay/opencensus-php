@@ -17,45 +17,6 @@ class EmiFile extends Base\EmiFile
 
     const TYPE = FileStore\Type::INDUSIND_EMI_FILE;
 
-    protected static $headers = [
-            'EMI ID',
-            'Card Pan',
-            'Issuer',
-            'RRN',
-            'Auth Code',
-            'Tx Amount',
-            'EMI_Offer',
-            'Manufacturer',
-            'Merchant Name',
-            'Address1',
-            'Store City',
-            'Store State',
-            'Acquirer',
-            'MID',
-            'TID',
-            'Tx Time',
-            'Settlement Time',
-            'Customer Processing Fee',
-            'Customer Processing Amt',
-            'Subvention payable to Issuer',
-            'Subvention Amount (Rs.)',
-            'Interest Rate',
-            'Tx Status',
-            'Product Category',
-            'Product Sub-Category 1',
-            'Product Sub-Category 2',
-            'Model Name',
-            'Card Hash',
-            'EMI Amount',
-            'Loan Amount',
-            'Discount / Cashback %',
-            'Discount / Cashback Amount',
-            'Is New Model',
-            'Additional Cashback',
-            'Reward Point',
-            'Txn Type',
-        ];
-
     protected function getEmiData($input)
     {
         $data = [];

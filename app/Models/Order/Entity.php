@@ -122,6 +122,11 @@ class Entity extends Base\PublicEntity
         self::OFFER_ID,
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     protected static $sign = 'order';
 
     protected $entity = 'order';
@@ -199,6 +204,11 @@ class Entity extends Base\PublicEntity
     public function setAmountPaid(int $amountPaid)
     {
         $this->setAttribute(self::AMOUNT_PAID, $amountPaid);
+    }
+
+    public function setPartialPayment(bool $partialPayment)
+    {
+        $this->setAttribute(self::PARTIAL_PAYMENT, $partialPayment);
     }
 
     public function getStatus()
@@ -280,7 +290,14 @@ class Entity extends Base\PublicEntity
 
     public function allowPartialPayment()
     {
-        $this->setAttribute(self::PARTIAL_PAYMENT, true);
+        $this->setPartialPayment(true);
+    }
+
+    public function togglePartialPayment()
+    {
+        $value = ($this->isPartialPaymentAllowed() === false);
+
+        $this->setPartialPayment($value);
     }
 
     public function incrementAttempts()

@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call('GroupMapSeeder');
         $this->call('WorkflowSeeder');
         $this->call('TaxGroupAndTaxSeeder');
+        $this->call('DisputeReasonSeeder');
     }
 
     private function seed()

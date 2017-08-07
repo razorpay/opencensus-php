@@ -8,6 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::PAYER_NAME     => 'sometimes|string|max:100',
         Entity::PAYER_ACCOUNT  => 'required|string|max:20',
         Entity::PAYER_IFSC     => 'required|string|size:11',
         Entity::PAYEE_ACCOUNT  => 'required|string|max:20',

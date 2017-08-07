@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         'bank'                    => 'required_if:method,netbanking,aeps',
         'wallet'                  => 'required_if:method,wallet|custom',
         'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             => 'sometimes',
+        'description'             => 'sometimes|string|max:255|utf8',
         'email'                   => 'sometimes|nullable|email',
         'contact'                 => 'sometimes|nullable|contact_syntax',
         'signature'               => 'sometimes|nullable|string',
@@ -50,7 +50,8 @@ class Validator extends Base\Validator
         'save'                    => 'sometimes|in:0,1',
         'recurring'               => 'sometimes_if:method,card|in:0,1',
         'fee'                     => 'sometimes|filled|integer|max:50000000',
-        'service_tax'             => 'sometimes|filled|integer|max:50000000',
+        Entity::SERVICE_TAX       => 'sometimes|filled|integer|max:50000000',
+        Entity::TAX               => 'sometimes|filled|integer|max:50000000',
         'on_hold'                 => 'sometimes_if:method,transfer|boolean',
         'on_hold_until'           => 'sometimes_if:method,transfer|nullable|epoch',
         'ip'                      => 'sometimes|ip',
@@ -96,7 +97,6 @@ class Validator extends Base\Validator
         'amount',
         'bank',
         'currency',
-        'description',
         'fee',
         'contact',
         'email',
@@ -357,28 +357,6 @@ class Validator extends Base\Validator
                     'customer_id'       => $input[Entity::CUSTOMER_ID],
                     'subscription_id'   => $input[Entity::SUBSCRIPTION_ID],
                 ]);
-        }
-    }
-
-    protected function validateDescription($input)
-    {
-        if (isset($input['description']) === false)
-            return;
-
-        $desc = $input['description'];
-
-        if (is_string($desc) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
-                Entity::DESCRIPTION);
-        }
-
-        if (strlen($desc) > 255)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
-                Entity::DESCRIPTION);
         }
     }
 

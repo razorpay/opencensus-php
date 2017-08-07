@@ -108,8 +108,9 @@ class Core extends Base\Core
         {
             $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
 
-            $attempts = $this->repo->fund_transfer_attempt->getCreatedPayoutAttemptsBeforeTimestamp(
-                FundTransferAttempt\Status::CREATED, $timestamp, ['source']);
+            $attempts = $this->repo
+                             ->fund_transfer_attempt
+                             ->getCreatedAttemptsBeforeTimestamp($timestamp, ['source']);
 
             $method = 'processBankPayoutsFor' . ucfirst($channel);
 
@@ -254,6 +255,8 @@ class Core extends Base\Core
         $payout->setFees($txn->getFee());
 
         $payout->setServiceTax($txn->getServiceTax());
+
+        $payout->setTax($txn->getTax());
 
         $this->validateMerchantBalance($payout);
 

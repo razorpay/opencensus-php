@@ -315,7 +315,7 @@ class Gateway extends Base\Gateway
 
             if (empty($authResponse['data']) === true)
             {
-                throw new Exception\LogicException(
+                throw new Exception\BadRequestValidationFailureException(
                     'The gateway input is empty. This is unexpected.',
                     null,
                     ['network' => $network]);
@@ -758,15 +758,16 @@ class Gateway extends Base\Gateway
                 $exception = new Exception\GatewayTimeoutException('');
                 break;
 
-            case Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE:
-                $exception = new Exception\GatewayRequestException;
-                break;
-
-            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF:
-            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN:
-            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT:
-                $exception = new Exception\GatewayErrorException($apiErrorCode);
-
+            case Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE:
+                // TODO: This is a hack. Fix this in a better way.
+                if ($this->action === Base\Action::AUTHORIZE)
+                {
+                    $exception = new Exception\GatewayRequestException;
+                }
+                else
+                {
+                    $exception = new Exception\GatewayErrorException($apiErrorCode);
+                }
                 break;
 
             default:

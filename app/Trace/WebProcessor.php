@@ -82,7 +82,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'ajax'          => $this->request->ajax(),
             'origin'        => $this->request->header('origin'),
             'application'   => $this->request->header('X-Razorpay-App'),
-            'client_ip'     => $this->request->getRealClientIp(),
+            'client_ip'     => $this->request->ip(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $headers->get('referer'),
             'content_type'  => $headers->get('content-type'),

@@ -84,7 +84,7 @@ class TransferTest extends TestCase
         // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
 
-        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0]);
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
     }
@@ -97,18 +97,19 @@ class TransferTest extends TestCase
 
         $transfer = $this->createTransfer('account');
 
-        $serviceTax = 4;
-        $expectedFee = 20 + $serviceTax;
+        $tax = 4;
+        $expectedFee = 20 + $tax;
 
         $transferData = [
-            'fees'        => $expectedFee,
-            'service_tax' => $serviceTax
+            'fees'  => $expectedFee,
+            'tax'   => $tax
         ];
 
         $txnData = [
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
-            'service_tax' => $serviceTax,
+            'service_tax' => $tax,
+            'tax'         => $tax,
             'debit'       => $transfer['amount'] + $expectedFee
         ];
 
@@ -488,6 +489,7 @@ class TransferTest extends TestCase
             'settled'       => false,
             'fee'           => 0,
             'service_tax'   => 0,
+            'tax'           => 0,
         ];
 
         if (empty($txnData) === false)
@@ -522,6 +524,7 @@ class TransferTest extends TestCase
             'settled'       => false,
             'fee'           => 0,
             'service_tax'   => 0,
+            'tax'           => 0,
         ];
 
         if (empty($txnData) === false)

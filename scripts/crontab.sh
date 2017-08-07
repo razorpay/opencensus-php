@@ -99,6 +99,7 @@ add_cron "58 7,19 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/ref
 # add_cron "33 1-19/6 * * *"  "freecharge_validate_refund_rec" POST "$BASE_URL/refunds/wallet_freecharge/validate"         ""                              $LIVE_AUTH
 # add_cron "9,39 * * * *"     "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
 add_cron "*/15 * * * *"     "refund_failed_retry"            POST "$BASE_URL/refunds/retry/failed"                       ""                              $LIVE_AUTH
+add_cron "*/15 * * * *"     "virtual_account_refund_excess"  POST "$BASE_URL/virtual_accounts/refund/excess"             ""                              $LIVE_AUTH
 
 # Invoice
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH

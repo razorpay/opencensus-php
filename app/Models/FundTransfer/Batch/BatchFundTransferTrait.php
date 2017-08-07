@@ -19,6 +19,7 @@ trait BatchFundTransferTrait
             $this->batchFundTransfer->incrementAmount($entity->getAmount());
             $this->batchFundTransfer->incrementFees($entity->getFees());
             $this->batchFundTransfer->incrementServiceTax($entity->getServiceTax());
+            $this->batchFundTransfer->incrementTax($entity->getTax());
             $this->batchFundTransfer->incrementTotalCount();
             $this->batchFundTransfer->incrementTransactionCount($txnsCount);
         }
@@ -57,6 +58,7 @@ trait BatchFundTransferTrait
             Entity::AMOUNT            => $entity->getAmount(),
             Entity::FEES              => $entity->getFees(),
             Entity::SERVICE_TAX       => $entity->getServiceTax(),
+            Entity::TAX               => $entity->getTax(),
             Entity::TOTAL_COUNT       => 1,
             Entity::TRANSACTION_COUNT => $txnsCount,
             Entity::INITIATED_AT      => time(),

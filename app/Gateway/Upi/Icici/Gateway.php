@@ -7,6 +7,7 @@ use ErrorException;
 use phpseclib\Crypt\RSA;
 use Request;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -681,13 +682,8 @@ class Gateway extends Base\Gateway
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'N',
+            Fields::ONLINE_REFUND                   => 'Y',
         ];
-
-        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
-        {
-            $data[Fields::ONLINE_REFUND] = 'Y';
-        }
 
         $content = $this->transformRequestArrayToContent($data);
 

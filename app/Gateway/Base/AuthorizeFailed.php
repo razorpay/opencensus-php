@@ -28,7 +28,7 @@ trait AuthorizeFailed
                 'When converting failed payment to authorized, payment verification ' .
                 'should have failed but instead it did not',
                 null,
-                $input);
+                $input['payment']);
         }
 
         $verify = $e->getVerifyObject();

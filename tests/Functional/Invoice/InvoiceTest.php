@@ -555,6 +555,30 @@ class InvoiceTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
+    public function testUpdateIssuedInvoiceWithOrderAttributes()
+    {
+        $this->createOrder();
+
+        $this->fixtures->create('invoice');
+
+        $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+
+        // Updates partial_payment attribute in request and asserts again.
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['partial_payment'] = '0';
+        $testData['response']['content']['partial_payment'] = false;
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
     public function testUpdateIssuedInvoiceWithExtraFields()
     {
         $this->createOrder();

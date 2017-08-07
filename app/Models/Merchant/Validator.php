@@ -14,9 +14,9 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
-    const maxImageSize = 1024 * 1024;
+    const MAXIMAGESIZE = 1024 * 1024;
 
-    const extensionMimeMap = [
+    const EXTENSIONMIMEMAP = [
         "jpeg"  => "image/jpeg",
         "jpg"   => "image/jpeg",
         "png"   => "image/png",
@@ -135,7 +135,7 @@ class Validator extends Base\Validator
         $height = $imageDetails['height'];
 
         // File size should not be more than 1M.
-        if ($fileSize > self::maxImageSize)
+        if ($fileSize > self::MAXIMAGESIZE)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG);
@@ -160,7 +160,7 @@ class Validator extends Base\Validator
 
     public function validateImage($mimeType, $extension)
     {
-        $acceptedMimeArray = self::extensionMimeMap;
+        $acceptedMimeArray = self::EXTENSIONMIMEMAP;
 
         // Checks if extension is defined in the array and if the extension and mime type match.
         if ((!isset($acceptedMimeArray[$extension])) or
@@ -208,8 +208,10 @@ class Validator extends Base\Validator
 
     protected function validateCsvEmail($input)
     {
-        if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
+        if (empty($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
             return;
+        }
 
         $emails = $input[Entity::TRANSACTION_REPORT_EMAIL];
 

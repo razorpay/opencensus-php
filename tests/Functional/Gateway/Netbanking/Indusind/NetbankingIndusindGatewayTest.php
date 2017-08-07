@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Indusind;
 use Mail;
 use Excel;
 use Mockery;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -47,6 +47,8 @@ class NetbankingIndusindGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
     }
 
     public function testPaymentVerify()
@@ -104,6 +106,8 @@ class NetbankingIndusindGatewayTest extends TestCase
         $this->createRefundsForExcel();
 
         $this->alterRefundsDateToYesterday();
+
+        $this->setPaymentsCreatedAtYesterday();
 
         // Generating 3rd payment and leaving its created_at
         // date to now unlike first 2 payments
@@ -180,6 +184,35 @@ class NetbankingIndusindGatewayTest extends TestCase
             });
     }
 
+    protected function checkRefundFileData($data)
+    {
+        $filePath = $data['netbanking_indusind']['refunds'];
+
+        $this->assertTrue(file_exists($filePath));
+
+        $refundsFileContents = file($filePath);
+
+        $refundAmounts = ['500.00', '100.00', '400.00'];
+
+        foreach ($refundsFileContents as $row)
+        {
+            $refundsFileRow = explode('|', $row);
+
+            // Asserting that the file contains 5 columns
+            assert(count($refundsFileRow) === 6);
+
+            // Asserting Bank Payment Id
+            assert(trim($refundsFileRow[5]) === '9999999999');
+
+            // Asserting that the refund amounts are correct
+            $rowRefundAmount = $refundsFileRow[4];
+
+            assert(in_array($rowRefundAmount, $refundAmounts));
+        }
+
+        unlink($filePath);
+    }
+
     protected function createRefundsForExcel()
     {
         // Refund the payment above in full
@@ -208,44 +241,26 @@ class NetbankingIndusindGatewayTest extends TestCase
         }
     }
 
-    protected function checkRefundFileData($data)
+    protected function setPaymentsCreatedAtYesterday()
     {
-        $filePath = $data['netbanking_indusind']['file'];
+        // Set the transactions to be reconciled today
+        $payments = $this->getEntities('payment', [], true);
 
-        // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
-        $this->assertEquals($data['netbanking_indusind']['count'], 3);
-        $this->assertTrue(file_exists($filePath));
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
 
-        $refundsFileContents = file($filePath);
-
-        $refundAmounts = ['500.00', '100.00', '400.00'];
-
-        foreach ($refundsFileContents as $row)
+        foreach ($payments['items'] as $payment)
         {
-            $refundsFileRow = explode('|', $row);
-
-            // Asserting that the file contains 5 columns
-            assert(count($refundsFileRow) === 6);
-
-            // Asserting Bank Payment Id
-            assert(trim($refundsFileRow[5]) === '9999999999');
-
-            // Asserting that the refund amounts are correct
-            $rowRefundAmount = $refundsFileRow[4];
-
-            assert(in_array($rowRefundAmount, $refundAmounts));
+            $this->fixtures->edit('payment', $payment['id'], ['authorized_at' => $createdAt]);
         }
-
-        unlink($filePath);
     }
 
     protected function checkMailQueue()
     {
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertSent(DailyFileMail::class, function ($mail)
         {
-            $body = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
+            $this->assertEquals('3', $mail->viewData['count']['refunds']);
 
-            $this->assertEquals($body, $mail->viewData['body']);
+            $this->assertEquals('2', $mail->viewData['count']['claims']);
 
             return true;
         });

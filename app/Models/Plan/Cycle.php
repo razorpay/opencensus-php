@@ -46,6 +46,15 @@ class Cycle
         return (in_array($period, self::$validPeriods, true) === true);
     }
 
+    public static function validatePeriod($period)
+    {
+        if (self::isPeriodValid($period) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid argument for period passed', Entity::PERIOD, [Entity::PERIOD => $period]);
+        }
+    }
+
     /**
      * The maximum allowed total count is basically the maximum
      * allowed interval divided by the interval set for the plan.
@@ -66,12 +75,7 @@ class Cycle
         $period = $plan->getPeriod();
         $interval = $plan->getInterval();
 
-        if (self::isPeriodValid($period) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invalid argument for period passed', null, ['period' => $period]
-            );
-        }
+        self::validatePeriod($period);
 
         $maxAllowedInterval = self::getMaxAllowedInterval($period);
 
@@ -82,12 +86,7 @@ class Cycle
 
     public static function getMaxAllowedInterval(string $period): int
     {
-        if (self::isPeriodValid($period) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invalid argument for period passed', null, ['period' => $period]
-            );
-        }
+        self::validatePeriod($period);
 
         return self::$allowedMaxInterval[$period];
     }

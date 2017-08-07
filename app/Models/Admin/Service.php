@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Admin;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Models\Merchant;
@@ -98,5 +99,17 @@ class Service extends Base\Service
         $validator->validateInput('mailgun_webhook', $input);
 
         return (new Mailgun)->processCallback($type, $input);
+    }
+
+    public function updateTaxColumnValue(string $entity, int $limit = 10000)
+    {
+        if (in_array($entity, [Entity::PAYMENT, Entity::TRANSACTION]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid entity: ' . $entity);
+        }
+
+        $count = $this->repo->$entity->updateTax($limit);
+
+        return ['count' => $count];
     }
 }

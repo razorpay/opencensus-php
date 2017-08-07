@@ -80,15 +80,6 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postSettlementReturn()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->returnSettlements($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function postSettlementReconcileGenerate()
     {
         $input = Request::all();
@@ -107,15 +98,6 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postSettlementReturnGenerate()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->generateSettlementReturn($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function deleteSettlementFile($setlFileType)
     {
         $data = (new Settlement\Service)->deleteSetlFile($setlFileType);
@@ -130,37 +112,9 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postSettlementCalculateFees()
-    {
-        $data = (new FundTransfer\Batch\Service)->calculatePrevousSettlementFees();
-
-        return ApiResponse::json($data);
-    }
-
-    public function postBatchFundTransferCalculatePreviousFees()
-    {
-        $data = (new FundTransfer\Batch\Service)->calculatePreviousBatchFundTransferFees();
-
-        return ApiResponse::json($data);
-    }
-
     public function getSettlementFixer()
     {
         $data = (new Transaction\Service)->settlementFixer();
-
-        return ApiResponse::json($data);
-    }
-
-    public function postComputeBatchFundTransferServiceTax()
-    {
-        $data = (new FundTransfer\Batch\Service)->computeBatchFundTransferServiceTax();
-
-        return ApiResponse::json($data);
-    }
-
-    public function postComputeSettlementServiceTax()
-    {
-        $data = (new Settlement\Service)->calculatePreviousSettlementServiceTax();
 
         return ApiResponse::json($data);
     }

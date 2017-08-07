@@ -58,6 +58,8 @@ class Service extends Base\Service
 
     public function multiAssignFeature($input)
     {
+        $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
         $response = new Base\Collection;
@@ -91,9 +93,11 @@ class Service extends Base\Service
 
     public function multiRemoveFeature($input)
     {
+        $this->trace->info(TraceCode::FEATURE_MULTI_REMOVE_REQUEST, $input);
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
-        $featureName = $input[ENTITY::NAME];
+        $featureName = $input[Entity::NAME];
 
         $response = new Base\Collection;
 

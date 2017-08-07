@@ -7,7 +7,7 @@ use RZP\Gateway\AxisMigs;
 
 class TxnResponseCode
 {
-    public static $messages = array(
+    public static $messages = [
         '0' => 'Transaction Successful',
         '1' => 'Unknown Error',
         '2' => 'Bank Declined Transaction',
@@ -15,7 +15,18 @@ class TxnResponseCode
         '4' => 'Expired Card',
         '5' => 'Insufficient Funds',
         '6' => 'Error Communicating with Bank',
-        '7' => 'Payment Server System Error',
+        '7' => [
+            'E5000'   => 'Username and/or password for merchant is invalid.',
+            'E5159'   => 'Invalid Card Type',
+            'E5408'   => 'Not an auth transaction',
+            'E5414'   => 'Requested capture amount exceeds outstanding authorized amount',
+            'E5415'   => 'Excessive refund attempted',
+            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand MS and not expected card brand MC',
+            'I5166'   => 'Invalid credit card: incorrect secure code number length : Invalid Card Security Code length',
+            'I5426'   => 'Invalid Permission : advanceMA',
+            'W9520'   => 'Server is unable to process the request at the moment - please try later',
+            'default' => 'Payment Server System Error',
+        ],
         '8' => 'Transaction Type Not Supported',
         '9' => 'Bank declined transaction (Do not contact Bank)',
         'A' => 'Transaction Aborted',
@@ -35,17 +46,28 @@ class TxnResponseCode
         '?' => 'Transaction status is unknown',
 
         'Aborted' => 'Transaction Aborted',
-    );
+    ];
 
 //    'default' => 'Unable to be determined',
-    public static $map = array(
+    public static $map = [
         '1' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         '2' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
         '3' => Error\ErrorCode::BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,
         '4' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         '5' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         '6' => Error\ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
-        '7' => Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        '7' => [
+            'E5000'   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
+            'E5159'   => Error\ErrorCode::GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK,
+            'E5408'   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
+            'E5414'   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
+            'E5415'   => Error\ErrorCode::GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED,
+            'I5154'   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+            'I5166'   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+            'I5426'   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
+            'W9520'   => Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+            'default' => Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
         '8' => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
         '9' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
         'A' => Error\ErrorCode::SERVER_ERROR_PAYMENT_ABORTED,
@@ -65,6 +87,27 @@ class TxnResponseCode
         '?' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
         'Aborted' => Error\ErrorCode::BAD_REQUEST_PAYMENT_ABORTED,
-    );
+    ];
 
+    public static function isErrorCodeMapped($code)
+    {
+        return (isset(self::$map[$code]) === true);
+    }
+
+    public static function getErrorCodeMapped($code, $msg = null)
+    {
+        if (is_array(self::$map[$code]) === true)
+        {
+            $msgCode = explode('-', explode(':', $msg)[0])[0];
+
+            if (isset(self::$map[$code][$msgCode]) === false)
+            {
+                $msgCode = 'default';
+            }
+
+            return self::$map[$code][$msgCode];
+        }
+
+        return self::$map[$code];
+    }
 }

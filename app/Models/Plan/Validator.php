@@ -21,11 +21,7 @@ class Validator extends Base\Validator
 
     protected function validatePeriod($attribute, $value)
     {
-        if (Cycle::isPeriodValid($value) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid argument for period passed', null, ['period' => $value]);
-        }
+        Cycle::validatePeriod($value);
     }
 
     protected function validateInterval($input)

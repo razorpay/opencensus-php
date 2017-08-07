@@ -134,15 +134,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEmiPaymentsBetween($from, $to, $bank)
+    public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
         return $this->newQuery()
+                    ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($terminalEmi, '=', false)
                     ->with('card.globalCard')
                     ->with('emiPlan')
+                    ->select($paymentData)
                     ->get();
     }
 
@@ -780,9 +795,10 @@ class Repository extends Base\Repository
      * Fetches the number of times a payment has been made against each offer id in $offerIds
      * grouped by offerId
      *
-     * @param  array  $cardIds  Card ids to check
-     * @param  array  $offerIds Offer ids to check
-     * @return int              Count of payments
+     * @param  array $cardIds  Card ids to check
+     * @param  array $offerIds Offer ids to check
+     *
+     * @return array Count of payments
      */
     public function getPaymentCountForCardIdsAndOfferIds(array $cardIds, array $offerIds): array
     {
@@ -839,6 +855,7 @@ class Repository extends Base\Repository
                     ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
                     ->where($paymentMethod, '=', Method::BANK_TRANSFER)
+                    ->orderByCreatedAt()
                     ->get();
     }
 
@@ -915,5 +932,14 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->sum(Entity::AMOUNT);
+    }
+
+    public function updateTax(int $limit = 10000)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::TAX)
+                    ->whereNotNull(Entity::SERVICE_TAX)
+                    ->limit($limit)
+                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
     }
 }

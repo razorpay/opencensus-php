@@ -23,55 +23,67 @@ class Orchestrator extends Base\Core
      * It's all meta data.
      */
     const EXTRA_DETAILS    = 'extra_details';
-    const EMAIL_DETAILS    = 'email_details';
     const ATTACHMENT_COUNT = 'attachment_count';
+
+    /**************************
+     * Email details constants
+     **************************/
+    const EMAIL_DETAILS    = 'email_details';
+    const FROM             = 'from';
+    const TO               = 'to';
+    const SUBJECT          = 'subject';
+    const TIMESTAMP        = 'timestamp';
+    const BODY             = 'body';
+    const BODY_HTML_TEXT   = 'body_html_text';
 
     /******************
      * Bank constants
      ******************/
 
-    const HDFC               = 'HDFC';
-    const AXIS               = 'Axis';
-    const KOTAK              = 'Kotak';
-    const BILLDESK           = 'BillDesk';
-    const PAYZAPP            = 'PayZapp';
-    const MOBIKWIK           = 'Mobikwik';
-    const PAYTM              = 'Paytm';
-    const OLAMONEY           = 'Olamoney';
-    const FREECHARGE         = 'Freecharge';
-    const NETBANKING_AXIS    = 'NetbankingAxis';
-    const NETBANKING_ICICI   = 'NetbankingIcici';
-    const NETBANKING_FEDERAL = 'NetbankingFederal';
-    const NETBANKING_RBL     = 'NetbankingRbl';
-    const JIOMONEY           = 'Jiomoney';
-    const EBS                = 'Ebs';
-    const FIRST_DATA         = 'FirstData';
-    const ADMIN              = 'admin';
+    const HDFC                = 'HDFC';
+    const AXIS                = 'Axis';
+    const KOTAK               = 'Kotak';
+    const BILLDESK            = 'BillDesk';
+    const PAYZAPP             = 'PayZapp';
+    const MOBIKWIK            = 'Mobikwik';
+    const PAYTM               = 'Paytm';
+    const OLAMONEY            = 'Olamoney';
+    const FREECHARGE          = 'Freecharge';
+    const NETBANKING_AXIS     = 'NetbankingAxis';
+    const NETBANKING_ICICI    = 'NetbankingIcici';
+    const NETBANKING_FEDERAL  = 'NetbankingFederal';
+    const NETBANKING_RBL      = 'NetbankingRbl';
+    const NETBANKING_INDUSIND = 'NetbankingIndusind';
+    const JIOMONEY            = 'Jiomoney';
+    const EBS                 = 'Ebs';
+    const FIRST_DATA          = 'FirstData';
+    const ADMIN               = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      * The banks send their MIS files through this sender address
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC               => ['payoutreport@hdfcbank.com'],
-        self::AXIS               => ['pg.estatements@axisbank.com'],
-        self::BILLDESK           => [],
-        self::PAYZAPP            => [],
-        self::MOBIKWIK           => [],
-        self::PAYTM              => [],
-        self::KOTAK              => ['BankAlerts@kotak.com'],
-        self::OLAMONEY           => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE         => ['noreply@freechargemail.in'],
-        self::NETBANKING_AXIS    => ['it.rico@axisbank.com'],
-        self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
-        self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
-        self::NETBANKING_RBL     => ['internetbanking@rblbank.com'],
-        self::JIOMONEY           => [],
-        self::EBS                => [],
-        self::FIRST_DATA         => ['customer.care@icici.mailserv.in'],
+        self::HDFC                => ['payoutreport@hdfcbank.com'],
+        self::AXIS                => ['pg.estatements@axisbank.com'],
+        self::BILLDESK            => [],
+        self::PAYZAPP             => [],
+        self::MOBIKWIK            => [],
+        self::PAYTM               => [],
+        self::KOTAK               => ['BankAlerts@kotak.com'],
+        self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE          => ['noreply@freechargemail.in'],
+        self::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
+        self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
+        self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
+        self::NETBANKING_INDUSIND => [],
+        self::JIOMONEY            => [],
+        self::EBS                 => [],
+        self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN              => ['prashanth.yv@razorpay.com'],
+        self::ADMIN               => ['prashanth.yv@razorpay.com'],
     ];
 
     /**
@@ -494,12 +506,12 @@ class Orchestrator extends Base\Core
         //
 
         $emailDetails = [
-            'from'              => $input['X-Original-Sender'] ?? $input['sender'],
-            'subject'           => $input['subject'],
-            'to'                => $input['recipient'],
-            'timestamp'         => $input['timestamp'],
-            'body'              => $input['stripped-text'],
-            'body_html_text'    => html_entity_decode(strip_tags($input['stripped-html'])),
+            self::FROM           => $input['X-Original-Sender'] ?? $input['sender'],
+            self::SUBJECT        => $input['subject'],
+            self::TO             => $input['recipient'],
+            self::TIMESTAMP      => $input['timestamp'],
+            self::BODY           => $input['stripped-text'],
+            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input['stripped-html'])),
         ];
 
         //
@@ -556,7 +568,7 @@ class Orchestrator extends Base\Core
 
         if ($gateway === self::ADMIN)
         {
-            $gateway = $this->emailDetails['subject'];
+            $gateway = $this->emailDetails[self::SUBJECT];
 
             assert(
                 in_array(
@@ -570,7 +582,7 @@ class Orchestrator extends Base\Core
 
     protected function getGatewayFromEmail()
     {
-        $fromEmailId = $this->emailDetails['from'];
+        $fromEmailId = $this->emailDetails[self::FROM];
 
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -584,9 +596,15 @@ class Orchestrator extends Base\Core
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
             ($this->gatewayEmailIsValid($gateway) === false))
         {
+            $formattedMailDetails = $this->emailDetails;
+            unset($formattedMailDetails[self::BODY]);
+            unset($formattedMailDetails[self::BODY_HTML_TEXT]);
+
             throw new Exception\ReconciliationException(
                 'Email content is invalid.',
-                ['email_details' => $this->emailDetails]);
+                [
+                    self::EMAIL_DETAILS => $formattedMailDetails
+                ]);
         }
 
         return $gateway;

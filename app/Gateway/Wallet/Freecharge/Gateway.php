@@ -950,7 +950,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) $topupAmount,
+            RequestFields::AMOUNT       => (string) ceil($topupAmount),
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',

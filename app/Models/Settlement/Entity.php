@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                 = 'amount';
     const FEES                   = 'fees';
     const SERVICE_TAX            = 'service_tax';
+    const TAX                    = 'tax';
     const STATUS                 = 'status';
     const TRANSACTION_ID         = 'transaction_id';
     const ATTEMPTS               = 'attempts';
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
@@ -55,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::TRANSACTION_ID,
         self::ATTEMPTS,
@@ -77,7 +80,8 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::UTR,
         self::SETTLED_ON,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::TAX,
     ];
 
     protected $defaults = [
@@ -89,14 +93,27 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::PROCESSED_AT,
-        self::SETTLED_ON,
+
+        //
+        // Dates field is used for formatting dates in reports,
+        // among other things. But, we have an accessor for
+        // settled_on, which formats it to d/m/y. The date formatting
+        // for reports is done in toArray, which is done after the
+        // accessor is called. Date formatter for reports expects
+        // the date to be in int(timestamp) format. But, since the
+        // accessor modifies the timestamp to `d/m/y` format, this fails.
+        //
+        // self::SETTLED_ON,
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
     ];
 
     protected $hiddenInReport = [self::SETTLED_ON];
@@ -105,7 +122,7 @@ class Entity extends Base\PublicEntity
 
     public function fundTransferAttempts()
     {
-        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity');
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source');
     }
 
     public function merchant()
@@ -172,6 +189,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
     public function getFailureReason()
     {
         return $this->getAttribute(self::FAILURE_REASON);
@@ -180,11 +202,6 @@ class Entity extends Base\PublicEntity
     public function getRemarks()
     {
         return $this->getAttribute(self::REMARKS);
-    }
-
-    public function getVersion()
-    {
-        return $this->getAttribute(self::VERSION);
     }
 
     public function getTransactionId()
@@ -249,6 +266,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEES, $fee);
     }
 
+    public function setTax($tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
+    }
+
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
@@ -257,11 +279,6 @@ class Entity extends Base\PublicEntity
     public function setRemarks($remarks)
     {
         $this->setAttribute(self::REMARKS, $remarks);
-    }
-
-    public function setVersion($version)
-    {
-        $this->setAttribute(self::VERSION, $version);
     }
 
     public function setAttempts($count)
@@ -284,6 +301,11 @@ class Entity extends Base\PublicEntity
     protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
+    protected function getTaxAttribute()
+    {
+        return (int) $this->attributes[self::TAX];
     }
 
     protected function getAmountAttribute()

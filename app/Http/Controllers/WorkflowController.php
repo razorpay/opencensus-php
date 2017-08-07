@@ -6,11 +6,8 @@ use App;
 use Request;
 use ApiResponse;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
@@ -54,75 +51,9 @@ class WorkflowController extends Controller
 
     public function postExecuteAction(string $id)
     {
-        $input = Request::all();
+        $response = (new Action\Service)->executeAction($id);
 
-        $actionPublicId = $id;
-
-        Action\Entity::verifyIdAndStripSign($id);
-
-        $action = (new Action\Repository)->findOrFailPublic($id);
-
-        if ($action->getApproved() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACTION_NOT_APPROVED);
-        }
-
-        if ($action->isExecuted() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
-        }
-
-        list($actionCore, $stateCore, $differCore) = [
-            new Action\Core,
-            new State\Core,
-            new Differ\Core,
-        ];
-
-        $diff = (new Differ\Service)->fetchRequest($id);
-
-        $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
-
-        $payload = $diff[Differ\Entity::PAYLOAD];
-
-        $controller = $diff[Differ\Entity::CONTROLLER];
-
-        $functionName = $diff[Differ\Entity::FUNCTION_NAME];
-
-        $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
-
-        // Replace the current request's payload with the
-        // actual maker request payload.
-        Request::replace($payload);
-
-        // Create controller object
-        $controller = App::make($controller);
-
-        // Auth details have to be initialized before
-        // the actual code (Controller@action) runs.
-        $actionCore->initAuthDetails($authDetails);
-
-        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
-
-        $state = State\Entity::EXECUTED;
-
-        if ($internalResponse->getStatusCode() !== 200)
-        {
-            $state = State\Entity::FAILED;
-        }
-
-        $adminId = $this->app['basicauth']->getAdmin()->getId();
-
-        // Update states
-
-        $actionCore->updateState($action, $state);
-
-        $stateCore->changeActionState($action->getId(), $state, $adminId);
-
-        $differCore->updateStateInEs($action->getId(), $state);
-
-        return $this->getActionDetails($actionPublicId);
+        return $this->getActionDetails($id);
     }
 
     public function postActionChecker(string $id)

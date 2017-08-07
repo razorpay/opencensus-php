@@ -40,13 +40,18 @@ class Entity extends Base\PublicEntity
 
     // Input Keys
 
-    //
-    // Add-on needs to be at a subscription level because
-    // the add-on amount can change based on the subscription period.
-    // For example: if the subscription is for 3 months, add-on amount can
-    // be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
-    //
+    /**
+     * Add-on needs to be at a subscription level because
+     * the add-on amount can change based on the subscription period.
+     * For example: if the subscription is for 3 months, add-on amount can
+     * be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
+     */
     const ADDONS = 'addons';
+
+    /**
+     * This key is used to search in subscriptions fetch multiple
+     */
+    const CUSTOMER_EMAIL = 'customer_email';
 
     protected static $sign = 'sub';
 
@@ -375,7 +380,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
-        Status::checkStatus($status);
+        Status::validateStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
 

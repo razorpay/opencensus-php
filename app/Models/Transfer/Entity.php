@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const NOTES                 = 'notes';
     const FEES                  = 'fees';
     const SERVICE_TAX           = 'service_tax';
+    const TAX                   = 'tax';
     const ON_HOLD               = 'on_hold';
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const TRANSACTION_ID        = 'transaction_id';
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::TAX,
     ];
 
     protected $public = [
@@ -83,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::CREATED_AT,
+        self::TAX,
     ];
 
     protected $publicSetters = [
@@ -98,12 +101,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED        => 'int',
         self::FEES                   => 'int',
         self::SERVICE_TAX            => 'int',
+        self::TAX                    => 'int',
         self::ON_HOLD                => 'bool',
         self::ON_HOLD_UNTIL          => 'int',
-    ];
-
-    protected $dates = [
-        self::ON_HOLD_UNTIL,
     ];
 
     protected $amounts = [
@@ -111,6 +111,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
     ];
 
     protected $defaults = [
@@ -118,6 +119,12 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::ON_HOLD           => 0,
         self::ON_HOLD_UNTIL     => null,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::ON_HOLD_UNTIL,
     ];
 
     // -------------------- Relations ---------------------------
@@ -201,6 +208,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
     public function getOnHold()
     {
         return $this->getAttribute(self::ON_HOLD);
@@ -265,6 +277,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax(int $serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setTax(int $tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
     }
 
     public function setOnHold(bool $onHold)
@@ -345,9 +362,14 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
+        $tax = $data[self::TAX];
+
+        // Add tax key at the end to maintain order of columns in the report
+        unset($data[self::TAX]);
+
         $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
 
-        $data[self::ON_HOLD_UNTIL] = $this->getDateInFormatDMYHMS(self::ON_HOLD_UNTIL);
+        $data[self::TAX] = $tax;
 
         return $data;
     }

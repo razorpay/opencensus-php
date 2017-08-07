@@ -314,9 +314,7 @@ class Gateway extends Base\Gateway
 
         $this->updateOrCreateRefundEntity($refundFields, $input);
 
-        $refundGatewayStatus  = $verifyRefundResponse->children('a1', true)
-                                                     ->TransactionState
-                                                     ->__toString();
+        $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)->TransactionState;
 
         return in_array($refundGatewayStatus, Status::VALID_REFUND_STATES, true);
     }
@@ -695,14 +693,14 @@ class Gateway extends Base\Gateway
                 // FirstData has several components or services
                 // The auth request is sent to the Connect service,
                 // so here we're only interested in that one.
-                $component = $transactionValue->children('a1', true)->SubmissionComponent->__toString();
+                $component = (string) $transactionValue->children('a1', true)->SubmissionComponent;
 
                 if ($component !== Component::CONNECT)
                 {
                     continue;
                 }
 
-                $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
+                $type = (string) $transactionValue->children('v1', true)->CreditCardTxType->Type;
 
                 // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
                 // We're only interested in one transaction state, so loop to that one, and check status.
@@ -723,11 +721,11 @@ class Gateway extends Base\Gateway
             //
             // As tdate, order_ID and state are structed under different
             // namespaces, their parsing logic is also distinct.
-            $authTdate  = $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate->__toString();
+            $authTdate = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate;
 
-            $authGatewayPaymntId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
+            $authGatewayPaymntId = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId;
 
-            $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
+            $authGatewayStatus = (string) $verifyAuthResponse->children('a1', true)->TransactionState;
 
             $verify->gatewaySuccess = in_array($authGatewayStatus, [Status::AUTHORIZED, Status::CAPTURED], true);
         }
@@ -891,7 +889,7 @@ class Gateway extends Base\Gateway
     {
         $ipgApiActionResponse = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true);
 
-        $successful = $ipgApiActionResponse->IPGApiActionResponse->successfully->__toString();
+        $successful = (string) $ipgApiActionResponse->IPGApiActionResponse->successfully;
 
         if ($successful === 'false')
         {
