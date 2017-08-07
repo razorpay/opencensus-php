@@ -1019,6 +1019,10 @@ class Service extends Base\Service
      */
     public function addTags($id, $input)
     {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $tags = $input['tags'];
