@@ -164,7 +164,9 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::LOAD
+        self::LOAD,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
     ];
 
     protected $defaults = [
@@ -270,6 +272,26 @@ class Entity extends Base\PublicEntity
             $load = round(($this->getAttribute(self::LOAD) / 100), 2);
 
             $array[self::LOAD] = $load;
+        }
+    }
+
+    public function setPublicMinAmountAttribute(array & $array)
+    {
+        if ($this->getAttribute(self::MIN_AMOUNT) !== null)
+        {
+            $minAmount = round(($this->getAttribute(self::MIN_AMOUNT) / 100), 2);
+
+            $array[self::MIN_AMOUNT] = $minAmount;
+        }
+    }
+
+    public function setPublicMaxAmountAttribute(array & $array)
+    {
+        if ($this->getAttribute(self::MAX_AMOUNT) !== null)
+        {
+            $maxAmount = round(($this->getAttribute(self::MAX_AMOUNT) / 100), 2);
+
+            $array[self::MAX_AMOUNT] = $maxAmount;
         }
     }
 

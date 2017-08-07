@@ -2317,7 +2317,7 @@ ALTER TABLE bank_transfers
 
 # query for adding columns required for rule filtering
 ALTER TABLE gateway_rules
-    ADD COLUMN type VARCHAR(10) NOT NULL AFTER gateway,
+    ADD COLUMN type VARCHAR(10) NOT NULL DEFAULT 'sorter' AFTER gateway,
     ADD COLUMN `group` VARCHAR(50) NULL AFTER type;
 
 ALTER TABLE gateway_rules
