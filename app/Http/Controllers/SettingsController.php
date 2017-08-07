@@ -29,11 +29,15 @@ class SettingsController extends Controller
     {
         $input = Request::all();
 
-        return $this->service()->upsert($entity, $id, $input);
+        $this->service()->upsert($entity, $id, $input);
+
+        return ApiResponse::json(['success' => true]);
     }
 
     public function delete(string $entity, string $id, string $key)
     {
-        return $this->service()->delete($entity, $id, $key);
+        $this->service()->delete($entity, $id, $key);
+
+        return ApiResponse::json(['success' => true]);
     }
 }
