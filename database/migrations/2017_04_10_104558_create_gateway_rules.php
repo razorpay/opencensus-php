@@ -62,6 +62,7 @@ class CreateGatewayRules extends Migration
                   ->nullable();
 
             $table->integer(Rule::MIN_AMOUNT)
+                  ->default(0)
                   ->unsigned();
 
             $table->integer(Rule::MAX_AMOUNT)
