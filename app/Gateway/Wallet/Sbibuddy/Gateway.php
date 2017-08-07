@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        parent::refund($input);
+        parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
 
@@ -91,11 +91,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
-        $response = $this->sendGatewayRequest($request);
-
-        $response = json_decode($response->body, true);
-
-        $content = $this->parseResponse($response);
+        list($content, $response) = $this->sendRequest($request);
 
         $this->createWalletEntityFromRefundResponse($content, $input);
 
@@ -122,11 +118,7 @@ class Gateway extends Base\Gateway
             RequestFields::PROCESSOR_ID             => 'ALL',
         ];
 
-        $encodedData = http_build_query($data);
-
-        $cryptor = $this->getEncryptor();
-
-        $encrypted = $cryptor->encryptString($encodedData);
+        $encrypted = $this->getEncryptedStringFromData($data);
 
         $content = [
             RequestFields::MERCHANT_ID    => $this->getMerchantId(),
@@ -179,12 +171,12 @@ class Gateway extends Base\Gateway
     {
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
-        $content = $this->getRefundRequestContent($input, $wallet);
+        $content = $this->getRefundRequestData($input, $wallet);
 
         return $content;
     }
 
-    protected function getRefundRequestContent($input, $wallet)
+    protected function getRefundRequestData($input, $wallet)
     {
         $payment = $input['payment'];
 
@@ -197,11 +189,7 @@ class Gateway extends Base\Gateway
             // RequestFields::REFUND_REQUEST_ID    => ResponseCodeMap::REFUND_FEE,
         ];
 
-        $encodedData = http_build_query($data);
-
-        $cryptor = $this->getEncryptor();
-
-        $encrypted = $cryptor->encryptString($encodedData);
+        $encrypted = $this->getEncryptedStringFromData($data);
 
         $content = [
             RequestFields::MERCHANT_ID    => $this->getMerchantId(),
@@ -258,27 +246,80 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        sd($verify);
-        $data = $this->getVerifyRequestData($verify);
+        $request = $this->getVerifyRequestData($verify);
 
-        $verify->verifyResponse = $this->sendSoapRequest($data,
-                                                   SoapAction::QUERY_API,
-                                                   SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        list($content, $response) = $this->sendRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $verify->verifyResponse,
-                'payment_id' => $verify->input['payment']['id'],
-            ]);
+        $verify->verifyResponseBody = $response;
 
-        $verify->verifyResponseContent = $verify->verifyResponse[ResponseFields::UCF_RESPONSE];
+        $verify->setVerifyResponseContent($content);
+
+        return $content;
     }
 
-    protected function getVerifyRequestData($verify)
+    protected function getVerifyRequestData(Verify $verify)
     {
+        $payment = $verify->input['payment'];
 
+        $wallet = $verify->payment;
+
+        $data = [
+            RequestFields::ORDER_ID             => $payment[Payment::ID],
+            RequestFields::TRANSACTION_ID       => $wallet[Entity::GATEWAY_PAYMENT_ID]
+        ];
+
+        $encrypted = $this->getEncryptedStringFromData($data);
+
+        $content = [
+            RequestFields::MERCHANT_ID    => $this->getMerchantId(),
+            RequestFields::ENCRYPTED_DATA => $encrypted
+        ];
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $input   = $verify->input;
+        $content = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = true;
+
+        // apiSuccess is false if the payment entity is in failed or created state
+        if (($input['payment']['status'] === Status::FAILED) or
+            ($input['payment']['status'] === Status::CREATED))
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // Initially assume the gatewaySuccess if false
+        $verify->gatewaySuccess = false;
+
+        if ($this->validatePaymentVerificationSuccess($content) === true)
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->verifyResponseContent = $this->getVerifyWalletAttributes($verify);
+    }
+
+
+    // Check if the payment verification API is successfull
+    protected function validatePaymentVerificationSuccess($data)
+    {
+        return true;
     }
 
     //-----------------Verify request helpers end---------------
@@ -315,12 +356,30 @@ class Gateway extends Base\Gateway
         return $this->terminal['gateway_merchant_id'];
     }
 
+    public function getEncryptedStringFromData($data)
+    {
+        $encodedData = http_build_query($data);
+
+        $cryptor = $this->getEncryptor();
+
+        return $cryptor->encryptString($encodedData);
+    }
+
+    protected function sendRequest($request)
+    {
+        $response = $this->sendGatewayRequest($request);
+
+        $response = json_decode($response->body, true);
+
+        return [$this->parseResponse($response), $response];
+    }
+
     /**
      * Formats amount to 2 decimal places
      * @param  int $amount amount in paise (100)
      * @return string amount formatted to 2 decimal places in INR (1.00)
      */
-    protected function formatAmount(int $amount): string
+    public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }
