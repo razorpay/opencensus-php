@@ -36,4 +36,4 @@ cd "$API_INSTALL_DIR" && php artisan queue:restart
 echo "Route Cache"
 cd "$API_INSTALL_DIR" && php artisan route:cache
 
-sudo service apache restart
+sudo service apache2 restart
