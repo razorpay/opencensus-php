@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Sbibuddy;
 use RZP\Gateway\Wallet\Sbibuddy\StatusCode;
 use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseFields;
+use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -39,6 +40,32 @@ class SbibuddyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testPaymentFailureFlow()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::GENERAL_ERROR;
+            $content[ResponseFields::ERROR_DESCRIPTION] = 'Error occured';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('unknown', $payment['two_factor_auth']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
     public function testRefundPayment()
