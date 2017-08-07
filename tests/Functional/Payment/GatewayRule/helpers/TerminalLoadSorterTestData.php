@@ -101,6 +101,29 @@ return [
             'test_chance' => 5000,
             'expected_terminal' => '1000AxisMigsTl',
         ],
+        // Rule present on both shared account and merchant account. MDirect rule
+        // to be given precedence
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'axis_migs',
+                    'network'     => 'VISA',
+                    'load'        => 60
+                ],
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'load'        => 70
+                ]
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000HdfcShared',
+        ],
         // netbanking rule gives precedence to shared netbanking gateway over direct integration
         [
             'method' => 'netbanking',

@@ -9,7 +9,9 @@ class Repository extends Base\Repository
     protected $entity = 'gateway_rule';
 
     /**
-     * Attributes used for fetching rules matching these keys from database
+     * Attributes used for fetching rules matching the criteria defined by these
+     * keys. These are used while checking for rxisting rules satisfying given criteria
+     * during new rule creation or update
      */
     protected $defaultQueryAttributes = [
         Entity::TYPE,
@@ -85,8 +87,6 @@ class Repository extends Base\Repository
     public function getRulesWithMatchingCriteria(Entity $rule)
     {
         $input = $rule->toArray();
-
-        $queryAttributes = $this->getQueryAttributes($rule);
 
         $params = $this->getQueryParams($rule);
 

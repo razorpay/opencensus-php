@@ -97,6 +97,7 @@ class CreateGatewayRules extends Migration
             $table->index(Rule::MIN_AMOUNT);
             $table->index(Rule::MAX_AMOUNT);
             $table->index(Rule::EMI_DURATION);
+            $table->index(Rule::EMI_SUBVENTION);
             $table->index(Rule::GATEWAY);
             $table->index(Rule::GATEWAY_ACQUIRER);
             $table->index(Rule::INTERNATIONAL);

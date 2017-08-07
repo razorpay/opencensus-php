@@ -165,6 +165,7 @@ class Core extends Base\Core
         $merchant = $input['merchant'];
 
         $params = [
+            Entity::TYPE          => Entity::SORTER,
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
@@ -198,10 +199,11 @@ class Core extends Base\Core
                 break;
 
             case Payment\Method::EMI:
-                $params[Entity::METHOD_TYPE]  = $card->getType();
-                $params[Entity::NETWORK]      = $card->getNetworkCode();
-                $params[Entity::ISSUER]       = $payment->getBank();
-                $params[Entity::EMI_DURATION] = $emiPlan->getDuration();
+                $params[Entity::METHOD_TYPE]    = $card->getType();
+                $params[Entity::NETWORK]        = $card->getNetworkCode();
+                $params[Entity::ISSUER]         = $payment->getBank();
+                $params[Entity::EMI_DURATION]   = $emiPlan->getDuration();
+                $params[Entity::EMI_SUBVENTION] = $emiPlan->getSubvention();
 
                 break;
 

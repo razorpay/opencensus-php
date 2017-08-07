@@ -2336,6 +2336,7 @@ ALTER TABLE gateway_rules
     ADD COLUMN iins TEXT NULL,
     ADD COLUMN currency VARCHAR(3) NULL,
     ADD COLUMN emi_duration TINYINT(4) NULL,
+    ADD COLUMN emi_subvention VARCHAR(20) NULL,
     ADD COLUMN category2 VARCHAR(255) NULL,
     ADD INDEX gateway_rules_type_index (type),
     ADD INDEX gateway_rules_filter_type_index (filter_type),
@@ -2344,6 +2345,7 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_min_amount_index (min_amount),
     ADD INDEX gateway_rules_max_amount_index (max_amount),
     ADD INDEX gateway_rules_emi_duration_index (emi_duration),
+    ADD_INDEX gateway_rules_emi_subvention_index (emi_subvention),
     ADD INDEX gateway_rules_terminal_type_index (terminal_type),
     ADD INDEX gateway_rules_network_category_index (network_category),
     ADD INDEX gateway_rules_category2_index (category2);
