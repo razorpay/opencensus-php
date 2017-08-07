@@ -134,6 +134,9 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === false)
             {
+                // We tag the merchant as referred from the original merchant on api
+                $this->addMerchantTagsOnAPI($merchant->id, ['ref-'.$currentMerchant->id]);
+
                 // Finally attach the current user to the new user's team
                 // And also update the session user merchant list.
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
