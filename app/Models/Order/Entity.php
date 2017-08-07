@@ -122,6 +122,11 @@ class Entity extends Base\PublicEntity
         self::OFFER_ID,
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     protected static $sign = 'order';
 
     protected $entity = 'order';

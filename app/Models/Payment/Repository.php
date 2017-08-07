@@ -134,15 +134,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEmiPaymentsBetween($from, $to, $bank)
+    public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
         return $this->newQuery()
+                    ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($terminalEmi, '=', false)
                     ->with('card.globalCard')
                     ->with('emiPlan')
+                    ->select($paymentData)
                     ->get();
     }
 

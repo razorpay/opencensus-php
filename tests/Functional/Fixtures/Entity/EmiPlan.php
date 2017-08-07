@@ -64,6 +64,26 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '850092'
         ],
+        [
+            'id'                => '10101010111110',
+            'duration'          => '9',
+            'rate'              => '1300',
+            'methods'           => 'debitcard',
+            'bank'              => 'ICIC',
+            'min_amount'        => '300000',
+            'issuer_plan_id'    => '1007773209'
+        ],
+        [
+            'id'                => '10101011111110',
+            'duration'          => '9',
+            'rate'              => '1300',
+            'methods'           => 'debitcard',
+            'bank'              => 'ICIC',
+            'min_amount'        => '300000',
+            'issuer_plan_id'    => '1007773209',
+            'subvention'        => 'merchant',
+            'merchant_payback'  => 549
+        ],
     ];
 
     public function createDefaultEmiPlans()

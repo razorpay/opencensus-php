@@ -94,6 +94,7 @@ class TraceCode
     const TERMINAL_ANALYTICS_SAVE_FAILED                = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const TERMINAL_CREATE_REQUEST                       = 'TERMINAL_CREATE_REQUEST';
     const TERMINAL_REMOVE_FROM_MERCHANT                 = 'TERMINAL_REMOVE_FROM_MERCHANT';
+    const TERMINAL_ADD_MERCHANT                         = 'TERMINAL_ADD_MERCHANT';
     const TERMINAL_COPY                                 = 'TERMINAL_COPY';
     const TERMINAL_REASSIGN_MERCHANT                    = 'TERMINAL_REASSIGN_MERCHANT';
     const VERIFY_REFUND_TRANSACTION_CREATED             = 'VERIFY_REFUND_TRANSACTION_CREATED';
@@ -140,6 +141,7 @@ class TraceCode
     const RECON_FILE_LINK_NOT_FOUND                     = 'RECON_FILE_LINK_NOT_FOUND';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED             = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION              = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
+    const CHANGING_FILE_PERMISSION                      = 'CHANGING_FILE_PERMISSION';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
@@ -343,6 +345,7 @@ class TraceCode
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED             = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
+    const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
 
     const FILE_DELETING                                 = 'FILE_DELETING';
     const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
@@ -773,6 +776,8 @@ class TraceCode
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
 
+    // Trace codes for dispute entity
+    const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';

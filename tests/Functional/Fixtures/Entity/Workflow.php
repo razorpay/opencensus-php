@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Permission as AdminPermission;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Workflow\Entity;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -24,8 +24,8 @@ class Workflow extends Base
 
         $this->addWorkflowPermissionsToOrg($this->org);
 
-        $this->workflowDefaultPermissions = (new Permission\Repository)
-                                                ->retrieveIdsByNames([Permission\Name::EDIT_ADMIN]);
+        $this->workflowDefaultPermissions = (new AdminPermission\Repository)
+                                                ->retrieveIdsByNames([AdminPermission\Name::EDIT_ADMIN]);
 
         $this->fixtures->create('org:workflow_users', ['org' => $this->org]);
 

@@ -105,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::UTR,
         self::SETTLED_ON,
@@ -139,6 +140,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
     ];

@@ -1,0 +1,15 @@
+<?php
+
+namespace RZP\Models\Dispute;
+
+class Phase
+{
+    const CHARGEBACK      = 'chargeback';
+    const PRE_ARBITRATION = 'pre_arbitration';
+    const ARBITRATION     = 'arbitration';
+
+    public static function exists(string $phase)
+    {
+        return defined(get_class() . '::' . strtoupper($phase));
+    }
+}

@@ -41,5 +41,6 @@ class Payment extends Validator
         Entity::INVOICE_ID          => 'sometimes|nullable|string|size:18',
         Entity::CUSTOMER_ID         => 'sometimes|nullable|string|size:19',
         Entity::TOKEN_ID            => 'sometimes|nullable|string|size:20',
+        Entity::DISPUTED            => 'sometimes|boolean',
     );
 }

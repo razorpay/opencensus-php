@@ -24,6 +24,7 @@ class Validator
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
         'rpt'   => ['text/plain'],
+        'dat'   => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [

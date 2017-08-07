@@ -34,7 +34,7 @@ class Format
 
     const VALID_EXTENSION_MIME_MAP = [
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
-                        'text/plain', 'inode/x-empty'],
+                        'text/plain', 'inode/x-empty', 'application/octet-stream'],
         self::ENC   => ['application/octet-stream'],
         self::JPG   => ['image/jpeg'],
         self::JPEG  => ['image/jpeg'],

@@ -11,6 +11,7 @@ use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement;
 use RZP\Models\Payment;
+use Razorpay\IFSC\IFSC as BaseIFSC;
 
 class Gateway
 {
@@ -111,6 +112,7 @@ class Gateway
         self::AXIS_MIGS,
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
+        self::NETBANKING_INDUSIND,
     ];
 
     /**
@@ -358,6 +360,13 @@ class Gateway
         Upi::IDFC   => Gateway::UPI_IDFC,
     ];
 
+    public static $acquirerToCodeMap = [
+        self::ACQUIRER_HDFC => IFSC::HDFC,
+        self::ACQUIRER_ICIC => IFSC::ICIC,
+        self::ACQUIRER_AXIS => IFSC::UTIB,
+        self::ACQUIRER_AMEX => Network::AMEX,
+    ];
+
     /**
      * @deprecated
      * List of gateways for which we run verification checks for all
@@ -523,17 +532,29 @@ class Gateway
         IFSC::RATN,
         IFSC::UTIB,
         IFSC::SCBL,
+        IFSC::ICIC,
     ];
 
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => Gateway::HDFC,
-        IFSC::ICIC => Gateway::FIRST_DATA,
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];
+
+    public static function getAcquirerName(string $acquirer)
+    {
+        $code = self::$acquirerToCodeMap[$acquirer];
+
+        if ($code === 'AMEX')
+        {
+            return Network::getFullName($code);
+        }
+
+        return BaseIFSC::getBankName($code);
+    }
 
     public static function isNetbankingBankDirectlySupported($bank)
     {

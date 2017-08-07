@@ -41,9 +41,13 @@ return array(
         'mock'      => env('SLACK_MOCK'),
     ),
 
-    'zapier' => array(
+    'sns' => [
+        'mock'      => env('SNS_MOCK'),
+    ],
+
+    'zapier' => [
         'mock'      => env('ZAPIER_MOCK'),
-    ),
+    ],
 
     'hosted' => array(
         'secret'    => env('APP_HOSTED_SECRET'),

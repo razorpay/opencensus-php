@@ -864,6 +864,49 @@ return [
         ],
     ],
 
+    'testFetchMultipleSubscriptionWithEmailFilter' => [
+        'request' => [
+            'url'     => '/subscriptions',
+            'method' => 'get',
+            'content' => [
+                'plan_id' => 'plan_1000000000plan',
+                'customer_email' => 'test@razorpay.com',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'        => 'subscription',
+                        'plan_id'       => 'plan_1000000000plan',
+                        'customer_id'   => 'cust_100000customer',
+                        'status'        => 'created'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchMultipleSubscriptionWithEmailFilterNegative' => [
+        'request' => [
+            'url'     => '/subscriptions',
+            'method' => 'get',
+            'content' => [
+                'plan_id' => 'plan_1000000000plan',
+                'customer_email' => 'test1@razorpay.com',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ],
+    ],
+
     'testSubscriptionCharge' => [
         'request' => [
             'url' => '/subscriptions/charge',

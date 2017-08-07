@@ -20,6 +20,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Subscription;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Entity extends Base\PublicEntity
 {
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
+    const DISPUTED              = 'disputed';
     const CURRENCY              = 'currency';
     const DESCRIPTION           = 'description';
     const ERROR_CODE            = 'error_code';
@@ -148,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::DISPUTED,
     ];
 
     protected $visible = [
@@ -218,6 +221,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DISPUTED,
     ];
 
     protected $public = [
@@ -250,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
+        self::TAX,
     ];
 
     /**
@@ -278,8 +283,6 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
     ];
 
-    protected $guarded = [self::ID];
-
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
 
     protected static $modifiers = [
@@ -294,7 +297,12 @@ class Entity extends Base\PublicEntity
         'metadata',
     ];
 
-    protected $dates = [self::AUTHORIZED_AT, self::CAPTURED_AT];
+    protected $dates = [
+        self::UPDATED_AT,
+        self::CREATED_AT,
+        self::AUTHORIZED_AT,
+        self::CAPTURED_AT
+    ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
 
@@ -326,6 +334,7 @@ class Entity extends Base\PublicEntity
         self::VERIFY_BUCKET        => null,
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
+        self::DISPUTED             => false,
     ];
 
     protected $amounts = [
@@ -362,6 +371,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_CAPTURED     => 'bool',
         self::LATE_AUTHORIZED      => 'bool',
         self::CONVERT_CURRENCY     => 'bool',
+        self::DISPUTED             => 'bool',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -737,6 +747,11 @@ class Entity extends Base\PublicEntity
         $this->metadata = $input['_'] ?? null;
     }
 
+    public function setDisputed($disputed)
+    {
+        $this->setAttribute(self::DISPUTED, $disputed);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -849,13 +864,7 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
-        if (empty($acquirerData) === true)
-        {
-            // Show the field as an empty object on json_encoded response
-            $acquirerData = new \stdClass;
-        }
-
-        return $acquirerData;
+        return (new Dictionary($acquirerData));
     }
 
     protected function getOtpAttemptsAttribute()
@@ -1158,6 +1167,11 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function isDisputed(): bool
+    {
+        return $this->getAttribute(self::DISPUTED);
     }
 
 // ----------------------- Getters ---------------------------------------------
@@ -1788,6 +1802,11 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
+        $tax = $data[self::TAX];
+
+        // Add tax key at the end to maintain order of columns in the report
+        unset($data[self::TAX]);
+
         unset($data[self::CUSTOMER_ID]);
         unset($data[self::TOKEN_ID]);
 
@@ -1807,6 +1826,8 @@ class Entity extends Base\PublicEntity
         {
             $data['invoice_id'] = $this->getInvoiceId();
         }
+
+        $data[self::TAX] = $tax;
 
         return $data;
     }

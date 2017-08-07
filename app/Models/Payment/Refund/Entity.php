@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Batch;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Entity extends Base\PublicEntity
 {
@@ -114,6 +115,12 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::BASE_AMOUNT,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::LAST_ATTEMPTED_AT,
     ];
 
     public function payment()
@@ -287,13 +294,7 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
-        if (empty($acquirerData) === true)
-        {
-            // Show the field as an empty object on json_encoded response
-            $acquirerData = new \stdClass;
-        }
-
-        return $acquirerData;
+        return (new Dictionary($acquirerData));
     }
 
     public function setGatewayRefunded($gatewayRefunded)
@@ -392,6 +393,21 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setUtr(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
+    public function setRemarks(string $value)
+    {
+        $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function getGateway()

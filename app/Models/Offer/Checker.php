@@ -110,6 +110,8 @@ class Checker extends Base\Core
             'offer_bank'     => $offerPaymentNetwork,
             'payment_bank'   => $this->payment->getBank()
         ]);
+
+        return $result;
     }
 
     /**

@@ -91,10 +91,7 @@ class Entity extends Base\PublicEntity
     {
         $paymentId = $this->getAttribute(static::PAYMENT_ID);
 
-        if ($paymentId !== null)
-        {
-            $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedIdOrNull($paymentId);
-        }
+        $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedIdOrNull($paymentId);
     }
 
     // -------------------------------------- End Mutators -----------

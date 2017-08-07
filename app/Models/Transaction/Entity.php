@@ -96,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
+        self::TAX,
     ];
 
     protected $publicSetters = array(
@@ -105,6 +106,8 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_ID);
 
     protected $dates = array(
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::SETTLED_AT,
     );
 
@@ -610,6 +613,11 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
+        $tax = $reportTxn[self::TAX];
+
+         // Add tax key at the end to maintain order of columns in the report
+        unset($reportTxn[self::TAX]);
+
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
         $reportTxn[Refund\Entity::PAYMENT_ID] = null;
@@ -670,6 +678,8 @@ class Entity extends Base\PublicEntity
 
             $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
         }
+
+        $reportTxn[self::TAX] = $tax;
 
         return $reportTxn;
     }

@@ -226,13 +226,10 @@ final class Route
         'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'                      ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
-        'setl_return_generate'                    => ['post',     'settlements/return/generate',                    'SettlementController@postSettlementReturnGenerate'                 ],
-        'setl_return'                             => ['post',     'settlements/return',                             'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'batch_setl_calc_previous_fees'           => ['post',     'batchfundtransfers/fees/previous',               'SettlementController@postBatchFundTransferCalculatePreviousFees'   ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                         'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -283,8 +280,6 @@ final class Route
         'dummy_route'                             => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
-        'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementTax'                     ],
-        'batch_fund_transfer_compute_tax'         => ['post',     'batchfundtransfers/compute/tax',                 'SettlementController@postComputeBatchFundTransferTax'              ],
         'feature_dummy'                           => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
@@ -580,10 +575,11 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
-
         // Risk Routes
         'risk_update'                             => ['put',      'risk/{id}',                                      'RiskController@put'                                                ],
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@fetchMultiple'                                      ],
+        // Dispute routes
+        'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
     ];
 
     public static $public = [
@@ -840,17 +836,11 @@ final class Route
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
         'setl_reconcile_test',
-        'setl_return_generate',
-        'setl_return',
         'setl_edit',
         'setl_delete_file',
-        'setl_calc_previous_fees',
         'setl_post_details_old',
         'setl_fixer',
-        'settlement_compute_tax',
         'nodal_initiate_transfer',
-        'batch_setl_calc_previous_fees',
-        'batch_fund_transfer_compute_tax',
         'payment_verify',
         'payment_authorize_failed',
         'payment_fix_authorize_at',
@@ -977,6 +967,7 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'payment_dispute_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
@@ -1288,7 +1279,6 @@ final class Route
             'payout_initiate',
             'setl_reconcile_generate',
             'setl_reconcile_test',
-            'setl_return_generate',
             'nodal_initiate_transfer',
             'payment_auth_notify',
             'payment_timeout',
@@ -1470,6 +1460,8 @@ final class Route
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
+
+    const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
 
     public function __construct($app)
     {
@@ -1703,11 +1695,12 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public function isWorkflowExecuteCall()
+    public function isWorkflowExecuteOrApproveCall()
     {
         $routeName = $this->router->currentRouteName();
 
-        if ($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME)
+        if (($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME) or
+            ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME))
         {
             return true;
         }

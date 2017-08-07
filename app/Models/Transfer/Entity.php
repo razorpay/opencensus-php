@@ -85,6 +85,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::CREATED_AT,
+        self::TAX,
     ];
 
     protected $publicSetters = [
@@ -361,7 +362,14 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
+        $tax = $data[self::TAX];
+
+        // Add tax key at the end to maintain order of columns in the report
+        unset($data[self::TAX]);
+
         $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
+
+        $data[self::TAX] = $tax;
 
         return $data;
     }
