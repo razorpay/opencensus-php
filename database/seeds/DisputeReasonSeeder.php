@@ -80,10 +80,11 @@ class DisputeReasonSeeder extends Seeder
 
                 DB::table(Table::DISPUTE_REASON)->insert([
                     'id'                  => str_random(14),
-                    'gateway_code'        => $reason[0],
-                    'gateway_description' => $reason[1],
-                    'code'                => $reason[2],
-                    'description'         => $reason[3],
+                    'network'             => $reason[0],
+                    'gateway_code'        => $reason[1],
+                    'gateway_description' => $reason[2],
+                    'code'                => $reason[3],
+                    'description'         => $reason[4],
                     'created_at'          => time(),
                     'updated_at'          => time(),
                 ]);
