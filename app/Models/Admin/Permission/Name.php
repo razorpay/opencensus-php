@@ -147,6 +147,10 @@ class Name
     const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
     const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
+    const VIEW_WALLET_CONFIG                  = 'view_wallet_config';
+    const CREATE_WALLET_CONFIG                = 'create_wallet_config';
+    const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
+
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
