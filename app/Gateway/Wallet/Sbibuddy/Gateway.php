@@ -9,6 +9,8 @@ use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Payment\Status;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Models\Payment\Entity as Payment;
@@ -311,15 +313,13 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
-
-        $verify->verifyResponseContent = $this->getVerifyWalletAttributes($verify);
     }
 
 
     // Check if the payment verification API is successfull
     protected function validatePaymentVerificationSuccess($data)
     {
-        return true;
+        return ($data[ResponseFields::STATUS_CODE] === ResponseCodeMap::SUCCESS_CODE);
     }
 
     //-----------------Verify request helpers end---------------
