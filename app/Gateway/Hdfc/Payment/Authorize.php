@@ -212,10 +212,8 @@ trait Authorize
         switch ($result)
         {
             case Payment\Result::APPROVED:
-                break;
-
             case Payment\Result::CAPTURED:
-                break;
+                return true;
 
             case Payment\Result::NOT_APPROVED:
                 $errorCode = Hdfc\ErrorCode::RP00006;
@@ -241,22 +239,16 @@ trait Authorize
                 $errorCode = Hdfc\ErrorCode::RP00011;
                 break;
 
-            case Hdfc\ErrorCode::PY20085:
-                $errorCode = Hdfc\ErrorCode::PY20085;
-                break;
-
             default:
-                $errorCode = Hdfc\ErrorCode::RP00002;
+                $errorCode = $result;
                 break;
         }
 
-        if ($errorCode !== null)
-        {
-            Hdfc\ErrorHandler::setErrorInResponse($authResponse, $errorCode);
-            $this->error = true;
-        }
+        Hdfc\ErrorHandler::setErrorInResponse($authResponse, $errorCode);
 
-        return ! ($this->error);
+        $this->error = true;
+
+        return false;
     }
 
     protected function createAuthNotEnrolledRequestFields()

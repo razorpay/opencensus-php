@@ -41,6 +41,7 @@ class Server extends Base\Mock\Server
         '4111111111111111',
         '4012001037411127',
         '5200000000000064',
+        '6080757792005576',
     );
 
     protected $notEnrolledDebitCardNumbers = array(
@@ -193,7 +194,6 @@ class Server extends Base\Mock\Server
             'tranid'    => $txnId,
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
-
 
         $networkCode = Network::getCode($card['network']);
 
