@@ -4,10 +4,12 @@ namespace RZP\Gateway\Wallet\Sbibuddy\Mock;
 
 use RZP\Gateway\Base;
 use phpseclib\Crypt\AES;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Gateway\Wallet\Base\Entity as Wallet;
+use RZP\Gateway\Wallet\Sbibuddy\Encryptor;
 use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
-use RZP\Gateway\Wallet\Sbibuddy\Encryptor;
 
 
 class Server extends Base\Mock\Server
@@ -39,19 +41,21 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    protected function parseEncryptedInput($input)
+    public function verify($input)
     {
-        $encryptor = $this->getGatewayInstance()->getEncryptor();
+        parent::verify($input);
 
-        $decryptedInput = $encryptor->decryptString($input[RequestFields::ENCRYPTED_DATA]);
+        $data = $this->parseEncryptedInput($input);
 
-        $data = [];
+        $content = $this->prepareVerifyResponse($data, $input[RequestFields::MERCHANT_ID]);
 
-        parse_str($decryptedInput, $data);
+        $this->content($content, 'verify');
 
-        return $data;
+        return $this->makeResponse($content);
     }
 
+
+    //------------------Authorize Helper methods----------------------
     protected function prepareAuthorizeResponse($input, $merchantId)
     {
         $content = [
@@ -76,6 +80,42 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    //-----------------Authorize Helper methods end---------------
+
+    protected function prepareVerifyResponse($input, $merchantId)
+    {
+        $content = $this->getVerifyResponseContent($input[RequestFields::ORDER_ID]);
+
+        $encryptedData = $this->getGatewayInstance()->getEncryptedStringFromData($content);
+
+        return [
+            ResponseFields::MERCHANT_ID     => $merchantId,
+            ResponseFields::ENCRYPTED_DATA  => $encryptedData
+        ];
+    }
+
+    protected function getVerifyResponseContent($paymentId)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $wallet = $this->repo->wallet->fetchWalletByPaymentId($paymentId);
+
+        $amount = $this->getGatewayInstance()->formatAmount($payment[Payment::AMOUNT]);
+
+        $content = [
+            ResponseFields::EXTERNAL_TRANSACTION_ID => $paymentId,
+            ResponseFields::TRANSACTION_ID          => $wallet[Wallet::GATEWAY_PAYMENT_ID],
+            ResponseFields::TRACKING_ID             => 123,
+            ResponseFields::AMOUNT                  => $amount,
+            ResponseFields::FEE                     => "0.00",
+            ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE
+        ];
+
+        return $content;
+    }
+
+    //-----------------Refund Helper methods----------------------
+
     protected function prepareRefundResponse($input, $merchantId)
     {
         $content = [
@@ -89,16 +129,29 @@ class Server extends Base\Mock\Server
             ResponseFields::REFUNDED_AMOUNT         => 456
         ];
 
-        $encryptor = $this->getGatewayInstance()->getEncryptor();
-
-        $encodedData = http_build_query($content);
-
-        $encryptedData = $encryptor->encryptString($encodedData);
+        $encryptedData = $this->getGatewayInstance()->getEncryptedStringFromData($content);
 
         return [
             ResponseFields::MERCHANT_ID     => $merchantId,
             ResponseFields::ENCRYPTED_DATA  => $encryptedData
         ];
+    }
+
+    //------------Refund Helper methods end----------------
+
+    //------------General Helper methods----------------------
+
+    protected function parseEncryptedInput($input)
+    {
+        $encryptor = $this->getGatewayInstance()->getEncryptor();
+
+        $decryptedInput = $encryptor->decryptString($input[RequestFields::ENCRYPTED_DATA]);
+
+        $data = [];
+
+        parse_str($decryptedInput, $data);
+
+        return $data;
     }
 }
 
