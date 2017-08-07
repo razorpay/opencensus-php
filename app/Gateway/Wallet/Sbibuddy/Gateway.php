@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Status;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Entity;
@@ -17,6 +18,8 @@ use RZP\Models\Payment\Entity as Payment;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'wallet_sbibuddy';
 
     protected $map = [
