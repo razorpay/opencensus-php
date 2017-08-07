@@ -8,8 +8,8 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::PAYMENT_ID    => 'required|string|size:14',
-        Entity::MERCHANT_ID   => 'sometimes|string|size:14',
+        Entity::PAYMENT_ID    => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID   => 'sometimes|alpha_num|size:14',
         Entity::FRAUD_TYPE    => 'required|string|max:30|filled|custom',
         Entity::SOURCE        => 'required|string|max:30|filled|custom',
         Entity::RISK_SCORE    => 'sometimes|numeric',
@@ -18,8 +18,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::PAYMENT_ID    => 'sometimes|string|size:14',
-        Entity::MERCHANT_ID   => 'sometimes|string|size:14',
+        Entity::PAYMENT_ID    => 'sometimes|alpha_num|size:14',
+        Entity::MERCHANT_ID   => 'sometimes|alpha_num|size:14',
         Entity::FRAUD_TYPE    => 'sometimes|string|max:30|custom',
         Entity::SOURCE        => 'sometimes|string|max:30|custom',
         Entity::RISK_SCORE    => 'sometimes|numeric',

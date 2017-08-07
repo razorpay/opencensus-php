@@ -12,6 +12,7 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const RISK                  = 'risk';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
@@ -136,8 +137,6 @@ class Table
     const TAX                   = 'taxes';
     const TAX_GROUP             = 'tax_groups';
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
-
-    const RISK                  = 'risk';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

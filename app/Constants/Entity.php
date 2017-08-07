@@ -24,6 +24,7 @@ class Entity
     const ITEM                  = 'item';
     const USER                  = 'user';
     const BATCH                 = 'batch';
+    const RISK                  = 'risk';
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
@@ -147,11 +148,6 @@ class Entity
 
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
-
-
-    // Risk and Fraud
-    const RISK                  = 'risk';
-
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,

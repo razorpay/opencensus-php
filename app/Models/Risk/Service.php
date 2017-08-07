@@ -30,7 +30,16 @@ class Service extends Base\Service
         return $risk->toArrayPublic();
     }
 
-    public function getRiskForAllPayments(array $input)
+    public function fetch(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $risk = (new Core)->get($id);
+
+        return $risk->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input)
     {
         $this->cleanPublicIds($input);
 

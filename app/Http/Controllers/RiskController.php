@@ -27,11 +27,18 @@ class RiskController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetch(string $id)
+    {
+        $data = $this->service(Entity::RISK)->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchMultiple()
     {
         $input = Request::all();
 
-        $data = $this->service(Entity::RISK)->getRiskForAllPayments($input);
+        $data = $this->service(Entity::RISK)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }

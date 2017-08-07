@@ -47,10 +47,9 @@ class CreateRiskTable extends Migration
             $table->integer(Risk::CREATED_AT);
             $table->integer(Risk::UPDATED_AT);
 
-            $table->index(Risk::PAYMENT_ID);
-            $table->index(Risk::MERCHANT_ID);
             $table->index(Risk::FRAUD_TYPE);
             $table->index(Risk::CREATED_AT);
+            $table->index(Risk::RISK_SCORE);
 
             $table->foreign(Risk::PAYMENT_ID)
                   ->references(Payment::ID)

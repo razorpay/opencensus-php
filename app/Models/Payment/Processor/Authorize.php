@@ -221,14 +221,14 @@ trait Authorize
                 ($e->getSafeRetry() === true));
     }
 
-    protected function updatePaymentAuthFailedAndThrowException($e)
+    protected function updatePaymentAuthFailedAndThrowException(Exception\BaseException $e)
     {
         $this->updatePaymentAuthFailed($e);
 
         throw $e;
     }
 
-    protected function updatePaymentAuthFailed($e)
+    protected function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
@@ -1000,7 +1000,11 @@ trait Authorize
             $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD, null, $data);
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $this->updatePaymentAuthFailed($e);
+
+            (new Risk\Core)->logPaymentOnBlockedCard($payment);
+
+            throw $e;
         }
     }
 
