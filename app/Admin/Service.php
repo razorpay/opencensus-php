@@ -533,7 +533,13 @@ class Service extends Base\Service
 
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
+                $merchant = Merchant\Entity::findOrFail($id);
+
+                $currentTags = $merchant->tags;
+
                 $this->addTagToMerchant($id, 'feebearer');
+
+                (new Merchant\Service)->addMerchantTagsOnAPI($id, array_merge($currentTags, ['feebearer']));
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
