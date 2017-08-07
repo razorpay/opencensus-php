@@ -47,12 +47,10 @@ class Entity extends Base\PublicEntity
         self::REASON,
     ];
 
+    // TODO expose reasons and spec out what we will show
     protected $public = [
         self::PAYMENT_ID,
-        self::MERCHANT_ID,
         self::FRAUD_TYPE,
-        self::COMMENTS,
-        self::REASON,
     ];
 
     protected $publicSetters = [
@@ -64,12 +62,7 @@ class Entity extends Base\PublicEntity
         self::RISK_SCORE => 'float',
     ];
 
-    protected $defaults = [
-        self::RISK_SCORE => 0,
-    ];
-
-
-    // ---------------------------------Relations -------------------
+    // ----------------------Relations -----------------------------
 
     public function payment()
     {

@@ -2,15 +2,24 @@
 
 namespace RZP\Models\Risk;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
-    public function create(string $paymentId, array $input)
+    public function create(array $input)
     {
-        $payment = $this->repo->payment->findByPublicId($paymentId);
+        if (isset($input[Entity::PAYMENT_ID]) === true)
+        {
+            $payment = $this->repo->payment->findByPublicId($input[Entity::PAYMENT_ID]);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The payment id field is required.');
+        }
 
         $risk = (new Core)->create($payment, $input);
 

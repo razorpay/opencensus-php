@@ -54,7 +54,8 @@ class FraudDetectionTest extends TestCase
 
         $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
 
-        $this->assertNotNull($riskEntity['risk_score']);
+        // We are not storing riskScore if it is not tagged by maxmind source
+        $this->assertNull($riskEntity['risk_score']);
 
         $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
 
@@ -85,6 +86,8 @@ class FraudDetectionTest extends TestCase
 
         $this->assertEquals(
             'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD', $riskEntity['reason']);
+
+        $this->assertNotNull($riskEntity['risk_score']);
     }
 
     public function testFraudNotDetected()

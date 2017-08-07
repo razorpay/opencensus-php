@@ -24,12 +24,6 @@ class FailureCodeMap
             Entity::REASON     => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
             Entity::FRAUD_TYPE => Type::SUSPECTED,
         ],
-
-        ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD => [
-            Entity::REASON     => RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
-            Entity::SOURCE     => Source::INTERNAL,
-            Entity::FRAUD_TYPE => Type::CONFIRMED,
-        ],
     ];
 
     public static function getRiskDataForError(string $errorCode): array

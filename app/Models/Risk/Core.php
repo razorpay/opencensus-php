@@ -5,19 +5,15 @@ namespace RZP\Models\Risk;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Processor\FraudDetector;
 
 class Core extends Base\Core
 {
-    use FraudDetector;
-
     public function create(Payment\Entity $payment, array $input)
     {
         $risk = new Entity;
 
         // Validator expects publicId
         $input[Entity::PAYMENT_ID] = $payment->getPublicId();
-        $input[Entity::MERCHANT_ID] = $payment->getMerchantId();
 
         $risk->build($input);
 
@@ -33,14 +29,17 @@ class Core extends Base\Core
     {
         $risk->edit($input);
 
+        // If the source exists, validate it is manual
+        $risk->getValidator()->validateSourceManual($input[Entity::SOURCE]);
+
         $this->repo->saveOrFail($risk);
 
         return $risk;
     }
 
     /**
-     * This function records riskScore by maxmind
-     * when the maxmind accepts the payment but gateway/bank rejects it
+     * Tag payments as risky if gateway throws an error
+     *
      *
      * @param Payment\Entity $payment
      * @param array          $riskData
@@ -50,15 +49,7 @@ class Core extends Base\Core
     public function logPaymentOnGatewayRiskFailure(
         Payment\Entity $payment, array $riskData)
     {
-        $input = [
-            Entity::MERCHANT_ID => $payment->getMerchantId(),
-            Entity::PAYMENT_ID  => $payment->getId(),
-            Entity::RISK_SCORE  => $this->getRiskScore($payment),
-        ];
-
-        $input = array_merge($riskData, $input);
-
-        return $this->create($payment, $input);
+        return $this->create($payment, $riskData);
     }
 
     public function logPaymentForRiskManual(
@@ -66,14 +57,12 @@ class Core extends Base\Core
     {
         $risk = $this->repo->risk->fetchByPaymentId($payment->getId());
 
-        // If a payment is tagged as confirmed fraud, add its maxmind score
-        $input[Entity::RISK_SCORE] = $this->getRiskScore($payment);
-
         if ($risk === null)
         {
             return $this->create($payment, $input);
         }
 
+        // We allow edits only if the source is manual
         return $this->edit($risk, $input);
     }
 
@@ -82,9 +71,9 @@ class Core extends Base\Core
     {
         $input = [
             Entity::SOURCE      => Source::MAXMIND,
-            Entity::RISK_SCORE  => $riskScore,
             Entity::REASON      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
             Entity::FRAUD_TYPE  => Type::SUSPECTED,
+            Entity::RISK_SCORE  => $riskScore,
         ];
 
         return $this->create($payment, $input);
@@ -93,11 +82,8 @@ class Core extends Base\Core
     public function logPaymentOnBlockedCard(
         Payment\Entity $payment)
     {
-        $riskScore = $this->getRiskScore($payment);
-
         $input = [
             Entity::SOURCE      => Source::INTERNAL,
-            Entity::RISK_SCORE  => $riskScore,
             Entity::REASON      => RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
             Entity::FRAUD_TYPE  => Type::CONFIRMED,
         ];

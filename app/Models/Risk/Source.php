@@ -17,6 +17,6 @@ class Source
     {
         $source = strtoupper($source);
 
-        return (defined(__CLASS__."::".$source) === true);
+        return (defined(__CLASS__ . '::' . $source) === true);
     }
 }

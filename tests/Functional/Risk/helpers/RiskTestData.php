@@ -32,5 +32,45 @@ return [
                 'count' => 1,
             ]
         ]
-    ]
+    ],
+
+    'testMarkSuspectedFraudPaymentConfirmed' => [
+        'request' => [
+            'url' =>'/risk/%s',
+            'method'  => 'PUT',
+            'content' => [
+                'source' => 'manual',
+                'reason' => 'PAYMENT_BLOCKED_BY_OPS',
+                'fraud_type' => 'confirmed',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'fraud_type' => 'confirmed',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testFailRiskEdit' => [
+        'request' => [
+            'url' =>'/risk/%s',
+            'method'  => 'PUT',
+            'content' => [
+                'source' => 'gateway',
+                'reason' => 'PAYMENT_BLOCKED_BY_GATEWAY',
+                'fraud_type' => 'confirmed',
+            ],
+
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'message' => 'Source is not manual. Edits are only allowed for manual sources',
+        ],
+    ],
 ];

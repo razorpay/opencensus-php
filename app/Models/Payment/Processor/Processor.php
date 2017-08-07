@@ -612,7 +612,7 @@ class Processor
      * Checks for risk failures and creates log in risk table
      *
      * @param $payment Payment\Entity
-     * @param $exception Exxception\BaseException
+     * @param $exception Exception\BaseException
      */
     public function checkAndLogRiskFailures(
         Payment\Entity $payment,

@@ -48,7 +48,6 @@ final class Route
         'payment_refund'                          => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                          => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'             => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
-        'risk_create'                             => ['post',     'payments/{id}/risk',                             'RiskController@post'                                               ],
         'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
@@ -576,6 +575,7 @@ final class Route
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
         // Risk Routes
+        'risk_create'                             => ['post',     'risk',                                           'RiskController@post'                                               ],
         'risk_update'                             => ['put',      'risk/{id}',                                      'RiskController@put'                                                ],
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@fetchMultiple'                                      ],
         // Dispute routes

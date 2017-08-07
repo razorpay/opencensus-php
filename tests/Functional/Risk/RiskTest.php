@@ -49,9 +49,42 @@ class RiskTest extends TestCase
 
     public function testFetchMultiple()
     {
-        $authPayment = $this->makeFraudulentPayment();
+        $payment = $this->makeFraudulentPayment();
 
-        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $authPayment['id'];
+        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment['id'];
+
+        $this->startTest();
+    }
+
+    public function testMarkSuspectedFraudPaymentConfirmed()
+    {
+        $payment = $this->makeFraudulentPayment();
+
+        $risk = $this->getLastEntity('risk', true);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $risk['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    /**
+     * Tests if the edit is not by source manual, it should raise an error
+     */
+    public function testFailRiskEdit()
+    {
+        $payment = $this->makeFraudulentPayment();
+
+        $risk = $this->getLastEntity('risk', true);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $risk['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }

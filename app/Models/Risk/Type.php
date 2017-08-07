@@ -12,6 +12,6 @@ class Type
     {
         $type = strtoupper($type);
 
-        return (defined(__CLASS__."::".$type) === true);
+        return (defined(__CLASS__ . '::' . $type) === true);
     }
 }
