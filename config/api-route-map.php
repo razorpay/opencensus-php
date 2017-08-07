@@ -82,6 +82,7 @@ return [
         'action_checker_create'             => 'w-actions/{id}/checkers',
         'action_request_execute'            => 'w-actions/{id}/execute',
         'workflow_action_close'             => 'w-actions/close/{id}',
+        'workflow_action_get_multiple'      => 'w-actions',
 
         // Admin Actions
         // Create Schedule
