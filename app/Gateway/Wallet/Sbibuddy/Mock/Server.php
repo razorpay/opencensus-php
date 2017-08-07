@@ -68,6 +68,8 @@ class Server extends Base\Mock\Server
             ResponseFields::PROCESSOR_ID            => "ALL",
         ];
 
+        $this->content($content, 'authorize');
+
         $encryptor = $this->getGatewayInstance()->getEncryptor();
 
         $encodedData = http_build_query($content);

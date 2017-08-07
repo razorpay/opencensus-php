@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Sbibuddy;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Wallet\Base;
