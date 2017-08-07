@@ -71,23 +71,6 @@ class Core extends Base\Core
     }
 
     /**
-     * Selects rules for the merchant from the set of all rules
-     *
-     * @param  Base\PublicCollection $rules    Set of all applicable rules
-     * @param  Merchant\Entity       $merchant Merchant making the payment
-     * @return Base\PublicCollection merchant specific rules
-     */
-    protected function getMerchantSpecificRules(
-                            Base\PublicCollection $rules,
-                            Merchant\Entity $merchant): Base\PublicCollection
-    {
-        return $rules->filter(function ($rule) use ($merchant)
-        {
-            return ($rule->getMerchantId() === $merchant->getId());
-        });
-    }
-
-    /**
      * For filter rules checks if there is any rule which satisfies same criteria
      * as new rule, and same gateway but opposite filter type in the same group
      * Ror e.g select rule for gateway A and reject rule for gateway A cannot be
@@ -154,7 +137,6 @@ class Core extends Base\Core
         $merchant = $input['merchant'];
 
         $params = [
-            Entity::TYPE          => Entity::SORTER,
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,

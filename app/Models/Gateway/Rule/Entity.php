@@ -421,11 +421,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function compareTerminalType(Terminal\Entity $terminal): bool
+    protected function compareSharedTerminal(Terminal\Entity $terminal): bool
     {
-        $terminalType = $this->getAttribute(self::TERMINAL_TYPE);
+        $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
-        return ($terminalType === 'shared') ? $terminal->isShared() : !$terminal->isShared();
+        return ($isApplicableForSharedTerminal === true) ? $terminal->isShared() : !$terminal->isShared();
     }
 
     protected function isValidEmiTerminal(Terminal\Entity $terminal): bool
