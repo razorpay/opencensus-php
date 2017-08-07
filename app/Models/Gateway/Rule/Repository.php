@@ -22,6 +22,7 @@ class Repository extends Base\Repository
         Entity::MIN_AMOUNT,
         Entity::MAX_AMOUNT,
         Entity::EMI_DURATION,
+        Entity::EMI_SUBVENTION,
         Entity::INTERNATIONAL,
     ];
 
@@ -56,13 +57,14 @@ class Repository extends Base\Repository
         Entity::METHOD_TYPE      => 'sometimes|string',
         Entity::GATEWAY_ACQUIRER => 'sometimes|string',
         Entity::NETWORK_CATEGORY => 'sometimes|string',
-        Entity::SHARED_TERMINAL  => 'sometimes|in:shared,direct',
+        Entity::SHARED_TERMINAL  => 'sometimes|boolean',
         Entity::NETWORK          => 'sometimes|string',
         Entity::INTERNATIONAL    => 'sometimes|boolean',
         Entity::ISSUER           => 'sometimes|string',
         Entity::MIN_AMOUNT       => 'sometimes|integer',
         Entity::MAX_AMOUNT       => 'sometimes|integer',
         Entity::EMI_DURATION     => 'sometimes|integer',
+        Entity::EMI_SUBVENTION   => 'sometimees|string',
         Entity::CURRENCY         => 'sometimes|string',
         Entity::CATEGORY2        => 'sometimes|string',
     ];

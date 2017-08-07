@@ -77,6 +77,9 @@ class CreateGatewayRules extends Migration
             $table->tinyInteger(Rule::EMI_DURATION)
                   ->nullable();
 
+            $table->string(Rule::EMI_SUBVENTION, 20)
+                  ->nullable();
+
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
 

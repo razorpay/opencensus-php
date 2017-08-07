@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
 
     // Terminal and payment properties both
     const EMI_DURATION     = 'emi_duration';
+    const EMI_SUBVENTION   = 'emi_subvention';
     const INTERNATIONAL    = 'international';
     const CURRENCY         = 'currency';
 
@@ -64,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CATEGORY,
         self::SHARED_TERMINAL,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::CURRENCY,
     ];
 
@@ -85,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::IINS,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::CURRENCY,
     ];
 
@@ -121,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::IINS,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::CURRENCY,
     ];
 
@@ -145,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::IINS,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
