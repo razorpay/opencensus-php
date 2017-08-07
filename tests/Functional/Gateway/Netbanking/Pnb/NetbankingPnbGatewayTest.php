@@ -46,12 +46,10 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->mockFailedCallbackResponse();
 
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthAndCapturePayment($this->payment);
-            });
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthAndCapturePayment($this->payment);
+        });
 
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
@@ -101,12 +99,10 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->mockFailedVerifyResponse();
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
@@ -127,12 +123,10 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->mockSetVerifyTransactionId();
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
     }
 
     protected function mockFailedVerifyResponse()

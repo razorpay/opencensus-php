@@ -123,7 +123,7 @@ class Gateway extends Base\Gateway
 
     protected function getEncryptedString(array $input, $glue = '|')
     {
-        $str = urldecode(http_build_query($input, null, $glue));
+        $str = urldecode(http_build_query($input, '', $glue));
 
         return $this->encryptString($str);
     }
@@ -180,7 +180,7 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($input, $glue = '|'): string
     {
-        return urldecode(http_build_query($input, null, $glue));
+        return urldecode(http_build_query($input, '', $glue));
     }
 
     protected function getHashOfString($str): string

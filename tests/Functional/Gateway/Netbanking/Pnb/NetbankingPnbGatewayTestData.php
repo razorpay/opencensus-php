@@ -21,8 +21,7 @@ return [
         'error_description' => null,
         'email'             => 'a@b.com',
         'contact'           => '+919918899029',
-        'notes'             =>
-        [
+        'notes'             => [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'netbanking_pnb',

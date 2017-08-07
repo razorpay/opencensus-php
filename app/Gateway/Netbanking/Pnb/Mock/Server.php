@@ -34,7 +34,9 @@ class Server extends Base\Mock\Server
 
         $request = [
             'url'     => $decryptedData[RequestFields::RETURN_URL],
-            'content' => [RequestFields::ENCDATA => $response],
+            'content' => [
+                RequestFields::ENCDATA => $response
+            ],
             'method'  => 'post',
         ];
 
@@ -126,6 +128,5 @@ class Server extends Base\Mock\Server
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
-
     }
 }

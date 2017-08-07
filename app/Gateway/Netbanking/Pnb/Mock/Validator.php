@@ -8,18 +8,18 @@ use RZP\Gateway\Netbanking\Pnb\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::ENCDATA => 'required|string',
+        RequestFields::ENCDATA         => 'required|string',
     ];
 
     protected static $authorizeRules = [
         RequestFields::CHALLAN_NUMBER  => 'required|string|size:14',
         RequestFields::MERCHANT_DATE   => 'required|string',
         RequestFields::MERCHANT_AMOUNT => 'required|string',
-        RequestFields::RETURN_URL      => 'required|string',
+        RequestFields::RETURN_URL      => 'required|string|url',
         RequestFields::ITEM_CODE       => 'required|string|size:14',
         RequestFields::CHECKSUM        => 'required|string',
         RequestFields::USER_NAME       => 'required|string',
-        RequestFields::EMAIL           => 'required|string',
+        RequestFields::EMAIL           => 'required|string|email',
         RequestFields::REMARK          => 'required|string',
         RequestFields::PHONE_NUMBER    => 'required|string',
         RequestFields::ADDRESS         => 'required|string',
@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         RequestFields::CHALLAN_NUMBER  => 'required|string|size:14',
         RequestFields::MERCHANT_DATE   => 'required|string',
         RequestFields::MERCHANT_AMOUNT => 'required|string',
-        RequestFields::RETURN_URL      => 'required|string',
+        RequestFields::RETURN_URL      => 'required|string|url',
         RequestFields::ITEM_CODE       => 'required|string|size:14',
         RequestFields::CHECKSUM        => 'required|string',
     ];
