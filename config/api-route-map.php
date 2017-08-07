@@ -77,8 +77,6 @@ return [
         'action_comment_fetch'              => 'w-actions/{id}/comments',
         'workflow_action_details'           => 'w-actions/{id}/details',
         'workflow_action_update'            => 'w-actions/{id}',
-        'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
-        'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
         'action_checker_create'             => 'w-actions/{id}/checkers',
         'action_request_execute'            => 'w-actions/{id}/execute',
         'workflow_action_close'             => 'w-actions/close/{id}',
