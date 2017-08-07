@@ -146,11 +146,9 @@ class Category
         return in_array($category, self::CATEGORIES_ALL, true);
     }
 
-    public static function isNetworkCategoryValid($input)
+    public static function isNetworkCategoryValid(string $networkCategory, string $method, string $gateway): bool
     {
-        $category = $input[Entity::NETWORK_CATEGORY];
-
-        if ($category === self::INVALID)
+        if ($networkCategory === self::INVALID)
         {
             return false;
         }
@@ -158,10 +156,6 @@ class Category
         // Get the correct constant for the terminal
         // get the values array and check in array
         $allCategories = array_combine(self::CATEGORIES_ALL, self::CATEGORIES_ALL);
-
-        $method = self::getMethod($input);
-
-        $gateway = $input[Entity::GATEWAY];
 
         if (isset(self::CATEGORIES[$method][$gateway]) === true)
         {
@@ -174,7 +168,7 @@ class Category
         // No need to worry about duplicates. we only need values
         $values = array_values($allCategories);
 
-        return in_array($category, $values, true);
+        return in_array($networkCategory, $values, true);
     }
 
     public static function getDefaultForMethodAndGateway($method, $gateway)
@@ -231,28 +225,5 @@ class Category
         }
 
         return $networkCategory;
-    }
-
-    protected static function getMethod($input)
-    {
-        if ((isset($input[Entity::CARD]) === true) and
-            (empty($input[Entity::CARD]) === false))
-        {
-            return Method::CARD;
-        }
-
-        if ((isset($input[Entity::NETBANKING]) === true) and
-            (empty($input[Entity::NETBANKING]) === false))
-        {
-            return Method::NETBANKING;
-        }
-
-        if ((isset($input[Entity::EMI]) === true) and
-            (empty($input[Entity::EMI]) === false))
-        {
-            return Method::EMI;
-        }
-
-        return null;
     }
 }

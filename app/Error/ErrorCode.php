@@ -606,7 +606,6 @@ class ErrorCode
 
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                            = 'BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED';
 
-    const BAD_REQUEST_GATEWAY_RULE_EXISTS                                           = 'BAD_REQUEST_GATEWAY_RULE_EXISTS';
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                                   = 'BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                          = 'BAD_REQUEST_COUPON_LIMIT_REACHED';

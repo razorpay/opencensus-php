@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Payment\TerminalLoadSorter;
+namespace RZP\Tests\Functional\Payment\GatewayRule;
 
 use Carbon\Carbon;
 use RZP\Models\Merchant;
@@ -9,188 +9,18 @@ use RZP\Models\Terminal\Options;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
+/**
+ * Tests for terminal selection with different combination of load sorter rules
+ */
 class TerminalLoadSorterTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/TerminalLoadSorterTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/TerminalLoadSorterTestData.php';
 
         parent::setUp();
-    }
-
-    public function testCreateGatewayRuleForCard()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidGateway()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidCardGateway()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleWithInvalidMethod()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidNetwork()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidNetworkForGateway()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidIssuer()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidCardType()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForCardWithInvalidGatewayAcquirer()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForNetbanking()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForNetbankingWithInvalidGatewayForNetbanking()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForNetbankingWithDirectNetbankingGatewayAndNullIssuer()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForNetbankingWithIssuerNotSupportedByGateway()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleForWallet()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleWithAlreadyExistingRule()
-    {
-        $existingRule = $this->fixtures->create('gateway_rule:card');
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * Tests the case when there is a load existing and new load input potentially
-     * conflictes with the new load input but the cumulate load is <= 100 %
-     */
-    public function testCreateGatewayRuleWithConflictingRulesButTotalLoadNotExceedingMaxLoad()
-    {
-        $existingRule = $this->fixtures->create('gateway_rule:card', [
-            'network' => null,
-            'load' => 60,
-        ]);
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateGatewayRuleWithConflictingRulesButTotalLoadExceedsMaxLoad()
-    {
-        $existingRule = $this->fixtures->create('gateway_rule:card', [
-            'network' => null,
-            'load' => 60,
-        ]);
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testUpdadateGatewayRuleLoad()
-    {
-        $existingRule = $this->fixtures->create('gateway_rule:card');
-
-        $this->ba->appAuth();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $existingRule->getId();
-
-        $this->startTest();
-    }
-
-    public function testUpdateGatewayRuleLoadButWithTotalLoadExceedingMaxLoad()
-    {
-        $rule1 = $this->fixtures->create('gateway_rule:card');
-
-        $rule2 = $existingRule = $this->fixtures->create('gateway_rule:card', [
-            'network' => null,
-            'load' => 50,
-        ]);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule2->getId();
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testDeleteGatewayRule()
-    {
-        $rule = $this->fixtures->create('gateway_rule:card');
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule->getId();
-
-        $this->ba->appAuth();
-
-        $content = $this->startTest();
     }
 
     public function testTerminalSelectionWithRule()
