@@ -132,6 +132,10 @@ app
           delete gatewayRule.emi_duration;
         }
 
+        if (!gatewayRule.method === 'emi' && gatewayRule.emi_subvention) {
+          delete gatewayRule.emi_subvention;
+        }
+
         if (!gatewayRule.type === 'sorter' && gatewayRule.load) {
           delete gatewayRule.load;
         }

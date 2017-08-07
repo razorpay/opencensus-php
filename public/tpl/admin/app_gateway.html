@@ -463,7 +463,23 @@
         </div>
       </div>
 
-      <!-- Iins -->
+      <!-- Emi Subvention ........ -->
+      <div class="form-group" ng-if="current.method === 'emi'">
+        <label class="col-lg-2 control-label">Emi Subvention:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b"
+                  name="emi_subvention"
+                  ng-model="current.emi_subvention"
+                  ng-disabled="editMode"
+                  ng-init="current.emi_subvention = current.emi_subvention || ''">
+            <option value="">ALL</option>
+            <option value="customer">Customer</option>
+            <option value="merchant">Merchant</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Iins ....... -->
       <div class="form-group" ng-if="['card', 'emi'].indexOf(current.method) > -1">
         <label class="col-lg-2 control-label">Iins:</label>
         <div class="col-lg-10" >
@@ -485,17 +501,17 @@
 
       <!-- Terminal Type .-->
       <div class="form-group">
-        <label class="col-lg-2 control-label">Terminal Type:</label>
+        <label class="col-lg-2 control-label">Shared Terminal:</label>
         <div class="col-lg-10" >
           <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
-          <select name="terminal_type"
-                  ng-model="current.terminal_type"
-                  ng-init="current.terminal_type = current.terminal_type || ''"
+          <select name="shared_terminal"
+                  ng-model="current.shared_terminal"
+                  ng-init="current.shared_terminal = current.shared_terminal || ''"
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">ALL</option>
-            <option value="shared">Shared</option>
-            <option value="direct">Direct</option>
+            <option value="1">YES</option>
+            <option value="0">NO</option>
           </select>
         </div>
       </div>
