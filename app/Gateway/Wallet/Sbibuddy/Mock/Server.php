@@ -14,7 +14,6 @@ use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
 
 class Server extends Base\Mock\Server
 {
-
     public function authorize($input)
     {
         $data = $this->parseEncryptedInput($input);
@@ -65,7 +64,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
             ResponseFields::FEE                     => 0.00,
             ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE,
-            ResponseFields::PROCESSOR_ID            => "ALL",
+            ResponseFields::PROCESSOR_ID            => 'ALL',
         ];
 
         $this->content($content, 'authorize');

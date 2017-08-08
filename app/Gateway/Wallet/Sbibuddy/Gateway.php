@@ -345,9 +345,7 @@ class Gateway extends Base\Gateway
 
     protected function parseResponse($input)
     {
-        $cryptor = $this->getEncryptor();
-
-        $decryptedInput = $cryptor->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
+        $decryptedInput = $this->getEncryptor()->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
 
         parse_str($decryptedInput, $data);
 
