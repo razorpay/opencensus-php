@@ -55,6 +55,7 @@ class Gateway extends Base\Gateway
             Entity::CONTACT             => $this->getFormattedContact($input['payment'][Payment::CONTACT]),
             Entity::RECEIVED            => false
         ];
+        $contentToSave = $this->getAuthorizeWalletContentToSave($input['payment']);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
 
@@ -134,6 +135,18 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         return $request;
+    }
+
+    protected function getAuthorizeWalletContentToSave($payment)
+    {
+        return [
+            RequestFields::MERCHANT_ID  => $this->getMerchantId(),
+            Entity::PAYMENT_ID          => $payment[Payment::ID],
+            RequestFields::AMOUNT       => $payment[Payment::AMOUNT],
+            Entity::EMAIL               => $payment[Payment::EMAIL],
+            Entity::CONTACT             => $this->getFormattedContact($payment[Payment::CONTACT]),
+            Entity::RECEIVED            => false
+        ];
     }
 
     //----------------Auth helper methods ends------------------
