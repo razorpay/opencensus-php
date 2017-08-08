@@ -67,6 +67,13 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
+        if ($input['payment']->isMethodCardOrEmi() === true)
+        {
+            $iins = (array) $input['payment']->card->getIin();
+
+            $applicableRules = $this->getRulesWithOverLappingIins($iins, $applicableRules);
+        }
+
         return $applicableRules;
     }
 

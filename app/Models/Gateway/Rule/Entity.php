@@ -173,10 +173,6 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT => 0,
     ];
 
-    protected static $unsetEditInput = [
-        self::TYPE,
-    ];
-
     public function getLoad()
     {
         return $this->getAttribute(self::LOAD);
