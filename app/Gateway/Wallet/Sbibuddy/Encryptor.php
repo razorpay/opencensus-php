@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Sbibuddy;
 
-use RZP\Gateway\Netbanking\Base\AESCrypto;
+use RZP\Gateway\Base\AESCrypto;
 
 class Encryptor extends AESCrypto
 {
