@@ -19,7 +19,7 @@
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div style="padding: 15px; margin: 8px 0;">
-      <form style="display: table" ng-init="gatewayRuleSearch={}">
+      <form style="display: table">
         <div class="gateway-search-fields">
           <div class="gateway-search-element">
             <label for="merchant_id">Merchant Id:</label>
