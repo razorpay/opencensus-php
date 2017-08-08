@@ -107,9 +107,9 @@ trait Authorize
 
     protected function verifyAuthResponse(array & $authResponse)
     {
-        $this->isAuthSuccess($authResponse);
-
         $this->traceAuthEnrolledResponse($authResponse);
+
+        $this->isAuthSuccess($authResponse);
 
         if (isset($authResponse['data']['trackid']) === true)
         {
@@ -297,20 +297,10 @@ trait Authorize
 
     protected function traceAuthEnrolledResponse($authResponse)
     {
-        if ($this->error)
-        {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_ENROLLED_AUTH_ERROR,
-                $authResponse);
-        }
-        else
-        {
-            $this->trace(
-                Trace::INFO,
-                TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
-                $authResponse);
-        }
+        $this->trace(
+            Trace::INFO,
+            TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
+            $authResponse);
     }
 
     protected function persistAfterAuthNotEnrolled()
