@@ -73,14 +73,14 @@ export default class ReportsContainer extends Component {
         label: 'Payments',
       },
       {
-        value: 'order',
-        id: 'order',
-        label: 'Order',
-      },
-      {
         value: 'refund',
         id: 'refund',
         label: 'Refunds',
+      },
+      {
+        value: 'order',
+        id: 'order',
+        label: 'Orders',
       },
       {
         value: 'settlement',
