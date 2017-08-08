@@ -290,6 +290,13 @@ class TransactionFilter extends Terminal\Filter
 
     protected function subscriptionFilter(Terminal\Entity $terminal, array $input)
     {
+        //
+        // For now, not filtering based on gateway.
+        // Assuming that all gateways work without
+        // one year limitation. /cc @shk
+        //
+        return true;
+
         $payment = $input['payment'];
 
         //
@@ -315,14 +322,7 @@ class TransactionFilter extends Terminal\Filter
         $currentGateway = $terminal->getGateway();
         $allowedGateways = Gateway::$subscriptionOverOneYearGateways;
 
-        // return (in_array($currentGateway, $allowedGateways, true) === true);
-
-        //
-        // For now, not filtering based on gateway.
-        // Assuming that all gateways work without
-        // one year limitation. /cc @shk
-        //
-        return true;
+        return (in_array($currentGateway, $allowedGateways, true) === true);
     }
 
     protected function isValidEmiTerminal($terminal, $input)
