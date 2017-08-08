@@ -25,6 +25,13 @@ class SettingsController extends Controller
         return ApiResponse::json($settings);
     }
 
+    public function getDefined(string $key)
+    {
+        $settings = $this->service()->getDefined($key);
+
+        return ApiResponse::json($settings);
+    }
+
     public function upsert(string $entity, string $id)
     {
         $input = Request::all();

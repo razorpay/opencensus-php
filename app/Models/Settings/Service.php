@@ -15,6 +15,13 @@ class Service extends Base\Service
         return ['settings' => $settings];
     }
 
+    public function getDefined(string $key): array
+    {
+        $settings = Types::getWithDescriptions($key);
+
+        return ['settings' => $settings];
+    }
+
     public function getAll(string $entity, string $id): array
     {
         $entity = $this->fetchEntity($entity, $id);

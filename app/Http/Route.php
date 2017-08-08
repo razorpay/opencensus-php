@@ -579,8 +579,8 @@ final class Route
         'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
 
         // Settings routes
+        'settings_fetch_defined'                  => ['get',      'settings/{key}',                                 'SettingsController@getDefined'                                     ],
         'settings_fetch'                          => ['get',      'settings/{entity}/{id}/{key?}',                  'SettingsController@get'                                            ],
-        'settings_fetch_defined'                  => ['get',      'settings/defined/{entity}/{id}/{key?}',          'SettingsController@getDefined'                                     ],
         'settings_upsert'                         => ['post',     'settings/{entity}/{id}',                         'SettingsController@upsert'                                         ],
         'settings_delete'                         => ['delete',   'settings/{entity}/{id}/{key}',                   'SettingsController@delete'                                         ],
     ];
@@ -1238,6 +1238,8 @@ final class Route
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
         'settings_fetch'                   => Permission::VIEW_WALLET_CONFIG,
+        'settings_fetch_defined'           => Permission::VIEW_WALLET_CONFIG,
+        'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
     ];
 
     public static $direct = [
