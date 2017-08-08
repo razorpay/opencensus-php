@@ -11,7 +11,6 @@ use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
 
-
 class Server extends Base\Mock\Server
 {
     public function authorize($input)

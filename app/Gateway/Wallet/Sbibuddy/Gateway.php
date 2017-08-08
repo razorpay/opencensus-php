@@ -208,11 +208,11 @@ class Gateway extends Base\Gateway
             RequestFields::REFUND_REQUEST_ID    => $input['refund']['id'],
         ];
 
-        $encrypted = $this->getEncryptedStringFromData($data);
+        $encryptedData = $this->getEncryptedStringFromData($data);
 
         $content = [
             RequestFields::MERCHANT_ID    => $this->getMerchantId(),
-            RequestFields::ENCRYPTED_DATA => $encrypted
+            RequestFields::ENCRYPTED_DATA => $encryptedData
         ];
 
         $request = $this->getStandardRequestArray($content);
