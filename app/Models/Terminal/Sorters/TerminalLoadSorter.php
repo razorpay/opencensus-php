@@ -111,8 +111,8 @@ class TerminalLoadSorter extends Terminal\Sorter
             }
 
             // We iterate through the rules and keep adding the rule load to the
-            // cumulative total load  value.  If the total  load is greater than
-            // chance  percentage, that rule  is selected.  For  e.g  if we have
+            // total load  value.  If the total  load is greater than chance
+            // percentage, that rule  is selected.  For  e.g  if we have
             // rules R1 - load 30, and R2 load 50. If chance percentage is 40 in
             // the second iteration totalLoad becomes 80  > 40 and we select R2.
             // However if say the chance percentage was 90, then even  after all

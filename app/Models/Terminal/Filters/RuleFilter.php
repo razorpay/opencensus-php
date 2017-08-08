@@ -50,7 +50,7 @@ class RuleFilter extends Terminal\Filter
      * For example if two SELECT rules are present in a group it means
      * SELECT terminal A or SELECT terminal B
      *
-     * @param array                 $terminals  Terminals to be filtewred in group
+     * @param array                 $terminals  Terminals to be filtered in group
      * @param  Base\PublicCollection $rules     Applicable rules for the group
      * @param  bool                  $verbose   Flag to turn on / off verbose logging
      */
@@ -100,7 +100,7 @@ class RuleFilter extends Terminal\Filter
             $filteredTerminals = array_diff($terminals, $rejectedTerminals);
         }
 
-        // In certain cases, like 2 select rules in same group seelecting the same terminal
+        // In certain cases, like 2 select rules in same group selecting the same terminal
         // we can have duplicate entries. Hence running a final unique check
         $terminals = array_values(array_unique($filteredTerminals));
 
