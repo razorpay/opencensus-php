@@ -2,15 +2,21 @@
 
 namespace RZP\Models\Settings;
 
-use Razorpay\Spine\DataTypes\Dictionary;
 use Setting;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Base;
 
-class Core extends Base\Core
+class Accessor extends Base\Core
 {
+    /**
+     * @var string
+     */
     protected $entity;
 
+    /**
+     * @var string
+     */
     protected $id;
 
     public function __construct(Base\PublicEntity $entity)
@@ -24,7 +30,7 @@ class Core extends Base\Core
 
     public static function for(Base\PublicEntity $entity): self
     {
-        // Validate for allowed entities
+        // TODO: Validate for allowed entities?
 
         return new static($entity);
     }
@@ -75,6 +81,10 @@ class Core extends Base\Core
         Setting::save();
     }
 
+    /**
+     * Set the extra columns that we filter on
+     * https://github.com/anlutro/laravel-settings#example
+     */
     protected function setColumns()
     {
         $filterColumns = [

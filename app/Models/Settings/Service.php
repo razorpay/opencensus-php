@@ -10,7 +10,7 @@ class Service extends Base\Service
     {
         $entity = $this->fetchEntity($entity, $id);
 
-        $settings = Core::for($entity)->get($key);
+        $settings = Accessor::for($entity)->get($key);
 
         return ['settings' => $settings];
     }
@@ -26,30 +26,30 @@ class Service extends Base\Service
     {
         $entity = $this->fetchEntity($entity, $id);
 
-        $settings = Core::for($entity)->all();
+        $settings = Accessor::for($entity)->all();
 
         return ['settings' => $settings];
     }
 
     public function upsert(string $entity, string $id, array $input)
     {
-        // Validate input
+        // Validate input?
 
         $entity = $this->fetchEntity($entity, $id);
 
-        Core::for($entity)->create($input)->save();
+        Accessor::for($entity)->create($input)->save();
     }
 
     public function delete(string $entity, string $id, string $key)
     {
         $entity = $this->fetchEntity($entity, $id);
 
-        Core::for($entity)->delete($key)->save();
+        Accessor::for($entity)->delete($key)->save();
     }
 
     protected function fetchEntity(string $entity, string $id): Base\PublicEntity
     {
-        // Validate Entity whitelisted
+        // TODO: Validate Entity whitelisted
 
         $entity = $this->repo
                        ->$entity

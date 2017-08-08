@@ -6,30 +6,31 @@ use Setting;
 
 class Types
 {
-    const OPENWALLET_CLOSED             = 'openwallet.closed';
-    const OPENWALLET_SEMICLOSED_LIMITED = 'openwallet.semiclosed_limited';
-    const OPENWALLET_SEMICLOSED_KYC     = 'openwallet.semiclosed_kyc';
+    const OPENWALLET_CLOSED              = 'openwallet.closed';
+    const OPENWALLET_SEMI_CLOSED_LIMITED = 'openwallet.semi_closed_limited';
+    const OPENWALLET_SEMI_CLOSED_KYC     = 'openwallet.semi_closed_kyc';
 
     /**
      * Pre-defined settings and their descriptions
+     *
      * @var array
      */
     protected static $defined = [
-        self::OPENWALLET_CLOSED             => [
+        self::OPENWALLET_CLOSED              => [
             'max_limit'       => 'Max Balance',
             'max_load_value'  => 'Daily Load Limit',
             'max_load_txns'   => 'Daily Load Transactions Limit',
             'max_spend_value' => 'Daily Spend Limit',
             'max_spend_txns'  => 'Daily Spend Transactions Limit',
         ],
-        self::OPENWALLET_SEMICLOSED_LIMITED => [
+        self::OPENWALLET_SEMI_CLOSED_LIMITED => [
             'max_limit'       => 'Max Balance',
             'max_load_value'  => 'Daily Load Limit',
             'max_load_txns'   => 'Daily Load Transactions Limit',
             'max_spend_value' => 'Daily Spend Limit',
             'max_spend_txns'  => 'Daily Spend Transactions Limit',
         ],
-        self::OPENWALLET_SEMICLOSED_KYC     => [
+        self::OPENWALLET_SEMI_CLOSED_KYC     => [
             'max_limit'       => 'Max Balance',
             'max_load_value'  => 'Daily Load Limit',
             'max_load_txns'   => 'Daily Load Transactions Limit',
@@ -42,6 +43,14 @@ class Types
         ]
     ];
 
+    /**
+     * Return a list of pre-defined setting types
+     * (and their descriptions)
+     *
+     * @param string|null $key
+     *
+     * @return array
+     */
     public static function getWithDescriptions(string $key = null): array
     {
         $data = static::$defined;
@@ -52,25 +61,5 @@ class Types
         }
 
         return array_dot($data);
-    }
-
-    protected static function dotFlatten($array, $prepend = ''): array
-    {
-        $results = [];
-
-        foreach ($array as $key => $value)
-        {
-            if ((is_array($value) === true) and
-                (empty($value) === false))
-            {
-                $results = array_merge($results, static::dotFlatten($value, $prepend . $key . '.'));
-            }
-            else
-            {
-                $results[$prepend . $key] = $value;
-            }
-        }
-
-        return $results;
     }
 }
