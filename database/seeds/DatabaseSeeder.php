@@ -1650,6 +1650,7 @@ class DatabaseSeeder extends Seeder
                 'card'                      => '0',
                 'netbanking'                => '0',
                 'gateway_merchant_id'       => 'random_merchant_id',
+                'gateway_merchant_id2'      => 'random_merchant_id2',
                 'gateway_secure_secret'     => Crypt::encrypt('demo_account_mpesa_secure_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),

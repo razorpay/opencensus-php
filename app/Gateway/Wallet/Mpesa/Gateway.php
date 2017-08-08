@@ -370,6 +370,13 @@ class Gateway extends Base\Gateway
             RequestFields::NARRATION             => Constants::NARRATION
         ];
 
+        $billerCode = $this->getMerchantId2();
+
+        if (empty($billerCode) === false)
+        {
+            $gatewayParam[RequestFields::FILLER2] = $billerCode;
+        }
+
         $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
 
         return $gatewayParam;
@@ -673,6 +680,18 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $merchantId = $this->config['test_merchant_id'];
+        }
+
+        return $merchantId;
+    }
+
+    protected function getMerchantId2()
+    {
+        $merchantId = $this->terminal['gateway_merchant_id2'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->config['test_merchant_id2'];
         }
 
         return $merchantId;

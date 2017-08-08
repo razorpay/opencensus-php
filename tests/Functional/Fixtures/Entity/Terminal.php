@@ -303,6 +303,7 @@ class Terminal extends Base
             'netbanking'                => 0,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'mpesa_merchant',
+            'gateway_merchant_id2'      => 'mpesa_merchant_2',
             'gateway_secure_secret'     => 'secret',
         ];
 
