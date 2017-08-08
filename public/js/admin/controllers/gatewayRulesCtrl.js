@@ -26,7 +26,9 @@ app
       $scope.methodMap = utilMapping.getMap('methodMap');
       $scope.gatewayAcquirerMap = utilMapping.getMap('gatewayAcquirerMap');
 
-      $scope.merchantId = '100000Razorpay'; // Default search for shared merchant
+      $scope.gatewayRuleSearch = {
+        merchant_id: '100000Razorpay',
+      };
 
       admin.identity().then(function(data) {
         $scope.admin = data;
