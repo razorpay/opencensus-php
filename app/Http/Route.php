@@ -580,6 +580,7 @@ final class Route
 
         // Settings routes
         'settings_fetch'                          => ['get',      'settings/{entity}/{id}/{key?}',                  'SettingsController@get'                                            ],
+        'settings_fetch_defined'                  => ['get',      'settings/defined/{entity}/{id}/{key?}',          'SettingsController@getDefined'                                     ],
         'settings_upsert'                         => ['post',     'settings/{entity}/{id}',                         'SettingsController@upsert'                                         ],
         'settings_delete'                         => ['delete',   'settings/{entity}/{id}/{key}',                   'SettingsController@delete'                                         ],
     ];
@@ -973,6 +974,7 @@ final class Route
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'settings_fetch',
+        'settings_fetch_defined',
         'settings_upsert',
         'settings_delete',
     ];
@@ -1235,6 +1237,7 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'settings_fetch'                   => Permission::VIEW_WALLET_CONFIG,
     ];
 
     public static $direct = [
