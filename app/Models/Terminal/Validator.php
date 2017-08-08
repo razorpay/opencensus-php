@@ -242,6 +242,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
     ];
 
+    protected static $walletSbibuddyTerminalRules = [
+        Entity::GATEWAY                   => 'required|in:wallet_sbibuddy',
+        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET     => 'required|string',
+    ];
+
     protected static $walletMpesaTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_mpesa',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
