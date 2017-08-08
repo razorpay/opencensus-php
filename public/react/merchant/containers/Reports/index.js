@@ -53,11 +53,7 @@ export default class ReportsContainer extends Component {
 
   getEntityLabel(value) {
     let label = null;
-    try {
-      label = this.entityOptions.filter(item => item.value === value)[0].label;
-    } catch (e) {
-      label = 'Some Error';
-    }
+    label = this.entityOptions.find(item => item.value === value).label;
 
     return label;
   }
@@ -153,7 +149,7 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props.mode}/reports/invoice?year=${data.year}&month=${month}`,
+          `/${this.props.mode}/reports/invoice?year=${data.year}&month=${data.month}`,
           '_blank'
         )
       );
