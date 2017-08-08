@@ -205,7 +205,7 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT               => $this->formatAmount($payment[Payment::AMOUNT]),
             RequestFields::REFUND_FEE           => ResponseCodeMap::REFUND_FEE,
             // This is optional
-            // RequestFields::REFUND_REQUEST_ID    => ResponseCodeMap::REFUND_FEE,
+            RequestFields::REFUND_REQUEST_ID    => $input['refund']['id'],
         ];
 
         $encrypted = $this->getEncryptedStringFromData($data);
