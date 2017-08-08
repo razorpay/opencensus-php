@@ -158,7 +158,7 @@ class BasicEntityReport extends BaseReport
 
         $this->createReportEntity($input);
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $filename = $this->generateFilename($now);
 

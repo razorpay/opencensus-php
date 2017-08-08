@@ -49,7 +49,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantOffersForCheckout(string $merchantId)
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
@@ -62,7 +62,7 @@ class Repository extends Base\Repository
 
     public function fetchActiveExpiredOffers()
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->where(Entity::ACTIVE, '=', true)

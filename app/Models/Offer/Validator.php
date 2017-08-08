@@ -128,7 +128,7 @@ class Validator extends Base\Validator
 
     protected function validateOfferPeriod(array $input)
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $endsAt = $input[Entity::ENDS_AT];
 

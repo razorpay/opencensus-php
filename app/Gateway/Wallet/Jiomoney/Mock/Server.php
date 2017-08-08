@@ -124,7 +124,7 @@ class Server extends Base\Mock\Server
     protected function getAuthorizeResponse(array $input)
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         $paymentId = $input[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)];
@@ -151,7 +151,7 @@ class Server extends Base\Mock\Server
     protected function getRefundResponse(array $input)
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         return [
@@ -174,7 +174,7 @@ class Server extends Base\Mock\Server
     protected function getCheckTxnStatusResponse(array $input): array
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         if ($input[RequestFields::APINAME] === 'CHECKPAYMENTSTATUS')
@@ -207,7 +207,7 @@ class Server extends Base\Mock\Server
     protected function getCheckPaymentStatusResponse(array $input): array
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         return [

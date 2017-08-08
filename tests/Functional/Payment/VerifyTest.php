@@ -250,7 +250,7 @@ class VerifyTest extends TestCase
 
     public function testNewlyCreatedPayment()
     {
-        $createdAt = Carbon::now('Asia/Kolkata')->timestamp;
+        $createdAt = Carbon::now()->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_created', ['created_at' => $createdAt-1]);

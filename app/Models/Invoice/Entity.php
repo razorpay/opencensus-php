@@ -749,7 +749,7 @@ class Entity extends Base\PublicEntity
         if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
             $timestampKey = $status . '_at';
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
@@ -988,7 +988,7 @@ class Entity extends Base\PublicEntity
         // If DATE is sent, even as null use that only(so not using isset)
         if (array_key_exists(Entity::DATE, $input) === false)
         {
-            $now = Carbon::now('Asia/Kolkata')->timestamp;
+            $now = Carbon::now()->getTimestamp();
 
             $this->setAttribute(self::DATE, $now);
         }
@@ -1041,7 +1041,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $scheduledAt = Carbon::now('Asia/Kolkata')->timestamp;
+            $scheduledAt = Carbon::now()->getTimestamp();
         }
 
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);

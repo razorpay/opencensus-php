@@ -89,7 +89,7 @@ class Repository extends Base\Repository
 
     public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->where($medium . '_status', '=', NotifyStatus::PENDING)
@@ -116,7 +116,7 @@ class Repository extends Base\Repository
      */
     public function getIssuedAndPastExpiredByInvoices()
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)

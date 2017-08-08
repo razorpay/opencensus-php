@@ -1053,7 +1053,7 @@ class Gateway extends Base\Gateway
 
     protected function getTimeSincePaymentCreation(array $input)
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         return ($now - $input['payment']['created_at']);
     }

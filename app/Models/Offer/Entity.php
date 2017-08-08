@@ -346,7 +346,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateStartsAt(array $input)
     {
-        $startsAt = $input[self::STARTS_AT] ?? Carbon::now('Asia/Kolkata')->timestamp;
+        $startsAt = $input[self::STARTS_AT] ?? Carbon::now()->getTimestamp();
 
         $this->setAttribute(self::STARTS_AT, $startsAt);
     }

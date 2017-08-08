@@ -46,7 +46,7 @@ class Service extends Base\Service
 
         $versionV2RolloutTimestamp = 1489170600; // Date 1st March 2017 IST
 
-        $currentTimestamp = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTimestamp = Carbon::now()->getTimestamp();
 
         if ($batch->getCreatedAt() < $versionV2RolloutTimestamp)
         {

@@ -109,7 +109,7 @@ class RowProcessor extends BaseCore
     {
         $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], 'Asia/Kolkata');
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $tenPm = $recordDate->hour(22)->timestamp;
 

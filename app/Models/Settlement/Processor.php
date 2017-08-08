@@ -270,7 +270,7 @@ class Processor extends Base\Core
 
     protected function inititalizeVariables(array $input)
     {
-        $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $this->setlTime = Carbon::now()->getTimestamp();
 
         if (($this->mode === Mode::TEST) and
             (empty($input['testSettleTimeStamp']) === false))
