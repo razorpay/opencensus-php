@@ -18,7 +18,7 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Settlement ID: <b>{settlement.id}</b>
+              Settlement Id: <b>{settlement.id}</b>
             </div>
 
             <div class="SliderPanel__Body">

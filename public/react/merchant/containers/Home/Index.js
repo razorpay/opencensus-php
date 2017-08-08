@@ -126,14 +126,14 @@ export default class HomeContainer extends Component {
                           <div class="media-body">
                             <AsyncButton
                               class="btn btn-large btn-default pull-right"
-                              text="Switch to the new Navigation"
+                              text="Switch to new Navigation"
                               pendingText="Switching..."
                               onClick={this.switchToNewUI}
                             />
                             <div>
                               <b>Try out the new dashboard navigation!</b>
                               <div>
-                                We are simplifying the dashboard experience. If you switch, you can come back too if you want to.
+                                We are simplifying your dashboard experience. If you switch, you can come back anytime!
                               </div>
                             </div>
                           </div>

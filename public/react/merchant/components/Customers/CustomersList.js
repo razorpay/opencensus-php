@@ -26,7 +26,7 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>Customer ID</th>
+            <th>Customer Id</th>
             <th>Customer Name</th>
             <th>Email</th>
             <th>Contact</th>

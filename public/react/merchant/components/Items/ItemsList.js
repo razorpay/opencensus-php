@@ -4,6 +4,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 const ItemsListItem = ({ item, onEdit, onDelete }) => {
   return (
     <EntityItemRow id={item.id}>
+      <td><a onClick={onEdit}><code>{item.id}</code></a></td>
       <td><a onClick={onEdit}>{item.name}</a></td>
       <td>{item.description}</td>
       <td class="text-right">{item.amountInINR}</td>
@@ -29,6 +30,7 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
       <table class="table table-hover">
         <thead>
           <tr>
+            <th>Item Id</th>
             <th>Item Name</th>
             <th>Description</th>
             <th class="text-right">Amount</th>
@@ -37,7 +39,7 @@ export default ({ items, isLoading, onEdit, onDelete }) => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={4}
+          colSpan={5}
           rows={items}
           emptyTableMsg="No Items found!"
         >
