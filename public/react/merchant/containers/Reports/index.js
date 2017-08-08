@@ -361,7 +361,7 @@ export default class ReportsContainer extends Component {
 
               <div class="form-element">
                 <div class="title">
-                  DATE RANGE
+                  PERIOD
                 </div>
                 {entity === 'invoice' ||
                   <div class="col-sm-3 col-xs-12">
@@ -413,10 +413,11 @@ export default class ReportsContainer extends Component {
                   pendingText="Generating..."
                 />
 
-                <footer>
-                  Combined reports will include transactions on the given date, as well as payments
-                  settled on that given date.
-                </footer>
+                {this.props.entity === 'transaction' &&
+                  <footer style={{ marginTop: '16' }}>
+                    Combined reports will include transactions on the given date, as well as payments
+                    settled on that given date.
+                  </footer>}
               </div>
             </div>
           </div>
