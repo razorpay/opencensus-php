@@ -832,8 +832,8 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        if ((isset($PaRes['Message']['PaRes']['TX']['status']) === true) and
-            ($PaRes['Message']['PaRes']['TX']['status'] !== 'Y'))
+        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
+            ($PaRes['Message']['PARes']['TX']['status'] !== 'Y'))
         {
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
