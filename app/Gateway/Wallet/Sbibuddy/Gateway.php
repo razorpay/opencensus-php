@@ -45,7 +45,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+        $date = Carbon::now()->format('d/m/Y H:m:s');
 
         $contentToSave = [
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
