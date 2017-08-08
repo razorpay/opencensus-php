@@ -34,8 +34,8 @@ class Validator extends Base\Validator
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
         Entity::MIN_AMOUNT       => 'sometimes|filled|integer|min:0',
         Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
-        Entity::EMI_DURATION     => 'sometimes_if:method,emi|integer|in:3,6,9,12,18,24',
-        Entity::EMI_SUBVENTION   => 'sometimes_if:method,emi|in:customer,merchant',
+        Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
         Entity::IINS             => 'sometimes|filled|array',
         Entity::CURRENCY         => 'sometimes|filled|in:INR,USD'
     ];

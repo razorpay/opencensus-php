@@ -88,8 +88,6 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::EMI_DURATION,
         self::IINS,
-        self::EMI_DURATION,
-        self::EMI_SUBVENTION,
         self::CURRENCY,
     ];
 
@@ -272,6 +270,11 @@ class Entity extends Base\PublicEntity
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     public function getCurrency()

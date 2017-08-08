@@ -43,6 +43,8 @@ class TerminalRuleFilterTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->fixtures->merchant->addFeatures('rule_filter');
+
         $app = App::getFacadeRoot();
 
         $app['rzp.mode'] = 'test';
@@ -77,7 +79,6 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         foreach ($testCases as $test)
         {
@@ -94,14 +95,35 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_olamoney_terminal');
         $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->merchant->enableEmi();
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         foreach ($testCases as $test)
         {
             $this->runTestCase($test, $merchant);
         }
+    }
+
+    public function testMethodFilterWithMerchantEmiSubvention()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_merchant_subvention_terminal');
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
     }
 
     public function testNetworkFilter()
@@ -110,7 +132,6 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_axis_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         $test = $this->testData[__FUNCTION__];
 
@@ -125,7 +146,6 @@ class TerminalRuleFilterTest extends TestCase
         ]);
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         $testCases = $this->testData[__FUNCTION__];
 
@@ -143,7 +163,6 @@ class TerminalRuleFilterTest extends TestCase
         ]);
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         $test = $this->testData[__FUNCTION__];
 
@@ -156,7 +175,6 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_axis_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         $testCases = $this->testData[__FUNCTION__];
 
@@ -172,7 +190,6 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_axis_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         $test = $this->testData[__FUNCTION__];
 
@@ -185,7 +202,6 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_axis_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
         $this->fixtures->merchant->editCategory2('securities');
 
         $test = $this->testData[__FUNCTION__];
@@ -201,7 +217,7 @@ class TerminalRuleFilterTest extends TestCase
                                 ['id' => 'SCorNbKtkTrmnl','network_category' => 'corporate']);
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
+
         $this->fixtures->merchant->editCategory2('corporate');
 
         $test = $this->testData[__FUNCTION__];
@@ -217,7 +233,6 @@ class TerminalRuleFilterTest extends TestCase
                                 ['id' => 'SCorNbKtkTrmnl']);
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
 
         $test = $this->testData[__FUNCTION__];
 
@@ -235,8 +250,6 @@ class TerminalRuleFilterTest extends TestCase
 
         $this->runTestCase($testCases[0], $merchant);
 
-        $this->fixtures->merchant->addFeatures('rule_filter');
-
         $this->runTestCase($testCases[1], $merchant);
     }
 
@@ -246,7 +259,7 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_axis_terminal');
 
         $merchant = Merchant\Entity::find('10000000000000');
-        $this->fixtures->merchant->addFeatures('rule_filter');
+
         $this->fixtures->merchant->editCategory2('securities');
 
         $test = $this->testData[__FUNCTION__];

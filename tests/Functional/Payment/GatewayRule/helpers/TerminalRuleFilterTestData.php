@@ -444,7 +444,7 @@ return [
                 'amount' => '300000',
                 'emi' => [
                     'duration' => '9',
-                    'bank' => 'ICIC',
+                    'bank' => 'HDFC',
                 ],
                 'card' => [
                     'number'       => '41476700000006',
@@ -453,28 +453,30 @@ return [
                     'expiry_year'  => '2017',
                     'cvv'          => '566',
                     'network'      => 'Visa',
-                    'issuer'       => 'ICIC',
+                    'issuer'       => 'HDFC',
                 ],
-                'bank' => 'ICIC',
+                'bank' => 'HDFC',
             ],
             'fixtures' => [
                 [
-                    'method'       => 'emi',
-                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'      => 'hdfc',
-                    'type'         => 'filter',
-                    'filter_type'  => 'select',
-                    'group'        => 'method_filter',
-                    'emi_duration' => '9',
-                    'issuer'       => 'ICIC',
+                    'method'         => 'emi',
+                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'        => 'hdfc',
+                    'type'           => 'filter',
+                    'filter_type'    => 'select',
+                    'group'          => 'method_filter',
+                    'emi_duration'   => '9',
+                    'emi_subvention' => 'customer',
+                    'issuer'         => 'HDFC',
                 ],
                 [
-                    'method'       => 'emi',
-                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'      => 'hdfc',
-                    'type'         => 'filter',
-                    'filter_type'  => 'select',
-                    'group'        => 'method_filter',
+                    'method'         => 'emi',
+                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'        => 'hdfc',
+                    'type'           => 'filter',
+                    'filter_type'    => 'select',
+                    'emi_subvention' => 'customer',
+                    'group'          => 'method_filter',
                 ],
             ],
             'expected_terminal_ids' => [
@@ -534,6 +536,51 @@ return [
                 '100UPIICICITml',
             ]
         ],
+    ],
+
+    'testMethodFilterWithMerchantEmiSubvention' => [
+        'payment_options' => [
+                'method' => Method::EMI,
+                'amount' => '500000',
+                'emi' => [
+                    'duration' => '9',
+                    'bank' => 'HDFC',
+                ],
+                'card' => [
+                    'number'       => '41476700000006',
+                    'name'         => 'Harshil',
+                    'expiry_month' => '12',
+                    'expiry_year'  => '2017',
+                    'cvv'          => '566',
+                    'network'      => 'Visa',
+                    'issuer'       => 'HDFC',
+                ],
+                'bank' => 'HDFC',
+            ],
+            'fixtures' => [
+                 [
+                    'method'         => 'emi',
+                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'        => 'hdfc',
+                    'type'           => 'filter',
+                    'filter_type'    => 'select',
+                    'group'          => 'method_filter',
+                    'emi_duration'   => '9',
+                    'emi_subvention' => 'merchant',
+                    'issuer'         => 'HDFC',
+                ],
+                [
+                    'method'       => 'emi',
+                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'      => 'hdfc',
+                    'type'         => 'filter',
+                    'filter_type'  => 'select',
+                    'group'        => 'method_filter',
+                ],
+            ],
+            'expected_terminal_ids' => [
+                'ShrdEmiMrSubTr',
+            ]
     ],
 
     'testNetworkFilter' => [
