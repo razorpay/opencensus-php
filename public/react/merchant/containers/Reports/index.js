@@ -78,6 +78,11 @@ export default class ReportsContainer extends Component {
         label: 'Refunds',
       },
       {
+        value: 'order',
+        id: 'order',
+        label: 'Orders',
+      },
+      {
         value: 'settlement',
         id: 'settlement',
         label: 'Settlements',
@@ -139,7 +144,10 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    const account_id = this.state.merchantSelected.id;
+    let isMarketplace = this.props.user.tags.indexOf('Marketplace') !== -1;
+    const account_id = isMarketplace
+      ? this.state.merchantSelected.id
+      : this.props.user.current;
 
     let data = {
       month: date.month() + 1, // Jan is 0 in moment library
@@ -164,7 +172,7 @@ export default class ReportsContainer extends Component {
       data: data,
     };
 
-    if (account_id !== this.props.user.id) {
+    if (isMarketplace && account_id !== this.props.user.current) {
       data.account_id = 'acc_' + account_id; // It will be handled at api level later
     }
 
@@ -404,6 +412,11 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <AsyncButton
                   class="btn btn-primary"
+                  disabled={
+                    isMarketplace &&
+                      (!this.state.merchantSelected ||
+                        !this.state.merchantSelected.id)
+                  }
                   onClick={handleSubmit(this.prepareGenerateReport)}
                   text="Generate and Download Report"
                   pendingText="Generating..."
