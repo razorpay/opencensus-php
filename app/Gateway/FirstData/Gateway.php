@@ -3,6 +3,7 @@
 namespace RZP\Gateway\FirstData;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Requests_Hooks;
 use SimpleXMLElement;
 
@@ -998,7 +999,7 @@ class Gateway extends Base\Gateway
     {
         $createdAt = $input['payment'][Payment\Entity::CREATED_AT];
 
-        $dateTime = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata');
+        $dateTime = Carbon::createFromTimestamp($createdAt, Timezone::IST);
 
         $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
@@ -1020,7 +1021,7 @@ class Gateway extends Base\Gateway
         }
 
         $content = [
-            ConnectRequestFields::TIME_ZONE                 => 'Asia/Kolkata',
+            ConnectRequestFields::TIME_ZONE                 => Timezone::IST,
             ConnectRequestFields::TXN_DATE_TIME             => $txnDateTime,
             ConnectRequestFields::HASH_ALGORITHM            => strtoupper(HashAlgo::SHA1),
             ConnectRequestFields::HASH                      => $requestHash,

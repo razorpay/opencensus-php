@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Rbl;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -202,7 +203,7 @@ class NetbankingRblGatewayTest extends TestCase
         // Set the transactions to be reconciled today
         $transactions = $this->getEntities('transaction', [], true);
 
-        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+        $reconciledAt = Carbon::today(Timezone::IST)->addHours(5)->addMinutes(13)->timestamp;
 
         foreach ($transactions['items'] as $transaction)
         {
@@ -238,7 +239,7 @@ class NetbankingRblGatewayTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
                                                       ->addMinutes(45)
                                                       ->timestamp;
 

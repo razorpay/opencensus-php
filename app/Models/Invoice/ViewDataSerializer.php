@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -127,7 +128,7 @@ class ViewDataSerializer extends Base\Core
 
             if ($epoch !== null)
             {
-                $epochFormatted = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                $epochFormatted = Carbon::createFromTimestamp($epoch, Timezone::IST)
                                         ->format('j M Y');
             }
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Error;
@@ -679,7 +680,7 @@ class Service extends Base\Service
         // to arrive at 5 days before.
         $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
-        $date = Carbon::today('Asia/Kolkata');
+        $date = Carbon::today(Timezone::IST);
         $ts = $date->subSeconds($seconds)->timestamp;
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
@@ -783,7 +784,7 @@ class Service extends Base\Service
 
     public function notifyAuthorizedPayments()
     {
-        $date = Carbon::yesterday('Asia/Kolkata');
+        $date = Carbon::yesterday(Timezone::IST);
         $timestamp = $date->timestamp;
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp(
@@ -881,8 +882,8 @@ class Service extends Base\Service
 
     public function deliverAutoCaptureEmail()
     {
-        $timeLowerLimit = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $timeUpperLimit = Carbon::today('Asia/Kolkata')->timestamp;
+        $timeLowerLimit = Carbon::yesterday(Timezone::IST)->timestamp;
+        $timeUpperLimit = Carbon::today(Timezone::IST)->timestamp;
 
         $payments = $this->repo->payment->getAutoCapturedPaymentsBetweenTimestamps(
                                                         $timeLowerLimit, $timeUpperLimit);
@@ -950,8 +951,8 @@ class Service extends Base\Service
         ];
 
         // This is the start of the day 00:00, $day ago
-        $start = Carbon::today('Asia/Kolkata')->subDays($day);
-        $end   = Carbon::today('Asia/Kolkata')->subDays($day)->addDays(1);
+        $start = Carbon::today(Timezone::IST)->subDays($day);
+        $end   = Carbon::today(Timezone::IST)->subDays($day)->addDays(1);
 
         $to = $end->timestamp;
         $from = $start->timestamp;
@@ -1009,7 +1010,7 @@ class Service extends Base\Service
      */
     public function updateOnHold(array $input) : array
     {
-        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+        $timestamp = Carbon::today(Timezone::IST)->timestamp;
 
         $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
 
@@ -1018,7 +1019,7 @@ class Service extends Base\Service
             [
                 'step'          => 'fetch_payments',
                 'ids_fetched'   => $paymentsToUpdate->getIds(),
-                'timestamp'     => Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-m-Y H:i:s')
+                'timestamp'     => Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-m-Y H:i:s')
             ]
         );
 

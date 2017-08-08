@@ -3,6 +3,7 @@
 namespace RZP\Mail\Emi;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Base\Constants;
 
@@ -39,7 +40,7 @@ class Password extends Base
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = $this->bankName . ' Emi File Password for ' . $today;
 
@@ -50,7 +51,7 @@ class Password extends Base
 
     protected function addMailData()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $body = $this->bankName . ' Emi File Password for ' . $today . " is " . $this->emiFilePassword;
 

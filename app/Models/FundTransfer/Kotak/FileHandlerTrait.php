@@ -8,6 +8,7 @@ use Excel;
 use Config;
 use RZP\Trace\Trace;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Trace\TraceCode;
@@ -524,7 +525,7 @@ trait FileHandlerTrait
 
     protected function getFileToReadNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->getMode();
 
@@ -621,7 +622,7 @@ trait FileHandlerTrait
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->getMode();
 
@@ -728,7 +729,7 @@ trait FileHandlerTrait
             mkdir($dir, 0777);
         }
 
-        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
+        $time = Carbon::now(Timezone::IST)->format('H:i:s');
 
         $mode = $this->getMode();
 

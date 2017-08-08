@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -289,7 +290,7 @@ class Processor extends Base\Core
             return [true, null];
         }
 
-        $today = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today(Timezone::IST);
 
         if (Holidays::isWorkingDay($today) === false)
         {
@@ -313,7 +314,7 @@ class Processor extends Base\Core
     protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 5.01pm.
-        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
+        $fivePm = Carbon::today(Timezone::IST)->hour(17)->minute(10)->timestamp;
 
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us

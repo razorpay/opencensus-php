@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Olamoney;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -823,7 +824,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::UNIQUE_BILL_ID   => $input[$entity]['id'],
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
-            RequestFields::TIMESTAMP        => Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s'),
+            RequestFields::TIMESTAMP        => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
         ];
 
         $content[RequestFields::HASH] = $this->getHashForVerifyRequest($content);

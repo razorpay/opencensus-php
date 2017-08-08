@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Base\RuntimeManager;
@@ -205,11 +206,11 @@ class DailyReport extends Base\Core
     {
         if (isset($input['on']) === true)
         {
-            $on = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+            $on = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
         }
         else
         {
-            $on = Carbon::yesterday('Asia/Kolkata');
+            $on = Carbon::yesterday(Timezone::IST);
         }
 
         // date format = 6th July 2015

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Jiomoney\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base;
@@ -257,7 +258,7 @@ class Server extends Base\Mock\Server
 
     protected function getFormattedTimeStamp($timestamp, $format)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format($format);
     }
 
     protected function verifyAuthorizeHash($content)

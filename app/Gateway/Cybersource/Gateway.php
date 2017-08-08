@@ -9,6 +9,7 @@ use SoapVar;
 use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
@@ -394,7 +395,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestContent($input, 'refund');
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'Asia/Kolkata')
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], Timezone::IST)
                             ->format('Ymd');
 
         $request['content'][F::TARGET_DATE] = $targetDate;
@@ -404,7 +405,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
-        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'Asia/Kolkata')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], Timezone::IST)
                             ->format('Ymd');
 
         $content = [
