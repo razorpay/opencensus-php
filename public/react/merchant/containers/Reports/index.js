@@ -412,6 +412,11 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <AsyncButton
                   class="btn btn-primary"
+                  disabled={
+                    isMarketplace &&
+                      (!this.state.merchantSelected ||
+                        !this.state.merchantSelected.id)
+                  }
                   onClick={handleSubmit(this.prepareGenerateReport)}
                   text="Generate and Download Report"
                   pendingText="Generating..."
