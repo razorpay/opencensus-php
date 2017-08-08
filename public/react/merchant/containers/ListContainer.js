@@ -17,15 +17,25 @@ export default class ListContainer extends Component {
     };
   }
 
-  // Do default search based on query params
-  componentWillMount() {
+  defaultSearch(queryString) {
     let params = null;
 
-    if (this.props.location.search) {
-      params = getURLQueryParams(this.props.location.search);
+    if (queryString) {
+      params = getURLQueryParams(queryString);
     }
 
     this.fetchAll(params);
+  }
+
+  // Do default search based on query params
+  componentWillMount() {
+    this.defaultSearch(this.props.location.search);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.location.search !== nextProps.location.search) {
+      this.defaultSearch(nextProps.location.search);
+    }
   }
 
   fetchAll = (params = {}) => {
