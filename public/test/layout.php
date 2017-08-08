@@ -58,7 +58,7 @@ var live_key = 'rzp_live_ILgsfZCZoFIKMb';
 
 var key = test_key;
 
-<?php if ($_SERVER['HTTP_HOST'] === "api.razorpay.com"): ?>
+<?php if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com"): ?>
 var Razorpay = {
   config: {
     api: '/'
