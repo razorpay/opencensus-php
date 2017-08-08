@@ -429,18 +429,6 @@ class Verify extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $cron = $this->app['basicauth']->isCron();
-
-        // If filter is null, then verify is initiated manually, not via cron
-        // Don't update VERIFY_BUCKET, in that case
-        if (($cron === true) and
-            ($this->route === 'payment_verify_multiple'))
-        {
-            $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
-
-            $payment->setVerifyBucket($nextVerifyBucket);
-        }
-
         //
         // Exception is thrown when the there's a mismatch
         // between payment status and status returned by gateway.
@@ -450,9 +438,13 @@ class Verify extends Base\Core
         try
         {
             $response = $this->processor($merchant)->verify($payment);
+
+            $this->updateVerifyBucket($payment, $filter, 'next');
         }
         catch (Exception\PaymentVerificationException $e)
         {
+            $this->updateVerifyBucket($payment, $filter, 'next');
+
             $verify = $e->getVerifyObject();
 
             if (($verify->apiSuccess === true) and ($verify->gatewaySuccess === false))
@@ -494,6 +486,8 @@ class Verify extends Base\Core
         }
         catch (Exception\GatewayTimeoutException $e)
         {
+            $this->updateVerifyBucket($payment, $filter, 'next');
+
             $this->trace->info(
                 TraceCode::GATEWAY_REQUEST_TIMEOUT,
                 ['payment_id' => $payment->getId()]);
@@ -503,6 +497,8 @@ class Verify extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->updateVerifyBucket($payment, $filter, 'next');
+
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
             // exception.
@@ -522,6 +518,31 @@ class Verify extends Base\Core
             ]);
 
         return $result;
+    }
+
+    protected function updateVerifyBucket($payment, $filter, $param = 'next')
+    {
+        if ($this->isBucketUpdateApplicable())
+        {
+            $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
+
+            $payment->setVerifyBucket($nextVerifyBucket);
+        }
+    }
+
+    protected function isBucketUpdateApplicable()
+    {
+        $cron = $this->app['basicauth']->isCron();
+
+        // If filter is null, then verify is initiated manually, not via cron
+        // Don't update VERIFY_BUCKET, in that case
+        if (($cron === true) and
+            ($this->route === 'payment_verify_multiple'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getAuthExceptionTraceBody(
@@ -604,7 +625,7 @@ class Verify extends Base\Core
         return $currentVerifyBucket;
     }
 
-    protected function getPaymentNextVerifyBucket(Payment\Entity $payment, string  $filter)
+    protected function getPaymentVerifyBucket(Payment\Entity $payment, string $filter, string $param = 'next')
     {
         // For Payment having verified as error,
         // verify bucket should be 0
@@ -625,11 +646,17 @@ class Verify extends Base\Core
         // Get Verify Boundary to update Verify Bucket
         $boundaries = $this->getBoundaryInSeconds($filter);
 
-        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
-
-        $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
+        if ($param === 'next')
+        {
+            $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
+        }
+        else if ($param === 'last')
+        {
+            $currentVerifyBucket = count($boundaries);
+        }
 
         $nextVerifyBucket = $currentVerifyBucket + 1;
+        s($nextVerifyBucket);
 
         return $nextVerifyBucket;
     }
