@@ -5,18 +5,14 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import ajax from 'merchant/utils/ajax';
 import { generateReport } from 'merchant/modules/reports';
+import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ReduxDatetime from 'rzp/ui/ReduxDatetime';
+import { PowerSelect, TypeAhead } from 'react-power-select';
 
-let now = moment();
-let currentMonth = now.month();
-let currentYear = now.year();
-let currentDate = now.date();
-
-function numberOfDays(month, year) {
-  return moment(year + ' ' + month, 'YYYY M').daysInMonth();
+function validYear(current) {
+  return current.year() >= 2015 && current.year() <= 2017;
 }
 
 const selector = formValueSelector('generateReports');
@@ -26,50 +22,151 @@ const selector = formValueSelector('generateReports');
     return {
       mode: state.session.mode,
       user: state.session.user,
+      accounts: state.accounts.accounts,
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
-      month: selector(state, 'month'),
-      year: selector(state, 'year'),
+      date: selector(state, 'date'),
     };
   },
-  { generateReport, ...NotificationsActions }
+  { generateReport, fetchAccounts, ...NotificationsActions }
 )
 @reduxForm({
   form: 'generateReports',
   initialValues: {
     entity: 'payment',
-    type: 'monthly',
-    month: currentMonth,
-    year: currentYear,
-    day: currentDate,
+    type: 'daily',
+    date: moment(),
   },
 })
 export default class ReportsContainer extends Component {
+  state = {};
+  componentWillMount() {
+    this.props.fetchAccounts();
+    this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
+
+    this.prepareEntityOptions();
+
+    this.setState({
+      entity: this.entityOptions[1],
+    });
+  }
+
+  getEntityLabel(value) {
+    let label = null;
+    label = this.entityOptions.find(item => item.value === value).label;
+
+    return label;
+  }
+
+  prepareEntityOptions() {
+    const { user } = this.props;
+
+    this.entityOptions = [
+      {
+        value: 'transaction',
+        id: 'combined',
+        label: 'Combined Report',
+      },
+      {
+        value: 'payment',
+        id: 'payment',
+        label: 'Payments',
+      },
+      {
+        value: 'refund',
+        id: 'refund',
+        label: 'Refunds',
+      },
+      {
+        value: 'settlement',
+        id: 'settlement',
+        label: 'Settlements',
+      },
+      {
+        value: 'invoice',
+        id: 'invoice',
+        label: 'Monthly Invoice',
+      },
+    ];
+
+    if (user.tags.indexOf('Broking_Report') !== -1) {
+      this.entityOptions.push({
+        value: 'broking',
+        id: 'broking',
+        label: 'Broking Reports', //
+      });
+    }
+
+    // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
+    if (user.tags.indexOf('Dsp_Report') !== -1) {
+      this.entityOptions.push({
+        value: 'dsp_report',
+        id: 'dsp_report',
+        label: 'DSP Transaction Report',
+      });
+    }
+
+    if (user.tags.indexOf('Rpp_report') !== -1) {
+      this.entityOptions.push({
+        value: 'rpp_report',
+        id: 'rpp_report',
+        label: 'e-Mitra Report',
+      });
+    }
+
+    if (user.tags.indexOf('Payment_Link_Report') !== -1) {
+      this.entityOptions.push({
+        value: 'payment_link',
+        id: 'payment_link',
+        label: 'Payment Link',
+      });
+    }
+
+    if (user.tags.indexOf('Marketplace') !== -1) {
+      this.entityOptions.push({
+        value: 'transfer',
+        id: 'transfer',
+        label: 'Transfers',
+      });
+
+      this.entityOptions.push({
+        value: 'reversal',
+        id: 'reversal',
+        label: 'Reversals',
+      });
+    }
+  }
+
   prepareGenerateReport = values => {
-    let { entity, type, month, year, day } = values;
+    let { entity, type, date } = values;
+    const account_id = this.state.merchantSelected.id;
 
     let data = {
-      month,
-      year,
+      month: date.month() + 1, // Jan is 0 in moment library
+      year: date.year(),
     };
 
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props.mode}/reports/invoice?year=${year}&month=${month}`,
+          `/${this.props.mode}/reports/invoice?year=${data.year}&month=${data.month}`,
           '_blank'
         )
       );
     }
 
     if (type === 'daily') {
-      data.day = day;
+      data.day = date.date();
     }
 
     var ajaxParams = {
       url: '/reports/' + entity,
       data: data,
     };
+
+    if (account_id !== this.props.user.id) {
+      data.account_id = 'acc_' + account_id; // It will be handled at api level later
+    }
 
     if (entity === 'broking') {
       ajaxParams.headers = {
@@ -103,7 +200,20 @@ export default class ReportsContainer extends Component {
   };
 
   render() {
-    let { entity, type, mode, month, year, user, handleSubmit } = this.props;
+    let { entity, type, mode, user, date, handleSubmit } = this.props;
+    let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
+
+    let merchantAccounts = [];
+
+    merchantAccounts.push({
+      name: user.name,
+      id: user.current,
+      email: user.email,
+      tag: 'My Account',
+      tagIcon: 'icon-account',
+    });
+
+    merchantAccounts = merchantAccounts.concat(this.props.accounts);
 
     return (
       <tabbed-container>
@@ -111,107 +221,201 @@ export default class ReportsContainer extends Component {
           <NavLink to="/reports">Download Reports</NavLink>
         </header>
         <content>
-          <div class="content-wrapper content-sm text-center">
-            <div class="row">
-              <div class="col-sm-3">
-                <div class="form-group">
-                  <Field name="entity" component="select" class="form-control">
-                    <option value="payment">Payment</option>
-                    <option value="refund">Refund</option>
-                    <option value="order">Order</option>
-                    {/*Api must give this flag. Currently hard coded for uber*/}
-                    <ShowWhen featureEnabled="Payment_Link_Report">
-                      <option value="payment_link">Payment Link</option>
-                    </ShowWhen>
-                    <option value="settlement">Settlement</option>
-                    <option value="transaction">Combined</option>
-                    <ShowWhen featureEnabled="Broking_Report">
-                      <option value="broking">Broking Report</option>
-                    </ShowWhen>
-                    <ShowWhen featureEnabled="Dsp_Report">
-                      <option value="dsp_report">DSP Transaction Report</option>
-                    </ShowWhen>
-                    <ShowWhen featureEnabled="Rpp_Report">
-                      <option value="rpp_report">e-Mitra Report</option>
-                    </ShowWhen>
-                    <option value="invoice">Monthly Invoice</option>
-                    <ShowWhen featureEnabled="Marketplace">
-                      <optgroup label="Route">
-                        <option value="transfer">Transfer</option>
-                        <option value="reversal">Reversal</option>
-                      </optgroup>
-                    </ShowWhen>
-                  </Field>
-                </div>
-              </div>
-
-              {entity === 'invoice' ||
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <Field name="type" class="form-control" component="select">
-                      <option value="daily">Daily</option>
-                      <option value="monthly">Monthly</option>
-                    </Field>
-                  </div>
-                </div>}
-
-              <div class="col-sm-2">
-                <div class="form-group">
-                  <Field name="year" class="form-control" component="select">
-                    <option value="2017">2017</option>
-                    <option value="2016">2016</option>
-                    <option value="2015">2015</option>
-                  </Field>
-                </div>
-              </div>
-
-              <div class="col-sm-3">
-                <div class="form-group">
-                  <Field name="month" class="form-control" component="select">
-                    {moment.months().map((name, index) => {
-                      return (
-                        <option value={index + 1} key={index}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                </div>
-              </div>
-
-              {type === 'daily' &&
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <Field name="day" class="form-control" component="select">
-                      {Array.from(
-                        Array(numberOfDays(month, year)),
-                        (undef, index) => {
-                          return (
-                            <option value={index + 1} key={index}>
-                              {index + 1}
-                            </option>
-                          );
-                        }
-                      )}
-                    </Field>
-                  </div>
-                </div>}
-
+          <div class="report-wrapper col-lg-8 col-sm-10 col-xs-11">
+            {/*Report Type Selection*/}
+            <div
+              class={`col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel report-list-panel${this.isMobileDevice ? '--mobile' : '--desktop'}`}
+            >
+              <div class="title">SELECT REPORT TYPE</div>
+              {this.isMobileDevice
+                ? <PowerSelect
+                    options={this.entityOptions}
+                    searchEnabled={false}
+                    selected={this.state.entity}
+                    onChange={({ option }) => {
+                      this.setState({ entity: option }); // only for powerselect view otherwise not consumed elsewhere
+                      this.props.change('entity', option.value); // programmatically set redux-form 'entity' otherwise, powerselect closes before redux-form is updated
+                    }}
+                    optionComponent={({ option }) => (
+                      <div class="reports-entity-options">
+                        <Field
+                          name="entity"
+                          value={option.value}
+                          id={option.id}
+                          component="input"
+                          type="radio"
+                          class="report-type form-control"
+                        />
+                        <label for={option.id}>{option.label}</label>
+                      </div>
+                    )}
+                    selectedOptionComponent={({ option }) => (
+                      <div>{option.label}</div>
+                    )}
+                  />
+                : <div>
+                    {this.entityOptions.map((option, index) => (
+                      <div class="reports-entity-options" key={index}>
+                        <Field
+                          name="entity"
+                          value={option.value}
+                          id={option.id}
+                          component="input"
+                          type="radio"
+                          class="report-type form-control"
+                        />
+                        <label for={option.id}>{option.label}</label>
+                      </div>
+                    ))}
+                  </div>}
             </div>
+            {/*Report Generate Panel*/}
+            <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 report-generate-panel">
+              {!this.isMobileDevice &&
+                <div class="form-heading">
+                  {this.props.entity && this.getEntityLabel(this.props.entity)}
+                </div>}
+              <div class="form-element">
+                <div class="title">
+                  {isMarketplace &&
+                    ['transaction', 'payment', 'refund', 'settlement'].indexOf(
+                      this.props.entity
+                    ) > -1
+                    ? 'SELECT '
+                    : ''}
+                  ACCOUNT
+                </div>
+                {isMarketplace &&
+                  ['transaction', 'payment', 'refund', 'settlement'].indexOf(
+                    this.props.entity
+                  ) > -1
+                  ? <div class="custom-select" style={{ position: 'relative' }}>
+                      <i class="icon icon-search custom-icon" />
+                      <div
+                        class="typeAheadSkin"
+                        ref={typeAheadSkin => {
+                          this.typeAheadSkin = typeAheadSkin;
+                        }}
+                      >
+                        {this.state.merchantSelected
+                          ? <div>
+                              <b style={{ marginRight: '5' }}>
+                                {this.state.merchantSelected.name}
+                              </b>
+                              <span>- {this.state.merchantSelected.id}</span>
+                              <span
+                                class={`${this.isMobileDevice ? this.state.merchantSelected.tagIcon + ' icon' : ''} custom-tag`}
+                              >
+                                {this.isMobileDevice
+                                  ? ''
+                                  : this.state.merchantSelected.tag}
+                              </span>
+                            </div>
+                          : null}
+                      </div>
 
-            <hr />
+                      <TypeAhead
+                        options={merchantAccounts}
+                        placeholder="Search for merchant Name/Email/Merchant ID"
+                        optionLabelPath="name"
+                        onClick={() => {
+                          this.typeAheadSkin.classList.add('hide');
+                        }}
+                        onBlur={() => {
+                          this.typeAheadSkin.classList.remove('hide');
+                        }}
+                        searchIndices={['name', 'id', 'email']}
+                        selected={this.state.merchantSelected}
+                        optionComponent={({ option }) => (
+                          <div style={{ padding: 5 }}>
+                            <b style={{ marginRight: '5' }}>{option.name}</b>
+                            <span>- {option.id}</span>
+                            <span
+                              class={`${this.isMobileDevice ? option.tagIcon + ' icon' : ''} custom-tag`}
+                            >
+                              {this.isMobileDevice ? '' : option.tag}
+                            </span>
+                          </div>
+                        )}
+                        selectedOptionComponent={({ option }) => (
+                          <div>
+                            <b style={{ marginRight: '5' }}>{option.name}</b>
+                            <span>- {option.id}</span>
+                          </div>
+                        )}
+                        onChange={({ option }) => {
+                          if (option) {
+                            this.setState({ merchantSelected: option });
+                          }
+                        }}
+                      />
+                    </div>
+                  : <div class="account">
+                      <strong>{user.name || user.user.name}</strong>
+                    </div>}
+              </div>
 
-            <AsyncButton
-              class="btn btn-primary"
-              onClick={handleSubmit(this.prepareGenerateReport)}
-              text="Download Report"
-              pendingText="Generating..."
-            />
+              <div class="form-element">
+                <div class="title">
+                  PERIOD
+                </div>
+                {entity === 'invoice' ||
+                  <div class="col-sm-3 col-xs-12">
+                    <div class="form-group form-control">
+                      <Field name="type" class="fix-select" component="select">
+                        <option value="daily">Daily</option>
+                        <option value="monthly">Monthly</option>
+                      </Field>
+                    </div>
+                  </div>}
 
-            <footer>
-              Combined reports will include transactions on the given date, as well as payments
-              settled on that given date.
-            </footer>
+                {(type === 'monthly' || entity === 'invoice') &&
+                  <div class="col-sm-4 col-xs-12">
+                    <div class="form-group">
+                      <Field
+                        name="date"
+                        component={ReduxDatetime}
+                        dateFormat="MMM, YYYY"
+                        closeOnSelect={true}
+                        isValidDate={validYear}
+                        placeholder="Select Year-Month"
+                        timeFormat={false}
+                      />
+                    </div>
+                  </div>}
+
+                {type === 'daily' &&
+                  entity !== 'invoice' &&
+                  <div class="col-sm-4 col-xs-12">
+                    <div class="form-group">
+                      <Field
+                        name="date"
+                        dateFormat="DD MMM, YYYY"
+                        closeOnSelect={true}
+                        component={ReduxDatetime}
+                        placeholder="Select Date-Month-Year"
+                        isValidDate={validYear}
+                        timeFormat={false}
+                      />
+                    </div>
+                  </div>}
+              </div>
+
+              <div class="form-element">
+                <AsyncButton
+                  class="btn btn-primary"
+                  onClick={handleSubmit(this.prepareGenerateReport)}
+                  text="Generate and Download Report"
+                  pendingText="Generating..."
+                />
+
+                {this.props.entity === 'transaction' &&
+                  <footer style={{ marginTop: '16' }}>
+                    Combined reports will include transactions on the given date, as well as payments
+                    settled on that given date.
+                  </footer>}
+              </div>
+            </div>
           </div>
         </content>
       </tabbed-container>
