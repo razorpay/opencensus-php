@@ -255,7 +255,7 @@ trait Authorize
         return false;
     }
 
-    protected function createAuthNotEnrolledRequestFields()
+    protected function createAuthNotEnrolledRequestFieldsFromEnrollData()
     {
         //
         // Only need to add zip and addr fields
@@ -271,6 +271,11 @@ trait Authorize
         $this->authNotEnrolledRequest['data'] = $data;
 
         unset($this->authNotEnrolledRequest['content']);
+    }
+
+    protected function createAuthNotEnrolledRequestFields()
+    {
+        $this->createAuthNotEnrolledRequestFieldsFromEnrollData();
 
         $this->trace(
             Trace::DEBUG,
@@ -375,5 +380,98 @@ trait Authorize
         // Postdate that we get back from hdfc gateway as yet is weird
         // It's giving next day date on 5 pm on current day.
         ;
+    }
+
+    protected function createAuthRecurringRequestFieldsFromEnrollData()
+    {
+        //
+        // Only need to add zip and addr fields
+        // since other fields have already been added during enroll
+        //
+        $data = $this->enrollRequest['data'];
+
+        $this->authSecondRecurringRequest['data'] = $data;
+
+        unset($this->authSecondRecurringRequest['content']);
+    }
+
+
+    protected function authorizeRecurring($input)
+    {
+        $this->createEnrollRequestFields($input);
+
+        $this->createAuthRecurringRequestFieldsFromEnrollData();
+
+        $data = &$this->authSecondRecurringRequest['data'];
+
+        // Fields not required for authorizeRecurring.
+       unset($data['cvv2']);
+
+       // @TODO : trace is unsetting the variables
+       // $this->trace(
+       //     Trace::DEBUG,
+       //     TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+       //     $this->authSecondRecurringRequest);
+
+        $this->runRequestResponseFlow(
+            $this->authSecondRecurringRequest,
+            $this->authSecondRecurringResponse);
+
+        // Check for auth success.
+        if ($this->isAuthSuccess($this->authSecondRecurringResponse) === true)
+        {
+            $this->validateAuthRecurringResponse();
+        }
+
+        $this->traceAuthRecurringResponse();
+
+        $this->persistAfterAuthRecurring();
+
+        if ($this->error)
+        {
+            $this->throwException($this->authSecondRecurringResponse['error']);
+        }
+
+    }
+
+    protected function traceAuthRecurringResponse()
+    {
+        if ($this->error)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_RECURRING_AUTH_ERROR,
+                $this->authSecondRecurringResponse);
+        }
+        else
+        {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE,
+                $this->authSecondRecurringResponse);
+        }
+    }
+
+    protected function persistAfterAuthRecurring()
+    {
+        if ($this->error)
+        {
+            $this->repo->persistAfterAuthRecurringError(
+                $this->authSecondRecurringRequest['data'],
+                $this->authSecondRecurringResponse['error']);
+        }
+        else
+        {
+            $this->repo->persistAfterAuthRecurring(
+                $this->authSecondRecurringRequest['data'],
+                $this->authSecondRecurringResponse['data']);
+        }
+    }
+
+    protected function validateAuthRecurringResponse()
+    {
+        $data = $this->authSecondRecurringResponse['data'];
+
+        $this->validatePostDate($data['postdate']);
     }
 }
