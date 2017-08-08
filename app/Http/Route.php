@@ -575,9 +575,9 @@ final class Route
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
         // Risk Routes
-        'risk_create'                             => ['post',     'risk',                                           'RiskController@post'                                               ],
-        'risk_update'                             => ['put',      'risk/{id}',                                      'RiskController@put'                                                ],
-        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@fetchMultiple'                                      ],
+        'risk_create'                             => ['post',     'risk',                                           'RiskController@create'                                               ],
+        'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
+        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                      ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
     ];

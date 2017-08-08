@@ -1002,7 +1002,7 @@ trait Authorize
 
             $this->updatePaymentAuthFailed($e);
 
-            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::INTERNAL, []);
+            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::INTERNAL);
 
             throw $e;
         }

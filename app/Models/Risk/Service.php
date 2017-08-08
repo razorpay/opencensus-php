@@ -26,7 +26,7 @@ class Service extends Base\Service
         return $risk->toArrayPublic();
     }
 
-    public function edit(string $id, array $input)
+    public function update(string $id, array $input)
     {
         $risk = $this->repo->risk->findByPublicId($id);
 
@@ -47,5 +47,10 @@ class Service extends Base\Service
         $entities = $this->repo->risk->fetch($input);
 
         return $entities->toArrayPublic();
+    }
+
+    public function delete(string $id)
+    {
+        return [];
     }
 }

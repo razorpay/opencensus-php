@@ -37,7 +37,7 @@ return [
     'testMarkSuspectedFraudPaymentConfirmed' => [
         'request' => [
             'url' =>'/risk/%s',
-            'method'  => 'PUT',
+            'method'  => 'PATCH',
             'content' => [
                 'source' => 'manual',
                 'reason' => 'PAYMENT_BLOCKED_BY_OPS',
@@ -55,7 +55,7 @@ return [
     'testFailRiskEdit' => [
         'request' => [
             'url' =>'/risk/%s',
-            'method'  => 'PUT',
+            'method'  => 'PATCH',
             'content' => [
                 'source' => 'gateway',
                 'reason' => 'PAYMENT_BLOCKED_BY_GATEWAY',

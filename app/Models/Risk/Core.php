@@ -38,34 +38,39 @@ class Core extends Base\Core
     }
 
     public function logPaymentForSource(
-        Payment\Entity $payment, string $source, array $data)
+        Payment\Entity $payment, string $source, array $data = [])
     {
-        $func = 'logPaymentFor' . ucwords($source);
+        $func = 'logPaymentFor' . studly_case($source);
 
         if (method_exists($this, $func) === true)
         {
             return $this->{$func}($payment, $data);
         }
+
+        $error = "Risk Action - $func not found";
+
+        throw new Exception\LogicException(
+            $error, ErrorCode::SERVER_ERROR_MISSING_HANDLER, $data);
     }
 
     protected function logPaymentForGateway(
-        Payment\Entity $payment, array $riskData)
+        Payment\Entity $payment, array $data)
     {
-        return $this->create($payment, $riskData);
+        return $this->create($payment, $data);
     }
 
     protected function logPaymentForManual(
-        Payment\Entity $payment, array $input)
+        Payment\Entity $payment, array $data)
     {
         $risk = $this->repo->risk->fetchByPaymentId($payment->getId());
 
         if ($risk === null)
         {
-            return $this->create($payment, $input);
+            return $this->create($payment, $data);
         }
 
         // We allow edits only if the source is manual
-        return $this->edit($risk, $input);
+        return $this->edit($risk, $data);
     }
 
     protected function logPaymentForMaxmind(

@@ -30,7 +30,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Source is not manual. Edits are only allowed for manual sources',
-                Entity::SOURCE, $source);
+                Entity::SOURCE,
+                [Entity::SOURCE => $source]);
         }
     }
 
@@ -40,7 +41,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The fraud type for risk logging is invalid',
-                Entity::FRAUD_TYPE, $value);
+                Entity::FRAUD_TYPE,
+                [Entity::SOURCE => $source]);
         }
     }
 
@@ -50,7 +52,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The source for risk logging is invalid',
-                Entity::SOURCE, $value);
+                Entity::SOURCE,
+                [Entity::SOURCE => $source]);
         }
     }
 }

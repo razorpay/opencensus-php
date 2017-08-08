@@ -23,8 +23,9 @@ class Entity
     const PLAN                  = 'plan';
     const ITEM                  = 'item';
     const USER                  = 'user';
-    const BATCH                 = 'batch';
     const RISK                  = 'risk';
+    const ADDON                 = 'addon';
+    const BATCH                 = 'batch';
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
@@ -32,7 +33,6 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
-    const ADDON                 = 'addon';
     const REPORT                = 'report';
     const DISPUTE               = 'dispute';
     const ADDRESS               = 'address';
@@ -71,13 +71,13 @@ class Entity
     const DISPUTE_REASON        = 'dispute_reason';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const CREDIT_TRANSACTION    = 'credit_transaction';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';

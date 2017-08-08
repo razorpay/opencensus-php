@@ -62,6 +62,11 @@ class Entity extends Base\PublicEntity
         self::RISK_SCORE => 'float',
     ];
 
+    protected $defaults = [
+        self::RISK_SCORE => null,
+        self::COMMENTS   => null,
+    ];
+
     // ----------------------Relations -----------------------------
 
     public function payment()
