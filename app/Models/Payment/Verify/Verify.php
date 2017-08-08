@@ -527,6 +527,8 @@ class Verify extends Base\Core
             $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
 
             $payment->setVerifyBucket($nextVerifyBucket);
+
+            $this->repo->saveOrFail($payment);
         }
     }
 
@@ -656,7 +658,6 @@ class Verify extends Base\Core
         }
 
         $nextVerifyBucket = $currentVerifyBucket + 1;
-        s($nextVerifyBucket);
 
         return $nextVerifyBucket;
     }
