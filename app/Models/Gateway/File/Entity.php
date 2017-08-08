@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::BEGIN,
         self::END,
         self::SCHEDULED,
+        self::PARTIALLY_PROCESSED,
     ];
 
     protected $visible = [

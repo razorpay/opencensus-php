@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;

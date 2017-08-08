@@ -69,6 +69,48 @@ class GatewayRefundFileTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
     }
 
+    public function testProcessGatewayFileWithInvalidType()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessGatewayFileWithInvalidGateway()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessGatewayFileWithInvalidBank()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessGatewayFileWithInvalidRecipients()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessGatewayFileStartingInFuture()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessGatewayFileWithInvalidTimeRange()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testRefundFileProcessorWithCustomRecipients()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
@@ -279,5 +321,59 @@ class GatewayRefundFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
+    }
+
+    public function testGatewayFileAcknowledge()
+    {
+        $this->testRefundFileProcessor();
+
+        $gatewayFile = $this->getLastEntity('gateway_file', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/acknowledge';
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    public function testGatewayFileAcknowledgePartiallyProcessed()
+    {
+        $this->testRefundFileProcessor();
+
+        $gatewayFile = $this->getLastEntity('gateway_file', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/acknowledge';
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    public function testGenerateGatewayFilesBulk()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testGenerateGatewayFilesBulkWithInvalidType()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 }

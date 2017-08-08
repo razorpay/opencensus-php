@@ -1,6 +1,8 @@
 <?php
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
     'testRefundFileProcessor' => [
@@ -28,6 +30,169 @@ return [
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
+        ]
+    ],
+
+    'testProcessGatewayFileWithInvalidType' => [
+        'request' => [
+            'content' => [
+                'type'    => 'xyz',
+                'gateway' => 'netbanking_hdfc',
+                'bank'    => 'HDFC',
+                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
+                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'xyz is not a valid gateway file type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testProcessGatewayFileWithInvalidGateway' => [
+        'request' => [
+            'content' => [
+                'type'    => 'refund',
+                'gateway' => 'hdfc',
+                'bank'    => 'HDFC',
+                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
+                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'hdfc is not a supported gateway for type refund',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testProcessGatewayFileWithInvalidBank' => [
+        'request' => [
+            'content' => [
+                'type'    => 'refund',
+                'gateway' => 'netbanking_hdfc',
+                'bank'    => 'ICIC',
+                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
+                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ICIC is not supported for refund file for netbanking_hdfc gateway',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testProcessGatewayFileWithInvalidRecipients' => [
+        'request' => [
+            'content' => [
+                'type'       => 'refund',
+                'gateway'    => 'netbanking_hdfc',
+                'bank'       => 'HDFC',
+                'from'       => Carbon::today('Asia/Kolkata')->timestamp,
+                'to'         => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+                'recipients' => ['abc']
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'recipient email id provided is not valid: abc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testProcessGatewayFileStartingInFuture' => [
+        'request' => [
+            'content' => [
+                'type'       => 'refund',
+                'gateway'    => 'netbanking_hdfc',
+                'bank'       => 'HDFC',
+                'from'       => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+                'to'         => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'from cannot be in the future',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testProcessGatewayFileWithInvalidTimeRange' => [
+        'request' => [
+            'content' => [
+                'type'       => 'refund',
+                'gateway'    => 'netbanking_hdfc',
+                'bank'       => 'HDFC',
+                'from'       => Carbon::today('Asia/Kolkata')->timestamp,
+                'to'         => Carbon::yesterday('Asia/Kolkata')->timestamp,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'from cannot be after to',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
@@ -189,6 +354,105 @@ return [
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
+        ]
+    ],
+
+    'testGatewayFileAcknowledge' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status'              => 'acknowledged',
+                'scheduled'           => true,
+                'partially_processed' => false,
+                'attempts'            => 1,
+                'sender'              => 'refunds@razorpay.com',
+                'type'                => 'refund',
+                'gateway'             => 'netbanking_hdfc',
+                'bank'                => 'HDFC',
+                'entity'              => 'gateway_file',
+                'admin'               => true
+            ]
+        ]
+    ],
+
+    'testGatewayFileAcknowledgePartiallyProcessed' => [
+        'request' => [
+            'content' => [
+                'partially_processed' => '1',
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status'              => 'acknowledged',
+                'scheduled'           => true,
+                'partially_processed' => true,
+                'attempts'            => 1,
+                'sender'              => 'refunds@razorpay.com',
+                'type'                => 'refund',
+                'gateway'             => 'netbanking_hdfc',
+                'bank'                => 'HDFC',
+                'entity'              => 'gateway_file',
+                'admin'               => true
+            ]
+        ]
+    ],
+
+    'testGenerateGatewayFilesBulk' => [
+        'request' => [
+            'content' => [
+                'netbanking_hdfc' => 'HDFC'
+            ],
+            'url' => '/gateway/files/refund/generate',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'refund',
+                        'gateway'             => 'netbanking_hdfc',
+                        'bank'                => 'HDFC',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGenerateGatewayFilesBulkWithInvalidType' => [
+        'request' => [
+            'content' => [
+                'netbanking_hdfc' => 'HDFC'
+            ],
+            'url' => '/gateway/files/xyz/generate',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'xyz is not a supported type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ]
 ];
