@@ -445,7 +445,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'xyz is not a supported type',
+                    'description' => 'xyz is not a valid gateway file type',
                 ],
             ],
             'status_code' => 400,
