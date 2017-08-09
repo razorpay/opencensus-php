@@ -177,7 +177,7 @@ class Gateway extends Base\Gateway
     protected function handleCallbackFailure($content)
     {
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
             $content[ResponseFields::STATUS_CODE],
             $content[ResponseFields::ERROR_DESCRIPTION]
         );
