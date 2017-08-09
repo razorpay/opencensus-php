@@ -45,22 +45,21 @@ export default class ReportsContainer extends Component {
     this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
 
     const user = this.props.user;
-    const isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    this.props.fetchAccounts().then(res => {
-      if (isMarketplace) {
+    if (user.isMarketplaceEnabled) {
+      this.props.fetchAccounts().then(res => {
         this.setState({
           merchantAccounts: this.state.merchantAccounts.concat(
             this.props.accounts
           ),
         });
-      }
-    });
+      });
+    }
 
     this.prepareEntityOptions();
 
     // Select default merchantAccount
-    if (isMarketplace) {
+    if (user.isMarketplaceEnabled) {
       let merchantAccounts = this.state.merchantAccounts.concat([]);
       merchantAccounts.push({
         name: user.name,
@@ -174,8 +173,7 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    const isMarketplace = this.props.user.tags.indexOf('Marketplace') !== -1;
-    const account_id = isMarketplace
+    const account_id = user.isMarketplaceEnabled
       ? this.state.merchantSelected.id
       : this.props.user.current;
 
@@ -202,7 +200,7 @@ export default class ReportsContainer extends Component {
       data: data,
     };
 
-    if (isMarketplace && account_id !== this.props.user.current) {
+    if (user.isMarketplaceEnabled && account_id !== this.props.user.current) {
       data.account_id = 'acc_' + account_id; // It will be handled at api level later
     }
 
@@ -239,7 +237,6 @@ export default class ReportsContainer extends Component {
 
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
-    const isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
     return (
       <tabbed-container>
@@ -303,7 +300,7 @@ export default class ReportsContainer extends Component {
                 </div>}
               <div class="form-element">
                 <div class="title">
-                  {isMarketplace &&
+                  {user.isMarketplaceEnabled &&
                     ['transaction', 'payment', 'refund', 'settlement'].indexOf(
                       this.props.entity
                     ) > -1
@@ -312,7 +309,7 @@ export default class ReportsContainer extends Component {
                   ACCOUNT
                 </div>
 
-                {isMarketplace &&
+                {user.isMarketplaceEnabled &&
                   ['transaction', 'payment', 'refund', 'settlement'].indexOf(
                     this.props.entity
                   ) > -1
@@ -326,7 +323,7 @@ export default class ReportsContainer extends Component {
                       >
                         {this.state.merchantSelected
                           ? <div>
-                              <b style={{ marginRight: '5' }}>
+                              <b style={{ marginRight: '5px' }}>
                                 {this.state.merchantSelected.name}
                               </b>
                               <span>- {this.state.merchantSelected.id}</span>
@@ -338,7 +335,7 @@ export default class ReportsContainer extends Component {
                                   : this.state.merchantSelected.tag}
                               </span>
                             </div>
-                          : <div>lol</div>}
+                          : null}
                       </div>
 
                       <TypeAhead
@@ -352,7 +349,7 @@ export default class ReportsContainer extends Component {
                         selected={this.state.merchantSelected}
                         optionComponent={({ option }) => (
                           <div style={{ padding: 5 }}>
-                            <b style={{ marginRight: '5' }}>{option.name}</b>
+                            <b style={{ marginRight: '5px' }}>{option.name}</b>
                             <span>- {option.id}</span>
                             <span
                               class={`${this.isMobileDevice ? option.tagIcon + ' icon' : ''} custom-tag`}
@@ -363,7 +360,7 @@ export default class ReportsContainer extends Component {
                         )}
                         selectedOptionComponent={({ option }) => (
                           <div>
-                            <b style={{ marginRight: '5' }}>{option.name}</b>
+                            <b style={{ marginRight: '5px' }}>{option.name}</b>
                             <span>- {option.id}</span>
                           </div>
                         )}
@@ -379,7 +376,7 @@ export default class ReportsContainer extends Component {
                       <strong>{user.name || user.user.name}</strong>
                     </div>}
 
-                {isMarketplace &&
+                {user.isMarketplaceEnabled &&
                   <small class="help-block">
                     <i class="icon icon-info-circle" />
                     <span>
@@ -438,7 +435,7 @@ export default class ReportsContainer extends Component {
                 <AsyncButton
                   class="btn btn-primary"
                   disabled={
-                    isMarketplace &&
+                    user.isMarketplaceEnabled &&
                       (!this.state.merchantSelected ||
                         !this.state.merchantSelected.id)
                   }
