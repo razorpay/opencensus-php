@@ -10,37 +10,24 @@ class AESCrypto extends Base\AESCrypto
 {
     const IV = '1234567890123456';
 
-    protected $aes;
-
-    protected $iv;
-
-    protected $masterKey;
-
     public function __construct(string $key)
     {
-        $this->masterKey = base64_decode($key);
+        $key = base64_decode($key);
 
-        $this->iv = self::IV;
-
-        $this->createAesCrypter();
+        parent::__construct(AES::MODE_CBC, $key, self::IV);
     }
 
     public function encryptString(string $string)
     {
-        return base64_encode($this->aes->encrypt($string));
+        $payload = $this->aes->encrypt($string);
+
+        return base64_encode($payload);
     }
 
     public function decryptString(string $string)
     {
-        return $this->aes->decrypt(base64_decode($string));
-    }
+        $payload = base64_decode($string);
 
-    protected function createAesCrypter()
-    {
-        $this->aes = new AES(AES::MODE_CBC);
-
-        $this->aes->setKey($this->masterKey);
-
-        $this->aes->setIV($this->iv);
+        return $this->aes->decrypt($payload);
     }
 }
