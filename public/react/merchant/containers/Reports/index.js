@@ -46,6 +46,24 @@ export default class ReportsContainer extends Component {
 
     this.prepareEntityOptions();
 
+    const user = this.props.user;
+    const isMarketplace = user.tags.indexOf('Marketplace') !== -1;
+
+    if (isMarketplace) {
+      this.merchantAccounts = [];
+
+      this.merchantAccounts.push({
+        name: user.name,
+        id: user.current,
+        email: user.email,
+        tag: 'My Account',
+        tagIcon: 'icon-account',
+      });
+      this.setState({
+        merchantSelected: this.merchantAccounts[0],
+      });
+    }
+
     this.setState({
       entity: this.entityOptions[1],
     });
@@ -144,7 +162,7 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    let isMarketplace = this.props.user.tags.indexOf('Marketplace') !== -1;
+    const isMarketplace = this.props.user.tags.indexOf('Marketplace') !== -1;
     const account_id = isMarketplace
       ? this.state.merchantSelected.id
       : this.props.user.current;
@@ -209,19 +227,11 @@ export default class ReportsContainer extends Component {
 
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
-    let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
+    const isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    let merchantAccounts = [];
-
-    merchantAccounts.push({
-      name: user.name,
-      id: user.current,
-      email: user.email,
-      tag: 'My Account',
-      tagIcon: 'icon-account',
-    });
-
-    merchantAccounts = merchantAccounts.concat(this.props.accounts);
+    if (isMarketplace) {
+      this.merchantAccounts = this.merchantAccounts.concat(this.props.accounts);
+    }
 
     return (
       <tabbed-container>
@@ -324,7 +334,7 @@ export default class ReportsContainer extends Component {
                       </div>
 
                       <TypeAhead
-                        options={merchantAccounts}
+                        options={this.merchantAccounts}
                         placeholder="Search for merchant Name/Email/Merchant ID"
                         optionLabelPath="name"
                         onClick={() => {
@@ -364,11 +374,12 @@ export default class ReportsContainer extends Component {
                     </div>}
 
                 {isMarketplace &&
-                  (!this.state.merchantSelected ||
-                    !this.state.merchantSelected.id) &&
-                  <div class="InputField__ErrorText text-danger">
-                    Please select a linked account from the list
-                  </div>}
+                  <small class="help-block">
+                    <i class="icon icon-info-circle" />
+                    <span>
+                      You can also select a linked account from the list
+                    </span>
+                  </small>}
               </div>
 
               <div class="form-element">
