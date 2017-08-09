@@ -8,8 +8,6 @@ class Repository extends Base\Repository
 {
     protected $entity = 'risk';
 
-    protected $merchantIdRequiredForMultipleFetch = false;
-
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID   => 'sometimes|alpha_num|size:14',

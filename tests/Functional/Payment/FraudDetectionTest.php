@@ -85,7 +85,7 @@ class FraudDetectionTest extends TestCase
         $this->assertEquals($payment['id'], $riskEntity['payment_id']);
 
         $this->assertEquals(
-            'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD', $riskEntity['reason']);
+            'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND', $riskEntity['reason']);
 
         $this->assertNotNull($riskEntity['risk_score']);
     }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Risk;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -49,6 +50,9 @@ class Core extends Base\Core
 
         $error = "Risk Action - $func not found";
 
+        $data[Entity::PAYMENT_ID] = $payment->getId();
+        $data[Entity::SOURCE] = $source;
+
         throw new Exception\LogicException(
             $error, ErrorCode::SERVER_ERROR_MISSING_HANDLER, $data);
     }
@@ -76,14 +80,9 @@ class Core extends Base\Core
     protected function logPaymentForMaxmind(
         Payment\Entity $payment, array $data)
     {
-        $input = [
-            Entity::SOURCE      => Source::MAXMIND,
-            Entity::REASON      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
-            Entity::FRAUD_TYPE  => Type::SUSPECTED,
-            Entity::RISK_SCORE  => $data[Entity::RISK_SCORE],
-        ];
+        $data[Entity::SOURCE] = Source::MAXMIND;
 
-        return $this->create($payment, $input);
+        return $this->create($payment, $data);
     }
 
     protected function logPaymentForInternal(

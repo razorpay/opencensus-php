@@ -85,9 +85,9 @@ class Entity extends Base\PublicEntity
 
     public function setPublicPaymentIdAttribute(array & $attributes)
     {
-        $paymentId = $this->getAttribute(static::PAYMENT_ID);
+        $paymentId = $this->getAttribute(self::PAYMENT_ID);
 
-        $attributes[static::PAYMENT_ID] = Payment\Entity::getSignedIdOrNull($paymentId);
+        $attributes[self::PAYMENT_ID] = Payment\Entity::getSignedIdOrNull($paymentId);
     }
 
     // ----------------------End Mutators --------------------------

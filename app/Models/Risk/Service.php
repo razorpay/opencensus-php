@@ -48,9 +48,4 @@ class Service extends Base\Service
 
         return $entities->toArrayPublic();
     }
-
-    public function delete(string $id)
-    {
-        return [];
-    }
 }

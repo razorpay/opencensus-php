@@ -31,7 +31,11 @@ trait FraudDetector
 
             $this->updatePaymentAuthFailed($e);
 
-            $riskData = [Risk\Entity::RISK_SCORE => $riskScore];
+            $riskData = [
+                Risk\Entity::RISK_SCORE => $riskScore,
+                Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
+                Risk\Entity::FRAUD_TYPE => Risk\Type::SUSPECTED,
+            ];
 
             (new Risk\Core)->logPaymentForSource($payment, Risk\Source::MAXMIND, $riskData);
 
