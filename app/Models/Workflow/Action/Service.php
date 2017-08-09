@@ -31,7 +31,15 @@ class Service extends Base\Service
 
         $orgId = $admin->getOrgId();
 
-        // Duty here defines maker/ checker of that particular individual.
+        /* $duty variable here can have options as maker/checker and it defines
+        which actions to be fetch for the admin who is requesting for actions,
+        if we provide duty=checker then all the actions which are open and has
+        to be checked by the admin who is requesting for the actions will be returned,
+        if we provide duty=maker then all the actions which are made by the admin
+        who is requesting the actions will be returned.
+        if we provide duty=admin_checked then all the actions till now performed by the
+        admin who is requesting will be returned by the function.
+        */
         $duty = $input['duty'] ?? 'org';
 
         switch ($duty)
@@ -240,7 +248,12 @@ class Service extends Base\Service
         return $actions;
     }
 
-    public function getClosedActionsByMaker($admin)
+    /**
+     * @param Admin\Entity $admin
+     *
+     * @return mixed
+     */
+    public function getClosedActionsByMaker(Admin\Entity $admin)
     {
         $actions = $this->repo->workflow_action
             ->getClosedActionsByAdmin(
@@ -249,7 +262,12 @@ class Service extends Base\Service
         return $actions;
     }
 
-    public function getActionsByMaker($admin)
+    /**
+     * @param Admin\Entity $admin
+     *
+     * @return mixed
+     */
+    public function getActionsByMaker(Admin\Entity $admin)
     {
         $relations = ['workflow', 'admin'];
 
