@@ -1002,7 +1002,12 @@ trait Authorize
 
             $this->updatePaymentAuthFailed($e);
 
-            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::INTERNAL);
+            $riskData = [
+                Risk\Entity::REASON => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+                Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
+            ];
+
+            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::INTERNAL, $riskData);
 
             throw $e;
         }

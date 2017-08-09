@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::FRAUD_TYPE    => 'required|string|max:30|filled|custom',
         Entity::SOURCE        => 'required|string|max:30|filled|custom',
         Entity::RISK_SCORE    => 'sometimes|numeric',
-        Entity::COMMENTS      => 'sometimes|string|max:255|filled', # soft validation
+        Entity::COMMENTS      => 'sometimes|string|max:255|filled',
         Entity::REASON        => 'required|string|max:150',
     ];
 

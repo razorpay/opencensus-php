@@ -575,9 +575,10 @@ final class Route
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
         // Risk Routes
-        'risk_create'                             => ['post',     'risk',                                           'RiskController@create'                                               ],
+        'risk_create'                             => ['post',     'risk',                                           'RiskController@create'                                             ],
         'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
-        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                      ],
+        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
+        'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
     ];
@@ -973,6 +974,7 @@ final class Route
         'risk_create',
         'risk_update',
         'risk_fetch_multiple',
+        'risk_get',
     ];
 
     public static $proxy = [

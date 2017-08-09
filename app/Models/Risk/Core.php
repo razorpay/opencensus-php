@@ -89,12 +89,8 @@ class Core extends Base\Core
     protected function logPaymentForInternal(
         Payment\Entity $payment, array $data)
     {
-        $input = [
-            Entity::SOURCE      => Source::INTERNAL,
-            Entity::REASON      => RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
-            Entity::FRAUD_TYPE  => Type::CONFIRMED,
-        ];
+        $data[Entity::SOURCE] = Source::INTERNAL;
 
-        return $this->create($payment, $input);
+        return $this->create($payment, $data);
     }
 }
