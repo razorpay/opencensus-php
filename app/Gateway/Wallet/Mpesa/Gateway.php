@@ -374,7 +374,7 @@ class Gateway extends Base\Gateway
 
         if (empty($billerCode) === false)
         {
-            $gatewayParam[RequestFields::FILLER2] = $billerCode;
+            $gatewayParam[RequestFields::FILLER3] = $billerCode;
         }
 
         $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
