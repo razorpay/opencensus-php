@@ -4,20 +4,25 @@ namespace RZP\Models\Gateway\File;
 
 class ProcessorFactory
 {
-    public static function getProcessor(Entity $gatewayFile)
+    protected static $processors = [];
+
+    public static function getProcessor(Entity $gatewayFile, $type = null)
     {
-        $type = $gatewayFile->getType();
+        $type = $type ?: $gatewayFile->getType();
         $gateway = $gatewayFile->getGateway();
         $bank = $gatewayFile->getBank();
 
         $processorClass = self::getProcessorClass($type, $gateway, $bank);
 
-        $processor = new $processorClass($gatewayFile);
+        if (isset(self::$processors[$processorClass]) === true)
+        {
+            return self::$processors[$processorClass];
+        }
 
-        return $processor;
+        return self::$processors[$processorClass] = new $processorClass($gatewayFile);
     }
 
-    public static function getProcessorClass(string $type, string $gateway, string $bank)
+    protected static function getProcessorClass(string $type, string $gateway, string $bank)
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 
