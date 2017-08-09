@@ -239,6 +239,10 @@ trait Authorize
                 $errorCode = Hdfc\ErrorCode::RP00011;
                 break;
 
+            case '':
+                $errorCode = Hdfc\ErrorCode::RP00002;
+                break;
+
             default:
                 $errorCode = $result;
                 break;
