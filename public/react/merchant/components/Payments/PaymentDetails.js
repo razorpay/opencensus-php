@@ -36,6 +36,7 @@ const shownByDefault = [
   'refund_status',
   'refunds',
   'tax',
+  'service_tax',
   'status',
   'wallet',
 ];
@@ -152,7 +153,7 @@ export default props => {
                   <EntityDetailRow
                     label="Total Fees"
                     value={() => (
-                      <span data-tip="Total Fees is inclusive of Tax charges">
+                      <span data-tip="Total Fees is inclusive of tax charges">
                         <Amount value={payment.fee} />
                         <i class="icon icon-info-circle info-tooltip" />
                       </span>
