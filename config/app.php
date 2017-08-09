@@ -183,6 +183,7 @@ return array(
         RZP\Services\DashboardServiceProvider::class,
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
+        \Conner\Tagging\Providers\TaggingServiceProvider::class,
     ],
 
     /*

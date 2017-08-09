@@ -1012,6 +1012,40 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * used for adding tags to merchant
+     * @param string $id
+     * @param array $input which contains the tags of the merchant
+     */
+    public function addTags($id, $input)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        return $merchant->tagNames();
+    }
+
     public function markGratisTransactionPostpaid($input)
     {
         $this->trace->info(
