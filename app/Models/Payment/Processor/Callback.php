@@ -133,9 +133,20 @@ trait Callback
 
     /**
      * This means the payment has already been processed but
-     * we are hitting callback again. This could be due to
-     * browser refresh by the customer or s2s callback notification being
-     * delivered by the gateway before browser hits the callback route etc.
+     * we are hitting callback again.
+     *
+     * This could be due to browser refresh by the customer or
+     * s2s callback notification being delivered by the gateway before
+     * browser hits the callback route etc.
+     *
+     * @TODO
+     * Another case that needs to be explicitly handled is the
+     * case of a payment authorizaion occurring due to
+     * a pending authorization corporate netbanking payment
+     * that was marked failed due to the pending status.
+     *
+     * Once a checker approval comes in callback will be fired
+     * which must be accepted and sent as success.
      */
     protected function processPaymentCallbackSecondTime($payment)
     {
