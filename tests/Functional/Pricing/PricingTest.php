@@ -397,15 +397,17 @@ class PricingTest extends TestCase
         return $this->merchantAssignPricingPlan($id, '10000000000000');
     }
 
-    protected function createPricingPlan()
+    protected function createPricingPlan($pricingPlan = [])
     {
-        $pricingPlan = array(
+        $defaultPricingPlan = array(
             'plan_name' => 'TestPlan1',
             'payment_method' => 'card',
             'payment_method_type'  => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'HDFC',
             'percent_rate' => 1000);
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
 
         $plan = $this->fixtures->create('pricing', $pricingPlan);
 
@@ -450,6 +452,7 @@ class PricingTest extends TestCase
             'payment_network' => 'DICL',
             'payment_issuer' => 'SBIN',
             'percent_rate' => '275',
+            'fixed_rate' => 0,
             );
 
         $pricingData =
@@ -474,21 +477,15 @@ class PricingTest extends TestCase
                     'fixed_rate' => 3000,)
                 );
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $planData);
+        $plan = $this->createPricingPlan($planData);
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('id', $content);
-        $pricingPlanId = $content['id'];
+        $pricingPlanId = $plan['id'];
 
         foreach ($pricingData as $data)
         {
             $request = array(
                 'method' => 'POST',
-                'url' => '/pricing/'.$pricingPlanId.'/rule',
+                'url' => '/pricing/' . $pricingPlanId . '/rule',
                 'content' => $data);
 
             $content = $this->makeRequestAndGetContent($request);
