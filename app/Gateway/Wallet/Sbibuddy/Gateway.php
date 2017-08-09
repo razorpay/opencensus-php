@@ -336,7 +336,7 @@ class Gateway extends Base\Gateway
     // Check if the payment verification API is successfull
     protected function validatePaymentVerificationSuccess($data)
     {
-        return ($data[ResponseFields::STATUS_CODE] === ResponseCodeMap::SUCCESS_CODE);
+        return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes);
     }
 
     //-----------------Verify request helpers end---------------
