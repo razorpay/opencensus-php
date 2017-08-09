@@ -293,6 +293,7 @@ export default class ReportsContainer extends Component {
                     : ''}
                   ACCOUNT
                 </div>
+
                 {isMarketplace &&
                   ['transaction', 'payment', 'refund', 'settlement'].indexOf(
                     this.props.entity
@@ -361,6 +362,13 @@ export default class ReportsContainer extends Component {
                   : <div class="account">
                       <strong>{user.name || user.user.name}</strong>
                     </div>}
+
+                {isMarketplace &&
+                  (!this.state.merchantSelected ||
+                    !this.state.merchantSelected.id) &&
+                  <div class="InputField__ErrorText text-danger">
+                    Please select a linked account from the list
+                  </div>}
               </div>
 
               <div class="form-element">
