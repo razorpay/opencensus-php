@@ -108,9 +108,20 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
+        // Changes occur to url, secrets and responses
+        // multiple callbacks will have to be handled
+        // verify calls will have to be handled
+        if ($verify->input['terminal']->isCorporate() === true)
+        {
+            $this->setCorporateBanking();
+        }
+
+        //Sets domain type to include bankingType and mode
+        $this->setDomainType();
+
         $content = $this->getVerifyRequestData($verify);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -129,6 +140,8 @@ class Gateway extends Base\Gateway
                 'payment_id' => $verify->input['payment']['id'],
                 'response'   => $responseBody
             ]);
+
+        $this->preProcessVerifyResponse($responseBody);
 
         $verify->verifyResponseContent = $this->getResponseArray($responseBody);
     }
@@ -185,10 +198,20 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if ((isset($content[ResponseFields::STATUS]) === true) and
-            ($content[ResponseFields::STATUS] === Status::SUCCESS))
+        if (isset($content[ResponseFields::STATUS]) === true)
         {
-            $verify->gatewaySuccess = true;
+            $status = $content[ResponseFields::STATUS];
+
+            // Yes, the corporate verify success is Y
+            if ($this->isCorporateBanking() === true)
+            {
+                $verify->gatewaySuccess = ($status === Status::Y);
+            }
+            // Whereas, the retail verify success is success
+            else
+            {
+                $verify->gatewaySuccess = ($status === Status::SUCCESS);
+            }
         }
     }
 
@@ -207,6 +230,7 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestData(Verify $verify)
     {
         $input = $verify->input;
+
         $payment = $verify->payment;
 
         $data = $this->createDefaultRequestData($input);
@@ -220,6 +244,15 @@ class Gateway extends Base\Gateway
         $data[RequestFields::MODE]  = Action::INQUIRY;
 
         $additionalData = $this->getPaymentReferenceData($input);
+
+        if ($this->isCorporateBanking() === true)
+        {
+            $data[RequestFields::SHOW_ON_SAME_PAGE]  = Status::Y;
+            // This is a dummy url that is being set to use the api
+            $data[RequestFields::RETURN_URL]  = $this->app['config']->get('app.url');
+        }
+
+        $this->setTpvFieldIfNeeded($additionalData, $input);
 
         $data = array_merge($data, $additionalData);
 
@@ -381,6 +414,18 @@ class Gateway extends Base\Gateway
     protected function getAuthSuccessStatus()
     {
         return Confirmation::getAuthSuccessStatus();
+    }
+
+    /**
+     * In case of corporate payments the verify response returned is an
+     * ill formed xml. To parse the same, we will reploace the offending keys
+     * with an appropriate parsable version of the same.
+     * */
+    protected function preProcessVerifyResponse(&$content)
+    {
+        $content = str_replace(ResponseFields::BILL_REF_NUM, ResponseFields::US_BILL_REF_NUM, $content);
+
+        $content = str_replace(ResponseFields::CONSUMER_CODE, ResponseFields::US_CONSUMER_CODE, $content);
     }
 
     protected function getResponseArray($content)

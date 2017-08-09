@@ -145,6 +145,20 @@ class Server extends Base\Mock\Server
 
     protected function createResponseArray(array $input)
     {
+        $bankingType = $this->getBankingType($input);
+
+        if ($bankingType === 'corporate')
+        {
+            return [
+                ResponseFields::BILL_REF_NUM => $input[RequestFields::PAYMENT_ID],
+                ResponseFields::PAYMENTID    => '..',
+                ResponseFields::CONSUMER_CODE => $input[RequestFields::ITEM_CODE],
+                ResponseFields::UC_AMOUNT    => $input[RequestFields::AMOUNT],
+                ResponseFields::STATUS       => Status::Y,
+                ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
+            ];
+        }
+
         return [
             ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
             ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],

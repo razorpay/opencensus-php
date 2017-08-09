@@ -60,6 +60,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $content = $this->verifyPayment($payment['id']);
+
         $this->assertTestResponse($payment, 'testPayment');
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
@@ -69,6 +71,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        assert($content['payment']['verified'] === 1);
 
         $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['enabled' => 1]);
     }
