@@ -342,7 +342,7 @@ class Processor extends Base\Core
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment::AMOUNT]      = $bankTransfer->getAmount();
-        $paymentArray[Payment::DESCRIPTION] = $bankTransfer->getDescription();
+        $paymentArray[Payment::DESCRIPTION] = $bankTransfer->getDescription() ?? "";
 
         if ($this->virtualAccount->hasCustomer() === true)
         {
