@@ -22,11 +22,13 @@ class PricingTest extends TestCase
 
     public function testCreatePricingPlan()
     {
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithMinAndMaxFee()
     {
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
         $this->startTest();
     }
 
@@ -333,7 +335,9 @@ class PricingTest extends TestCase
 
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
-        $content = $this->startTest();
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+
+        $this->startTest();
     }
 
     public function testDeleteUsedPricingPlanRule()
@@ -395,6 +399,8 @@ class PricingTest extends TestCase
 
     protected function createPricingPlan()
     {
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+
         $pricingPlan = array(
             'plan_name' => 'TestPlan1',
             'payment_method' => 'card',
