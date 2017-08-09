@@ -514,6 +514,8 @@ return [
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 
+        'refund_verify_failed'              => 'refunds/{id}/retry',
+
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
 

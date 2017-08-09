@@ -14,9 +14,8 @@
   </div>
     <div class="row wrapper">
       <div class="list-group">
-        <div class="list-group-item" ng-repeat="key in getKeys()"
-          ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
-        >
+        <div class="list-group-item" ng-repeat="(key, value) in entity"
+             ng-init="valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}">
           <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
             {{displayValue(key, value, entity)}}
           </span>
@@ -28,10 +27,25 @@
         </div>
       </div>
     </div>
-    <div class="panel-footer row" ng-show="entity.entity == 'terminal'">
+    <div class="panel-footer row"
+         ng-class="{'text-center': hasRetryRefund}"
+         ng-show="entity.entity == 'terminal' || hasRetryRefund">
+
+      <div class="btn-group text-center m-b" role="group"
+           aria-label="Refund Actions"
+           ng-show="hasRetryRefund">
+
+        <button class="btn btn-info"
+                ng-click="onRetryRefund($event)"
+                ng-disabled="isRetryRefundProcessing">
+          <span ng-if="!isRetryRefundProcessing">Retry Refund</span>
+          <span ng-if="isRetryRefundProcessing">Processing...</span>
+        </button>
+      </div>
+
       <div class="btn-group text-left m-b" role="group"
-        aria-label="Terminal Actions"
-      >
+           aria-label="Terminal Actions"
+           ng-show="entity.entity == 'terminal'">
         <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
           Edit Terminal
         </button>
@@ -46,8 +60,8 @@
       </div>
 
       <div class="btn-group text-left" role="group"
-        aria-label="Terminal Actions"
-      >
+           aria-label="Terminal Actions"
+           ng-show="entity.entity == 'terminal'">
         <button class="btn btn-danger" ng-click="terminal.delete(entity.id)"
           dynamic-tooltip-pos="top" dynamic-tooltip="delete_terminal"
           ng-confirm-click="Are you sure you want to delete this terminal?"
