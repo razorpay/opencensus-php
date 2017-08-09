@@ -51,10 +51,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPaymentCorporate()
     {
-        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['enabled' => 0]);
-
-        $this->fixtures->create('terminal:shared_netbanking_icici_terminal',
-                                ['id' => 'CorpNBIciciTml', 'corporate' => '1']);
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 1]);
 
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -74,7 +71,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         assert($content['payment']['verified'] === 1);
 
-        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['enabled' => 1]);
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 0]);
     }
 
     public function testPaymentVerify()
