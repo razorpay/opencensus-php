@@ -39,20 +39,30 @@ const selector = formValueSelector('generateReports');
   },
 })
 export default class ReportsContainer extends Component {
-  state = {};
-  componentWillMount() {
-    this.props.fetchAccounts();
-    this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
+  state = { merchantAccounts: [] };
 
-    this.prepareEntityOptions();
+  componentWillMount() {
+    this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
 
     const user = this.props.user;
     const isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    if (isMarketplace) {
-      this.merchantAccounts = [];
+    this.props.fetchAccounts().then(res => {
+      if (isMarketplace) {
+        this.setState({
+          merchantAccounts: this.state.merchantAccounts.concat(
+            this.props.accounts
+          ),
+        });
+      }
+    });
 
-      this.merchantAccounts.push({
+    this.prepareEntityOptions();
+
+    // Select default merchantAccount
+    if (isMarketplace) {
+      let merchantAccounts = this.state.merchantAccounts.concat([]);
+      merchantAccounts.push({
         name: user.name,
         id: user.current,
         email: user.email,
@@ -60,10 +70,12 @@ export default class ReportsContainer extends Component {
         tagIcon: 'icon-account',
       });
       this.setState({
-        merchantSelected: this.merchantAccounts[0],
+        merchantAccounts: merchantAccounts,
+        merchantSelected: merchantAccounts[0],
       });
     }
 
+    // Select default report type
     this.setState({
       entity: this.entityOptions[1],
     });
@@ -229,10 +241,6 @@ export default class ReportsContainer extends Component {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
     const isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    if (isMarketplace) {
-      this.merchantAccounts = this.merchantAccounts.concat(this.props.accounts);
-    }
-
     return (
       <tabbed-container>
         <header>
@@ -330,18 +338,15 @@ export default class ReportsContainer extends Component {
                                   : this.state.merchantSelected.tag}
                               </span>
                             </div>
-                          : null}
+                          : <div>lol</div>}
                       </div>
 
                       <TypeAhead
-                        options={this.merchantAccounts}
+                        options={this.state.merchantAccounts}
                         placeholder="Search for merchant Name/Email/Merchant ID"
                         optionLabelPath="name"
                         onClick={() => {
                           this.typeAheadSkin.classList.add('hide');
-                        }}
-                        onBlur={() => {
-                          this.typeAheadSkin.classList.remove('hide');
                         }}
                         searchIndices={['name', 'id', 'email']}
                         selected={this.state.merchantSelected}
@@ -365,6 +370,7 @@ export default class ReportsContainer extends Component {
                         onChange={({ option }) => {
                           if (option) {
                             this.setState({ merchantSelected: option });
+                            this.typeAheadSkin.classList.remove('hide');
                           }
                         }}
                       />
