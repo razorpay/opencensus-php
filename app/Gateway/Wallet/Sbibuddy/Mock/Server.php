@@ -36,6 +36,8 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'refund');
 
+        $content = http_build_query($content);
+
         return $this->makeResponse($content);
     }
 

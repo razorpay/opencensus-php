@@ -384,9 +384,11 @@ class Gateway extends Base\Gateway
     {
         $response = $this->sendGatewayRequest($request);
 
-        $response = json_decode($response->body, true);
+        $responseContent = [];
 
-        return [$this->parseResponse($response), $response];
+        parse_str($response->body, $responseContent);
+
+        return [$this->parseResponse($responseContent), $responseContent];
     }
 
     /**
