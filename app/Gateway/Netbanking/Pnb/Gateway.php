@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -35,7 +34,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $entityAttrs = $this->getEntityAttributes($input);
+        $entityAttrs = $this->getNetbankingEntityAttributes($input);
 
         $this->createGatewayPaymentEntity($entityAttrs);
 
@@ -57,10 +56,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'gateway'           => $this->gateway,
-                'gateway_response'  => $input[Payment\Entity::GATEWAY],
-                'payment_id'        => $input['payment'][Payment\Entity::ID],
-                'decrypted_content' => $content,
+                'gateway'          => $this->gateway,
+                'gateway_response' => $input[Payment\Entity::GATEWAY],
+                'payment_id'       => $input['payment'][Payment\Entity::ID],
+                'content'          => $content,
             ]
         );
 
@@ -93,8 +92,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request
-        );
+            $request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -150,7 +148,7 @@ class Gateway extends Base\Gateway
         return $decryptedString;
     }
 
-    protected function getEntityAttributes(array $input): array
+    protected function getNetbankingEntityAttributes(array $input): array
     {
         $entityAttributes = [
             RequestFields::MERCHANT_AMOUNT => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
