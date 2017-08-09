@@ -75,9 +75,19 @@ class Server extends Base\Mock\Server
     {
         $httpQuery = http_build_query($postData);
 
+        $bankingType = $this->getBankingType($input);
+
         $aes = $this->getAesCrypto($input);
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery));
+
+        // response as sent back for corporate payment
+        if ($bankingType === 'corporate')
+        {
+            $content['Payopt'] = 'ICI';
+
+            $content['var1']   = 'xyz';
+        }
 
         $this->content($content, 'hash');
 

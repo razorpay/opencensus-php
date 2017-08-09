@@ -29,7 +29,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
     }
 
     public function testPayment()
@@ -51,6 +51,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPaymentCorporate()
     {
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['enabled' => 0]);
+
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal',
                                 ['id' => 'CorpNBIciciTml', 'corporate' => '1']);
 
@@ -67,6 +69,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['enabled' => 1]);
     }
 
     public function testPaymentVerify()
