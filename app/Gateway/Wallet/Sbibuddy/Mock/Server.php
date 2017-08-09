@@ -51,6 +51,8 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'verify');
 
+        $content = http_build_query($content);
+
         return $this->makeResponse($content);
     }
 
