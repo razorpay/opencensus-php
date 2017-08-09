@@ -411,23 +411,14 @@
       <div class="form-group">
         <label class="col-lg-3 control-label">Reason Id:</label>
         <div class="col-lg-9">
-          <div class="pills-container-users">
-              <span class="pills-label assignee-label" ng-repeat="(index, roleId) in selected_roles track by $index">
-                {{roleNames[roleId]}}
-                <i class="delete-btn fa fa-times m-l" ng-click="removeRole(roleId)" />
-              </span>
-          </div>
-
           <!-- Role Selection -->
-          <select class="select2 role-select2" multiple="single" style="width: 100%" ng-model="roleSelect" role-select="Select a Reason Id">
-            <option  ng-repeat="role in roles | filter:filterRoles" value="{{role.id}}">{{role.name}}</option>
+          <select class="select2 role-select2" style="width: 100%" ng-model="dispute.reason_id" role-select="Select a Reason Id">
+            <option ng-repeat="reason in reasonIds" value="{{reason.id}}">
+              ({{reason.network}} - {{reason.gateway_code}}) : {{reason.code}}
+            </option>
           </select>
-
         </div>
       </div>
-
-
-
 
 
       <!--Amount-->

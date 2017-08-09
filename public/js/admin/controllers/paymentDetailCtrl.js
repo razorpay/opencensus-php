@@ -512,12 +512,9 @@ app
         var data = {
           route_name: 'admin_fetch_entity_multiple',
           url_params: {
-            '{type}': 'dispute',
+            '{type}': 'dispute_reason',
           },
           mode: 'test',
-          query_params: {
-            merchant_id: merchant_id,
-          },
         };
         var request = $http.get('/admin/generic', {
           params: data,
@@ -527,6 +524,20 @@ app
           .success(function(data) {
             if (data.success || true) {
               console.log('DATA ITEMS...', data.data.items);
+
+              $scope.reasonIds = data.data.items;
+
+              var reasonInfo = '';
+              angular.forEach($scope.reasonIds, function(reason, index) {
+                reasonInfo =
+                  reasonInfo +
+                  (index + 1) +
+                  '. ' +
+                  reason.description +
+                  '<br />';
+              });
+
+              $scope.reasonIdInfo = '<pre>' + reasonInfo + '</pre>';
             } else {
               $scope.alerts.resetAlerts(true);
               angular.forEach(data.errors, function(value) {
