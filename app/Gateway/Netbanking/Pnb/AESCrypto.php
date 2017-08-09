@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Pnb;
 
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base;
 
 use phpseclib\Crypt\AES;
 
