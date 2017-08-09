@@ -54,8 +54,8 @@ export default props => {
                 <EntityDetailRow label="UTR" value={settlement.utr} />
 
                 <EntityDetailRow
-                  label="GST"
-                  value={() => <Amount value={settlement.service_tax} />}
+                  label="Tax"
+                  value={() => <Amount value={settlement.tax} />}
                 />
 
                 <ListGroupToggler

@@ -48,7 +48,7 @@ const InvoiceListItem = props => {
           email: customer.customer_email,
         })}
       </td>
-      <td><CopyLink url={invoice.short_url} /></td>
+      <td>{invoice.short_url && <CopyLink url={invoice.short_url} />}</td>
       {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
       <td>
         <InvoiceStatusLabel status={invoice.status} />
