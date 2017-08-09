@@ -399,8 +399,6 @@ class PricingTest extends TestCase
 
     protected function createPricingPlan()
     {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
-
         $pricingPlan = array(
             'plan_name' => 'TestPlan1',
             'payment_method' => 'card',
@@ -409,18 +407,13 @@ class PricingTest extends TestCase
             'payment_issuer' => 'HDFC',
             'percent_rate' => 1000);
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $pricingPlan);
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
 
-        $content = $this->makeRequestAndGetContent($request);
+        $plan = $plan->toArray();
 
-        $this->assertArrayHasKey('rules', $content);
+        $plan['id'] = $plan['plan_id'];
 
-        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
-
-        return $content;
+        return $plan;
     }
 
     protected function addPricingPlanRule($id)
