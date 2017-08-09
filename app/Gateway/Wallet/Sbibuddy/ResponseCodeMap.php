@@ -3,8 +3,9 @@
 namespace RZP\Gateway\Wallet\Sbibuddy;
 
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base;
 
-class ResponseCodeMap
+class ResponseCodeMap extends Base\ResponseCodeMap
 {
     const SUCCESS_CODE              = '1';
     const GENERAL_ERROR             = '2';
@@ -32,21 +33,21 @@ class ResponseCodeMap
         self::TRANSACTION_REFUNDED
     ];
 
-    public static $errorDescriptions = [
-        self::GENERAL_ERROR             => 'General error. Check error description.',
+    public static $codes = [
+        self::GENERAL_ERROR             => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::PIN_AUTH_FAIL             => ErrorCode::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
-        self::ACCOUNT_LOCKED            => 'Account locked.',
+        self::ACCOUNT_LOCKED            => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CUSTOMER,
         self::INSUFFICIENT_BALANCE      => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
-        self::GENERAL_TRANSACTION_ERROR => 'General transaction error. Check error description.',
-        self::DUPLICATE_TRANSACTION     => 'Duplicate transaction.',
-        self::PENDING_TRANSACTION       => 'Pending transaction.',
+        self::GENERAL_TRANSACTION_ERROR => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::DUPLICATE_TRANSACTION     => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::PENDING_TRANSACTION       => ErrorCode::GATEWAY_ERROR_PAYMENT_PENDING_TRANSACTION,
         self::WRONG_OTP                 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
-        self::VELOCITY_EXCEEDED         => 'Velocity exceeded.',
-        self::GENERAL_LOGIN_FAILURE     => 'General login failure.',
-        self::WALLET_DISABLED           => 'Wallet disabled.',
-        self::TEMPORARY_CREDENTIAL      => 'Temporary credential not accepted.',
+        self::VELOCITY_EXCEEDED         => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_WRONG_ATTEMPT_LIMIT_CROSSED,
+        self::GENERAL_LOGIN_FAILURE     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED,
+        self::WALLET_DISABLED           => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INACTIVE,
+        self::TEMPORARY_CREDENTIAL      => ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE,
         self::CANCELLED_TRANSACTION     => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE,
-        self::SESSION_EXPIRED           => 'Session expired',
-        self::OPERATION_NOT_ALLOWED     => 'Operation not allowed',
+        self::SESSION_EXPIRED           => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED,
+        self::OPERATION_NOT_ALLOWED     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_OPERATION_NOT_ALLOWED,
     ];
 }
