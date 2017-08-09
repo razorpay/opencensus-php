@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -30,6 +31,7 @@ class Service extends Base\Service
 
         $orgId = $admin->getOrgId();
 
+        // Duty here defines maker/ checker of that particular individual.
         $duty = $input['duty'] ?? 'org';
 
         switch ($duty)
@@ -55,7 +57,7 @@ class Service extends Base\Service
         return $actions->toArrayPublic();
     }
 
-    public function getActionsCheckedByAdmin($admin)
+    public function getActionsCheckedByAdmin(Admin\Entity $admin)
     {
         $actions = $this->repo->workflow_action
             ->getActionsCheckedByAdmin(
@@ -173,9 +175,11 @@ class Service extends Base\Service
      * Based on current level, get the steps/roles in the workflow
      * if the admin has the role, give the checker the action_id, step_id
      *
+     * @param Admin\Entity $admin Admin entity
+     *
      * @return array
      */
-    public function getActionsForChecker($admin)
+    public function getActionsForChecker(Admin\Entity $admin)
     {
         $adminRoleIds = $admin->roles()->allRelatedIds()->toArray();
 
@@ -185,7 +189,13 @@ class Service extends Base\Service
         return $actions;
     }
 
-    public function getActionsByMakerAndType($admin, array $input)
+    /**
+     * @param Admin\Entity $admin
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getActionsByMakerAndType(Admin\Entity $admin, array $input)
     {
         $orgId = $admin->getOrgId();
 
@@ -217,9 +227,10 @@ class Service extends Base\Service
     /**
      * @param string $orgId
      * @param string $type  - all/open
+     *
      * @return array
      */
-    public function getActionsByOrg(string $orgId, $type)
+    public function getActionsByOrg(string $orgId, string $type)
     {
         $this->app['basicauth']->validateSuperAdminAccess();
 
