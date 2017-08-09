@@ -8,6 +8,8 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Type;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -474,9 +476,25 @@ class MerchantFilter extends Terminal\Filter
             ($terminal->isShared() === true) and
             (in_array($merchantId,  $blackListedMerchants, true) === true))
         {
-            return false;
+            // Removes shared terminals for all other card payments apart from
+            // - ICIC debit cards
+            // - All CITI cards
+            if ($this->isCardIssuerWhiteListed($input) === false)
+            {
+                return false;
+            }
         }
 
         return true;
+    }
+
+    public function isCardIssuerWhiteListed(array $input): bool
+    {
+        $issuer = $input['payment']->card->getIssuer();
+        $type = $input['payment']->card->getType();
+
+        return (((($issuer === Issuer::ICIC) and
+                ($type !== Type::CREDIT))) or
+                ($issuer === Issuer::CITI));
     }
 }
