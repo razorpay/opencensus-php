@@ -94,6 +94,26 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return (new $class)->generate($input);
     }
 
+    public function setBankingType($bankingType)
+    {
+        $this->bankingType = $bankingType;
+    }
+
+    protected function setCorporateBanking()
+    {
+        $this->bankingType = 'corporate';
+    }
+
+    protected function isCorporateBanking()
+    {
+        return ($this->bankingType === 'corporate');
+    }
+
+    protected function getBankingType()
+    {
+        return $this->bankingType;
+    }
+
     protected function shouldStatusBeUpdated(Entity $gatewayPayment)
     {
         //

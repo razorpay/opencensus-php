@@ -25,6 +25,8 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'icici';
 
+    protected $bankingType = 'retail';
+
     protected $map = [
         RequestFields::AMOUNT  => 'amount'
     ];
@@ -33,13 +35,24 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        // Changes occur to url, secrets and responses
+        // multiple callbacks will have to be handled
+        // verify calls will have to be handled
+        if ($input['terminal']->isCorporate() === true)
+        {
+            $this->setCorporateBanking();
+        }
+
+        //Sets domain type to include bankingType and mode
+        $this->setDomainType();
+
         $content = $this->getPaymentRequestData($input);
 
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
         $this->createGatewayPaymentEntity($entity);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -49,6 +62,17 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        // Changes occur to url, secrets and responses
+        // multiple callbacks will have to be handled
+        // verify calls will have to be handled
+        if ($input['terminal']->isCorporate() === true)
+        {
+            $this->setCorporateBanking();
+        }
+
+        //Sets domain type to include bankingType and mode
+        $this->setDomainType();
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
@@ -385,10 +409,37 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId2();
+            if ($this->isCorporateBanking() === true)
+            {
+                return $this->getTestMerchantId2Corporate();
+            }
+            else
+            {
+                return $this->getTestMerchantId2();
+            }
         }
 
         return $this->getLiveMerchantId2();
+    }
+
+    protected function getTestMerchantId2Corporate()
+    {
+        return $this->config['test_merchant_id2_corp'];
+    }
+
+    protected function getTestSecret()
+    {
+        if ($this->isCorporateBanking() === true)
+        {
+            return $this->getTestSecretCorporate();
+        }
+
+        return parent::getTestSecret();
+    }
+
+    protected function getTestSecretCorporate()
+    {
+        return $this->config['test_hash_secret_corp'];
     }
 
     /**
@@ -404,5 +455,15 @@ class Gateway extends Base\Gateway
             case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
         }
+    }
+
+    protected function setDomainType()
+    {
+        $this->domainType = $this->getBankingType() . '_' . $this->getMode();
+    }
+
+    protected function getUrlType()
+    {
+        return $this->getBankingType() . '_' . $this->getAction();
     }
 }
