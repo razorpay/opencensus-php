@@ -417,6 +417,33 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedHdfcRecurringTerminals(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hdfc',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'shared_merchant_hdfc',
+            'gateway_terminal_id'       => 'shared_terminal_hdfc',
+            'gateway_terminal_password' => 'shared_account_hdfc_terminal_pass',
+        ];
+
+        // Add recurring 3ds terminal;
+        $attributes['id'] = 'FssRecurr3DSTl';
+        $attributes['type'] = 3;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        // Add recurring 3ds
+        $attributes['id'] = 'FssRecurrN3DST';
+        $attributes['type'] = 4;
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCybersourceHdfcRecurringTerminals(array $attributes = [])
     {
         $attributes = [

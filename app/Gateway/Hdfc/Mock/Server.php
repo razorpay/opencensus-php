@@ -81,7 +81,7 @@ class Server extends Base\Mock\Server
         return $input;
     }
 
-    public function gatewayTransaction()
+    public function gatewayTransaction($type = null)
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
 
@@ -114,6 +114,13 @@ class Server extends Base\Mock\Server
             default:
                 throw new Exception\LogicException(
                     'Hdfc\Mock: Action code not recognized. Action: ' . $this->data['action']);
+        }
+
+        switch ($type) {
+            case 'auth_second_recurring':
+                $this->action = 'authorize';
+                $xml = $this->authSecondRecurringOnGateway();
+                break;
         }
 
         return $this->makeResponse($xml);
@@ -212,7 +219,14 @@ class Server extends Base\Mock\Server
 
     protected function authNotEnrolledOnGateway()
     {
-        $this->processInput('authNotEnrolled');
+        $type = $this->getRequestType(__FUNCTION__);
+
+        return $this->getXMLForRequest($type);
+    }
+
+    protected function getXMLForRequest($type = null)
+    {
+        $this->processInput($type);
 
         $cardNumber = $this->data['card'];
 
@@ -246,6 +260,18 @@ class Server extends Base\Mock\Server
         $xml = Hdfc\Utility::createXml($res);
 
         return $xml;
+    }
+
+    protected function authSecondRecurringOnGateway()
+    {
+        $type = $this->getRequestType(__FUNCTION__);
+
+        return $this->getXMLForRequest($type);
+    }
+
+    protected function getRequestType($function)
+    {
+        return explode('OnGateway', $function)[0];
     }
 
     protected function authOnGateway()

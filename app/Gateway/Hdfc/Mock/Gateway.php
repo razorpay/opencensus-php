@@ -60,6 +60,10 @@ class Gateway extends Hdfc\Gateway
                 $response = $server->authEnrolled();
                 break;
 
+            case 'auth_second_recurring':
+                $response = $server->gatewayTransaction('auth_second_recurring');
+                break;
+
             case 'auth_not_enrolled':
             case 'capture':
             case 'refund':
