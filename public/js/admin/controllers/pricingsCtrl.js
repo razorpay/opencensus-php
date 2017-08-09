@@ -120,14 +120,20 @@ app.controller('PricingsCtrl', [
       request
         .success(function(data) {
           if (data.success) {
-            $scope.alerts.addAlert(
-              'success',
-              'Plan created successfully',
-              true
-            );
-            $state.go('app.pricingdetail', {
-              id: data.data.id,
-            });
+              if (data.data.workflow_id) {
+                  $state.go('app.workflows.actions.detail', {
+                      action_id: data.data.id,
+                  });
+              } else {
+                  $scope.alerts.addAlert(
+                      'success',
+                      'Plan created successfully',
+                      true
+                  );
+                  $state.go('app.pricingdetail', {
+                      id: data.data.id,
+                  });
+              }
           } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {
