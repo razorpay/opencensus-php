@@ -96,14 +96,14 @@ class ScheduleLibraryTest extends TestCase
 
     private function getTimestampFromFormatted($formattedTime)
     {
-        return $this->getTimeObjectFromFormatted($formattedTime)->getTimeStamp();
+        return $this->getTimeObjectFromFormatted($formattedTime)->getTimestamp();
     }
 
     private function getInitialNextRun($formattedTime)
     {
         $timeObject = $this->getTimeObjectFromFormatted($formattedTime);
 
-        return $timeObject->hour(0)->minute(0)->second(0)->getTimeStamp();
+        return $timeObject->hour(0)->minute(0)->second(0)->getTimestamp();
     }
 
     private function getFormattedTimeFromTimestamp($timestamp)

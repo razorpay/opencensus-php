@@ -96,17 +96,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::PROCESSED_AT,
-
-        //
-        // Dates field is used for formatting dates in reports,
-        // among other things. But, we have an accessor for
-        // settled_on, which formats it to d/m/y. The date formatting
-        // for reports is done in toArray, which is done after the
-        // accessor is called. Date formatter for reports expects
-        // the date to be in int(timestamp) format. But, since the
-        // accessor modifies the timestamp to `d/m/y` format, this fails.
-        //
-        // self::SETTLED_ON,
+        self::SETTLED_ON,
     ];
 
     protected $amounts = [
@@ -296,7 +286,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_ON, $date);
     }
 
-    // --------------------------------- modifiers -------------------------------
+    // --------------------------------- accessors -------------------------------
 
     protected function getServiceTaxAttribute()
     {

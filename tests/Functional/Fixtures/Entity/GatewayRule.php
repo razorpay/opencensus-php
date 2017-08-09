@@ -13,6 +13,7 @@ class GatewayRule extends Base
             'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
             'gateway'       => 'hdfc',
             'network'       => 'VISA',
+            'min_amount'    => 0,
             'load'          => 50
         ];
 
@@ -26,9 +27,11 @@ class GatewayRule extends Base
     public function createNetbanking(array $attributes = [])
     {
         $ruleAttributes = [
-            'method'        => 'netbanking',
-            'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
-            'load'          => 50,
+            'type'        => 'sorter',
+            'method'      => 'netbanking',
+            'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+            'min_amount'  => 0,
+            'load'        => 50,
         ];
 
         $attributes = array_merge($ruleAttributes, $attributes);
@@ -41,9 +44,11 @@ class GatewayRule extends Base
     public function createWallet(array $attributes = [])
     {
         $ruleAttributes = [
-            'method'        => 'wallet',
-            'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
-            'load'          => 50,
+            'type'        => 'sorter',
+            'method'      => 'wallet',
+            'min_amount'  => 0,
+            'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+            'load'        => 50,
         ];
 
         $attributes = array_merge($ruleAttributes, $attributes);

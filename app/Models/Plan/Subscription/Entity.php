@@ -388,7 +388,7 @@ class Entity extends Base\PublicEntity
         {
             $timestampKey = $status . '_at';
 
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }

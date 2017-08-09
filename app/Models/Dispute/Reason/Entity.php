@@ -6,6 +6,7 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const NETWORK             = 'network';
     const GATEWAY_CODE        = 'gateway_code';
     const GATEWAY_DESCRIPTION = 'gateway_description';
     const CODE                = 'code';
@@ -18,6 +19,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
+        self::NETWORK,
         self::GATEWAY_CODE,
         self::GATEWAY_DESCRIPTION,
         self::CODE,
@@ -26,6 +28,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::NETWORK,
         self::GATEWAY_CODE,
         self::GATEWAY_DESCRIPTION,
         self::CODE,

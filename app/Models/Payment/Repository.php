@@ -373,14 +373,14 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']);
     }
 
     protected function addWhereClauseForMinAndMaxTime(array $minMaxArray, array & $whereConditions)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($minMaxArray['max'] !== null)
         {
@@ -405,7 +405,7 @@ class Repository extends Base\Repository
                                                     array $verifyBoundaries,
                                                     BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $whereConditions = [];
 

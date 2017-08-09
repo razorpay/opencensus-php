@@ -13,7 +13,7 @@ border:2px solid #29B7D6;border-top-color:transparent}
   </style>
 </head>
 <body>
-  <img src="{{$data['cdn']}}/logo.svg" id="logo" height="70px" style="display:block;margin:30px auto 0;">
+  <img src="{{$data['cdn']}}/logo.svg" id="logo" height="70px" style="margin:30px auto 0">
   <div class="loader vis" style="position:absolute;top:115px;left:50%;margin-left:-12px"></div>
   <link href="{{$data['cdn']}}/static/payment_redirect/bundle.css" rel="stylesheet"></link>
   <script type="text/javascript">

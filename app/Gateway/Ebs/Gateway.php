@@ -51,8 +51,11 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        $merchant = $input['merchant'];
+
         if (($input['payment']['method'] === Payment\Method::NETBANKING) and
-           (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$redircetDisabledBanks, true) === false))
+            (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$redircetDisabledBanks, true) === false) and
+            ($merchant->getId() !== '6NUzoQ2ej35gvi'))
         {
             $request = $this->makeRequestAndGetBankUrl($request, $input);
         }
@@ -69,7 +72,16 @@ class Gateway extends Base\Gateway
 
     protected function setReferer($terminal, array $input)
     {
-        $this->referer = $this->app['config']->get('app.url');
+        $referer = $this->app['config']->get('app.url');
+
+        $merchant = $input['merchant'];
+
+        if ($merchant->getId() === '6NUzoQ2ej35gvi')
+        {
+            $referer = $merchant->getWebsite();
+        }
+
+        $this->referer = $referer;
     }
 
     public function capture(array $input)

@@ -96,7 +96,7 @@ class Server extends Base\Mock\Server
 
         $this->addMessageAndResponseCode($content, $input);
 
-        $this->content($content);
+        $this->content($content, 'acs');
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
@@ -132,6 +132,8 @@ class Server extends Base\Mock\Server
             'vpc_TxnResponseCode'   => '0',
             'vpc_Version'           => '1',
         );
+
+        $this->content($content, 'capture');
 
         return $this->prepareResponse($content);
     }

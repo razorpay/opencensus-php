@@ -21,10 +21,10 @@ use RZP\Models\Transaction;
 class Service extends Base\Service
 {
     /**
-     * We get the last 100 days refunds created of a gateway.
+     * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 

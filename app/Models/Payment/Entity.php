@@ -1402,7 +1402,7 @@ class Entity extends Base\PublicEntity
 
     public function getDaysSinceAuthorized()
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;

@@ -61,7 +61,7 @@ class DSPTransactionReport extends BasicEntityReport
 
         $this->setDefaults();
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $filename = $this->generateFilename($now) . '_' . strtoupper($this->mode);
 

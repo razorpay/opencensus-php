@@ -11,11 +11,20 @@ use RZP\Models\Payment;
 
 class EmiFile extends Base\EmiFile
 {
-    protected $emailIdsToSendTo = [''];
+    protected static $fileToWriteName = 'Icici_Emi_File';
+
+    protected $emailIdsToSendTo = [];
 
     protected $bankName  = 'Icici';
 
     const TYPE = FileStore\Type::ICICI_EMI_FILE;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->shouldCompress = false;
+    }
 
     protected function getEmiData($input)
     {
@@ -87,49 +96,32 @@ class EmiFile extends Base\EmiFile
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
     }
 
-    protected function sendEmiFile(array $fileData)
+    protected function generateEmiFile(array $emiData, array $metadata = [])
     {
+        if (empty($this->emailIdsToSendTo) === true)
+        {
+            $metadata = $this->getH2HMetadata();
+        }
+
+        $fileData = parent::generateEmiFile($emiData, $metadata);
+
         return $fileData;
     }
 
-    protected function generateEmiFile(array $emiData, $store = 's3')
+    protected function getFileToWriteName(array $data)
     {
-        $id = UniqueIdEntity::generateUniqueId();
-
-        $count = count($emiData);
+        $count = count($data);
 
         $date = Carbon::now('Asia/Kolkata')->format('dmY');
 
-        $fileName = 'Razorpay _ICICIEMI_' . $date . '_' . $count;
+        $fileToWriteName = 'icici/outgoing/Razorpay_ICICIEMI_' . $date . '_' . $count;
 
-        $metadata = $this->getH2HMetadata();
+        if (empty($this->emailIdsToSendTo) === false)
+        {
+            $fileToWriteName = 'icici/temp/Razorpay_ICICIEMI_' . $date . '_' . $count;
+        }
 
-        $creator = new FileStore\Creator;
-
-        $creator->extension(static::EXTENSION)
-                ->content($emiData)
-                ->name($fileName)
-                ->store($store)
-                ->type(static::TYPE)
-                ->id($id)
-                ->metadata($metadata)
-                ->save();
-
-        $file = $creator->get();
-
-        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
-        $fileData = [
-            'signed_url' => $signedFileUrl,
-            'file_name'  => basename($file['local_file_path']),
-        ];
-
-        return $fileData;
-    }
-
-    protected function fetchAndSendPassword()
-    {
-        return;
+        return $fileToWriteName;
     }
 
     protected function getH2HMetadata()
@@ -137,7 +129,7 @@ class EmiFile extends Base\EmiFile
         return [
             'gid'   => '10000',
             'uid'   => '10002',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
     }

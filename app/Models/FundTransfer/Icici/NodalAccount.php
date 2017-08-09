@@ -137,7 +137,7 @@ class NodalAccount extends Base\Core
         return [
             'gid'   => '10000',
             'uid'   => '10002',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
     }

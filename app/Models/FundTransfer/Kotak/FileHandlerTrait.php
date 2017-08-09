@@ -802,7 +802,7 @@ trait FileHandlerTrait
         return array(
             'gid'   => '10000',
             'uid'   => '10001',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         );
     }

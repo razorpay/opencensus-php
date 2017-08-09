@@ -998,7 +998,7 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function toArrayReport() : array
+    public function toArrayReport(): array
     {
         $data = parent::toArrayReport();
 

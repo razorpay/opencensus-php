@@ -135,7 +135,7 @@ class PaymentValidationTest extends TestCase
 
         $testData = $this->testData[$func];
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $this->runRequestResponseFlow($testData);
     }

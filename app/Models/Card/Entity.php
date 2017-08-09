@@ -500,6 +500,12 @@ class Entity extends Base\PublicEntity
 
     public function isBlocked()
     {
+        // if iin is missing from database, allow transaction on it
+        if ($this->iinRelation === null)
+        {
+            return false;
+        }
+
         $iin = $this->getIin();
 
         $last4 = $this->getLast4();

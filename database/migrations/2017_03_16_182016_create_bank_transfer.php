@@ -28,6 +28,9 @@ class CreateBankTransfer extends Migration
             $table->char(BankTransfer::MERCHANT_ID, BankTransfer::ID_LENGTH)
                   ->nullable();
 
+            $table->string(BankTransfer::PAYER_NAME)
+                  ->nullable();
+
             $table->string(BankTransfer::PAYER_ACCOUNT, 20);
 
             $table->string(BankTransfer::PAYER_IFSC, 11);

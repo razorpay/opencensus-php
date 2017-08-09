@@ -13,11 +13,13 @@ class SplunkTimestampProcessor
 {
     protected $timezone;
 
-    protected $dateFormat = 'Y-m-d\TH:i:s';
+    const TIME_ZONE = 'UTC';
+
+    const DATE_FORMAT = 'Y-m-d\TH:i:s';
 
     public function __construct()
     {
-        $this->timezone = new DateTimeZone(date_default_timezone_get() ?: 'UTC');
+        $this->timezone = new DateTimeZone(self::TIME_ZONE);
     }
 
     /**
@@ -34,7 +36,7 @@ class SplunkTimestampProcessor
 
         $date->setTimezone($this->timezone);
 
-        $timestamp = $date->format($this->dateFormat) . '.' . $milliseconds;
+        $timestamp = $date->format(self::DATE_FORMAT) . '.' . $milliseconds;
 
         //
         // reordering records to bring timestamp to first position

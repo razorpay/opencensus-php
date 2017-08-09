@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -212,7 +213,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($queryString));
     }
@@ -273,7 +274,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
         $string = str_replace(' ', '+', $data['ES']);
 

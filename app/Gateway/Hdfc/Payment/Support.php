@@ -235,7 +235,10 @@ trait Support
 
         $data['member'] = $card['name'];
 
-        $data['transid'] = $this->model->gateway_transaction_id;
+        if ($input['merchant']->getId() !== '2aTeFCKTYWwfrF')
+        {
+            $data['transid'] = $this->model->gateway_transaction_id;
+        }
 
         if ($type === 'refund')
         {

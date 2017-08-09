@@ -2308,3 +2308,36 @@ ALTER TABLE daily_settlements
 
 ALTER TABLE pricing
     ADD COLUMN emi_duration INT UNSIGNED DEFAULT NULL AFTER payment_issuer;
+
+ALTER TABLE dispute_reasons
+    ADD COLUMN network VARCHAR(50) NOT NULL AFTER id;
+
+ALTER TABLE bank_transfers
+    ADD COLUMN payer_name VARCHAR(255) AFTER merchant_id;
+
+# query for adding columns required for rule filtering
+ALTER TABLE gateway_rules
+    ADD COLUMN type VARCHAR(10) NOT NULL DEFAULT 'sorter' AFTER gateway,
+    ADD COLUMN `group` VARCHAR(50) NULL AFTER type,
+    ADD COLUMN filter_type VARCHAR(10) NULL AFTER `group`,
+    MODIFY COLUMN `load` INT(11),
+    ADD COLUMN network_category VARCHAR(255) NULL AFTER gateway_acquirer,
+    ADD COLUMN shared_terminal TINYINT(4) NULL AFTER network_category,
+    ADD COLUMN min_amount INT(11) UNSIGNED NOT NULL DEFAULT 0 AFTER issuer,
+    ADD COLUMN max_amount INT(11) UNSIGNED NULL AFTER min_amount,
+    ADD COLUMN iins TEXT NULL AFTER max_amount,
+    ADD COLUMN currency VARCHAR(3) NULL AFTER iins,
+    ADD COLUMN emi_duration TINYINT(4) NULL AFTER currency,
+    ADD COLUMN emi_subvention VARCHAR(20) NULL AFTER emi_duration,
+    ADD COLUMN category2 VARCHAR(255) NULL AFTER emi_subvention,
+    ADD INDEX gateway_rules_type_index (type),
+    ADD INDEX gateway_rules_filter_type_index (filter_type),
+    ADD INDEX gateway_rules_group_index (`group`),
+    ADD INDEX gateway_rules_currency_index (currency),
+    ADD INDEX gateway_rules_min_amount_index (min_amount),
+    ADD INDEX gateway_rules_max_amount_index (max_amount),
+    ADD INDEX gateway_rules_emi_duration_index (emi_duration),
+    ADD INDEX gateway_rules_emi_subvention_index (emi_subvention),
+    ADD INDEX gateway_rules_shared_terminal_index (shared_terminal),
+    ADD INDEX gateway_rules_network_category_index (network_category),
+    ADD INDEX gateway_rules_category2_index (category2);

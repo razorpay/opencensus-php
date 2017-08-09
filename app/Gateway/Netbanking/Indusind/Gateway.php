@@ -51,15 +51,16 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace->info(
+        $content = $this->getDataFromCallbackResponse($input['gateway']);
+
+         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway_response' => $input['gateway'],
                 'payment_id'       => $input['payment']['id'],
+                'content'          => $content,
             ]
         );
-
-        $content = $this->getDataFromCallbackResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -262,6 +263,26 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                    $input['payment']['id'],
+                                    Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Constants::YES))
+        {
+            return true;
+        }
+
+        $gatewayPayment->setStatus(Constants::YES);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 
     public function getPid(): string

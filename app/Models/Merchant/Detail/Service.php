@@ -242,7 +242,7 @@ class Service extends Base\Service
 
     protected function markSubmitted($merchantDetails)
     {
-        $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
+        $submittedAt = Carbon::now()->getTimestamp();
 
         $input = [
             Entity::SUBMITTED     => 1,

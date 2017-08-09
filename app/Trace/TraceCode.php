@@ -572,6 +572,7 @@ class TraceCode
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';

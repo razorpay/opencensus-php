@@ -457,26 +457,27 @@ class Core extends Base\Core
     {
         if ($customer->merchant->isShared() === true)
         {
-            $customer = $this->repo->customer->findByContactAndMerchant(
+            $existingCustomer = $this->repo->customer->findByContactAndMerchant(
                 $customer->getContact(),
                 $customer->merchant);
         }
         else
         {
-            $customer = $this->repo->customer->findByContactEmailAndMerchant(
+            $existingCustomer = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),
                 $customer->getEmail(),
                 $customer->merchant);
         }
 
-        if (($customer !== null) and
+        if (($existingCustomer !== null) and
+            ($customer->getId() !== $existingCustomer->getId()) and
             ($failOnDuplicate === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
 
-        return $customer;
+        return $existingCustomer;
     }
 
     protected function getSharedAccount()

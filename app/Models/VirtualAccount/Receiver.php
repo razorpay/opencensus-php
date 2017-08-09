@@ -113,12 +113,12 @@ class Receiver
 
         $root = $this->getRoot($provider);
 
-        $accountNumber = $this->generateNewAccountNumberWithRoot($root);
-
         $attempts = 0;
 
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
+            $accountNumber = $this->generateNewAccountNumberWithRoot($root);
+
             $existingAccount = $this->repo->bank_account
                                     ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 

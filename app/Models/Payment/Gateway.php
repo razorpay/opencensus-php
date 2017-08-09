@@ -112,6 +112,7 @@ class Gateway
         self::AXIS_MIGS,
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
+        self::NETBANKING_INDUSIND,
     ];
 
     /**

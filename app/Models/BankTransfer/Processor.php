@@ -321,7 +321,12 @@ class Processor extends Base\Core
 
     protected function getBankAccountInput(Entity $bankTransfer)
     {
-        $label = $bankTransfer->merchant->getBillingLabel();
+        $label = $bankTransfer->getPayerName();
+
+        if ($label === null)
+        {
+            $label = $bankTransfer->merchant->getBillingLabel();
+        }
 
         $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
 
@@ -337,6 +342,7 @@ class Processor extends Base\Core
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment::AMOUNT]      = $bankTransfer->getAmount();
+        $paymentArray[Payment::DESCRIPTION] = $bankTransfer->getDescription();
 
         if ($this->virtualAccount->hasCustomer() === true)
         {

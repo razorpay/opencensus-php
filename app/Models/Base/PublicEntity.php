@@ -118,16 +118,16 @@ class PublicEntity extends UniqueIdEntity
 
         unset($array[self::ENTITY]);
 
-        $this->formatAmountFieldsForReport($array);
-
-        $this->formatDateFieldsForReport($array);
-
         // Remove fields hidden in reports
 
         foreach ($this->getHiddenInReport() as $key)
         {
             unset($array[$key]);
         }
+
+        $this->formatAmountFieldsForReport($array);
+
+        $this->formatDateFieldsForReport($array);
 
         return $array;
     }
@@ -147,7 +147,17 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->dates as $key)
         {
-            if (isset($report[$key]) === true)
+            //
+            // Adding a is_numeric check here because we want
+            // to format the dates only if they are in epoch
+            // format and not in some other date format already.
+            //
+            // For example: settled_on of settlements and payouts
+            // is formatted to `d/m/Y` in accessors. We don't
+            // have to format anything there for the report.
+            //
+            if ((isset($report[$key]) === true) and
+                (is_numeric($report[$key]) === true))
             {
                 $report[$key] = $this->getDateInFormatDMYHMS($key);
             }

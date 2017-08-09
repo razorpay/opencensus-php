@@ -106,7 +106,7 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
-            $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
+            $timestamp = Carbon::now()->getTimestamp();
 
             $attempts = $this->repo
                              ->fund_transfer_attempt

@@ -27,7 +27,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                     = 'Gateway experienced a communication error.';
-    const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                     = 'Cardholder did not return from RuPay.';
     const GATEWAY_ERROR_USER_INACTIVE                                           = 'User is inactive.';
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
@@ -74,6 +73,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED                             = 'Payment Exception: Card cvv not provided';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'Payment failed due to incorrect card CVV';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                 = 'Payment failed because cardholder couldn\'t be authenticated';
+    const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                 = 'Payment failed because cardholder couldn\'t be authenticated';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                           = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                              = 'Wallet is not supported';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                               = 'Wallet is not provided';
@@ -491,7 +491,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
-    const BAD_REQUEST_GATEWAY_RULE_EXISTS                                       = 'Gateway rule already exists for the given criteria';
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                      = 'Coupon code limit reached';

@@ -613,7 +613,7 @@ class Verify extends Base\Core
             return 0;
         }
 
-        $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
+        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
 
         // Payments which are less than X minutes old should always be picked by cron
         // Payments older than X minutes should follow the bucket logic
@@ -625,7 +625,7 @@ class Verify extends Base\Core
         // Get Verify Boundary to update Verify Bucket
         $boundaries = $this->getBoundaryInSeconds($filter);
 
-        $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
+        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
 
         $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
 
