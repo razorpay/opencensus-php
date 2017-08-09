@@ -280,6 +280,34 @@ app
       };
       $scope.createDispute = function(data) {
         console.log('CREATE DISPUTE....', data);
+
+        var params = {
+          route_name: 'payment_disputes',
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          mode: 'test',
+          body: data,
+        };
+
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: params,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              console.log('TODO....', data);
+            } else {
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
       };
 
       $scope.refund = function(data) {
@@ -523,8 +551,6 @@ app
         request
           .success(function(data) {
             if (data.success || true) {
-              console.log('DATA ITEMS...', data.data.items);
-
               $scope.reasonIds = data.data.items;
 
               var reasonInfo = '';
@@ -564,7 +590,6 @@ app
 
       $scope.ok = function() {
         cleanFields();
-        console.log('DISPUTE...', $scope.dispute);
         $modalInstance.close($scope.dispute);
       };
       $scope.cancel = function() {

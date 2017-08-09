@@ -538,6 +538,9 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
+
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
     ],
 
     // auth
