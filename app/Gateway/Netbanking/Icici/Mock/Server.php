@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
+
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Status;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
@@ -26,11 +28,16 @@ class Server extends Base\Mock\Server
 
         $this->content($postData);
 
-        $content = $this->formatResponseData($postData);
+        $content = $this->formatResponseData($postData, $input);
 
         $callbackUrl = $decryptedData['RU'] . '?' . http_build_query($content);
 
         return $callbackUrl;
+    }
+
+    public function getBankingType($input)
+    {
+        return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
     }
 
     public function verify($input)
@@ -64,13 +71,11 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function formatResponseData(array $postData)
+    protected function formatResponseData(array $postData, array $input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
-
         $httpQuery = http_build_query($postData);
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = $this->getAesCrypto($input);
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery));
 
@@ -79,11 +84,18 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
+    protected function getAesCrypto($input)
+    {
+        $bankingType = $this->getBankingType($input);
+
+        $masterKey = $this->getGatewayInstance($bankingType)->getSecret();
+
+        return new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
+    }
+
     protected function decryptData(array $input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
-
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = $this->getAesCrypto($input);
 
         $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
