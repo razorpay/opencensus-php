@@ -95,6 +95,9 @@ return [
         // Add Adjustment
         'adj_add'                           => 'adjustments',
 
+        // Feature Delete
+        'feature_delete'                    => 'features/{entityId}/{featureName}',
+
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
@@ -515,6 +518,10 @@ return [
         'dummy_critical_error'              => 'trigger/error',
 
         'refund_verify_failed'              => 'refunds/{id}/retry',
+
+        // Tags
+        'merchant_tag_add'                  => 'merchants/{id}/tags',
+        'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',

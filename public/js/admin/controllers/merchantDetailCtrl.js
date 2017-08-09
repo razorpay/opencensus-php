@@ -201,11 +201,11 @@ app
       var getReferer = function(tags) {
         for (var i in tags) {
           var tag = tags[i];
-          if (tag.substr(0, 3).toLowerCase() === 'ref') {
+          if (tag.substr(0, 4).toLowerCase() === 'ref-') {
             return tag.substr(4);
           }
         }
-        return false;
+        return '';
       };
 
       $scope.tagMerchant = function(tags) {

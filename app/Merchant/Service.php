@@ -10,6 +10,7 @@ use Requests;
 use App\Base;
 use App\User;
 use App\Admin;
+use App\Generic;
 use App\Merchant;
 use App\Invitation;
 use App\User\Helper;
@@ -60,6 +61,8 @@ class Service extends Base\Service
             if ($referer)
             {
                 $merchant->tag('ref-'.$referer);
+
+                (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, ['ref-'.$referer]);
             }
 
             $merchant->save();
@@ -131,6 +134,9 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === false)
             {
+                // We tag the merchant as referred from the original merchant on api
+                $this->addMerchantTagsOnAPI($merchant->id, ['ref-'.$currentMerchant->id]);
+
                 // Finally attach the current user to the new user's team
                 // And also update the session user merchant list.
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
@@ -915,6 +921,38 @@ class Service extends Base\Service
 
         $currentMerchant->retag($newAllTags);
 
+        $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
+
         return [[], $currentMerchant->toArray()];
+    }
+
+    public function addMerchantTagsOnAPI($merchantId, $tags) {
+        $addTags = [
+            'route_name' => 'merchant_tag_add',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ],
+            'body' => [
+                'tags' => $tags
+            ]
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $addTags);
+    }
+
+    public function deleteMerchantTagOnAPI($merchantId, $tagName) {
+        $deleteTag = [
+            'route_name' => 'merchant_tag_delete',
+            'url_params' => [
+                '{id}'      => $merchantId,
+                '{tagName}' => $tagName
+            ],
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('DELETE', $deleteTag);
     }
 }
