@@ -816,7 +816,6 @@ final class Route
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_create_plan',
         'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
@@ -1112,6 +1111,7 @@ final class Route
         'adj_add',
         'payment_authorize_refund',
         'admin_change_password',
+        'pricing_create_plan',
     ];
 
     public static $routePermission = [
@@ -1231,6 +1231,7 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
     ];
 
     public static $direct = [
