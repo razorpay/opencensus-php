@@ -29,12 +29,6 @@ export const listFetchPendingState = (state, action, initialState) => {
   return initialState;
 };
 
-export const resetEntityInList = state => {
-  return merge(state, {
-    items: [],
-  });
-};
-
 export const listFetchSuccessState = (state, action) => {
   return merge(state, {
     loading: false,
@@ -52,7 +46,6 @@ export const listFetchErrorState = (state, action, initialState) => {
 };
 
 export const appendEntityToList = (state, action) => {
-  console.log('ACTION PAYLOAD...', action.payload);
   return set(state, 'items', unshift(state.items, action.payload));
 };
 
