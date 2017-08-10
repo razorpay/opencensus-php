@@ -530,6 +530,12 @@ app
       $scope.currency = currency;
       $scope.dispute = {};
 
+      // Date options for Raised date
+      $scope.dateRaised = dateFactory.getHandler($scope);
+      $scope.dateRaised.dateOptions['showWeeks'] = false;
+      $scope.dateRaised.dateOptions['minDate'] = moment().subtract(2, 'years'); // Avoid selection of date before today
+      $scope.dateRaised.dateOptions['maxDate'] = moment(); // Avoid selection of date after today
+
       // Date options
       $scope.date = dateFactory.getHandler($scope);
       $scope.date.dateOptions['showWeeks'] = false;
@@ -581,9 +587,9 @@ app
 
       function cleanFields() {
         $scope.dispute.raised_on =
-          new Date($scope.dispute.raised_on).getTime() / 100;
+          new Date($scope.dispute.raised_on).getTime() / 1000;
         $scope.dispute.expires_on =
-          new Date($scope.dispute.expires_on).getTime() / 100;
+          new Date($scope.dispute.expires_on).getTime() / 1000;
         $scope.dispute.amount = $scope.dispute.amount * 100;
         $scope.dispute.deduct_at_onset = $scope.dispute.deduct_at_onset ? 1 : 0;
       }
