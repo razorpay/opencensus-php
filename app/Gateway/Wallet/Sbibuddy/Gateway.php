@@ -41,8 +41,6 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $input['payment'][Payment::AMOUNT] = $this->formatAmount($input['payment'][Payment::AMOUNT]);
-
         $request = $this->getPayloadForAuth($input);
 
         $this->traceGatewayPaymentRequest($request, $input);
@@ -115,7 +113,7 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::EXTERNAL_TRANSACTION_ID  => $payment[Payment::ID],
             RequestFields::ORDER_ID                 => $payment[Payment::ID],
-            RequestFields::AMOUNT                   => $payment[Payment::AMOUNT],
+            RequestFields::AMOUNT                   => $this->formatAmount($input['payment'][Payment::AMOUNT]),
             RequestFields::CURRENCY                 => $payment[Payment::CURRENCY],
             RequestFields::CALLBACK_URL             => $input['callbackUrl'],
             RequestFields::BACK_URL                 => $input['callbackUrl'],
