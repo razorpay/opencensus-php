@@ -29,7 +29,8 @@ class Repository extends Base\Repository
         Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
         Entity::USER_ID           => 'sometimes|alpha_num',
         Entity::STATUS            => 'sometimes|string',
-        Entity::TYPE              => 'sometimes|string|max:16',
+        Entity::TYPE              => 'sometimes|string|custom',
+        Entity::TYPES             => 'sometimes|array|min:1|max:2|custom',
         Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
@@ -43,6 +44,23 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::ORDER_ID    => 'sometimes|string|max:20',
     ];
+
+    // ---------------------- Custom validation methods --------------
+
+    protected function validateType($attribute, $value)
+    {
+        Type::checkType($value);
+    }
+
+    protected function validateTypes($attribute, $value)
+    {
+        foreach ($value as $type)
+        {
+            Type::checkType($type);
+        }
+    }
+
+    // ---------------------- Custom validation methods ends ---------
 
     /**
      * Fetches invoice entity for given public id and merchant, followed by
@@ -330,6 +348,13 @@ class Repository extends Base\Repository
         $batchIdAttribute = $this->dbColumn(Entity::BATCH_ID);
 
         $query->where($batchIdAttribute, '=', $batchId);
+    }
+
+    protected function addQueryParamTypes(BuilderEx $query, array $params)
+    {
+        $typeAttribute = $this->dbColumn(Entity::TYPE);
+
+        $query->whereIn($typeAttribute, $params[Entity::TYPES]);
     }
 
     protected function joinQueryPayment($query)
