@@ -82,4 +82,17 @@ return [
         Wallet::ERROR_MESSAGE        => 'Error occured',
         Wallet::ENTITY               => 'wallet'
     ],
+
+
+    'testRefundFailedPaymentEntity' => [
+        'action'               => 'refund',
+        'wallet'               => 'sbibuddy',
+        'email'                => 'a@b.com',
+        'amount'               => 50000,
+        'contact'              => '9918899029',
+        'gateway_merchant_id'  => 'random_id',
+        'status_code'          => ResponseCodeMap::GENERAL_ERROR,
+        'error_message'        => 'An error occured',
+        'entity'               => 'wallet'
+    ],
 ];

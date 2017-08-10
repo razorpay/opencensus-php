@@ -81,6 +81,33 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
+    public function testRefundFailedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::GENERAL_ERROR;
+
+                $content[ResponseFields::ERROR_DESCRIPTION] = 'An error occured';
+            }
+        });
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $capturePaymentId = $capturePayment['id'];
+
+        $refund = $this->refundPayment($capturePaymentId);
+
+        $gatewayRefundEntity = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($gatewayRefundEntity, 'testRefundFailedPaymentEntity');
+
+        return $refund;
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
