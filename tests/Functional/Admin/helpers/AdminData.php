@@ -773,4 +773,37 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testConfigKeysSet' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'terminal_selection_log_verbose' => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'key'       => 'terminal_selection_log_verbose',
+                    'old_value' => '0',
+                    'new_value' => '1',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testConfigKeysFetch' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/config/keys',
+        ],
+        'response' => [
+            'content' => [
+                'terminal_selection_log_verbose' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
