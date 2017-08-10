@@ -443,46 +443,30 @@ class Verify extends Base\Core
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->updateVerifyBucket($payment, $filter, 'next');
+            $code = $e->getCode();
 
-            $verify = $e->getVerifyObject();
+            $result = Result::ERROR;
 
-            if (($verify->apiSuccess === true) and ($verify->gatewaySuccess === false))
+            switch ($code)
             {
-                throw new Exception\LogicException(
-                    "Should not have reached here. apiSuccess cannot be true when gatewaySuccess is false.",
-                    null,
-                    $verify->getDataToTrace());
+                case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED:
+                    // TODO block paymnet verification
+                    break;
+
+                case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_RETRY:
+
+                    break;
+
+                case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_SKIP:
+
+                    $this->updateVerifyBucket($payment, $filter, 'last');
+                    break;
+
+                default:
+
+                    $result = $this->authorizePayment($merchant, $payment, $e);
+                    break;
             }
-            else
-            {
-                try
-                {
-                    // Attempt to authorize payments whose verification failed
-                    $this->processor($merchant)->authorizeFailedPayment($payment);
-                }
-                catch (Exception\BadRequestValidationFailureException $ex)
-                {
-                    $this->trace->warning(
-                        TraceCode::PAYMENT_VERIFY_ALREADY_AUTHORIZED,
-                        $this->getAuthExceptionTraceBody($payment, $ex)
-                    );
-
-                    return null;
-                }
-                catch (Exception\GatewayErrorException $ex)
-                {
-                    $this->trace->warning(
-                        TraceCode::GATEWAY_VERIFY_ERROR,
-                        $this->getAuthExceptionTraceBody($payment, $ex)
-                    );
-
-                    return null;
-                }
-            }
-
-            // Now Just continue
-            $result = Result::AUTHORIZED;
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -518,6 +502,48 @@ class Verify extends Base\Core
             ]);
 
         return $result;
+    }
+
+    protected function authorizePayment($merchant, $payment, $e)
+    {
+        $verify = $e->getVerifyObject();
+
+        if (($verify->apiSuccess === true) and ($verify->gatewaySuccess === false))
+        {
+            throw new Exception\LogicException(
+                "Should not have reached here. apiSuccess cannot be true when gatewaySuccess is false.",
+                null,
+                $verify->getDataToTrace());
+        }
+        else
+        {
+            try
+            {
+                // Attempt to authorize payments whose verification failed
+                $this->processor($merchant)->authorizeFailedPayment($payment);
+            }
+            catch (Exception\BadRequestValidationFailureException $ex)
+            {
+                $this->trace->warning(
+                    TraceCode::PAYMENT_VERIFY_ALREADY_AUTHORIZED,
+                    $this->getAuthExceptionTraceBody($payment, $ex)
+                );
+
+                return null;
+            }
+            catch (Exception\GatewayErrorException $ex)
+            {
+                $this->trace->warning(
+                    TraceCode::GATEWAY_VERIFY_ERROR,
+                    $this->getAuthExceptionTraceBody($payment, $ex)
+                );
+
+                return null;
+            }
+        }
+
+        // Now Just continue
+        return Result::AUTHORIZED;
     }
 
     protected function updateVerifyBucket($payment, $filter, $param = 'next')

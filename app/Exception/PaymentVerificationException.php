@@ -23,9 +23,13 @@ class PaymentVerificationException extends RecoverableException
     public function __construct(
         $data,
         $verify,
+        $code = null,
         \Exception $previous = null)
     {
-        $code = ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED;
+        if ($code === null)
+        {
+            $code = ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED;
+        }
 
         $this->error = new Error($code, null, null, $data);
 
