@@ -239,6 +239,19 @@ class Entity extends Base\PublicEntity
         self::P_GSTIN
     ];
 
+    protected $eventFields = [
+        self::BUSINESS_NAME,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_MOBILE,
+        self::BUSINESS_TYPE,
+        self::TRANSACTION_VOLUME,
+        self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_STATE,
+        self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_STATE,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
@@ -293,7 +306,7 @@ class Entity extends Base\PublicEntity
 
     public function getActivationProgress()
     {
-        $this->getAttribute(self::ACTIVATION_PROGRESS);
+        return $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 
     public function getContactMobile()
@@ -304,5 +317,20 @@ class Entity extends Base\PublicEntity
     public function toArrayGST()
     {
         return array_only($this->toArrayPublic(), self::GST_FIELDS);
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantDetailAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantDetailAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        return $merchantDetailAttributes;
     }
 }

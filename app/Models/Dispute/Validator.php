@@ -47,4 +47,14 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT);
         }
     }
+
+    public function validateInputBeforeBuild(array $input)
+    {
+        if (empty($input[Entity::REASON_ID]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'reason_id should be sent in the request to create a dispute.',
+                Entity::REASON_ID);
+        }
+    }
 }
