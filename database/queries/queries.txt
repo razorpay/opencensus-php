@@ -2405,3 +2405,7 @@ UPDATE hdfc
 ALTER TABLE payments
     ADD INDEX payments_updated_at_index (updated_at),
     ADD INDEX payments_captured_at_index (captured_at);
+
+# Query for adding sbibuddy column in merchant_banks table
+ALTER TABLE merchant_banks
+    ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;
