@@ -99,17 +99,33 @@ class Activate extends Base\Core
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
-        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
-
-        $this->sendActivationEmail($merchant);
+        $this->sendMerchantActivatedEvents($merchant);
 
         return $merchant->toArrayPublic();
     }
 
     /**
+     * Send merchant activated events to drip & eventManager
+     * Also, send the email to merchant.
+     *
+     * @param Entity $merchant
+     */
+    protected function sendMerchantActivatedEvents(Entity $merchant)
+    {
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
+
+        $attributes = $merchant->toArrayEvent();
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
+
+        $this->sendActivationEmail($merchant);
+    }
+
+    /**
      * Sends activation email to the merchant, cc's notifications
      * Includes pricing details in the email (properly formatted)
-     * @param  RZP\Models\Merchant\Entity $merchant merchant entity
+     *
+     * @param  Entity $merchant merchant entity
      * @return null
      */
     public function sendActivationEmail($merchant)
@@ -147,8 +163,6 @@ class Activate extends Base\Core
         ];
 
         $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
-
-        $config = $this->app->config->get('applications.mailgun');
 
         // For marketplace accounts, send this email to the parent merchant
         if ($merchant->isLinkedAccount() === true)

@@ -202,6 +202,15 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
     ];
 
+    protected $eventFields = [
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::WEBSITE,
+        self::CATEGORY,
+        self::CATEGORY2,
+    ];
+
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -1085,5 +1094,27 @@ class Entity extends Base\PublicEntity
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
         return $attributes;
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        if ($this->merchantDetail !== null)
+        {
+            $merchantDetailAttributes = $this->merchantDetail->toArrayEvent();
+
+            $merchantAttributes = array_merge($merchantAttributes, $merchantDetailAttributes);
+        }
+
+        return $merchantAttributes;
     }
 }
