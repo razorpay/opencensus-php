@@ -39,13 +39,49 @@ const selector = formValueSelector('generateReports');
   },
 })
 export default class ReportsContainer extends Component {
-  state = {};
+  state = { merchantAccounts: [] };
+
   componentWillMount() {
-    this.props.fetchAccounts();
     this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
+
+    this.linkedAccountOptions = [
+      'transaction',
+      'payment',
+      'refund',
+      'settlement',
+    ];
+
+    const user = this.props.user;
+
+    if (user.isMarketplaceEnabled) {
+      this.props.fetchAccounts().then(res => {
+        this.setState({
+          merchantAccounts: this.state.merchantAccounts.concat(
+            this.props.accounts
+          ),
+        });
+      });
+    }
 
     this.prepareEntityOptions();
 
+    // Select default merchantAccount
+    if (user.isMarketplaceEnabled) {
+      let merchantAccounts = this.state.merchantAccounts.concat([]);
+      merchantAccounts.push({
+        name: user.name,
+        id: user.current,
+        email: user.email,
+        tag: 'My Account',
+        tagIcon: 'icon-account',
+      });
+      this.setState({
+        merchantAccounts: merchantAccounts,
+        merchantSelected: merchantAccounts[0],
+      });
+    }
+
+    // Select default report type
     this.setState({
       entity: this.entityOptions[1],
     });
@@ -144,8 +180,8 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    let isMarketplace = this.props.user.tags.indexOf('Marketplace') !== -1;
-    const account_id = isMarketplace
+    const account_id = user.isMarketplaceEnabled &&
+      this.linkedAccountOptions.indexOf(this.props.entity) !== -1
       ? this.state.merchantSelected.id
       : this.props.user.current;
 
@@ -172,7 +208,7 @@ export default class ReportsContainer extends Component {
       data: data,
     };
 
-    if (isMarketplace && account_id !== this.props.user.current) {
+    if (user.isMarketplaceEnabled && account_id !== this.props.user.current) {
       data.account_id = 'acc_' + account_id; // It will be handled at api level later
     }
 
@@ -209,19 +245,10 @@ export default class ReportsContainer extends Component {
 
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
-    let isMarketplace = user.tags.indexOf('Marketplace') !== -1;
 
-    let merchantAccounts = [];
-
-    merchantAccounts.push({
-      name: user.name,
-      id: user.current,
-      email: user.email,
-      tag: 'My Account',
-      tagIcon: 'icon-account',
-    });
-
-    merchantAccounts = merchantAccounts.concat(this.props.accounts);
+    let isDisabled =
+      user.isMarketplaceEnabled &&
+      this.linkedAccountOptions.indexOf(this.props.entity) !== -1;
 
     return (
       <tabbed-container>
@@ -285,15 +312,14 @@ export default class ReportsContainer extends Component {
                 </div>}
               <div class="form-element">
                 <div class="title">
-                  {isMarketplace &&
-                    ['transaction', 'payment', 'refund', 'settlement'].indexOf(
-                      this.props.entity
-                    ) > -1
+                  {user.isMarketplaceEnabled &&
+                    this.linkedAccountOptions.indexOf(this.props.entity) !== -1
                     ? 'SELECT '
                     : ''}
                   ACCOUNT
                 </div>
-                {isMarketplace &&
+
+                {user.isMarketplaceEnabled &&
                   ['transaction', 'payment', 'refund', 'settlement'].indexOf(
                     this.props.entity
                   ) > -1
@@ -307,7 +333,7 @@ export default class ReportsContainer extends Component {
                       >
                         {this.state.merchantSelected
                           ? <div>
-                              <b style={{ marginRight: '5' }}>
+                              <b style={{ marginRight: '5px' }}>
                                 {this.state.merchantSelected.name}
                               </b>
                               <span>- {this.state.merchantSelected.id}</span>
@@ -323,20 +349,17 @@ export default class ReportsContainer extends Component {
                       </div>
 
                       <TypeAhead
-                        options={merchantAccounts}
+                        options={this.state.merchantAccounts}
                         placeholder="Search for merchant Name/Email/Merchant ID"
                         optionLabelPath="name"
                         onClick={() => {
                           this.typeAheadSkin.classList.add('hide');
                         }}
-                        onBlur={() => {
-                          this.typeAheadSkin.classList.remove('hide');
-                        }}
                         searchIndices={['name', 'id', 'email']}
                         selected={this.state.merchantSelected}
                         optionComponent={({ option }) => (
                           <div style={{ padding: 5 }}>
-                            <b style={{ marginRight: '5' }}>{option.name}</b>
+                            <b style={{ marginRight: '5px' }}>{option.name}</b>
                             <span>- {option.id}</span>
                             <span
                               class={`${this.isMobileDevice ? option.tagIcon + ' icon' : ''} custom-tag`}
@@ -347,13 +370,14 @@ export default class ReportsContainer extends Component {
                         )}
                         selectedOptionComponent={({ option }) => (
                           <div>
-                            <b style={{ marginRight: '5' }}>{option.name}</b>
+                            <b style={{ marginRight: '5px' }}>{option.name}</b>
                             <span>- {option.id}</span>
                           </div>
                         )}
                         onChange={({ option }) => {
                           if (option) {
                             this.setState({ merchantSelected: option });
+                            this.typeAheadSkin.classList.remove('hide');
                           }
                         }}
                       />
@@ -361,6 +385,15 @@ export default class ReportsContainer extends Component {
                   : <div class="account">
                       <strong>{user.name || user.user.name}</strong>
                     </div>}
+
+                {user.isMarketplaceEnabled &&
+                  this.linkedAccountOptions.indexOf(this.props.entity) !== -1 &&
+                  <small class="help-block">
+                    <i class="icon icon-info-circle" />
+                    <span>
+                      You can also select a linked account from the list
+                    </span>
+                  </small>}
               </div>
 
               <div class="form-element">
@@ -412,11 +445,7 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <AsyncButton
                   class="btn btn-primary"
-                  disabled={
-                    isMarketplace &&
-                      (!this.state.merchantSelected ||
-                        !this.state.merchantSelected.id)
-                  }
+                  disabled={isDisabled}
                   onClick={handleSubmit(this.prepareGenerateReport)}
                   text="Generate and Download Report"
                   pendingText="Generating..."
