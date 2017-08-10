@@ -87,6 +87,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getConfigKeys()
+    {
+        $data = (new Admin\Service)->getConfigKeys();
+
+        return ApiResponse::json($data);
+    }
+
     public function getScorecard()
     {
         $input = Request::all();

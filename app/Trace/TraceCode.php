@@ -183,8 +183,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
 
-    const ADMIN_CONFIG_KEY_SET                          = 'ADMIN_CONFIG_KEY_SET';
-
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
@@ -571,6 +569,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
+    const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 

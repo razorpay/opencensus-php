@@ -100,13 +100,13 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $result[] = $this->setSingleConfigKey($key, $value);
+            $result[] = $this->setConfigKey($key, $value);
         }
 
         return $result;
     }
 
-    protected function setSingleConfigKey(string $key, string $newValue): array
+    protected function setConfigKey(string $key, string $newValue): array
     {
         $oldValue = Cache::get($key);
 
@@ -118,9 +118,24 @@ class Service extends Base\Service
             'new_value' => $newValue,
         ];
 
-        $this->trace->info(TraceCode::ADMIN_CONFIG_KEY_SET, $data);
+        if (ConfigKey::isSensitive($key) === false)
+        {
+            $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+        }
 
         return $data;
+    }
+
+    public function getConfigKeys(): array
+    {
+        $result = [];
+
+        foreach (ConfigKey::PUBLIC_KEYS as $key)
+        {
+            $result[$key] = Cache::get($key);
+        }
+
+        return $result;
     }
 
     public function processMailgunCallback($type, $input)

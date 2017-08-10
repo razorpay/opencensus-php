@@ -188,9 +188,9 @@ class Selector extends Base\Core
         {
             $verbose = (bool) Cache::get(ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex, Trace::ERROR);
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINAL_CONFIG_FETCH_ERROR);
 
             $verbose = false;
         }
