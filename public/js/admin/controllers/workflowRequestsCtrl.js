@@ -55,6 +55,7 @@ app.controller('WorkflowRequestsCtrl', [
 
       if (type === 'checker' || type === 'admin_checked') {
         duty = type;
+        type = 'all'; // since currently checker and admin_checked don't have types.
       }
 
       $scope.getActionsByDutyAndType(duty, type);
