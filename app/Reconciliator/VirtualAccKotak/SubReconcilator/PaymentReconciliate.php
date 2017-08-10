@@ -7,36 +7,9 @@ use RZP\Reconciliator\Base;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    /*******************
-     * Row Header Names
-     ******************/
-
-    // Common fields
-    const TXN_DATE                = 'txn_date';
-    const E_COLL_AC_NO            = 'e_coll_ac_no';
-    const DEALER_NAME             = 'dealer_name';
-    const MASTER_AC_NO            = 'master_ac_no';
-    const AMOUNT                  = 'amount';
-    const SND_BRN_IFSC            = 'snd_brn_ifsc';
-    const REF1                    = 'ref1';
-    const REF2                    = 'ref2';
-    const REF3                    = 'ref3';
-
-    // RTGS fields
-    const UTR_NO                  = 'utr_no';
-    const BENEFICIARY_DETAILS     = 'beneficiary_details';
-    const ORDERING_CUSTOMER       = 'ordering_customer';
-    const DETAILS_OF_PAYMENT      = 'details_of_payment';
-    const SENDER_TO_RECEIVER_INFO = 'sender_to_receiver_info';
-    const SENDER_ADDRESS          = 'sender_address';
-
-    // NEFT fields
     const TXN_REF_NO              = 'txn_ref_no';
-    const BENE_CUST_ACNAME        = 'bene_cust_acname';
     const SEND_CUST_ACNAME        = 'send_cust_acname';
-    const SEND_CUST_AC_NO         = 'send_cust_ac_no';
-    const REMITT_INFO             = 'remitt_info';
-    const DYNAMIC_INFO            = 'dynamic_info';
+    const AMOUNT                  = 'amount';
 
     /**
      * Identify the bank transfer using UTR, and thus find payment
@@ -46,11 +19,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentId($row)
     {
-        if (isset($row[self::UTR_NO]) === true)
-        {
-            $utr = $row[self::UTR_NO];
-        }
-        else if (isset($row[self::TXN_REF_NO]) === true)
+        if (isset($row[self::TXN_REF_NO]) === true)
         {
             $utr = $row[self::TXN_REF_NO];
         }
