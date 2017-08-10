@@ -130,8 +130,9 @@
                                      callbackMethod,
                                      requestParams) {
 
-          document.body.className = document.body.className + " " +
-                                    "has-redirect";
+          document.body.className = ([document.body.className,
+                                      "paid",
+                                      "has-redirect"]).join(" ");
 
           var form = document.createElement("form"),
               input, key;
@@ -186,7 +187,7 @@
           </div>
 
           <div class="redirect-message">
-            <center><i>Redirecting you to the merchant site</i></center>
+            <center><i>Redirecting you to the Merchant Site...</i></center>
             <br/>
           </div>
 
@@ -300,31 +301,29 @@
                 parentElement: "#invoice-container",
                 data: data,
                 paymentResponseHandler: function(response) {
-                  if (response.razorpay_payment_id) {
 
-                    if (globalScope.hasRedirect()) {
+                  if (globalScope.hasRedirect()) {
 
-                      return globalScope.redirectToCallback(
-                                                             data.invoice.callback_url,
-                                                             data.invoice.callback_method,
-                                                             response
-                                                           );
-                    }
+                    return globalScope.redirectToCallback(
+                                                           data.invoice.callback_url,
+                                                           data.invoice.callback_method,
+                                                           response
+                                                         );
+                  }
 
-                    if (data.invoice.partial_payment) {
-                      window.location.reload()
-                    } else {
-                      let invoice = data.invoice;
-                      invoice.amount_due_formatted = '0.00';
-                      invoice.amount_paid_formatted = invoice.amount_formatted;
-                      invoice.status = 'paid';
-                      invoice.is_paid = true;
-                      this.rerender(data)
-                    }
-                    data.invoice.status = 'paid';
-                    data.invoice.is_paid = true;
+                  if (data.invoice.partial_payment) {
+                    window.location.reload()
+                  } else {
+                    let invoice = data.invoice;
+                    invoice.amount_due_formatted = '0.00';
+                    invoice.amount_paid_formatted = invoice.amount_formatted;
+                    invoice.status = 'paid';
+                    invoice.is_paid = true;
                     this.rerender(data)
                   }
+                  data.invoice.status = 'paid';
+                  data.invoice.is_paid = true;
+                  this.rerender(data)
                 }
               });
             }(window.RZP_DATA = window.RZP_DATA || {}));
