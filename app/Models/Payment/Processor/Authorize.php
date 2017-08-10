@@ -2373,6 +2373,12 @@ trait Authorize
             {
                 $this->fillReturnDataWithSubscription($payment, $returnData);
             }
+            else if ($payment->hasInvoice() === true)
+            {
+                assertTrue($payment->hasBeenCaptured() === true);
+
+                $this->fillReturnDataWithInvoice($payment, $returnData);
+            }
             else if ($payment->hasOrder() === true)
             {
                 if ($payment->order->getPaymentCapture() === true)
@@ -2398,6 +2404,14 @@ trait Authorize
         $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
 
         $data['razorpay_signature'] = $this->getSignature($data);
+    }
+
+    protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
+    {
+        $invoice = $payment->order->invoice;
+
+        $data['razorpay_invoice_id']     = $invoice->getPublicId();
+        $data['razorpay_invoice_status'] = $invoice->getStatus();
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)

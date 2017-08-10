@@ -20,10 +20,11 @@ use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
-    const PDF_PREFIX = 'pdfs/';
-
     use NotesTrait;
     use SoftDeletes;
+
+    const PDF_PREFIX               = 'pdfs/';
+    const DEFAULT_CALLBACK_METHOD  = 'get';
 
     // ------------------ Entity Keys --------------------------------
 
@@ -90,6 +91,15 @@ class Entity extends Base\PublicEntity
      * the bottom of invoice.
      */
     const GROUP_TAXES_DISCOUNTS    = 'group_taxes_discounts';
+
+
+    /**
+     * Post payment hosted page sends back control to following
+     * callback URL via specified method (currently only GET).
+     */
+    const CALLBACK_URL             = 'callback_url';
+    const CALLBACK_METHOD          = 'callback_method';
+
     const DELETED_AT               = 'deleted_at';
 
     // ---------------------- Input Keys -----------------------------
@@ -189,6 +199,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_CONTACT         => null,
         self::CUSTOMER_BILLING_ADDR_ID => null,
         self::GROUP_TAXES_DISCOUNTS    => false,
+        self::CALLBACK_URL             => null,
+        self::CALLBACK_METHOD          => null,
     ];
 
     protected static $generators = [
@@ -198,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
+        self::CALLBACK_METHOD,
     ];
 
     protected $fillable = [
@@ -219,6 +232,8 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::USER_ID,
         self::EXPIRE_BY,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
     ];
 
     protected $visible = [
@@ -257,6 +272,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::PARTIAL_PAYMENT,
         self::GROUP_TAXES_DISCOUNTS,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -307,6 +324,8 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
         self::USER_ID,
         self::CREATED_AT,
     ];
@@ -1067,6 +1086,22 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->setStatus(Status::ISSUED);
+        }
+    }
+
+    /**
+     * Generates default callback method if callback URL is sent
+     * in request input.
+     *
+     * @param array $input
+     *
+     */
+    public function generateCallbackMethod(array $input)
+    {
+        if ((isset($input[self::CALLBACK_URL]) === true) and
+            (isset($input[self::CALLBACK_METHOD]) === false))
+        {
+            $this->setAttribute(self::CALLBACK_METHOD, self::DEFAULT_CALLBACK_METHOD);
         }
     }
 

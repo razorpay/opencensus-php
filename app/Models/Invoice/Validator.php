@@ -63,6 +63,8 @@ class Validator extends Base\Validator
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
     ];
 
     //
@@ -94,6 +96,8 @@ class Validator extends Base\Validator
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
     ];
 
     protected static $createIssuedRules = [
@@ -120,6 +124,8 @@ class Validator extends Base\Validator
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
     ];
 
     protected static $editDraftRules  = [
@@ -141,6 +147,8 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'sometimes|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'sometimes|boolean',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
     ];
 
     protected static $editIssuedRules  = [
@@ -150,6 +158,8 @@ class Validator extends Base\Validator
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
     ];
 
     protected static $issueBatchRules = [
