@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 
 use RZP\Models\Item;
@@ -60,7 +61,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(500, $authPayment['amount']);
         $this->assertEquals('refunded', $authPayment['status']);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -108,7 +109,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertNull($subscription['error_status']);
         $this->assertEquals(0, $subscription['auth_attempts']);
         $this->assertEquals($subscription['start_at'], $subscription['current_start']);
-        $expectedEndAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+        $expectedEndAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                ->addMonthsNoOverflow(2)
                                ->startOfDay()
                                ->timestamp;
@@ -315,7 +316,7 @@ class SubscriptionChargeTest extends TestCase
 
         $task = $this->getLastEntity('schedule_task', true);
         // First success, then fail
-        $expectedNextRun = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+        $expectedNextRun = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                  ->addMonthsNoOverflow(2)
                                  ->addDays(1)
                                  ->timestamp;
@@ -384,7 +385,7 @@ class SubscriptionChargeTest extends TestCase
         $this->clearMock();
         $this->failOnCapture();
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                           ->addDay(1)
                           ->addMinute(1);
 
@@ -410,7 +411,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->clearMock();
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                           ->addDay(1)
                           ->addMinute(1);
 
@@ -455,7 +456,7 @@ class SubscriptionChargeTest extends TestCase
         {
             $this->failCharge();
 
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                 ->addDay(1)
                 ->addMinute(1);
 
@@ -490,7 +491,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals('active', $subscription['status']);
         $this->assertNull($subscription['error_status']);
-        $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+        $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                   ->addMonthsNoOverflow(2)
                                   ->startOfDay()
                                   ->timestamp;
@@ -521,7 +522,7 @@ class SubscriptionChargeTest extends TestCase
         {
             $this->failCharge();
 
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                               ->addDay(1)
                               ->addMinute(1);
 
@@ -557,7 +558,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
-        $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+        $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                   ->addMonthsNoOverflow(2)
                                   ->startOfDay()
                                   ->timestamp;
@@ -607,7 +608,7 @@ class SubscriptionChargeTest extends TestCase
             // Subscription marked as pending
             $this->assertEquals('pending', $subscription['status']);
 
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                               ->addDay(1)
                               ->addMinute(1);
 
@@ -694,7 +695,7 @@ class SubscriptionChargeTest extends TestCase
             // Subscription marked as pending
             $this->assertEquals('pending', $subscription['status']);
 
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                               ->addDay(1)->addMinute(1);
 
             Carbon::setTestNow($chargeAt);
@@ -772,7 +773,7 @@ class SubscriptionChargeTest extends TestCase
             // Subscription marked as pending
             $this->assertEquals('pending', $subscription['status']);
 
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                 ->addDay(1)
                 ->addMinute(1);
 
@@ -830,7 +831,7 @@ class SubscriptionChargeTest extends TestCase
         // Subscription is not authenticated before start_at
         $expireBy = Carbon::createFromTimestamp(
             $subscription['start_at'] + 1,
-            'Asia/Kolkata');
+            Timezone::IST);
 
         Carbon::setTestNow($expireBy);
         $result = $this->makeSubscriptionExpireCronRequest();
@@ -880,7 +881,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('auth_failure', $subscription['error_status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
         Carbon::setTestNow($chargeAt);
 
         // Second failure
@@ -891,7 +892,7 @@ class SubscriptionChargeTest extends TestCase
 
         // $task = $this->getLastEntity('schedule_task', true);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
         Carbon::setTestNow($chargeAt);
 
         // Third failure
@@ -901,7 +902,7 @@ class SubscriptionChargeTest extends TestCase
         // subscription.halted event fired after final failed charge
         $this->mockAndTestWebhookData('subscription.halted');
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
         Carbon::setTestNow($chargeAt);
 
         // Fourth failure
@@ -1042,7 +1043,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForSuccessAfterPending');
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
         Carbon::setTestNow($chargeAt);
 
         // Second failure
@@ -1069,7 +1070,7 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('authenticated', $subscription['status']);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 

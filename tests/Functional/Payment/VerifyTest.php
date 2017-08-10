@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use DB;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
@@ -131,7 +132,7 @@ class VerifyTest extends TestCase
 
         $filter = 'payments_failed';
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $request = [
             'url'    => '/payments/verify/'. $filter,
@@ -263,7 +264,7 @@ class VerifyTest extends TestCase
 
         $filter = $verifiedResultArray['filter'];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $request = [
             'url'    => '/payments/verify/'. $filter,
@@ -279,7 +280,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $resultData);
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         Carbon::setTestNow($time->addSeconds(180));
 
@@ -329,7 +330,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         Carbon::setTestNow($time->addMinutes(5));
 
@@ -386,7 +387,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(15);
 
@@ -457,7 +458,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(15);
 
@@ -584,7 +585,7 @@ class VerifyTest extends TestCase
 
         $filter = $verifiedResultArray['filter'];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $request = [
             'url'    => '/payments/verify/'. $filter,
@@ -622,7 +623,7 @@ class VerifyTest extends TestCase
         {
             Carbon::setTestNow();
 
-            $time = Carbon::now('Asia/Kolkata');
+            $time = Carbon::now(Timezone::IST);
 
             $time->addMinutes($minutes);
 
@@ -670,7 +671,7 @@ class VerifyTest extends TestCase
 
         foreach ($minutesArray as $minutes)
         {
-            $time = Carbon::now('Asia/Kolkata');
+            $time = Carbon::now(Timezone::IST);
 
             $time->addMinutes($minutes);
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Plan\Subscription;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
@@ -420,8 +421,8 @@ class Charge extends Base\Core
             $billingPeriod['start'] = $task->getNextRunAt();
         }
 
-        $currentTime = Carbon::now('Asia/Kolkata');
-        $lastRun = Carbon::createFromTimestamp($task->getNextRunAt(), 'Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
+        $lastRun = Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST);
         $currentEnd = Library::computeFutureRun($schedule, $currentTime, $lastRun, false);
 
         $billingPeriod['end'] = $currentEnd->timestamp;

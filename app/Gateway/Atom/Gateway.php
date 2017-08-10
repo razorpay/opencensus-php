@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
@@ -108,7 +109,7 @@ class Gateway extends Base\Gateway
 
         $createdAt = $input['payment']['created_at'];
 
-        $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');
+        $tdate = Carbon::createFromTimestamp($createdAt, Timezone::IST)->format('Y-m-d');
 
         $fields = array(
             'merchantid'        => $input['terminal']['gateway_merchant_id'],

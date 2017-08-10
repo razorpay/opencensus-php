@@ -5,6 +5,7 @@ namespace RZP\Tests\Unit\Models\Schedule;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Schedule;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class ScheduleLibraryTest extends TestCase
 {
@@ -113,11 +114,11 @@ class ScheduleLibraryTest extends TestCase
 
     private function getTimeObjectFromFormatted($formattedTime)
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s', $formattedTime, 'Asia/Kolkata');
+        return Carbon::createFromFormat('Y-m-d H:i:s', $formattedTime, Timezone::IST);
     }
 
     private function getTimeObjectFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST);
     }
 }

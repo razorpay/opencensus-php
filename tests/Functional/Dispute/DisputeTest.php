@@ -40,7 +40,7 @@ class DisputeTest extends TestCase
     {
         $dispute = $this->fixtures->create('dispute');
 
-        $testData = $this->updateTestData($dispute['payment_id']);
+        $testData = $this->updateTestData('pay_'.$dispute['payment_id']);
 
         $this->startTest();
     }
@@ -76,7 +76,7 @@ class DisputeTest extends TestCase
         {
             $this->payment = $this->fixtures->create('payment:captured');
 
-            $paymentId = $this->payment->getId();
+            $paymentId = $this->payment->getPublicId();
         }
 
         $reason = $this->fixtures->create('dispute_reason');

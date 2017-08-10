@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payout;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Payout;
 use RZP\Models\FundTransfer\Attempt;
@@ -180,7 +181,7 @@ class PayoutTest extends TestCase
         $this->ba->privateAuth();
         $p2 = $this->testCreatePaymentPayout();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->addDays(10);
+        $createdAt = Carbon::today(Timezone::IST)->addDays(10);
 
         Carbon::setTestNow($createdAt);
 

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Requests;
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -36,7 +37,7 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = array(
             'MerchantID'        => $input['MerchantID'],
@@ -168,7 +169,7 @@ class Server extends Base\Mock\Server
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
         // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        $now = Carbon::now(Timezone::IST)->format('Ymd0His');
 
         $content = array(
             'RequestType'   => '0410',

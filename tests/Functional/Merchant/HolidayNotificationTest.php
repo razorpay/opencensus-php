@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
@@ -43,7 +44,7 @@ class HolidayNotificationTest extends TestCase
 
     public function testHolidayNotificationOnLiveHoliday1()
     {
-        $date = Carbon::today('Asia/Kolkata');
+        $date = Carbon::today(Timezone::IST);
 
         $newDate = $this->getNextRandomDoubleWorkingDay($date);
 
@@ -75,7 +76,7 @@ class HolidayNotificationTest extends TestCase
                     Mockery::any()
                 );
 
-        $date = Carbon::parse('3 September 2016', 'Asia/Kolkata');
+        $date = Carbon::parse('3 September 2016', Timezone::IST);
 
         $date = $this->getRandomWorkingDayThatIsASettlementHoliday($date);
 

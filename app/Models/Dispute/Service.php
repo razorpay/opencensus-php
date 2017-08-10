@@ -8,7 +8,7 @@ class Service extends Base\Service
 {
     public function create(array $input, string $paymentId): array
     {
-        $payment = $this->repo->payment->findOrFail($paymentId);
+        $payment = $this->repo->payment->findByPublicId($paymentId);
 
         $reason = $this->repo->dispute_reason->findOrFail($input[Entity::REASON_ID]);
 
