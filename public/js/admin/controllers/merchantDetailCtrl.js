@@ -2863,13 +2863,13 @@ app
         $scope.daysInSelectedMonth = numberOfDays(month, year); // total days in that month-year
 
         // Change the date if exceeding
-        if ($scope.daysInSelectedMonth < $scope.reportForm.date) {
-          $scope.reportForm.date = $scope.daysInSelectedMonth;
+        if ($scope.daysInSelectedMonth < $scope.reportForm.day) {
+          $scope.reportForm.day = $scope.daysInSelectedMonth;
         }
 
         // Remove the date key if duration is no longer 'daily'
         if ($scope.reportForm.type === 'monthly') {
-          delete $scope.reportForm.date;
+          delete $scope.reportForm.day;
         }
       };
 
