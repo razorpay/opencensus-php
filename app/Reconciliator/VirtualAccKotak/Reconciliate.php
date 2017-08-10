@@ -55,7 +55,7 @@ class Reconciliate extends Base\Reconciliate
         return self::PAYMENT;
     }
 
-    public function getColumnHeadersForType($type)
+    public function getColumnHeadersForType()
     {
         return self::HEADERS;
     }

@@ -41,7 +41,7 @@ class Validator
         Orchestrator::AXIS               => "/^Axis Estatement [0-9]{2}-"
                                             . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
         Orchestrator::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
-        Orchestrator::VIRTUAL_ACC_KOTAK  => "/^Virtual Account MIS.*/",
+        Orchestrator::VIRTUAL_ACC_KOTAK  => "/^RAZOR_VA_REPORT$/",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -55,8 +55,6 @@ class Validator
         Orchestrator::AXIS               => "/Please find attached the settlement file for today."
                                             . " You net amount settled is/",
         Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
-        Orchestrator::VIRTUAL_ACC_KOTAK  => "/Dear Sir\/Madam,Please find attached (RTGS|NEFT) "
-                                            . "Virtual Account MIS file with this mail.*/",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -181,13 +179,11 @@ class Validator
                             $emailDetails[Orchestrator::SUBJECT],
                             Orchestrator::VIRTUAL_ACC_KOTAK);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::VIRTUAL_ACC_KOTAK);
-
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
             Orchestrator::VIRTUAL_ACC_KOTAK);
 
-        return ($validSubject and $validAttachmentCount and $validBody);
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validateAxisEmail(array $emailDetails)
