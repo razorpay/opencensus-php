@@ -99,9 +99,26 @@
       #button:active {
         box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset, 0 0 6px rgba(0,0,0,.2) inset;
       }
+
+      body div.redirect-message {
+
+        display: none;
+      }
+
+      body.has-redirect div.redirect-message {
+
+        display: block;
+      }
     </style>
   </head>
   <body>
+
+    <script>
+      var CALLBACK_URL = "/test.html",
+          CALLBACK_METHOD = "POST",
+          PAYMENT_ID;
+    </script>
+
     @if (isset($data['error']))
       <div id="failure" class="card">
         {!! $error_icon !!}
@@ -109,7 +126,7 @@
         <p>{{$data['error']['description']}}. Please contact the merchant for assistance.</p>
       </div>
     @else
-      <div class={{$data['invoice']['status']}}>
+      <div id="invoice-status-container" class={{$data['invoice']['status']}}>
         @if ($data['invoice']['type'] !== 'invoice')
           <div id="success" class="card">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
@@ -118,7 +135,13 @@
               <div>Amount Paid<span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
               <div>Invoice ID<span>{{ $data['invoice']['id'] }}</span></div>
               <div>Payment ID<span id='pay_id'>{{ $data['invoice']['payment_id'] or '' }}</span></div>
+              <script>PAYMENT_ID = "{{ $data['invoice']['payment_id'] or '' }}";</script>
             </div>
+          </div>
+
+          <div class="redirect-message">
+            <center><i>Redirecting you to the merchant site</i></center>
+            <br/>
           </div>
 
           @if ($data['invoice']['partial_payment'] && $data['invoice']['amount_due'] > 0)
@@ -164,6 +187,9 @@
                   }
                   document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
                   document.body.className = 'paid';
+
+                  PAYMENT_ID = response.razorpay_payment_id;
+                  checkCallbackAndRedirect();
                 },
                 prefill: {
                   contact: invoiceObj.customer_details.customer_contact,
@@ -234,5 +260,43 @@
         @endif
       </div>
     @endif
+
+    <script> 
+      function checkCallbackAndRedirect () {
+
+        if (!CALLBACK_URL || !CALLBACK_METHOD) {
+
+          return;
+        } 
+
+        var hasRedirect = PAYMENT_ID &&
+                          (
+                           CALLBACK_URL !== window.location.href ||
+                           CALLBACK_METHOD !== "GET"
+                          );
+
+        if (!hasRedirect) {
+
+          return;
+
+        }
+
+        document.body.className = document.body.className + " " +
+                                  "has-redirect";
+
+        var form = document.createElement("form");
+        form.method = CALLBACK_METHOD;
+        form.action = CALLBACK_URL;
+
+        document.body.appendChild(form);
+
+	window.setTimeout(function () {
+
+          form.submit();
+        }, 3000);
+      }
+
+      checkCallbackAndRedirect();
+    </script>
   </body>
 </html>
