@@ -11,19 +11,19 @@ class Service extends Base\Service
     protected $admin;
 
     const ACTION_FUNCTION_MAPPING = [
-            "maker" => [
-                "all"     => "getActionsByOrg",
-                "closed"  => "getClosedActionsByMaker",
-                "open"    => "getActionsByOrg",
-                "maker"   => "getActionsByMaker",
-            ],
-            "checker" => [
-                "all"     => "getActionsForChecker",
-            ],
-            "admin_checked" => [
-                "all"     => "getActionsCheckedByAdmin",
-            ],
-        ];
+        "maker" => [
+            "all"     => "getActionsByOrg",
+            "closed"  => "getClosedActionsByMaker",
+            "open"    => "getActionsByOrg",
+            "maker"   => "getActionsByMaker",
+        ],
+        "checker" => [
+            "all"     => "getActionsForChecker",
+        ],
+        "admin_checked" => [
+            "all"     => "getActionsCheckedByAdmin",
+        ],
+    ];
 
     public function __construct()
     {
@@ -52,9 +52,10 @@ class Service extends Base\Service
     {
         $orgId = $this->admin->getOrgId();
 
-        /* $duty can be maker/checker/admin_checked
-        actions will be fetched based on duty and type
-        type can be all/closed/open etc */
+        // $duty can be maker/checker/admin_checked
+        // actions will be fetched based on duty and type
+        // type can be all/closed/open etc
+
         $duty = $input['duty'] ?? 'default';
         $type = $input['type'] ?? 'all';
 
