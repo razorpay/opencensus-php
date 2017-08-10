@@ -2109,7 +2109,7 @@
           </select>
         </div>
         <div class="col-lg-3" ng-show="reportForm.type === 'daily'">
-          <select class="form-control m-b" name="date" ng-model="reportForm.date">
+          <select class="form-control m-b" name="date" ng-model="reportForm.day">
             <option ng-repeat="date in range(1, daysInSelectedMonth)" value={{date}}>{{date}}</option>
           </select>
         </div>
