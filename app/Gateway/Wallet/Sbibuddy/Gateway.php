@@ -194,7 +194,7 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::ORDER_ID             => $payment[Payment::ID],
             RequestFields::TRANSACTION_ID       => $wallet[Entity::GATEWAY_PAYMENT_ID],
-            RequestFields::AMOUNT               => $this->formatAmount($payment[Payment::AMOUNT]),
+            RequestFields::AMOUNT               => $this->formatAmount($input['refund']['amount']),
             RequestFields::REFUND_FEE           => ResponseCodeMap::REFUND_FEE,
             // This is optional
             RequestFields::REFUND_REQUEST_ID    => $input['refund']['id'],
