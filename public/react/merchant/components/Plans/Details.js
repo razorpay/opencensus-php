@@ -8,15 +8,9 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
-import { subscriptionId, paidCount, status } from 'rzp/ui/item/pair';
+import { subscriptionId, createdAt, status } from 'rzp/ui/item/pair';
 
-export default ({
-  plan,
-  isLoading,
-  statusMsg,
-  subscriptions,
-  onToggleSusbsList,
-}) => {
+export default ({ plan, isLoading, statusMsg, subscriptions }) => {
   const tableLimit = 5; // Set limit to total rows displayed in table
 
   return (
@@ -75,15 +69,18 @@ export default ({
 
                 {subscriptions.items
                   ? <ListToggler
-                      label="Subscriptions"
+                      label="Recently created Subscriptions"
+                      subLabel="to this plan"
                       limit={tableLimit}
+                      limitUrl={`/subscriptions?plan_id=${plan.id}`}
+                      loading={subscriptions.loading}
                       totalItems={subscriptions.items.length}
-                      onToggleClick={() => onToggleSusbsList(plan.id)}
                     >
                       <DataTable
-                        columns={[subscriptionId, paidCount, status]}
+                        columns={[subscriptionId, createdAt, status]}
+                        customClass="subscriptions-table"
                         limit={tableLimit}
-                        limitUrl={`/subscriptions?plan_id=${plan.id}`}
+                        progressLoader={true}
                         title="Subscriptions"
                         items={subscriptions.items}
                         loading={subscriptions.loading}

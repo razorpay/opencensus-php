@@ -199,11 +199,14 @@ export default props => {
                   />
                   {payment.refund_status
                     ? <ListToggler
-                        label="Refunds"
+                        label="Recently created Refunds"
+                        subLabel="to this payment"
+                        loading={refunds.loading}
                         totalItems={refunds.items.length}
-                        onToggleClick={() => props.onToggleRefundList(payment)}
                       >
                         <DataTable
+                          customClass="refunds-table"
+                          progressLoader={true}
                           title="Refunds"
                           columns={[refundId, amount]}
                           items={refunds.items}
