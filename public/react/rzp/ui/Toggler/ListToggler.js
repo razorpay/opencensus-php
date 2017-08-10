@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { NavLink } from 'react-router-dom';
-import BaseToggler from 'rzp/ui/Toggler/BaseToggler';
 
 /*
  // Usage: Check PaymentDetails
@@ -8,7 +7,7 @@ import BaseToggler from 'rzp/ui/Toggler/BaseToggler';
  // Eg: Refund list
 */
 
-export default class ListToggler extends BaseToggler {
+export default class ListToggler extends Component {
   render() {
     let { loading, limit, totalItems, label, subLabel, limitUrl } = this.props;
 
