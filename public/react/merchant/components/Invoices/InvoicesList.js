@@ -16,7 +16,7 @@ const InvoiceListItem = props => {
       <td>
         {
           do {
-            if (invoice.type === 'link') {
+            if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
               if (isNewUIEnabled) {
                 <NavLink to={`/paymentlinks/${invoice.id}`}>
                   <code>{invoice.id}</code>
