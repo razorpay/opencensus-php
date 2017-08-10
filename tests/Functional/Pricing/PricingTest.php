@@ -515,18 +515,9 @@ class PricingTest extends TestCase
             'amount_range_min' => 100,
             'amount_range_max' => 25000);
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $pricingPlan);
+        $plan = $this->createPricingPlan($pricingPlan);
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('rules', $content);
-
-        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
-
-        return $content;
+        return $plan;
     }
 
     public function testAddPricingPlanRuleWithFeature()
