@@ -384,7 +384,6 @@ class Terminal extends Base
             'netbanking'                => 0,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'sbibuddy_merchant',
-            'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
         ];
 
