@@ -92,6 +92,10 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::RISK_RATING);
 
+            $table->tinyInteger(Merchant::RISK_THRESHOLD)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Merchant::RECEIPT_EMAIL_ENABLED)
                   ->default(1);
 

@@ -972,7 +972,7 @@ trait Authorize
     {
         if ($payment->shouldRunFraudChecks() === true)
         {
-            $this->validateFraudDetection($payment);
+            $this->validateFraudDetection($payment, $this->merchant);
 
             $this->validateBlockedCard($payment);
         }
