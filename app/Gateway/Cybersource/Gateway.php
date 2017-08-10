@@ -1137,8 +1137,7 @@ class Gateway extends Base\Gateway
 
         $content[F::BILL_TO] = $this->getBillingInfo($input);
 
-        if (($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT) and
-            ($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS'))
+        if ($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS')
         {
             unset($content[F::BILL_TO]);
         }
