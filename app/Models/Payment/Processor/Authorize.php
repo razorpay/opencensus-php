@@ -2410,8 +2410,9 @@ trait Authorize
     {
         $invoice = $payment->order->invoice;
 
-        $data['razorpay_invoice_id']     = $invoice->getPublicId();
-        $data['razorpay_invoice_status'] = $invoice->getStatus();
+        $data['razorpay_invoice_id']      = $invoice->getPublicId();
+        $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
+        $data['razorpay_invoice_status']  = $invoice->getStatus();
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)

@@ -179,6 +179,8 @@ class InvoiceController extends Controller
             $view = 'invoice.uber';
         }
 
+        $data['request_params'] = Request::all();
+
         return View::make($view)
                    ->with('data', $data);
     }
