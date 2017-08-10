@@ -395,6 +395,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FREECHARGE);
     }
 
+    public function getSbibuddy()
+    {
+        return $this->getAttribute(self::SBIBUDDY);
+    }
+
     public function getOpenwallet()
     {
         return $this->getAttribute(self::OPENWALLET);
@@ -477,6 +482,11 @@ class Entity extends Base\PublicEntity
     public function setFreecharge($value)
     {
         $this->setAttribute(self::FREECHARGE, $value);
+    }
+
+    public function setSbibuddy($value)
+    {
+        $this->setAttribute(self::SBIBUDDY, $value);
     }
 
     public function setOpenwallet($value)
