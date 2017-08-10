@@ -97,8 +97,8 @@ return [
     ],
 
     'testVerifyFailedPayment'   => [
-        'response'  => [
-            'content'     => [
+        'response' => [
+            'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,

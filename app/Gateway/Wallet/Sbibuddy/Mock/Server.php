@@ -61,7 +61,7 @@ class Server extends Base\Mock\Server
         $content = [
             ResponseFields::EXTERNAL_TRANSACTION_ID => $input[RequestFields::EXTERNAL_TRANSACTION_ID],
             ResponseFields::ORDER_ID                => $input[RequestFields::ORDER_ID],
-            ResponseFields::TRANSACTION_ID          => 123,
+            ResponseFields::TRANSACTION_ID          => '987654321',
             ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
             ResponseFields::FEE                     => 0.00,
             ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE,

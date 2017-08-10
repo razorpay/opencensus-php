@@ -30,6 +30,7 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS_CODE         => Entity::STATUS_CODE,
         ResponseFields::ERROR_DESCRIPTION   => Entity::ERROR_MESSAGE,
         ResponseFields::TRANSACTION_ID      => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::REFUND_ID           => Entity::GATEWAY_REFUND_ID,
         Entity::CONTACT                     => Entity::CONTACT,
         Entity::RECEIVED                    => Entity::RECEIVED,
         Entity::DATE                        => Entity::DATE,
@@ -87,13 +88,17 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $request = $this->getRefundRequest($input);
+        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
+
+        $request = $this->getRefundRequest($input, $wallet);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         list($content, $response) = $this->sendRequest($request);
 
-        $this->createWalletEntityFromRefundResponse($content, $input);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+
+        $this->createWalletEntityFromRefundResponse($content, $input, $wallet);
 
         if ($this->isStatusCodeSuccess($content) !== true)
         {
@@ -178,10 +183,8 @@ class Gateway extends Base\Gateway
 
     //----------------Refund helper methods--------------------
 
-    protected function getRefundRequest(array $input)
+    protected function getRefundRequest(array $input, $wallet)
     {
-        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
-
         $content = $this->getRefundRequestData($input, $wallet);
 
         return $content;
@@ -212,28 +215,42 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function createWalletEntityFromRefundResponse(array $data, array $input)
+    protected function createWalletEntityFromRefundResponse(array $data, array $input, $wallet)
     {
-        $refundAttributes = $this->getGatewayRefundEntityData($data, $input);
+        $refundAttributes = $this->getGatewayRefundEntityData($data, $input, $wallet);
 
         $this->createGatewayRefundEntity($refundAttributes);
     }
 
-    protected function getGatewayRefundEntityData(array $data, array $input): array
+    protected function getGatewayRefundEntityData(array $data, array $input, $wallet): array
     {
+        // They return all the refund ids comma separated in every
+        // refund request. So, we're taking the last one out of those
+        // and associate that with the current refund request.
+        $exploded = explode(',', $data[ResponseFields::REFUND_ID]);
+        $refundId = end($exploded);
+
         $contentToSave = [
-            Entity::PAYMENT_ID            => $input['payment']['id'],
-            Entity::ACTION                => $this->action,
-            Entity::AMOUNT                => $input['refund']['amount'],
-            Entity::WALLET                => $input['payment']['wallet'],
-            Entity::EMAIL                 => $input['payment']['email'],
-            Entity::RECEIVED              => true,
-            Entity::CONTACT               => $this->getFormattedContact($input['payment']['contact']),
-            Entity::GATEWAY_MERCHANT_ID   => $this->getMerchantId(),
-            Entity::STATUS_CODE           => $data[ResponseFields::STATUS_CODE],
-            Entity::ERROR_MESSAGE         => $data[ResponseFields::ERROR_DESCRIPTION],
-            Entity::REFUND_ID             => $input['refund']['id'],
+            Entity::PAYMENT_ID          => $input['payment']['id'],
+            Entity::ACTION              => $this->action,
+            Entity::AMOUNT              => $input['refund']['amount'],
+            Entity::WALLET              => $input['payment']['wallet'],
+            Entity::EMAIL               => $input['payment']['email'],
+            Entity::RECEIVED            => true,
+            Entity::CONTACT             => $this->getFormattedContact($input['payment']['contact']),
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+            Entity::GATEWAY_PAYMENT_ID  => $wallet[Entity::GATEWAY_PAYMENT_ID],
+            Entity::GATEWAY_REFUND_ID   => $refundId,
+            Entity::STATUS_CODE         => $data[ResponseFields::STATUS_CODE],
+            Entity::REFUND_ID           => $input['refund']['id'],
+            Entity::DATE                => $date = Carbon::now()->format('d/m/Y H:m:s'),
         ];
+
+        // Since error description is optional
+        if(array_key_exists(ResponseFields::ERROR_DESCRIPTION, $data))
+        {
+            $contentToSave[Entity::ERROR_MESSAGE] = $data[ResponseFields::ERROR_DESCRIPTION];
+        }
 
         return $contentToSave;
     }
