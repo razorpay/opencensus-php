@@ -85,6 +85,15 @@ class Verify extends Base\Core
     const DEFAULT_LOCK_TIME = 900; // 15 Minutes
 
     /**
+     * We Need to Block gateway from verify after certain error codes are returned,
+     * The block will be lifted after duration mentioned here
+     */
+    const GATEWAY_BLOCK_TIME = 900; // 15 minutes
+
+
+    const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache_key';
+
+    /**
      * Minimum duration a payment should be old before it gets picked up
      * for verify for a particular payment verify filter.
      */
@@ -120,6 +129,7 @@ class Verify extends Base\Core
 
     protected $core;
     protected $mutex;
+    protected $redis;
     protected $slack;
     protected $slackChannel;
     protected $route;
@@ -129,6 +139,8 @@ class Verify extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->redis = $this->app['redis'];
 
         $this->slack = $this->app['slack'];
 
@@ -206,6 +218,7 @@ class Verify extends Base\Core
             }
         }
 
+        $disabledGateways = $this->getBlockedGateway();
         //
         // We Fetch Twice the number of required payments,
         // and filtering extra payments in later stage
@@ -216,9 +229,11 @@ class Verify extends Base\Core
                                                                 $verifyStatus,
                                                                 $paymentStatus,
                                                                 true,
-                                                                self::ROWS_TO_FETCH * 2);
+                                                                self::ROWS_TO_FETCH * 2,
+                                                                $disabledGateways);
 
         $payments = $paymentsCollectionWithCount['payments'];
+
 
         $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
 
@@ -450,7 +465,8 @@ class Verify extends Base\Core
             switch ($code)
             {
                 case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED:
-                    // TODO block paymnet verification
+
+                    $this->blockGatewayAfterInvalidVerifyResponse($payment->getGateway());
                     break;
 
                 case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_RETRY:
@@ -464,6 +480,7 @@ class Verify extends Base\Core
 
                 default:
 
+                    $this->updateVerifyBucket($payment, $filter, 'next');
                     $result = $this->authorizePayment($merchant, $payment, $e);
                     break;
             }
@@ -502,6 +519,36 @@ class Verify extends Base\Core
             ]);
 
         return $result;
+    }
+
+    protected function blockGatewayAfterInvalidVerifyResponse(string $gateway)
+    {
+        $this->redis->hSet(
+            self::GATEWAY_BLOCK_CACHE_KEY,
+            $gateway,
+            Carbon::now()->getTimestamp() + self::GATEWAY_BLOCK_TIME
+        );
+    }
+
+    protected function getBlockedGateway()
+    {
+        $blockedGateways = [];
+
+        $allBlockedGateways = $this->redis->hGetAll(self::GATEWAY_BLOCK_CACHE_KEY);
+
+        foreach ($allBlockedGateways as $blockedGateway => $expiryTime)
+        {
+            if ($expiryTime <= Carbon::now()->getTimestamp())
+            {
+                $blockedGateways[] = $blockedGateway;
+            }
+            else
+            {
+                $this->redis->hDel(self::GATEWAY_BLOCK_CACHE_KEY, $blockedGateway);
+            }
+        }
+
+        return $blockedGateways;
     }
 
     protected function authorizePayment($merchant, $payment, $e)

@@ -301,9 +301,12 @@ class Repository extends Base\Repository
                         $verifyStatus = null,
                         $paymentStatus = null,
                         bool $random = true,
-                        int $rowsToFetch = 100)
+                        int $rowsToFetch = 100,
+                        array $disabledGateways = [])
     {
         $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
+
+        $verifyDisabledGateways = array_merge ($verifyDisabledGateways, $disabledGateways);
 
         $query = $this->newQuery()
                       ->whereNotNull(Payment\Entity::GATEWAY)
