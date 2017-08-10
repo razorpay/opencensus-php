@@ -12,4 +12,5 @@ class RiskCode
     // Risk codes for confirmed fraud payments
 
     const PAYMENT_FAILED_DUE_TO_BLOCKED_CARD = 'PAYMENT_FAILED_DUE_TO_BLOCKED_CARD';
+    const PAYMENT_DENIED_DUE_TO_RISK         = 'PAYMENT_DENIED_BY_RISK';
 }

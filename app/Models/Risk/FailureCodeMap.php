@@ -9,20 +9,13 @@ class FailureCodeMap
     public static $codes = [
         ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK => [
             Entity::SOURCE     => Source::BANK,
-            Entity::REASON     => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
+            Entity::REASON     => RiskCode::PAYMENT_DENIED_DUE_TO_RISK,
             Entity::FRAUD_TYPE => Type::CONFIRMED,
         ],
-
         ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK => [
             Entity::SOURCE     => Source::GATEWAY,
-            Entity::REASON     => ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
+            Entity::REASON     => RiskCode::PAYMENT_DENIED_DUE_TO_RISK,
             Entity::FRAUD_TYPE => Type::CONFIRMED,
-        ],
-
-        ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED => [
-            Entity::SOURCE     => Source::BANK,
-            Entity::REASON     => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
-            Entity::FRAUD_TYPE => Type::SUSPECTED,
         ],
     ];
 
