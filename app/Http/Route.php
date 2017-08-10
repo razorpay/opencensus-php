@@ -1231,6 +1231,7 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
     ];
 
