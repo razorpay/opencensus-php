@@ -134,7 +134,6 @@ class Gateway extends Base\Gateway
     {
         return [
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
-            Entity::PAYMENT_ID          => $payment[Payment::ID],
             RequestFields::AMOUNT       => $payment[Payment::AMOUNT],
             Entity::EMAIL               => $payment[Payment::EMAIL],
             Entity::CONTACT             => $this->getFormattedContact($payment[Payment::CONTACT]),
