@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -774,11 +775,11 @@ class Service extends Base\Service
     {
         if (isset($input['on']))
         {
-            $today = Carbon::createFromTimestamp($input['on'], 'Asia/Kolkata');
+            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
         }
         else
         {
-            $today = Carbon::today('Asia/Kolkata');
+            $today = Carbon::today(Timezone::IST);
         }
 
         if (Holidays::isWorkingDay($today) === false)

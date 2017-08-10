@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Mpesa;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use Lib\PhoneBook;
 use SimpleXMLElement;
@@ -670,7 +671,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate()
     {
-        return Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
+        return Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
     }
 
     protected function getMerchantId()

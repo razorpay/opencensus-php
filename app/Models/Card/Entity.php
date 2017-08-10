@@ -3,6 +3,7 @@
 namespace RZP\Models\Card;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
@@ -318,7 +319,7 @@ class Entity extends Base\PublicEntity
 
         $month = $this->getExpiryMonth();
 
-        return Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+        return Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
                         ->timestamp;
     }

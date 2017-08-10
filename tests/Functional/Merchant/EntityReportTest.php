@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -25,7 +26,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,
@@ -47,7 +48,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,
@@ -68,7 +69,7 @@ class EntityReportTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -118,7 +119,7 @@ class EntityReportTest extends TestCase
      */
     public function testEntityReportTLE()
     {
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => 2017,
@@ -135,7 +136,7 @@ class EntityReportTest extends TestCase
     {
         $this->testEntityReports();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -161,7 +162,7 @@ class EntityReportTest extends TestCase
         $input['force'] = '1';
         $this->refundAuthorizedPayment($payment['id'], $input);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
         $input = [
             'year'  => $dt->year,
             'month' => $dt->month
@@ -179,7 +180,7 @@ class EntityReportTest extends TestCase
     {
         $this->doAuthAndCapturePayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,
@@ -222,7 +223,7 @@ class EntityReportTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'day'         => 'today',
@@ -242,7 +243,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthCaptureAndRefundPayment($payment);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -339,7 +340,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,

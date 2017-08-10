@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Jiomoney;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -382,7 +383,7 @@ class Gateway extends Base\Gateway
     {
         $refundInfo = $this->generateRefundInfo($wallet);
 
-        $timestamp = Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
+        $timestamp = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
         $content = [
             RequestFields::CLIENT_ID    => $this->getClientId(),
@@ -1020,7 +1021,7 @@ class Gateway extends Base\Gateway
     protected function getFormattedDateFromTimeStamp(
         $timestamp, $format = self::DATE_FORMAT)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format($format);
     }
 
     protected function getFormattedAmount($amount)

@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -569,7 +570,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->getStartAt() !== null)
         {
-            $startAt = Carbon::createFromTimestamp($this->getStartAt(), 'Asia/Kolkata');
+            $startAt = Carbon::createFromTimestamp($this->getStartAt(), Timezone::IST);
 
             $anchor = $startAt->{Anchor::CHECKS[$period]};
         }

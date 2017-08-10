@@ -3,6 +3,7 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Entity as E;
@@ -194,7 +195,7 @@ class RPPOrderReport extends BasicEntityReport
         $ts = $payment->getCreatedAt();
 
         // Format dd/mm/yyyy hh:mm,
-        $paymentDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
+        $paymentDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                             ->format('d/m/Y H:i:s');
 
         return $paymentDate;

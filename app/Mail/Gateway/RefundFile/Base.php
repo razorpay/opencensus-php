@@ -3,6 +3,7 @@
 namespace RZP\Mail\Gateway\RefundFile;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Payment\Gateway;
@@ -84,7 +85,7 @@ class Base extends Mailable
 
     protected function getSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = Constants::SUBJECT_MAP[$this->type] . $today;
 

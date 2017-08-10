@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Ebs\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
@@ -22,7 +23,7 @@ class Server extends Base\Mock\Server
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input[Request::API_REFERENCE_NO], Action::AUTHORIZE);
 
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = '<output transactionId="'.
             $payment['transaction_id'].
@@ -51,7 +52,7 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = array(
             Response::RESPONSE_CODE         => '0',
@@ -95,7 +96,7 @@ class Server extends Base\Mock\Server
         $payment = $this->getRepo()->findByEbsPaymentIdAndActionOrFail(
             $input['PaymentID'], Action::AUTHORIZE);
 
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = '<output response="SUCCESS" transactionId="'.
             $payment['transaction_id'].
