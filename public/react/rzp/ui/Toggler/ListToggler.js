@@ -1,59 +1,38 @@
 import { Component } from 'react';
-import AsyncButton from 'react-async-button';
+import { NavLink } from 'react-router-dom';
 import BaseToggler from 'rzp/ui/Toggler/BaseToggler';
 
 /*
- // USAGE: Check PaymentDetails
+ // Usage: Check PaymentDetails
+ // Constraints: Don't pass props `limitUrl` if `limit` is not passed as it won't be utlized
  // Eg: Refund list
 */
 
 export default class ListToggler extends BaseToggler {
   render() {
-    let subText = null;
-    let statusMsg = null;
-
-    if (this.props.limit && this.props.totalItems) {
-      subText = <span>items <b>&gt;</b></span>;
-    } else if (this.props.totalItems) {
-      subText = <span>all <b>{this.props.totalItems} &gt;</b></span>;
-    }
-
-    if (this.state.show && this.props.limit && this.props.totalItems) {
-      statusMsg = (
-        <span class="text-muted clearix" style={{ float: 'right' }}>
-          Showing {this.props.limit} out of {this.props.totalItems}
-        </span>
-      );
-    }
+    let { loading, limit, totalItems, label, subLabel, limitUrl } = this.props;
 
     return (
       <div class="list-table">
-        <span class="list-label">{this.props.label} • </span>
-        <AsyncButton
-          class="primary-link"
-          text="View all"
-          pendingText="Fetching..."
-          onClick={this.toggle}
-        >
-          {({ buttonText, isPending }) => (
-            <span>
-              {isPending && 'Fetching...'}
-              {!isPending &&
-                <span>
-                  {this.state.show ? 'Hide' : 'View'} {' '}
-                  {subText}
-                </span>}
-            </span>
-          )}
-        </AsyncButton>
-        {statusMsg}
-        {this.state.show
-          ? <div class="panel-body" style={{ padding: '15px 0' }}>
-              <div class="list-group detail-row-container">
-                {this.props.children}
-              </div>
-            </div>
-          : null}
+        <span class="list-label">
+          <b>{label}</b> {subLabel}
+        </span>
+        {!loading && limit && limit < totalItems && <span> • </span>}
+
+        <span class="primary-link">
+          {!loading &&
+            limit &&
+            limit < totalItems &&
+            <NavLink to={limitUrl}>
+              View all <b>{totalItems} &gt;</b>
+            </NavLink>}
+        </span>
+
+        <div class="panel-body" style={{ padding: '15px 0' }}>
+          <div class="list-group detail-row-container">
+            {this.props.children}
+          </div>
+        </div>
       </div>
     );
   }
