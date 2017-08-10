@@ -153,8 +153,8 @@ class Gateway extends Base\Gateway
         $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
 
         $contentToSave = $data + [
-            Entity::RECEIVED                => true,
-            Entity::DATE                    => $date
+            Entity::RECEIVED    => true,
+            Entity::DATE        => $date
         ];
 
         // Order ID in the wallet API is mapped to our payment ID
@@ -276,8 +276,8 @@ class Gateway extends Base\Gateway
         $wallet = $verify->payment;
 
         $data = [
-            RequestFields::ORDER_ID             => $payment[Payment::ID],
-            RequestFields::TRANSACTION_ID       => $wallet[Entity::GATEWAY_PAYMENT_ID]
+            RequestFields::ORDER_ID         => $payment[Payment::ID],
+            RequestFields::TRANSACTION_ID   => $wallet[Entity::GATEWAY_PAYMENT_ID]
         ];
 
         $encrypted = $this->getEncryptedStringFromData($data);
@@ -393,5 +393,4 @@ class Gateway extends Base\Gateway
     }
 
     //----------------General helper methods ends---------------
-
 }
