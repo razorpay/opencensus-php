@@ -97,10 +97,6 @@ class RuleFilter extends Terminal\Filter
             }
         }
 
-        $this->traceTerminals($selectedTerminals, 'selected_terminals', $verbose);
-
-        $this->traceTerminals($rejectedTerminals, 'rejected_terminals', $verbose);
-
         $isSelectRulePresent = $this->isSelectRulePresent($rules);
 
         $filteredTerminals = $selectedTerminals;
