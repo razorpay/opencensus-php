@@ -34,6 +34,10 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
+    const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
+
+    const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
+
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
 
@@ -97,6 +101,8 @@ class Type
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::ICICI_EMI_FILE,
+            self::PNB_NETBANKING_REFUND,
+            self::PNB_NETBANKING_CLAIMS,
         ],
 
         Constants\Entity::BATCH => [
@@ -151,6 +157,8 @@ class Type
         self::ICICI_UPI_REFUND,
         self::FUND_TRANSFER_DEFAULT,
         self::FUND_TRANSFER_H2H,
+        self::PNB_NETBANKING_REFUND,
+        self::PNB_NETBANKING_CLAIMS,
     ];
 
     /**
@@ -176,6 +184,8 @@ class Type
             self::SCBL_EMI_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::PNB_NETBANKING_REFUND,
+            self::PNB_NETBANKING_CLAIMS,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
