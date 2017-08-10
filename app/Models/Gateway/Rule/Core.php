@@ -165,6 +165,7 @@ class Core extends Base\Core
         $method = $payment->getMethod();
         $card = $payment->card;
         $emiPlan = $payment->emiPlan;
+        $bank = $payment->getBank();
 
         switch ($method)
         {
@@ -177,6 +178,13 @@ class Core extends Base\Core
                 break;
 
             case Payment\Method::EMI:
+                // For certain banks whose emi payments need to go through card terminals
+                // we set the method sa card both while fetching applicable rules
+                if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+                {
+                    $params[Entity::METHOD] = Payment\Method::CARD;
+                }
+
                 $params[Entity::METHOD_TYPE]    = $card->getType();
                 $params[Entity::NETWORK]        = $card->getNetworkCode();
                 $params[Entity::ISSUER]         = $payment->getBank();

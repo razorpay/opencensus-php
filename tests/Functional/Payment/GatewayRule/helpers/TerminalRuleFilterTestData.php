@@ -469,15 +469,6 @@ return [
                     'emi_subvention' => 'customer',
                     'issuer'         => 'HDFC',
                 ],
-                [
-                    'method'         => 'emi',
-                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'        => 'hdfc',
-                    'type'           => 'filter',
-                    'filter_type'    => 'select',
-                    'emi_subvention' => 'customer',
-                    'group'          => 'method_filter',
-                ],
             ],
             'expected_terminal_ids' => [
                 'ShrdHdfcEmiTrm',
@@ -504,13 +495,12 @@ return [
             ],
             'fixtures' => [
                 [
-                    'method'       => 'emi',
-                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'      => 'hdfc',
-                    'type'         => 'filter',
-                    'filter_type'  => 'select',
-                    'group'        => 'method_filter',
-                    'issuer'       => 'KKBK',
+                    'method'      => 'card',
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'hdfc',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'method_filter',
                 ],
             ],
             'expected_terminal_ids' => [

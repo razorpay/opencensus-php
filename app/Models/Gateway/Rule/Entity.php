@@ -408,7 +408,7 @@ class Entity extends Base\PublicEntity
                 return ($terminal->isNetbankingEnabled() === true);
 
             case Method::EMI:
-                return ($this->isValidEmiTerminal($terminal) === true);
+                return ($terminal->isEmiEnabled() === true);
 
             case Method::WALLET:
                 return ($this->getGateway() === $terminal->getGateway());
@@ -426,23 +426,5 @@ class Entity extends Base\PublicEntity
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
         return ($isApplicableForSharedTerminal === $terminal->isShared()) ? true : false;
-    }
-
-    protected function isValidEmiTerminal(Terminal\Entity $terminal): bool
-    {
-        $issuer = $this->getIssuer();
-
-        //@note: There are some banks for whom emi payments needs to be processed
-        //through card terminals only. We will also need to create rules with issuer
-        //values set for these banks
-        //@todo: Check if we can create terminals with emi method for all correspodning
-        //card terminals. We can remove this check then
-        if ((empty($issuer) === false) and
-            (in_array($issuer, Gateway::$emiBanksUsingCardTerminals, true) === true))
-        {
-            return (($terminal->isCardEnabled() === true) and ($terminal->isEmiEnabled() === false));
-        }
-
-        return ($terminal->isEmiEnabled() === true);
     }
 }

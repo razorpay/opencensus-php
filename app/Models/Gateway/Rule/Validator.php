@@ -149,10 +149,11 @@ class Validator extends Base\Validator
         switch($method)
         {
             case Method::CARD:
-            case Method::EMI:
-
                 $this->validateCardIssuer($input);
+                break;
 
+            case Method::EMI:
+                $this->validateEmiIssuer($input);
                 break;
 
             case Method::NETBANKING:
@@ -181,6 +182,25 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid bank code');
+        }
+    }
+
+    protected function validateEmiIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $gatewayToEmiBankMap = array_flip(Gateway::$emiBankToGatewayMap);
+
+        $gateway = $input[Entity::GATEWAY];
+        $issuer = $input[Entity::ISSUER] ?? null;
+
+        if ($issuer !== $gatewayToEmiBankMap[$gateway])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid for emi for gateway ' . $gateway);
         }
     }
 
