@@ -149,7 +149,7 @@
             input = document.createElement("input");
 
             input.type  = "hidden";
-            input.name  = "key";
+            input.name  = key;
             input.value = requestParams[key];
 
             form.appendChild(input);
