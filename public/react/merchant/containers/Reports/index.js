@@ -44,6 +44,13 @@ export default class ReportsContainer extends Component {
   componentWillMount() {
     this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
 
+    this.linkedAccountOptions = [
+      'transaction',
+      'payment',
+      'refund',
+      'settlement',
+    ];
+
     const user = this.props.user;
 
     if (user.isMarketplaceEnabled) {
@@ -173,7 +180,8 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    const account_id = user.isMarketplaceEnabled
+    const account_id = user.isMarketplaceEnabled &&
+      this.linkedAccountOptions.indexOf(this.props.entity) !== -1
       ? this.state.merchantSelected.id
       : this.props.user.current;
 
@@ -238,6 +246,10 @@ export default class ReportsContainer extends Component {
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
 
+    let isDisabled =
+      user.isMarketplaceEnabled &&
+      this.linkedAccountOptions.indexOf(this.props.entity) !== -1;
+
     return (
       <tabbed-container>
         <header>
@@ -301,9 +313,7 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <div class="title">
                   {user.isMarketplaceEnabled &&
-                    ['transaction', 'payment', 'refund', 'settlement'].indexOf(
-                      this.props.entity
-                    ) > -1
+                    this.linkedAccountOptions.indexOf(this.props.entity) !== -1
                     ? 'SELECT '
                     : ''}
                   ACCOUNT
@@ -377,6 +387,7 @@ export default class ReportsContainer extends Component {
                     </div>}
 
                 {user.isMarketplaceEnabled &&
+                  this.linkedAccountOptions.indexOf(this.props.entity) !== -1 &&
                   <small class="help-block">
                     <i class="icon icon-info-circle" />
                     <span>
@@ -434,11 +445,7 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <AsyncButton
                   class="btn btn-primary"
-                  disabled={
-                    user.isMarketplaceEnabled &&
-                      (!this.state.merchantSelected ||
-                        !this.state.merchantSelected.id)
-                  }
+                  disabled={isDisabled}
                   onClick={handleSubmit(this.prepareGenerateReport)}
                   text="Generate and Download Report"
                   pendingText="Generating..."
