@@ -101,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::LOAD            => 'int',
         self::MIN_AMOUNT      => 'int',
         self::MAX_AMOUNT      => 'int',
+        self::EMI_DURATION    => 'int',
         self::IINS            => 'array',
     ];
 
