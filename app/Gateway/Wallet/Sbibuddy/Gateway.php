@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
 
     //----------------Auth helper methods----------------------
 
-    protected function getPayloadForAuth($input)
+    protected function getPayloadForAuth(array $input): array
     {
         $payment = $input['payment'];
 
@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY                 => $payment[Payment::CURRENCY],
             RequestFields::CALLBACK_URL             => $input['callbackUrl'],
             RequestFields::BACK_URL                 => $input['callbackUrl'],
-            RequestFields::DESCRIPTION              => "WAPO",
+            RequestFields::DESCRIPTION              => 'WAPO',
             RequestFields::PROCESSOR_ID             => 'ALL',
         ];
 
@@ -130,7 +130,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getAuthorizeWalletContentToSave($payment)
+    protected function getAuthorizeWalletContentToSave($payment): array
     {
         return [
             RequestFields::MERCHANT_ID  => $this->getMerchantId(),
@@ -148,7 +148,7 @@ class Gateway extends Base\Gateway
     /**
      * If the callback gives a success status, update the wallet entity
      */
-    protected function saveWalletEntity($data)
+    protected function saveWalletEntity(array $data)
     {
         $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
 
@@ -166,7 +166,7 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
     }
 
-    protected function handleCallbackFailure($content)
+    protected function handleCallbackFailure(array $content)
     {
         throw new Exception\GatewayErrorException(
             ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
@@ -178,7 +178,7 @@ class Gateway extends Base\Gateway
 
     //----------------Refund helper methods--------------------
 
-    protected function getRefundRequest($input)
+    protected function getRefundRequest(array $input)
     {
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
@@ -187,7 +187,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getRefundRequestData($input, $wallet)
+    protected function getRefundRequestData(array $input, $wallet): array
     {
         $payment = $input['payment'];
 
@@ -212,14 +212,14 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function createWalletEntityFromRefundResponse($data, $input)
+    protected function createWalletEntityFromRefundResponse(array $data, array $input)
     {
-        $refundAttributes = $this->getWalletEntityAttributesFromRefundResponse($data, $input);
+        $refundAttributes = $this->getGatewayRefundEntityData($data, $input);
 
         $this->createGatewayRefundEntity($refundAttributes);
     }
 
-    protected function getWalletEntityAttributesFromRefundResponse($data, $input)
+    protected function getGatewayRefundEntityData(array $data, array $input): array
     {
         $contentToSave = [
             Entity::PAYMENT_ID            => $input['payment']['id'],
@@ -242,7 +242,7 @@ class Gateway extends Base\Gateway
      *
      * @param $data Parsed data from the response of transaction
      */
-    protected function handleRefundFailure($data)
+    protected function handleRefundFailure(array $data)
     {
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_REFUND_FAILED,
@@ -328,12 +328,12 @@ class Gateway extends Base\Gateway
 
     //----------------General helper methods-------------------
 
-    protected function isStatusCodeSuccess($data)
+    protected function isStatusCodeSuccess(array $data): bool
     {
         return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes);
     }
 
-    protected function parseResponse($input)
+    protected function parseResponse(array $input): array
     {
         $decryptedInput = $this->getEncryptor()->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
 
@@ -342,7 +342,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    public function getEncryptor()
+    public function getEncryptor(): Encryptor
     {
         $secret = base64_decode($this->getSecret());
 
