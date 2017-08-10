@@ -1220,6 +1220,18 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleInvoicesByTypes()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createDraftInvoice();
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
+
+        $this->startTest();
+    }
+
     // -------------------------------------------------------------------------
     // Following tests asserts working of es fetch in various cases.
     //
