@@ -3,7 +3,6 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Base;
-use RZP\Models\Admin\Admin;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
