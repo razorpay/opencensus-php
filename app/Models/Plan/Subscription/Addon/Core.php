@@ -28,7 +28,7 @@ class Core extends Base\Core
 
                 $item = (new Item\Core)->getOrCreateItemForType($input, $merchant, Item\Type::ADDON);
 
-                $this->createAddonAssociations($addon, $merchant, $item, $subscription);
+                $addon->createAssociations($merchant, $item, $subscription);
 
                 $this->repo->saveOrFail($addon);
             });
@@ -47,16 +47,5 @@ class Core extends Base\Core
         $addon->getValidator()->validateDelete();
 
         return $this->repo->addon->deleteOrFail($addon);
-    }
-
-    protected function createAddonAssociations(
-        Entity $addon,
-        Merchant\Entity $merchant,
-        Item\Entity $item,
-        Subscription\Entity $subscription)
-    {
-        $addon->merchant()->associate($merchant);
-        $addon->item()->associate($item);
-        $addon->subscription()->associate($subscription);
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
@@ -150,4 +151,14 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Relations -----------------------
+
+    public function createAssociations(
+        Merchant\Entity $merchant,
+        Item\Entity $item,
+        Subscription\Entity $subscription)
+    {
+        $this->merchant()->associate($merchant);
+        $this->item()->associate($item);
+        $this->subscription()->associate($subscription);
+    }
 }

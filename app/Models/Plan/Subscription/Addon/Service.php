@@ -19,18 +19,9 @@ class Service extends Base\Service
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
-        $addons = [];
+        $addon = $this->core->create($input, $subscription);
 
-        foreach ($input as $addonInput)
-        {
-            $addons[] = $this->core->create($addonInput, $subscription);
-        }
-
-        //
-        // TODO: Confirm with Shk on the response
-        // The response is not our standard collection
-        //
-        return $addons;
+        return $addon->toArrayPublic();
     }
 
     public function fetch(string $id): array
