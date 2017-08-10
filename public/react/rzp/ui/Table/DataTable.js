@@ -4,6 +4,12 @@ import Alert from 'rzp/ui/Forms/Alert';
 import Table from 'rzp/ui/Table/Index';
 import { NavLink } from 'react-router-dom';
 
+/*
+  // Usage: Check slider/details view of payments, plans, etc.
+  // Constraint: 1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
+                 2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
+*/
+
 export default function DataTable(props) {
   let {
     error,
@@ -16,18 +22,9 @@ export default function DataTable(props) {
     paginate,
     title,
     limit,
-    limitUrl,
+    progressLoader,
+    customClass,
   } = props;
-
-  let showMoreBtn;
-
-  if (items.length && limit && limitUrl) {
-    showMoreBtn = (
-      <NavLink to={limitUrl} target="_blank">
-        <b>Show More</b>
-      </NavLink>
-    );
-  }
 
   return (
     <div>
@@ -38,9 +35,13 @@ export default function DataTable(props) {
         columns={columns}
         showHeaders={showHeaders}
         limit={limit}
-        class="table-striped"
+        progressLoader={progressLoader}
+        loading={loading}
+        class={`table-striped ${columns ? customClass : ''}`}
       />
-      {loading && <div style={{ padding: 77 }}><Spinner /></div>}
+      {!progressLoader &&
+        loading &&
+        <div style={{ padding: 77 }}><Spinner /></div>}
       {!loading &&
         !items.length &&
         <h4 class="empty-table-message">{`No ${title} Found!`}</h4>}
@@ -53,7 +54,6 @@ export default function DataTable(props) {
           onClick={paginate}
         />}
 
-      {showMoreBtn}
     </div>
   );
 }
