@@ -246,10 +246,6 @@ export default class ReportsContainer extends Component {
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
 
-    let isDisabled =
-      user.isMarketplaceEnabled &&
-      this.linkedAccountOptions.indexOf(this.props.entity) !== -1;
-
     return (
       <tabbed-container>
         <header>
@@ -445,7 +441,6 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <AsyncButton
                   class="btn btn-primary"
-                  disabled={isDisabled}
                   onClick={handleSubmit(this.prepareGenerateReport)}
                   text="Generate and Download Report"
                   pendingText="Generating..."
