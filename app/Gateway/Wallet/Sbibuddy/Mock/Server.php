@@ -34,8 +34,6 @@ class Server extends Base\Mock\Server
 
         $content = $this->prepareRefundResponse($data, $input[RequestFields::MERCHANT_ID]);
 
-        $this->content($content, 'refund');
-
         $content = http_build_query($content);
 
         return $this->makeResponse($content);
@@ -132,6 +130,8 @@ class Server extends Base\Mock\Server
             ResponseFields::REFUND_ID               => 234,
             ResponseFields::REFUNDED_AMOUNT         => 456
         ];
+
+        $this->content($content, 'refund');
 
         $encryptedData = $this->getGatewayInstance()->getEncryptedStringFromData($content);
 
