@@ -47,14 +47,6 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::now()->format('d/m/Y H:m:s');
 
-        $contentToSave = [
-            RequestFields::MERCHANT_ID  => $this->getMerchantId(),
-            Entity::PAYMENT_ID          => $input['payment'][Payment::ID],
-            RequestFields::AMOUNT       => $input['payment'][Payment::AMOUNT],
-            Entity::EMAIL               => $input['payment'][Payment::EMAIL],
-            Entity::CONTACT             => $this->getFormattedContact($input['payment'][Payment::CONTACT]),
-            Entity::RECEIVED            => false
-        ];
         $contentToSave = $this->getAuthorizeWalletContentToSave($input['payment']);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -102,7 +94,7 @@ class Gateway extends Base\Gateway
 
         $this->createWalletEntityFromRefundResponse($content, $input);
 
-        if ($content[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS_CODE)
+        if ($this->isStatusCodeSuccess($content) !== true)
         {
             $this->handleRefundFailure($content);
         }
@@ -319,7 +311,7 @@ class Gateway extends Base\Gateway
         // Initially assume the gatewaySuccess if false
         $verify->gatewaySuccess = false;
 
-        if ($this->validatePaymentVerificationSuccess($content) === true)
+        if ($this->isStatusCodeSuccess($content) === true)
         {
             $verify->gatewaySuccess = true;
         }
@@ -332,16 +324,14 @@ class Gateway extends Base\Gateway
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
     }
 
-
-    // Check if the payment verification API is successfull
-    protected function validatePaymentVerificationSuccess($data)
-    {
-        return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes);
-    }
-
     //-----------------Verify request helpers end---------------
 
     //----------------General helper methods-------------------
+
+    protected function isStatusCodeSuccess($data)
+    {
+        return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes);
+    }
 
     protected function parseResponse($input)
     {
