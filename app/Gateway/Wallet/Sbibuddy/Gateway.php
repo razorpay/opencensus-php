@@ -240,14 +240,14 @@ class Gateway extends Base\Gateway
     /**
      * Handles the failures by checking the response of refund call
      *
-     * @param $data Parsed data from the response of transaction
+     * @param $data Parsed data from the response of refund
      */
-    protected function handleRefundFailure(array $data)
+    protected function handleRefundFailure(array $content)
     {
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_REFUND_FAILED,
-            $data[ResponseFields::STATUS_CODE],
-            $data[ResponseFields::ERROR_DESCRIPTION]
+            ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
+            $content[ResponseFields::STATUS_CODE],
+            $content[ResponseFields::ERROR_DESCRIPTION]
         );
     }
 
