@@ -45,8 +45,6 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $date = Carbon::now()->format('d/m/Y H:m:s');
-
         $contentToSave = $this->getAuthorizeWalletContentToSave($input['payment']);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
