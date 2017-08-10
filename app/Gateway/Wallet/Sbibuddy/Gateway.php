@@ -231,6 +231,7 @@ class Gateway extends Base\Gateway
             Entity::CONTACT               => $this->getFormattedContact($input['payment']['contact']),
             Entity::GATEWAY_MERCHANT_ID   => $this->getMerchantId(),
             Entity::STATUS_CODE           => $data[ResponseFields::STATUS_CODE],
+            Entity::ERROR_MESSAGE         => $data[ResponseFields::ERROR_DESCRIPTION],
             Entity::REFUND_ID             => $input['refund']['id'],
         ];
 
