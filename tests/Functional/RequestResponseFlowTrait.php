@@ -46,7 +46,6 @@ trait RequestResponseFlowTrait
             }
         }
         $this->processAndAssertStatusCode($data, $response);
-
         return $this->processAndAssertResponseData($data, $response);
     }
 

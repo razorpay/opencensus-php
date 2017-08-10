@@ -399,13 +399,15 @@ class PricingTest extends TestCase
 
     protected function createPricingPlan($pricingPlan = [])
     {
-        $defaultPricingPlan = array(
-            'plan_name' => 'TestPlan1',
-            'payment_method' => 'card',
-            'payment_method_type'  => 'credit',
-            'payment_network' => 'DICL',
-            'payment_issuer' => 'HDFC',
-            'percent_rate' => 1000);
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+        ];
 
         $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
 
@@ -445,37 +447,40 @@ class PricingTest extends TestCase
 
     protected function createPricingPlan2()
     {
-        $planData = array(
-            'plan_name' => 'TestPlan2',
-            'payment_method' => 'card',
+        $planData = [
+            'plan_name'           => 'TestPlan2',
+            'payment_method'      => 'card',
+            'plan_id'             => '1ycviEdCgurrFJ',
             'payment_method_type' => 'credit',
-            'payment_network' => 'DICL',
-            'payment_issuer' => 'SBIN',
-            'percent_rate' => '275',
-            'fixed_rate' => 0,
-            );
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'SBIN',
+            'percent_rate'        => '275',
+            'fixed_rate'          => 0,
+            ];
 
-        $pricingData =
-            array(
-                array(
-                    'payment_method' => 'card',
+        $pricingData = [
+                [
+                    'payment_method'      => 'card',
                     'payment_method_type' => 'credit',
-                    'payment_network' => 'DICL',
-                    'payment_issuer' => 'ICIC',
-                    'percent_rate' => 250,),
-                array(
-                    'payment_method' => 'card',
+                    'payment_network'     => 'DICL',
+                    'payment_issuer'      => 'ICIC',
+                    'percent_rate'        => 250,
+                ],
+                [
+                    'payment_method'      => 'card',
                     'payment_method_type' => 'debit',
-                    'payment_network' => 'MAES',
-                    'payment_issuer' => 'PUNB',
-                    'percent_rate' => 250,),
-                array(
-                    'payment_method' => 'card',
+                    'payment_network'     => 'MAES',
+                    'payment_issuer'      => 'PUNB',
+                    'percent_rate'        => 250,
+                ],
+                [
+                    'payment_method'      => 'card',
                     'payment_method_type' => 'credit',
-                    'payment_network' => 'MC',
-                    'payment_issuer' => 'AXIS',
-                    'fixed_rate' => 3000,)
-                );
+                    'payment_network'     => 'MC',
+                    'payment_issuer'      => 'AXIS',
+                    'fixed_rate'          => 3000,
+                ],
+            ];
 
         $plan = $this->createPricingPlan($planData);
 
