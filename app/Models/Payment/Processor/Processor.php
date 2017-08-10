@@ -597,8 +597,6 @@ class Processor
 
         $this->eventPaymentFailed();
 
-        $this->checkAndLogRiskFailures($payment, $exception);
-
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
         {
             $notifier = new Notify($this->payment);

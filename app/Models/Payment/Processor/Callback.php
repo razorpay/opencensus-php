@@ -341,6 +341,8 @@ trait Callback
 
         $this->setTwoFactorAuthAfterCallbackException($e);
 
+        $this->checkAndLogRiskFailures($this->payment, $e);
+
         if (Error\Error::hasAction($code) === false)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
