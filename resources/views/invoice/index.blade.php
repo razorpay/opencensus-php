@@ -114,9 +114,56 @@
   <body>
 
     <script>
-      var CALLBACK_URL = "/test.html",
-          CALLBACK_METHOD = "POST",
-          PAYMENT_ID;
+
+      (function (globalScope) {
+
+        var data = {!!utf8_json_encode($data)!!};
+
+        function hasRedirect () {
+
+          return data.invoice &&
+                 data.invoice.callback_url &&
+                 data.invoice.callback_method;
+        }
+
+        function redirectToCallback (callbackUrl,
+                                     callbackMethod,
+                                     requestParams) {
+
+          document.body.className = document.body.className + " " +
+                                    "has-redirect";
+
+          var form = document.createElement("form"),
+              input, key;
+
+          form.method = callbackMethod.toUpperCase();
+          form.action = callbackUrl;
+
+          for (key in requestParams) {
+
+            if (!requestParams.hasOwnProperty(key)) {
+
+              continue;
+            }
+
+            input = document.createElement("input");
+
+            input.type  = "hidden";
+            input.name  = "key";
+            input.value = requestParams[key];
+
+            form.appendChild(input);
+          }
+
+          document.body.appendChild(form);
+
+          form.submit();
+        }
+
+        globalScope.data               = data;
+        globalScope.hasRedirect        = hasRedirect;
+        globalScope.redirectToCallback = redirectToCallback;
+      }(window.RZP_DATA = window.RZP_DATA || {}));
     </script>
 
     @if (isset($data['error']))
@@ -135,7 +182,6 @@
               <div>Amount Paid<span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
               <div>Invoice ID<span>{{ $data['invoice']['id'] }}</span></div>
               <div>Payment ID<span id='pay_id'>{{ $data['invoice']['payment_id'] or '' }}</span></div>
-              <script>PAYMENT_ID = "{{ $data['invoice']['payment_id'] or '' }}";</script>
             </div>
           </div>
 
@@ -167,136 +213,142 @@
               </div>
             @endif
             <script>
-              var data = {!!utf8_json_encode($data)!!};
-              var invoiceObj = data.invoice;
-              var merchant = data.merchant;
-              var options = {
-                key: data.key_id,
-                invoice_id: invoiceObj.id,
-                amount: invoiceObj.amount,
-                description: 'Invoice #' + invoiceObj.id,
-                handler: function(response) {
-                  if (invoiceObj.partial_payment && invoiceObj.amount_due) {
-                    document.querySelector('#partial').style.display = 'block';
-                    document.querySelector('#button').style.display = 'none';
-                    document.querySelector('#partial h3').innerHTML = 'Please wait...';
-                    return location.reload();
-                  }
-                  if (data.merchant && data.merchant.name) {
-                    document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant.name;
-                  }
-                  document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
-                  document.body.className = 'paid';
+              (function (globalScope) {
 
-                  PAYMENT_ID = response.razorpay_payment_id;
-                  checkCallbackAndRedirect();
-                },
-                prefill: {
-                  contact: invoiceObj.customer_details.customer_contact,
-                  email: invoiceObj.customer_details.customer_email,
-                },
-                callback_url: location.href,
-                theme: {
-                  close_button: false
-                },
-                modal: {
-                  confirm_close: true,
-                  escape: false
-                }
-              };
-              @if (isset($data['merchant']))
-                @if ($data['merchant']['id'] === '6lGF5wNtCS8UA0')
-                  options.theme.branding = 'payzapp'
-                @elseif (isset($data['merchant']['organization']))
-                  @if (isset($data['merchant']['organization']['invoice_logo_url']))
-                    options.theme.branding = merchant.organization.invoice_logo_url;
+                var data = globalScope.data;
+
+                var invoiceObj = data.invoice;
+                var merchant = data.merchant;
+                var options = {
+                  key: data.key_id,
+                  invoice_id: invoiceObj.id,
+                  amount: invoiceObj.amount,
+                  description: 'Invoice #' + invoiceObj.id,
+                  handler: function(response) {
+
+                    if (globalScope.hasRedirect()) {
+
+                      return globalScope.redirectToCallback(
+                                                             data.invoice.callback_url,
+                                                             data.invoice.callback_method,
+                                                             response
+                                                           );
+                    }
+
+                    if (invoiceObj.partial_payment && invoiceObj.amount_due) {
+                      document.querySelector('#partial').style.display = 'block';
+                      document.querySelector('#button').style.display = 'none';
+                      document.querySelector('#partial h3').innerHTML = 'Please wait...';
+                      return location.reload();
+                    }
+                    if (data.merchant && data.merchant.name) {
+                      document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant.name;
+                    }
+                    document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
+                    document.body.className = 'paid';
+                  },
+                  prefill: {
+                    contact: invoiceObj.customer_details.customer_contact,
+                    email: invoiceObj.customer_details.customer_email,
+                  },
+                  callback_url: location.href,
+                  theme: {
+                    close_button: false
+                  },
+                  modal: {
+                    confirm_close: true,
+                    escape: false
+                  }
+                };
+                @if (isset($data['merchant']))
+                  @if ($data['merchant']['id'] === '6lGF5wNtCS8UA0')
+                    options.theme.branding = 'payzapp'
+                  @elseif (isset($data['merchant']['organization']))
+                    @if (isset($data['merchant']['organization']['invoice_logo_url']))
+                      options.theme.branding = merchant.organization.invoice_logo_url;
+                    @endif
                   @endif
                 @endif
-              @endif
-              if (merchant) {
-                if (merchant.name) {
-                  options.name = merchant.name;
+                if (merchant) {
+                  if (merchant.name) {
+                    options.name = merchant.name;
+                  }
+                  if (merchant.color) {
+                    options.theme.color = merchant.color;
+                  }
+                  if (merchant.image) {
+                    options.image = merchant.image;
+                  }
                 }
-                if (merchant.color) {
-                  options.theme.color = merchant.color;
+                var razorpay = Razorpay(options);
+                if (!data.error && invoiceObj.status !== 'partially_paid') {
+                  razorpay.open();
                 }
-                if (merchant.image) {
-                  options.image = merchant.image;
-                }
-              }
-              var razorpay = Razorpay(options);
-              if (!data.error && invoiceObj.status !== 'partially_paid') {
-                razorpay.open();
-              }
+
+              }(window.RZP_DATA = window.RZP_DATA || {}));
             </script>
           @endif
         @else
           <script src="{{$data['invoicejs_url']}}"></script>
           <div id="invoice-container"></div>
           <script type="text/javascript">
-            var data = {!!utf8_json_encode($data)!!};
-            RazorpayInvoice({
-              parentElement: "#invoice-container",
-              data: data,
-              paymentResponseHandler: function(response) {
-                if (response.razorpay_payment_id) {
-                  if (data.invoice.partial_payment) {
-                    window.location.reload()
-                  } else {
-                    let invoice = data.invoice;
-                    invoice.amount_due_formatted = '0.00';
-                    invoice.amount_paid_formatted = invoice.amount_formatted;
-                    invoice.status = 'paid';
-                    invoice.is_paid = true;
+            (function (globalScope) {
+
+              var data = globalScope.data;
+
+              RazorpayInvoice({
+                parentElement: "#invoice-container",
+                data: data,
+                paymentResponseHandler: function(response) {
+                  if (response.razorpay_payment_id) {
+
+                    if (globalScope.hasRedirect()) {
+
+                      return globalScope.redirectToCallback(
+                                                             data.invoice.callback_url,
+                                                             data.invoice.callback_method,
+                                                             response
+                                                           );
+                    }
+
+                    if (data.invoice.partial_payment) {
+                      window.location.reload()
+                    } else {
+                      let invoice = data.invoice;
+                      invoice.amount_due_formatted = '0.00';
+                      invoice.amount_paid_formatted = invoice.amount_formatted;
+                      invoice.status = 'paid';
+                      invoice.is_paid = true;
+                      this.rerender(data)
+                    }
+                    data.invoice.status = 'paid';
+                    data.invoice.is_paid = true;
                     this.rerender(data)
                   }
-                  data.invoice.status = 'paid';
-                  data.invoice.is_paid = true;
-                  this.rerender(data)
                 }
-              }
-            })
+              });
+            }(window.RZP_DATA = window.RZP_DATA || {}));
           </script>
         @endif
       </div>
     @endif
 
-    <script> 
-      function checkCallbackAndRedirect () {
+    <script>
 
-        if (!CALLBACK_URL || !CALLBACK_METHOD) {
+      (function (globalScope) {
 
-          return;
-        } 
+        var data = globalScope.data;
 
-        var hasRedirect = PAYMENT_ID &&
-                          (
-                           CALLBACK_URL !== window.location.href ||
-                           CALLBACK_METHOD !== "GET"
-                          );
+        if (globalScope.hasRedirect() &&
+            data.request_params.razorpay_payment_id) {
 
-        if (!hasRedirect) {
-
-          return;
-
+          return globalScope.redirectToCallback(
+                                                 data.invoice.callback_url,
+                                                 data.invoice.callback_method,
+                                                 data.request_params
+                                               );
         }
-
-        document.body.className = document.body.className + " " +
-                                  "has-redirect";
-
-        var form = document.createElement("form");
-        form.method = CALLBACK_METHOD;
-        form.action = CALLBACK_URL;
-
-        document.body.appendChild(form);
-
-	window.setTimeout(function () {
-
-          form.submit();
-        }, 3000);
-      }
-
-      checkCallbackAndRedirect();
+      }(window.RZP_DATA = window.RZP_DATA || {}));
     </script>
   </body>
 </html>
