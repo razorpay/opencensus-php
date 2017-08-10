@@ -8,6 +8,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -85,12 +86,14 @@ class Verify extends Base\Core
     const DEFAULT_LOCK_TIME = 900; // 15 Minutes
 
     /**
-     * We Need to Block gateway from verify after certain error codes are returned,
+     * We need to block gateway from verify after certain error codes are returned,
      * The block will be lifted after duration mentioned here
      */
     const GATEWAY_BLOCK_TIME = 900; // 15 minutes
 
-
+    /**
+     * Cache key used to store gateway block info in hash map
+     */
     const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache_key';
 
     /**
@@ -233,7 +236,6 @@ class Verify extends Base\Core
                                                                 $disabledGateways);
 
         $payments = $paymentsCollectionWithCount['payments'];
-
 
         $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
 
@@ -551,7 +553,10 @@ class Verify extends Base\Core
         return $blockedGateways;
     }
 
-    protected function authorizePayment($merchant, $payment, $e)
+    protected function authorizePayment(
+        Merchant\Entity $merchant,
+        Payment\Entity $payment,
+        Exception\PaymentVerificationException $e)
     {
         $verify = $e->getVerifyObject();
 
@@ -593,7 +598,10 @@ class Verify extends Base\Core
         return Result::AUTHORIZED;
     }
 
-    protected function updateVerifyBucket($payment, $filter, $param = 'next')
+    protected function updateVerifyBucket(
+        Payment\Entity $payment,
+        string $filter,
+        string $param = 'next')
     {
         if ($this->isBucketUpdateApplicable())
         {
