@@ -119,6 +119,44 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create(
+            'payment:failed',
+            [
+                'email'         => 'a@b.com',
+                'amount'        => 50000,
+                'contact'       => '9918899029',
+                'method'        => 'wallet',
+                'wallet'        => 'sbibuddy',
+                'gateway'       => 'wallet_sbibuddy',
+                'card_id'       => null,
+                'terminal_id'   => $this->sharedTerminal->id
+            ]);
+
+        $wallet = $this->fixtures->create('wallet', [
+            'payment_id'          => $payment->getId(),
+            'amount'              => $payment->getAmount(),
+            'wallet'              => 'sbibuddy',
+            'action'              => 'authorize',
+            'gateway_payment_id'  => null,
+            'email'               => 'a@b.com',
+            'contact'             => '+919918899029',
+            'gateway_merchant_id' => 'random_id',
+        ]);
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
+            $this->verifyPayment($id);
+        });
+    }
+
     //----------------------Helper methods-----------------------
 
     protected function runPaymentCallbackFlowWalletSbibuddy($response, & $callback = null)
