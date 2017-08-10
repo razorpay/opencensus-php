@@ -174,6 +174,7 @@ class TraceCode
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
     const TERMINAL_FILTER_RULE_MATCH                    = 'TERMINAL_FILTER_RULE_MATCH';
     const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';

@@ -33,6 +33,7 @@ class TerminalRuleFilterTest extends TestCase
         'cryptocurrency',
         'gateway',
         'wallet',
+        'shared_terminal',
     ];
 
     public function setUp()

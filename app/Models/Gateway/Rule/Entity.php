@@ -424,7 +424,7 @@ class Entity extends Base\PublicEntity
     {
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
-        return ($isApplicableForSharedTerminal === true) ? $terminal->isShared() : !$terminal->isShared();
+        return ($isApplicableForSharedTerminal === $terminal->isShared()) ? true : false;
     }
 
     protected function isValidEmiTerminal(Terminal\Entity $terminal): bool

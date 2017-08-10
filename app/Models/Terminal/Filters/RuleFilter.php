@@ -3,10 +3,11 @@
 namespace RZP\Models\Terminal\Filters;
 
 use RZP\Models\Base;
-use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Gateway\Rule;
+use RZP\Trace\Trace;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Gateway\Rule;
+use RZP\Models\Feature\Constants as Feature;
 
 class RuleFilter extends Terminal\Filter
 {
@@ -21,27 +22,39 @@ class RuleFilter extends Terminal\Filter
      */
     public function filter(array $terminals, $verbose = false)
     {
-        // Temporarily setting verbosity to true for this filter
-        $verbose = true;
-
-        $merchant = $this->input['merchant'];
-
-        if (($this->rules->isEmpty() === true) or
-            ($merchant->isFeatureEnabled(Feature::RULE_FILTER) === false))
+        try
         {
+            // Temporarily setting verbosity to true for this filter
+            $verbose = true;
+
+            $merchant = $this->input['merchant'];
+
+            if (($this->rules->isEmpty() === true) or
+                ($merchant->isFeatureEnabled(Feature::RULE_FILTER) === false))
+            {
+                return $terminals;
+            }
+
+            $ruleGroups = $this->rules->groupBy(Rule\Entity::GROUP);
+
+            $this->traceFilterRules($ruleGroups, $verbose);
+
+            foreach ($ruleGroups as $group => $rules)
+            {
+                $this->filterTerminalsForGroup($terminals, $rules, $verbose);
+            }
+
             return $terminals;
         }
-
-        $ruleGroups = $this->rules->groupBy(Rule\Entity::GROUP);
-
-        $this->traceFilterRules($ruleGroups, $verbose);
-
-        foreach ($ruleGroups as $group => $rules)
+        catch (\Throwable $e)
         {
-            $this->filterTerminalsForGroup($terminals, $rules, $verbose);
+            $this->traceException($e,
+                                  Trace::Error,
+                                  TraceCode::TERMINAL_RULE_FILTER_EXCEPTION,
+                                  [
+                                      'terminal_ids' => array_pluck($terminals, 'id'),
+                                  ]);
         }
-
-        return $terminals;
     }
 
     /**
@@ -102,7 +115,7 @@ class RuleFilter extends Terminal\Filter
 
         // In certain cases, like 2 select rules in same group selecting the same terminal
         // we can have duplicate entries. Hence running a final unique check
-        $terminals = array_values(array_unique($filteredTerminals));
+        $terminals = $this->getUniqueTerminals($filteredTerminals);
 
         $data = [
             'selected' => $selectedTerminals,
@@ -119,6 +132,25 @@ class RuleFilter extends Terminal\Filter
         {
             return ($rule->getAttribute(Rule\Entity::FILTER_TYPE) === Rule\Entity::SELECT);
         });
+    }
+
+    protected function getUniqueTerminals(array $terminals): array
+    {
+        $terminalIds = array_pluck($terminals, 'id');
+
+        $uniqueTerminals = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $uniqueTerminalIds = array_pluck($uniqueTerminals, 'id');
+
+            if (in_array($terminal->getId(), $uniqueTerminalIds, true) === false)
+            {
+                $uniqueTerminals[] = $terminal;
+            }
+        }
+
+        return $uniqueTerminals;
     }
 
     protected function traceFilterRules(Base\PublicCollection $ruleGroups, bool $verbose)

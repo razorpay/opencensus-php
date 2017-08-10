@@ -69,7 +69,23 @@ class TerminalProcessor extends Base\Core
             $options->setFailedTerminals($failedTerminalIds);
         }
 
-        if ($this->payment->isNetbanking() === true)
+        if ($this->payment->isNetbanking() === false)
+        {
+            $failedTerminalIds = $this->getFailedTerminalIds();
+
+            if (empty($failedTerminalIds) === false)
+            {
+                $this->trace->info(
+                    TraceCode::TERMINAL_USED_BEFORE,
+                    [
+                        'failed_terminals'      => $failedTerminalIds,
+                        'payment_id'            => $this->payment->getId(),
+                    ]);
+
+                $options->setFailedTerminals($failedTerminalIds);
+            }
+        }
+        else
         {
             $options->setMultiple(false);
         }
@@ -93,11 +109,6 @@ class TerminalProcessor extends Base\Core
         $pastPayments = [];
 
         $failedTerminalIds = [];
-
-        if ($this->payment->isNetbanking() === true)
-        {
-            return $failedTerminalIds;
-        }
 
         if ($orderId !== null)
         {

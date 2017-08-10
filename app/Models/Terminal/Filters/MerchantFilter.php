@@ -472,13 +472,13 @@ class MerchantFilter extends Terminal\Filter
 
         $blackListedMerchants = Merchant\Preferences::$merchantSharedTerminalsBlackList;
 
-        if (($input['payment']->isCard() === true) and
+        if (($this->input['payment']->isCard() === true) and
             (in_array($merchantId,  $blackListedMerchants, true) === true))
         {
             // For card types listed below only allow shared terminal
             // - ICIC debit cards
             // - All CITI cards
-            if ($this->isCardIssuerWhiteListed($input) === true)
+            if ($this->isCardIssuerWhiteListed($this->input) === true)
             {
                 return ($terminal->isShared() === true);
             }
@@ -490,10 +490,10 @@ class MerchantFilter extends Terminal\Filter
         return true;
     }
 
-    public function isCardIssuerWhiteListed(array $input): bool
+    public function isCardIssuerWhiteListed(): bool
     {
-        $issuer = $input['payment']->card->getIssuer();
-        $type = $input['payment']->card->getType();
+        $issuer = $this->input['payment']->card->getIssuer();
+        $type = $this->input['payment']->card->getType();
 
         return (((($issuer === Issuer::ICIC) and
                 ($type !== Type::CREDIT))) or
