@@ -1091,7 +1091,8 @@ class Entity extends Base\PublicEntity
 
     /**
      * Generates default callback method if callback URL is sent
-     * in request input.
+     * in request input. We don't want the same assigned in $defaults
+     * as we want it to be 'null' if callback_url is 'null'.
      *
      * @param array $input
      *
