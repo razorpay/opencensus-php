@@ -76,7 +76,25 @@ class RiskTest extends TestCase
      */
     public function testFailRiskEdit()
     {
-        $payment = $this->makeFraudulentPayment();
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 521729,
+                'network' => 'MasterCard',
+                'type' => 'debit',
+                'country' => null,
+                'enabled' => 0
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5217294025032720';
+
+        $data = $this->testData['testBlockedBin'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $risk = $this->getLastEntity('risk', true);
 

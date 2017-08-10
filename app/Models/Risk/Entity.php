@@ -99,6 +99,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::COMMENTS);
     }
 
+    public function getFraudType(): string
+    {
+        return $this->getAttribute(self::FRAUD_TYPE);
+    }
+
     // ----------------------End Getters ---------------------------
 
     // ----------------------Setters -------------------------------

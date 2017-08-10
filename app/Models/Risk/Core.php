@@ -28,10 +28,13 @@ class Core extends Base\Core
 
     public function edit(Entity $risk, array $input)
     {
-        $risk->edit($input);
+        //
+        // If the risk entity is already marked as confirmed,
+        // Do not allow edits
+        //
+        $risk->getValidator()->validateFraudTypeConfirmed($risk->getFraudType());
 
-        // If the source exists, validate it is manual
-        $risk->getValidator()->validateSourceManual($input[Entity::SOURCE]);
+        $risk->edit($input);
 
         $this->repo->saveOrFail($risk);
 

@@ -18,20 +18,18 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::FRAUD_TYPE    => 'sometimes|string|max:30|custom',
-        Entity::SOURCE        => 'required|string|max:30|custom',
-        Entity::RISK_SCORE    => 'sometimes|numeric',
         Entity::COMMENTS      => 'sometimes|string|filled',
         Entity::REASON        => 'required|string|max:150',
     ];
 
-    public function validateSourceManual(string $source)
+    public function validateFraudTypeConfirmed(string $fraudType)
     {
-        if ($source !== Source::MANUAL)
+        if ($fraudType == Type::CONFIRMED)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Source is not manual. Edits are only allowed for manual sources',
-                Entity::SOURCE,
-                [Entity::SOURCE => $source]);
+                'Cannot edit confirmed risk entities',
+                Entity::FRAUD_TYPE,
+                [Entity::FRAUD_TYPE => $fraudType]);
         }
     }
 

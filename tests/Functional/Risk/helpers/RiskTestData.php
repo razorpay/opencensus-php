@@ -39,7 +39,6 @@ return [
             'url' =>'/risk/%s',
             'method'  => 'PATCH',
             'content' => [
-                'source' => 'manual',
                 'reason' => 'PAYMENT_BLOCKED_BY_OPS',
                 'fraud_type' => 'confirmed',
             ],
@@ -57,9 +56,8 @@ return [
             'url' =>'/risk/%s',
             'method'  => 'PATCH',
             'content' => [
-                'source' => 'gateway',
                 'reason' => 'PAYMENT_BLOCKED_BY_GATEWAY',
-                'fraud_type' => 'confirmed',
+                'fraud_type' => 'suspected',
             ],
 
         ],
@@ -70,7 +68,7 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            'message' => 'Source is not manual. Edits are only allowed for manual sources',
+            'message' => 'Cannot edit confirmed risk entities',
         ],
     ],
 
@@ -90,6 +88,22 @@ return [
                 'fraud_type' => 'confirmed',
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testBlockedBin' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+            'public_error_description' => ''
         ],
     ],
 ];
