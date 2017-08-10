@@ -1,4 +1,4 @@
-import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
+import { getFormattedAmount } from 'rzp/utils/rzp-utils';
 
 const currencies = {
   INR: '₹',
@@ -8,7 +8,7 @@ const currencies = {
 export default ({ value, currency, className, ...attrs }) => {
   return (
     <span class={`amount ${className}`} {...attrs}>
-      {currencies[currency]} {getFixedINRAmount(value)}
+      {currencies[currency]} {getFormattedAmount(value)}
     </span>
   );
 };
