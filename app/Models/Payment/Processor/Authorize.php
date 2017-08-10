@@ -190,7 +190,13 @@ trait Authorize
                 //
                 $terminalData['exception'] = $e;
 
-                $this->updatePaymentAuthFailedAndThrowException($e);
+                $this->updatePaymentAuthFailed($e);
+
+                $internalErrorCode = $this->payment->getInternalErrorCode();
+
+                $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
+
+                throw $e;
             }
             finally
             {
@@ -233,8 +239,6 @@ trait Authorize
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
-
-        $this->checkAndLogRiskFailures($this->payment, $e);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)

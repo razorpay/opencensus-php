@@ -77,9 +77,18 @@ class Processor
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
     protected $trace;
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Terminal\Entity
+     */
     protected $terminal;
     protected $selectedTerminals;
     protected $mode;
@@ -90,7 +99,13 @@ class Processor
     protected $mutex;
     protected $request;
     protected $methods;
+    /**
+     * @var Payment\Refund\Entity
+     */
     protected $refund;
+    /**
+     * @var Order\Entity
+     */
     protected $order;
     protected $segment;
 
@@ -605,22 +620,17 @@ class Processor
         }
     }
 
-
     /**
      * Checks for risk failures and creates log in risk table
      *
-     * @param $payment Payment\Entity
-     * @param $exception Exception\BaseException
+     * @param        $payment Payment\Entity
+     * @param string $internalErrorCode
      */
-    public function checkAndLogRiskFailures(
+    public function logRiskFailureForGateway(
         Payment\Entity $payment,
-        Exception\BaseException $exception)
+        string $internalErrorCode)
     {
-        $error = $exception->getError();
-
-        $internalCode = $error->getInternalErrorCode();
-
-        $riskData = Risk\FailureCodeMap::getRiskDataForError($internalCode);
+        $riskData = Risk\FailureCodeMap::getRiskDataForError($internalErrorCode);
 
         // If it is not error raised due to fraud failure, ignore everything
         if (empty($riskData) === true)
@@ -628,7 +638,9 @@ class Processor
             return;
         }
 
-        (new Risk\Core)->logPaymentForSource($payment, Risk\Source::GATEWAY, $riskData);
+        $source = $riskData[Risk\Entity::SOURCE];
+
+        (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)

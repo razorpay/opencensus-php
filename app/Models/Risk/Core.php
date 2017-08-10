@@ -60,6 +60,16 @@ class Core extends Base\Core
     protected function logPaymentForGateway(
         Payment\Entity $payment, array $data)
     {
+        // Source is present as part of the data
+
+        return $this->create($payment, $data);
+    }
+
+    protected function logPaymentForBank(
+        Payment\Entity $payment, array $data)
+    {
+        // Source is present as part of the data
+
         return $this->create($payment, $data);
     }
 
