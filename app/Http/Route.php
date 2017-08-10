@@ -578,7 +578,8 @@ final class Route
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
 
         // Dispute routes
-        'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
+        'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
     ];
 
     public static $public = [
@@ -968,6 +969,7 @@ final class Route
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
         'payment_dispute_create',
+        'dispute_edit',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
     ];

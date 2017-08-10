@@ -152,6 +152,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REASON_CODE, $code);
     }
 
+    public function setResolvedAt(int $time)
+    {
+        $this->setAttribute(self::RESOLVED_AT, $time);
+    }
+
+    public function setExpiresOn(int $time)
+    {
+        $this->setAttribute(self::EXPIRES_ON, $time);
+    }
+
     // ----------------------- Setters Ends-------------------------------------
 
     // ----------------------- Getters -----------------------------------------
@@ -174,6 +184,21 @@ class Entity extends Base\PublicEntity
     protected function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getExpiresOn()
+    {
+        return $this->getAttribute(self::EXPIRES_ON);
+    }
+
+    public function getResolvedAt()
+    {
+        return $this->getAttribute(self::RESOLVED_AT);
+    }
+
+    public function getRaisedOn()
+    {
+        return $this->getAttribute(self::RAISED_ON);
     }
 
     // ----------------------- Getters Ends-------------------------------------
@@ -202,5 +227,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Reason\Entity::class);
     }
 
-    // --------------- Relation to other entity section ends -------------------
+    // --------------- Relation to other entity section ends --------------------
+
+    public function isClosed(): bool
+    {
+        return (in_array($this->getStatus(), Status::getClosedStatuses(), true) === true);
+    }
 }

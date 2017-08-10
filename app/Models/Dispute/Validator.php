@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
         Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
-        Entity::PHASE                  => 'required|string',
+        Entity::PHASE                  => 'required|string|custom',
         Entity::RAISED_ON              => 'required|epoch',
         Entity::EXPIRES_ON             => 'required|epoch',
         Entity::REASON_ID              => 'required|alpha_num|size:14',
@@ -20,17 +20,35 @@ class Validator extends Base\Validator
         Entity::DEDUCT_AT_ONSET        => 'required|boolean',
     ];
 
-    protected static $createValidators = [
-        Entity::PHASE,
+    protected static $editRules = [
+        Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
+        Entity::STATUS                 => 'sometimes|string|custom',
+        Entity::EXPIRES_ON             => 'sometimes|epoch',
     ];
 
-    protected function validatePhase(array $input)
+    protected function validatePhase(string $attribute, string $value)
     {
-        if (Phase::exists($input[Entity::PHASE]) === false)
+        if (Phase::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid dispute phase: '.$input[Entity::PHASE]);
+                'Not a valid dispute phase: '.$value);
         }
+    }
+
+    protected function validateStatus(string $attribute, string $value)
+    {
+        if (Status::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid dispute status');
+        }
+
+        if ($this->entity->isClosed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE);
+        }
+
     }
 
     public function validatePaymentForDispute(array $input, Payment\Entity $payment)

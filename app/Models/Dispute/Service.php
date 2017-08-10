@@ -16,7 +16,16 @@ class Service extends Base\Service
 
         $reason = $this->repo->dispute_reason->findOrFail($input[Entity::REASON_ID]);
 
-        $dispute = $this->core()->create($input, $payment, $reason);
+        $dispute = $this->core()->create($payment, $reason, $input);
+
+        return $dispute->toArrayPublic();
+    }
+
+    public function update(string $id, array $input): array
+    {
+        $dispute = $this->repo->dispute->findByPublicId($id);
+
+        $dispute = $this->core()->update($dispute, $input);
 
         return $dispute->toArrayPublic();
     }
