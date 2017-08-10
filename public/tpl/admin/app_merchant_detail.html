@@ -268,7 +268,7 @@
             </div>
           </div>
 
-        <div class="list-group-item" ng-show="referer!=false">
+        <div class="list-group-item" ng-show="referer!==''">
           <span class="pull-right">{{referer}}</span>
           Referer
         </div>
@@ -1945,7 +1945,7 @@
   <div class="modal-footer">
       <div>You can also type other referral sources instead of merchant id</div>
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(referral)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-disabled="referral===''" ng-click="ok(referral)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="featureModalContent.html">
