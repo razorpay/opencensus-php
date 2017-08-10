@@ -7,6 +7,7 @@ use Excel;
 use Mockery;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Terminal\Options;
@@ -236,7 +237,7 @@ class NetbankingIndusindGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
     }
@@ -246,7 +247,7 @@ class NetbankingIndusindGatewayTest extends TestCase
         // Set the transactions to be reconciled today
         $payments = $this->getEntities('payment', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
 
         foreach ($payments['items'] as $payment)
         {

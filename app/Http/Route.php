@@ -139,6 +139,8 @@ final class Route
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
+        'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
+        'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -818,7 +820,6 @@ final class Route
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_create_plan',
         'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
@@ -954,6 +955,8 @@ final class Route
         'gateway_update_rule',
         'gateway_delete_rule',
         'merchant_actions',
+        'merchant_tag_add',
+        'merchant_tag_delete',
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
@@ -1116,6 +1119,7 @@ final class Route
         'adj_add',
         'payment_authorize_refund',
         'admin_change_password',
+        'pricing_create_plan',
     ];
 
     public static $routePermission = [
@@ -1235,6 +1239,7 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
     ];
 
     public static $direct = [

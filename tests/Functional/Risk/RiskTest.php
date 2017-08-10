@@ -71,9 +71,6 @@ class RiskTest extends TestCase
         $this->startTest();
     }
 
-    /**
-     * Tests if the edit is not by source manual, it should raise an error
-     */
     public function testFailRiskEdit()
     {
         $this->fixtures->create(

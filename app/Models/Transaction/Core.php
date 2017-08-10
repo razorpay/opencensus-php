@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
@@ -1002,7 +1003,7 @@ class Core extends Base\Core
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 

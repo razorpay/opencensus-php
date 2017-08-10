@@ -3,6 +3,7 @@
 namespace RZP\Models\Promotion;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Schedule;
@@ -107,7 +108,7 @@ class Core extends Base\Core
     {
        $anchor = null;
 
-       $day = Carbon::now('Asia/Kolkata');
+       $day = Carbon::now(Timezone::IST);
 
        $anchor = $day->{Anchor::CHECKS[$period]};
 

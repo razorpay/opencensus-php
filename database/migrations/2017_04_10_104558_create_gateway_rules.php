@@ -27,10 +27,24 @@ class CreateGatewayRules extends Migration
 
             $table->string(Rule::GATEWAY, 50);
 
+            $table->string(Rule::TYPE, 10);
+
+            $table->string(Rule::GROUP, 50)
+                  ->nullable();
+
+            $table->string(Rule::FILTER_TYPE, 10)
+                  ->nullable();
+
             $table->integer(Rule::LOAD)
-                  ->default(0);
+                  ->nullable();
 
             $table->string(Rule::GATEWAY_ACQUIRER)
+                  ->nullable();
+
+            $table->string(Rule::NETWORK_CATEGORY)
+                  ->nullable();
+
+            $table->tinyInteger(Rule::SHARED_TERMINAL)
                   ->nullable();
 
             $table->tinyInteger(Rule::INTERNATIONAL)
@@ -47,6 +61,29 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::ISSUER)
                   ->nullable();
 
+            $table->integer(Rule::MIN_AMOUNT)
+                  ->default(0)
+                  ->unsigned();
+
+            $table->integer(Rule::MAX_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->text(Rule::IINS)
+                  ->nullable();
+
+            $table->string(Rule::CURRENCY, 3)
+                  ->nullable();
+
+            $table->tinyInteger(Rule::EMI_DURATION)
+                  ->nullable();
+
+            $table->string(Rule::EMI_SUBVENTION, 20)
+                  ->nullable();
+
+            $table->string(Merchant::CATEGORY2)
+                  ->nullable();
+
             $table->integer(Rule::CREATED_AT);
 
             $table->integer(Rule::UPDATED_AT);
@@ -54,9 +91,20 @@ class CreateGatewayRules extends Migration
             $table->integer(Rule::DELETED_AT)
                   ->nullable();
 
+            $table->index(Rule::TYPE);
+            $table->index(Rule::FILTER_TYPE);
+            $table->index(Rule::GROUP);
+            $table->index(Rule::CURRENCY);
+            $table->index(Rule::MIN_AMOUNT);
+            $table->index(Rule::MAX_AMOUNT);
+            $table->index(Rule::EMI_DURATION);
+            $table->index(Rule::EMI_SUBVENTION);
             $table->index(Rule::GATEWAY);
             $table->index(Rule::GATEWAY_ACQUIRER);
             $table->index(Rule::INTERNATIONAL);
+            $table->index(Rule::SHARED_TERMINAL);
+            $table->index(Rule::NETWORK_CATEGORY);
+            $table->index(Rule::CATEGORY2);
             $table->index(Rule::NETWORK);
             $table->index(Rule::METHOD);
             $table->index(Rule::METHOD_TYPE);

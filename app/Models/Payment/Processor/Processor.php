@@ -1306,7 +1306,7 @@ class Processor
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $this->trace->info(
             TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,

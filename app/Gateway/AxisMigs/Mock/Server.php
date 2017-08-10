@@ -3,6 +3,7 @@
 namespace RZP\Gateway\AxisMigs\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
@@ -17,7 +18,7 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $date = Carbon::today('Asia/Kolkata')->format('Ymd');
+        $date = Carbon::today(Timezone::IST)->format('Ymd');
 
         $content = array(
             'vpc_AVSRequestCode'    => 'Z',
@@ -58,7 +59,7 @@ class Server extends Base\Mock\Server
         $this->validateAuthenticateInput($input);
 
         // Format - YYYYMMDD
-        $date = Carbon::today('Asia/Kolkata')->format('Ymd');
+        $date = Carbon::today(Timezone::IST)->format('Ymd');
 
         $content = array(
             'vpc_3DSECI'            => '01',

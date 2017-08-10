@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -1446,7 +1447,7 @@ class InvoiceTest extends TestCase
         $this->createOrder();
         $this->fixtures->create('invoice');
 
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addDays(18);
         Carbon::setTestNow($currentTime);
 

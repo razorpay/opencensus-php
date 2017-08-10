@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Lib\PhoneBook;
 
 use RZP\Exception;
@@ -1402,7 +1403,7 @@ class Entity extends Base\PublicEntity
 
     public function getDaysSinceAuthorized()
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
@@ -1853,7 +1854,7 @@ class Entity extends Base\PublicEntity
 
         $data[self::FORMATTED_AMOUNT] = $this->getFormattedAmount();
 
-        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata');
+        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), Timezone::IST);
 
         $data[self::FORMATTED_CREATED_AT] = $createdAt->format(self::HOSTED_TIME_FORMAT);
 

@@ -112,6 +112,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('eventManager', function($app)
+        {
+            return new HarvesterClient($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -158,6 +163,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'elfin',
             'segment',
+            'eventManager',
             'upi.client',
             'webhook.inferno',
             'exchange',

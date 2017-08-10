@@ -54,42 +54,32 @@ class Authenticate
         if ((in_array($route, Route::$internal, true)) or
             (in_array($route, Route::$admin, true)))
         {
+            $this->throttleRequests(Type::ADMIN_AUTH);
+
             $ret = $ba->appAuth();
         }
         else if (in_array($route, Route::$private, true))
         {
-            $this->throttleRequests(Type::PRIVATE_AUTH);
-
             $ret = $ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true))
         {
-            $this->throttleRequests(Type::PUBLIC_AUTH);
-
             $ret = $ba->publicAuth();
         }
         else if (in_array($route, Route::$publicCallback, true))
         {
-            $this->throttleRequests(Type::PUBLIC_AUTH);
-
             $ret = $ba->publicCallbackAuth();
         }
         else if (in_array($route, Route::$proxy, true))
         {
-            $this->throttleRequests(Type::PROXY_AUTH);
-
             $ret = $ba->proxyAuth();
         }
         else if (in_array($route, Route::$device, true))
         {
-            $this->throttleRequests(Type::DEVICE_AUTH);
-
             $ret = $ba->deviceAuth();
         }
         else if (in_array($route, Route::$direct, true))
         {
-            $this->throttleRequests(Type::DIRECT_AUTH);
-
             ; // $ret = $ba->proxyAuth();
         }
         else
@@ -117,8 +107,8 @@ class Authenticate
      */
     private function throttleRequests(string $auth)
     {
-        // $throttle = new Throttle($this->app);
+        $throttle = new Throttle($this->app);
 
-        // $throttle->process($auth);
+        $throttle->process($auth);
     }
 }

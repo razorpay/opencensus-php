@@ -16,6 +16,8 @@ use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
 {
+    use \Conner\Tagging\Taggable;
+
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
@@ -198,6 +200,15 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE       => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+    ];
+
+    protected $eventFields = [
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::WEBSITE,
+        self::CATEGORY,
+        self::CATEGORY2,
     ];
 
     protected $dates = [
@@ -996,7 +1007,7 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function toArrayReport() : array
+    public function toArrayReport(): array
     {
         $data = parent::toArrayReport();
 
@@ -1083,5 +1094,27 @@ class Entity extends Base\PublicEntity
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
         return $attributes;
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        if ($this->merchantDetail !== null)
+        {
+            $merchantDetailAttributes = $this->merchantDetail->toArrayEvent();
+
+            $merchantAttributes = array_merge($merchantAttributes, $merchantDetailAttributes);
+        }
+
+        return $merchantAttributes;
     }
 }

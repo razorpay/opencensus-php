@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use DB;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
@@ -373,14 +374,14 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']);
     }
 
     protected function addWhereClauseForMinAndMaxTime(array $minMaxArray, array & $whereConditions)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($minMaxArray['max'] !== null)
         {
@@ -405,7 +406,7 @@ class Repository extends Base\Repository
                                                     array $verifyBoundaries,
                                                     BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $whereConditions = [];
 
@@ -673,16 +674,16 @@ class Repository extends Base\Repository
 
     public function getYesterdayVolume()
     {
-        $yesterday = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $today = Carbon::today('Asia/Kolkata')->timestamp;
+        $yesterday = Carbon::yesterday(Timezone::IST)->timestamp;
+        $today = Carbon::today(Timezone::IST)->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
     }
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
@@ -708,8 +709,8 @@ class Repository extends Base\Repository
 
     public function getYesterdayTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp;
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -735,8 +736,8 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp;
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -888,7 +889,7 @@ class Repository extends Base\Repository
         // For optimization purposes we only pick payments in last 10 days. This picked
         // '10 days' is sufficient filter logically.
 
-        $nowMinus10Days = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
         $results = $this->newQuery()
                         ->join($orderTable, $orderId, '=', $paymentOrderId)

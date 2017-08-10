@@ -2417,7 +2417,7 @@ trait Authorize
 
         if ($wasFailed)
         {
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
 

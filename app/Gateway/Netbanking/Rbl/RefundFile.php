@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
@@ -40,7 +41,7 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
+        $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
@@ -67,12 +68,12 @@ class RefundFile extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                         $row['payment']['created_at'],
-                        'Asia/Kolkata')
+                        Timezone::IST)
                         ->format('m-d-y h:m:s');
 
             $refundDate = Carbon::createFromTimestamp(
                               $row['refund']['created_at'],
-                              'Asia/Kolkata')
+                              Timezone::IST)
                               ->format('m-d-y h:m:s');
 
             $data[] = [

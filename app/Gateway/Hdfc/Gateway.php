@@ -332,6 +332,8 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGatewayFields($input, $network);
 
+        $this->validateParesStatusIfApplicable($input);
+
         $this->id = $input['payment']['id'];
 
         $this->model = $this->repo->findByGatewayTransactionIdOrFail(
@@ -805,4 +807,38 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function validateParesStatusIfApplicable(array $input)
+    {
+        if (isset($input['gateway']['PaRes']) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $PaRes = $input['gateway']['PaRes'];
+
+            $PaRes = base64_decode($PaRes);
+            $PaRes = gzinflate(substr($PaRes, 2));
+
+            $PaResObject = simplexml_load_string($PaRes);
+            $PaRes = json_decode(json_encode($PaResObject), true);
+        }
+        catch (\Throwable $e)
+        {
+            // Trace and ignore the exeption
+            $this->trace->traceException($e);
+
+            return;
+        }
+
+        // We are doing this only for N right now as Y, A and U
+        // depends on the processor
+        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
+            ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
+        }
+    }
 }

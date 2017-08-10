@@ -49,7 +49,7 @@ class Core extends Base\Core
 
         $diff->build($differInput);
 
-        $diff[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp;
+        $diff[Entity::CREATED_AT] = Carbon::now()->getTimestamp();
 
         $diff = $this->makerAction($diff);
 

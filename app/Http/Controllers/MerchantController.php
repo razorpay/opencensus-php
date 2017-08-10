@@ -723,6 +723,22 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function addTags($id)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->addTags($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteTag($id, $tagName)
+    {
+        $response = (new Merchant\Service)->deleteTag($id, $tagName);
+
+        return ApiResponse::json($response);
+    }
+
     public function markGratisTransactionPostpaid()
     {
         $input = Request::all();

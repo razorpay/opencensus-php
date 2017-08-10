@@ -293,6 +293,30 @@ return [
         ],
     ],
 
+    'testRupayFailedPayment' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '6080757792005576',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'gateway_error_code'  => Hdfc\ErrorCode::PY20007,
+        ],
+    ],
+
     'testMockOnLiveMode' => [
         'request' => [
             'content' => []

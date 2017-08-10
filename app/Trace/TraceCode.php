@@ -522,6 +522,7 @@ class TraceCode
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -571,6 +572,7 @@ class TraceCode
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
@@ -654,14 +656,15 @@ class TraceCode
     const FORCE_AUTH_FAILED_PAYMENT                     = 'FORCE_AUTH_FAILED_PAYMENT';
     const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS       = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
     const PAYMENT_ALREADY_AUTHORIZED                    = 'PAYMENT_ALREADY_AUTHORIZED';
-    const LUMBERJACK_TRACK_FAILED                       = 'LUMBERJACK_TRACK_FAILED';
-    const LUMBERJACK_CONTEXT_FETCH_FAILED               = 'LUMBERJACK_CONTEXT_FETCH_FAILED';
-    const LUMBERJACK_EMPTY_EVENTS                       = 'LUMBERJACK_EMPTY_EVENTS';
-    const LUMBERJACK_POST_FAILED                        = 'LUMBERJACK_POST_FAILED';
-    const LUMBERJACK_QUEUE_SEND_FAILED                  = 'LUMBERJACK_QUEUE_SEND_FAILED';
-    const LUMBERJACK_MISSING_PAYMENT_PROPERTY           = 'LUMBERJACK_MISSING_PAYMENT_PROPERTY';
-    const LUMBERJACK_MISSING_TERMINAL_DATA              = 'LUMBERJACK_MISSING_TERMINAL_DATA';
-    const LUMBERJACK_MISSING_PAYMENT_CONTEXT            = 'LUMBERJACK_MISSING_PAYMENT_CONTEXT';
+
+    // Trace codes for events
+    const EVENT_TRACK_FAILED                            = 'EVENT_TRACK_FAILED';
+    const EVENT_CONTEXT_FETCH_FAILED                    = 'EVENT_CONTEXT_FETCH_FAILED';
+    const EVENT_MISSING_PAYMENT_PROPERTY                = 'EVENT_MISSING_PAYMENT_PROPERTY';
+    const EVENT_MISSING_TERMINAL_DATA                   = 'EVENT_MISSING_TERMINAL_DATA';
+    const EVENT_MISSING_PAYMENT_CONTEXT                 = 'EVENT_MISSING_PAYMENT_CONTEXT';
+    const EVENT_QUEUE_SEND_FAILED                       = 'EVENT_QUEUE_SEND_FAILED';
+    const EVENT_POST_FAILED                             = 'EVENT_POST_FAILED';
 
     // Trace code for features
 

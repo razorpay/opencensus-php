@@ -4,6 +4,7 @@ namespace RZP\Gateway\AxisMigs;
 
 use Str;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
@@ -415,7 +416,7 @@ class Gateway extends Base\Gateway
         //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] > Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->timestamp)
             {
                 return false;
             }
