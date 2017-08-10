@@ -404,6 +404,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,
