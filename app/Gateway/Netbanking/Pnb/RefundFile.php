@@ -25,7 +25,7 @@ class RefundFile extends Base\RefundFile
             FileStore\Format::TXT,
             $fileText,
             $fileName,
-            FileStore\Type::PNB_NETBANKING_REFUNDS);
+            FileStore\Type::PNB_NETBANKING_REFUND);
 
         $file = $creator->get();
 
@@ -48,9 +48,9 @@ class RefundFile extends Base\RefundFile
     {
         $txt = '';
 
-        foreach ($date as $row)
+        foreach ($data as $row)
         {
-            $txt = join($row , '');
+            $txt .= join($row , '');
 
             $txt .= "\r\n";
         }
@@ -75,7 +75,7 @@ class RefundFile extends Base\RefundFile
                 $row['payment']['currency'],
                 Constants::SERVICE_OUTLET,
                 Constants::CREDIT,
-                str_pad($amount, 17, STR_PAD_RIGHT),
+                str_pad($amount, 17, ' ', STR_PAD_LEFT),
                 Constants::REFUND,
                 $date,
             ];
@@ -89,7 +89,7 @@ class RefundFile extends Base\RefundFile
             'INR',
             '0120000',
             Constants::DEBIT,
-            str_pad($totalAmount, 17, STR_PAD_RIGHT),
+            str_pad($amount, 17, ' ', STR_PAD_LEFT),
             Constants::REFUND,
         ];
 

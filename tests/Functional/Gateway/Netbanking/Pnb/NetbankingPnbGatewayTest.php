@@ -2,8 +2,13 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Pnb;
 
+use Mail;
+use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingPnbGatewayTest extends TestCase
@@ -129,6 +134,70 @@ class NetbankingPnbGatewayTest extends TestCase
         });
     }
 
+    public function testRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals($refund['amount'], 50000);
+    }
+
+    public function testRefundPartial()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $this->assertEquals($refund['amount'], 10000);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_refunded'], 10000);
+    }
+
+    public function testRefundFailed()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $refund = $this->refundPayment($payment['id'], 100000);
+            });
+    }
+
+    public function testDailyFileGeneration()
+    {
+        Mail::fake();
+
+        $payments = $this->createPaymentsToClaim();
+
+        $this->createRefundForFileGeneration($payments);
+
+        $data = $this->generateRefundsExcelForNB('PUNB');
+
+        $this->checkRefundTextData($data);
+
+        $this->checkMailQueue();
+    }
+
+    public function testDailyFileGenerationEmpty()
+    {
+        Mail::fake();
+
+        $payments = $this->createPaymentsToClaim();
+
+        $data = $this->generateRefundsExcelForNb('PUNB');
+
+        $this->checkEmptyRefundTextData($data);
+
+        $this->checkEmptyRefundsMailQueue();
+    }
+
     protected function mockFailedVerifyResponse()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -158,6 +227,134 @@ class NetbankingPnbGatewayTest extends TestCase
             $gatewayPayment = $this->getLastEntity('netbanking', true);
 
             $content['txns'][0]['txnid'] = $gatewayPayment['bank_payment_id'];
+        });
+    }
+
+    protected function createRefundForFileGeneration($payments)
+    {
+        // Refund a payment
+        $lastPayment = $payments['items'][2];
+
+        // Refunding 100 rupees followed by 400
+        $this->refundPayment($lastPayment['id'], 10000);
+
+        $this->refundPayment($lastPayment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(45)->timestamp;
+
+        // Mark refunds as created yesterday
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+    }
+
+    protected function createPaymentsToClaim()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
+                                                      ->addMinutes(30)
+                                                      ->timestamp;
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['created_at'    => $createdAt,
+                                                              'authorized_at' => $createdAt + 10,
+                                                              'captured_at'   => $createdAt + 20]);
+        }
+
+        return $payments;
+    }
+
+    protected function checkRefundTextData($data)
+    {
+        $this->assertTrue(file_exists($data['netbanking_pnb']['refunds']));
+
+        $this->assertTrue(file_exists($data['netbanking_pnb']['claims']));
+
+        $refundsFileContents = file($data['netbanking_pnb']['refunds']);
+
+        $claimsFileContents = file($data['netbanking_pnb']['claims']);
+
+        // 2 refunds + 1 total line
+        assert(count($refundsFileContents) === 3);
+
+        assert(count($claimsFileContents) === 3);
+    }
+
+    protected function checkEmptyRefundTextData($data)
+    {
+        $this->assertTrue(file_exists($data['netbanking_pnb']['refunds']) === false);
+
+        $this->assertTrue(file_exists($data['netbanking_pnb']['claims']));
+
+        $claimsFileContents = file($data['netbanking_pnb']['claims']);
+
+        // 3 claims
+        assert(count($claimsFileContents) === 3);
+    }
+
+    protected function checkMailQueue()
+    {
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Pnb Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 500,
+                    'total'   => 1000,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 3,
+                    'total'   => 6
+                ]
+        ];
+
+        // Mail catch with amount and refund everywhere
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+    }
+
+    protected function checkEmptyRefundsMailQueue()
+    {
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Pnb Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 0,
+                    'total'   => 1500,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 0,
+                    'total'   => 3
+                ]
+        ];
+
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
         });
     }
 }

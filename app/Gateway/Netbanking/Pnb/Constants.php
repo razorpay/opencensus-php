@@ -13,6 +13,7 @@ class Constants
 
     const CREDIT         = 'C';
     const DEBIT          = 'D';
+    const PAYMENT        = 'Payment';
     const REFUND         = 'Refund';
     const SERVICE_OUTLET = '0120000';
 }

@@ -459,6 +459,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::PUNB,
     ];
 
     /**
@@ -506,6 +507,7 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**

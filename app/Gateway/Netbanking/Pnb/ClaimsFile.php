@@ -48,9 +48,9 @@ class ClaimsFile extends Base\RefundFile
     {
         $txt = '';
 
-        foreach ($date as $row)
+        foreach ($data as $row)
         {
-            $txt = join($row , '');
+            $txt .= join($row , '');
 
             $txt .= "\r\n";
         }
@@ -70,17 +70,27 @@ class ClaimsFile extends Base\RefundFile
                     $row['payment']['created_at'], Timezone::IST)
                     ->format('dmYHis');
 
-            $type = (isset($row['payment']['refund'])) ? Constants::CREDIT : Constants::DEBIT;
-
-            $amount = $row['refund']['amount'] / 100;
+            if (isset($row['payment']['refund']) === true)
+            {
+                $type = Constants::CREDIT;
+                $amount = $row['refund']['amount'] / 100;
+                $txnDetails = Constants::PAYMENT;
+            }
+            else
+            {
+                $type = Constants::DEBIT;
+                $amount = $row['payment']['amount'] / 100;
+                $txnDetails = Constants::REFUND;
+            }
 
             $data[] = [
                 $row['gateway']['account_number'],
                 $row['payment']['currency'],
                 Constants::SERVICE_OUTLET,
                 $type,
-                $str_pad($amount, 17, STR_PAD_RIGHT),
-                $date
+                str_pad($amount, 17, ' ', STR_PAD_LEFT),
+                $txnDetails,
+                $date,
             ];
 
             $totalAmount += $amount;
