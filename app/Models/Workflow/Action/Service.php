@@ -10,6 +10,21 @@ class Service extends Base\Service
 {
     protected $admin;
 
+    const ACTION_FUNCTION_MAPPING = [
+            "maker" => [
+                "all"     => "getActionsByOrg",
+                "closed"  => "getClosedActionsByMaker",
+                "open"    => "getActionsByOrg",
+                "maker"   => "getActionsByMaker",
+            ],
+            "checker" => [
+                "all"     => "getActionsForChecker",
+            ],
+            "admin_checked" => [
+                "all"     => "getActionsCheckedByAdmin",
+            ],
+        ];
+
     public function __construct()
     {
         parent::__construct();
@@ -37,23 +52,18 @@ class Service extends Base\Service
     {
         $orgId = $this->admin->getOrgId();
 
-        /* $duty variable here can have options as maker/checker and it defines
-        which actions to be fetch for the admin who is requesting for actions,
-        if we provide duty=checker then all the actions which are open and has
-        to be checked by the admin who is requesting for the actions will be returned,
-        if we provide duty=maker then all the actions which are made by the admin
-        who is requesting the actions will be returned.
-        if we provide duty=admin_checked then all the actions till now performed by the
-        admin who is requesting will be returned by the function.
-        */
+        /* $duty can be maker/checker/admin_checked
+        actions will be fetched based on duty and type
+        type can be all/closed/open etc */
         $duty = $input['duty'] ?? 'default';
         $type = $input['type'] ?? 'all';
 
-        $functionMapping = $this->getfetchActionsFunctionMapping();
-
-        if (isset($functionMapping[$duty][$type]))
+        if (isset(self::ACTION_FUNCTION_MAPPING[$duty][$type]))
         {
-            $actions = call_user_func_array([$this, $functionMapping[$duty][$type]], [$input]);
+            // Function name which needs to be called to return actions based on duty and maker.
+            $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
+
+            $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
         }
         else
         {
@@ -241,29 +251,5 @@ class Service extends Base\Service
             $this->admin->getId(), $this->admin->getOrgId(), $relations);
 
         return $actions;
-    }
-
-    /**
-     * will return a list which will define mapping of duty and type to functions.
-     *
-     */
-    public function getfetchActionsFunctionMapping()
-    {
-        $functionMapping = [
-            "maker" => [
-                "all"     => "getActionsByOrg",
-                "closed"  => "getClosedActionsByMaker",
-                "open"    => "getActionsByOrg",
-                "maker"   => "getActionsByMaker",
-            ],
-            "checker" => [
-                "all"     => "getActionsForChecker",
-            ],
-            "admin_checked" => [
-                "all"     => "getActionsCheckedByAdmin",
-            ],
-        ];
-
-        return $functionMapping;
     }
 }
