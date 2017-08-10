@@ -674,6 +674,8 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
+        $verifyAuthResponse = null;
+
         if($verifyResponse === null)
         {
             // Verify request failed, as FirstData API returned successfully flag set to false
@@ -715,6 +717,11 @@ class Gateway extends Base\Gateway
                     // state. So we avoid the second transaction, and break after finding the first.
                     break;
                 }
+            }
+
+            if ($verifyAuthResponse === null)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
             }
 
             // A example of the verify response structure can be found
@@ -841,6 +848,11 @@ class Gateway extends Base\Gateway
                 'code'    => $response->status_code,
             ]
         );
+
+        if ($response->body === null)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
 
         $xml = simplexml_load_string(trim($response->body));
 
