@@ -36,6 +36,7 @@ class Workflow
         Permission::EDIT_MERCHANT_ENABLE_LIVE,
         Permission::EDIT_MERCHANT_DISABLE_LIVE,
         Permission::DELETE_MERCHANT_FEATURES,
+        Permission::CREATE_PRICING_PLAN,
     ];
 
     protected $app;
