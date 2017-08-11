@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
+import { Link } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import Alert from 'rzp/ui/Forms/Alert';
 import InputField from 'rzp/ui/Forms/InputField';
@@ -41,8 +42,16 @@ export default class AddFundsContainer extends Component {
     ]).catch(error => {
       this.setState({
         status: {
-          type: 'error',
-          message: error,
+          type: 'info',
+          message: (
+            <span>
+              API keys need to be generated before adding funds.
+              {' '}
+              <span>
+                Keys can be generated <Link to="/keys"><u>here.</u></Link>
+              </span>
+            </span>
+          ),
         },
       });
     });
