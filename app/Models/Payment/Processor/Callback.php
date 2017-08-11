@@ -337,11 +337,13 @@ trait Callback
                 ]);
         }
 
-        $code = $e->getError()->getInternalErrorCode();
+        $internalErrorCode = $e->getError()->getInternalErrorCode();
 
         $this->setTwoFactorAuthAfterCallbackException($e);
 
-        if (Error\Error::hasAction($code) === false)
+        $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
+
+        if (Error\Error::hasAction($internalErrorCode) === false)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
@@ -350,7 +352,7 @@ trait Callback
             $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
         }
 
-        switch ($code)
+        switch ($internalErrorCode)
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();

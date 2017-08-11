@@ -34,6 +34,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
+use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\GatewayToken;
@@ -189,7 +190,17 @@ trait Authorize
                 //
                 $terminalData['exception'] = $e;
 
-                $this->updatePaymentAuthFailedAndThrowException($e);
+                $this->updatePaymentAuthFailed($e);
+
+                $internalErrorCode = $payment->getInternalErrorCode();
+
+                // TODO: Remove this after testing on prod
+                if ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT)
+                {
+                    $this->logRiskFailureForGateway($payment, $internalErrorCode);
+                }
+
+                throw $e;
             }
             finally
             {
@@ -220,13 +231,18 @@ trait Authorize
                 ($e->getSafeRetry() === true));
     }
 
-    protected function updatePaymentAuthFailedAndThrowException($e)
+    protected function updatePaymentAuthFailedAndThrowException(Exception\BaseException $e)
+    {
+        $this->updatePaymentAuthFailed($e);
+
+        throw $e;
+    }
+
+    protected function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
-
-        throw $e;
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -958,7 +974,7 @@ trait Authorize
         {
             $this->validateFraudDetection($payment);
 
-            $this->validateBlockedCard($payment->card);
+            $this->validateBlockedCard($payment);
         }
     }
 
@@ -975,14 +991,35 @@ trait Authorize
         }
     }
 
-    protected function validateBlockedCard(Card\Entity $card)
+    protected function validateBlockedCard(Payment\Entity $payment)
     {
+        if ($payment->hasCard() === false)
+        {
+            return;
+        }
+
+        $card = $payment->card;
+
         if ($card->isBlocked() === true)
         {
-            $e = new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'card_id'    => $card->getId(),
+            ];
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $e = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD, null, $data);
+
+            $this->updatePaymentAuthFailed($e);
+
+            $riskData = [
+                Risk\Entity::REASON => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+                Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
+            ];
+
+            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::INTERNAL, $riskData);
+
+            throw $e;
         }
     }
 
