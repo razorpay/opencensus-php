@@ -55,6 +55,7 @@ class Validator
         Orchestrator::AXIS               => "/Please find attached the settlement file for today."
                                             . " You net amount settled is/",
         Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
+        Orchestrator::VIRTUAL_ACC_KOTAK  => "/Dear Sir,\n\nPlease find the report.\n\nregards/",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -179,11 +180,15 @@ class Validator
                             $emailDetails[Orchestrator::SUBJECT],
                             Orchestrator::VIRTUAL_ACC_KOTAK);
 
+        $validBody = $this->validateEmailBody(
+                            $emailDetails[Orchestrator::BODY],
+                            Orchestrator::VIRTUAL_ACC_KOTAK);
+
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
             Orchestrator::VIRTUAL_ACC_KOTAK);
 
-        return ($validSubject and $validAttachmentCount);
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateAxisEmail(array $emailDetails)

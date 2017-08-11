@@ -7,9 +7,9 @@ use RZP\Reconciliator\Base;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const TXN_REF_NO              = 'txn_ref_no';
-    const AMOUNT                  = 'amount';
-    const SEND_CUST_ACNAME        = 'send_cust_acname';
+    const COLUMN_UTR           = 'txn_ref_no';
+    const COLUMN_AMOUNT        = 'amount';
+    const COLUMN_CUSTOMER_NAME = 'send_cust_acname';
 
     /**
      * Identify the bank transfer using UTR, and thus find payment
@@ -19,9 +19,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentId($row)
     {
-        if (isset($row[self::TXN_REF_NO]) === true)
+        if (isset($row[self::COLUMN_UTR]) === true)
         {
-            $utr = $row[self::TXN_REF_NO];
+            $utr = $row[self::COLUMN_UTR];
         }
         else
         {
@@ -51,7 +51,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayPaymentAmount($row)
     {
-        $paymentAmount = floatval($row[self::AMOUNT]) * 100;
+        $paymentAmount = floatval($row[self::COLUMN_AMOUNT]) * 100;
 
         // We are converting to int after casting to string as PHP randomly
         // returns wrong int values due to differing floating point precisions
@@ -112,15 +112,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getNbCustomerDetails($row)
     {
         return [
-            Base\self::CUSTOMER_NAME => $this->getCustomerName($row),
+            Base\Reconciliate::CUSTOMER_NAME => $this->getCustomerName($row),
         ];
     }
 
     protected function getCustomerName($row)
     {
-        if (empty($row[self::SEND_CUST_ACNAME]) === false)
+        if (empty($row[self::COLUMN_CUSTOMER_NAME]) === false)
         {
-            return $row[self::SEND_CUST_ACNAME];
+            return $row[self::COLUMN_CUSTOMER_NAME];
         }
 
         return null;
