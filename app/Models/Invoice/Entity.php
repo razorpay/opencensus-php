@@ -210,7 +210,6 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
-        self::CALLBACK_METHOD,
     ];
 
     protected $fillable = [
@@ -1086,23 +1085,6 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->setStatus(Status::ISSUED);
-        }
-    }
-
-    /**
-     * Generates default callback method if callback URL is sent
-     * in request input. We don't want the same assigned in $defaults
-     * as we want it to be 'null' if callback_url is 'null'.
-     *
-     * @param array $input
-     *
-     */
-    public function generateCallbackMethod(array $input)
-    {
-        if ((isset($input[self::CALLBACK_URL]) === true) and
-            (isset($input[self::CALLBACK_METHOD]) === false))
-        {
-            $this->setAttribute(self::CALLBACK_METHOD, self::DEFAULT_CALLBACK_METHOD);
         }
     }
 

@@ -64,7 +64,7 @@ class Validator extends Base\Validator
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     //
@@ -97,7 +97,7 @@ class Validator extends Base\Validator
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $createIssuedRules = [
@@ -125,7 +125,7 @@ class Validator extends Base\Validator
         Entity::DRAFT               => 'sometimes|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $editDraftRules  = [
@@ -148,7 +148,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $editIssuedRules  = [
@@ -159,7 +159,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
         Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'sometimes|string|in:get',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $issueBatchRules = [
