@@ -22,17 +22,6 @@ class Validator extends Base\Validator
         Entity::REASON        => 'required|string|max:150',
     ];
 
-    public function validateFraudTypeConfirmed(string $fraudType)
-    {
-        if ($fraudType == Type::CONFIRMED)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot edit confirmed risk entities',
-                Entity::FRAUD_TYPE,
-                [Entity::FRAUD_TYPE => $fraudType]);
-        }
-    }
-
     protected function validateFraudType(string $attribute, string $value)
     {
         if (Type::isValidType($value) === false)

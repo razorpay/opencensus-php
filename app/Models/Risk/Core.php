@@ -32,7 +32,13 @@ class Core extends Base\Core
         // If the risk entity is already marked as confirmed,
         // Do not allow edits
         //
-        $risk->getValidator()->validateFraudTypeConfirmed($risk->getFraudType());
+        if ($risk->getFraudType() == Type::CONFIRMED)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot edit confirmed risk entities',
+                'risk_id',
+                ['risk_id' => $risk->getPublicId()]);
+        }
 
         $risk->edit($input);
 
@@ -79,15 +85,9 @@ class Core extends Base\Core
     protected function logPaymentForManual(
         Payment\Entity $payment, array $data)
     {
-        $risk = $this->repo->risk->fetchByPaymentId($payment->getId());
+        $data[Entity::SOURCE] = Source::MANUAL;
 
-        if ($risk === null)
-        {
-            return $this->create($payment, $data);
-        }
-
-        // We allow edits only if the source is manual
-        return $this->edit($risk, $data);
+        return $this->create($payment, $data);
     }
 
     protected function logPaymentForMaxmind(

@@ -21,11 +21,4 @@ class Repository extends Base\Repository
     protected $signedIds = [
         Entity::PAYMENT_ID,
     ];
-
-    public function fetchByPaymentId(string $paymentId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->first();
-    }
 }
