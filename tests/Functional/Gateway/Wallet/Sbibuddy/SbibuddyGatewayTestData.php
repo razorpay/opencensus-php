@@ -34,6 +34,7 @@ return [
         'entity'            => 'payment',
         'otp_attempts'      => null
     ],
+
     'testPaymentWalletEntity' => [
         'action'               => 'authorize',
         // They give the response in Rupees
@@ -45,6 +46,7 @@ return [
         'status_code'          => ResponseCodeMap::SUCCESS_CODE,
         'entity'               => 'wallet'
     ],
+
     'testRefundPayment' => [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
@@ -52,9 +54,23 @@ return [
         'amount'               => 50000,
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
-        'status_code'          => '1',
+        'status_code'          => ResponseCodeMap::SUCCESS_CODE,
         'entity'               => 'wallet'
     ],
+
+    'testPartialRefundPayment' => [
+        'action'               => 'refund',
+        'wallet'               => 'sbibuddy',
+        'email'                => 'a@b.com',
+        'amount'               => 25000,
+        'contact'              => '9918899029',
+        'gateway_merchant_id'  => 'random_id',
+        'gateway_payment_id'   => '987654321',
+        'gateway_refund_id'    => '234',
+        'status_code'          => ResponseCodeMap::SUCCESS_CODE,
+        'entity'               => 'wallet'
+    ],
+
     'testPaymentFailureFlow' => [
         'response'  => [
             'content'     => [
