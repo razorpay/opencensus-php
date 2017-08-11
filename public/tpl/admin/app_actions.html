@@ -48,6 +48,7 @@
           Generate Refunds Excel (Netbanking)
         </a>
         <a href class="list-group-item" ng-click="openGenerateEmiFiles()"
+           ng-show="admin.permissions.indexOf('generate_emi_files') !== -1"
            dynamic-tooltip-pos="top" dynamic-tooltip="generate_emi_files">
           Generate Emi Excel
         </a>
