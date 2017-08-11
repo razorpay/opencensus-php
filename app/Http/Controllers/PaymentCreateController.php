@@ -176,7 +176,7 @@ class PaymentCreateController extends Controller
 
     /**
      * Creates a dummy payment and
-     * returns corresponding fees and service_tax
+     * returns corresponding fees and tax
      * Used where customer is the fee-bearer and the
      * fee needs to be displayed to the user on the checkout.
      *

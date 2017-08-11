@@ -3,6 +3,8 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 
 class MerchantSorter extends Terminal\Sorter
@@ -21,7 +23,7 @@ class MerchantSorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function categorySorter($terminals, array $input)
+    public function categorySorter($terminals)
     {
         $specificCategoryTerminals = [];
 
@@ -29,20 +31,20 @@ class MerchantSorter extends Terminal\Sorter
 
         $nonCategoryTerminals      = [];
 
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
-        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
-
-        $category2 = $input['merchant']->getCategory2();
-
-        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
-
-        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork($method, $network, $category2);
+        $category2 = $this->input['merchant']->getCategory2();
 
         // As the terminals are from the priority list
         // append to the terminal
         foreach ($terminals as $terminal)
         {
+            $gateway = $terminal->getGateway();
+
+            $defaultCategory = Category::getDefaultForMethodAndGateway($method, $gateway);
+
+            $merchantTerminalCategory = Category::getCategoryForMethodAndGateway($method, $gateway, $category2);
+
             $terminalCategory = $terminal->getNetworkCategory();
 
             if ($merchantTerminalCategory === $terminalCategory)

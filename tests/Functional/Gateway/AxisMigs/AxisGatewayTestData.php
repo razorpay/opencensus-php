@@ -183,8 +183,8 @@ return [
         'action'                => 'authorize',
         'received'              => true,
         'genius'                => false,
-        'amex'                  => '0',
-        'vpc_Amount'            => '50000',
+        'amex'                  => false,
+        'vpc_Amount'            => 50000,
         'vpc_AcqResponseCode'   => '00',
         'vpc_AuthorisedAmount'  => null,
         'vpc_CapturedAmount'    => null,
@@ -273,5 +273,53 @@ return [
             'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         ],
-    ]
+    ],
+
+    'testInvalidAmaCaptureError' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
+            'gateway_error_code'  => '7',
+        ],
+    ],
+
+    'testFailedPaymentWithProperError' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,
+            'gateway_error_code'  => '3',
+        ],
+    ],
 ];

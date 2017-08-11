@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use DB;
 use Mail;
 use Illuminate\Http\UploadedFile;
@@ -11,8 +12,8 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Models\Transaction;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Methods;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -625,6 +626,35 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testAddBankAccountWithMerchantDetail()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail',
+                                                [
+                                                    'merchant_id' => '10000000000000',
+                                                ]);
+
+        $this->startTest();
+
+        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccount']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+
+        $detail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals('0002020000304030434', $detail['bank_account_number']);
+
+        $this->assertEquals('Test R4zorpay', $detail['bank_account_name']);
+
+        $this->assertEquals('ICIC0001206', $detail['bank_branch_ifsc']);
+    }
+
     public function testAddBankAccountWithInvalidIFSC()
     {
         $this->startTest();
@@ -676,8 +706,8 @@ class MerchantTest extends TestCase
 
         $this->testAddBankAccount();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 10;
 
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
@@ -900,7 +930,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $offer = $this->fixtures->create('offer:wallet', [
                 'checkout_display' => true,
@@ -916,7 +946,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $testData = $this->testData[__FUNCTION__];
 

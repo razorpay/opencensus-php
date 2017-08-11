@@ -41,7 +41,7 @@ class RoleTest extends TestCase
 
     public function testCreateRoleWithPermissions()
     {
-        $permIds = $this->getAssignablePermissionsByIds();
+        $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
@@ -82,7 +82,7 @@ class RoleTest extends TestCase
     {
         $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
 
-        $oldPerms = array_slice($this->getAssignablePermissionsByIds(), 0, 3);
+        $oldPerms = array_slice($this->getPermissionsByIds('assignable'), 0, 3);
 
         $unsignedOldPerms = $oldPerms;
 
@@ -90,7 +90,7 @@ class RoleTest extends TestCase
 
         $role->permissions()->sync($unsignedOldPerms);
 
-        $newPerm = $this->getAssignablePermissionsByIds()[5];
+        $newPerm = $this->getPermissionsByIds('assignable')[5];
 
         $request = $this->testData[__FUNCTION__]['request'];
 

@@ -120,6 +120,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_PAYBACK);
     }
 
+    public function getIssuerPlanId()
+    {
+        return $this->getAttribute(self::ISSUER_PLAN_ID);
+    }
+
     /**
      * Issuer is either a bank or a network
      */

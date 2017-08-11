@@ -14,15 +14,6 @@ header('Pragma: no-cache');
 		function rm(key){
 			document.cookie = key + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/'
 		}
-		rm('nextRequest');
-		function readHash(){
-			var hash = location.hash.slice(1);
-			if(hash){
-				document.cookie = 'nextRequest=' + hash + ";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
-			}
-		}
-		readHash(location.hash);
-		onhashchange = readHash;
 		function readCookie(name){
 			var nameEQ = name + "=";
 			var ca = document.cookie.split(';');
@@ -33,7 +24,7 @@ header('Pragma: no-cache');
 			}
 			return null;
 		}
-		setInterval(function(){
+		var interval = setInterval(function(){
 			var msg;
 			try {
 				msg = localStorage.getItem('onComplete');
@@ -43,10 +34,9 @@ header('Pragma: no-cache');
 
 			if(msg) {
 				parent.postMessage(msg, '*')
-				rm('onComplete');
-				try {
-					localStorage.removeItem('onComplete');
-				} catch(e) {}
+				clearInterval(interval)
+				rm('onComplete')
+				localStorage.removeItem('onComplete')
 			}
 		}, 150)
 	</script>

@@ -3,12 +3,13 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
 
 class Validator extends Base\Validator
 {
@@ -265,6 +266,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:netbanking_federal',
     ];
 
+    protected static $netbankingRblTerminalRules = [
+        Entity::GATEWAY                      => 'required|in:netbanking_rbl',
+        Entity::GATEWAY_MERCHANT_ID          => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE          => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2         => 'required|string',
+    ];
+
+    protected static $netbankingIndusindTerminalRules = [
+        Entity::GATEWAY                       => 'required|in:netbanking_indusind',
+        Entity::GATEWAY_MERCHANT_ID           => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET         => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -395,7 +410,13 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (Category::isNetworkCategoryValid($input) === false)
+        $networkCategory = $input[Entity::NETWORK_CATEGORY];
+
+        $method = self::getMethod($input);
+
+        $gateway = $input[Entity::GATEWAY];
+
+        if (Category::isNetworkCategoryValid($networkCategory, $method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
@@ -434,5 +455,25 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
         }
+    }
+
+    protected static function getMethod($input)
+    {
+        if (empty($input[Entity::CARD]) === false)
+        {
+            return Method::CARD;
+        }
+
+        if (empty($input[Entity::NETBANKING]) === false)
+        {
+            return Method::NETBANKING;
+        }
+
+        if (empty($input[Entity::EMI]) === false)
+        {
+            return Method::EMI;
+        }
+
+        return null;
     }
 }

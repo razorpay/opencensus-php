@@ -81,7 +81,7 @@ class Service extends Base\Service
 
         (new ScheduleTask\Validator)->validateInput('updateNextRunAt', $input);
 
-        $timestamp = $input['next_run_at'] ?? Carbon::now('Asia/Kolkata')->timestamp;
+        $timestamp = $input['next_run_at'] ?? Carbon::now()->getTimestamp();
 
         $type = $input['type'];
 
@@ -106,7 +106,7 @@ class Service extends Base\Service
         (new ScheduleTask\Validator)->validateInput('processTasks', $input);
 
         //all tasks which are due and less than time
-        $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
+        $timestamp = Carbon::now()->getTimestamp();
 
         $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
 

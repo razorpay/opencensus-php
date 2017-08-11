@@ -233,7 +233,7 @@ trait Authorize
     {
         // try calculating the fees, throws exception if fees is more than amount
 
-        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     /**
@@ -2384,7 +2384,7 @@ trait Authorize
 
         if ($wasFailed)
         {
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
 

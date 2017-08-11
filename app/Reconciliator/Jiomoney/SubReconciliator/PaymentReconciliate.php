@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Jiomoney;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Jiomoney\Gateway as JiomoneyGateway;
@@ -52,7 +53,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $gatewayPaymentDate = Carbon::createFromFormat(
                                     self::GATEWAY_PAYMENT_DATE_FORMAT,
                                     $row[self::COLUMN_PAYMENT_DATE],
-                                    'Asia/Kolkata');
+                                    Timezone::IST);
 
             $gatewayPaymentDate = $gatewayPaymentDate->format(JiomoneyGateway::DATE_FORMAT);
         }
@@ -158,7 +159,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             try
             {
-                $formattedDate = Carbon::createFromFormat(JiomoneyGateway::DATE_FORMAT, $date, 'Asia/Kolkata');
+                $formattedDate = Carbon::createFromFormat(JiomoneyGateway::DATE_FORMAT, $date, Timezone::IST);
 
                 return ($formattedDate !== null) ? true : false;
             }

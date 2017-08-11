@@ -22,16 +22,15 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         if ($this->isCybersource($row) === true)
         {
-            $paymentId = $this->getRefundIdForCybersource($row);
+            $refundId = $this->getRefundIdForCybersource($row);
         }
         else
         {
-            $paymentId = $this->getRefundIdForFss($row);
+            $refundId = $this->getRefundIdForFss($row);
         }
 
-        return $paymentId;
+        return $refundId;
     }
-
 
     protected function getRefundIdForFss(array $row)
     {
@@ -55,10 +54,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getRefundIdForCybersource(array $row)
     {
         //
-        // Currently, we have no way to get a refund ID
-        // from the MIS file.
+        // Currently, the way to get refundId for a Cybersource
+        // refund is the same as for FSS refund. Keeping two
+        // different functions for clarity sake and easy reading.
         //
-        return null;
+        return $this->getRefundIdForFss($row);
     }
 
     protected function getPaymentId(array $row)

@@ -57,6 +57,10 @@ class Service extends Base\Service
 
     public function saveMerchantDetails(array $input)
     {
+        $this->trace->info(
+                TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
+                ['input' => $input]);
+
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
         $merchantDetails->getValidator()->validateIsNotLocked();
@@ -67,20 +71,34 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
+        $eventAttributes = $this->merchant->toArrayEvent();
+
         if ($this->canSubmit($input, $response) === true)
         {
             $this->markSubmitted($merchantDetails);
+
+            $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::SUBMITTED, $eventAttributes);
         }
 
         $response = $this->createResponse($merchantDetails);
 
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+        $activationProgress = $response['verification']['activation_progress'];
+
+        $merchantDetails->setActivationProgress($activationProgress);
 
         $this->repo->saveOrFail($merchantDetails);
 
+        if ($this->canSubmit($input, $response) === true)
+        {
+            (new Detail\Core)->fireActivationTrigger($merchantDetails);
+        }
+
+        $eventAttributes['activation_progress'] = $activationProgress;
+
+        $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+
         return $response;
     }
-
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
     {
@@ -117,6 +135,8 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
+            $merchantDetails->getValidator()->validateFileType($value);
+
             $fileName = 'api/' . $merchant->getId() .'/' .$key;
 
             $file = $this->createFile(
@@ -231,7 +251,7 @@ class Service extends Base\Service
 
     protected function markSubmitted($merchantDetails)
     {
-        $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
+        $submittedAt = Carbon::now()->getTimestamp();
 
         $input = [
             Entity::SUBMITTED     => 1,

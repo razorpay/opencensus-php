@@ -59,6 +59,10 @@ class CreatePayoutsTable extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Payout::TAX)
+                  ->unsigned()
+                  ->default(0);
+
             $table->string(Payout::STATUS);
 
             $table->char(Payout::TRANSACTION_ID, Payout::ID_LENGTH)

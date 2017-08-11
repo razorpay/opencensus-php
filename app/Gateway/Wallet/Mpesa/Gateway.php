@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Mpesa;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use Lib\PhoneBook;
 use SimpleXMLElement;
@@ -370,6 +371,13 @@ class Gateway extends Base\Gateway
             RequestFields::NARRATION             => Constants::NARRATION
         ];
 
+        $billerCode = $this->getMerchantId2();
+
+        if (empty($billerCode) === false)
+        {
+            $gatewayParam[RequestFields::FILLER3] = $billerCode;
+        }
+
         $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
 
         return $gatewayParam;
@@ -663,7 +671,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate()
     {
-        return Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
+        return Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
     }
 
     protected function getMerchantId()
@@ -673,6 +681,18 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $merchantId = $this->config['test_merchant_id'];
+        }
+
+        return $merchantId;
+    }
+
+    protected function getMerchantId2()
+    {
+        $merchantId = $this->terminal['gateway_merchant_id2'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->config['test_merchant_id2'];
         }
 
         return $merchantId;

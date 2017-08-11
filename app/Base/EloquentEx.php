@@ -56,7 +56,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
     {
         $attributes = parent::attributesToArray();
 
-        foreach ($this->getDates() as $key)
+        foreach ($this->dates as $key)
         {
             if ( ! isset($attributes[$key])) continue;
 

@@ -24,6 +24,8 @@ class MinAmount
                 Category::GOVT_EDUCATION => 200000,
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
+                Category::FOREX          => 200000,
+                Category::HOUSING        => 150000,
             ],
             self::TOP_SIX_BANKS => [
             ],
@@ -32,10 +34,12 @@ class MinAmount
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
                 Category::LENDING        => 150000,
+                Category::FOREX          => 150000,
+                Category::HOUSING        => 150000,
             ],
         ],
         Method::CARD => [
-            Network::AMEX => [
+            Gateway::AMEX => [
             ],
         ],
     ];
@@ -64,27 +68,12 @@ class MinAmount
      */
     public static function getMinAmount($method, $gateway, $network, $category)
     {
-        $key = '';
-
         $minAmount = 0;
 
         // set category if not available
         if (empty($category) === true)
         {
-            $category = Category::getDefaultForMethodAndNetwork($method, $network);
-        }
-
-        // set method key
-        switch ($method)
-        {
-            case Method::NETBANKING:
-                $key = $gateway;
-                break;
-
-            case Method::EMI:
-            case Method::CARD:
-                $key = $network;
-                break;
+            $category = Category::getDefaultForMethodAndGateway($method, $gateway);
         }
 
         // get method category combination
@@ -102,9 +91,9 @@ class MinAmount
         }
 
         // get method key category map
-        if (isset(self::MIN_AMOUNT[$method][$key][$category]) === true)
+        if (isset(self::MIN_AMOUNT[$method][$gateway][$category]) === true)
         {
-            $minAmount = self::MIN_AMOUNT[$method][$key][$category];
+            $minAmount = self::MIN_AMOUNT[$method][$gateway][$category];
         }
 
         return $minAmount;

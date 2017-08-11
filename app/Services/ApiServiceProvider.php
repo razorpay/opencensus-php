@@ -112,6 +112,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('eventManager', function($app)
+        {
+            return new HarvesterClient($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -120,8 +125,6 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerExchange();
 
-        $this->registerValidatorResolver();
-
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
@@ -129,6 +132,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerSesClient();
 
         $this->registerDrip();
+
+        $this->registerSns();
 
         $this->registerWorkflow();
 
@@ -156,11 +161,13 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'elfin',
             'segment',
+            'eventManager',
             'upi.client',
             'webhook.inferno',
             'exchange',
             'pigeon',
             'workflow',
+            'sns',
         ];
     }
 
@@ -174,15 +181,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
-        });
-    }
-
-    protected function registerValidatorResolver()
-    {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
-        {
-            return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -317,6 +315,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Drip($app);
+        });
+    }
+
+    protected function registerSns()
+    {
+        $this->app->singleton('sns', function ($app)
+        {
+            $snsMock = $app['config']->get('applications.sns.mock');
+
+            if ($snsMock === true)
+            {
+                return new Aws\Mock\Sns($app);
+            }
+
+            return new Aws\Sns($app);
         });
     }
 

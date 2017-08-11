@@ -67,6 +67,26 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreditCardAuthNotAvailable3()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'auth_response')
+            {
+                unset($content['auth'], $content['tranid'],
+                      $content['postdate'], $content['avr'],
+                      $content['ref'], $content['amt']);
+
+                $content['error_code_tag'] = 'FSS0001';
+                $content['error_service_tag'] = 'null';
+                $content['error_text'] = '!ERROR!-FSS0001-Authentication Not Available';
+                $content['result'] = 'FSS0001-Authentication Not Available';
+            }
+        });
+
+        $this->startTest();
+    }
+
     public function testSignatureFailure1()
     {
         $this->startTest();
@@ -86,6 +106,29 @@ class HdfcGatewayAuthTest extends TestCase
             $payment['card']['number'] = $number;
             $this->doAuthAndGetPayment($payment);
         }
+    }
+
+    public function testRupayFailedPayment()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'auth_response')
+            {
+                $content = [
+                    'Error'     => 'PY20007',
+                    'ErrorText' => 'PY20007-Invalid Order Status.',
+                    'paymentid' => $content['paymentid'],
+                    'trackid'   => $content['trackid'],
+                    'udf1'      => 'test',
+                    'udf2'      => 'a@b.com',
+                    'udf3'      => '9918899029',
+                    'udf4'      => 'test',
+                    'udf5'      => 'test',
+                ];
+            }
+        });
+
+        $this->startTest();
     }
 
     public function testMaestroCard()
@@ -200,7 +243,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $testData = $this->testData[$func];
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         return $this->runRequestResponseFlow($testData);
     }

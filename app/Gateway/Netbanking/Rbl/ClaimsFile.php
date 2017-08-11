@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
@@ -72,7 +73,7 @@ class ClaimsFile extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
-                        'Asia/Kolkata')
+                        Timezone::IST)
                         ->format('m-d-y h:m:s');
 
             $paymentAmount = $this->getFormattedAmount($row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT]);

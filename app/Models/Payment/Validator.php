@@ -50,7 +50,8 @@ class Validator extends Base\Validator
         'save'                    => 'sometimes|in:0,1',
         'recurring'               => 'sometimes_if:method,card|in:0,1',
         'fee'                     => 'sometimes|filled|integer|max:50000000',
-        'service_tax'             => 'sometimes|filled|integer|max:50000000',
+        Entity::SERVICE_TAX       => 'sometimes|filled|integer|max:50000000',
+        Entity::TAX               => 'sometimes|filled|integer|max:50000000',
         'on_hold'                 => 'sometimes_if:method,transfer|boolean',
         'on_hold_until'           => 'sometimes_if:method,transfer|nullable|epoch',
         'ip'                      => 'sometimes|ip',
@@ -423,7 +424,7 @@ class Validator extends Base\Validator
                     'The on_hold field must be set to 1, if on_hold_until is sent');
             }
 
-            $now = Carbon::now('Asia/Kolkata')->timestamp;
+            $now = Carbon::now()->getTimestamp();
 
             if ($input[Entity::ON_HOLD_UNTIL] < $now)
             {

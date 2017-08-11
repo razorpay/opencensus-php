@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Refund;
 use DB;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Payment\Refunded as RefundedMail;
@@ -166,7 +167,7 @@ class RefundTest extends TestCase
 
     public function testRefundOfOldAuthorizedPayments()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:authorized',
@@ -218,7 +219,6 @@ class RefundTest extends TestCase
         // Order 7: - Attempted, Partial payment allowed
         //          - 2 Captured and 2 Authorized payment exists
         //          - Payments NOT PICKED for refund
-
 
         $order1 = $this->fixtures->order->create(['partial_payment' => true]);
 
@@ -363,20 +363,20 @@ class RefundTest extends TestCase
         // Change auto refund delay to 2 days
         $this->fixtures->merchant->editAutoRefundDelay('2 days');
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(2)->timestamp;
 
         $payments = $this->fixtures->times(3)->create(
             'payment:authorized',
             ['created_at' => $createdAt]);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000']);
 
         $payment = $this->fixtures->create(
             'payment:authorized',
             ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:authorized',
@@ -392,7 +392,7 @@ class RefundTest extends TestCase
 
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:purchased',
@@ -421,8 +421,8 @@ class RefundTest extends TestCase
     // This will also be picked up for a refund and refunded.
     public function testRefundOnHdfcCapturedPaymentAuthorized()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
-        $authorizedAt = Carbon::today('Asia/Kolkata')->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
+        $authorizedAt = Carbon::today(Timezone::IST)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:captured',
@@ -471,7 +471,7 @@ class RefundTest extends TestCase
     {
         // Case where refunded payment has no entry in hdfc
 
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:purchased',
@@ -522,7 +522,7 @@ class RefundTest extends TestCase
     {
         $this->markTestSkipped('Transactions are getting created now');
 
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:purchased',
@@ -566,11 +566,14 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
+        $actual = $rfnd->toArrayPublic();
+        $actual['acquirer_data'] = $actual['acquirer_data']->toArray();
+
         $refund = $this->getEntityById('refund', $rfnd['public_id']);
-        $this->assertArraySelectiveEquals($rfnd->toArrayPublic(), $refund);
+        $this->assertArraySelectiveEquals($actual, $refund);
 
         $refunds = $this->getEntities('refund');
-        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$rfnd->toArrayPublic()]];
+        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$actual]];
         $this->assertArraySelectiveEquals($rfnds, $refunds);
     }
 
@@ -655,7 +658,7 @@ class RefundTest extends TestCase
                     {
                         $testData = [
                             'payment' => [
-                                'amount'=>  'INR 500.00'
+                                'amount' => 'INR 500.00'
                             ],
                             'merchant' => [],
                             'customer' => [

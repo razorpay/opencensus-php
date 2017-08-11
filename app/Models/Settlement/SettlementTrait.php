@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
@@ -62,7 +63,7 @@ trait SettlementTrait
             $merchant = $txns[$i]->merchant;
 
             // Settlement amount
-            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax, $setlGatewayFee) =
+            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee) =
                 $this->getSettlementAmountsForMerchant($txns, $i, $txnsCount, $merchant);
 
             //
@@ -84,7 +85,7 @@ trait SettlementTrait
             }
 
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax);
+                $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax);
 
             $txnsSettledCount += $setlTxns->count();
 
@@ -99,7 +100,7 @@ trait SettlementTrait
     protected function getSettlementAmountsForMerchant($txns, & $i, $txnsCount, $merchant): array
     {
         $setlAmount = $setlGatewayFee = $setlApiFee = 0;
-        $setlFee = $serviceTax = 0;
+        $setlFee = $tax = 0;
 
         $setlTxns = new Base\PublicCollection;
 
@@ -118,17 +119,17 @@ trait SettlementTrait
             $setlGatewayFee += $txn->getGatewayFee();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
-            $serviceTax     += $txn->getServiceTax();
+            $tax            += $txn->getServiceTax();
 
             $setlTxns->push($txn);
             $i++;
         }
 
-        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax, $setlGatewayFee];
+        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee];
     }
 
     protected function settleForMerchant(
-        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax): array
+        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
         // create settlement and update batch settlement entity in transaction
         $merchantSettler = new Merchant($merchant, $channel, $this->repo);
@@ -142,7 +143,7 @@ trait SettlementTrait
                 $setlAmount,
                 $setlFee,
                 $setlApiFee,
-                $serviceTax,
+                $tax,
                 $setlDetailAmounts)
             {
                 list($setl, $bankTransferAtpt) = $merchantSettler->settle(
@@ -150,7 +151,7 @@ trait SettlementTrait
                                                     $setlAmount,
                                                     $setlFee,
                                                     $setlApiFee,
-                                                    $serviceTax,
+                                                    $tax,
                                                     $this->setlTime,
                                                     $setlDetailAmounts);
 
@@ -188,7 +189,7 @@ trait SettlementTrait
     {
         $shouldSettle = true;
 
-        $today = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today(Timezone::IST);
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
@@ -211,7 +212,7 @@ trait SettlementTrait
 
     protected function traceSetlInitiating($channel)
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
 
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,

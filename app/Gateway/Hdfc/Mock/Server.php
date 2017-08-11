@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
@@ -40,6 +41,8 @@ class Server extends Base\Mock\Server
         '6073849700004947',
         '4111111111111111',
         '4012001037411127',
+        '5200000000000064',
+        '6080757792005576',
     );
 
     protected $notEnrolledDebitCardNumbers = array(
@@ -200,7 +203,9 @@ class Server extends Base\Mock\Server
             $res['result'] = 'CAPTURED';
         }
 
-//        $this->copyUdfValues($res);
+        $this->content($res, 'auth_response');
+
+        // $this->copyUdfValues($res);
 
         return $res;
     }
@@ -484,7 +489,7 @@ class Server extends Base\Mock\Server
 
     protected function getPostDateForToday()
     {
-        return (new Carbon('now', 'Asia/Kolkata'))->format('md');
+        return (new Carbon('now', Timezone::IST))->format('md');
     }
 
     protected function getNewPaymentId()
@@ -533,11 +538,6 @@ class Server extends Base\Mock\Server
 
         switch ($cardNumber)
         {
-            case '4012001036275556':
-                sleep(Hdfc\Gateway::TIMEOUT);
-                exit(1);
-                break;
-
             case '4012001036853337':
                 $code = Hdfc\ErrorCode::GV00007;
                 break;

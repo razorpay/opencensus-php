@@ -13,6 +13,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -79,9 +80,9 @@ class FeeCalculator
 
         $this->getRelevantPricingRule($pricing);
 
-        list($fee, $serviceTax) = $this->getFees($amount);
+        list($fee, $tax) = $this->getFees($amount);
 
-        return [$fee, $serviceTax, $this->feesSplit];
+        return [$fee, $tax, $this->feesSplit];
     }
 
     protected function getFees($amount)
@@ -113,7 +114,7 @@ class FeeCalculator
         return [$totalFees, $totalTaxes];
     }
 
-    public static function getServiceTaxRate()
+    public static function getTaxRate()
     {
         // returning igst percentage as igst = cgst + sgst
         return self::IGST_PERCENTAGE;
@@ -176,7 +177,7 @@ class FeeCalculator
         $method = $this->entity->getMethod();
 
         $filters = array(
-            [Pricing\Entity::FEATURE, $feature, false, null  ],
+            [Pricing\Entity::FEATURE,         $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
         );
 
@@ -350,6 +351,7 @@ class FeeCalculator
             [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
         ];
 
+
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
@@ -382,11 +384,20 @@ class FeeCalculator
     protected function getRelevantPricingRuleForEmi($rules)
     {
         $payment = $this->entity;
+        $emiPlan = $payment->emiPlan;
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
+        $emiDuration = $emiPlan->getDuration();
+
+        $issuer = $emiPlan->getIssuer();
+
+        //Emi duration and issuer filter is for merchant subvented model
+        //in normal emi it will be null where feature is payment
         $filters1 = array(
-            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+            [Pricing\Entity::PAYMENT_NETWORK, $network,     true, null ],
+            [Pricing\Entity::PAYMENT_ISSUER,  $issuer,      true, null ],
+            [Pricing\Entity::EMI_DURATION,    $emiDuration, true, null ]
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
@@ -575,7 +586,7 @@ class FeeCalculator
 
     /**
      * Irrespective of preCalculationOfFees, Use the percent of original amount
-     * to calculate razorpay fees. Service tax is not included here.
+     * to calculate razorpay fees. Tax is not included here.
      *
      * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
@@ -585,23 +596,6 @@ class FeeCalculator
     protected function getUnroundedFees($amount, $percent, $fixed)
     {
         return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
-    }
-
-    /**
-     * This formula is only to be used if support is required for the following
-     * formula.
-     *
-     * amount + rzpFees + serviceTax = totalAmount
-     *                       rzpFees = percent * totalAmount + fixed
-     *                    serviceTax = serviceTaxPercentage * rzpFees
-     */
-    protected function getRzpFeesUsingPercentOfTotalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
-    {
-        $numerator =   (100 * ( $fixed * 100 + ($percent * $amount) / 100 ));
-
-        $denominator = (10000 - ($percent) - ($percent * $serviceTaxPercentage / 100));
-
-        return $numerator / $denominator;
     }
 
     /**
@@ -718,29 +712,6 @@ class FeeCalculator
         }
 
         return true;
-    }
-
-    public function calculateServiceTaxesFromFees($fee)
-    {
-        $totalTaxes = 0;
-
-        $taxComponents = $this->taxComponents;
-
-        foreach ($taxComponents as $name => $percentage)
-        {
-            $taxValue = $this->calculateTaxFromFees($fee, $percentage);
-
-            $taxBreakup = $this->createFeeBreakup(
-                                            $name,
-                                            $percentage,
-                                            $taxValue);
-
-            $this->feesSplit->push($taxBreakup);
-
-            $totalTaxes += $taxValue;
-        }
-
-        return $totalTaxes;
     }
 
     protected function getTaxComponents(): array

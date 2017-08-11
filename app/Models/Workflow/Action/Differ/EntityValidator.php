@@ -30,6 +30,7 @@ class EntityValidator
             self::ENTITY_NAME_KEY   => Entity::ROLE,
             self::VALIDATOR_KEY     => 'edit'
         ],
+        'pricing_create_plan'   => [Entity::PRICING, 'create']
     ];
 
     const RELATIONS_WHITELIST = [

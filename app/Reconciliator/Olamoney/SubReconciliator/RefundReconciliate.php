@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Olamoney;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
@@ -55,7 +56,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         try
         {
-            $gatewaySettledAt = Carbon::createFromFormat(self::SETTLEMENT_DATE_FORMAT, $columnSettledAt, 'Asia/Kolkata');
+            $gatewaySettledAt = Carbon::createFromFormat(self::SETTLEMENT_DATE_FORMAT, $columnSettledAt, Timezone::IST);
             $gatewaySettledAt = $gatewaySettledAt->timestamp;
         }
         catch (\Exception $ex)

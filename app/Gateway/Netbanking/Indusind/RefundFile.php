@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Indusind;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Constants\MailTags;
@@ -29,36 +30,40 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $data = $this->getRefundData($input);
+        list($totalAmount, $data) = $this->getRefundData($input);
+
+        $fileText = $this->getTextData($data);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
         // Creating a file with txt format
         $creator = $this->createFile(
             FileStore\Format::TXT,
-            $data,
+            $fileText,
             $fileName,
             FileStore\Type::INDUSIND_NETBANKING_REFUND);
 
         $file = $creator->get();
 
-        $today = Carbon::now('Asia/Kolkata')->format('d_m_Y');
+        $today = Carbon::now(Timezone::IST)->format('d_m_Y');
 
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         $fileData = [
-            'file_path'  => $file['local_file_path'],
-            'signed_url' => $signedFileUrl,
-            'file_name'  => basename($file['local_file_path']),
+            'local_file_path' => $file['local_file_path'],
+            'signed_url'      => $signedFileUrl,
+            'count'           => count($data),
+            'file_name'       => basename($file['local_file_path']),
+            'total_amount'    => $totalAmount,
         ];
 
-        $this->sendRefundEmail($fileData);
-
-        return $fileData['file_path'];
+        return $fileData;
     }
 
     protected function getRefundData($input)
     {
+        $amount = 0;
+
         foreach ($input['data'] as $index => $row)
         {
             $data[] = [
@@ -69,9 +74,11 @@ class RefundFile extends Base\RefundFile
                 RefundFileFields::REFUND_AMOUNT      => number_format($row['refund']['amount'] / 100, 2, '.', ''),
                 RefundFileFields::BANK_REFERENCE_ID  => $row['gateway']['bank_payment_id']
             ];
+
+            $amount = $amount + $row['refund']['amount'] / 100;
         }
 
-        return $this->getTextData($data);
+        return [$amount, $data];
     }
 
     protected function getTextData(array $data, string $prependLine = '')
@@ -85,19 +92,12 @@ class RefundFile extends Base\RefundFile
         return $txt;
     }
 
-    protected function sendRefundEmail($fileData = [])
-    {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_INDUSIND);
-
-        Mail::queue($refundFileMail);
-    }
-
      /*
      * @override parent class's method
      */
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('dmY');
+        $time = Carbon::now(Timezone::IST)->format('dmY');
 
         if ($this->mode === Mode::TEST)
         {

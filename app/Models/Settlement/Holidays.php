@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class Holidays
 {
@@ -340,7 +341,7 @@ class Holidays
 
     protected static function getDateToCompareWith($year, $month, $date): Carbon
     {
-        return Carbon::now('Asia/Kolkata')->setDate($year, $month, $date)
+        return Carbon::now(Timezone::IST)->setDate($year, $month, $date)
                                           ->hour(0)
                                           ->minute(0)
                                           ->second(0);

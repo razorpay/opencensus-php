@@ -259,7 +259,7 @@ class Entity extends Base\Entity
 
     public function updateLastLoginAt()
     {
-        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->timestamp);
+        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->getTimestamp());
     }
 
     public function getLastLoginAt()
@@ -367,7 +367,7 @@ class Entity extends Base\Entity
 
     protected function updatePasswordChangedAt()
     {
-        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->timestamp);
+        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->getTimestamp());
     }
 
     protected function setOldPasswordsAttribute($oldPasswords = [])
@@ -512,7 +512,7 @@ class Entity extends Base\Entity
     {
         $app = App::getFacadeRoot();
 
-        if ($app['api.route']->isWorkflowExecuteCall() === true)
+        if ($app['api.route']->isWorkflowExecuteOrApproveCall() === true)
         {
             return true;
         }

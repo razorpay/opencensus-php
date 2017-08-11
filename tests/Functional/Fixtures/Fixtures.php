@@ -83,6 +83,8 @@ class Fixtures
 
         $this->create('vpa:default');
 
+        $this->workflow->setUp();
+
         $this->entities = $entities;
     }
 

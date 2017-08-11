@@ -139,6 +139,8 @@ final class Route
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
+        'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
+        'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -225,13 +227,10 @@ final class Route
         'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'                      ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
-        'setl_return_generate'                    => ['post',     'settlements/return/generate',                    'SettlementController@postSettlementReturnGenerate'                 ],
-        'setl_return'                             => ['post',     'settlements/return',                             'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'batch_setl_calc_previous_fees'           => ['post',     'batchfundtransfers/fees/previous',               'SettlementController@postBatchFundTransferCalculatePreviousFees'   ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                         'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -267,6 +266,7 @@ final class Route
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
+        'entity_tax_update'                       => ['put',      'admin/{entity}/tax_update',                      'AdminController@updateEntityTax'                                   ],
         'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
@@ -281,8 +281,6 @@ final class Route
         'dummy_route'                             => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
-        'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementServiceTax'              ],
-        'batch_fund_transfer_compute_tax'         => ['post',     'batchfundtransfers/compute/tax',                 'SettlementController@postComputeBatchFundTransferServiceTax'       ],
         'feature_dummy'                           => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
@@ -573,6 +571,10 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
+
+        // Dispute routes
+        'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
     ];
 
     public static $public = [
@@ -767,6 +769,7 @@ final class Route
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
+        'entity_tax_update',
         'merchant_activation_upload_file_admin',
         'merchant_secret',
         'merchant_create',
@@ -809,7 +812,6 @@ final class Route
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_create_plan',
         'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
@@ -828,17 +830,11 @@ final class Route
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
         'setl_reconcile_test',
-        'setl_return_generate',
-        'setl_return',
         'setl_edit',
         'setl_delete_file',
-        'setl_calc_previous_fees',
         'setl_post_details_old',
         'setl_fixer',
-        'settlement_compute_tax',
         'nodal_initiate_transfer',
-        'batch_setl_calc_previous_fees',
-        'batch_fund_transfer_compute_tax',
         'payment_verify',
         'payment_authorize_failed',
         'payment_fix_authorize_at',
@@ -951,6 +947,8 @@ final class Route
         'gateway_update_rule',
         'gateway_delete_rule',
         'merchant_actions',
+        'merchant_tag_add',
+        'merchant_tag_delete',
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
@@ -965,6 +963,8 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'payment_dispute_create',
+        'dispute_edit',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
     ];
@@ -1105,6 +1105,7 @@ final class Route
         'adj_add',
         'payment_authorize_refund',
         'admin_change_password',
+        'pricing_create_plan',
     ];
 
     public static $routePermission = [
@@ -1222,6 +1223,8 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'invitation_fetch'                 => '*',
+        'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
     ];
 
     public static $direct = [
@@ -1263,11 +1266,11 @@ final class Route
         ],
 
         'cron' => [
+            'entity_tax_update',
             'setl_initiate',
             'payout_initiate',
             'setl_reconcile_generate',
             'setl_reconcile_test',
-            'setl_return_generate',
             'nodal_initiate_transfer',
             'payment_auth_notify',
             'payment_timeout',
@@ -1449,6 +1452,8 @@ final class Route
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
+
+    const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
 
     public function __construct($app)
     {
@@ -1682,11 +1687,12 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public function isWorkflowExecuteCall()
+    public function isWorkflowExecuteOrApproveCall()
     {
         $routeName = $this->router->currentRouteName();
 
-        if ($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME)
+        if (($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME) or
+            ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME))
         {
             return true;
         }

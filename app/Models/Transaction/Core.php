@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
@@ -268,6 +269,7 @@ class Core extends Base\Core
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::FEE                 => 0,
             Transaction\Entity::SERVICE_TAX         => 0,
+            Transaction\Entity::TAX                 => 0,
             Transaction\Entity::AMOUNT              => $amount,
         ];
 
@@ -304,19 +306,19 @@ class Core extends Base\Core
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
 
             $fee = 0;
-            $serviceTax = 0;
+            $tax = 0;
             $credit = $amount;
 
             $txn->setPricingRule($pricingRuleId);
         }
         else if ($merchant->isPrepaid())
         {
-            list($credit, $fee, $serviceTax, $feesSplit)
+            list($credit, $fee, $tax, $feesSplit)
                 = $this->calculatePrepaidFee($payment, $txn, $merchantBalance);
         }
         else
         {
-            list($credit, $fee, $serviceTax, $feesSplit)
+            list($credit, $fee, $tax, $feesSplit)
                 = $this->calculatePostpaidFee($payment, $txn, $merchantBalance);
         }
 
@@ -324,7 +326,8 @@ class Core extends Base\Core
         $txn->setCredit($credit);
         $txn->setDebit(0);
         $txn->setFee($fee);
-        $txn->setServiceTax($serviceTax);
+        $txn->setServiceTax($tax);
+        $txn->setTax($tax);
 
         return [$txn, $feesSplit];
     }
@@ -345,7 +348,7 @@ class Core extends Base\Core
     {
         list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
-        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
 
         switch (true)
         {
@@ -379,7 +382,7 @@ class Core extends Base\Core
     {
         list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
-        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
 
         switch (true)
         {
@@ -422,13 +425,13 @@ class Core extends Base\Core
 
         $credit = $amount;
         $fee = 0;
-        $serviceTax = 0;
+        $tax = 0;
 
         $transaction->setGratis(true);
 
         $transaction->setCreditType(Transaction\CreditType::AMOUNT);
 
-        return [$credit, $fee, $serviceTax, new Base\PublicCollection];
+        return [$credit, $fee, $tax, new Base\PublicCollection];
     }
 
     /**
@@ -444,7 +447,7 @@ class Core extends Base\Core
     {
         $amount = $payment->getBaseAmount();
 
-        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
 
         $credit = $amount;
         $feeCredits = $fee;
@@ -452,7 +455,7 @@ class Core extends Base\Core
         $transaction->setFeeCredits($feeCredits);
         $transaction->setCreditType(Transaction\CreditType::FEE);
 
-        return [$credit, $fee, $serviceTax, $feesSplit];
+        return [$credit, $fee, $tax, $feesSplit];
     }
 
     /**
@@ -468,13 +471,13 @@ class Core extends Base\Core
     {
         $amount = $payment->getBaseAmount();
 
-        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
 
         $credit = $amount - $fee;
 
         $transaction->setCreditType(Transaction\CreditType::DEFAULT);
 
-        return [$credit, $fee, $serviceTax, $feesSplit];
+        return [$credit, $fee, $tax, $feesSplit];
     }
 
     /**
@@ -490,13 +493,13 @@ class Core extends Base\Core
     {
         $amount = $payment->getBaseAmount();
 
-        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
 
         $credit = $amount;
 
         $transaction->setCreditType(Transaction\CreditType::DEFAULT);
 
-        return [$credit, $fee, $serviceTax, $feesSplit];
+        return [$credit, $fee, $tax, $feesSplit];
     }
 
     protected function checkIfOldPayment($payment)
@@ -553,6 +556,7 @@ class Core extends Base\Core
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::SERVICE_TAX     => 0,
+            Transaction\Entity::TAX             => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
             Transaction\Entity::CURRENCY        => Currency\Currency::INR);
@@ -645,6 +649,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::SERVICE_TAX     => 0,
+            Transaction\Entity::TAX             => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
@@ -675,7 +680,7 @@ class Core extends Base\Core
 
         $amount = $transfer->getAmount();
 
-        list($fee, $serviceTax, $feesSplit) =
+        list($fee, $tax, $feesSplit) =
             (new Pricing\Fee)->calculateMerchantFees($transfer);
 
         $settledAt = time();
@@ -692,7 +697,8 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
             Transaction\Entity::FEE           => $fee,
-            Transaction\Entity::SERVICE_TAX   => $serviceTax,
+            Transaction\Entity::SERVICE_TAX   => $tax,
+            Transaction\Entity::TAX           => $tax,
             Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
@@ -742,6 +748,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED_AT    => $nowTimestamp,
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::SERVICE_TAX   => 0,
+            Transaction\Entity::TAX           => 0,
             Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
@@ -764,7 +771,7 @@ class Core extends Base\Core
 
         $amount = $payout->getAmount();
 
-        list($fee, $serviceTax, $feesSplit) =
+        list($fee, $tax, $feesSplit) =
             (new Pricing\Fee)->calculateMerchantFees($payout, false);
 
         $settledAt = time();
@@ -782,7 +789,8 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED             => 0,
             Transaction\Entity::SETTLED_AT          => $settledAt,
             Transaction\Entity::FEE                 => $fee,
-            Transaction\Entity::SERVICE_TAX         => $serviceTax,
+            Transaction\Entity::SERVICE_TAX         => $tax,
+            Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
             Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
@@ -995,7 +1003,7 @@ class Core extends Base\Core
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 

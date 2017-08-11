@@ -438,14 +438,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refund = $this->refund;
 
-        //
-        // Converting to an array because, `getAcquirerData`
-        // returns back, (*brace yourself*) an empty OBJECT or
-        // an array with data!
-        //
-        // TODO: Discuss and fix the above one if possible.
-        //
-        $refundAcquirerData = (array) $refund->getAcquirerData();
+        $refundAcquirerData = $refund->getAcquirerData();
 
         if (empty($refundAcquirerData[Refund\Entity::ARN]) === false)
         {

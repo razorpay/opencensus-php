@@ -574,7 +574,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
         {
@@ -761,7 +761,36 @@ class Core extends Base\Core
         Entity $invoice,
         array $input)
     {
-        $this->repo->saveOrFail($invoice);
+        $this->repo->transaction(
+            function () use ($invoice)
+            {
+                $this->updateOrderOfIssuedInvoice($invoice);
+
+                $this->repo->saveOrFail($invoice);
+            });
+    }
+
+    /**
+     * Issue invoice has an order created. There are few attributes
+     * which gets copied to order when issuing an invoice. Eg. invoice
+     * has partial_payment attribute.
+     *
+     * In most of the cases we don't allow edits on issued invoice attributes
+     * but when we do and it affects orders (highly unlikely case) we need
+     * to update corresponding order details as well.
+     *
+     * @param Entity $invoice
+     */
+    protected function updateOrderOfIssuedInvoice(Entity $invoice)
+    {
+        if ($invoice->isDirty(Entity::PARTIAL_PAYMENT) === true)
+        {
+            $order = $invoice->order;
+
+            $order->togglePartialPayment();
+
+            $this->repo->saveOrFail($order);
+        }
     }
 
     /**

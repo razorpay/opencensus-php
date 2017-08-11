@@ -21,11 +21,33 @@ class PublicEntity extends UniqueIdEntity
      */
     const IDS = 'ids';
 
-    protected static $sign = '';
+    protected static $sign      = '';
 
     protected static $delimiter = '_';
 
-    protected $hiddenInReport = [];
+    protected $hiddenInReport   = [];
+
+    /**
+     * Fields which will get formatted as amount (e.g. 1.01) in reports
+     *
+     * @var array
+     */
+    protected $amounts          = [];
+
+    /**
+     * Usage:
+     * - Base/EloquentEx.php: to serialize attributes with $dates fields casted to int,
+     * - Base/PublicEntity.php: formatDateFieldsForReport(): to format $dates fields
+     *   converted to a uniform string format across reports.
+     *
+     * Also refer Base/Entity.php::getDates().
+     *
+     * @var array
+     */
+    protected $dates            = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
 
     /**
      * For an entity which is being exposed outside,
@@ -38,17 +60,27 @@ class PublicEntity extends UniqueIdEntity
      *
      * @var array
      */
-    protected $public = array();
+    protected $public           = [];
 
-    protected $publicSetters = array(self::ID, self::ENTITY);
+    /**
+     * Fields exposed to hosted page(invoice, subscriptions etc)
+     * where there would mostly be no authentication.
+     *
+     * @var array
+     */
+    protected $hosted           = [];
 
-    protected $amounts = array();
+    protected $publicSetters    = [
+        self::ID,
+        self::ENTITY,
+    ];
 
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
 
         $relations = $this->relationsToArrayPublic();
+
         $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);
@@ -86,23 +118,63 @@ class PublicEntity extends UniqueIdEntity
 
         unset($array[self::ENTITY]);
 
-        foreach ($this->amounts as $key)
-        {
-            if (isset($array[$key]))
-            {
-                $array[$key] = $array[$key] / 100;
-            }
-        }
-
         // Remove fields hidden in reports
+
         foreach ($this->getHiddenInReport() as $key)
         {
             unset($array[$key]);
         }
 
-        $array[self::CREATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
+        $this->formatAmountFieldsForReport($array);
+
+        $this->formatDateFieldsForReport($array);
 
         return $array;
+    }
+
+    protected function formatAmountFieldsForReport(array & $report)
+    {
+        foreach ($this->amounts as $key)
+        {
+            if (isset($report[$key]) === true)
+            {
+                $report[$key] = $report[$key] / 100;
+            }
+        }
+    }
+
+    protected function formatDateFieldsForReport(array & $report)
+    {
+        foreach ($this->dates as $key)
+        {
+            //
+            // Adding a is_numeric check here because we want
+            // to format the dates only if they are in epoch
+            // format and not in some other date format already.
+            //
+            // For example: settled_on of settlements and payouts
+            // is formatted to `d/m/Y` in accessors. We don't
+            // have to format anything there for the report.
+            //
+            if ((isset($report[$key]) === true) and
+                (is_numeric($report[$key]) === true))
+            {
+                $report[$key] = $this->getDateInFormatDMYHMS($key);
+            }
+        }
+    }
+
+    /**
+     * Returns attributes to be used in public views.
+     * E.g. Invoice hosted page, Subscription pages etc.
+     *
+     * @return array
+     */
+    public function toArrayHosted()
+    {
+        $attributes = $this->toArrayPublic();
+
+        return array_only($attributes, $this->hosted);
     }
 
     /**

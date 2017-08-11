@@ -75,18 +75,22 @@ class Entity extends Base\Entity
         'vpc_VerType',
     );
 
-    protected $guarded = array();
+    protected $guarded = [];
 
     protected $entity = 'axis_migs';
 
-    protected $appends = array('vpc_amount');
-
     public $incrementing = true;
 
-    public function getGeniusAttribute()
-    {
-        return (bool) $this->attributes['genius'];
-    }
+    protected $appends = [
+        'vpc_amount'
+    ];
+
+    protected $casts = [
+        'amex'       => 'bool',
+        'genius'     => 'bool',
+        'vpc_Amount' => 'int',
+        'vpc_amount' => 'int',
+    ];
 
     public function getVpcAmountAttribute()
     {

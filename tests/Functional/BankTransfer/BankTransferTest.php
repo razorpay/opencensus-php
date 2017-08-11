@@ -5,15 +5,19 @@ namespace RZP\Tests\Functional\BankTransfer;
 use Redis;
 use Mockery;
 use Closure;
+use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class BankTransferTest extends TestCase
 {
     use PaymentTrait;
     use PayoutTrait;
+    use SettlementTrait;
 
     public function setUp()
     {
@@ -57,6 +61,7 @@ class BankTransferTest extends TestCase
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
     public function testBankTransferRefund()
@@ -64,7 +69,9 @@ class BankTransferTest extends TestCase
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
-        $this->processBankTransfer($accountNumber, $ifsc);
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -98,6 +105,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiatePayouts();
         $this->assertNotNull($content['kotak']['payout_text_file']);
@@ -251,6 +259,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
     }
 
     public function testBankTransferProcessFailure()
@@ -366,6 +375,36 @@ class BankTransferTest extends TestCase
         // No payment created
         $payment =  $this->getLastEntity('payment', true);
         $this->assertNull($payment);
+    }
+
+    public function testBankTransferRefundReconciliation()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->processBankTransfer($accountNumber, $ifsc);
+        $payment =  $this->getLastEntity('payment', true);
+        $this->refundPayment($payment['id'], 4000000);
+        $content = $this->initiatePayouts();
+
+        $reconFile = $this->generateSetlReconciliationFile($content['kotak']['payout_text_file']);
+
+        $data = $this->reconcileSettlements($reconFile);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertEquals($attempt['utr'], $refund['arn']);
+
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+
+        $this->assertEquals($attempt['batch_fund_transfer_id'], $batch['id']);
+        $this->assertEquals($content['kotak']['payout_text_file'], $batch['urls']['kotak_payout_txt']);
+        $this->assertEquals('refund', $batch['type']);
     }
 
     protected function createVirtualAccount()

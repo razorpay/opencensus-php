@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -144,6 +145,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 976400);
         $this->assertEquals($transaction['fee'], 23600);
         $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
@@ -313,7 +315,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment('1', false);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->fixtures->merchant->edit(
@@ -353,7 +355,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -371,7 +373,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $defaultMerchantId = '10000000000000';
@@ -395,7 +397,7 @@ class CaptureTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $invoice = $this->fixtures->invoice->edit($invoice['id'], ['status' => 'expired']);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -433,7 +435,7 @@ class CaptureTest extends TestCase
             'payment_capture' => '1'
             ]);
 
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+        $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
         $this->fixtures->create(
                             'invoice',
@@ -550,7 +552,7 @@ class CaptureTest extends TestCase
 
     public function testAutoCaptureEmail()
     {
-        $time = Carbon::today('Asia/Kolkata')->timestamp;
+        $time = Carbon::today(Timezone::IST)->timestamp;
         $createdAt = $time - rand(0, 23) * 60 * 60;
 
         $attributes = [
@@ -676,6 +678,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23600);
         $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['fee_credits'], 23600);
         $this->assertEquals($transaction['credit_type'], 'fee');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
@@ -803,6 +806,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['service_tax'], 0);
+        $this->assertEquals($transaction['tax'], 0);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
@@ -952,6 +956,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['service_tax'], 0);
+        $this->assertEquals($transaction['tax'], 0);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'customer');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
@@ -1034,6 +1039,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 0);
         $this->assertEquals($transaction['service_tax'], 0);
+        $this->assertEquals($transaction['tax'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
@@ -1079,6 +1085,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23600);
         $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['fee_credits'], 23600);
         $this->assertEquals($transaction['credit_type'], 'fee');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
@@ -1116,6 +1123,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23600);
         $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'postpaid');
@@ -1198,7 +1206,7 @@ class CaptureTest extends TestCase
 
         if ($withInvoice)
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+            $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
             $this->fixtures->create(
                                 'invoice',

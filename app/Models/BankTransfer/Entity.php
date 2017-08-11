@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
 
     // Details of the sender bank account
+    const PAYER_NAME            = 'payer_name';
     const PAYER_ACCOUNT         = 'payer_account';
     const PAYER_IFSC            = 'payer_ifsc';
     const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
@@ -55,6 +56,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::PAYMENT_ID,
+        self::PAYER_NAME,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYEE_ACCOUNT,
@@ -82,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::AMOUNT,
+        self::PAYER_NAME,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYER_BANK_ACCOUNT_ID,
@@ -208,6 +211,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getPayerName()
+    {
+        return $this->getAttribute(self::PAYER_NAME);
+    }
+
     public function getPayeeAccount()
     {
         return $this->getAttribute(self::PAYEE_ACCOUNT);
@@ -226,6 +234,11 @@ class Entity extends Base\PublicEntity
     public function getPayerIfsc()
     {
         return $this->getAttribute(self::PAYER_IFSC);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
     }
 
     public function isNotified()

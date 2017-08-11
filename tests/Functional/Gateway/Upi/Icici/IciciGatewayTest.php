@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 use Cache;
 use Closure;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -541,7 +542,7 @@ EOT;
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -10,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -186,7 +188,7 @@ class Gateway extends Base\Gateway
         $data = $this->createDefaultRequestData($input);
 
         $paymentDate = Carbon::createFromTimestamp($payment['created_at'],
-                                                   'Asia/Kolkata')
+                                                   Timezone::IST)
                                                    ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
@@ -212,7 +214,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($queryString));
     }
@@ -273,7 +275,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
         $string = str_replace(' ', '+', $data['ES']);
 

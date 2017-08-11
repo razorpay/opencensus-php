@@ -235,7 +235,7 @@ class Base extends BaseModel\Core
         $this->batch->setSuccessCount($successCount);
         $this->batch->setFailureCount($failureCount);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $this->batch->setProcessedAt($now);
 

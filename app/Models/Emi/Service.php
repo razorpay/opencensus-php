@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -92,7 +93,7 @@ class Service extends Base\Service
 
     protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email = null)
     {
-        $emiPaymentsForBank = $this->repo->payment->fetchEmiPaymentsBetween($from, $to, $bankIfsc);
+        $emiPaymentsForBank = $this->repo->payment->fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bankIfsc);
 
         $count = $emiPaymentsForBank->count();
 
@@ -115,12 +116,12 @@ class Service extends Base\Service
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp - 1;
 
         if (isset($input['on']))
         {
-            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
             $fromTimeStamp = $from->timestamp;
 

@@ -106,7 +106,7 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
-            $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
+            $timestamp = Carbon::now()->getTimestamp();
 
             $attempts = $this->repo
                              ->fund_transfer_attempt
@@ -200,9 +200,10 @@ class Core extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            FundTransferAttempt\Entity::CHANNEL => $payout->getChannel(),
-            FundTransferAttempt\Entity::VERSION => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS  => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
+            FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);
@@ -255,6 +256,8 @@ class Core extends Base\Core
         $payout->setFees($txn->getFee());
 
         $payout->setServiceTax($txn->getServiceTax());
+
+        $payout->setTax($txn->getTax());
 
         $this->validateMerchantBalance($payout);
 

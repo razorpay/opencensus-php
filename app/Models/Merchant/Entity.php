@@ -16,6 +16,8 @@ use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
 {
+    use \Conner\Tagging\Taggable;
+
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
@@ -198,6 +200,21 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE       => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+    ];
+
+    protected $eventFields = [
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::WEBSITE,
+        self::CATEGORY,
+        self::CATEGORY2,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::ACTIVATED_AT,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -754,7 +771,7 @@ class Entity extends Base\PublicEntity
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
 
         // Just so there is no whitespace before or after the email
-        return array_map('trim', $emails);
+        return array_filter(array_map('trim', $emails));
     }
 
     protected function setEmailAttribute($email)
@@ -990,7 +1007,7 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function toArrayReport() : array
+    public function toArrayReport(): array
     {
         $data = parent::toArrayReport();
 
@@ -1007,8 +1024,6 @@ class Entity extends Base\PublicEntity
         $data = array_only($data, $reportFields);
 
         $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
-
-        $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::ACTIVATED_AT);
 
         return $data;
     }
@@ -1079,5 +1094,27 @@ class Entity extends Base\PublicEntity
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
         return $attributes;
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        if ($this->merchantDetail !== null)
+        {
+            $merchantDetailAttributes = $this->merchantDetail->toArrayEvent();
+
+            $merchantAttributes = array_merge($merchantAttributes, $merchantDetailAttributes);
+        }
+
+        return $merchantAttributes;
     }
 }

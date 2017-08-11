@@ -55,6 +55,19 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createEventAccount()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'id'        => '100001Razorpay',
+            'name'      => 'TestMerchant',
+            'email'     => 'abc.def@gmail.com',
+            'website'   => 'http://goyette.net/',
+            'category'  => 1100,
+        ]);
+
+        return $merchant;
+    }
+
     public function createApiFeeAccount()
     {
         $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);

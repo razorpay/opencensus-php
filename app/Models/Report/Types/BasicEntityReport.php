@@ -158,7 +158,7 @@ class BasicEntityReport extends BaseReport
 
         $this->createReportEntity($input);
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $filename = $this->generateFilename($now);
 
@@ -511,7 +511,7 @@ class BasicEntityReport extends BaseReport
 
         $s3File = $creator->localFilePath($filePath)
                           ->extension(FileStore\Format::CSV)
-                          ->mime('text/csv')
+                          ->mime('application/octet-stream')
                           ->name('reports/' . $fileName)
                           ->store(FileStore\Store::S3)
                           ->type(FileStore\Type::REPORT)

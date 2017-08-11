@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call('GroupMapSeeder');
         $this->call('WorkflowSeeder');
         $this->call('TaxGroupAndTaxSeeder');
+        $this->call('DisputeReasonSeeder');
     }
 
     private function seed()
@@ -1644,11 +1645,12 @@ class DatabaseSeeder extends Seeder
         DB::table(Table::TERMINAL)->insert(
             array(
                 'id'                        => Terminal\Shared::MPESA_RAZORPAY_TERMINAL,
-                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'merchant_id'               => Account::TEST_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_MPESA,
                 'card'                      => '0',
                 'netbanking'                => '0',
                 'gateway_merchant_id'       => 'random_merchant_id',
+                'gateway_merchant_id2'      => 'random_merchant_id2',
                 'gateway_secure_secret'     => Crypt::encrypt('demo_account_mpesa_secure_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),

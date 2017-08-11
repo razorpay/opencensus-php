@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
     const BATCH_IDS                = 'batch_ids';
+    const TYPES                    = 'types';
 
     // ---------------------- Input Keys End -------------------------
 
@@ -114,6 +116,7 @@ class Entity extends Base\PublicEntity
     const EMAIL                    = 'email';
     const SMS                      = 'sms';
     const ITEMS                    = 'items';
+    const IS_PAID                  = 'is_paid';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -126,6 +129,7 @@ class Entity extends Base\PublicEntity
     // ------------------------ Relation Keys ------------------------
 
     const ORDER                    = 'order';
+    const PAYMENTS                 = 'payments';
 
     protected static $sign         = 'inv';
 
@@ -334,9 +338,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT                => 'int',
         self::AMOUNT_PAID           => 'int',
         self::AMOUNT_DUE            => 'int',
-        self::DATE                  => 'int',
-        self::EXPIRE_BY             => 'int',
-        self::EXPIRED_AT            => 'int',
         self::GROUP_TAXES_DISCOUNTS => 'bool',
     ];
 
@@ -370,7 +371,9 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS,
     ];
 
-    protected $reportDates = [
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::DATE,
         self::EXPIRE_BY,
         self::ISSUED_AT,
@@ -386,7 +389,7 @@ class Entity extends Base\PublicEntity
 
     public function setDateAttribute($date)
     {
-        if (empty($date))
+        if (empty($date) === true)
         {
             $date = null;
         }
@@ -748,7 +751,7 @@ class Entity extends Base\PublicEntity
         if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
             $timestampKey = $status . '_at';
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
@@ -987,7 +990,7 @@ class Entity extends Base\PublicEntity
         // If DATE is sent, even as null use that only(so not using isset)
         if (array_key_exists(Entity::DATE, $input) === false)
         {
-            $now = Carbon::now('Asia/Kolkata')->timestamp;
+            $now = Carbon::now()->getTimestamp();
 
             $this->setAttribute(self::DATE, $now);
         }
@@ -1025,7 +1028,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)
+            $dueBy = Carbon::now(Timezone::IST)->addDays(self::DEFAULT_DUE_DAYS)
                                                 ->timestamp;
         }
 
@@ -1040,7 +1043,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $scheduledAt = Carbon::now('Asia/Kolkata')->timestamp;
+            $scheduledAt = Carbon::now()->getTimestamp();
         }
 
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
@@ -1152,17 +1155,6 @@ class Entity extends Base\PublicEntity
         }
 
         $report = parent::toArrayReport();
-
-        // Convert dates
-        // @todo: This needs to be moved to parent method
-
-        foreach ($this->reportDates as $key)
-        {
-            if (isset($report[$key]))
-            {
-                $report[$key] = $this->getDateInFormatDMYHMS($key);
-            }
-        }
 
         // Add flattened customer details in report
 

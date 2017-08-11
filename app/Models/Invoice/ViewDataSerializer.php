@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -102,11 +103,17 @@ class ViewDataSerializer extends Base\Core
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
-        $isInvoicePaid = $this->invoice->isPaid();
+        $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();
 
-        $invoiceData += [
-            'is_paid' => $isInvoicePaid,
-        ];
+        // Gets public view attributes of all payments against this invoice
+        // in desc order.
+
+        $invoiceData[Entity::PAYMENTS] = $this->invoice
+                                              ->load(Entity::PAYMENTS)
+                                              ->payments
+                                              ->sortByDesc(Entity::CREATED_AT)
+                                              ->values()
+                                              ->toArrayHosted();
 
         foreach (self::$amounts as $key)
         {
@@ -121,7 +128,7 @@ class ViewDataSerializer extends Base\Core
 
             if ($epoch !== null)
             {
-                $epochFormatted = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                $epochFormatted = Carbon::createFromTimestamp($epoch, Timezone::IST)
                                         ->format('j M Y');
             }
 

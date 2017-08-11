@@ -3,6 +3,7 @@
 namespace RZP\Models\Card;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
@@ -318,7 +319,7 @@ class Entity extends Base\PublicEntity
 
         $month = $this->getExpiryMonth();
 
-        return Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+        return Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
                         ->timestamp;
     }
@@ -500,6 +501,12 @@ class Entity extends Base\PublicEntity
 
     public function isBlocked()
     {
+        // if iin is missing from database, allow transaction on it
+        if ($this->iinRelation === null)
+        {
+            return false;
+        }
+
         $iin = $this->getIin();
 
         $last4 = $this->getLast4();
