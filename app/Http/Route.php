@@ -1210,6 +1210,7 @@ final class Route
         'admin_fetch_entity_multiple'      => '*',
         'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
         'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
+        'retry_refund_failed'              => Permission::RETRY_REFUND_FAILED,
         'payment_refund'                   => Permission::EDIT_PAYMENT_REFUND,
         'payment_capture'                  => Permission::EDIT_PAYMENT_CAPTURE,
         'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
