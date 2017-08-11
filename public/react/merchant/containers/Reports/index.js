@@ -180,7 +180,7 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    const account_id = user.isMarketplaceEnabled &&
+    const account_id = this.props.user.isMarketplaceEnabled &&
       this.linkedAccountOptions.indexOf(this.props.entity) !== -1
       ? this.state.merchantSelected.id
       : this.props.user.current;
@@ -208,7 +208,10 @@ export default class ReportsContainer extends Component {
       data: data,
     };
 
-    if (user.isMarketplaceEnabled && account_id !== this.props.user.current) {
+    if (
+      this.props.user.isMarketplaceEnabled &&
+      account_id !== this.props.user.current
+    ) {
       data.account_id = 'acc_' + account_id; // It will be handled at api level later
     }
 
