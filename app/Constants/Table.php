@@ -12,6 +12,7 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const RISK                  = 'risk';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
