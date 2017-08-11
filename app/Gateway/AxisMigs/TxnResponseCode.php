@@ -62,7 +62,7 @@ class TxnResponseCode
             'E5408'   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
             'E5414'   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
             'E5415'   => Error\ErrorCode::GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED,
-            'I5154'   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+            'I5154'   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
             'I5166'   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
             'I5426'   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
             'W9520'   => Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR,

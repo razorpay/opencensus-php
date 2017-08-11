@@ -78,6 +78,7 @@ class Entity
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
     const CREDIT_TRANSACTION    = 'credit_transaction';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
@@ -135,6 +136,7 @@ class Entity
     const NETBANKING_FEDERAL    = 'netbanking_federal';
     const NETBANKING_RBL        = 'netbanking_rbl';
     const NETBANKING_INDUSIND   = 'netbanking_indusind';
+    const NETBANKING_PNB        = 'netbanking_pnb';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
@@ -194,6 +196,7 @@ class Entity
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
+        self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
@@ -232,6 +235,7 @@ class Entity
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Indusind::class,
+        self::NETBANKING_PNB        => \RZP\Gateway\Netbanking\Pnb::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
@@ -268,6 +272,7 @@ class Entity
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_PNB        => \RZP\Gateway\Netbanking\Base::class,
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,

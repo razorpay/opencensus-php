@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         Entity::FILTER_TYPE      => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
         Entity::LOAD             => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
         Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|max:30',
+        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
         Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
@@ -33,8 +34,8 @@ class Validator extends Base\Validator
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
         Entity::MIN_AMOUNT       => 'sometimes|filled|integer|min:0',
         Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
-        Entity::EMI_DURATION     => 'sometimes_if:method,emi|integer|in:3,6,9,12,18,24',
-        Entity::EMI_SUBVENTION   => 'sometimes_if:method,emi|in:customer,merchant',
+        Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
         Entity::IINS             => 'sometimes|filled|array',
         Entity::CURRENCY         => 'sometimes|filled|in:INR,USD'
     ];
@@ -148,10 +149,11 @@ class Validator extends Base\Validator
         switch($method)
         {
             case Method::CARD:
-            case Method::EMI:
-
                 $this->validateCardIssuer($input);
+                break;
 
+            case Method::EMI:
+                $this->validateEmiIssuer($input);
                 break;
 
             case Method::NETBANKING:
@@ -180,6 +182,25 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid bank code');
+        }
+    }
+
+    protected function validateEmiIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $gatewayToEmiBankMap = array_flip(Gateway::$emiBankToGatewayMap);
+
+        $gateway = $input[Entity::GATEWAY];
+        $issuer = $input[Entity::ISSUER] ?? null;
+
+        if ($issuer !== $gatewayToEmiBankMap[$gateway])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid for emi for gateway ' . $gateway);
         }
     }
 

@@ -4,7 +4,7 @@ namespace RZP\Trace;
 
 use RZP\Exception\InvalidArgumentException;
 
-class TraceCode
+class TraceCode extends \Razorpay\Trace\TraceCode
 {
     /*
      * Payment component error messages
@@ -172,6 +172,9 @@ class TraceCode
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
+    const TERMINAL_FILTER_RULE_MATCH                    = 'TERMINAL_FILTER_RULE_MATCH';
+    const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
@@ -452,6 +455,7 @@ class TraceCode
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
     const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
+    const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -770,6 +774,7 @@ class TraceCode
     const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
     const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_FILTER_RULES                          = 'GATEWAY_FILTER_RULES';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';
@@ -781,6 +786,7 @@ class TraceCode
 
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
+    const DISPUTE_EDIT_REQUEST                          = 'DISPUTE_EDIT_REQUEST';
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';

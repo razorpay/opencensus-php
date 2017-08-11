@@ -18,17 +18,17 @@ class FailedTerminalsSorter extends Terminal\Sorter
      * @param $terminals
      * @param $input
      */
-    public function failedSorter($terminals, $input)
+    public function failedSorter($terminals)
     {
         $sortedTerminals = $terminals;
 
-        if (isset($input['failed_terminals']))
+        if (empty($this->options->getFailedTerminals() === false))
         {
             $nonFailedTerminals = [];
 
             $failedTerminals = [];
 
-            $failedTerminalIds = $input['failed_terminals'];
+            $failedTerminalIds = $this->options->getFailedTerminals();
 
             // Flipping converts array into assoc array which has the keys indexed
             $flipped = array_flip($failedTerminalIds);

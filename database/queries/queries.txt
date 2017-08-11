@@ -2341,3 +2341,6 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_shared_terminal_index (shared_terminal),
     ADD INDEX gateway_rules_network_category_index (network_category),
     ADD INDEX gateway_rules_category2_index (category2);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;

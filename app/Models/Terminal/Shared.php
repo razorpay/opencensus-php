@@ -27,6 +27,7 @@ class Shared
     const NETBANKING_RBL_TERMINAL           = '100NbRblTermnl';
     const NETBANKING_RBL_TPV_TERMINAL       = '100NbRblTpvTml';
     const NETBANKING_INDUSIND_TERMINAL      = '100NbIndnTrmnl';
+    const NETBANKING_PNB_TERMINAL           = '100NbPunbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL        = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
@@ -62,6 +63,7 @@ class Shared
         self::NETBANKING_FEDERAL_TERMINAL,
         self::NETBANKING_RBL_TERMINAL,
         self::NETBANKING_INDUSIND_TERMINAL,
+        self::NETBANKING_PNB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -98,6 +100,7 @@ class Shared
         self::NETBANKING_FEDERAL_TERMINAL   => Gateway::NETBANKING_FEDERAL,
         self::NETBANKING_RBL_TERMINAL       => Gateway::NETBANKING_RBL,
         self::NETBANKING_INDUSIND_TERMINAL  => Gateway::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB_TERMINAL       => Gateway::NETBANKING_PNB_TERMINAL,
         self::OLAMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL     => Gateway::WALLET_PAYZAPP,

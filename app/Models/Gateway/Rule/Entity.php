@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
      * Attributes used for comparing terminal to rule
      */
     const COMPARISON_ATTRIBUTES = [
+        self::METHOD,
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
@@ -85,9 +86,8 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::SHARED_TERMINAL,
         self::INTERNATIONAL,
-        self::IINS,
         self::EMI_DURATION,
-        self::EMI_SUBVENTION,
+        self::IINS,
         self::CURRENCY,
     ];
 
@@ -101,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::LOAD            => 'int',
         self::MIN_AMOUNT      => 'int',
         self::MAX_AMOUNT      => 'int',
+        self::EMI_DURATION    => 'int',
         self::IINS            => 'array',
     ];
 
@@ -183,9 +184,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getGroup()
+    {
+        return $this->getAttribute(self::GROUP);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getFilterType()
+    {
+        return $this->getAttribute(self::FILTER_TYPE);
     }
 
     public function getMethod()
@@ -258,11 +269,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
     }
-
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
@@ -359,7 +374,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->match($key, $terminal) === false)
+            if ($this->compare($key, $terminal) === false)
             {
                 return false;
             }
@@ -368,8 +383,48 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function match(string $key, Terminal\Entity $terminal): bool
+    protected function compare(string $key, Terminal\Entity $terminal): bool
     {
+        $compareFunc = 'compare' . studly_case($key);
+
+        if (method_exists($this, $compareFunc) === true)
+        {
+            return $this->$compareFunc($terminal);
+        }
+
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
+    }
+
+    protected function compareMethod(Terminal\Entity $terminal): bool
+    {
+        $method = $this->getMethod();
+
+        switch ($method)
+        {
+            case Method::CARD:
+                return (($terminal->isCardEnabled() === true) and ($terminal->isEmiEnabled() === false));
+
+            case Method::NETBANKING:
+                return ($terminal->isNetbankingEnabled() === true);
+
+            case Method::EMI:
+                return ($terminal->isEmiEnabled() === true);
+
+            case Method::WALLET:
+                return ($this->getGateway() === $terminal->getGateway());
+
+            case Method::UPI:
+                return ($terminal->isUpiEnabled() === true);
+
+            case Method::AEPS:
+                return ($terminal->isAepsEnabled() === true);
+        }
+    }
+
+    protected function compareSharedTerminal(Terminal\Entity $terminal): bool
+    {
+        $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
+
+        return ($isApplicableForSharedTerminal === $terminal->isShared()) ? true : false;
     }
 }

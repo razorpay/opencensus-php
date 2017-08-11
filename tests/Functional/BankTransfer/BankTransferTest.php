@@ -69,7 +69,9 @@ class BankTransferTest extends TestCase
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
-        $this->processBankTransfer($accountNumber, $ifsc);
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -103,6 +105,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiatePayouts();
         $this->assertNotNull($content['kotak']['payout_text_file']);
@@ -256,6 +259,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
     }
 
     public function testBankTransferProcessFailure()

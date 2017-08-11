@@ -200,9 +200,10 @@ class Core extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            FundTransferAttempt\Entity::CHANNEL => $payout->getChannel(),
-            FundTransferAttempt\Entity::VERSION => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS  => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
+            FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);
