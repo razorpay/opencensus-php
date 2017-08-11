@@ -99,6 +99,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
                 <option value="INDB">Indusind Bank</option>
+                <option value="PUNB">Punjab National Bank</option>
             </select>
         </td>
     </tr>
