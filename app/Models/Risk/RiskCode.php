@@ -4,13 +4,9 @@ namespace RZP\Models\Risk;
 
 class RiskCode
 {
-    // Risk codes for suspected fraud payments
+    const PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND    = 'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND';
 
-    const PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND = 'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND';
+    const PAYMENT_FAILED_DUE_TO_BLOCKED_CARD    = 'PAYMENT_FAILED_DUE_TO_BLOCKED_CARD';
 
-
-    // Risk codes for confirmed fraud payments
-
-    const PAYMENT_FAILED_DUE_TO_BLOCKED_CARD = 'PAYMENT_FAILED_DUE_TO_BLOCKED_CARD';
-    const PAYMENT_DENIED_DUE_TO_RISK         = 'PAYMENT_DENIED_BY_RISK';
+    const PAYMENT_DECLINED_DUE_TO_RISK          = 'PAYMENT_DECLINED_DUE_TO_RISK';
 }

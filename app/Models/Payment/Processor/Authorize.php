@@ -192,9 +192,13 @@ trait Authorize
 
                 $this->updatePaymentAuthFailed($e);
 
-                $internalErrorCode = $this->payment->getInternalErrorCode();
+                $internalErrorCode = $payment->getInternalErrorCode();
 
-                $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
+                // TODO: Remove this after testing on prod
+                if ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT)
+                {
+                    $this->logRiskFailureForGateway($payment, $internalErrorCode);
+                }
 
                 throw $e;
             }

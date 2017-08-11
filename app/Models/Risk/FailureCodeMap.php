@@ -9,7 +9,7 @@ class FailureCodeMap
     public static $codes = [
         ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK => [
             Entity::SOURCE     => Source::BANK,
-            Entity::REASON     => RiskCode::PAYMENT_DENIED_DUE_TO_RISK,
+            Entity::REASON     => RiskCode::PAYMENT_DECLINED_DUE_TO_RISK,
             Entity::FRAUD_TYPE => Type::SUSPECTED,
         ],
     ];

@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\Trace;
 
 class Core extends Base\Core
 {
@@ -48,22 +49,38 @@ class Core extends Base\Core
     }
 
     public function logPaymentForSource(
-        Payment\Entity $payment, string $source, array $data = [])
+        Payment\Entity $payment,
+        string $source,
+        array $data = [])
     {
-        $func = 'logPaymentFor' . studly_case($source);
-
-        if (method_exists($this, $func) === true)
+        try
         {
-            return $this->{$func}($payment, $data);
+            $func = 'logPaymentFor' . studly_case($source);
+
+            if (method_exists($this, $func) === true)
+            {
+                return $this->{$func}($payment, $data);
+            }
+
+            throw new Exception\LogicException(
+                "Risk Action - $func not found",
+                ErrorCode::SERVER_ERROR_MISSING_HANDLER, $data
+            );
         }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                ErrorCode::SERVER_ERROR_LOG_RISK,
+                [
+                    'data'          => $data,
+                    'payment_id'    => $payment->getId(),
+                    'source'        => $source
+                ]);
 
-        $error = "Risk Action - $func not found";
-
-        $data[Entity::PAYMENT_ID] = $payment->getId();
-        $data[Entity::SOURCE] = $source;
-
-        throw new Exception\LogicException(
-            $error, ErrorCode::SERVER_ERROR_MISSING_HANDLER, $data);
+            return null;
+        }
     }
 
     protected function logPaymentForGateway(

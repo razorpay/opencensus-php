@@ -473,6 +473,7 @@ class ErrorCode
     const SERVER_ERROR_APP_TOKEN_NOT_PRESENT                                        = 'SERVER_ERROR_APP_TOKEN_NOT_PRESENT';
     const SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY                      = 'SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY';
     const SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT                                 = 'SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT';
+    const SERVER_ERROR_LOG_RISK                                                     = 'SERVER_ERROR_LOG_RISK';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
