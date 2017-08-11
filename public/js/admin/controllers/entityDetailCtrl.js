@@ -45,17 +45,19 @@ app
       $scope.hasRetryRefund = false;
       $scope.isRetryRefundProcessing = false;
 
-      $scope.generate = function(entityType) {
-        fetchEntity(entityType);
-      };
-
-      admin.identity().then(function(data) {
+      var adminData = admin.identity().then(function(data) {
         $scope.admin = data;
       });
 
+      $scope.generate = function(entityType) {
+        adminData.then(function() {
+          fetchEntity(entityType);
+        });
+      };
+
       function hasRetryRefund(entity) {
         return (
-          entity.has_retry_refund &&
+          $scope.admin.permissions.indexOf('retry_refund_failed') !== -1 &&
           $scope.loadType === 'refund' &&
           entity.status === 'failed'
         );
