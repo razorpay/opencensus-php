@@ -47,6 +47,10 @@
            dynamic-tooltip-pos="top" dynamic-tooltip="create_netbanking_refund">
           Generate Refunds Excel (Netbanking)
         </a>
+        <a href class="list-group-item" ng-click="openGenerateEmiFiles()"
+           dynamic-tooltip-pos="top" dynamic-tooltip="generate_emi_files">
+          Generate Emi Excel
+        </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
            ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1"
            dynamic-tooltip-pos="top" dynamic-tooltip="edit_authorized_failed_payment">
@@ -605,11 +609,84 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label for="email_self" class="col-lg-2 control-label">Send Email to self</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" class="form-control m-b" name="email_self" ng-model="email_self" />
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode)">Generate</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode, email_self)">Generate</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="emiGenerateModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Generate EMI Files</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="from" class="col-lg-2 control-label">From</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="from_date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="to" class="col-lg-2 control-label">To</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="to_date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="bank" class="col-lg-2 control-label">Bank</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="bank" ng-model="bank">
+            <!-- Take care to keep these capitalized -->
+            <option value="KKBK">KOTAK</option>
+            <option value="UTIB">AXIS</option>
+            <option value="INDB">INDUS_IND</option>
+            <option value="RATN">RBL</option>
+            <option value="SCBL">SCBL</option>
+            <option value="ICIC">ICICI</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email_self" class="col-lg-2 control-label">Send Email to self</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" class="form-control m-b" name="email_self" ng-model="email_self" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date, from_date, to_date,bank, mode, email_self)">Generate</button>
   </div>
 </script>
 
