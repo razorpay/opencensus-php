@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::TYPE                        => 'sometimes|integer|max:7',
-        Entity::MODE                        => 'required|in:1,2,3',
+        Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
@@ -322,6 +322,15 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
+        // Adding this for backward compatibility
+        // Will remove when dashboard starts sending both fields
+        // Tests will also need to be updated
+        if ((isset($input[Entity::MODE]) === false) or
+            (isset($input[Entity::TYPE]) === false))
+        {
+            return;
+        }
+
         $gateway = $input[Entity::GATEWAY];
 
         $type = $input[Entity::TYPE];
