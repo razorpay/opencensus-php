@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
+import { titleCase } from 'rzp/utils/rzp-utils';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LineItemReadOnlyTable from './LineItemReadOnlyTable';
@@ -93,6 +94,7 @@ export default props => {
                     label="Status"
                     value={() => <InvoiceStatusLabel status={invoice.status} />}
                   />
+                  <DetailRow label="Type" value={titleCase(invoice.type)} />
                   <DetailRow
                     label="Payment Id"
                     value={() => {
@@ -183,15 +185,6 @@ export default props => {
                   </div>
 
                   <div class="list-group details-row-container">
-                    <DetailRow
-                      label="Last Updated At"
-                      value={() => (
-                        <Time
-                          value={invoice.updated_at}
-                          format="DD MMM YYYY, hh:mm:ss a"
-                        />
-                      )}
-                    />
                     <DetailRow
                       label="Created At"
                       value={() => (

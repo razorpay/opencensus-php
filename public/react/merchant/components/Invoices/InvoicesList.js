@@ -16,7 +16,7 @@ const InvoiceListItem = props => {
       <td>
         {
           do {
-            if (invoice.type === 'link') {
+            if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
               if (isNewUIEnabled) {
                 <NavLink to={`/paymentlinks/${invoice.id}`}>
                   <code>{invoice.id}</code>
@@ -48,7 +48,7 @@ const InvoiceListItem = props => {
           email: customer.customer_email,
         })}
       </td>
-      <td><CopyLink url={invoice.short_url} /></td>
+      <td>{invoice.short_url && <CopyLink url={invoice.short_url} />}</td>
       {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
       <td>
         <InvoiceStatusLabel status={invoice.status} />
