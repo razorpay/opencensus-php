@@ -16,9 +16,9 @@ class Gateway extends Base\Gateway
     protected $tpv;
 
     protected $map = [
-        'CustID'    => NetbankingEntity::CUSTOMER_ID,
-        'MerCD'     => NetbankingEntity::MERCHANT_CODE,
-        'AMT'       => NetbankingEntity::AMOUNT,
+        RequestFields::CUSTOMER_ID      => NetbankingEntity::CUSTOMER_ID,
+        RequestFields::MERCHANT_CODE    => NetbankingEntity::MERCHANT_CODE,
+        RequestFields::AMOUNT           => NetbankingEntity::AMOUNT,
     ];
 
     public function authorize(array $input)
@@ -37,6 +37,28 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway'          => $this->gateway,
+                'gateway_response' => $input['gateway'],
+                'payment_id'       => $input['payment']['id']
+            ]
+        );
+
+        $this->assertPaymentId(
+            $input['payment']['id'],
+            $content[ResponseFields::PAYMENT_ID]
+        );
+
+        $this->checkCallbackStatus($content);
+        sd($input);
     }
 
     protected function getPaymentRequestData($input)
