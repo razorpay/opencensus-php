@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 
 class Validator extends Base\Validator
@@ -33,6 +34,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::TYPE                        => 'sometimes|integer|max:7',
+        Entity::MODE                        => 'required|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
@@ -56,6 +58,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY,
         Entity::CURRENCY,
         Entity::GATEWAY_ACQUIRER,
+        Entity::MODE,
     ];
 
     protected static $reassignRules = [
@@ -106,6 +109,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::TYPE                        => 'sometimes|integer|max:7',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
@@ -303,7 +307,8 @@ class Validator extends Base\Validator
             $input['category'],
             $input['tpv'],
             $input[Entity::NETWORK_CATEGORY],
-            $input[Entity::GATEWAY_ACQUIRER]);
+            $input[Entity::GATEWAY_ACQUIRER],
+            $input[Entity::MODE]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -312,6 +317,62 @@ class Validator extends Base\Validator
         if (property_exists(__CLASS__, $var))
         {
             $this->validateInput($op, $input);
+        }
+    }
+
+    protected function validateMode($input)
+    {
+        $gateway = $input[Entity::GATEWAY];
+
+        $type = $input[Entity::TYPE];
+
+        // FirstData N3DS terminals are always in purchase mode
+        //
+        $isFirstDataNon3DS = (($gateway === Gateway::FIRST_DATA) and
+                              (Type::isApplicable($type, Type::RECURRING_NON_3DS)));
+
+        // Most non-card gateways have terminals only in purchase mode
+        //
+        // Exceptions are Sharp (which is a test gateway),
+        // OpenWallet (which is a mock gateway), and Atom.
+        $nonCardPurchaseExceptions = [
+            Gateway::SHARP,
+            Gateway::ATOM,
+            Gateway::WALLET_OPENWALLET
+        ];
+
+        $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
+                                    (in_array($gateway, $nonCardPurchaseExceptions, true)));
+
+        // Migs, Amex, and OpenWallet terminals are always in auth-capture mode
+        //
+        $authCaptureOnly = [
+            Gateway::AXIS_MIGS,
+            Gateway::AMEX,
+            Gateway::WALLET_OPENWALLET
+        ];
+
+        $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
+
+        if ((($isFirstDataNon3DS === true) or ($isNonCardNonMockGateway === true)) and
+            ($input[Entity::MODE] !== Mode::PURCHASE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'FirstData Non-3DS terminals must be in Purchase mode',
+                Entity::GATEWAY);
+        }
+        else if (($isAuthCaptureOnlyGateway === true) and
+                 ($input[Entity::MODE] !== Mode::AUTH_CAPTURE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $input['gateway'] . ' terminals must be in AuthCapture mode',
+                Entity::GATEWAY);
+        }
+        else if ($input[Entity::MODE] !== Mode::DUAL)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $input['gateway'] . ' terminals must be in Dual mode',
+                Entity::GATEWAY);
         }
     }
 

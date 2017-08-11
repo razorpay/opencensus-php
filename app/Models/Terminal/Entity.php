@@ -140,7 +140,6 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         'method',
-        self::MODE,
     ];
 
     protected static $modifiers = [
@@ -529,55 +528,6 @@ class Entity extends Base\PublicEntity
             {
                 $this->setAttribute($method, 0);
             }
-        }
-    }
-
-    public function generateMode($input)
-    {
-        $gateway = $input[self::GATEWAY];
-
-        $type = $input[self::TYPE];
-
-        // FirstData N3DS terminals are always in purchase mode
-        //
-        $isFirstDataNon3DS = (($gateway === Payment\Gateway::FIRST_DATA) and
-                              (Type::isApplicable($type, Type::RECURRING_NON_3DS)));
-
-        // Most non-card gateways have terminals only in purchase mode
-        //
-        // Exceptions are Sharp (which is a test gateway),
-        // OpenWallet (which is a mock gateway), and Atom.
-        $nonCardPurchaseExceptions = [
-            Payment\Gateway::SHARP,
-            Payment\Gateway::ATOM,
-            Payment\Gateway::WALLET_OPENWALLET
-        ];
-
-        $isNonCardNonMockGateway = (($this->isCardEnabled() === false) and
-                                    (in_array($gateway, $nonCardPurchaseExceptions, true)));
-
-        // Migs, Amex, and OpenWallet terminals are always in auth-capture mode
-        //
-        $authCaptureOnly = [
-            Payment\Gateway::AXIS_MIGS,
-            Payment\Gateway::AMEX,
-            Payment\Gateway::WALLET_OPENWALLET
-        ];
-
-        $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
-
-        if (($isFirstDataNon3DS === true) or
-            ($isNonCardNonMockGateway === true))
-        {
-            $this->setAttribute(self::MODE, Mode::PURCHASE);
-        }
-        else if ($isAuthCaptureOnlyGateway === true)
-        {
-            $this->setAttribute(self::MODE, Mode::AUTH_CAPTURE);
-        }
-        else
-        {
-            $this->setAttribute(self::MODE, Mode::DUAL);
         }
     }
 
