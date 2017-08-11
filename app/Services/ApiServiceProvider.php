@@ -125,8 +125,6 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerExchange();
 
-        $this->registerValidatorResolver();
-
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
@@ -183,15 +181,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
-        });
-    }
-
-    protected function registerValidatorResolver()
-    {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
-        {
-            return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 

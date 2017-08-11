@@ -4,7 +4,7 @@ namespace RZP\Trace;
 
 use RZP\Exception\InvalidArgumentException;
 
-class TraceCode
+class TraceCode extends \Razorpay\Trace\TraceCode
 {
     /*
      * Payment component error messages
