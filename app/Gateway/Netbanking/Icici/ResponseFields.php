@@ -16,9 +16,10 @@ class ResponseFields
     const LC_STATUS        = 'status';
 
     const BILL_REF_NUM     = 'BILL REF NUMBER';
-    const US_BILL_REF_NUM  = 'BILL_REF_NUMBER';
     const PAYMENTID        = 'PAYMENTID';
     const CONSUMER_CODE    = 'CONSUMER CODE';
+
+    const US_BILL_REF_NUM  = 'BILL_REF_NUMBER';
     const US_CONSUMER_CODE = 'CONSUMER_CODE';
     const UC_AMOUNT        = 'AMOUNT';
 }

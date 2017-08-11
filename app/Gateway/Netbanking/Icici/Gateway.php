@@ -384,31 +384,64 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
-        {
-            $status = Confirmation::YES;
-        }
-        else
-        {
-            $status = Confirmation::NO;
-        }
+        $confirmation = $this->getConfirmationFromContent($content);
 
         $attributes = [];
 
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes = [Base\Entity::STATUS => $status];
+            $attributes = [Base\Entity::STATUS => $confirmation];
         }
 
-        if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
-            (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
+        if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
         {
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $this->getBankPaymentIdFromContent($content);
         }
 
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    protected function getConfirmationFromContent($content)
+    {
+        $confirmation = Confirmation::NO;
+
+        if (isset($content[ResponseFields::STATUS]) === true)
+        {
+            $status = $content[ResponseFields::STATUS];
+
+            // Yes, the corporate verify success is Y
+            if (($this->isCorporateBanking() === true) and
+                ($status === Status::Y))
+            {
+                $confirmation = Confirmation::YES;
+            }
+
+            // retail verify success is success
+            if (($this->isCorporateBanking() === false) and
+                ($status === Status::SUCCESS))
+            {
+                $confirmation = Confirmation::YES;
+            }
+        }
+
+        return $confirmation;
+    }
+
+    protected function getBankPaymentIdFromContent($content)
+    {
+        if(($this->isCorporateBanking() === true) and
+           (isset($content[ResponseFields::PAYMENTID]) === true))
+        {
+            return $content[ResponseFields::PAYMENTID];
+        }
+
+        if(($this->isCorporateBanking() === false) and
+           (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
+        {
+            return $content[ResponseFields::BANK_PAYMENT_ID];
+        }
     }
 
     protected function getAuthSuccessStatus()
@@ -423,6 +456,7 @@ class Gateway extends Base\Gateway
      * */
     protected function preProcessVerifyResponse(&$content)
     {
+        // successful case
         $content = str_replace(ResponseFields::BILL_REF_NUM, ResponseFields::US_BILL_REF_NUM, $content);
 
         $content = str_replace(ResponseFields::CONSUMER_CODE, ResponseFields::US_CONSUMER_CODE, $content);
