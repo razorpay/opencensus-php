@@ -187,8 +187,8 @@
           </div>
 
           <div class="redirect-message">
-            <center><i>Redirecting you to the Merchant Site...</i></center>
             <br/>
+            <center><i>Redirecting you to the Merchant Site...</i></center>
           </div>
 
           @if ($data['invoice']['partial_payment'] && $data['invoice']['amount_due'] > 0)
