@@ -100,6 +100,7 @@ class Entity extends Base\PublicEntity
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
     const BATCH_IDS                = 'batch_ids';
+    const TYPES                    = 'types';
 
     // ---------------------- Input Keys End -------------------------
 

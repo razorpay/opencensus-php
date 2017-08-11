@@ -170,7 +170,7 @@ class NodalAccount
                 Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
                 Headings::IFSC_CODE               => $ba->getIfscCode(),
                 Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
-                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                Headings::CREDIT_NARRATION        => $attempt->getNarration() ?? 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
                 Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
                 Headings::PAYMENT_DETAILS_3       => $version,

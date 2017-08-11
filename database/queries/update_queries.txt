@@ -570,3 +570,15 @@ LOAD DATA LOCAL INFILE '/tmp/dispute_reasons.csv' INTO TABLE dispute_reasons FIE
 
 UPDATE gateway_rules
     SET type='sorter';
+
+# Tags Migration
+# Add column `tag_group_id` to Dashboard DB and get the dump, then remove that column from Dashboard DB
+# Dump tags from Dashboard
+mysqldump -h host --no-create-info --complete-insert -u user -p dbd tagging_tagged tagging_tags > tag_dump.sql;
+
+# Import tags on API
+truncate table tagging_tagged;
+truncate table tagging_tags;
+source tag_dump.sql;
+# Update tagging_tagged table
+UPDATE `tagging_tagged` SET `taggable_type` = 'merchant' WHERE `taggable_type` = 'App\\Merchant\\Entity';

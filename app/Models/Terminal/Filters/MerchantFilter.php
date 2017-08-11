@@ -8,6 +8,8 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Type;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -73,19 +75,19 @@ class MerchantFilter extends Terminal\Filter
      * Rules are based on merchant category and the corresponding
      * banks not enabled on those categories.
      * */
-    public function billdeskCategoryFilter(Terminal\Entity $terminal, array $input) : bool
+    public function billdeskCategoryFilter(Terminal\Entity $terminal) : bool
     {
-        $bank = $input['payment']->getBank();
+        $bank = $this->input['payment']->getBank();
 
         $gateway = $terminal->getGateway();
 
-        $category2 = $input['merchant']->getCategory2();
+        $category2 = $this->input['merchant']->getCategory2();
 
         $networkCategory = $terminal->getNetworkCategory();
 
         $disAllowedBanks = self::CATEGORY_DISALLOWED_IFSC[$category2] ?? [];
 
-        if (($input['payment']->isNetbanking() === true) and
+        if (($this->input['payment']->isNetbanking() === true) and
             ($gateway === Gateway::BILLDESK) and
             ($this->isBankDisallowed($bank, $disAllowedBanks) === true))
         {
@@ -162,13 +164,13 @@ class MerchantFilter extends Terminal\Filter
      * Rules are based on merchant id and the corresponding
      * banks not enabled on those direct terminals.
      * */
-    public function billdeskMerchantFilter(Terminal\Entity $terminal, array $input) : bool
+    public function billdeskMerchantFilter(Terminal\Entity $terminal) : bool
     {
         $gateway = $terminal->getGateway();
 
-        $bank = $input['payment']->getBank();
+        $bank = $this->input['payment']->getBank();
 
-        $merchantId = $input['merchant']->getId();
+        $merchantId = $this->input['merchant']->getId();
 
         $merchantIdsToDisallowDirectTerminal = [
             '4sW8jQ22JR4Bfi',
@@ -176,7 +178,7 @@ class MerchantFilter extends Terminal\Filter
 
         if (($bank === IFSC::ICIC) and
             ($gateway === Gateway::BILLDESK) and
-            ($input['payment']->isNetbanking() === true))
+            ($this->input['payment']->isNetbanking() === true))
         {
             if (in_array($merchantId, $merchantIdsToDisallowDirectTerminal, true) === true)
             {
@@ -193,16 +195,16 @@ class MerchantFilter extends Terminal\Filter
      * For merchants with a risk rating above 4 and card use only axis_migs
      * terminals if the card used is supported
      */
-    public function riskFilter(Terminal\Entity $terminal, array $input) : bool
+    public function riskFilter(Terminal\Entity $terminal) : bool
     {
         // We allow EMI transactions a pass through for
         // the riskFilter. Because in EMI, we may have to
         // allow payment through a specific EMI terminal
-        if ($input['payment']->isCard())
+        if ($this->input['payment']->isCard())
         {
-            if ($input['merchant']->getRiskRating() >= 4)
+            if ($this->input['merchant']->getRiskRating() >= 4)
             {
-                $network = $input['payment']->card->getNetworkCode();
+                $network = $this->input['payment']->card->getNetworkCode();
 
                 if (Gateway::isCardNetworkSupported($network, Gateway::AXIS_MIGS))
                 {
@@ -219,9 +221,9 @@ class MerchantFilter extends Terminal\Filter
      * For merchants with a category2 that is incompatible,
      * the null and the default match terminals will be filtered out
      **/
-    public function incompatibleFilter(Terminal\Entity $terminal, array $input) : bool
+    public function incompatibleFilter(Terminal\Entity $terminal) : bool
     {
-        $merchantTerminalCategory = $input['merchant']->getCategory2();
+        $merchantTerminalCategory = $this->input['merchant']->getCategory2();
 
         if ((isset($merchantTerminalCategory) === true) and
             (Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
@@ -234,7 +236,7 @@ class MerchantFilter extends Terminal\Filter
                 return false;
             }
 
-            $method = $input['payment']->getMethod();
+            $method = $this->input['payment']->getMethod();
 
             $gateway = $terminal->getGateway();
 
@@ -250,7 +252,7 @@ class MerchantFilter extends Terminal\Filter
         return true;
     }
 
-    public function categoryFilter(Terminal\Entity $terminal, array $input) : bool
+    public function categoryFilter(Terminal\Entity $terminal) : bool
     {
         $category = $terminal->getNetworkCategory();
 
@@ -264,7 +266,7 @@ class MerchantFilter extends Terminal\Filter
 
         $gateway = $terminal->getGateway();
 
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
         $defaultCategory = Category::getDefaultForMethodAndGateway($method, $gateway);
 
@@ -275,7 +277,7 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
-        $category2 = $input['merchant']->getCategory2();
+        $category2 = $this->input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
         $merchantTerminalCategory = Category::getCategoryForMethodAndGateway(
@@ -292,18 +294,17 @@ class MerchantFilter extends Terminal\Filter
      * network is Visa or Master
      *
      * @param Terminal\Entity $terminal
-     * @param array           $input Combined input
      *
      * @return bool Whether a terminal is to be chosen or not
      */
-    public function pharmaFilter(Terminal\Entity $terminal, array $input) : bool
+    public function pharmaFilter(Terminal\Entity $terminal) : bool
     {
-        $category2 = $input['merchant']->getCategory2();
+        $category2 = $this->input['merchant']->getCategory2();
 
         $acquirer = $terminal->getGatewayAcquirer();
 
         if (($category2 === Category::PHARMA) and
-            ($input['payment']->isMethodCardOrEmi()))
+            ($this->input['payment']->isMethodCardOrEmi()))
         {
             if (($terminal->isShared() === true) and
                 ($acquirer === Gateway::ACQUIRER_HDFC))
@@ -319,7 +320,7 @@ class MerchantFilter extends Terminal\Filter
             // Terminal ID for Aala first data terminal is 76lEBqibDvhOzY
             else if ($terminal->getId() === '76lEBqibDvhOzY')
             {
-                 $network = $input['payment']->card->getNetworkCode();
+                 $network = $this->input['payment']->card->getNetworkCode();
 
                  if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
                  {
@@ -336,40 +337,41 @@ class MerchantFilter extends Terminal\Filter
      * netbanking terminals for HDFC or ICIC
      *
      * @param Terminal\Entity $terminal
-     * @param Array $input Combined input
      * @return bool Whether a terminal is to be chosen or not
      * */
-    public function cryptocurrencyFilter(Terminal\Entity $terminal, array $input) : bool
+    public function cryptocurrencyFilter(Terminal\Entity $terminal) : bool
     {
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
-        if ($input['merchant']->getCategory2() === Category::CRYPTOCURRENCY)
+        if ($this->input['merchant']->getCategory2() === Category::CRYPTOCURRENCY)
         {
-            if ($input['payment']->isMethodCardOrEmi())
+            if ($this->input['payment']->isMethodCardOrEmi())
             {
                 return false;
             }
             else if ($method === Method::Netbanking)
             {
-                $bank = $input['payment']->getBank();
+                $bank = $this->input['payment']->getBank();
 
-                return (in_array($bank, Category::DISABLED[Method::Netbanking][Category::CRYPTOCURRENCY], true) === false);
+                return (in_array($bank,
+                                Category::DISABLED[Method::Netbanking][Category::CRYPTOCURRENCY],
+                                true) === false);
             }
         }
 
         return true;
     }
 
-    public function gatewayFilter(Terminal\Entity $terminal, array $input) : bool
+    public function gatewayFilter(Terminal\Entity $terminal) : bool
     {
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
         if (in_array($method, [Method::CARD, Method::EMI], true) === false)
         {
             return true;
         }
 
-        $merchantId = $input['payment']->getMerchantId();
+        $merchantId = $this->input['payment']->getMerchantId();
 
         $gateway = $terminal->getGateway();
 
@@ -381,7 +383,7 @@ class MerchantFilter extends Terminal\Filter
 
             if (in_array($gateway, $excludedGateways, true) === true)
             {
-                $network = $input['payment']->card->getNetworkCode();
+                $network = $this->input['payment']->card->getNetworkCode();
 
                 if (($network === Network::VISA) or
                     ($network === Network::MC))
@@ -403,7 +405,7 @@ class MerchantFilter extends Terminal\Filter
             }
             else
             {
-                $network = $input['payment']->card->getNetworkCode();
+                $network = $this->input['payment']->card->getNetworkCode();
 
                 if (($network === Network::VISA) or
                     ($network === Network::MC))
@@ -416,7 +418,7 @@ class MerchantFilter extends Terminal\Filter
         return true;
     }
 
-    public function walletFilter(Terminal\Entity $terminal, array $input, $applicableTerminals) : bool
+    public function walletFilter(Terminal\Entity $terminal, $applicableTerminals) : bool
     {
         //
         // For wallets, payments have to go through their assigned terminal
@@ -426,7 +428,7 @@ class MerchantFilter extends Terminal\Filter
         $gateway = $terminal->getGateway();
 
         // Filter only applicable for wallets
-        if ($input['payment']->getMethod() !== Method::WALLET)
+        if ($this->input['payment']->getMethod() !== Method::WALLET)
         {
             return true;
         }
@@ -464,19 +466,37 @@ class MerchantFilter extends Terminal\Filter
      * For certaiin specified merchants, removes shared terminals from list of
      * terminals if the payment method is card.
      */
-    public function sharedTerminalFilter(Terminal\Entity $terminal, array $input): bool
+    public function sharedTerminalFilter(Terminal\Entity $terminal): bool
     {
-        $merchantId = $input['payment']->getMerchantId();
+        $merchantId = $this->input['payment']->getMerchantId();
 
         $blackListedMerchants = Merchant\Preferences::$merchantSharedTerminalsBlackList;
 
-        if (($input['payment']->isCard() === true) and
-            ($terminal->isShared() === true) and
+        if (($this->input['payment']->isCard() === true) and
             (in_array($merchantId,  $blackListedMerchants, true) === true))
         {
-            return false;
+            // For card types listed below only allow shared terminal
+            // - ICIC debit cards
+            // - All CITI cards
+            if ($this->isCardIssuerWhiteListed($this->input) === true)
+            {
+                return ($terminal->isShared() === true);
+            }
+
+            // For all other cards only allow direct terminals
+            return ($terminal->isShared() === false);
         }
 
         return true;
+    }
+
+    public function isCardIssuerWhiteListed(): bool
+    {
+        $issuer = $this->input['payment']->card->getIssuer();
+        $type = $this->input['payment']->card->getType();
+
+        return (((($issuer === Issuer::ICIC) and
+                ($type !== Type::CREDIT))) or
+                ($issuer === Issuer::CITI));
     }
 }

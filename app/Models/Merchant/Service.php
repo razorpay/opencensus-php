@@ -289,6 +289,20 @@ class Service extends Base\Service
 
         $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
 
+        if ($this->mode === MODE::LIVE)
+        {
+            $action = Merchant\Action::LIVE_KEYS_CREATED;
+        }
+        elseif ($this->mode === MODE::TEST)
+        {
+            $action = Merchant\Action::TEST_KEYS_CREATED;
+        }
+
+        if ($action !== null)
+        {
+            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
+        }
+
         return $keyData;
     }
 

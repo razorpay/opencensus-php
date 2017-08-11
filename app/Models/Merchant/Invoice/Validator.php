@@ -1,0 +1,31 @@
+<?php
+
+namespace RZP\Models\Merchant\Invoice;
+
+use RZP\Exception;
+use RZP\Models\Base;
+
+class Validator extends Base\Validator
+{
+    protected static $createRules = [
+        Entity::MONTH   => 'required|integer|between:1,12',
+        Entity::YEAR    => 'required|digits:4',
+        Entity::TYPE    => 'required|string',
+        Entity::AMOUNT  => 'required|integer',
+        Entity::TAX     => 'required|integer',
+        Entity::GSTIN   => 'sometimes|string|size:15',
+    ];
+
+    protected static $createValidators = [
+        Entity::TYPE,
+    ];
+
+    protected function validateType($input)
+    {
+        if (Type::isValid($input[Entity::TYPE]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid commision type: ', $input[Entity::TYPE]);
+        }
+    }
+}

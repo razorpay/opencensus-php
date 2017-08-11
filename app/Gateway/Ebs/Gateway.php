@@ -25,6 +25,13 @@ class Gateway extends Base\Gateway
     const MERCHANT_ID  = 'test_merchant_id';
     const HASH_SECRET  = 'test_hash_secret';
 
+    /**
+     * TODO Remove this after the shared terminal logic is changed
+     * Currently, there is no retry logic for netbanking terminals
+     */
+    const SHARED_TERMINAL_ID = '6DFrTjBda3DQXB';
+    const TEST_TERMINAL_ID   = '100000EbsTrmnl';
+
     const CHECKSUM_ATTRIBUTE = Resp::SECURE_HASH;
 
     const API          = 'api';
@@ -51,11 +58,9 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $merchant = $input['merchant'];
-
         if (($input['payment']['method'] === Payment\Method::NETBANKING) and
             (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$redircetDisabledBanks, true) === false) and
-            ($merchant->getId() !== '6NUzoQ2ej35gvi'))
+            ($this->checkForSharedTerminal($input['terminal']) === true))
         {
             $request = $this->makeRequestAndGetBankUrl($request, $input);
         }
@@ -70,14 +75,31 @@ class Gateway extends Base\Gateway
         $this->setReferer($terminal, $input);
     }
 
+    protected function checkForSharedTerminal($terminal)
+    {
+        if (in_array(
+                $terminal->getId(),
+                [
+                    self::TEST_TERMINAL_ID,
+                    self::SHARED_TERMINAL_ID
+                ],
+                true
+            ) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function setReferer($terminal, array $input)
     {
         $referer = $this->app['config']->get('app.url');
 
-        $merchant = $input['merchant'];
-
-        if ($merchant->getId() === '6NUzoQ2ej35gvi')
+        if ($this->checkForSharedTerminal($terminal) === false)
         {
+            $merchant = $input['merchant'];
+
             $referer = $merchant->getWebsite();
         }
 

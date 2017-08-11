@@ -112,6 +112,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('eventManager', function($app)
+        {
+            return new HarvesterClient($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -119,8 +124,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerElfin();
 
         $this->registerExchange();
-
-        $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
 
@@ -158,6 +161,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'elfin',
             'segment',
+            'eventManager',
             'upi.client',
             'webhook.inferno',
             'exchange',
@@ -177,15 +181,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
-        });
-    }
-
-    protected function registerValidatorResolver()
-    {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
-        {
-            return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 

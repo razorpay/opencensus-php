@@ -86,8 +86,6 @@ class Repository extends Base\Repository
     */
     public function getRulesWithMatchingCriteria(Entity $rule)
     {
-        $input = $rule->toArray();
-
         $params = $this->getQueryParams($rule);
 
         $query = $this->newQuery();
