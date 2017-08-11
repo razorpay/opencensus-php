@@ -41,7 +41,7 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        IFSC::PUNB,
+        // IFSC::PUNB,
     ];
 
     protected static $selfTPV = [
