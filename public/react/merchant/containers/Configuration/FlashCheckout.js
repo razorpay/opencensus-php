@@ -94,7 +94,7 @@ export default class FlashCheckout extends Component {
                 >
                   Know more about Flash Checkout
                   <i
-                    class="fa fa-external-link"
+                    class="icon icon-external-link"
                     style={{ marginLeft: '5px' }}
                   />
                 </a>

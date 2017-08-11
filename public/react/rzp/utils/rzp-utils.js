@@ -1,10 +1,18 @@
 import moment from 'moment';
 
+moment.updateLocale('en', {
+  relativeTime: {
+    s: 'few secs',
+    ss: '%s secs',
+    m: 'a min',
+    mm: '%d mins',
+  },
+});
+
 export function titleCase(sentence) {
-  let text = sentence || '';
-  return text
+  return (sentence || '')
     .split(/\s+|_/)
-    .map(word => word.charAt(0).toUpperCase() + word.substr(1))
+    .map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
     .join(' ');
 }
 
@@ -19,22 +27,39 @@ export function makeArray(obj) {
   return Array.isArray(obj) ? obj : [obj];
 }
 
-export function isBlank(obj) {
-  if (!obj) return !obj;
-
-  if (typeof obj === 'object') {
-    return !Object.keys(obj).length;
+export function arrayDiff(arr1, arr2) {
+  if (arr1.length < arr2.length) {
+    let tempArr = arr1;
+    arr1 = arr2;
+    arr2 = tempArr;
   }
 
-  if (typeof obj === 'string') {
-    obj = obj.trim();
+  return arr1.reduce((prev, curr) => {
+    if (arr2.indexOf(curr) === -1) {
+      prev.push(curr);
+    }
+    return prev;
+  }, []);
+}
+
+export function isBlank(value) {
+  if (value !== null && typeof value === 'object') {
+    return !Object.keys(value).length;
   }
-  return !obj;
+  if (typeof value === 'string') {
+    value = value.trim();
+    return !value;
+  }
+  return isNone(value);
 }
 
 export function isPresent(obj) {
   return !isBlank(obj);
 }
+
+export const isNone = value => {
+  return value === null || value === undefined;
+};
 
 export const findBy = (array, prop, value) => {
   return array.find(item => {
@@ -64,6 +89,7 @@ export const pipe = (...funcs) => {
 };
 
 export const normalizeDate = date => moment(date).format('D/M/Y');
+export const formatFromNow = unixSeconds => moment(unixSeconds * 1e3).fromNow();
 
 export const normalizeBoolean = bool => {
   if (bool === undefined) {
@@ -74,6 +100,13 @@ export const normalizeBoolean = bool => {
 };
 
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
+
+// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
+export const getFormattedAmount = amount =>
+  (amount / 100)
+    .toFixed(2)
+    .replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,')
+    .replace('.00', '');
 
 export const without = (source, keys) => {
   keys = makeArray(keys);
@@ -96,4 +129,75 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
   }, {});
 };
 
+// TODO: Remove this fn once Selva's branch is merged having this function.
+export const getURLQueryParams = (url = document.location.hash) => {
+  let search = url.split('?')[1];
+  let params = {};
+
+  if (search) {
+    params = search.split('&').reduce((prev, curr) => {
+      let [key, value] = curr.split('=');
+      prev[key] = value;
+      return prev;
+    }, {});
+  }
+
+  return params;
+};
+
 export const noop = () => {};
+
+export const colors = ['primary', 'success', 'info', 'warn', 'danger'];
+
+export const paymentStatusColor = {
+  captured: colors[1],
+  authorized: colors[2],
+  refunded: colors[3],
+  failed: colors[4],
+};
+
+export const intervals = [
+  {
+    value: 'day',
+    label: 'Daily',
+  },
+  {
+    value: 'week',
+    label: 'Weekly',
+  },
+  {
+    value: 'month',
+    label: 'Monthly',
+  },
+  {
+    value: 'year',
+    label: 'Yearly',
+  },
+];
+
+const periods = {
+  weekly: 'Week',
+  monthly: 'Month',
+  yearly: 'Year',
+};
+
+export const getIntervalCycle = (interval, period) => {
+  switch (interval) {
+    case 1:
+      return `Every ${periods[period]}`;
+
+    case 2:
+      return `Bi-${titleCase(period)}`;
+
+    default:
+      return `Once in ${interval} ${periods[period]}s`;
+  }
+};
+
+export const getCustomerDisplayName = ({ name, contact, email }) => {
+  let displayParts = [name, contact, email].filter(item => !isBlank(item));
+
+  return `${displayParts
+    .join(' / ')
+    .replace('\/ ', '(')}${displayParts.length > 1 ? ')' : ''}`;
+};

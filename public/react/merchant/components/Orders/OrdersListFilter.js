@@ -5,13 +5,18 @@ export default props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
-        <label>Order ID:</label>
+        <label>Order Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Receipt:</label>
+        <label>Receipt</label>
         <Field name="receipt" component="input" class="form-control input-sm" />
+      </div>
+
+      <div class="form-group list-filter-item">
+        <label>Notes</label>
+        <Field name="notes" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item count">

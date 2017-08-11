@@ -1,7 +1,10 @@
 import { Component, PropTypes } from 'react';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
+import moment from 'moment';
+import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
@@ -9,6 +12,7 @@ import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import Spinner from 'rzp/ui/Spinner';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import { findBy } from 'rzp/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import LineItemTable from './LineItemTable';
 import CustomerCreation from 'merchant/containers/Customers/New';
@@ -22,11 +26,7 @@ import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import { fetchConfig } from 'merchant/modules/config';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import { fetchItemsForAutocomplete } from 'merchant/modules/items';
-import {
-  saveInvoice,
-  highLightInvoice,
-  deleteInvoice,
-} from 'merchant/modules/invoices/list';
+import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
 import * as InvoiceActions from 'merchant/modules/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -61,9 +61,11 @@ function validate(values) {
 }
 
 const selector = formValueSelector('newInvoice');
+
+@withRouter
 @connect(
   state => {
-    let customers = state.customers.customers;
+    let customers = state.customers.items;
     return {
       session: state.session,
       customers,
@@ -77,7 +79,6 @@ const selector = formValueSelector('newInvoice');
     fetchCustomersForAutocomplete,
     fetchItemsForAutocomplete,
     saveInvoice,
-    highLightInvoice,
     deleteInvoice,
     fetchConfig,
     ...InvoiceActions,
@@ -103,7 +104,6 @@ const selector = formValueSelector('newInvoice');
 })
 export default class InvoicesNewContainer extends Component {
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 
@@ -120,9 +120,17 @@ export default class InvoicesNewContainer extends Component {
       this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete(),
     ];
+    let invoiceId = this.props.match.params.id;
 
-    if (this.props.id) {
-      promises.push(this.props.fetchInvoice(this.props.id));
+    if (invoiceId) {
+      promises.push(
+        this.props.fetchInvoice(invoiceId).then(invoice => {
+          if (invoice.partial_payment) {
+            this.props.fetchInvoicePayments(invoiceId);
+          }
+          return invoice;
+        })
+      );
     } else {
       this.props.initializeInvoice();
     }
@@ -155,14 +163,7 @@ export default class InvoicesNewContainer extends Component {
       let config = response.data;
       let user = this.props.session.user;
       let merchant = user.merchants[user.current];
-      let logoUrl = '';
-
-      if (config.logo_url) {
-        let cdnName = window.location.hostname.indexOf('-') !== -1
-          ? 'betacdn'
-          : 'cdn';
-        logoUrl = `https://${cdnName}.razorpay.com${config.logo_url.replace(/\.([^\.]+$)/, '_medium.$1')}`;
-      }
+      let logoUrl = config.logo_url;
 
       this.setState({
         merchantLogoUrl: logoUrl,
@@ -237,9 +238,7 @@ export default class InvoicesNewContainer extends Component {
         type: 'success',
         message: 'Invoice Saved',
       });
-      this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
-        notify: false,
-      });
+      this.props.history.push(`/invoices/${invoice.id}`);
       return invoice;
     });
   };
@@ -254,9 +253,7 @@ export default class InvoicesNewContainer extends Component {
           type: 'success',
           message: 'Invoice Issued',
         });
-        this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
-          notify: false,
-        });
+        this.props.history.push(`/invoices/${invoice.id}`);
         return invoice;
       });
     });
@@ -305,7 +302,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   navigateToList() {
-    return this.context.ngRouter.transitionTo('app.invoices.list');
+    this.props.history.push('/invoices');
   }
 
   deleteInvoice = () => {
@@ -334,12 +331,11 @@ export default class InvoicesNewContainer extends Component {
           ? this.props
               .deleteInvoice(invoice)
               .then(() => {
-                this.navigateToList().then(() => {
-                  this.props.showNotification({
-                    type: 'success',
-                    message: 'Invoice deleted successfully',
-                  });
+                this.props.showNotification({
+                  type: 'success',
+                  message: 'Invoice deleted successfully',
                 });
+                this.navigateToList();
               })
               .catch(({ errors }) => {
                 this.props.showNotification({
@@ -407,28 +403,32 @@ export default class InvoicesNewContainer extends Component {
   };
 
   handleBackNavClick = () => {
-    if (!(this.props.anyTouched && this.props.dirty)) {
-      return this.navigateToList();
-    }
+    this.navigateToList();
 
-    this.context
-      .confirm({
-        header: 'Unsaved changes',
-        message: 'You have some unsaved changes. Do you want to leave this page ?',
-        affirmativeLabel: 'Yes, leave',
-        abortLabel: 'No, stay',
-      })
-      .then(() => {
-        this.navigateToList();
-      });
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // if (!(this.props.anyTouched && this.props.dirty)) {
+    //   return this.navigateToList();
+    // }
+
+    // this.context
+    //   .confirm({
+    //     header: 'Unsaved changes',
+    //     message: 'You have some unsaved changes. Do you want to leave this page ?',
+    //     affirmativeLabel: 'Yes, leave',
+    //     abortLabel: 'No, stay',
+    //   })
+    //   .then(() => {
+    //     this.navigateToList();
+    //   });
   };
 
   handleWindowClose() {
-    window.onbeforeunload = function() {
-      return this.props.anyTouched && this.props.dirty
-        ? 'Unsaved changes will be deleted. Do you want to leave the page?'
-        : null;
-    }.bind(this);
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // window.onbeforeunload = function() {
+    //   return this.props.anyTouched && this.props.dirty
+    //     ? 'Unsaved changes will be deleted. Do you want to leave the page?'
+    //     : null;
+    // }.bind(this);
   }
 
   componentWillUnmount() {
@@ -459,7 +459,7 @@ export default class InvoicesNewContainer extends Component {
           : <div class="content-wrapper invoice-creation-container">
               <form onSubmit={handleSubmit(this.save)}>
                 <div class="row">
-                  <div class="col-md-8">
+                  <div class="col-md-8 col-sm-8">
                     <div class="invoice-container pull-right">
                       <InvoiceBreadcrumbNav
                         invoice={invoice}
@@ -504,7 +504,6 @@ export default class InvoicesNewContainer extends Component {
                                     class="form-control input-xs"
                                     placeholder="Receipt number"
                                     disabled={locked}
-                                    autoFocus={true}
                                   />}
                             </div>
 
@@ -520,7 +519,14 @@ export default class InvoicesNewContainer extends Component {
                           </div>
                           <div class="col-md-6 text-right">
                             <label>AMOUNT DUE</label>
-                            <h3 class="inv__amountdue">₹ {invoiceTotal}</h3>
+                            <h3 class="inv__amountdue">
+                              {invoice.amount_due
+                                ? <Amount
+                                    value={invoice.amount_due}
+                                    currency={invoice.currency}
+                                  />
+                                : <span>₹ {invoiceTotal}</span>}
+                            </h3>
                           </div>
                         </div>
 
@@ -533,14 +539,8 @@ export default class InvoicesNewContainer extends Component {
                               component={TypeAhead}
                               options={this.props.customers}
                               selected={this.props.customer_id}
-                              selectedLabel={selectedCustomer => {
-                                return (
-                                  selectedCustomer.name ||
-                                  selectedCustomer.contact ||
-                                  selectedCustomer.email
-                                );
-                              }}
                               optionLabelPath="displayName"
+                              selectedOptionLabelPath="selectedDisplayName"
                               placeholder="Select a customer"
                               onQuickAdd={this.quickCreateCustomer}
                               disabled={isIssued || locked}
@@ -557,11 +557,7 @@ export default class InvoicesNewContainer extends Component {
                                   value
                                 );
                                 if (selected) {
-                                  return (
-                                    selected.name ||
-                                    selected.contact ||
-                                    selected.email
-                                  );
+                                  return selected.selectedDisplayName;
                                 }
                                 return value;
                               }}
@@ -606,8 +602,28 @@ export default class InvoicesNewContainer extends Component {
                               component={LineItemTable}
                               items={this.props.items}
                               disabled={isIssued || locked}
+                              invoice={invoice}
                               invoiceTotal={invoiceTotal}
                             />
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12">
+                            <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                              <div class="rzpCheckbox rzpCheckbox-sm">
+                                <Field
+                                  name="partial_payment"
+                                  id="partial_payment"
+                                  component="input"
+                                  type="checkbox"
+                                  disabled={locked}
+                                />
+                                <label for="partial_payment">
+                                  Enable Partial Payments
+                                </label>
+                              </div>
+                            </ShowWhen>
                           </div>
                         </div>
 
@@ -653,84 +669,90 @@ export default class InvoicesNewContainer extends Component {
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-4" style={{ marginTop: '48px' }}>
-                    {!locked &&
-                      <div class="inv__cta">
-                        <div class="btn-group-vertical">
-                          {(isNew || isDraft) &&
-                            <AsyncButton
-                              type="button"
-                              class="btn btn-primary btn-block btn-lg"
-                              disabled={this.state.isSaving}
-                              onClick={handleSubmit(props => {
-                                return this.saveAndIssue({
-                                  ...props,
-                                  ...{ draft: 0 },
-                                });
-                              })}
-                            >
-                              <i class="fa fa-check" />
-                              <span>Finalize and Issue</span>
-                            </AsyncButton>}
 
-                          {isIssued &&
-                            <AsyncButton
-                              type="button"
-                              class="btn btn-primary btn-block btn-lg"
-                              disabled={this.state.isSaving}
-                              onClick={handleSubmit(this.resendInvoice)}
-                            >
-                              <i class="fa fa-paper-plane" />
-                              <span>Resend Invoice</span>
-                            </AsyncButton>}
+                  <ShowWhen notMyRole="support finance">
+                    <div
+                      class="col-md-4 col-sm-4"
+                      style={{ marginTop: '48px' }}
+                    >
+                      {!locked &&
+                        <div class="inv__cta">
+                          <div class="btn-group-vertical">
+                            {(isNew || isDraft) &&
+                              <AsyncButton
+                                type="button"
+                                class="btn btn-primary btn-block btn-lg"
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(props => {
+                                  return this.saveAndIssue({
+                                    ...props,
+                                    ...{ draft: 0 },
+                                  });
+                                })}
+                              >
+                                <i class="icon icon-done" />
+                                <span>Finalize and Issue</span>
+                              </AsyncButton>}
 
-                          {!locked &&
-                            <AsyncButton
-                              type="button"
-                              class="btn btn-default btn-block btn-lg"
-                              text="Save Invoice"
-                              pendingText="Saving..."
-                              disabled={this.state.isSaving}
-                              onClick={handleSubmit(props => {
-                                return this.save({
-                                  ...props,
-                                  ...{ draft: isIssued ? 0 : 1 },
-                                });
-                              })}
-                            >
-                              <i class="fa fa-floppy-o" />
-                              <span>Save Invoice</span>
-                            </AsyncButton>}
-                          {(isNew || isDraft) &&
-                            <button
-                              type="button"
-                              class="btn btn-default btn-block btn-lg"
-                              onClick={this.deleteInvoice}
-                              disabled={this.state.isSaving}
-                            >
-                              <i class="fa fa-times" />
-                              <span>Delete Invoice</span>
-                            </button>}
-                          {isIssued &&
-                            <button
-                              type="button"
-                              class="btn btn-default btn-block btn-lg"
-                              onClick={this.cancelInvoice}
-                              disabled={this.state.isSaving}
-                            >
-                              <i class="fa fa-times" />
-                              <span>Cancel Invoice</span>
-                            </button>}
-                        </div>
-                      </div>}
+                            {isIssued &&
+                              <AsyncButton
+                                type="button"
+                                class="btn btn-primary btn-block btn-lg"
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(this.resendInvoice)}
+                              >
+                                <i class="icon icon-send" />
+                                <span>Resend Invoice</span>
+                              </AsyncButton>}
 
-                    <InvoiceInfo invoice={invoice} />
-                    <InvoiceNotes
-                      invoice={invoice}
-                      isSaving={this.state.isSaving}
-                      onAddClick={this.addInternalNote}
-                    />
-                  </div>
+                            {!locked &&
+                              <AsyncButton
+                                type="button"
+                                class="btn btn-default btn-block btn-lg"
+                                text="Save Invoice"
+                                pendingText="Saving..."
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(props => {
+                                  return this.save({
+                                    ...props,
+                                    ...{ draft: isIssued ? 0 : 1 },
+                                  });
+                                })}
+                              >
+                                <i class="icon icon-save" />
+                                <span>Save Invoice</span>
+                              </AsyncButton>}
+                            {(isNew || isDraft) &&
+                              <button
+                                type="button"
+                                class="btn btn-default btn-block btn-lg"
+                                onClick={this.deleteInvoice}
+                                disabled={this.state.isSaving}
+                              >
+                                <i class="icon icon-done" />
+                                <span>Delete Invoice</span>
+                              </button>}
+                            {isIssued &&
+                              <button
+                                type="button"
+                                class="btn btn-default btn-block btn-lg"
+                                onClick={this.cancelInvoice}
+                                disabled={this.state.isSaving}
+                              >
+                                <i class="icon icon-done" />
+                                <span>Cancel Invoice</span>
+                              </button>}
+                          </div>
+                        </div>}
+
+                      <InvoiceInfo invoice={invoice} />
+                      <InvoiceNotes
+                        invoice={invoice}
+                        isSaving={this.state.isSaving}
+                        onAddClick={this.addInternalNote}
+                      />
+                    </div>
+                  </ShowWhen>
                 </div>
               </form>
             </div>}

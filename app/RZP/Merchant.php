@@ -14,8 +14,6 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 class Merchant extends Entity
 {
     const SUBMERCHANT_CREATE_URL = 'submerchants';
-    const BANK_ACCOUNT_URL = 'account/bank_account';
-    const PROXY_BALANCE_URL = 'balance';
 
     public function create($params = null)
     {
@@ -54,7 +52,7 @@ class Merchant extends Entity
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/activate';
 
-        return $this->request('POST', $relativeUrl);
+        return $this->request('POST', $relativeUrl, []);
     }
 
     public function edit($params)
@@ -112,25 +110,6 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function fetchBalance()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/balance';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
-    public function fetchProxyBalance()
-    {
-        return $this->request('GET', self::PROXY_BALANCE_URL);
-    }
-
-    public function editCredits($params)
-    {
-        $relativeUrl = $this->getEntityUrl() . $this->id . '/credits';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function setId($id)
     {
         $this->attributes['id'] = $id;
@@ -146,18 +125,10 @@ class Merchant extends Entity
         ]);
     }
 
-    public function fetchProxyBankAccount()
+    public function getUsers($merchantId)
     {
-        return $this->request('GET', self::BANK_ACCOUNT_URL);
-    }
+        $relativeUrl = $this->getEntityUrl().$merchantId.'/users';
 
-    public function setSchedule($merchantId, $params)
-    {
-        // merchants/{id}/schedules
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/schedules';
-
-        $res = $this->request('POST', $relativeUrl, $params);
-
-        return $res;
+        return $this->request('GET', $relativeUrl);
     }
 }

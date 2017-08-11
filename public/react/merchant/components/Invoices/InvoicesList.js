@@ -1,34 +1,56 @@
-import TableBody from '../TableBody';
+import { NavLink } from 'react-router-dom';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
-  let { invoice, canHighlight } = props;
+  let { invoice, isNewUIEnabled, onEditClick } = props;
+  let customer = invoice.customer_details;
+
   return (
-    <tr class={canHighlight ? 'luminate' : ''}>
+    <EntityItemRow id={invoice.id}>
       <td>
-        <a
-          href={`${invoice.type === 'invoice' ? `#/app/invoices/${invoice.id}` : `#/app/invoices/${invoice.id}/details`}`}
-        >
-          {invoice.id}
-        </a>
+        {
+          do {
+            if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
+              if (isNewUIEnabled) {
+                <NavLink to={`/paymentlinks/${invoice.id}`}>
+                  <code>{invoice.id}</code>
+                </NavLink>;
+              } else {
+                <NavLink to={`/invoices/${invoice.id}/details`}>
+                  <code>{invoice.id}</code>
+                </NavLink>;
+              }
+            } else {
+              <NavLink to={`/invoices/${invoice.id}`}>
+                <code>{invoice.id}</code>
+              </NavLink>;
+            }
+          }
+        }
       </td>
       <td>
         <Time value={invoice.date} />
       </td>
-      <td>{invoice.receipt}</td>
-      <td>
-        {invoice.customer_details.customer_contact ||
-          invoice.customer_details.customer_email ||
-          invoice.customer_details.customer_name}
-      </td>
-      <td>{invoice.short_url}</td>
-      <td>{invoice.type}</td>
       <td class="text-right">
         <Amount value={invoice.amount} />
       </td>
-      <td class="text-right">
+      <td>{invoice.receipt}</td>
+      <td>
+        {getCustomerDisplayName({
+          name: customer.customer_name,
+          contact: customer.customer_contact,
+          email: customer.customer_email,
+        })}
+      </td>
+      <td>{invoice.short_url && <CopyLink url={invoice.short_url} />}</td>
+      {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
+      <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
       <td>
@@ -42,32 +64,33 @@ const InvoiceListItem = props => {
               disabled={!invoice.isEditable}
               onClick={props.onEditClick}
             >
-              <i class="fa fa-edit" />
+              <i class="icon icon-edit" />
               <span>edit</span>
             </button>
           </div>
         </div>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
 export default props => {
-  let { invoices, isLoading, highlightRow = () => {} } = props;
+  let { type, invoices, isNewUIEnabled, isLoading } = props;
+  let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
-            <th>Invoice Id</th>
-            <th>Invoice Date</th>
+            <th>{label} Id</th>
+            <th>{label} Date</th>
+            <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
-            <th>Type</th>
-            <th class="text-right">Amount (INR)</th>
-            <th class="text-right">Status</th>
+            {!isNewUIEnabled ? <th>Type</th> : ''}
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -75,13 +98,13 @@ export default props => {
           isLoading={isLoading}
           colSpan={8}
           rows={invoices}
-          emptyTableMsg="No Invoices found!"
+          emptyTableMsg="No data found!"
         >
           {invoices.map(invoice => (
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
-              canHighlight={highlightRow(invoice)}
+              isNewUIEnabled={isNewUIEnabled}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
             />

@@ -1,5 +1,8 @@
 'use strict';
 
+const path = require('path');
+const fs = require('fs');
+const execSync = require('child_process').execSync;
 const gulp = require('gulp');
 const webpack = require('webpack');
 const through = require('through2').obj;
@@ -51,6 +54,10 @@ function handleError(err) {
   console.log(err.toString());
   this.emit('end');
 }
+
+gulp.task('clean', () => {
+  execSync('rm -rf public/dist public/js/generated public/css/generated');
+});
 
 gulp.task('css', () => {
   gulp
@@ -104,10 +111,8 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/angular/ui-validate.js',
     'public/js/angular/ui-bootstrap-tpls.min.js',
     'public/js/angular/angular-busy.js',
-    'public/js/angular/ng-react.js',
     'public/js/libs/angular-file-upload.min.js',
     'public/js/libs/filesaver.min.js',
-    'public/js/libs/jquery-tourbus.js',
     'public/js/themes/init.js',
     'public/js/themes/theme.js',
     'public/js/libs/select2.min.js',
@@ -120,11 +125,8 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'node_modules/moment/min/moment.min.js',
   ],
 
-  'js/generated/merchant_react.js': ['public/react/dist/merchant_react.js'],
-
-  'js/generated/admin_react.js': ['public/react/dist/admin_react.js'],
-
   'js/generated/admin.js': [
+    'public/js/angular/ng-react.js',
     'public/js/admin/**/*.js',
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
@@ -137,7 +139,7 @@ gulp.task('js:prod', () => {
   return concatJs()
     .pipe(uglify())
     .on('error', function(e) {
-      console.log(e);
+      throw new Error('Uglify failed', e);
     })
     .pipe(rev())
     .pipe(gulp.dest('public'))
@@ -147,7 +149,10 @@ gulp.task('js:prod', () => {
 
 gulp.task('tmpl', () => {
   gulp
-    .src('resources/views/**/*.blade.php.tmpl')
+    .src([
+      'resources/views/**/tmpgetIndex.blade.php',
+      'resources/views/**/*.blade.php.tmpl',
+    ])
     .pipe(
       through(function(file, enc, cb) {
         file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');
@@ -157,25 +162,6 @@ gulp.task('tmpl', () => {
       })
     )
     .pipe(gulp.dest('resources/views'));
-});
-
-gulp.task('dev', () => {
-  run('compileThemes', ['css', 'js'], 'tmpl');
-});
-
-gulp.task('reactRevReplace', () => {
-  return gulp
-    .src(`public/${revMap['js/generated/merchant.js']}`)
-    .pipe(
-      through(function(file, enc, cb) {
-        file.contents = new Buffer(
-          interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g)
-        );
-        this.push(file);
-        cb();
-      })
-    )
-    .pipe(gulp.dest('public/js/generated'));
 });
 
 const runWebpack = (webpackConfig, cb) => {
@@ -192,45 +178,26 @@ const runWebpack = (webpackConfig, cb) => {
   });
 };
 
-gulp.task('webpack', cb => {
-  runWebpack(Object.create(webpackConfig), cb);
-});
-
 var webpackCompiler = null;
 gulp.task('webpack:watch', cb => {
   if (!webpackCompiler) {
-    webpackCompiler = webpack(Object.assign({}, webpackConfig));
+    webpackCompiler = webpack(webpackConfig('development'));
   }
   webpackCompiler.run(function(err, stats) {
-    console.log(
-      stats.toString({
-        colors: true,
-        chunks: false,
-      })
-    );
+    if (stats.hasErrors()) {
+      console.log(
+        stats.toString({
+          colors: true,
+          chunks: false,
+        })
+      );
+    }
     cb();
   });
 });
 
 gulp.task('webpack:prod', cb => {
-  let config = Object.create(webpackConfig);
-  config.plugins = config.plugins.concat(
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('production'),
-      },
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-      },
-      output: {
-        comments: false,
-      },
-    })
-  );
-
-  runWebpack(config, cb);
+  runWebpack(webpackConfig('production'), cb);
 });
 
 gulp.task('dev:setENV', cb => {
@@ -238,45 +205,35 @@ gulp.task('dev:setENV', cb => {
   cb();
 });
 
-gulp.task('default', cb => {
-  run(
-    'webpack:prod',
-    'compileThemes',
-    ['css:prod', 'js:prod'],
-    'tmpl',
-    'reactRevReplace',
-    cb
-  );
+gulp.task('default', ['clean'], cb => {
+  run('compileThemes', ['css:prod', 'js:prod'], 'webpack:prod', 'tmpl', cb);
 });
 
 gulp.task('dev', cb => {
-  run(['css', 'js'], 'tmpl', cb);
+  run('compileThemes', ['css', 'js'], cb);
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], cb => {
-  run('webpack:watch', 'dev', cb);
+  run('dev', 'webpack:watch', 'tmpl', cb);
 });
 
-gulp.task('watch:full', ['dev:webpack'], () => {
-  gulp.watch('public/css/*.styl', ['css']);
+const watch = () => {
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
-  gulp.watch(
-    [
-      'public/js/*.js',
-      'public/js/admin/**/*.js',
-      'public/js/merchant/**/*.js',
-      'public/react/merchant/**/*',
-      'public/react/admin/**/*',
-      'public/react/rzp/**/*',
-    ],
-    ['dev:webpack']
-  );
-});
-
-gulp.task('watch', ['dev'], () => {
   gulp.watch('public/css/*.styl', ['css']);
   gulp.watch(
     ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
     ['js']
   );
-});
+  gulp.watch(
+    [
+      'public/react/merchant/**/*',
+      'public/react/admin/**/*',
+      'public/react/rzp/**/*',
+      'public/react/styles/**/*.styl',
+    ],
+    ['dev:webpack']
+  );
+};
+
+gulp.task('watch:full', ['clean', 'dev:webpack'], watch);
+gulp.task('watch', ['clean', 'dev:webpack'], watch);

@@ -1,27 +1,29 @@
+import { Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
   return (
-    <tr>
+    <EntityItemRow id={settlement.id}>
       <td>
-        <a href={`#/app/settlements/${settlement.id}`} target="_blank">
+        <Link to={`/settlements/${settlement.id}`}>
           <code>{settlement.id}</code>
-        </a>
+        </Link>
       </td>
       <td class="text-right">
         <Amount value={settlement.amount} />
-      </td>
-      <td>
-        <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td class="text-right">
         <Amount value={settlement.fees} />
       </td>
       <td class="text-right">
-        <Amount value={settlement.service_tax} />
+        <Amount value={settlement.tax} />
+      </td>
+      <td>
+        <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td>
         <SettlementStatusLabel status={settlement.status} />
@@ -31,7 +33,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
           Breakup
         </button>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
@@ -45,9 +47,9 @@ export default props => {
           <tr>
             <th>Settlement Id</th>
             <th class="text-right">Amount</th>
-            <th>Created At</th>
             <th class="text-right">Fees</th>
-            <th class="text-right">Service Tax</th>
+            <th class="text-right">Tax</th>
+            <th>Created At</th>
             <th>Status</th>
             <th />
           </tr>

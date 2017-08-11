@@ -8,53 +8,52 @@ const EMAIL_SEND = 'EMAIL_SEND';
 const INVOICE_ISSUE = 'INVOICE_ISSUE';
 const INVOICE_INIT = 'INVOICE_INIT';
 const INVOICE_CANCEL = 'INVOICE_CANCEL';
+const INVOICE_PAYMENTS_FETCH = 'INVOICE_PAYMENTS_FETCH';
 
 export const fetchInvoice = id => {
-  return dispatch => {
-    let invoice = new Invoice();
-    return dispatch({
-      type: INVOICE_FETCH,
-      payload: invoice.fetch(id),
-    });
+  let invoice = new Invoice();
+  return {
+    type: INVOICE_FETCH,
+    payload: invoice.fetch(id),
   };
 };
 
 export const notifyCustomer = (params, type) => {
-  return dispatch => {
-    let invoice = new Invoice(params);
-    return dispatch({
-      type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
-      payload: invoice.notify(type),
-    });
+  let invoice = new Invoice(params);
+  return {
+    type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
+    payload: invoice.notify(type),
   };
 };
 
 export const issueInvoice = params => {
-  return dispatch => {
-    let invoice = new Invoice(params);
-    return dispatch({
-      type: INVOICE_ISSUE,
-      payload: invoice.markAsIssued(),
-    });
+  let invoice = new Invoice(params);
+  return {
+    type: INVOICE_ISSUE,
+    payload: invoice.markAsIssued(),
   };
 };
 
 export const initializeInvoice = () => {
-  return dispatch => {
-    return dispatch({
-      type: INVOICE_INIT,
-      payload: new Invoice(initialState.invoice),
-    });
+  return {
+    type: INVOICE_INIT,
+    payload: new Invoice(initialState.invoice),
   };
 };
 
 export const cancelInvoice = params => {
-  return dispatch => {
-    let invoice = new Invoice(params);
-    return dispatch({
-      type: INVOICE_CANCEL,
-      payload: invoice.cancel(),
-    });
+  let invoice = new Invoice(params);
+  return {
+    type: INVOICE_CANCEL,
+    payload: invoice.cancel(),
+  };
+};
+
+export const fetchInvoicePayments = id => {
+  let invoice = new Invoice({ id });
+  return {
+    type: INVOICE_PAYMENTS_FETCH,
+    payload: invoice.fetchPayments(),
   };
 };
 
@@ -64,6 +63,7 @@ let initialState = {
     customer_details: {},
     line_items: [],
     notes: {},
+    payments: [],
   },
   error: null,
 };
@@ -84,6 +84,9 @@ export default function(state = initialState, action) {
         invoice: action.payload,
         error: null,
       });
+
+    case `${INVOICE_PAYMENTS_FETCH}::SUCCESS`:
+      return set(state, 'invoice.payments', action.payload.data.items);
 
     case `${INVOICE_FETCH}::ERROR`:
       return merge(state, {

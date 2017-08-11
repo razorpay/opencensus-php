@@ -122,7 +122,7 @@ export default class BusinessDetailsForm extends Component {
                       validate={[required()]}
                     />
                     <small class="help-block">
-                      <i class="fa fa-info-circle" />
+                      <i class="icon icon-info-circle" />
                       <span>
                         This is the brand name that the customers are familiar with.
                       </span>
@@ -144,7 +144,7 @@ export default class BusinessDetailsForm extends Component {
                       <i />
                     </label>
                     <small class="help-block">
-                      <i class="fa fa-info-circle" />
+                      <i class="icon icon-info-circle" />
                       <span>
                         Please note that applications for international transactions take longer time to process.
                       </span>
@@ -188,7 +188,7 @@ export default class BusinessDetailsForm extends Component {
                       validate={[required()]}
                     />
                     <small class="help-block">
-                      <i class="fa fa-info-circle" />
+                      <i class="icon icon-info-circle" />
                       <span>
                         Please give a brief explanation of your business model and future plans (Essential for startups)
                       </span>
@@ -277,7 +277,7 @@ export default class BusinessDetailsForm extends Component {
                           <i />
                         </label>
                         <small class="help-block">
-                          <i class="fa fa-info-circle" />
+                          <i class="icon icon-info-circle" />
                           <span>
                             Physical Verification might be performed at your operational address.
                           </span>
@@ -368,6 +368,32 @@ export default class BusinessDetailsForm extends Component {
                 </div>
 
                 <div class="form-group">
+                  <label class="col-md-3 control-label">
+                    GST Identification Number
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="gstin"
+                      component="input"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label">
+                    Provisional GST Identification Number
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="p_gstin"
+                      component="input"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
                   <label class="col-md-3 control-label">Company CIN</label>
                   <div class="col-md-9">
                     <Field
@@ -377,7 +403,7 @@ export default class BusinessDetailsForm extends Component {
                       placeholder="Company CIN"
                     />
                     <small class="help-block">
-                      <i class="fa fa-info-circle" />
+                      <i class="icon icon-info-circle" />
                       <span>Mandatory for Companies</span>
                     </small>
                   </div>
@@ -396,7 +422,7 @@ export default class BusinessDetailsForm extends Component {
               {accountId
                 ? null
                 : <small class="help-block">
-                    <i class="fa fa-info-circle" />
+                    <i class="icon icon-info-circle" />
                     <span>Mandatory for Companies</span>
                   </small>}
             </div>
@@ -415,7 +441,7 @@ export default class BusinessDetailsForm extends Component {
                       placeholder="Name on PAN (provided above)"
                     />
                     <small class="help-block">
-                      <i class="fa fa-info-circle" />
+                      <i class="icon icon-info-circle" />
                       <span>Mandatory for Companies</span>
                     </small>
                   </div>

@@ -3,15 +3,17 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { roles } from 'rzp/utils/constants';
+import { without } from 'rzp/utils/rzp-utils';
 import {
-  roles,
   resendInvitation,
   updateInvitation,
   cancelInvitation,
   fetchTeamDetails,
 } from 'merchant/modules/team';
 
-@connect(null, {
+const ROLES = without(roles, 'owner');
+@connect(state => state.session, {
   fetchTeamDetails,
   resendInvitation,
   cancelInvitation,
@@ -30,7 +32,7 @@ export default class EditInvitation extends Component {
     return this.props
       .updateInvitation(this.props.invite.id, fieldProps)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: "Team member's role has been changed successfully",
@@ -48,7 +50,7 @@ export default class EditInvitation extends Component {
     return this.props
       .cancelInvitation(this.props.invite.id)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: "Team member's invitation has been removed successfully",
@@ -64,10 +66,13 @@ export default class EditInvitation extends Component {
 
   resendInvitation = () => {
     let invite = this.props.invite;
+    let data = {
+      sender_name: this.props.user.user.name,
+    };
     return this.props
-      .resendInvitation(invite.id)
+      .resendInvitation(invite.id, data)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: `Invitation has been successfully resent to ${invite.email}`,
@@ -81,6 +86,10 @@ export default class EditInvitation extends Component {
       });
   };
 
+  fetchTeamDetails = () => {
+    this.props.fetchTeamDetails({ merchant_id: this.props.user.current });
+  };
+
   render() {
     const { handleSubmit, invite } = this.props;
 
@@ -89,8 +98,8 @@ export default class EditInvitation extends Component {
         <td>{invite.email}</td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {Object.keys(roles).map(role => (
-              <option key={role} value={role}>{roles[role].label}</option>
+            {Object.keys(ROLES).map(role => (
+              <option key={role} value={role}>{ROLES[role].label}</option>
             ))}
           </Field>
         </td>

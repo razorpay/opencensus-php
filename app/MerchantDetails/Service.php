@@ -3,18 +3,18 @@
 namespace App\MerchantDetails;
 
 use Auth;
-use Aws\Laravel\AwsFacade as AWS;
-use Aws\Sdk;
-use Illuminate\Support\Facades\App as App;
-use Carbon\Carbon;
-use Config;
 use Mail;
+use Queue;
+use Trace;
+use Config;
+use Aws\Sdk;
+use Requests;
 use App\Base;
 use App\Merchant;
-use Queue;
+use Carbon\Carbon;
 use App\Mailers\MerchantMailer;
-use Requests;
-use Trace;
+use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
@@ -42,6 +42,8 @@ class Service extends Base\Service
             'business_doe'                => 2,
             'transaction_volume'          => 2,
             'transaction_value'           => 2,
+            'gstin'                       => 2,
+            'p_gstin'                     => 2,
             'promoter_pan'                => 2,
             'promoter_pan_name'           => 2,
 
@@ -138,7 +140,7 @@ class Service extends Base\Service
 
         if ($user)
         {
-            $this->merchant = $user->currentMerchant;
+            $this->merchant = $user->currentMerchant();
 
             $this->user = $user;
         }
@@ -196,10 +198,6 @@ class Service extends Base\Service
             {
                 $error = [ "Some mandatory fields are required" ];
             }
-            else
-            {
-                $this->fireActivationTrigger($merchantDetails);
-            }
         }
 
         return $error;
@@ -215,7 +213,8 @@ class Service extends Base\Service
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
         //
-        if (($this->merchant->isActive()) and ($step === $bankStep))
+
+        if (($this->merchant->activated === true) and ($step === $bankStep))
         {
             return ["Bank account updation not allowed after account is updated"];
         }
@@ -334,74 +333,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * On submission of activation form by user, send email
-     * to the customer and sales team notifying them about the activity
-     */
-    protected function fireActivationTrigger($merchantDetails)
-    {
-        $customer = [
-            'id'            => $this->merchant->id,
-            'name'          => $merchantDetails['contact_name'],
-            'email'         => $merchantDetails['contact_email'],
-            'business_name' => $merchantDetails['business_name'],
-            'dba'           => $merchantDetails['business_dba'],
-            'website'       => $merchantDetails['business_website']
-        ];
-
-        $user = Auth::user();
-
-        $mailer = new MerchantMailer($user->currentMerchant, $merchantDetails);
-
-        // For marketplace linked accounts - skip sending this email
-        if ($this->isLinkedAccount() === false)
-        {
-            $mailer->confirmActivationSubmission()->queueAndDeliver();
-        }
-
-        $mailer->notifyActivationSubmission()->queueAndDeliver();
-
-        // Take screenshots as well
-        $urls = $this->getWebsiteUrls($merchantDetails);
-
-        Queue::push('App\Admin\Creevey', [
-            $customer['id'],
-            $urls,
-            $customer['business_name']
-        ]);
-
-        // We also send over details to slack
-        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
-
-        $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
-
-        $zapierData = $this->activationZapierData($customer);
-
-        Queue::push('App\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
-    }
-
-    protected function activationZapierData(array $customer)
-    {
-        $customer['date'] =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
-
-        $customer['contact_name'] = $this->user->name;
-
-        return $customer;
-    }
-
-    public function postFormSubmissionToZapier($job, $data)
-    {
-        if (Config::get('razorpay.zapier.mock'))
-        {
-            return;
-        }
-
-        $url = Config::get('razorpay.zapier.submissions');
-        Requests::post($url, [], $data);
-
-        $job->delete();
-    }
-
     public function getDetailsFromAPI($merchantId = null)
     {
         if ($merchantId === null)
@@ -433,8 +364,6 @@ class Service extends Base\Service
 
     public function saveDetailsOnAPI(array $input, $merchantId = null)
     {
-        $input = $this->unsetExtraValues($input);
-
         if ($merchantId === null)
         {
             $merchantId = $this->merchant->id;
@@ -489,51 +418,11 @@ class Service extends Base\Service
 
     protected function uploadFileToAPI(array $input)
     {
-        $this->setApiCredentials($this->merchant['id']);
+        $this->setApiCredentials($this->merchant->id);
 
         $response = $this->api
                          ->merchantDetail
-                         ->uploadActivationFile($this->merchant['id'], $input);
-    }
-
-    protected function unsetExtraValues(array $input)
-    {
-        $fieldsToDrop = [
-            '1', '2', '3', '4', '5', '6',
-            'steps_finished', 'submitted', 'submitted_at', 'created_at', 'updated_at', 'verification',
-            'can_submit', 'bank_account_number_confirmation', 'locked', 'activation_progress',
-            'agree_terms', 'files', 'business_proof_url', 'business_operation_proof_url',
-            'business_pan_url', 'address_proof_url', 'promoter_proof_url', 'promoter_pan_url', 'promoter_address_url',
-            'activated'
-        ];
-
-        $dropIfEmpty = [
-            'transaction_volume',
-            'transaction_value',
-            'business_international',
-        ];
-
-        foreach ($fieldsToDrop as $key)
-        {
-            unset($input[$key]);
-        }
-
-        foreach ($dropIfEmpty as $key)
-        {
-            if (isset($input[$key]) and empty($input[$key]))
-            {
-                unset($input[$key]);
-            }
-        }
-
-        if (isset($input['business_international']) === true)
-        {
-            // This is boolean, but needs to be passed as 0, 1 to API
-            $input['business_international'] = intval($input['business_international']);
-        }
-
-        return $input;
-
+                         ->uploadActivationFile($this->merchant->id, $input);
     }
 
     protected function calculateSteps(array $response = null) : array
@@ -665,7 +554,7 @@ class Service extends Base\Service
         }
 
         // Switch $this->merchant to the linked-account entity
-        $this->merchant = Merchant\Entity::findorfail($account->id);
+        $this->merchant = Merchant\Entity::findOrFail($account->id);
 
         $this->linked_account = true;
     }
@@ -677,6 +566,6 @@ class Service extends Base\Service
 
     public function getUrlKeys()
     {
-        return self::$WEBSITE_URLS;
+        return self::WEBSITE_URLS;
     }
 }

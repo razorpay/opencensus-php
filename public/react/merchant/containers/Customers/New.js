@@ -87,7 +87,7 @@ export default class AddCustomer extends Component {
             </div>
 
             <div class="help-block">
-              One of these - <b>email</b> or <b>phone</b> is required.
+              Either <b>email</b> or <b>Contact No.</b> is mandatory.
             </div>
 
             <div class="form-group">

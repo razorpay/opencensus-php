@@ -18,114 +18,64 @@
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
         <a href class="list-group-item" ng-click="openSetlUpload()"
-          ng-show="admin.permissions.indexOf('add_settlement_reconciliation') !== -1">
+           ng-show="admin.permissions.indexOf('add_settlement_reconciliation') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="add_settlement_reconciliation">
           Upload Settlement Reconciliation (UTR)
         </a>
         <a href class="list-group-item" ng-click="openReconUpload()"
-          ng-show="admin.permissions.indexOf('add_reconciliation_file') !== -1">
+           ng-show="admin.permissions.indexOf('add_reconciliation_file') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="add_reconciliation_file">
           Upload Reconciliation File (Payment/Refund)
         </a>
         <a href class="list-group-item" ng-click="openAddIIN()"
-          ng-show="admin.permissions.indexOf('edit_iin_rule') !== -1">
+           ng-show="admin.permissions.indexOf('edit_iin_rule') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="edit_iin_rule">
           Add IIN Rule
         </a>
         <a href class="list-group-item" ng-click="openAddEMI()"
-          ng-show="admin.permissions.indexOf('create_emi_plan') !== -1">
+           ng-show="admin.permissions.indexOf('create_emi_plan') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="create_emi_plan">
           Add EMI Plan
         </a>
         <a href class="list-group-item" ng-click="openConfirmUser()"
-          ng-show="admin.permissions.indexOf('edit_merchant_confirm') !== -1">
+           ng-show="admin.permissions.indexOf('edit_merchant_confirm') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="edit_merchant_confirm">
           Confirm User
         </a>
         <a href class="list-group-item" ng-click="openGenerateRefund()"
-          ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1">
+           ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="create_netbanking_refund">
           Generate Refunds Excel (Netbanking)
         </a>
+        <a href class="list-group-item" ng-click="openGenerateEmiFiles()"
+           ng-show="admin.permissions.indexOf('generate_emi_files') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="generate_emi_files">
+          Generate Emi Excel
+        </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
-          ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1">
+           ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="edit_authorized_failed_payment">
           Authorize Failed Payment
         </a>
-        <!-- <a href class="list-group-item" ng-click="openEditNewsletter()"
-          ng-show="admin.permissions.indexOf('send_newsletter') !== -1">
-          Send Merchant Newsletter
-        </a> -->
-        <a href class="list-group-item" ng-click="openAddSchedule()" ng-show="admin.permissions.indexOf('schedule_create') !== -1">
+        <a href class="list-group-item" ng-click="openAddSchedule()" ng-show="admin.permissions.indexOf('schedule_create') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="schedule_create">
           Create Schedule
         </a>
         <a href class="list-group-item" ng-click="triggerError()"
-          ng-confirm-click="Are you sure you want to trigger an error?"
-          ng-show="admin.permissions.indexOf('trigger_dummy_error') !== -1"
-        >
+           ng-confirm-click="Are you sure you want to trigger an error?"
+           ng-show="admin.permissions.indexOf('trigger_dummy_error') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="trigger_dummy_error">
           Trigger Dummy Error
         </a>
         <a href class="list-group-item" ng-click="openApiRequest()"
-          ng-show="admin.permissions.indexOf('make_api_call') !== -1">
+           ng-show="admin.permissions.indexOf('make_api_call') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="make_api_call">
           Make API Call
         </a>
       </div>
     </div>
   </div>
 </div>
-<script type="text/ng-template" id="sendNewsletter.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Send Newsletter</h3>
-  </div>
-  <div class="modal-body newsletter-modal">
-    <form class="form-horizontal row">
-      <div class="col-lg-5">
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="lists">Email list</label>
-          <div class="col-lg-9">
-            <div class="checkbox" ng-repeat="(list, label) in mailingLists">
-              <label class="i-checks">
-                <input ng-model="lists[list]" type="checkbox">
-                <i></i>
-                {{label}}
-              </label>
-            </div>
-            <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
-              exactly once at most to any merchant.
-            </span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="subject">Subject</label>
-          <div class="col-lg-9">
-            <input type="text" class="form-control m-b" maxlength="100" name="subject" ng-model="subject" placeholder="Razorpay">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="template">Template</label>
-          <div class="col-lg-9">
-            <input type="text" class="form-control m-b" maxlength="100" name="template" ng-model="template" placeholder="Template to Use">
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-7">
-        <div class="form-group">
-          <label for="message" class="col-lg-3">Message</label>
-          <div class="col-lg-12 col-sm-12">
-            <textarea rows="17" ng-model="message" class="form-control" name="message" id="message" required="required"></textarea>
-            <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings. <br>
-              You can use <code>%recipient_email%</code> and <code>%recipient_name%</code>
-              to match the merchant email and name.
-            </span>
-          </div>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <div class="col-lg-12 col-sm-12" ng-model="adminEmail">
-      The test email will be sent to {{adminEmail}}
-    </div>
-    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-info" ng-click="test(subject, message, template)">Send Test</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject, message, template)"
-      ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
-    >OK</button>
-  </div>
-</script>
 <script type="text/ng-template" id="addIINModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Add IIN</h3>
@@ -258,6 +208,7 @@
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
             <option value="INDB">Indusind</option>
+            <option value="RATN">RBL</option>
           </select>
         </div>
       </div>
@@ -278,7 +229,7 @@
         <label for="methods" class="col-lg-2 control-label">Methods</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="methods" ng-model="emi.methods">
-            <option value="card">Card</option>
+            <option value="card" selected="selected">Card</option>
           </select>
         </div>
       </div>
@@ -286,6 +237,33 @@
         <label for="rate" class="col-lg-2 control-label">Interest Rate</label>
         <div class="col-lg-10" >
           <input type="number" class="form-control m-b" name="rate" ng-model="emi.rate" placeholder="1250">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="subvention" class="col-lg-2 control-label">Subvention</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="subvention" ng-model="emi.subvention">
+            <option value="customer">Customer</option>
+            <option value="merchant">Merchant</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="merchant_payback" class="col-lg-2 control-label">Merchant Payback</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="merchant_payback" ng-model="emi.merchant_payback" placeholder="1250">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="issuer_plan_id" class="col-lg-2 control-label">Issuer Plan Id</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="issuer_plan_id" ng-model="emi.issuer_plan_id">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="min_amount" class="col-lg-2 control-label">Min Amount</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="min_amount" ng-model="emi.min_amount" placeholder="1250">
         </div>
       </div>
     </form>
@@ -543,6 +521,7 @@
             <option value="HDFC">HDFC</option>
             <option value="BillDesk">BillDesk</option>
             <option value="Axis">Axis</option>
+            <option value="Ebs">Ebs</option>
             <option value="PayZapp">PayZapp</option>
             <option value="Mobikwik">Mobikwik</option>
             <option value="Olamoney">Olamoney</option>
@@ -553,6 +532,9 @@
             <option value="NetbankingAxis">Netbanking AXIS</option>
             <option value="NetbankingIcici">Netbanking ICICI</option>
             <option value="NetbankingFederal">Netbanking Federal</option>
+            <option value="NetbankingRbl">Netbanking Rbl</option>
+            <option value="NetbankingIndusind">Netbanking Indusind</option>
+            <option value="FirstData">First Data</option>
           </select>
         </div>
       </div>
@@ -614,6 +596,8 @@
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
             <option value="INDB">Indusind</option>
+            <option value="RATN">RBL</option>
+            <option value="PUNB">PNB</option>
           </select>
         </div>
       </div>
@@ -626,11 +610,84 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label for="email_self" class="col-lg-2 control-label">Send Email to self</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" class="form-control m-b" name="email_self" ng-model="email_self" />
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode)">Generate</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode, email_self)">Generate</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="emiGenerateModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Generate EMI Files</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="from" class="col-lg-2 control-label">From</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="from_date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="to" class="col-lg-2 control-label">To</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="to_date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="bank" class="col-lg-2 control-label">Bank</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="bank" ng-model="bank">
+            <!-- Take care to keep these capitalized -->
+            <option value="KKBK">KOTAK</option>
+            <option value="UTIB">AXIS</option>
+            <option value="INDB">INDUS_IND</option>
+            <option value="RATN">RBL</option>
+            <option value="SCBL">SCBL</option>
+            <option value="ICIC">ICICI</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email_self" class="col-lg-2 control-label">Send Email to self</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" class="form-control m-b" name="email_self" ng-model="email_self" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date, from_date, to_date,bank, mode, email_self)">Generate</button>
   </div>
 </script>
 
@@ -655,14 +712,6 @@
             <option value="weekly">Weekly</option>
             <option value="monthly-date">Monthly-Date</option>
             <option value="monthly-week">Monthly-Week</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="type" class="col-lg-2 control-label">Type</label>
-        <div class="col-lg-10" >
-          <select class="form-control m-b" name="type" ng-model="schedule.type" required>
-            <option value="settlement">Settlement</option>
           </select>
         </div>
       </div>

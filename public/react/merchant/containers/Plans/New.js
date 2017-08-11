@@ -1,127 +1,188 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, FieldArray, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
+import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
+import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import * as PlanActions from 'merchant/modules/plans';
+import { required } from 'rzp/utils/validators';
+import { savePlan } from 'merchant/modules/plans';
+import * as ModalActions from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
-const selector = formValueSelector('newPlan');
-@connect(state => {
-  let isNew = !selector(state, 'id');
-  return {
-    isNew,
-  };
-}, PlanActions)
+@connect(null, {
+  savePlan,
+  showNotification,
+  ...ModalActions,
+})
 @reduxForm({
   form: 'newPlan',
   initialValues: {
-    interval_count: 1,
-    interval: 'monthly',
+    period: 'monthly',
+    interval: 1,
+    item: {
+      currency: 'INR',
+    },
+    notes: [],
   },
 })
 export default class AddPlan extends Component {
-  constructor() {
-    super(...arguments);
-    this.create = ::this.create;
-    this.edit = ::this.edit;
+  state = {};
+
+  componentWillMount() {
+    if (this.props.plan) {
+      this.props.initialize(this.props.plan);
+    }
   }
 
-  create(fieldProps) {
-    return this.props.createPlan(fieldProps).then(response => {
-      let plan = response.data.plan;
-      this.props.planAdded(plan);
-      this.props.onSave(plan);
-    });
-  }
-
-  edit(fieldProps) {
-    let { id, ...params } = fieldProps;
-    return this.props.editPlan(id, params).then(response => {
-      let plan = response.data.plan;
-      this.props.planEdited(plan);
-      this.props.onSave(plan);
-    });
-  }
+  save = props => {
+    return this.props
+      .savePlan(props)
+      .then(plan => {
+        this.props.onSave(plan);
+        this.props.showNotification({
+          type: 'success',
+          message: 'Plan saved successfully',
+        });
+      })
+      .catch(err => {
+        this.setState({
+          errors: err.errors,
+        });
+      });
+  };
 
   render() {
-    const { handleSubmit, isNew } = this.props;
-    let action = isNew ? this.create : this.edit;
+    const { handleSubmit, invalid, plan } = this.props;
 
     return (
-      <div>
+      <div class="plan-create">
         <ModalHeader
-          title={isNew ? 'New Plan' : 'Edit Plan'}
+          title={plan && plan.id ? 'Edit Plan' : 'New Plan'}
           onCloseClick={this.props.closeModal}
         />
 
-        <form class="form-horizontal">
-          <div class="modal-body">
+        <div class="modal-body">
+          <Alert type="error" message={this.state.errors} />
+
+          <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
             <div class="form-group">
-              <label class="col-md-3 control-label">Name</label>
-              <div class="col-md-9">
+              <label class="col-sm-3 control-label label-required">
+                Plan Name
+              </label>
+              <div class="col-sm-7">
                 <Field
-                  name="name"
+                  name="item[name]"
                   component={InputField}
                   class="form-control"
                   autoFocus={true}
+                  validate={required()}
                 />
               </div>
             </div>
 
             <div class="form-group">
-              <label class="col-md-3 control-label">Amount</label>
-              <div class="col-md-9">
-                <div class="input-group">
-                  <span class="input-group-addon">INR</span>
+              <label class="control-label col-sm-3">Plan Description</label>
+              <div class="col-sm-7">
+                <Field
+                  name="item[description]"
+                  component="textarea"
+                  class="form-control"
+                />
+              </div>
+              <div class="col-sm-offset-3 col-sm-7">
+                <small class="help-block">
+                  <i class="icon icon-info-circle" />
+                  The
+                  {' '}
+                  <b>Plan Name</b>
+                  {' '}
+                  and
+                  {' '}
+                  <b>Plan Description</b>
+                  {' '}
+                  will appear on the invoice as entered above
+                </small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-3 control-label label-required">
+                Billing Frequency
+              </label>
+              <div class="col-sm-7">
+                <div class="billing-frequency">
+                  <span>Every</span>
                   <Field
-                    name="amount"
+                    name="interval"
                     component={InputField}
                     class="form-control"
+                    validate={required()}
                   />
+                  <Field name="period" component="select" class="form-control">
+                    <option value="weekly">Week(s)</option>
+                    <option value="monthly">Month(s)</option>
+                    <option value="yearly">Year(s)</option>
+                  </Field>
                 </div>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="col-md-3 control-label">Billing Frequency</label>
-              <div class="col-md-2">
+              <label class="col-sm-3 control-label label-required">
+                Billing Amount
+              </label>
+              <div class="col-sm-7">
                 <Field
-                  name="interval_count"
-                  component={InputField}
+                  name="item[amount]"
+                  component={InputGroupField}
+                  prefix="INR"
+                  suffix="per unit"
                   class="form-control"
-                  type="tel"
+                  validate={required()}
                 />
               </div>
+            </div>
 
-              <div class="col-md-7">
-                <Field name="interval" component="select" class="form-control">
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
-                </Field>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">
+                Internal Notes
+              </label>
+              <div class="col-sm-7">
+                <FieldArray name="notes" component={NotesFieldArray} />
               </div>
             </div>
-          </div>
 
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default"
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
+            <div class="row Modal__actions">
+              <div class="col-sm-offset-3 col-sm-7">
+                <div class="btn-toolbar">
+                  <button
+                    type="button"
+                    class="btn btn-default"
+                    onClick={this.props.closeModal}
+                  >
+                    Cancel
+                  </button>
 
-            <AsyncButton
-              type="button"
-              class="btn btn-primary"
-              text="Save"
-              onClick={handleSubmit(action)}
-            />
-          </div>
-        </form>
+                  <AsyncButton
+                    type="submit"
+                    class="btn btn-primary"
+                    text="Create Plan"
+                    pendingText="Creating..."
+                    onClick={handleSubmit(this.save)}
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
 }
+
+AddPlan.defaultProps = {
+  onSave: () => {},
+};

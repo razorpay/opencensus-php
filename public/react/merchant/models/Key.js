@@ -18,10 +18,12 @@ export default class Key extends GenericEntity {
     };
 
     data.route_name = this.listRouteName;
+    if (params.mode) {
+      data.mode = params.mode;
+    }
+
     return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
-      );
+      response.data.items = response.data.items.map(item => new Klass(item));
       return response;
     });
   }
@@ -52,11 +54,11 @@ export default class Key extends GenericEntity {
       data,
     }).then(response => {
       if (this.isNew) {
-        return new Klass().deserialize(response.data);
+        return new Klass(response.data);
       } else {
         return {
-          new: new Klass().deserialize(response.data.new),
-          old: new Klass().deserialize(response.data.old),
+          new: new Klass(response.data.new),
+          old: new Klass(response.data.old),
           delayRoll: +params.delay_roll,
         };
       }

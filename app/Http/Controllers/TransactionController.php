@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use Input;
 use App\Api;
+use Response;
 use App\Merchant;
+use Carbon\Carbon;
+use App\Transaction;
 use App\MerchantDetails;
 use App\Http\AppResponse;
-use App\Transaction;
-use Input;
-use Response;
-use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -40,7 +40,7 @@ class TransactionController extends Controller
 
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::user()->getCurrentMerchantId();
+        $input['merchant_id'] = Auth::user()->currentMerchant()->id;
 
         $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
@@ -51,7 +51,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->getCurrentMerchantId();
+        $merchant_id = Auth::user()->currentMerchant()->id;
 
         $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
 
@@ -62,31 +62,11 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->getCurrentMerchantId();
+        $merchant_id = Auth::user()->currentMerchant()->id;
 
         $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
 
         return AppResponse::jsonResponse([], $data);
-    }
-
-    public function getTransactions($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'transaction');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getTransaction($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'transaction');
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postAddfunds($mode)
@@ -105,6 +85,7 @@ class TransactionController extends Controller
     public function getGenerateReport($mode)
     {
         $input = Input::all();
+
         $this->checkMode($mode);
 
         list($error, $file) = (new Api\Service)->generateReport($mode, $input);
@@ -120,6 +101,7 @@ class TransactionController extends Controller
     public function getResourceReport($mode, $resource)
     {
         $this->checkMode($mode);
+
         $input = Input::all();
 
         list($error, $response) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
@@ -151,11 +133,26 @@ class TransactionController extends Controller
 
         list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
 
+        $month = intval($input['month']);
+        $year = intval($input['year']);
+
+        // GST is applicable from 1st July 2017
+        $isGstApplicable = (($year >= 2017) and ($month >= 7));
+
         if ($error === null)
         {
-            $merchantId = $data['merchant']['id'];
+            $merchantId = $data['merchant_id'];
+
+            list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
+            $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+
+            $gst = (empty($merchantDetails['gstin']) === false) ? $merchantDetails['gstin'] :
+                    ((empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '');
+
+            $data['gst'] = $gst;
+            $data['isGstApplicable'] = $isGstApplicable;
 
             $data['merchant_details'] = $merchantDetails;
 
@@ -188,6 +185,7 @@ class TransactionController extends Controller
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
 
         $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null;
+
         $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $merchantId);
 
         list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);

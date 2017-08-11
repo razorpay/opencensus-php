@@ -4,17 +4,19 @@ namespace App\Merchant;
 
 use Auth;
 use Hash;
-use Requests;
 use Queue;
-
+use Session;
+use Requests;
 use App\Base;
-use App\Merchant;
 use App\User;
+use App\Admin;
+use App\Generic;
+use App\Merchant;
 use App\Invitation;
+use App\User\Helper;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
-use App\Admin;
-use App\Exceptions\EntityNotFoundException;
+use App\RZP\PublicCollection;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
@@ -30,16 +32,10 @@ class Service extends Base\Service
     const ACCOUNT_CREATION_NOT_ALLOWED          = "You do not have account creation privileges. Please contact support@razorpay.com";
     const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
     const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
-    const BANK_ACCOUNT_NOT_FOUND                = "Could not find a Bank Account";
 
     public function __construct()
     {
         $this->currentUser = Auth::user();
-
-        if ($this->currentUser)
-        {
-            $this->currentMerchant = $this->currentUser->currentMerchant();
-        }
     }
 
     public static function register(User\Entity $user, array $data, $referer = false)
@@ -65,6 +61,8 @@ class Service extends Base\Service
             if ($referer)
             {
                 $merchant->tag('ref-'.$referer);
+
+                (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, ['ref-'.$referer]);
             }
 
             $merchant->save();
@@ -86,9 +84,11 @@ class Service extends Base\Service
      */
     public function registerSubMerchant(array $input)
     {
-        $currentMerchant = $this->currentMerchant;
+        $currentMerchant = $this->currentUser->currentMerchant();
 
         $isLinkedAccount = (bool) (\Input::get('account') ?? false);
+
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
         if ($isLinkedAccount === true)
         {
@@ -105,8 +105,8 @@ class Service extends Base\Service
             }
         }
 
-        $error = (new Merchant\Validator)
-                    ->validateInput('create_submerchant', $input)->messages();
+        $error = (new Merchant\Validator)->validateInput('create_submerchant', $input)
+                                         ->messages();
 
         if (empty($error))
         {
@@ -134,8 +134,26 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === false)
             {
+                // We tag the merchant as referred from the original merchant on api
+                $this->addMerchantTagsOnAPI($merchant->id, ['ref-'.$currentMerchant->id]);
+
                 // Finally attach the current user to the new user's team
-                $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                // And also update the session user merchant list.
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
+
+                if (empty($error) === true)
+                {
+                    User\Entity::find($this->currentUser->id)->merchants()->attach([$merchant->id], ['role' => 'owner']);
+
+                    list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
+
+                    if (empty($error) === true)
+                    {
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
+                }
+
+                return [$error, $merchant->toArray()];
             }
 
             return [null, $merchant->toArray()];
@@ -148,58 +166,66 @@ class Service extends Base\Service
 
     public function registerSubMerchantUser(array $input)
     {
-        $currentMerchant = $this->currentMerchant;
+        $currentMerchant = $this->currentUser->currentMerchant();
+
         $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
 
         $subMerchant = $this->fetch($input['id']);
+
         $email = $subMerchant['email'];
         $input['email'] = $email;
 
-        $error = (new Merchant\Validator)
-            ->validateInput('create_submerchant_user', $input)->messages();
+        $error = (new Merchant\Validator)->validateInput('create_submerchant_user', $input)->messages();
 
-        if (empty($error))
+        if (empty($error) === false)
         {
-            if ($email === $currentMerchant->email)
-            {
-                return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
-            }
-
-            // checks if the main merchant's owner user is the primary
-            // owner of the submerchant account
-            if ($currentMerchant->primaryOwner()->ownsMerchant($subMerchant) !== true)
-            {
-                return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
-            }
-
-            $input['name'] = $subMerchant['name'];
-            $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
-
-            try
-            {
-                $user = (new User\Service)->createUserForSubmerchant($input);
-                $user->save();
-
-                $userApiData = (new User\Service)->getUserApiData($user);
-                (new User\Service)->createUserOnApi($userApiData);
-
-                // Finally attach the new user to the sub merchant
-                $user->joinMerchantByIdWithRole($input['id'], 'owner');
-
-                (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
-
-                return [null, $user->toArray()];
-            }
-
-            catch(User\RecoverableException $e)
-            {
-                $error = [$e->getMessage()];
-
-                return [$error, null];
-            }
+            return [$error, null];
         }
-        else
+
+        if ($email === $currentMerchant->email)
         {
+            return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
+        }
+
+        list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
+
+        $ownerMerchant = $genericUser->merchants
+                                     ->where('role', 'owner')
+                                     ->where('id', $subMerchant['id'])
+                                     ->first();
+
+        // checks if the main merchant's owner user is the primary
+        // owner of the submerchant account
+        if ($ownerMerchant === null)
+        {
+            return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
+        }
+
+        $input['name'] = $subMerchant['name'];
+        $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
+
+        try
+        {
+            $user = (new User\Service)->createUserForSubmerchant($input);
+            $user->save();
+
+            $userApiData = (new User\Service)->getUserApiData($user);
+            (new User\Service)->createUserOnApi($userApiData);
+
+            // Finally attach the new user to the sub merchant
+            list($error, $response) = (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
+
+            if (empty($error) === true)
+            {
+                $user->joinMerchantByIdWithRole($input['id'], 'owner');
+            }
+
+            return [null, $user->toArray()];
+        }
+        catch(User\RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+
             return [$error, null];
         }
     }
@@ -275,34 +301,91 @@ class Service extends Base\Service
 
             $existingUser = User\Entity::getUserWithEmail($input['email']);
 
-            $selfUser = $merchant->users()->where('email',$originalEmail)->first();
+            $selfUser = $merchant->users()->where('email', $originalEmail)->first();
 
             //The merchant has a team member with new email
             if ($teamUser !== null)
             {
                 //swap roles between user with new email and original owner
                 $oldOwner = $merchant->users()->where('role', 'owner')->first();
-                $merchant->removeUserById($oldOwner->id);
-                $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
 
-                $merchant->removeUserById($teamUser->id);
-                $teamUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                // removing merchant user mapping entry on both api and dashboard for oldOwner user
+                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchant->id);
+
+                if (empty($error) === true)
+                {
+                    $merchant->removeUserById($oldOwner->id);
+                }
+
+                // adding merchant user mapping entry on both api and dashboard with manager role for oldOwner user
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchant->id, 'manager');
+
+                if (empty($error) === true)
+                {
+                    $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
+                }
+
+                // removing merchant user mapping entry on both api and dashboard for teamUser user
+                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($teamUser->id, $merchant->id);
+
+                if (empty($error) === true)
+                {
+                    $merchant->removeUserById($teamUser->id);
+                }
+
+                // adding merchant user mapping entry on both api and dashboard with owner role for teamUser user
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($teamUser->id, $merchant->id, 'owner');
+
+                if (empty($error) === true)
+                {
+                    $teamUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                }
             }
             //There is an existing user with new email but not a team member
             else if ($existingUser !== null)
             {
                 //assign owner to existing user and make existing owner a manager.
                 $oldOwner = $merchant->users()->where('role', 'owner')->first();
-                $merchant->removeUserById($oldOwner->id);
-                $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
 
-                $existingUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                // removing merchant user mapping entry on both api and dashboard for oldOwner user
+                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchant->id);
+
+                if (empty($error) === true)
+                {
+                    $merchant->removeUserById($oldOwner->id);
+                }
+
+                // adding merchant user mapping entry on both api and dashboard with manager role for oldOwner user
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchant->id, 'manager');
+
+                if (empty($error) === true)
+                {
+                    $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
+                }
+
+                // adding merchant user mapping entry on both api and dashboard with owner role for existingUser user
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($existingUser->id, $merchant->id, 'owner');
+
+                if (empty($error) === true)
+                {
+                    $existingUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                }
             }
             //change email of existing user attached to the merchant as owner
             else if ($selfUser)
             {
-                $selfUser->email = $input['email'];
-                $selfUser->saveOrFail();
+                $emailData = [
+                    'email' => $input['email']
+                ];
+
+                list($error, $response) = (new User\Service)->editUserOnApi($emailData, $selfUser->id);
+
+                if (empty($error) === true)
+                {
+                    $selfUser->email = $input['email'];
+
+                    $selfUser->saveOrFail();
+                }
             }
         }
     }
@@ -354,7 +437,7 @@ class Service extends Base\Service
 
         if (! empty($adminId))
         {
-            $merchantApiData['admin_id'] = $adminId;
+            $merchantApiData['admins'] = [ $adminId ];
         }
 
         // Fetch org by hostname and set the orgId in the input
@@ -376,35 +459,31 @@ class Service extends Base\Service
 
     public function resendConfirmation(array $input)
     {
-        $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
-
-        if (empty($error))
+        if (isset($input['email']) === false)
         {
-            $credentials = array(
-                'email'     => $input['email'],
-                'password'  => $input['password']
-            );
-
-            $user = Auth::guard('user');
-
-            if ($user->once($credentials))
-            {
-                $user = Auth::user();
-
-                if ($user->getConfirmToken() === null)
-                {
-                    return [['User already confirmed. You can login ' .
-                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
-                }
-
-                $user->token = $user->getConfirmToken();
-                (new UserMailer($user))->accountVerification()->queueAndDeliver();
-
-                return array(array(),array());
-            }
+            return [[static::INVALID_EMAIL_OR_PASSWORD], []];
         }
 
-        return array(array(static::INVALID_EMAIL_OR_PASSWORD), array());
+        $email = $input['email'];
+
+        $user = (new User\Entity)->where('users.email', $email)
+                                 ->first();
+        if ($user === null)
+        {
+            return [[static::INVALID_EMAIL_OR_PASSWORD], []];
+        }
+
+        if ($user->getConfirmToken() === null)
+        {
+            return [['User already confirmed. You can login ' .
+                    '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
+        }
+
+        $user->token = $user->getConfirmToken();
+
+        (new UserMailer($user))->accountVerification()->queueAndDeliver();
+
+        return [[], []];
     }
 
     public function fetch($merchantId)
@@ -413,9 +492,11 @@ class Service extends Base\Service
 
         $tags = Merchant\Entity::select(['id'])
                                 ->with('tagged')
-                                ->where('id', $merchantId);
+                                ->where('id', $merchantId)
+                                ->get()
+                                ->toArray();
 
-        return array_merge($merchant, $tags->get()->toArray()[0]);
+        return array_merge($merchant, $tags[0]);
     }
 
     public function fetchMerchantFromApi($merchantId)
@@ -424,17 +505,10 @@ class Service extends Base\Service
 
         $error = $response = null;
 
-        try
-        {
-            $response = $this->api
-                             ->merchant
-                             ->fetch($merchantId)
-                             ->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            throw new EntityNotFoundException("merchant");
-        }
+        $response = $this->api
+                         ->merchant
+                         ->fetch($merchantId)
+                         ->toArray();
 
         if (empty($response) === false)
         {
@@ -453,18 +527,20 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function fetchKeysFromApi($merchant_id, $mode)
+    public function fetchKeysFromApi($merchantId, $mode)
     {
         $this->setApiCredentials(null, $mode);
+
         $error = $response = null;
 
         try
         {
-            $response = $this->api->merchant
-                ->fetch($merchant_id)
-                ->keys()
-                ->all()
-                ->toArray();
+            $response = $this->api
+                             ->merchant
+                             ->setId($merchantId)
+                             ->keys()
+                             ->all()
+                             ->toArray();
         }
         catch(BadRequestError $e)
         {
@@ -474,41 +550,27 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function createKey($merchant_id, $mode)
+    public function createKey($merchantId, $mode)
     {
-        $errors = array();
-        $data = array();
+        $errors = $data = [];
 
         $this->setApiCredentials(null, $mode);
 
         try
         {
-            $data = $this->api->merchant
-                            ->fetch($merchant_id)
-                            ->keys()
-                            ->create()
-                            ->toArray();
+            $data = $this->api
+                         ->merchant
+                         ->setId($merchantId)
+                         ->keys()
+                         ->create()
+                         ->toArray();
         }
         catch(BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
 
-        return array($errors, $data);
-    }
-
-    public function getUsersListWithInvites()
-    {
-        $merchantId = $this->currentUser
-                           ->currentMerchant()
-                           ->id;
-
-        $users = Merchant\Entity::with('users', 'invitations')
-                    ->where('id', $merchantId)
-                    ->first()
-                    ->toArray();
-
-        return $users;
+        return [$errors, $data];
     }
 
     /**
@@ -537,7 +599,7 @@ class Service extends Base\Service
 
     public function getInvoices($mode)
     {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $merchantId = $this->currentUser->currentMerchant()->id;
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -557,17 +619,16 @@ class Service extends Base\Service
 
     public function createInvoice($mode, $input)
     {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $merchantId = $this->currentUser->currentMerchant()->id;
 
         $this->setApiCredentials($merchantId, $mode);
 
         $errors = [];
+
         $data = null;
 
         try
         {
-            // This is just semantics
-            // completely equivalent to all() for now
             $data = $this->api->invoice->create($input)->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
@@ -582,7 +643,7 @@ class Service extends Base\Service
     {
         $errors = $data = [];
 
-        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $merchantId = $this->currentUser->currentMerchant()->id;
 
         // Fetches keyId from api for given merchant
         list($errors, $data) = $this->fetchKeysFromApi($merchantId, $mode);
@@ -602,6 +663,7 @@ class Service extends Base\Service
         }
 
         $keyId = $data['items'][0]['id'];
+
         $this->setApiCredentialsForPublicAuth($keyId);
 
         try
@@ -628,14 +690,20 @@ class Service extends Base\Service
 
         if ($userId === $this->currentUser->id)
         {
-            return array(static::SELF_REMOVE_FORBIDDEN);
+            return [static::SELF_REMOVE_FORBIDDEN];
         }
 
-        $this->currentMerchant->users()->detach($userId);
+        $currentMerchant = $this->currentUser->currentMerchant();
+
+        list($error, $response) = (new User\Service)->detachMerchantUserOnApi($userId, $this->currentUser->currentMerchant()->id);
+
+        if (empty($error) === true)
+        {
+            Merchant\Entity::find($currentMerchant->id)->users()->detach($userId);
+        }
 
         return $error;
     }
-
 
     /**
      * Update a team member on the given merchant.
@@ -646,11 +714,12 @@ class Service extends Base\Service
      */
     public function updateTeamMemberForOwner($userId, $input)
     {
-        $error = array();
+        $error = [];
 
         if ($userId === $this->currentUser->id)
         {
             $error[] = "You cannot change your role.";
+
             return [$error, null];
         }
 
@@ -659,61 +728,38 @@ class Service extends Base\Service
         if ($validator->fails())
         {
             $error = $validator->messages();
+
             return [$error, null];
         }
 
-        $userToUpdate = $this->currentMerchant->users->find($userId);
+        list($error, $users) = $this->getUsersOfMerchantFromApi($this->currentUser->currentMerchant()->id);
 
-        if (is_null($userToUpdate))
+        $updatedUser = $users->where('id', $userId)
+                             ->first();
+
+        if ($updatedUser === null)
         {
             $error[] = "The team member you are looking for doesn't exist";
+
             return [$error, null];
         }
 
         $newRole = $input['role'];
-        $userToUpdate->merchants()->updateExistingPivot(
-            $this->currentMerchant->id, [
-                'role' => $newRole
-            ]
-        );
 
-        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentMerchant->id, $input['role']);
-
-        list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
-
-        return [$error, $merchant];
-    }
-
-    /**
-     * Fetches merchant balance
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $merchantId Merchant Id
-     * @return array contains both test and live balances
-     */
-    public function fetchMerchantBalance($merchantId)
-    {
-        $test = $this->fetchProxyMerchantBalance($merchantId, 'test');
-        $live = $this->fetchProxyMerchantBalance($merchantId, 'live');
-
-        return compact('test', 'live');
-    }
-
-    protected function fetchProxyMerchantBalance($merchantId, $mode)
-    {
-        try
+        list($error, $response) = (new User\Service)->updateMerchantUserMappingOnApi(
+                                                        $userId,
+                                                        $this->currentUser->currentMerchant()->id,
+                                                        $newRole);
+        if (empty($error) === true)
         {
-            $this->setApiCredentials($merchantId, $mode);
-            return $this->api->merchant->fetchProxyBalance()->toArray();
+            User\Entity::find($userId)
+                        ->merchants()
+                        ->updateExistingPivot(
+                            $this->currentUser->currentMerchant()->id,
+                            ['role' => $newRole]);
         }
 
-        catch(BadRequestError $e)
-        {
-            return [
-                'id'        =>  $merchantId,
-                'balance'   =>  0
-            ];
-        }
+        return [$error, null];
     }
 
     public function fetchReferredMerchants($merchantId)
@@ -736,10 +782,10 @@ class Service extends Base\Service
      */
     protected function fixHexColor(array $input)
     {
-
         if (isset($input['brand_color']))
         {
             $color = $input['brand_color'];
+
             $len = strlen($color);
 
             if ($len === 7)
@@ -753,27 +799,6 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    /**
-     * This one uses Proxy Auth
-     * @return [type]
-     */
-    public function fetchBankAccount()
-    {
-        $this->setApiCredentials($this->currentMerchant->id);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchProxyBankAccount()->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [self::BANK_ACCOUNT_NOT_FOUND];
-        }
-
-        return [$error, $data];
     }
 
     public function savePreSignupDetails($merchantId, $input)
@@ -823,7 +848,12 @@ class Service extends Base\Service
         return [ $error, $presignupDetails];
     }
 
-    public function getPreSignupDetails($merchantId)
+    /**
+     * returns the presignup data for a merchant
+     * if the merchant is referred (submerchant)
+     * then returns an empty array
+     */
+    public function getPreSignupDetails($merchantId): array
     {
         $data = [];
 
@@ -838,5 +868,91 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function getUsersOfMerchantFromApi($merchantId)
+    {
+        $error = [];
+
+        $genericUsers = new PublicCollection;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->merchant->getUsers($merchantId)->toArray();
+
+            $genericUsers = (new Helper)->createGenericUsers($response);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $genericUsers];
+    }
+
+    public function tagMerchant(array $input)
+    {
+        if ($this->currentUser === null)
+        {
+            return [[], []];
+        }
+
+        $currentMerchant = $this->currentUser->currentMerchant();
+
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
+
+        $merchantTags = $currentMerchant->tagNames;
+
+        $allTags = [];
+
+        if (empty($merchantTags) === false)
+        {
+            $allTags = explode(', ', strtolower($merchantTags));
+        }
+
+        $newAllTags = array_diff($allTags, ['newui']);
+
+        if ((isset($input['newui']) === true) and ($input['newui'] === 'true'))
+        {
+            $newAllTags[] = 'newui';
+        }
+
+        $currentMerchant->retag($newAllTags);
+
+        $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
+
+        return [[], $currentMerchant->toArray()];
+    }
+
+    public function addMerchantTagsOnAPI($merchantId, $tags) {
+        $addTags = [
+            'route_name' => 'merchant_tag_add',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ],
+            'body' => [
+                'tags' => $tags
+            ]
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $addTags);
+    }
+
+    public function deleteMerchantTagOnAPI($merchantId, $tagName) {
+        $deleteTag = [
+            'route_name' => 'merchant_tag_delete',
+            'url_params' => [
+                '{id}'      => $merchantId,
+                '{tagName}' => $tagName
+            ],
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('DELETE', $deleteTag);
     }
 }

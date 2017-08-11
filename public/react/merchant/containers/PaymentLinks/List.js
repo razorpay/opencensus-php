@@ -1,0 +1,88 @@
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import Pager from 'rzp/ui/Pager';
+import Alert from 'rzp/ui/Forms/Alert';
+import ShowWhen from 'merchant/components/ShowWhen';
+import InvoicesList from 'merchant/components/Invoices/InvoicesList';
+import ListContainer from 'merchant/containers/ListContainer';
+import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
+import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
+import * as InvoiceActions from 'merchant/modules/invoices/list';
+import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
+
+@connect(state => ({ ...state.invoices, ...state.session }), {
+  ...InvoiceActions,
+  ...ModalActions,
+  luminateRow,
+})
+export default class PaymentLinksContainer extends ListContainer {
+  fetchEntityList(params) {
+    params.types = ['link', 'ecod'];
+    return this.props.fetchInvoices(params);
+  }
+
+  showPaymentLinkModal = (invoice = null) => {
+    this.props.openModal({
+      component: (
+        <CreatePaymentLink
+          invoice={invoice}
+          onSave={invoice => {
+            this.props.luminateRow(invoice.id);
+          }}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
+  };
+
+  render() {
+    let { loading, invoices, user } = this.props;
+    let isNewUIEnabled = user.isNewUIEnabled;
+    let status = this.state.status;
+
+    return (
+      <div class="content-wrapper">
+        <HeaderAction>
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar pull-right">
+              <button
+                class="btn btn-primary"
+                onClick={() => this.showPaymentLinkModal()}
+              >
+                <i class="icon icon-plus" />
+                <span>Create Payment Link</span>
+              </button>
+            </div>
+          </ShowWhen>
+        </HeaderAction>
+
+        <InvoiceListFilter
+          form="InvoiceListFilter"
+          type="link"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
+
+        <Alert type={status.type} message={status.message} />
+
+        <InvoicesList
+          invoices={invoices}
+          isLoading={loading}
+          type="link"
+          isNewUIEnabled={isNewUIEnabled}
+          onEdit={this.showPaymentLinkModal}
+        />
+
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={invoices.length}
+          onClick={this.paginate}
+        />
+      </div>
+    );
+  }
+}

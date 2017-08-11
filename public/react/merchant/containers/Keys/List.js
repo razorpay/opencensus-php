@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header/Header';
 // import Role from 'merchant/components/Role'
 import KeysList from 'merchant/components/Keys/KeysList';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -65,26 +64,17 @@ export default class KeysListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
-        <Header title="API Keys" />
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              {`${mode} Keys`}
-            </div>
+      <div class="content-wrapper">
+        <Alert type={status.type} message={status.message} />
 
-            <Alert type={status.type} message={status.message} />
-
-            <KeysList
-              keys={keys}
-              isLoading={loading}
-              mode={mode}
-              generateKey={this.generateKey}
-              showRollKeyModal={this.showRollKeyModal}
-              merchantId={this.props.session.user.id}
-            />
-          </div>
-        </div>
+        <KeysList
+          keys={keys}
+          isLoading={loading}
+          mode={mode}
+          generateKey={this.generateKey}
+          showRollKeyModal={this.showRollKeyModal}
+          merchantId={this.props.session.user.id}
+        />
       </div>
     );
   }

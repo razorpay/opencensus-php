@@ -29,6 +29,12 @@ export default class Pager extends Component {
     let skip = +this.props.skip;
     let nextDisabled = length < count;
     let prevDisabled = !skip;
+    let total = skip + length;
+    let current = skip + 1;
+
+    if (!total) {
+      return null;
+    }
 
     return (
       <div
@@ -41,13 +47,13 @@ export default class Pager extends Component {
           ? <div class="btn-group pull-right">
               <button
                 type="button"
-                class="btn btn-default btn-sm fa fa-chevron-left"
+                class="btn btn-default btn-sm icon icon-chevron-left"
                 disabled={prevDisabled}
                 onClick={this.onPrev}
               />
               <button
                 type="button"
-                class="btn btn-default btn-sm fa fa-chevron-right"
+                class="btn btn-default btn-sm icon icon-chevron-right"
                 disabled={nextDisabled}
                 onClick={this.onNext}
               />
@@ -55,7 +61,7 @@ export default class Pager extends Component {
           : null}
 
         <small class="text-muted">
-          Showing {skip + 1} - {skip + length}
+          Showing {current} - {total}
         </small>
       </div>
     );

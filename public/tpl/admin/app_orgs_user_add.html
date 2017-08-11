@@ -127,7 +127,7 @@
               <thead>
                 <tr>
                   <th data-sort-ignore="true">
-                    <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
+                    <input type="checkbox" id="select_all" ng-checked='select_all' ng-click='toggleSelAll()'>
                   </th>
                   <th>Group</th>
                   <th>Group description</th>
@@ -135,7 +135,12 @@
               </thead>
               <tbody>
                 <tr ng-repeat="(key, row) in groups">
-                  <td><input type="checkbox" name='groups[]' ng-model='selected_groups[row.id]' value="{{row.id}}"></td>
+                  <td>
+                    <input type="checkbox" name='groups[]'
+                           ng-model='selected_groups[row.id]' value="{{row.id}}"
+                           ng-checked="selected_groups[row.id]"
+                           ng-change="updateIfGroupsChanged(row.id)">
+                  </td>
                   <td>{{row.name}}</td>
                   <td>{{row.description}}</td>
                 </tr>

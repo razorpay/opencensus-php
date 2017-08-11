@@ -1,7 +1,5 @@
 export default ({ label, value, ...otherProps }) => {
-  if (value === null || value === undefined) {
-    value = 'None';
-  } else if (value === '') {
+  if (value === null || value === undefined || value === '') {
     value = '--';
   }
 

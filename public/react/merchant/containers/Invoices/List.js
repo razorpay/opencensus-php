@@ -1,102 +1,107 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { NavLink, withRouter } from 'react-router-dom';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
-import CreatePaymentLink from './CreatePaymentLink';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
+import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
-@connect(state => state.invoices, { ...InvoiceActions, ...ModalActions })
+@withRouter
+@connect(
+  state => {
+    return { ...state.invoices, ...state.session };
+  },
+  { ...InvoiceActions, ...ModalActions, luminateRow }
+)
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
-    return this.props.fetchInvoices(params);
-  }
+    if (this.props.user.isNewUIEnabled) {
+      params.type = 'invoice';
+    }
 
-  showPaymentLinkModal(invoice = null) {
-    this.props.openModal({
-      component: (
-        <CreatePaymentLink
-          invoice={invoice}
-          onSave={invoice => {
-            this.props.highLightInvoice(invoice.id);
-          }}
-          closeModal={this.props.closeModal}
-        />
-      ),
-    });
+    return this.props.fetchInvoices(params);
   }
 
   editInvoice = invoice => {
     if (invoice.type === 'link') {
       this.showPaymentLinkModal(invoice);
-    } else if (invoice.type === 'invoice') {
-      this.context.ngRouter.transitionTo('app.invoices.edit', {
-        id: invoice.id,
-      });
+    } else {
+      this.props.history.push(`/invoices/${invoice.id}`);
     }
   };
 
+  showPaymentLinkModal = (invoice = null) => {
+    this.props.openModal({
+      component: (
+        <CreatePaymentLink
+          invoice={invoice}
+          onSave={invoice => {
+            this.props.luminateRow(invoice.id);
+          }}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
+  };
+
   render() {
-    let { loading, invoices } = this.props;
+    let { loading, invoices, user } = this.props;
+    let isNewUIEnabled = user.isNewUIEnabled;
     let status = this.state.status;
 
     return (
-      <div class="react-root">
-        <ShowWhen notMyRole="support">
-          <div class="btn-toolbar">
-            <button
-              class="btn btn-primary btn-rounded"
-              onClick={() => this.showPaymentLinkModal()}
-            >
-              <i class="fa fa-plus" />
-              <span>Create Payment Link</span>
-            </button>
+      <div class="content-wrapper">
+        <HeaderAction>
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar pull-right">
+              <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
+                <NavLink to="/invoices/new" class="btn btn-primary">
+                  <i class="icon icon-plus" />
+                  <span>Create Invoice</span>
+                </NavLink>
+              </ShowWhen>
 
-            <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
-              <a href="#/app/invoices/new" class="btn btn-primary btn-rounded">
-                <i class="fa fa-plus" />
-                <span>Create Invoice</span>
-              </a>
-            </ShowWhen>
-          </div>
-        </ShowWhen>
-
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Invoices List
+              {!isNewUIEnabled
+                ? <button
+                    class="btn btn-primary"
+                    onClick={() => this.showPaymentLinkModal()}
+                  >
+                    <i class="icon icon-plus" />
+                    <span>Create Payment Link</span>
+                  </button>
+                : null}
             </div>
+          </ShowWhen>
+        </HeaderAction>
 
-            <div class="panel-body">
-              <InvoiceListFilter
-                form="InvoiceListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-              />
-            </div>
+        <InvoiceListFilter
+          form="InvoiceListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-            <Alert type={status.type} message={status.message} />
+        <Alert type={status.type} message={status.message} />
 
-            <InvoicesList
-              invoices={invoices}
-              isLoading={loading}
-              highlightRow={invoice =>
-                invoice.id === this.props.highLightInvoiceId}
-              onEdit={this.editInvoice}
-            />
+        <InvoicesList
+          invoices={invoices}
+          isNewUIEnabled={isNewUIEnabled}
+          isLoading={loading}
+          onEdit={this.editInvoice}
+        />
 
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={invoices.length}
-              onClick={this.paginate}
-            />
-          </div>
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={invoices.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

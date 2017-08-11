@@ -1,3 +1,21 @@
+// https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
+if (!String.prototype.endsWith) {
+  String.prototype.endsWith = function(searchString, position) {
+    var subjectString = this.toString();
+    if (
+      typeof position !== 'number' ||
+      !isFinite(position) ||
+      Math.floor(position) !== position ||
+      position > subjectString.length
+    ) {
+      position = subjectString.length;
+    }
+    position -= searchString.length;
+    var lastIndex = subjectString.lastIndexOf(searchString, position);
+    return lastIndex !== -1 && lastIndex === position;
+  };
+}
+
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
 
 if (!Array.prototype.findIndex) {
@@ -29,4 +47,19 @@ if (!Array.prototype.findIndex) {
     configurable: false,
     writable: false,
   });
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/closest#Polyfill
+if (window.Element && !Element.prototype.closest) {
+  Element.prototype.closest = function(s) {
+    var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+      i,
+      el = this;
+    do {
+      i = matches.length;
+      while (--i >= 0 && matches.item(i) !== el) {
+      }
+    } while (i < 0 && (el = el.parentElement));
+    return el;
+  };
 }

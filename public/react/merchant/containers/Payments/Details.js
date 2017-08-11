@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
 import Amount from 'rzp/ui/Amount';
 import PaymentDetails from 'merchant/components/Payments/PaymentDetails';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -16,11 +15,16 @@ import RefundModal from './RefundModal';
 export default class PaymentDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
-    ngRouter: PropTypes.object,
   };
 
   componentWillMount() {
-    this.props.fetchPayment(this.props.id);
+    this.props.fetchItem(this.props.id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchItem(nextProps.id);
+    }
   }
 
   fetchCardDetails = payment => {
@@ -87,24 +91,17 @@ export default class PaymentDetailsContainer extends Component {
     }
 
     return (
-      <div class="react-root">
-        <Header title="Payment Details" />
-
-        <div class="content-wrapper">
-          <PaymentDetails
-            payment={payment}
-            card={card}
-            refunds={refunds}
-            isLoading={loading}
-            statusMsg={statusMsg}
-            onToggleCardDetails={this.fetchCardDetails}
-            onToggleRefundList={this.fetchRefunds}
-            confirmCapture={this.confirmCapture}
-            openRefundModal={this.openRefundModal}
-            ngRouter={this.context.ngRouter}
-          />
-        </div>
-      </div>
+      <PaymentDetails
+        payment={payment}
+        card={card}
+        refunds={refunds}
+        isLoading={loading}
+        statusMsg={statusMsg}
+        onToggleCardDetails={this.fetchCardDetails}
+        onToggleRefundList={this.fetchRefunds}
+        confirmCapture={this.confirmCapture}
+        openRefundModal={this.openRefundModal}
+      />
     );
   }
 }

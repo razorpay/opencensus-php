@@ -13,7 +13,7 @@ app
     'organization',
     'transformRequestAsFormPost',
     '$window',
-    '$cookies',
+    '$localStorage',
     function(
       $scope,
       $timeout,
@@ -25,7 +25,8 @@ app
       user,
       organization,
       transformRequestAsFormPost,
-      $window
+      $window,
+      $localStorage
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -137,13 +138,28 @@ app
 
       if ($location.search().invitation) {
         $scope.signup.data.invitation = $location.search().invitation;
+
+        // Get invitation details
+        $http({
+          url: '/user/invitations/token/' + $scope.signup.data.invitation,
+          method: 'GET',
+        })
+          .success(function(data) {
+            if (data.success) {
+              $scope.signup.data.email = data.data.email;
+              $scope.lock_email = data.data.email ? true : false;
+            } else {
+              $state.transitionTo('access.signin');
+            }
+          })
+          .error(function() {});
       } else if ($location.search().merchant_invitation) {
         // heimdall specific
         $scope.signup.data.merchant_invitation = $location.search().merchant_invitation;
 
         // Get invitation details
         $http({
-          url: '/invitation',
+          url: '/admin/generic',
 
           method: 'GET',
 
@@ -213,6 +229,7 @@ app
         showSpinner();
         request.success(function(data) {
           if (data.success) {
+            $localStorage.new_user_signup = true;
             $scope.signup.account_type = $scope.signup.data.invitation
               ? 'team_member'
               : 'merchant';
@@ -221,7 +238,7 @@ app
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
-                $scope.goToDashboard(data.user.merchants[0].pivot.role);
+                $scope.goToDashboard(data.user.merchants[0].role);
               } else {
                 hideSpinner();
                 $state.transitionTo(
@@ -236,6 +253,14 @@ app
             });
           } else {
             hideSpinner();
+            if (
+              data.errors &&
+              data.errors[0] &&
+              data.errors[0].indexOf('email has already been taken') !== -1
+            ) {
+              trackDrip('error_email_taken');
+            }
+
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
             });
@@ -252,16 +277,8 @@ app
       }
 
       $scope.goToDashboard = function(role) {
-        switch (role) {
-          case 'support':
-            $state.go('app.payments.list');
-            break;
-          case 'sellerapp':
-            $state.go('app.invoices');
-            break;
-          default:
-            $state.go('app.dashboard');
-        }
+        location.hash = '/app';
+        location.reload();
       };
 
       $scope.sendDetails = function() {
@@ -286,7 +303,7 @@ app
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
               if (user.isVerified()) {
-                var role = userDetails.merchants[userDetails.id].pivot.role;
+                var role = userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
                 goToVerification();
@@ -462,29 +479,32 @@ app
               $scope.login.data.email = $stateParams.email;
             }
           } else {
-            if (!user.isPreSignupDone()) {
+            user.identity().then(function(userDetails) {
               $scope.isLoggedIn = true;
-              var userDetails = user.getIdentity();
-              if (userDetails) {
-                Object.assign(
-                  $scope.signup.merchantData,
-                  userDetails.pre_signup
-                );
-              }
-              goToRelevantQuestion();
-              $scope.login.currentStep = 2;
-              $state.transitionTo(
-                'access.pre_signup',
-                {},
-                {
-                  notify: false,
+              $scope.login.data.email = userDetails.email;
+              if (!user.isPreSignupDone()) {
+                if (userDetails) {
+                  Object.assign(
+                    $scope.signup.merchantData,
+                    userDetails.pre_signup
+                  );
                 }
-              );
-            } else {
-              var userDetails = user.getIdentity();
-              var role = userDetails.merchants[userDetails.id].pivot.role;
-              $scope.goToDashboard(role);
-            }
+                goToRelevantQuestion();
+                $scope.login.currentStep = 2;
+                $state.transitionTo(
+                  'access.pre_signup',
+                  {},
+                  {
+                    notify: false,
+                  }
+                );
+              } else if (!user.isVerified()) {
+                goToVerification();
+              } else {
+                var role = userDetails.merchants[userDetails.id].role;
+                $scope.goToDashboard(role);
+              }
+            });
           }
         } else if ($state.current.name === 'access.forgotpwd') {
           $scope.login.currentStep = 0;
@@ -499,13 +519,21 @@ app
             );
             $scope.login.currentStep = 1;
           } else {
-            // if pre sign up pending
-            $scope.isLoggedIn = true;
-            var userDetails = user.getIdentity();
-            $scope.login.data.email = userDetails.email;
-            Object.assign($scope.signup.merchantData, userDetails.pre_signup);
-            $scope.login.currentStep = 2;
-            goToRelevantQuestion();
+            user.identity().then(function(userDetails) {
+              // if pre sign up pending
+              $scope.isLoggedIn = true;
+              $scope.login.data.email = userDetails.email;
+              if (!user.isPreSignupDone()) {
+                Object.assign(
+                  $scope.signup.merchantData,
+                  userDetails.pre_signup
+                );
+                $scope.login.currentStep = 2;
+                goToRelevantQuestion();
+              } else if (!user.isVerified()) {
+                goToVerification();
+              }
+            });
           }
         }
       } else if ($state.current.name === 'access.signup') {
@@ -581,10 +609,9 @@ app
               if (user.isVerified() && user.isPreSignupDone()) {
                 var role =
                   userDetails.merchants &&
-                  userDetails.merchants[userDetails.id].pivot.role;
+                  userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
-                $scope.email_not_verified = false;
                 $scope.isLoggedIn = true;
                 hideSpinner();
                 if (userDetails) {
@@ -594,15 +621,20 @@ app
                     userDetails.pre_signup
                   );
                 }
-                goToRelevantQuestion();
-                $scope.login.currentStep = 2;
-                $state.transitionTo(
-                  'access.pre_signup',
-                  {},
-                  {
-                    notify: false,
-                  }
-                );
+                if (!user.isPreSignupDone()) {
+                  $scope.email_not_verified = false;
+                  goToRelevantQuestion();
+                  $scope.login.currentStep = 2;
+                  $state.transitionTo(
+                    'access.pre_signup',
+                    {},
+                    {
+                      notify: false,
+                    }
+                  );
+                } else if (!user.isVerified()) {
+                  goToVerification();
+                }
               }
             });
           } else {
@@ -625,7 +657,9 @@ app
           method: 'post',
           url: '/user/resend',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.login.data,
+          data: {
+            email: $scope.signup.data.email || $scope.login.data.email,
+          },
         };
 
         var request = $http(payload);

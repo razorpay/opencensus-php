@@ -4,11 +4,13 @@ namespace App\Invitation;
 
 use Auth;
 use Mail;
+use Session;
 use App\Base;
-use App\Merchant;
 use App\User;
+use App\Merchant;
 use App\Invitation;
 use App\Mailers\MiscMailer;
+use App\Providers\GenericUser;
 
 class Service extends Base\Service
 {
@@ -20,122 +22,7 @@ class Service extends Base\Service
 
     public function __construct()
     {
-        if ($user = Auth::user())
-        {
-            $this->loggedInUser = $user;
-        }
-    }
-
-    /**
-     * Send an invitation for the given merchant.
-     *
-     * @return array ($error, $data)
-     */
-    public function sendInvitation($input)
-    {
-        $errors = [];
-        $data = null;
-
-        $validation = (new Validator)->validateInput('sendInvitation', $input);
-
-        if ($validation->fails())
-        {
-            return array($validation->messages(), null);
-        }
-
-        // We need to change this to currentLoggedInMerchant later
-        $merchant = $this->loggedInUser->getOwnerMerchant();
-
-        if ($merchant === false)
-        {
-            $errors[] = static::NO_MERCHANTS_OWNED_BY_USER;
-        }
-        else
-        {
-            $data = $merchant->toArray();
-        }
-
-        // This is a double check because going ahead once we have roles
-        // Users can invite others as well, meaning user->email check would
-        if ($this->loggedInUser->email === $input['email'])
-        {
-            $errors[] = static::SELF_INVITE_NOT_ALLOWED;
-        }
-        else if ($merchant->hasInvitiationForEmail($input['email']))
-        {
-            $errors[] = static::ALREADY_INVITED;
-        }
-        else if ($merchant->hasUserForEmail($input['email']))
-        {
-            $errors[] = static::ALREADY_A_MEMBER;
-        }
-
-        if (empty($errors))
-        {
-            $this->createInviteAndSendEmail($merchant, $input['email'], $input['role']);
-        }
-
-        return [$errors, $data];
-    }
-
-    /**
-     * This is the final method that sends out the invite
-     * @param  string $email Email Address of the person to send the invite to
-     * @param  string $role  role of the user in the tea
-     * @return null
-     */
-    protected function createInviteAndSendEmail(Merchant\Entity $merchant, $email, $role = 'manager')
-    {
-        // This only creates a new invitation entity
-        $invitation = $merchant->inviteUserByEmailWithRole($email, $role);
-
-        $this->sendInvitationEmail($invitation);
-    }
-
-    /**
-     * Resend the invitation for the given merchant.
-     *
-     * @return array ($error, $data)
-     */
-    public function resendInvitationForUser($inviteId)
-    {
-        $error = array();
-
-        $invitation = $this->loggedInUser->currentMerchant->invitations()->find($inviteId);
-
-        if (! $invitation)
-        {
-            $error[] = static::INVALID_INVITE;
-
-            return [$error, null];
-        }
-
-        $this->sendInvitationEmail($invitation);
-
-        return [$error, $invitation->toArray()];
-    }
-
-    /**
-     * Resend the invitation for the given merchant.
-     *
-     * @return array ($error, $data)
-     */
-    public function removeInvitationForUser($inviteId, $user)
-    {
-        $error = [];
-
-        $invitation = $user->currentMerchant->invitations()->find($inviteId);
-
-        if (! $invitation)
-        {
-            $error[] = static::INVALID_INVITE;
-        }
-        else
-        {
-            $invitation->delete();
-        }
-
-        return $error;
+        $this->loggedInUser = Auth::user();
     }
 
     /**
@@ -147,67 +34,21 @@ class Service extends Base\Service
      */
     public function acceptInvitationForUser($inviteId, $user)
     {
-        $invitation = $user->invitations()->find($inviteId);
+        list($error, $response) = $this->acceptInvitationOnApi($inviteId, $user->id);
 
-        if (! $invitation)
+        if (empty($error) === true)
         {
-            return [static::INVALID_INVITE];
+            $user = User\Entity::find($user->id);
+
+            $user->joinMerchantByIdWithRole($response['merchant_id'], $response['role']);
+
+            list($error, $genericUser) = (new User\Service)->getUserFromApi($user->id);
+
+            if (empty($error) === true)
+            {
+                Session::put('dashboard_user_payload', $genericUser);
+            }
         }
-
-        $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
-
-        $invitation->delete();
-    }
-
-    /**
-     * Accept the given merchant invitation.
-     *
-     * @param  string  $inviteId
-     * @param  \Models\User\Entity  $user
-     * @return array $error
-     */
-    public function updateInvitationForUser($inviteId, $user, $input)
-    {
-        $error = [];
-
-        $validation = (new Invitation\Validator)->validateInput('updateInvitation', $input);
-
-        if ($validation->fails())
-        {
-            $error[] = $validation->messages();
-        }
-
-        $invitation = $user->currentMerchant()->invitations()->find($inviteId);
-
-        if (! $invitation)
-        {
-            $error[] = [static::INVALID_INVITE];
-
-            return $error;
-        }
-
-        $invitation->role = $input['role'];
-
-        $invitation->save();
-    }
-
-    /**
-     * Destroy the given merchant invitation.
-     *
-     * @param  string  $inviteId
-     * @param  \Models\User\Entity  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function rejectInvitationForUser($inviteId, $user)
-    {
-        $invitation = $user->invitations()->find($inviteId);
-
-        if (! $invitation)
-        {
-            return [static::INVALID_INVITE];
-        }
-
-        $invitation->delete();
     }
 
     /**
@@ -232,32 +73,60 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    /**
-     * Get the pending invitations for the given user.
-     *
-     * @param \Models\User\Entity $user
-     * @return \App\Invitation\Entity[]
-     */
-    public function getPendingInvitationsForUser()
-    {
-        $invitations = $this->loggedInUser->invitations()->with('merchant')->get();
-
-        foreach ($invitations as $invite)
-        {
-            $invite->setVisible(['id', 'merchant', 'role']);
-
-            $invite->merchant->setVisible(['id','name','email']);
-        }
-
-        return [null, $invitations];
-    }
-
     protected function sendInvitationEmail($invitation)
     {
         $mailer = new MiscMailer();
 
-        $mailer
-            ->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
-            ->queueAndDeliver();
+        $mailer->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
+               ->queueAndDeliver();
+    }
+
+    public function getInvitationById(string $inviteId)
+    {
+        return Entity::find($inviteId);
+    }
+
+    public function getInvitationByTokenFromApi(string $token)
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api
+                             ->invitation
+                             ->fetchByToken($token)
+                             ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
+    }
+
+    public function acceptInvitationOnApi(string $id, $userId)
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $params = ['user_id' => $userId];
+
+            $response = $this->api
+                             ->invitation
+                             ->accept($id, $params)
+                             ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 }

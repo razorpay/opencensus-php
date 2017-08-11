@@ -1,5 +1,5 @@
 import 'rzp/utils/polyfills';
-import 'merchant/styles/layout.styl';
+import 'styles/rzp/layout.styl';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -9,15 +9,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import store from './store';
 
-// import './mocks/faker'
-// import WorkflowsListContainer from './containers/workflows'
-// import ItemsListContainer from 'merchant/containers/Items/List'
-// import InvoicesListContainer from './containers/Invoices/List'
-// import InvoicesNewContainer from './containers/Invoices/New'
-// import InvoiceDetailsContainer from './containers/Invoices/Details'
-// import PlansListContainer from './containers/Plans/List'
-// import SubscriptionsListContainer from './containers/Subscriptions/List'
-// import SubscriptionsNewContainer from './containers/Subscriptions/New'
+import Roles from 'admin/containers/Roles/List';
 
 // This is required for ngReact. Remove this finally
 window.React = React;
@@ -81,11 +73,4 @@ function createNgDirective(directiveName, component, ...args) {
   ]);
 }
 
-// createNgDirective('workflowsListDirective', WorkflowsListContainer)
-// createNgDirective('invoicesList', InvoicesListContainer)
-// createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
-// createNgDirective('customersList', CustomersListContainer)
-// createNgDirective('itemsList', ItemsListContainer)
-// createNgDirective('subscriptionsList', SubscriptionsListContainer)
-// createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
-// createNgDirective('plansList', PlansListContainer)
+createNgDirective('rolesList', Roles);

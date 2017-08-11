@@ -1,0 +1,752 @@
+// Only page layout styles should reside in this file.
+// This will be moved under `rzp` later
+
+a, .btn-link {
+  color: $primary-color;
+}
+
+html, body {
+  background-color: #f0f3f4;
+  overflow-x: hidden;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus {
+  outline: 0 !important;
+}
+
+.icon {
+  vertical-align: text-bottom;
+  font-size: 110%;
+}
+
+.layout {
+  position: relative;
+  min-height: 94vh;
+  padding-bottom: 45px;
+}
+
+.main-content {
+  margin-left: 200px;
+  margin-top: 51px;
+  @media (max-width $screen-sm-min) {
+    margin-left: 45px;
+  }
+}
+
+.btn {
+  .icon + span {
+    margin-left: 5px;
+  }
+}
+
+.font-thin {
+  font-weight: 300;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  background-color: #2E3345;
+  width: 200px;
+  z-index: 1111;
+  @media (max-width $screen-sm-min) {
+    width: 45px;
+  }
+
+  .brand-logo {
+    &::after {
+      content: '';
+      position: absolute;
+      border: 1px solid #45495A;
+      left: 20px;
+      right: 20px;
+    }
+
+    > a {
+      display: block;
+      line-height: 50px;
+      text-align: center;
+      padding: 10px;
+
+      > img {
+        max-width: 145px;
+        max-height: 28px;
+        display: inline-block;
+      }
+    }
+  }
+
+  .divider {
+    margin: 5px;
+    border-top: 1px solid transparent;
+  }
+
+  .divider-old {
+    border-top: 2px solid #252939;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-left: 20px;
+    padding-top: 10px;
+    @media (max-width $screen-sm-min) {
+      display: none;
+    }
+
+    &::after {
+      content: attr(data-label);
+      font-size: 11px;
+      color: #8b8e99;
+    }
+  }
+
+  nav {
+    position: absolute;
+    top: 72px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 15px;
+    padding-top: 15px;
+    @media (max-width $screen-sm-min) {
+      padding-bottom: 60px;
+    }
+
+    .text-warning {
+      color: #fbe165;
+    }
+  }
+
+  .nav > a {
+    border-left: 4px solid transparent;
+    color: #b4b6bd;
+    display: block;
+    line-height: 40px;
+    padding: 0 15px;
+    @media (max-width $screen-sm-min) {
+      white-space: nowrap;
+    }
+
+    .badge {
+      margin-top: 13px;
+      font-size: 9px;
+    }
+
+    .icon, .fa {
+      margin-right: 10px;
+      width: 16px;
+      text-align: center;
+    }
+
+    &:hover, &:focus {
+      background-color: #32374a;
+    }
+
+    &.active {
+      border-color: #586DD1;
+      color: #fff;
+      background-color: #252939;
+    }
+  }
+}
+
+.navbar-fixed-top {
+  margin-left: 200px;
+  margin-bottom: 0;
+  border-bottom: 0;
+  background-color: #fff;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
+  @media (max-width $screen-sm-min) {
+    margin-left: 45px;
+  }
+}
+
+.navbar-default .navbar-nav {
+  .dropdown > a.dropdown__trigger {
+    display: inline-block;
+    color: #777;
+    cursor: pointer;
+    padding: 15px;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+.pagefooter {
+  position: absolute;
+  bottom: 0;
+  padding: 10px 20px;
+  font-size: 12px;
+  color: #8F96B3;
+  margin-left: 200px;
+  @media (max-width $screen-sm-min) {
+    margin-left: 45px;
+  }
+
+  a {
+    color: #8F96B3;
+  }
+}
+
+.dropdown--active > .dropdown__content > .dropdown-menu {
+  display: block;
+}
+
+.react-root {
+  ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color: #aaa;
+  }
+  :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color: #aaa;
+  }
+  ::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color: #aaa;
+  }
+  :-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: #aaa;
+  }
+
+  h3, h2 {
+    margin: 0;
+  }
+
+  h3 {
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .alert {
+    > ul > li {
+      line-height: 2;
+    }
+  }
+
+  input[type='color'] {
+    padding: 0 3px;
+  }
+}
+
+.content-wrapper {
+  padding: 24px;
+  @media (max-width $screen-sm-min) {
+    padding: 10px;
+  }
+}
+
+.content-sm {
+  max-width: 800px;
+  margin: auto;
+  min-height: 300px;
+}
+
+// React Modal Style Overrides
+
+body.ReactModal__Body--open {
+  overflow: hidden;
+}
+
+.ReactModal__Content h4 {
+  margin: 0;
+}
+
+.ReactModal__Content {
+  transition: transform 300ms ease-in-out;
+  transform: translateY(-15%);
+
+  &--after-open {
+    transform: translateY(0);
+  }
+  &--before-close {
+    transform: translateY(-15%);
+  }
+}
+
+.ReactModalPortal > * {
+  // When the modal is closed, overlay div has no css class
+  // This selector should be overridden by the `&--after-open` class below
+  opacity: 0;
+}
+
+.ReactModal__Overlay {
+  transition: opacity 250ms ease-in-out;
+  opacity: 0;
+
+  &--after-open {
+    opacity: 1;
+  }
+  &--before-close {
+    opacity: 0;
+  }
+}
+
+.Modal .modal-body > .alert-dismissable {
+  margin-left: -24px;
+  margin-right: -24px;
+}
+
+.Modal {
+  .form-group > label {
+    font-weight: bold;
+  }
+}
+
+
+// react-dates style overrides
+
+.SingleDatePicker {
+  display: block;
+}
+
+.SingleDatePickerInput {
+  border-color: #cfdadd;
+}
+
+.SingleDatePicker__tether--show {
+  top: -11px !important;
+}
+
+.SingleDatePicker__picker,
+.DateRangePicker__picker {
+  top: 45px;
+}
+
+.DateInput__input {
+  cursor: pointer;
+}
+
+.DateInput {
+  font-weight: inherit;
+  font-size: 14px;
+  padding: 0;
+}
+
+.DateInput--disabled {
+  background-color: #eee;
+}
+
+.DateInput__display-text {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.SingleDatePickerInput__clear-date {
+  margin: 0;
+  padding: 0 8px;
+  svg {
+    fill: #ccc;
+  }
+}
+
+.SingleDatePickerInput__clear-date--hover,
+.SingleDatePickerInput__clear-date:focus {
+  background-color: transparent;
+  border-radius: 0;
+  svg {
+    fill: #666;
+  }
+}
+
+.DateInput__display-text--disabled {
+  font-style: normal;
+}
+
+.DateInput__display-text--focused {
+  background-color: #fff;
+  border-color: inherit;
+  color: inherit;
+}
+
+.DateInput__display-text--has-input {
+  color: #555;
+}
+
+.DateInput--with-caret::before {
+  top: 34px;
+}
+
+.DateInput--with-caret::after {
+  top: 35px;
+}
+
+.CalendarDay--after-hovered-start,
+.CalendarDay--hovered-span,
+.CalendarDay--selected-span {
+  background-color: #E9E6F8;
+  border-color: #CBCCE0;
+  color: #706E77;
+}
+
+.CalendarDay--selected-span.CalendarDay--hovered,
+.CalendarDay--selected-span:active {
+  background-color: #d2cdf0;
+  border-color: #CBCCE0;
+}
+
+.CalendarDay--selected,
+.CalendarDay--selected-end,
+.CalendarDay--selected-start,
+.CalendarDay--selected-end:active,
+.CalendarDay--selected-start:active,
+.CalendarDay--selected:active {
+  background-color: #6A5ACE;
+  border-color: #6A5ACE;
+  color: #fff;
+}
+
+.DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
+.DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-end,
+.CalendarMonth__day--selected-start,
+.CalendarMonth__day--selected-end,
+.CalendarMonth__day--selected {
+  background-color: #23b7e5;
+  border-color: #23b7e5;
+}
+
+.tether-element {
+  z-index: 1;
+}
+
+// End of third party style overrides
+
+.page-spinner-container {
+  display: flex;
+  height: 350px;
+
+  .spinner {
+    margin: auto;
+  }
+}
+
+.modal-body .page-spinner-container {
+  height: 150px;
+}
+
+.quick-create {
+  padding: 2px 5px;
+  background-color: rgba(195, 195, 195, 0.23);
+  color: $primary-color;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.row-action > .btn-group,
+.row-action.btn-group {
+  visibility: hidden;
+}
+
+tr:hover .row-action > .btn-group,
+tr:hover .row-action.btn-group {
+  visibility: visible;
+}
+
+.panel-detail-container {
+  .text-warning {
+    color: #d8b617;
+  }
+}
+
+.pair-group-item {
+  display: table;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: -1px;
+  position: relative;
+
+  .pair-label, .pair-value, .pair-separator {
+    display: table-cell;
+  }
+  .pair-label {
+    width: 39%;
+    color: #8991AE;
+    padding: 0; // to override col- padding
+  }
+  /*
+  // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
+  .pair-separator {
+    padding: 0 4px;
+    color: #afafaf;
+  }
+  */
+  .pair-value {
+    width: 60%;
+    padding-left: 8px;
+
+    > span {
+      vertical-align: top;
+    }
+
+    // For nested values
+    .table-responsive {
+      margin-top: 8px;
+
+      .pair-list-item {
+        .item-label {
+          font-weight: bold;
+          margin: 4px 0;
+          text-transform: capitalize;
+        }
+      }
+    }
+  }
+}
+
+.primary-link {
+  color: $primary-color;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.list-table {
+  padding: 8px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8ea;
+
+  .list-label {
+    color: #58666e;
+  }
+}
+
+.details-row-container {
+  .list-group-item {
+    > span:first-child {
+      margin-right: 20px;
+    }
+
+    .table > tbody > tr > td.empty-table {
+      padding: 20px;
+      border-top: 0;
+    }
+
+    &:not(.no-flex) {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .list-group, .table {
+      margin-bottom: 0;
+      border-bottom: 0;
+    }
+  }
+}
+
+.form-horizontal .control-label.label-required::after {
+  right: 7px;
+  top: 7px;
+}
+
+.btn-group > .tooltip-wrapper {
+  display: inline-block;
+}
+
+.txn-details {
+  > .panel {
+    border: none;
+
+    > .panel-heading {
+      background-color: #fff;
+      line-height: 74px;
+      vertical-align: middle;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 18px;
+
+      .btn-toolbar {
+        padding-top: 26px;
+      }
+
+      > .icon {
+        padding: 4px;
+        border: 2px solid;
+      }
+
+      .icon + strong {
+        margin-left: 5px;
+      }
+
+      > .close {
+        display: none;
+      }
+    }
+  }
+}
+
+.ModalSlider__Content {
+  .panel > .panel-heading > .close {
+    display: block;
+  }
+}
+
+.panel-heading > .btn-toolbar {
+  margin-top: -5px;
+}
+
+.SwitchMerchantDropdown {
+  .PowerSelect {
+    border: 0;
+    width: 145px;
+  }
+
+  .PowerSelect__Trigger {
+    height: auto
+    padding: 8px;
+  }
+
+  .PowerSelect__TriggerStatus {
+    border-top-color: #777;
+  }
+
+  .PowerSelect__TriggerLabel {
+    padding-right: 8px;
+  }
+
+  .PowerSelect__Placeholder {
+    color: #777;
+  }
+}
+
+.SwitchMerchantDropdown__option {
+  padding: 6px 12px;
+  display: inline-block;
+  color: #777;
+
+  .icon-done {
+    margin-top: 2px;
+    margin-left: 5px;
+  }
+}
+
+.detail-row {
+  margin-bottom: 12px;
+  padding-left: 5px;
+
+  > label {
+    font-weight: normal;
+    color: #999;
+
+    &::after {
+      content: ':';
+      position: absolute;
+      right: 0;
+      color: #ccc;
+    }
+  }
+}
+
+.amount {
+  white-space: nowrap;
+}
+
+.ProfileDropdown {
+  min-width: 300px;
+  padding: 0;
+  line-height: 1.8;
+
+  .media {
+    margin-top: 0;
+    padding: 10px 12px;
+
+    + .media {
+      border-top: 1px solid #eee;
+    }
+  }
+
+  .media-left {
+    vertical-align: middle;
+  }
+
+  .media-action {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #F7F8FA;
+    }
+  }
+
+  .media-object {
+    width: 40px;
+    text-align: center;
+  }
+
+  .merchantname {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .icon-business,
+  .icon-account {
+    font-size: 40px;
+    color: #dadada;
+  }
+
+  .icon-help,
+  .icon-undo {
+    font-size: 20px;
+  }
+}
+
+.pre {
+  white-space: pre;
+}
+
+.notes {
+  .note {
+    position: relative;
+    margin-bottom: 12px;
+
+    .icon-close {
+      position: absolute;
+      right: -31px;
+      top: 1px;
+      padding: 8px;
+      cursor: pointer;
+      color: #ccc;
+
+      &:hover {
+        color: #aaa;
+      }
+    }
+
+    .key {
+      margin-bottom: 4px;
+    }
+  }
+
+  .add-note {
+    padding-left: 0;
+  }
+}
+
+.secondary-details {
+  margin-top: 10px;
+  border-left: 2px solid rgb(234, 239, 240);
+
+  .table-responsive {
+    max-width: 475px;
+    border-left: 4px solid #e9eff0;
+    border-right: 1px solid #e9eff0;
+  }
+
+  .table {
+    margin: 0;
+  }
+
+  > .detail-row > label {
+    margin-left: -15px;
+    padding-left: 30px;
+  }
+}
+
+.info-tooltip {
+  font-size: 13px;
+  color: #ccc;
+  margin-left: 4px;
+}

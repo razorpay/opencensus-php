@@ -145,19 +145,25 @@ angular
         });
       });
 
-      $scope.switchMerchant = function(merchant) {
-        var request = $http.get('/settings/merchants/switch/' + merchant.id);
-        request
-          .success(function(data) {
-            if (data.success) {
-              location.reload();
-            } else {
-              $scope.alerts.addAlert('danger', null, true);
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null, true);
-          });
+      $scope.initRoleSelector = function(element) {
+        element.on('select2:select', function(e) {
+          var merchantId = e.params.data.id;
+
+          if (merchantId) {
+            var request = $http.get('/settings/merchants/switch/' + merchantId);
+            request
+              .success(function(data) {
+                if (data.success) {
+                  location.reload();
+                } else {
+                  $scope.alerts.addAlert('danger', null, true);
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null, true);
+              });
+          }
+        });
       };
     },
   ])

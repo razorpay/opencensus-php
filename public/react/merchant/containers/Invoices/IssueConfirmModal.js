@@ -104,7 +104,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                     Send {titleCase(entityName)} and payment instructions to...
                   </p>
                   {customer.contact &&
-                    <div class="rzpChecbox">
+                    <div class="rzpCheckbox">
                       <Field
                         name="sms_notify"
                         id="sms_notify"
@@ -115,7 +115,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                     </div>}
 
                   {customer.email &&
-                    <div class="rzpChecbox">
+                    <div class="rzpCheckbox">
                       <Field
                         name="email_notify"
                         id="email_notify"
@@ -144,7 +144,8 @@ export default class IssueInvoiceConfirmModal extends Component {
                       . So, only test payments can be made for this
                       {' '}
                       {entityName}
-                      . Also, SMS will not be sent in test mode.
+                      .
+                      {/* Also, SMS will not be sent in test mode.*/}
                     </div>}
 
                   <div class="Modal__actions">

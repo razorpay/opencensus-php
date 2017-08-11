@@ -1,12 +1,15 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
+import Payment from 'merchant/models/Payment';
 
 const createFields = [
   'id',
   'amount',
   'currency',
+  'partial_payment',
   'date',
+  'expire_by',
   'draft',
   'customer_id',
   'customer',
@@ -23,10 +26,12 @@ const createFields = [
 
 const editableFieldsInIssuedState = [
   'date',
+  'expire_by',
   'terms',
   'notes',
   'receipt',
   'comment',
+  'partial_payment',
 ];
 
 export default class Invoice extends GenericEntity {
@@ -66,7 +71,7 @@ export default class Invoice extends GenericEntity {
         }),
       },
     }).then(response => {
-      return new Invoice().deserialize(response.data);
+      return new Invoice(response.data).deserialize();
     });
   }
 
@@ -80,12 +85,23 @@ export default class Invoice extends GenericEntity {
         }),
       },
     }).then(response => {
-      return new Invoice().deserialize(response.data);
+      return new Invoice(response.data).deserialize();
+    });
+  }
+
+  fetchPayments() {
+    let payment = new Payment();
+    return payment.fetchAll({
+      invoice_id: this.id,
     });
   }
 
   serializeProperty(prop) {
-    if (prop === 'sms_notify' || prop === 'email_notify') {
+    if (
+      prop === 'sms_notify' ||
+      prop === 'email_notify' ||
+      prop === 'partial_payment'
+    ) {
       return this[prop] ? 1 : 0;
     }
 

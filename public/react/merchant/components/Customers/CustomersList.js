@@ -1,41 +1,32 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-const CustomersListItem = props => {
-  let { customer, canHighlightRow } = props;
+const CustomersListItem = ({ customer, onEdit }) => {
   return (
-    <tr class={canHighlightRow ? 'luminate' : ''}>
-      <td>{customer.name}</td>
+    <EntityItemRow id={customer.id}>
+      <td><a onClick={onEdit}>{customer.id}</a></td>
+      <td><a onClick={onEdit}>{customer.name}</a></td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
       <td class="row-action">
         <div class="btn-group">
-          <button class="btn btn-xs btn-default" onClick={props.onEdit}>
-            <i class="fa fa-edit" />
+          <button class="btn btn-xs btn-default" onClick={onEdit}>
+            <i class="icon icon-edit" />
             <span>edit</span>
           </button>
-          {/*
-          <button
-            class='btn btn-xs btn-default'
-            onClick={props.onDelete}
-          >
-            <i class='fa fa-trash text-danger'></i>
-            <span>delete</span>
-          </button>
-*/}
         </div>
       </td>
-    </tr>
+    </EntityItemRow>
   );
 };
 
-const CustomersList = props => {
-  let { customers, isLoading, onEdit, onDelete, highlightRow } = props;
-
+export default ({ customers, isLoading, onEdit, onDelete }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
           <tr>
+            <th>Customer Id</th>
             <th>Customer Name</th>
             <th>Email</th>
             <th>Contact</th>
@@ -44,7 +35,7 @@ const CustomersList = props => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={4}
+          colSpan={5}
           rows={customers}
           emptyTableMsg="No Customers found!"
         >
@@ -52,7 +43,6 @@ const CustomersList = props => {
             <CustomersListItem
               key={customer.id}
               customer={customer}
-              canHighlightRow={highlightRow(customer)}
               onEdit={() => onEdit(customer)}
               onDelete={() => onDelete(customer)}
             />
@@ -62,9 +52,3 @@ const CustomersList = props => {
     </div>
   );
 };
-
-CustomersList.defaultProps = {
-  highlightRow: () => {},
-};
-
-export default CustomersList;

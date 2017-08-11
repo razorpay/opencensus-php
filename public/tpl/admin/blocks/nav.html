@@ -2,7 +2,7 @@
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Management</span>
   </li>
-  <li class="active">
+  <li class="active" dynamic-tooltip="view_homepage" ng-if="admin.permissions && admin.permissions.indexOf('view_homepage') !== -1">
     <a id="dashboardNav" ui-sref="app.dashboard">
       <i class="fa fa-area-chart text-info"></i>
       <span>Dashboard</span>
@@ -18,6 +18,12 @@
     <a id="pricingNav" ui-sref="app.pricing">
       <i class="fa fa-inr icon text-warning-lter"></i>
       <span>Pricing Plans</span>
+    </a>
+  </li>
+  <li dynamic-tooltip="view_gateway_rule" ng-if="admin.permissions && admin.permissions.indexOf('view_gateway_rule') !== -1">
+    <a id="gatewayRulesNav" ui-sref="app.gateway">
+      <i class="fa fa-inbox icon text-warning-lter"></i>
+      <span>Gateway Rules</span>
     </a>
   </li>
   <li dynamic-tooltip="view_all_entity" ng-if="admin.permissions && admin.permissions.indexOf('view_all_entity') !== -1">
@@ -47,7 +53,8 @@
 
   <li class="line dk"></li>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs"
+      ng-if="admin.permissions && admin.permissions.indexOf('view_workflow_requests') !== -1">
     <span>Workflows</span>
   </li>
   <li dynamic-tooltip="view_all_workflow" ng-if="admin.permissions && admin.permissions.indexOf('view_all_workflow') !== -1">
@@ -56,8 +63,8 @@
       <span>Workflows</span>
     </a>
   </li>
-  <li>
-    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'open' })" >
+  <li dynamic-tooltip="view_workflow_requests" ng-if="admin.permissions && admin.permissions.indexOf('view_workflow_requests') !== -1">
+    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'checker' })" >
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Requests</span>
     </a>

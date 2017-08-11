@@ -81,8 +81,13 @@ app
             });
         };
         $scope.generateNetBankingRefunds = function(params) {
+          params.method = 'netbanking';
+          if (params.email_self) {
+            params.email = $scope.admin.email;
+          }
+          delete params.email_self;
           var data = {
-            route_name: 'refund_netbanking_generate_excel',
+            route_name: 'refund_generate_excel',
             body: params,
             mode: params.mode,
           };
@@ -113,46 +118,29 @@ app
               $scope.alerts.addAlert('danger', null, true);
             });
         };
-        $scope.sendTestEmail = function(data) {
+        $scope.generateEmiFiles = function(params) {
+          if (params.email_self) {
+            params.email = $scope.admin.email;
+          }
+          delete params.email_self;
+          var data = {
+            route_name: 'emi_generate_excel',
+            body: params,
+            mode: params.mode,
+          };
           var request = $http({
             method: 'post',
-            url: '/admin/newsletter/test',
+            url: '/admin/generic',
             data: data,
-            transformRequest: transformRequestAsFormPost,
           });
           request
             .success(function(data) {
               if (data.success) {
                 $scope.alerts.addAlert(
                   'success',
-                  'Test mail sent successfully to ' + data.data.email,
-                  true
-                );
-              } else {
-                $scope.alerts.resetAlerts();
-                $scope.alerts.addAlert('danger', data.errors);
-              }
-            })
-            .error(function() {
-              $scope.alerts.addAlert('danger', null, true);
-            });
-        };
-        $scope.sendNewsletter = function(data) {
-          var request = $http({
-            method: 'post',
-            url: '/admin/newsletter/mail',
-            data: data,
-            transformRequest: transformRequestAsFormPost,
-          });
-          request
-            .success(function(data) {
-              if (data.success) {
-                $scope.alerts.addAlert(
-                  'success',
-                  'Test mail sent successfully to ' +
+                  params.bank.toUpperCase() +
+                    ' Emi Excel Generated (Count = ' +
                     data.data.count +
-                    ' addresses (' +
-                    data.data.email +
                     ')',
                   true
                 );
@@ -322,6 +310,13 @@ app
           });
           modalInstance.result.then($scope.generateNetBankingRefunds, $.noop);
         };
+        $scope.openGenerateEmiFiles = function() {
+          var modalInstance = $modal.open({
+            templateUrl: 'emiGenerateModalContent.html',
+            controller: 'generateEmiModalCtrl',
+          });
+          modalInstance.result.then($scope.generateEmiFiles, $.noop);
+        };
         $scope.openAddIIN = function() {
           var modalInstance = $modal.open({
             templateUrl: 'addIINModalContent.html',
@@ -405,22 +400,6 @@ app
               $scope.alerts.addAlert('danger', null, true);
             });
         };
-        $scope.openEditNewsletter = function() {
-          var modalInstance = $modal.open({
-            templateUrl: 'sendNewsletter.html',
-            controller: 'sendNewsletterCtrl',
-            size: 'lg',
-          });
-          modalInstance.result.then(function(data) {
-            console.debug(data);
-            if (data.lists) {
-              // Send live email newsletter
-              $scope.sendNewsletter(data);
-            } else {
-              $scope.sendTestEmail(data);
-            }
-          }, $.noop);
-        };
       });
       $scope.openConfirmUser = function() {
         var modalInstance = $modal.open({
@@ -436,22 +415,6 @@ app
         });
         modalInstance.result.then(function(data) {
           $scope.authorizeFailedPayment(data.id, data.mode);
-        }, $.noop);
-      };
-      $scope.openEditNewsletter = function() {
-        var modalInstance = $modal.open({
-          templateUrl: 'sendNewsletter.html',
-          controller: 'sendNewsletterCtrl',
-          size: 'lg',
-        });
-        modalInstance.result.then(function(data) {
-          console.debug(data);
-          if (data.lists) {
-            // Send live email newsletter
-            $scope.sendNewsletter(data);
-          } else {
-            $scope.sendTestEmail(data);
-          }
         }, $.noop);
       };
       $scope.openAddSchedule = function() {
@@ -577,46 +540,6 @@ app
       };
     },
   ])
-  .controller('sendNewsletterCtrl', [
-    '$scope',
-    '$modalInstance',
-    '$http',
-    'admin',
-    function($scope, $modalInstance, $http, admin) {
-      $scope.mailingLists = {
-        all: 'All merchants',
-        live: 'Live Merchants',
-        recent: 'Recently signed up merchants',
-        paytm: 'Paytm enabled merchants',
-        mobikwik: 'Mobikwik enabled merchants',
-      };
-      $scope.message =
-        'Hi %recipient_name%,\n\nThanks for doing business with Razorpay.\n\n# section heading\n\ncontent\ncontent\n\nmore content\n\n---\n\nTeam Razorpay';
-      $scope.template = 'newsletter';
-      $scope.lists = { all: true };
-      admin.identity().then(function(admin) {
-        $scope.adminEmail = admin.email;
-      });
-      $scope.test = function(subject, msg, template) {
-        $modalInstance.close({
-          subject: subject,
-          msg: msg,
-          template: template,
-        });
-      };
-      $scope.ok = function(lists, subject, msg, template) {
-        $modalInstance.close({
-          lists: Object.keys(lists).join(),
-          subject: subject,
-          msg: msg,
-          template: template,
-        });
-      };
-      $scope.cancel = function() {
-        $modalInstance.dismiss('cancel');
-      };
-    },
-  ])
   .controller('ApiRequestCtrl', [
     '$scope',
     '$modalInstance',
@@ -717,12 +640,53 @@ app
       $scope.bank = 'HDFC';
       $scope.mode = 'live';
       $scope.date = moment().format('YYYY-MM-DD');
-      $scope.ok = function(date, from, to, bank, mode) {
+      $scope.ok = function(date, from, to, bank, mode, email_self) {
         var tzGMTToIST = 19800;
         var data = {
           bank: bank,
           mode: mode,
+          email_self: email_self,
         };
+        if (from && to) {
+          // Date from the date api is in GMT
+          var fromInGMT = new Date(from).getTime() / 1000;
+          var toInGMT = new Date(to).getTime() / 1000;
+
+          // Subtract 19800 from GMT to convert timestamps to IST
+          var fromInIST = fromInGMT - tzGMTToIST;
+          var toInIST = toInGMT - tzGMTToIST;
+
+          // Final variable to be sent
+          data.from = fromInIST;
+          data.to = toInIST;
+        } else {
+          // Final variable api expects is on
+          data.on = date;
+        }
+        $modalInstance.close(data);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('generateEmiModalCtrl', [
+    '$scope',
+    '$modalInstance',
+    '$http',
+    function($scope, $modalInstance, $http) {
+      $scope.mode = 'live';
+      $scope.date = moment().format('YYYY-MM-DD');
+      // Load bank list here
+
+      $scope.ok = function(date, from, to, bank, mode, email_self) {
+        var tzGMTToIST = 19800;
+        var data = {
+          bank: bank,
+          mode: mode,
+          email_self: email_self,
+        };
+
         if (from && to) {
           // Date from the date api is in GMT
           var fromInGMT = new Date(from).getTime() / 1000;
@@ -751,9 +715,6 @@ app
     '$modalInstance',
     '$http',
     function($scope, $modalInstance, $http) {
-      $scope.schedule = {
-        type: 'settlement',
-      };
       $scope.ok = function(schedule) {
         $modalInstance.close(schedule);
       };

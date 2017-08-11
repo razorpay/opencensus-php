@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { Field, reduxForm } from 'redux-form';
 import LineItem from './LineItem';
+import Amount from 'rzp/ui/Amount';
 
 @reduxForm({
   form: 'newInvoice',
@@ -16,7 +17,7 @@ export default class InvoiceLineItemTable extends Component {
   };
 
   render() {
-    let { fields, items, disabled, invoiceTotal } = this.props;
+    let { fields, items, disabled, invoice, invoiceTotal } = this.props;
 
     return (
       <div class="invoice-lineitem">
@@ -49,7 +50,7 @@ export default class InvoiceLineItemTable extends Component {
               <td class="no-border">
                 {!disabled &&
                   <button
-                    class="btn btn-default add-line-item"
+                    class="btn btn-default btn-xs add-line-item"
                     type="button"
                     onClick={this.addInvoiceItem}
                   >
@@ -59,11 +60,33 @@ export default class InvoiceLineItemTable extends Component {
               <td class="text-right">Sub Total</td>
               <td colSpan="2" class="text-right">₹ {invoiceTotal}</td>
             </tr>
-            <tr class="total">
+            <tr class={`${invoice.amount_paid ? '' : 'total'}`}>
               <td class="no-border" />
-              <td class="text-right"><b>Total</b></td>
-              <td colSpan="2" class="text-right"><b>₹ {invoiceTotal}</b></td>
+              <td class="text-right no-border"><b>Total</b></td>
+              <td colSpan="2" class="text-right no-border">
+                <b>₹ {invoiceTotal}</b>
+              </td>
             </tr>
+
+            {invoice.amount_paid
+              ? <tr class="text-success">
+                  <td class="no-border" />
+                  <td class="text-right no-border"><b>Amount Paid</b></td>
+                  <td colSpan="2" class="text-right no-border">
+                    <b><Amount value={invoice.amount_paid} /></b>
+                  </td>
+                </tr>
+              : null}
+
+            {invoice.amount_paid
+              ? <tr class="total">
+                  <td class="no-border" />
+                  <td class="text-right"><b>Amount Due</b></td>
+                  <td colSpan="2" class="text-right">
+                    <b><Amount value={invoice.amount_due} /></b>
+                  </td>
+                </tr>
+              : null}
           </tbody>
         </table>
       </div>

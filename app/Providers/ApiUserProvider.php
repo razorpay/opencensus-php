@@ -65,7 +65,6 @@ class ApiUserProvider implements UserProvider
     {
         try
         {
-
             $domain = request()->server->get('SERVER_NAME');
 
             // This is password based login

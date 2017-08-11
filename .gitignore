@@ -1,4 +1,5 @@
 !storage/screenshots
+selenium-server.jar
 ## Need to fix this
 .DS_Store
 /bootstrap/compiled.php
@@ -16,6 +17,7 @@ environment/.env.testing_docker
 !environment/.env.production
 !environment/.env.beta
 !environment/.env.alpha
+!environment/*.j2
 storage/
 generated/
 grunt.json
@@ -29,4 +31,5 @@ tmp/
 public/js/themes/*.js
 !public/js/themes/init.js
 public/react/dist/
+public/dist/
 yarn-error.log

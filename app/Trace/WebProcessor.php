@@ -46,15 +46,17 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     public function getServerData()
     {
-        $serverData = array(
-            'uri'       => $this->request->path(),
-            'url'       => $this->request->fullUrl(),
-            'method'    => $this->request->method(),
-            'ajax'      => $this->request->ajax(),
-            'origin'    => $this->request->header('origin'),
-            'client_ip' => $this->getClientIp(),
-            'server_ip' => $this->request->server('SERVER_ADDR'),
-            'env'       => $this->env);
+        $serverData = [
+            'request_id'    => $this->request->getId(),
+            'uri'           => $this->request->path(),
+            'url'           => $this->request->fullUrl(),
+            'method'        => $this->request->method(),
+            'ajax'          => $this->request->ajax(),
+            'origin'        => $this->request->header('origin'),
+            'client_ip'     => $this->getClientIp(),
+            'server_ip'     => $this->request->server('SERVER_ADDR'),
+            'env'           => $this->env
+        ];
 
         return $serverData;
     }

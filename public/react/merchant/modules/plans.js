@@ -1,90 +1,43 @@
-import ajax from 'merchant/utils/ajax';
+import Plan from 'merchant/models/Plan';
+import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
+import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
-const PLANS_FETCH = 'PLANS_FETCH';
-const PLAN_ADDED = 'PLAN_ADDED';
-const PLAN_EDITED = 'PLAN_EDITED';
+export const PLANS_FETCH = 'PLANS_FETCH';
+export const PLAN_CREATE = 'PLAN_CREATE';
+export const PLAN_EDIT = 'PLAN_EDIT';
+export const PLAN_DELETE = 'PLAN_DELETE';
+export const PLAN_FETCH = 'PLAN_FETCH';
 
-export const fetchPlans = () => {
-  return dispatch => {
-    return dispatch({
-      type: PLANS_FETCH,
-      payload: ajax('/plans'),
-    });
-  };
-};
+export const fetchPlans = params => fetchAll(params, Plan, 'PLANS');
 
-export const createPlan = data => {
-  return dispatch => {
-    return ajax({
-      url: '/plan',
-      method: 'post',
-      data,
-    });
-  };
-};
-
-export const editPlan = (id, data) => {
-  return dispatch => {
-    return ajax({
-      url: `/plan/${id}`,
-      method: 'put',
-      data,
-    });
-  };
-};
-
-export const planAdded = plan => {
+export const fetchPlan = id => {
+  let plan = new Plan();
   return {
-    type: PLAN_ADDED,
-    payload: plan,
+    type: PLAN_FETCH,
+    payload: plan.fetch(id),
   };
 };
 
-export const planEdited = plan => {
+export const savePlan = params => {
+  const plan = new Plan(params);
   return {
-    type: PLAN_EDITED,
-    payload: plan,
+    type: plan.isNew ? PLAN_CREATE : PLAN_EDIT,
+    payload: plan.save(),
   };
 };
 
-let initialState = {
-  loading: true,
-  plans: [],
-  count: 0,
+export const deletePlan = params => {
+  const plan = new Plan(params);
+
+  return {
+    type: PLAN_DELETE,
+    payload: plan.delete(),
+    id: plan.id,
+  };
 };
 
-export default function(state = initialState, action) {
-  switch (action.type) {
-    case `${PLANS_FETCH}::PENDING`:
-      return state.set('loading', true);
+// List Reducer
+export const plansReducer = makeActionCollectionReducer('PLANS');
 
-    case `${PLANS_FETCH}::SUCCESS`:
-      return state.merge({
-        loading: false,
-        plans: action.payload.data.items,
-        count: action.payload.data.count,
-      });
-
-    case `${PLANS_FETCH}::ERROR`:
-      return state.merge({
-        loading: false,
-        error: action.error,
-      });
-
-    case PLAN_ADDED:
-      return state.set('plans', state.get('plans').unshift(action.payload));
-
-    case PLAN_EDITED:
-      let plans = state.get('plans');
-      return state.set(
-        'plans',
-        plans.update(
-          plans.findIndex(item => item.get('id') === action.payload.id),
-          item => item.merge(action.payload)
-        )
-      );
-
-    default:
-      return state;
-  }
-}
+// Details Reducer
+export const planReducer = makeEntityReducer(PLAN_FETCH);

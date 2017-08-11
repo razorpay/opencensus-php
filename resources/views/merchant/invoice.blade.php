@@ -440,11 +440,16 @@ td
  </tr>
  <tr height=157 style='mso-height-source:userset;height:118.0pt'>
   <td colspan=2 height=157 class=xl85 width=370 style='height:118.0pt;
-  width:278pt'>{{{$merchant->name}}} [{{{$merchant->id}}}]<br>
+  width:278pt'>{{{$merchant['name']}}} [{{{$merchant['id']}}}]<br>
   {{{$merchant_details['business_registered_address']}}}<br>
   {{{$merchant_details['business_registered_city']}}} -
   {{{$merchant_details['business_registered_pin']}}}<br>
   {{{$merchant_details['business_registered_state']}}}<br>
+
+  @if ($isGstApplicable)
+    GSTIN: {{{$gst}}} <br>
+  @endif
+
   <td class=xl82>{{{$invoice_id}}}</td>
   <td class=xl83>{{{$dates['billingDate']}}}</td>
   <td colspan=5 style='mso-ignore:colspan'></td>
@@ -522,6 +527,15 @@ td
   No.<span style='mso-spacerun:yes'>&nbsp; </span>- <code>AAGCR4375JSD001</code></td>
   <td colspan=7 style='mso-ignore:colspan'></td>
  </tr>
+
+@if ($isGstApplicable)
+ <tr height=25 style='height:19.0pt'>
+  <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>GSTIN
+  <span style='mso-spacerun:yes'>&nbsp; </span>- <code>29AAGCR4375J1ZU</code></td>
+  <td colspan=7 style='mso-ignore:colspan'></td>
+ </tr>
+ @endif
+
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl80 style='height:16.0pt'></td>
   <td colspan=8 style='mso-ignore:colspan'></td>

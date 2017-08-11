@@ -4,7 +4,6 @@ export default class ListContainer extends Component {
   static SKIP = 0;
   static COUNT = 25;
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 
@@ -71,9 +70,7 @@ export default class ListContainer extends Component {
     };
   }
 
-  fetchEntityList() {
-    throw new Error(
-      `Implement \`fetchEntityList\` func in the ${this.constructor.name} component`
-    );
+  fetchEntityList(params) {
+    return this.props.fetchAll(params);
   }
 }

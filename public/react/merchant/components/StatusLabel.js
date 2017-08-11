@@ -9,6 +9,7 @@ const StatusLabel = statusMap => ({ status }) => (
 export const invoiceStatusMap = {
   draft: 'label-muted',
   issued: 'label-info',
+  partially_paid: 'label-partially-paid',
   paid: 'label-success',
   cancelled: 'label-danger',
   expired: 'label-danger',
@@ -16,29 +17,62 @@ export const invoiceStatusMap = {
 
 export const orderStatusMap = {
   created: 'bg-light',
-  attempted: 'bg-info',
-  paid: 'bg-success',
+  attempted: 'label-info',
+  paid: 'label-success',
 };
 
 export const paymentStatusMap = {
   created: 'bg-light',
-  authorized: 'bg-info',
-  captured: 'bg-success',
-  failed: 'bg-danger',
+  authorized: 'label-info',
+  captured: 'label-success',
+  failed: 'label-danger',
   refunded: 'bg-primary',
 };
 
 export const settlementStatusMap = {
   created: 'bg-light',
-  processed: 'bg-success',
-  failed: 'bg-danger',
+  processed: 'label-success',
+  failed: 'label-danger',
 };
 
 export const batchUploadStatusMap = {
   created: 'bg-light',
-  processing: 'bg-info',
-  processed: 'bg-success',
-  failure: 'bg-danger',
+  processing: 'label-info',
+  processed: 'label-success',
+  failure: 'label-danger',
+};
+
+export const virtualAccountStatusMap = {
+  active: 'label-info',
+  closed: 'label-danger',
+  paid: 'label-success',
+};
+
+export const subscriptionStatusMap = {
+  created: 'bg-light',
+  authenticated: 'label-info',
+  active: 'label-success',
+  pending: 'label-warning',
+  cancelled: 'label-danger',
+  halted: 'label-danger',
+  expired: 'label-danger',
+  completed: 'label-muted',
+};
+
+export const planStatusMap = {
+  active: 'label-success',
+  inactive: 'label-muted',
+};
+
+const entityMap = {
+  payment: paymentStatusMap,
+  settlement: settlementStatusMap,
+  invoice: invoiceStatusMap,
+  order: orderStatusMap,
+  batch: batchUploadStatusMap,
+  virtual_account: virtualAccountStatusMap,
+  subscription: subscriptionStatusMap,
+  plan: planStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -46,3 +80,8 @@ export const OrderStatusLabel = StatusLabel(orderStatusMap);
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);
 export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
+export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
+export const SubscriptionStatusLabel = StatusLabel(subscriptionStatusMap);
+export const PlanStatusLabel = StatusLabel(planStatusMap);
+
+export default item => StatusLabel(entityMap[item.entity])(item);

@@ -2,33 +2,44 @@
 
 namespace App\User;
 
-use Carbon\Carbon;
-use Config;
 use DB;
-use DrewM\MailChimp\MailChimp;
 use Auth;
 use Hash;
 use Input;
-use Session;
-
-use App\Base;
-use App\Invitation;
-use App\Merchant;
-use App\MerchantDetails;
-use App\Session as SessionTable;
-use App\User;
-use App\Lead;
-use App\Generic;
-
 use Queue;
-
+use Config;
+use Session;
 use Requests;
+use App\Base;
+use App\User;
+use App\Generic;
+use App\Merchant;
+use App\AdminLead;
+use Carbon\Carbon;
+use App\Invitation;
+use App\User\Helper;
+use App\MerchantDetails;
 use App\Mailers\UserMailer;
+use App\Providers\GenericUser;
+use DrewM\MailChimp\MailChimp;
+use App\Session as SessionTable;
+use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
+    // Users who signed up before this date
+    // are not exposed to the pre signup flow
+
+    const PRE_SIGNUP_TIMESTAMP = 1488306600;
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+    }
 
     protected function getRef(array &$input)
     {
@@ -52,22 +63,17 @@ class Service extends Base\Service
      */
     protected function getInvitationAndUserFromToken($token)
     {
-        list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($token);
+        list($error, $invitation) = (new Invitation\Service)->getInvitationByTokenFromApi($token);
 
-        if ($error)
+        if (empty($error) === false)
         {
             // This error is a string
             throw new RecoverableException($error[0]);
         }
 
-        $user = User\Entity::where('email', $invitation->email)->first();
+        $user = User\Entity::where('email', $invitation['email'])->first();
 
-        if ($user)
-        {
-            return [$invitation, $user];
-        }
-
-        return [$invitation, null];
+        return [$invitation, $user];
     }
 
     /**
@@ -94,7 +100,7 @@ class Service extends Base\Service
             list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
             // Since input would be lacking an email in case registration is via
             // the invitation
-            $input['email'] = $invitation->email;
+            $input['email'] = $invitation['email'];
         }
 
         $heimdallInvitationToken = Input::get('merchant_invitation');
@@ -157,9 +163,6 @@ class Service extends Base\Service
             {
                 $error[] = 'Error on creating User';
             }
-
-            // For Drip marketing. Where URL has ?email=abc@xyz.com
-            $this->updateLeadIfExists($user);
         }
 
         // These two branches are exclusive
@@ -168,8 +171,6 @@ class Service extends Base\Service
         if ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
-
-            $this->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
 
             $data['login'] = true;
         }
@@ -204,37 +205,78 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->user->edit($userData, $userId);
+        $error = $response = [];
 
-        return $response;
+        try
+        {
+            $response = $this->api->user->edit($userId, $userData);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
-
 
     public function attachMerchantUserOnApi($userId, $merchantId, $role)
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $error = $response = [];
 
-        $response = $this->api->user->attach($userId, $data);
+        try
+        {
+            $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+            $response = $this->api->user->attach($userId, $data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function updateMerchantUserMappingOnApi($userId, $merchantId, $role)
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $error = $response = [];
 
-        $response = $this->api->user->updateMapping($userId, $data);
+        try
+        {
+            $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+            $response = $this->api->user->updateMapping($userId, $data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
-    public function detachMerchantUserOnApi($userId, $merchantId, $role)
+    public function detachMerchantUserOnApi($userId, $merchantId)
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $error = $response = [];
 
-        $response = $this->api->user->detach($userId, $data);
+        try
+        {
+            $data = ['merchant_id' => $merchantId];
+
+            $response = $this->api->user->detach($userId, $data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function getUserApiData(Entity $user)
@@ -272,52 +314,22 @@ class Service extends Base\Service
         return $user;
     }
 
-    public function createLead($input)
-    {
-        $error = $data = null;
-
-        $lead = new Lead\Entity;
-
-        $error = $lead->build($input);
-
-        if (! empty($error))
-        {
-            $error = array_values($error);
-        }
-        else
-        {
-            $lead->save();
-        }
-
-        return [$error, null];
-    }
-
-    public function updateLeadIfExists($user)
-    {
-        // Update Leads as well
-        $lead = Lead\Entity::where('email', $user->email)->first();
-
-        if (! empty($lead))
-        {
-            $lead->registered = true;
-            $lead->registered_at = $user->created_at->timestamp;
-
-            $lead->save();
-        }
-    }
-
     /**
      * This function is used to confirm a user by email.
      * @param string $email
      */
     public function confirmUserByEmail($email)
     {
-        $user = User\Entity::where('email', $email)->first();
+        $confirm_data = ['email' => $email];
 
-        if ($user === null)
+        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
+
+        if (empty($error) === false)
         {
             return [['Email is invalid.'], []];
         }
+
+        $user = User\Entity::where('email', $email)->first();
 
         $user->confirm();
 
@@ -344,20 +356,39 @@ class Service extends Base\Service
      */
     public function confirm($token)
     {
-        $user = User\Entity::getUserForConfirmation($token);
+        $confirm_data = ['confirm_token' => $token];
 
-        if ($user === null)
+        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
+
+        if (empty($error) === false)
         {
             return [[static::INVALID_CONFIRMATION_TOKEN], []];
         }
 
-        $user->confirm();
+        $user = User\Entity::getUserForConfirmation($token);
 
-        $this->confirmUserOnApi($user->id);
+        $user->confirm();
 
         $this->subscribeToMailingList($user);
 
         return [null, ['email' => $user->email]];
+    }
+
+    public function confirmUserByDataOnApi($data)
+    {
+        $this->setApiCredentials();
+
+        $error = $response = [];
+        try
+        {
+            $response = $this->api->user->confirmByData($data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function confirmUserOnApi($userId)
@@ -372,15 +403,22 @@ class Service extends Base\Service
     /**
      * Attach a user to a merchant using an invitation
      */
-    protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
+    protected function attachUserToInvite(User\Entity $user, array $invitation)
     {
-        Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+        list($error, $response) = (new Invitation\Service)->acceptInvitationOnApi($invitation['id'], $user->id);
 
-        $user->confirm();
+        if (empty($error) === true)
+        {
+            $user->joinMerchantByIdWithRole($invitation['merchant_id'], $invitation['role']);
 
-        $this->subscribeToMailingList($user);
+            Session::put('current_merchant_id', $invitation['merchant_id']);
 
-        Auth::guard('user')->login($user);
+            $user->confirm();
+
+            $this->confirmUserOnApi($user->id);
+
+            $this->subscribeToMailingList($user);
+        }
     }
 
     public function subscribeToMailingList(User\Entity $user)
@@ -619,37 +657,26 @@ class Service extends Base\Service
             return [['Email or password is invalid.'], null];
         }
 
-        $credentials = array(
+        $credentials = [
             'email'     => $input['email'],
             'password'  => $input['password']
-        );
+        ];
 
-        // Credentials are correct
-        // Parameters passed are [creds], $remember, $login
-        if (Auth::attempt($credentials, false, false))
+        list($error, $genericUser) = $this->loginOnApi($credentials);
+
+        if (empty($error) === false)
         {
-            // And user is not confirmed
-            if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
-            {
-                // TODO: Use single error message to avoid info leak
-                // @see https://github.com/razorpay/dashboard/issues/216
-                $error = ['User email not confirmed. Please click on verification link in email to continue.'];
-            }
-            else
-            {
-                // Login the user
-            Auth::attempt($credentials, false, true);
-            }
+            return [['Email or password is invalid.'], null];
         }
-        else
-        {
-            $error = ['Email or password is invalid'];
-        }
+
+        Auth::login($genericUser, false);
+
+        $this->app['session']->put('dashboard_user_payload', $genericUser);
 
         if (empty($error))
         {
             $res = [
-                'id'    =>  Auth::user()->getAuthIdentifier(),
+                'id'    =>  $genericUser->id,
             ];
         }
 
@@ -660,21 +687,23 @@ class Service extends Base\Service
     {
         $user = Auth::user();
 
-        if ($user->currentMerchant and $user->currentMerchant->isTestAccount())
+        if ($user->currentMerchant() and $user->currentMerchant()->isTestAccount())
         {
             return [["Password change forbidden on this account"], null];
         }
 
-        $error = $user->changePassword($input);
+        $dashboardUser = Entity::findOrFail($user->id);
+
+        $error = $dashboardUser->changePassword($input);
 
         //Any changes in user password
         //are also reflected in the merchants table for now
-        DB::transaction(function() use ($user)
+        DB::transaction(function() use ($dashboardUser, $user)
         {
-            $user->password = Hash::make($user->password);
-            $user->save();
+            $dashboardUser->password = Hash::make($dashboardUser->password);
+            $dashboardUser->save();
 
-            $this->updatePasswordOnApi($user);
+            $this->updatePasswordOnApi($dashboardUser);
 
             $currentSessionId = Session::getId();
             (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
@@ -689,17 +718,25 @@ class Service extends Base\Service
      * @param  string  $merchantId
      * @return \Illuminate\Http\Response
      */
-    public function switchCurrentMerchantForUser($merchantId, User\Entity $user)
+    public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
-        $merchant = $user->merchants()->find($merchantId);
+        list($error, $genericUser) = $this->getUserFromApi($user->id);
 
-        if($merchant)
+        if (empty($error) === true)
         {
-            $user->switchToMerchant($merchant);
-            return array();
+            $currentMerchant = $genericUser->merchants
+                                           ->where('id', $merchantId)
+                                           ->first();
+
+            if ($currentMerchant !== null)
+            {
+                Session::put('current_merchant_id', $currentMerchant->id);
+
+                return [];
+            }
         }
 
-        return array("Couldn't find the merchant you are looking for.");
+        return ["Couldn't find the merchant you are looking for."];
     }
 
     /**
@@ -752,11 +789,11 @@ class Service extends Base\Service
 
     public function upgradeUserToMerchant($input)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
         $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
 
-        if (! empty($error))
+        if (empty($error) === false)
         {
             return [$error, null];
         }
@@ -765,10 +802,12 @@ class Service extends Base\Service
             'business_name' =>  $input['business_name']
         ];
 
+        $user = Entity::findOrFail($authUser->id);
+
         // We don't have a referrer for the upgrade
         list($error, $data) = $this->createMerchantFromUser($user, $data);
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             // $data['id'] is the newly created merchant Id
             // This confirmation creates the Merchant Account on the API Side
@@ -777,7 +816,18 @@ class Service extends Base\Service
 
             $user->confirm();
 
+            $this->confirmUserOnApi($user->id);
+
+            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
+
             $this->subscribeToMailingList($user);
+
+            list($error, $genericUser) = $this->getUserFromApi($user->id);
+
+            if (empty($error) === true)
+            {
+                Session::put('dashboard_user_payload', $genericUser);
+            }
         }
 
         return [$error, $data];
@@ -787,8 +837,194 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->user->changePassword($user->id, ['password' => $user->password]);
+        $params = [
+            'password'              => $user->password,
+            'password_confirmation' => $user->password,
+        ];
+
+        $response = $this->api->user->changePassword($user->id, $params);
 
         return $response;
+    }
+
+    public function getUserDetails()
+    {
+        $data = [
+            'current'   =>  null
+        ];
+
+        $user = Auth::user();
+
+        if (!$user)
+        {
+            return [['Not logged in'], null];
+        }
+
+        list($error, $genericUser) = $this->getUserFromApi($user->id);
+
+        if (empty($error) === false)
+        {
+            return [$error, $data];
+        }
+
+        $userDetails = $genericUser->toArray();
+
+        $this->getTags($userDetails);
+
+        $merchants = $userDetails['merchants'];
+
+        $data['user'] = $userDetails;
+
+        // Default values in case no merchant is associated
+        // with the user account
+        $data['pre_signup'] = [];
+        $data['pre_signup_complete'] = true;
+
+        $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
+
+        if ($currentMerchant === null)
+        {
+            return [[], $data];
+        }
+
+        $data = $data + $currentMerchant->toArray();
+
+        if ($currentMerchant->role === 'owner')
+        {
+            $data['primaryOwner'] = true;
+        }
+        else
+        {
+            $data['primaryOwner'] = false;
+        }
+
+        $currentMerchantId = $currentMerchant->id;
+
+        // If the user is logged in as someone
+        if ($currentMerchantId)
+        {
+            // Fetch merchant details for current merchant
+            $data = $data + (new MerchantDetails\Service)->fetchDetails();
+
+            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
+
+            foreach ($merchants as $merchant) {
+
+                $data['merchants'][$merchant['id']] = $merchant;
+
+                if ($merchant['id'] === $currentMerchantId)
+                {
+                    $data['current'] = $currentMerchantId;
+
+                    $data['tags'] = $merchant['tags'];
+                }
+            }
+
+            $preSignupValues = array_values($data['pre_signup']);
+
+            // This is same as on UserController
+            $data['pre_signup_complete'] = array_reduce($preSignupValues, function($carry, $item)
+            {
+                return $carry and !empty($item);
+            }, true);
+
+            // We don't show presignup form for user
+            // created before this date
+            if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            $activated = (bool) $merchant['activated'];
+
+            // There are approx 3k merchants who have not
+            // filled "role" or "department", but are
+            // already activated.
+            if ($activated)
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            if ($currentMerchant->role !== 'owner')
+            {
+                $data['pre_signup_complete'] = true;
+            }
+        }
+
+        return [[], $data];
+    }
+
+    protected function getTags(array & $userDetails)
+    {
+        if (empty($userDetails) === true)
+        {
+            return;
+        }
+
+        $merchants = $userDetails['merchants'];
+
+        $merchantIds = array_column($merchants, 'id');
+
+        $data = Merchant\Entity::select(['merchants.id'])
+                                ->with('tagged')
+                                ->whereIn('merchants.id', $merchantIds)
+                                ->get()
+                                ->toArray();
+
+        foreach ($merchants as & $merchant)
+        {
+            $key = array_search($merchant['id'], array_column($data, 'id'));
+
+            if ($key !== false)
+            {
+                $merchant = array_merge($merchant, $data[$key]);
+            }
+        }
+
+        $userDetails['merchants'] = $merchants;
+    }
+
+    public function loginOnApi(array $input)
+    {
+        $error = [];
+
+        $genericUser = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->user->login($input)->toArray();
+
+            $genericUser = (new Helper)->createdGenericUser($response);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $genericUser];
+    }
+
+    public function getUserFromApi($userId, array $input = [])
+    {
+        $error = [];
+
+        $genericUser = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->user->get($userId, $input)->toArray();
+
+            $genericUser = (new Helper)->createdGenericUser($response);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $genericUser];
     }
 }

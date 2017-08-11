@@ -1,55 +1,47 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
+import SubscriptionsListFilter
+  from 'merchant/components/Subscriptions/ListFilter';
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
+import {
+  subscriptionId,
+  planId,
+  customerId,
+  nextDueOn,
+  createdAt,
+  status,
+} from 'rzp/ui/item/pair';
 
-import { fetchSubscriptions } from 'merchant/modules/subscriptions';
-import { fetchPlans } from 'merchant/modules/plans';
-import SubscriptionsList
-  from 'merchant/components/Subscriptions/SubscriptionsList';
-
-@connect(
-  state => {
-    let plansState = state.plans;
-    let subscriptionsState = state.subscriptions;
-
-    return {
-      subscriptions: subscriptionsState.subscriptions,
-      plans: plansState.plans,
-      loading: subscriptionsState.loading && plansState.loading,
-    };
-  },
-  { fetchSubscriptions, fetchPlans }
-)
-export default class SubscriptionsListContainer extends Component {
-  componentWillMount() {
-    this.props.fetchSubscriptions();
-    this.props.fetchPlans();
-  }
-
+@connect(state => state.subscriptions, { fetchAll })
+export default class SubscriptionsListContainer extends ListContainer {
   render() {
-    let { loading, subscriptions, plans } = this.props;
+    let { loading, items, error } = this.props;
 
     return (
-      <div>
-        <Header title="Subscriptions">
-          <a
-            href="#/app/subscriptions/new"
-            className="pull-right btn btn-primary btn-rounded"
-          >
-            <i className="fa fa-plus" />
-            <span>New Subscription</span>
-          </a>
-        </Header>
+      <div class="content-wrapper">
+        <SubscriptionsListFilter
+          form="subscriptionsListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-        <div className="content-wrapper">
-          <div className="panel panel-default">
-            <SubscriptionsList
-              subscriptions={subscriptions}
-              plans={plans}
-              isLoading={loading}
-            />
-          </div>
-        </div>
+        <DataTable
+          title="Subscriptions"
+          columns={[
+            subscriptionId,
+            planId,
+            customerId,
+            nextDueOn,
+            createdAt,
+            status,
+          ]}
+          count={this.state.count}
+          skip={this.state.skip}
+          paginate={this.paginate}
+          {...this.props}
+        />
       </div>
     );
   }

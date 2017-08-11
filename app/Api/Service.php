@@ -2,13 +2,14 @@
 
 namespace App\Api;
 
-use Carbon\Carbon;
-use App\Http\AppResponse;
+use App\Admin\RawApiRequest;
 use Auth;
-use App\Base;
-
-use App\Trace\TraceCode;
 use Trace;
+use App\Base;
+use Carbon\Carbon;
+use App\Trace\TraceCode;
+use App\Http\AppResponse;
+use App\Generic;
 
 class Service extends Base\Service
 {
@@ -18,8 +19,9 @@ class Service extends Base\Service
 
         if ($loggedInUser)
         {
-            $this->merchantId = $loggedInUser->getCurrentMerchantId();
-            $this->merchant   = $loggedInUser->currentMerchant;
+            $this->merchant = $loggedInUser->currentMerchant();
+
+            $this->merchantId = $this->merchant->id;
         }
         else
         {
@@ -31,37 +33,6 @@ class Service extends Base\Service
         $this->app = $app;
 
         $this->trace = $app['trace'];
-    }
-
-    public function fetchEntity($id, $mode, $entity)
-    {
-        $error = (new Validator)->validateInput('fetch', array('id' => $id))->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $collection = [];
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->$entity->fetch($id)->toArray();
-
-            $collection = array(
-                'count' => 1,
-                'entity' => 'collection',
-                'items' => array($data));
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $collection);
     }
 
     public function fetchCollection(array $input, $mode, $entity)
@@ -85,14 +56,32 @@ class Service extends Base\Service
             'items'  => [],
         ];
 
+        if ($entity === 'customer')
+        {
+            $routeName = 'customer_fetch_multiple';
+        }
+        else if ($entity === 'item')
+        {
+            $routeName = 'item_fetch_multiple';
+        }
+
         for ($i = 0; $i < 5; $i++)
         {
-            $input = [
-                'skip' => $i * $count,
-                'count' => $count
+            // Using generic
+
+            $customerInput = [
+                'route_name' => $routeName,
+                'mode' => $mode,
+                'query_params' => [
+                    'skip' => $i * $count,
+                    'count' => $count
+                ]
             ];
 
-            list($error, $list) = $this->fetchEntityCollection($input, $mode, $entity);
+            $genericService = new Generic\Service;
+
+            list($error, $list) = $genericService->call('GET', $customerInput);
+
             $collection['count'] = $collection['count'] + $list['count'];
             $collection['items'] = array_merge($collection['items'], $list['items']);
 
@@ -205,6 +194,7 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
+
             $data = $this->api->payment
                                 ->fetch($id)
                                 ->capture($input)
@@ -278,7 +268,23 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $merchantId = $this->merchantId;
+
+            if (isset($params['merchant_id']) === true)
+            {
+                $merchantId = $params['merchant_id'];
+                unset($params['merchant_id']);
+            }
+
+            $this->setApiCredentials($merchantId, $mode);
+
+            if (isset($params['account_id']) === true)
+            {
+                $this->setAccountCredentials($params['account_id']);
+
+                unset ($params['account_id']);
+            }
+
             $data = $this->api
                          ->transaction
                          ->generateEntityReportFile($resource, $params)
@@ -301,7 +307,14 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $merchantId = $this->merchantId;
+            if (isset($params['merchant_id']))
+            {
+                $merchantId = $params['merchant_id'];
+                unset($params['merchant_id']);
+            }
+
+            $this->setApiCredentials($merchantId, $mode);
 
             $data = $this->api
                          ->transaction
@@ -353,9 +366,17 @@ class Service extends Base\Service
 
     public function getInvoiceReportData($mode, array $input)
     {
+        $merchantId = $this->merchantId;
+
+        if (isset($input['merchant_id']))
+        {
+            $merchantId = $input['merchant_id'];
+            unset($input['merchant_id']);
+        }
+
         try
         {
-            $this->setApiCredentials($this->merchantId, $mode);
+            $this->setApiCredentials($merchantId, $mode);
 
             $data = $this->api
                          ->transaction
@@ -363,8 +384,8 @@ class Service extends Base\Service
                          ->toArray();
 
             $data['dates']      = $this->getDateRanges($input['year'], $input['month']);
-            $data['merchant']   = $this->merchant;
-            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
+            $data['merchant_id'] = $merchantId;
+            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month'], $merchantId);
 
             return [null, $data];
         }
@@ -407,126 +428,9 @@ class Service extends Base\Service
         return Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
     }
 
-    protected function getInvoiceId($year, $month)
+    protected function getInvoiceId($year, $month, $merchantId)
     {
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
-        return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
-    }
-
-    public function uploadBatchFile($mode, $input)
-    {
-        $error = $batchRefund = null;
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $batchRefund = $this->api
-                                ->batch
-                                ->uploadFile($mode, $this->merchantId, $input);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $batchRefund];
-    }
-
-    public function fetchMultipleBatches($mode, $input)
-    {
-        $error = $collection = null;
-
-        try
-        {
-            $collection = [];
-
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $collection = $this->api
-                               ->batch
-                               ->all($input)
-                               ->toArray();
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $collection];
-    }
-
-    public function fetchBatchById($mode, $id)
-    {
-        $error = $collection = null;
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $data = $this->api
-                         ->batch
-                         ->fetch($id)
-                         ->toArray();
-
-            $collection = [
-                            'count' => 1,
-                            'entity' => 'collection',
-                            'items' => array($data),
-                          ];
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $collection];
-    }
-
-    public function downloadBatchFile($mode, $id)
-    {
-        $error = $downloadResponse = null;
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $downloadResponse = $this->api
-                                     ->batch
-                                     ->downloadFile($id)
-                                     ->toArray();
-
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $downloadResponse];
-    }
-
-    public function retryBatchFile($mode, $id)
-    {
-        $error = $batchRefund = null;
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-
-            $batchRefund = $this->api
-                                ->batch
-                                ->retryFile($id)
-                                ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $batchRefund];
+        return $merchantId . '/' . $startDate->addMonth()->format('m/y');
     }
 }

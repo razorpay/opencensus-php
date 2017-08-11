@@ -3,8 +3,9 @@
 const path = require('path');
 const webpack = require('webpack');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
+const BabiliPlugin = require('babili-webpack-plugin');
 
-const webpackConfig = {
+const commonConfig = {
   context: process.cwd() + '/public/react',
   resolve: {
     alias: {
@@ -17,62 +18,108 @@ const webpackConfig = {
       'web_modules',
       path.resolve(__dirname, 'public/react'),
     ],
-    extensions: ['.js', '.jsx', '.styl'],
+    extensions: ['.js', '.jsx', '.styl', '.jst'],
   },
-  module: {},
-  externals: {
-    jquery: 'jQuery',
-  },
-};
 
-// ------------------------------------
-// Entry Points
-// ------------------------------------
-webpackConfig.entry = {
-  merchant: './merchant',
-  admin: './admin',
+  module: {},
+  stats: {
+    children: false,
+  },
 };
 
 // ------------------------------------
 // Bundle Output
 // ------------------------------------
-webpackConfig.output = {
-  path: './public/react/dist',
-  filename: '[name]_react.js',
+commonConfig.output = {
+  publicPath: '/dist/',
+  path: path.resolve(__dirname, 'public/dist'),
 };
-
-// ------------------------------------
-// Loaders
-// ------------------------------------
-webpackConfig.module.loaders = [
-  {
-    test: /\.(js|jsx)$/,
-    include: path.resolve(__dirname, 'public/react'),
-    loader: 'babel-loader',
-    query: {
-      cacheDirectory: true,
-      plugins: [
-        'react-html-attrs',
-        'transform-runtime',
-        'transform-decorators-legacy',
-      ],
-      presets: ['es2015', 'react', 'stage-0'],
-    },
-  },
-  {
-    test: /\.styl$/,
-    loader: 'style-loader!css-loader?modules&localIdentName=[local]!stylus-loader?paths=/public/react',
-  },
-];
 
 // ------------------------------------
 // Plugins
 // ------------------------------------
-webpackConfig.plugins = [
+commonConfig.plugins = [
   new CaseSensitivePathsPlugin(),
 
-  /* https://github.com/webpack/webpack/issues/3128 */
-  new webpack.IgnorePlugin(/(locale)/, /node_modules.+(momentjs)/),
+  new webpack.ProvidePlugin({
+    React: 'react',
+    $: 'jquery',
+  }),
 ];
 
-module.exports = webpackConfig;
+module.exports = env => {
+  const isProd = env === 'production' ? true : false;
+  commonConfig.output.filename = isProd ? '[name]_[chunkhash].js' : '[name].js';
+
+  // ------------------------------------
+  // Loaders
+  // ------------------------------------
+  commonConfig.module.rules = [
+    {
+      test: /\.(js|jsx)$/,
+      include: path.resolve(__dirname, 'public/react'),
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: true,
+            plugins: [
+              'react-html-attrs',
+              'transform-runtime',
+              'transform-decorators-legacy',
+            ],
+            presets: [
+              ['es2015', { loose: true, modules: false }],
+              'react',
+              'stage-0',
+            ],
+          },
+        },
+      ],
+    },
+    {
+      test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+      use: [
+        {
+          loader: 'file-loader',
+        },
+      ],
+    },
+
+    {
+      test: /\.jst$/,
+      use: [
+        {
+          loader: 'dot-tpl-loader',
+        },
+      ],
+    },
+  ];
+
+  // Production specific plugins
+  if (isProd) {
+    commonConfig.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env': {
+          NODE_ENV: JSON.stringify('production'),
+        },
+      }),
+      new BabiliPlugin({
+        mangle: { topLevel: true },
+      }),
+      new webpack.optimize.UglifyJsPlugin({
+        compress: {
+          warnings: false,
+        },
+        output: {
+          comments: false,
+        },
+      })
+    );
+  }
+
+  return [
+    require('./webpack.merchant.js')(commonConfig, isProd),
+    require('./webpack.admin.js')(commonConfig, isProd),
+  ];
+};
