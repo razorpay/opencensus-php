@@ -24,7 +24,6 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const PDF_PREFIX               = 'pdfs/';
-    const DEFAULT_CALLBACK_METHOD  = 'get';
 
     // ------------------ Entity Keys --------------------------------
 
