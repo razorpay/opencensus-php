@@ -412,7 +412,8 @@
         <label class="col-lg-3 control-label">Reason Id:</label>
         <div class="col-lg-9">
           <!-- Role Selection -->
-          <select class="select2 role-select2" style="width: 100%" ng-model="dispute.reason_id" role-select="Select a Reason Id">
+          <select class="select2 role-select2" style="width: 100%" ng-model="dispute.reason_id" role-select="Select a Reason Id" required>
+            <option></option>
             <option ng-repeat="reason in reasonIds" value="{{reason.id}}">
               ({{reason.network}} - {{reason.gateway_code}}) : {{reason.code}}
             </option>

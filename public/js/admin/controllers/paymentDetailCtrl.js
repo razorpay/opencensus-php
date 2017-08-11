@@ -279,8 +279,6 @@ app
           });
       };
       $scope.createDispute = function(data) {
-        console.log('CREATE DISPUTE....', data);
-
         var params = {
           route_name: 'payment_disputes',
           url_params: {
@@ -298,7 +296,7 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              console.log('TODO....', data);
+              window.location.reload();
             } else {
               angular.forEach(data.errors, function(value) {
                 $scope.alerts.addAlert('danger', value);
