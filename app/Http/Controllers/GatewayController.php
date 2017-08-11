@@ -175,6 +175,10 @@ class GatewayController extends Controller
     {
         $input = Request::all();
         // For testing in beta
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [ 'input' => $input ]
+        );
         sd($input);
     }
 

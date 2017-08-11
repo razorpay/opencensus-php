@@ -59,7 +59,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getMerchantId()
+    public function getMerchantId()
     {
         $mid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
