@@ -582,3 +582,7 @@ truncate table tagging_tags;
 source tag_dump.sql;
 # Update tagging_tagged table
 UPDATE `tagging_tagged` SET `taggable_type` = 'merchant' WHERE `taggable_type` = 'App\\Merchant\\Entity';
+
+# Type 4 terminals are Non-3DS for recurring
+# FirstData N3DS terminals are always in Purchase mode
+UPDATE terminals SET mode=2 WHERE gateway='first_data' AND type=4;
