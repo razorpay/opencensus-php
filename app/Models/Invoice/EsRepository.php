@@ -44,6 +44,7 @@ class EsRepository extends Base\EsRepository
     protected $commonFetchParams = [
         Entity::STATUS,
         Entity::TYPE,
+        Entity::TYPES,
         Entity::MERCHANT_ID,
     ];
 
@@ -56,6 +57,13 @@ class EsRepository extends Base\EsRepository
                 ],
             ],
         ];
+
+        $this->addFilter($query, $filter);
+    }
+
+    public function buildQueryForTypes(array & $query, array $value)
+    {
+        $filter = ['terms' => ['type' => $value]];
 
         $this->addFilter($query, $filter);
     }
