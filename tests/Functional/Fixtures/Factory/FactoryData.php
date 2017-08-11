@@ -683,6 +683,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Gateway\Rule\Entity::class, [
             'id'         => $faker->uniqueid,
+            'min_amount' => 0,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp
         ]);
