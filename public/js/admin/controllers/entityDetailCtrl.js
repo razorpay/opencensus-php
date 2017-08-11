@@ -54,7 +54,11 @@ app
       });
 
       function hasRetryRefund(entity) {
-        return $scope.loadType === 'refund' && entity.status === 'failed';
+        return (
+          entity.has_retry_refund &&
+          $scope.loadType === 'refund' &&
+          entity.status === 'failed'
+        );
       }
 
       function fetchEntity(entityType) {
