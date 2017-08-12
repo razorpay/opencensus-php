@@ -454,7 +454,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
-        $customerDetails = $this->getNbCustomerDetails($row);
+        $customerDetails = $this->getCustomerDetails($row);
 
         $accountDetails = $this->getNbAccountDetails($row);
 
@@ -1277,7 +1277,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param $row
      * @return null
      */
-    protected function getNbCustomerDetails($row)
+    protected function getCustomerDetails($row)
     {
         return [];
     }

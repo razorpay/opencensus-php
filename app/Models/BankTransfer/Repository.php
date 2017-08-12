@@ -35,13 +35,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByUtrOrFail(string $utr)
-    {
-        return $this->newQuery()
-                    ->where(Entity::UTR, '=', $utr)
-                    ->firstOrFail();
-    }
-
     public function findByPayment(Payment\Entity $payment)
     {
         return $this->findByPaymentId($payment->getId());

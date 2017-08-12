@@ -25,7 +25,10 @@ class Reconciliate extends Base\Reconciliate
     ];
 
     /**
-     * Virtual Account MIS files contain only payment info
+     * Kotak Virtual Account MIS files contain only payment info.
+     *
+     * Refunds are handled via payouts made from nodal directly
+     * to customer bank account, and not via Kotak E-Collect
      *
      * @param string $fileName
      * @return string
