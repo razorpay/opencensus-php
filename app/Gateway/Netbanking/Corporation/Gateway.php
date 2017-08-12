@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Corporation;
 
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
@@ -43,11 +44,13 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $content = $input['gateway'];
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway'          => $this->gateway,
-                'gateway_response' => $input['gateway'],
+                'gateway_response' => $content,
                 'payment_id'       => $input['payment']['id']
             ]
         );
@@ -58,7 +61,7 @@ class Gateway extends Base\Gateway
         );
 
         $this->checkCallbackStatus($content);
-        sd($input);
+        sd($content);
     }
 
     protected function getPaymentRequestData($input)
@@ -92,4 +95,36 @@ class Gateway extends Base\Gateway
 
         return $mid;
     }
+
+    /**
+     * In this case, we have added a custom callback route.
+     * When the callback is called from their end, we need
+     * to generate the gateway instance from the payment id
+     * in the callback.
+     *
+     * This function identifies the above and returns the same.
+     *
+     * @param array $input
+     * @return String
+     */
+    public function getPaymentIdFromServerCallback($input)
+    {
+        return $input[ResponseFields::PAYMENT_ID];
+    }
+
+    protected function checkCallbackStatus(array $content)
+    {
+        if ($content[ResponseFields::STATUS] !== ResponseCodeMap::SUCCESS_CODE)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                [
+                    'content' => $content
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
 }
