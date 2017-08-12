@@ -457,6 +457,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
+        Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP
     ];
 
