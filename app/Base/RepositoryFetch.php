@@ -118,19 +118,7 @@ trait RepositoryFetch
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
-        $params = $this->unsetEmptyParams($params);
-
-        $this->addDefaultParams($params);
-
-        // validateFetchParams modifies fetchParamRules.
-        // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
-        $this->defaultFetchParamRules = $this->fetchParamRules;
-
-        $this->validateFetchParams($params);
-
-        $this->modifyFetchParams($params);
-
-        $this->updateExpandsIfApplicable($params);
+        $this->getProcessedFetchParams($params);
 
         $query = $this->newQuery();
 
@@ -371,6 +359,23 @@ trait RepositoryFetch
                           ->caller($this)
                           ->input($params)
                           ->validate();
+    }
+
+    protected function getProcessedFetchParams(array & $params)
+    {
+        $params = $this->unsetEmptyParams($params);
+
+        $this->addDefaultParams($params);
+
+        // validateFetchParams modifies fetchParamRules.
+        // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
+        $this->defaultFetchParamRules = $this->fetchParamRules;
+
+        $this->validateFetchParams($params);
+
+        $this->modifyFetchParams($params);
+
+        $this->updateExpandsIfApplicable($params);
     }
 
     /**
