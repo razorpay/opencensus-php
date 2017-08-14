@@ -514,6 +514,8 @@ return [
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
         // Generate Refunds Excel
         'refund_generate_excel'             => 'refunds/excel',
+        // Generate Emi Excel
+        'emi_generate_excel'                => 'emi/generate/excel',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 
