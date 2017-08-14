@@ -8,6 +8,30 @@ use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
+    protected $admin;
+
+    const ACTION_FUNCTION_MAPPING = [
+        "maker" => [
+            "all"     => "getActionsByOrg",
+            "closed"  => "getClosedActionsByMaker",
+            "open"    => "getActionsByOrg",
+            "maker"   => "getActionsByMaker",
+        ],
+        "checker" => [
+            "all"     => "getActionsForChecker",
+        ],
+        "admin_checked" => [
+            "all"     => "getActionsCheckedByAdmin",
+        ],
+    ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->admin = $this->app['basicauth']->getAdmin();
+    }
+
     public function create(array $input)
     {
         $action = $this->core()->create($input);
@@ -26,15 +50,37 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $orgId = $this->admin->getOrgId();
 
-        $orgId = $admin->getOrgId();
+        // $duty can be maker/checker/admin_checked
+        // actions will be fetched based on duty and type
+        // type can be all/closed/open etc
 
-        $input[Entity::ORG_ID] = $orgId;
+        $duty = $input['duty'] ?? 'default';
+        $type = $input['type'] ?? 'all';
 
-        $actions = $this->repo->workflow_action->findByOrgId($orgId);
+        if (isset(self::ACTION_FUNCTION_MAPPING[$duty][$type]))
+        {
+            // Function name which needs to be called to return actions based on duty and maker.
+            $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
+
+            $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
+        }
+        else
+        {
+            $actions = $this->repo->workflow_action->findByOrgId($orgId);
+        }
 
         return $actions->toArrayPublic();
+    }
+
+    public function getActionsCheckedByAdmin($input)
+    {
+        $actions = $this->repo->workflow_action
+            ->getActionsCheckedByAdmin(
+                $this->admin->getId(), ['admin']);
+
+        return $actions;
     }
 
     public function getActionDetails(string $actionId)
@@ -139,5 +185,72 @@ class Service extends Base\Service
         }
 
         return $this->core()->executeAction($action);
+    }
+
+    /**
+     * Get all the actions in the admin's org
+     * Based on current level, get the steps/roles in the workflow
+     * if the admin has the role, give the checker the action_id, step_id
+     *
+     * @param array $input input array
+     *
+     * @return array
+     */
+    public function getActionsForChecker(array $input)
+    {
+        $adminRoleIds = $this->admin->roles()->allRelatedIds()->toArray();
+
+        $actions = $this->repo->workflow_action->findActionsForChecker(
+            $adminRoleIds, ['admin']);
+
+        return $actions;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getActionsByOrg(array $input)
+    {
+        $orgId = $this->admin->getOrgId();
+
+        $type = $input['type'] ?? 'all';
+
+        $this->app['basicauth']->validateSuperAdminAccess();
+
+        $actions = $this->repo->workflow_action->findByOrgId(
+            $orgId, ['admin'], $type);
+
+        return $actions;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function getClosedActionsByMaker(array $input)
+    {
+        $actions = $this->repo->workflow_action
+            ->getClosedActionsByAdmin(
+                $this->admin->getId(), ['admin']);
+
+        return $actions;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function getActionsByMaker(array $input)
+    {
+        $relations = ['workflow', 'admin'];
+
+        $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
+            $this->admin->getId(), $this->admin->getOrgId(), $relations);
+
+        return $actions;
     }
 }
