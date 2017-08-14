@@ -1,4 +1,5 @@
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 export default ({
   rows,
@@ -21,7 +22,7 @@ export default ({
               class={column.columnClass ? column.columnClass : ''}
               key={index}
             >
-              <span class="progress-loader" />
+              <PlaceholderLoader />
             </td>
           ))}
         </EntityItemRow>

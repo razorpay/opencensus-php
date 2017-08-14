@@ -104,9 +104,9 @@ export default class KeyGenerationStep extends Component {
           {isLoading
             ? <div class="media-body">
                 <div class="media-heading">
-                  <PlaceholderLoader style={{ height: '16px' }} />
+                  <PlaceholderLoader style={{ height: '16px', width: '90%' }} />
                 </div>
-                <PlaceholderLoader />
+                <PlaceholderLoader style={{ width: '90%' }} />
               </div>
             : <div class="media-body">
                 <div class="media-heading">{header}</div>
