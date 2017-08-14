@@ -647,6 +647,12 @@ angular
           draft: 'bg-light',
           issued: 'bg-info',
           expired: 'bg-danger',
+
+          // dispute
+          open: 'bg-primary',
+          under_review: 'bg-warning',
+          won: 'bg-success',
+          lost: 'bg-danger',
         };
 
         return mapper[status];
@@ -770,6 +776,7 @@ angular
     'statusClass',
     function(isStatusKey, statusClass) {
       return function(key, value) {
+        console.log('IS STATUS KEY...', key, value);
         if (isStatusKey(key, value)) {
           return 'label ' + statusClass(value);
         }
@@ -797,7 +804,11 @@ angular
       return function(key, value) {
         var entity = key.substr(0, key.length - 3);
         var isTimestamp = function(key) {
-          return key.substr(-3) === '_at' || key === 'next_run';
+          return (
+            key.substr(-3) === '_at' ||
+            key.substr(-3) === '_on' ||
+            key === 'next_run'
+          );
         };
         // These have their own views
         var specialEntities = ['merchant_id', 'payment_id'];
