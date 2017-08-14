@@ -571,7 +571,11 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
-
+        // Risk Routes
+        'risk_create'                             => ['post',     'risk',                                           'RiskController@create'                                             ],
+        'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
+        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
+        'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
@@ -967,6 +971,10 @@ final class Route
         'dispute_edit',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
+        'risk_create',
+        'risk_update',
+        'risk_fetch_multiple',
+        'risk_get',
     ];
 
     public static $proxy = [

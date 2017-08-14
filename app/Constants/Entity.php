@@ -23,6 +23,8 @@ class Entity
     const PLAN                  = 'plan';
     const ITEM                  = 'item';
     const USER                  = 'user';
+    const RISK                  = 'risk';
+    const ADDON                 = 'addon';
     const BATCH                 = 'batch';
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
@@ -31,7 +33,6 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
-    const ADDON                 = 'addon';
     const REPORT                = 'report';
     const DISPUTE               = 'dispute';
     const ADDRESS               = 'address';
@@ -70,13 +71,13 @@ class Entity
     const DISPUTE_REASON        = 'dispute_reason';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const CREDIT_TRANSACTION    = 'credit_transaction';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
     const MERCHANT_INVOICE      = 'merchant_invoice';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
@@ -135,6 +136,7 @@ class Entity
     const NETBANKING_FEDERAL    = 'netbanking_federal';
     const NETBANKING_RBL        = 'netbanking_rbl';
     const NETBANKING_INDUSIND   = 'netbanking_indusind';
+    const NETBANKING_PNB        = 'netbanking_pnb';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
@@ -148,7 +150,6 @@ class Entity
 
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
-
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -234,6 +235,7 @@ class Entity
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Indusind::class,
+        self::NETBANKING_PNB        => \RZP\Gateway\Netbanking\Pnb::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
@@ -270,6 +272,7 @@ class Entity
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_PNB        => \RZP\Gateway\Netbanking\Base::class,
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,

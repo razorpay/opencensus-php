@@ -215,6 +215,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::SUBMITTED_AT        => null,
         self::ACTIVATION_PROGRESS => 0,
+        self::GSTIN               => null,
+        self::P_GSTIN             => null,
     ];
 
     protected $casts = [

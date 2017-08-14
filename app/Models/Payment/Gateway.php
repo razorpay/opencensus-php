@@ -33,6 +33,7 @@ class Gateway
     const NETBANKING_INDUSIND= 'netbanking_indusind';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
     const NETBANKING_RBL     = 'netbanking_rbl';
+    const NETBANKING_PNB     = 'netbanking_pnb';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_MINDGATE       = 'upi_mindgate';
@@ -156,6 +157,7 @@ class Gateway
         self::NETBANKING_FEDERAL  => Settlement\Channel::KOTAK,
         self::NETBANKING_RBL      => Settlement\Channel::KOTAK,
         self::NETBANKING_INDUSIND => Settlement\Channel::KOTAK,
+        self::NETBANKING_PNB      => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP      => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY     => Settlement\Channel::KOTAK,
@@ -201,6 +203,7 @@ class Gateway
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
+            self::NETBANKING_PNB,
         ],
 
         Method::WALLET => [
@@ -389,6 +392,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -455,6 +459,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::PUNB,
     ];
 
     /**
@@ -484,7 +489,8 @@ class Gateway
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL
+        IFSC::RATN => Gateway::NETBANKING_RBL,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**
@@ -500,7 +506,8 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**
