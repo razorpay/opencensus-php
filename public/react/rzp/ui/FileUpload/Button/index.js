@@ -98,7 +98,7 @@ export default class FileUploadButton extends Component {
               if (maxSize && event.target.files[0].size > maxSize) {
                 this.props.showNotification({
                   type: 'error',
-                  message: 'Max file size allowed is 1 MB',
+                  message: `Max file size allowed is ${Math.round(maxSize / 1e6)} MB`,
                 });
               } else {
                 this.handleChange(event);

@@ -331,6 +331,17 @@ var app = angular
         })
         // React Routes
         // Test routes
+        .state('app.merchants.team', {
+          url: '/:id/team',
+          controller: [
+            '$scope',
+            '$stateParams',
+            function($scope, $stateParams) {
+              $scope.id = $stateParams.id;
+            },
+          ],
+          templateProvider: reactTemplateProvider('<merchant-team id="id" />'),
+        })
         .state('app.zroles', {
           url: '/zroles',
           template: '<div ui-view class="fade-in-down"></div>',
