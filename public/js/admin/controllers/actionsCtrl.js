@@ -82,6 +82,10 @@ app
         };
         $scope.generateNetBankingRefunds = function(params) {
           params.method = 'netbanking';
+          if (params.email_self) {
+            params.email = $scope.admin.email;
+          }
+          delete params.email_self;
           var data = {
             route_name: 'refund_generate_excel',
             body: params,
@@ -99,6 +103,43 @@ app
                   'success',
                   params.bank.toUpperCase() +
                     ' Refunds Excel Generated (Count = ' +
+                    data.data.count +
+                    ')',
+                  true
+                );
+              } else {
+                $scope.alerts.resetAlerts();
+                angular.forEach(data.errors, function(value, key) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        };
+        $scope.generateEmiFiles = function(params) {
+          if (params.email_self) {
+            params.email = $scope.admin.email;
+          }
+          delete params.email_self;
+          var data = {
+            route_name: 'emi_generate_excel',
+            body: params,
+            mode: params.mode,
+          };
+          var request = $http({
+            method: 'post',
+            url: '/admin/generic',
+            data: data,
+          });
+          request
+            .success(function(data) {
+              if (data.success) {
+                $scope.alerts.addAlert(
+                  'success',
+                  params.bank.toUpperCase() +
+                    ' Emi Excel Generated (Count = ' +
                     data.data.count +
                     ')',
                   true
@@ -268,6 +309,13 @@ app
             controller: 'generateRefundModalCtrl',
           });
           modalInstance.result.then($scope.generateNetBankingRefunds, $.noop);
+        };
+        $scope.openGenerateEmiFiles = function() {
+          var modalInstance = $modal.open({
+            templateUrl: 'emiGenerateModalContent.html',
+            controller: 'generateEmiModalCtrl',
+          });
+          modalInstance.result.then($scope.generateEmiFiles, $.noop);
         };
         $scope.openAddIIN = function() {
           var modalInstance = $modal.open({
@@ -592,12 +640,53 @@ app
       $scope.bank = 'HDFC';
       $scope.mode = 'live';
       $scope.date = moment().format('YYYY-MM-DD');
-      $scope.ok = function(date, from, to, bank, mode) {
+      $scope.ok = function(date, from, to, bank, mode, email_self) {
         var tzGMTToIST = 19800;
         var data = {
           bank: bank,
           mode: mode,
+          email_self: email_self,
         };
+        if (from && to) {
+          // Date from the date api is in GMT
+          var fromInGMT = new Date(from).getTime() / 1000;
+          var toInGMT = new Date(to).getTime() / 1000;
+
+          // Subtract 19800 from GMT to convert timestamps to IST
+          var fromInIST = fromInGMT - tzGMTToIST;
+          var toInIST = toInGMT - tzGMTToIST;
+
+          // Final variable to be sent
+          data.from = fromInIST;
+          data.to = toInIST;
+        } else {
+          // Final variable api expects is on
+          data.on = date;
+        }
+        $modalInstance.close(data);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('generateEmiModalCtrl', [
+    '$scope',
+    '$modalInstance',
+    '$http',
+    function($scope, $modalInstance, $http) {
+      $scope.mode = 'live';
+      $scope.date = moment().format('YYYY-MM-DD');
+      // Load bank list here
+
+      $scope.ok = function(date, from, to, bank, mode, email_self) {
+        var tzGMTToIST = 19800;
+        var data = {
+          bank: bank,
+          mode: mode,
+          email_self: email_self,
+        };
+
         if (from && to) {
           // Date from the date api is in GMT
           var fromInGMT = new Date(from).getTime() / 1000;
