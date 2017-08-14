@@ -151,8 +151,7 @@ class Core extends Base\Core
         // Not we'll consider [] to be a valid diff as well
         // and store in ES
 
-        if ((is_array($differ->getDiff()) === true) or
-            (empty($differ->getDiff()) === false))
+        if ((empty($differ->getDiff()) === false))
         {
             $this->saveToEs($differ->toArray());
 
