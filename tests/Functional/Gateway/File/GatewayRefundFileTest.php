@@ -25,13 +25,6 @@ class GatewayRefundFileTest extends TestCase
         parent::setUp();
     }
 
-    public function tearDown()
-    {
-        ProcessorFactory::flushProcessors();
-
-        parent::tearDown();
-    }
-
     public function testRefundFileProcessor()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
