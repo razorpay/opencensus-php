@@ -576,9 +576,14 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
-
+        // Risk Routes
+        'risk_create'                             => ['post',     'risk',                                           'RiskController@create'                                             ],
+        'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
+        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
+        'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
-        'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
+        'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
     ];
 
     public static $public = [
@@ -816,7 +821,6 @@ final class Route
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_create_plan',
         'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
@@ -969,8 +973,13 @@ final class Route
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
         'payment_dispute_create',
+        'dispute_edit',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
+        'risk_create',
+        'risk_update',
+        'risk_fetch_multiple',
+        'risk_get',
     ];
 
     public static $proxy = [
@@ -1112,6 +1121,7 @@ final class Route
         'adj_add',
         'payment_authorize_refund',
         'admin_change_password',
+        'pricing_create_plan',
     ];
 
     public static $routePermission = [
@@ -1231,6 +1241,8 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'invitation_fetch'                 => '*',
+        'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
     ];
 
     public static $direct = [

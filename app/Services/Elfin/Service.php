@@ -5,8 +5,8 @@ namespace RZP\Services\Elfin;
 use Illuminate\Config\Repository as Config;
 
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 
 /**
  * This service is available throughout application.
@@ -35,7 +35,7 @@ class Service extends Impl\Base
 
     protected $allowFallback;
 
-    public function __construct(Config $config, Trace $trace)
+    public function __construct(Config $config, Logger $trace)
     {
         $this->config        = $config->get('applications.elfin');
         $this->trace         = $trace;

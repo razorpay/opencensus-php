@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Anchor;
 use RZP\Models\Schedule\Period;
 
@@ -24,7 +25,7 @@ class Promotion extends Base
 
     public function createRecurring(array $attributes = [])
     {
-        $day = Carbon::now('Asia/Kolkata');
+        $day = Carbon::now(Timezone::IST);
 
         $anchor = $day->{Anchor::CHECKS[Period::MONTHLY]};
 

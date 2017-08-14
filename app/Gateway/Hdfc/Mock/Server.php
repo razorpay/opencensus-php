@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
@@ -488,7 +489,7 @@ class Server extends Base\Mock\Server
 
     protected function getPostDateForToday()
     {
-        return (new Carbon('now', 'Asia/Kolkata'))->format('md');
+        return (new Carbon('now', Timezone::IST))->format('md');
     }
 
     protected function getNewPaymentId()

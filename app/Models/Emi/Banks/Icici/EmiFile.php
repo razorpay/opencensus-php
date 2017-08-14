@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Base\UniqueIdEntity;
@@ -93,7 +94,7 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d/m/Y');
     }
 
     protected function generateEmiFile(array $emiData, array $metadata = [])
@@ -112,7 +113,7 @@ class EmiFile extends Base\EmiFile
     {
         $count = count($data);
 
-        $date = Carbon::now('Asia/Kolkata')->format('dmY');
+        $date = Carbon::now(Timezone::IST)->format('dmY');
 
         $fileToWriteName = 'icici/outgoing/Razorpay_ICICIEMI_' . $date . '_' . $count;
 

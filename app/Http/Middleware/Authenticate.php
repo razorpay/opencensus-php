@@ -54,8 +54,6 @@ class Authenticate
         if ((in_array($route, Route::$internal, true)) or
             (in_array($route, Route::$admin, true)))
         {
-            $this->throttleRequests(Type::ADMIN_AUTH);
-
             $ret = $ba->appAuth();
         }
         else if (in_array($route, Route::$private, true))

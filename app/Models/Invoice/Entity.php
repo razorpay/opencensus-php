@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
     const BATCH_IDS                = 'batch_ids';
+    const TYPES                    = 'types';
 
     // ---------------------- Input Keys End -------------------------
 
@@ -1026,7 +1028,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)
+            $dueBy = Carbon::now(Timezone::IST)->addDays(self::DEFAULT_DUE_DAYS)
                                                 ->timestamp;
         }
 

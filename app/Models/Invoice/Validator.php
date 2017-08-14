@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Base;
 use RZP\Models\Feature;
@@ -552,7 +553,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        $now = Carbon::now('Asia/Kolkata');
+        $now = Carbon::now(Timezone::IST);
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
         if ($invoice->getExpireBy() < $minExpireBy->timestamp)

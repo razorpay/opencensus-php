@@ -12,6 +12,7 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const RISK                  = 'risk';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
@@ -63,6 +64,7 @@ class Table
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';

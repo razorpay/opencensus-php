@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
@@ -123,7 +124,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];
@@ -163,7 +164,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];
@@ -203,7 +204,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];

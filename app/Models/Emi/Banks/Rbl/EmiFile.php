@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Rbl;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
@@ -84,6 +85,6 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-M-y');
     }
 }

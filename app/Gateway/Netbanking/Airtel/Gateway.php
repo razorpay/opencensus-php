@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Airtel;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -413,7 +414,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate($input)
     {
-        $date = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
+        $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                                             ->format(self::TIME_FORMAT);
 
         return $date;

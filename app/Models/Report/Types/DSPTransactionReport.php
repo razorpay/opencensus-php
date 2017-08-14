@@ -4,6 +4,7 @@ namespace RZP\Models\Report\Types;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity as E;
 use RZP\Mail\Report\DSPReport as DSPMail;
@@ -238,7 +239,7 @@ class DSPTransactionReport extends BasicEntityReport
         $ts = $txn->source->getCreatedAt();
 
         // Format dd/mm/yyyy hh:mm,
-        $txnDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
+        $txnDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                          ->format('d/m/Y H:i:s');
 
         return $txnDate;
@@ -278,11 +279,11 @@ class DSPTransactionReport extends BasicEntityReport
             // cron
             if ($input['day'] === 'today')
             {
-                $date = Carbon::today('Asia/Kolkata')->startOfDay();
+                $date = Carbon::today(Timezone::IST)->startOfDay();
             }
             else if ($input['day'] === 'yesterday')
             {
-                $date = Carbon::yesterday('Asia/Kolkata')->startOfDay();
+                $date = Carbon::yesterday(Timezone::IST)->startOfDay();
             }
             else
             {
@@ -292,7 +293,7 @@ class DSPTransactionReport extends BasicEntityReport
                 $month = (int) $input['month'];
                 $year = (int) $input['year'];
 
-                $date = Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata')
+                $date = Carbon::createFromDate($year, $month, $day, Timezone::IST)
                               ->startOfDay();
             }
 
@@ -309,19 +310,19 @@ class DSPTransactionReport extends BasicEntityReport
             assertTrue($month > 0);
             assertTrue($month <= 12);
 
-            $from = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+            $from = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                           ->startOfDay()
                           ->timestamp;
 
-            $to = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+            $to = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
                         ->timestamp;
         }
         else
         {
-            $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+            $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
-            $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+            $to = Carbon::today(Timezone::IST)->timestamp - 1;
 
             if (isset($input['from']) === true)
             {
@@ -364,19 +365,19 @@ class DSPTransactionReport extends BasicEntityReport
     {
         list($from, $to) = $this->getTimestamps($input);
 
-        $fdate = Carbon::createFromTimestamp($from, 'Asia/Kolkata')->format('Y-m-d');
+        $fdate = Carbon::createFromTimestamp($from, Timezone::IST)->format('Y-m-d');
 
-        $tdate = Carbon::createFromTimestamp($to, 'Asia/Kolkata')->format('Y-m-d');
+        $tdate = Carbon::createFromTimestamp($to, Timezone::IST)->format('Y-m-d');
 
-        $fdateTime = Carbon::createFromTimestamp($from, 'Asia/Kolkata')->format('Y-m-d H:i');
+        $fdateTime = Carbon::createFromTimestamp($from, Timezone::IST)->format('Y-m-d H:i');
 
-        $tdateTime = Carbon::createFromTimestamp($to, 'Asia/Kolkata')->format('Y-m-d H:i');
+        $tdateTime = Carbon::createFromTimestamp($to, Timezone::IST)->format('Y-m-d H:i');
 
         if ((isset($input['day']) === true) and
             ($input['day'] === 'today'))
         {
             // $from and $to would be 00:00 to 23:59. In the message body we need to send time as 12:59
-            $tdateTime = Carbon::create(null, null, null, 12, 59, 59, 'Asia/Kolkata')->format('Y-m-d H:i');
+            $tdateTime = Carbon::create(null, null, null, 12, 59, 59, Timezone::IST)->format('Y-m-d H:i');
         }
 
         $data = [

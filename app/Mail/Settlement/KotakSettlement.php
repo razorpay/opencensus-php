@@ -3,6 +3,7 @@
 namespace RZP\Mail\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 
 class KotakSettlement extends Base
@@ -54,7 +55,7 @@ class KotakSettlement extends Base
 
     protected function getSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = "Kotak Settlement files for $today";
 

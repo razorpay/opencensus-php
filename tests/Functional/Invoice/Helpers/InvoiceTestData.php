@@ -2405,6 +2405,35 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesByTypes' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [
+                'types' => ['link', 'ecod'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 3,
+                'items' => [
+                    [
+                        'id'   => 'inv_1000003invoice',
+                        'type' => 'ecod',
+                    ],
+                    [
+                        'id'   => 'inv_1000002invoice',
+                        'type' => 'ecod',
+                    ],
+                    [
+                        'id'   => 'inv_1000001invoice',
+                        'type' => 'link',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testGetMultipleInvoicesOnlyEsFields' => [
         'request' => [
             'url'     => '/invoices',

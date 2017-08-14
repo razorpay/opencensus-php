@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Kotak;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Config;
 use Mail;
 use RZP\Constants\Mode;
@@ -91,7 +92,7 @@ class ReconciliationTest extends TestCase
     {
         Mail::fake();
         // Mocking time to 22:30 for settlements to get processed
-        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, 'Asia/Kolkata'));
+        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, Timezone::IST));
 
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -295,7 +296,7 @@ class ReconciliationTest extends TestCase
         $txtFile1 = $this->createSettlementsAndSettlementFile(3);
 
         // Added so that a new file name is created for next settlement
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addSecond();
         Carbon::setTestNow($currentTime);
 

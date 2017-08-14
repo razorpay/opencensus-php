@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -1219,6 +1220,18 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleInvoicesByTypes()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createDraftInvoice();
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
+
+        $this->startTest();
+    }
+
     // -------------------------------------------------------------------------
     // Following tests asserts working of es fetch in various cases.
     //
@@ -1446,7 +1459,7 @@ class InvoiceTest extends TestCase
         $this->createOrder();
         $this->fixtures->create('invoice');
 
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addDays(18);
         Carbon::setTestNow($currentTime);
 
