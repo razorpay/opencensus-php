@@ -518,6 +518,8 @@ return [
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 
+        'refund_verify_failed'              => 'refunds/{id}/retry',
+
         // Tags
         'merchant_tag_add'                  => 'merchants/{id}/tags',
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
