@@ -19,13 +19,6 @@ abstract class Base extends Core
 
     protected $data;
 
-    public function __construct(File\Entity $gatewayFile)
-    {
-        parent::__construct();
-
-        $this->gatewayFile = $gatewayFile;
-    }
-
     /**
      * We perform the following steps to process the gateway_file entity
      * 1. Generate the required data
@@ -33,8 +26,9 @@ abstract class Base extends Core
      * 3. Send the mail to gateway
      * Each of the steps needs to be implemented for respective child classes
      */
-    public function process()
+    public function process(File\Entity $gatewayFile)
     {
+        $this->gatewayFile = $gatewayFile;
         // We check if the gateway file entity is at a state where it can be processed
         // again
         if ($this->canProcess() === false)

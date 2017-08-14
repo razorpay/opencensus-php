@@ -22,7 +22,7 @@ class ProcessorFactory
         return self::$processors[$processorClass] = new $processorClass($gatewayFile);
     }
 
-    protected static function getProcessorClass(string $type, string $gateway, string $bank)
+    public static function getProcessorClass(string $type, string $gateway, string $bank)
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 

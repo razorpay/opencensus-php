@@ -991,7 +991,6 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
-        'gateway_create_file',
         'gateway_file_create',
         'gateway_file_retry',
         'gateway_files_generate',

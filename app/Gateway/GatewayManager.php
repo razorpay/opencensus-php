@@ -19,6 +19,8 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected $recons = [];
 
+    protected $fileProcessors = [];
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -159,6 +161,20 @@ class GatewayManager extends \Illuminate\Support\Manager
         $this->recons[$driver] = $recon;
 
         return $recon;
+    }
+
+    public function getFileProcessor(string $driver)
+    {
+        if (isset($this->fileProcessors[$driver]) === true)
+        {
+            return $this->fileProcessors[$driver];
+        }
+
+        $processor = new $driver;
+
+        $this->fileProcessors[$driver] = $processor;
+
+        return $this->fileProcessors[$driver];
     }
 
     public function getServerClass($driver)
