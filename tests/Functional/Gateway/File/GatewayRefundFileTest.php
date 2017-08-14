@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Gateway\File\ProcessorFactory;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
@@ -241,8 +240,6 @@ class GatewayRefundFileTest extends TestCase
         $this->markTestSkipped();
         $this->testRefundFileProcessorWithFileGenerationError();
 
-        ProcessorFactory::flushProcessors();
-
         Mockery::close();
         Mail::fake();
 
@@ -286,8 +283,6 @@ class GatewayRefundFileTest extends TestCase
     public function testRefundFileMailSendErrorRetryProcessing()
     {
         $this->testRefundFileProcessingWithMailSendError();
-
-        ProcessorFactory::flushProcessors();
 
         Mail::fake();
 
