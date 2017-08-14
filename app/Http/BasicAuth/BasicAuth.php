@@ -1340,4 +1340,19 @@ class BasicAuth
                 return false;
         }
     }
+
+    public function validateSuperAdminAccess()
+    {
+        $admin = $this->getAdmin();
+
+        if ($admin->isSuperAdmin() === false)
+        {
+            $data = ['admin_id' => $admin->getId()];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
+                null,
+                $data);
+        }
+    }
 }

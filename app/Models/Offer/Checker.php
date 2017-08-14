@@ -65,9 +65,14 @@ class Checker extends Base\Core
     {
         $paymentMethod = $this->payment->getMethod();
 
-        $checkerFunction = 'check' . studly_case($paymentMethod);
+        if ($paymentMethod === $this->offer->getPaymentMethod())
+        {
+            $checkerFunction = 'check' . studly_case($paymentMethod);
 
-        return $this->$checkerFunction();
+            return $this->$checkerFunction();
+        }
+
+        return false;
     }
 
     protected function checkWallet()
