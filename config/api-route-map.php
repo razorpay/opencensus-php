@@ -100,6 +100,7 @@ return [
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        'pricing_create_plan'               => 'pricing',
     ],
 
     // auth
@@ -498,7 +499,6 @@ return [
         'pricing_get_merchant_plans'        => 'pricing/merchants',
         'pricing_get_plan'                  => 'pricing/{id}',
         'pricing_add_plan_rule'             => 'pricing/{id}/rule',
-        'pricing_create_plan'               => 'pricing',
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
 
@@ -513,6 +513,8 @@ return [
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
         // Generate Refunds Excel
         'refund_generate_excel'             => 'refunds/excel',
+        // Generate Emi Excel
+        'emi_generate_excel'                => 'emi/generate/excel',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 
