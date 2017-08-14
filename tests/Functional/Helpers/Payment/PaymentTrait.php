@@ -1406,7 +1406,7 @@ trait PaymentTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new PaymentVerificationException(
+            throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_SKIP);
@@ -1417,7 +1417,7 @@ trait PaymentTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new FatalThrowableError();
+            throw new Exception\FatalThrowableError();
         });
     }
 
@@ -1425,7 +1425,7 @@ trait PaymentTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new GatewayTimeoutException(
+            throw new Exception\GatewayTimeoutException(
                 'cURL error 28: Operation timed out after ' .
                 '10001 milliseconds with 0 bytes received');
         });
@@ -1435,7 +1435,7 @@ trait PaymentTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new PaymentVerificationException(
+            throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_RETRY);
@@ -1446,7 +1446,7 @@ trait PaymentTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new PaymentVerificationException(
+            throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED);
