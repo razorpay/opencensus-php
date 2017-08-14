@@ -45,57 +45,6 @@ trait PaymentEbsTrait
         });
     }
 
-    public function getFatalErrorInVerify()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new FatalThrowableError();
-        });
-    }
-
-    public function getTimeoutInVerify()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new GatewayTimeoutException(
-                'cURL error 28: Operation timed out after ' .
-                '10001 milliseconds with 0 bytes received');
-        });
-    }
-
-    public function getVerificationSkipError()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new PaymentVerificationException(
-                ['test' => 'test'],
-                '',
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_SKIP);
-        });
-    }
-
-    public function getVerificationRetryError()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new PaymentVerificationException(
-                ['test' => 'test'],
-                '',
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_RETRY);
-        });
-    }
-
-    public function getVerificationBlockError()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new PaymentVerificationException(
-                ['test' => 'test'],
-                '',
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED);
-        });
-    }
-
     public function getErrorInCallback()
     {
         $this->mockServerContentFunction(function (& $content)
