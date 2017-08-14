@@ -897,7 +897,7 @@ class BasicAuth
         ];
 
         // Gets all headers with 'X-Dashboard' as prefix and assign them to a
-        // key(with prefix removed) in $this->dashboardHeaders.
+        // snake cased key (with prefix removed) in $this->dashboardHeaders.
 
         $dashHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
 
