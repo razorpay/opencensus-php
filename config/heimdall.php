@@ -135,6 +135,7 @@ return [
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT => '',
             Permission::VIEW_REFUND_PAYMENTS => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT => '',
+            Permission::RETRY_REFUND_FAILED => '',
             Permission::EDIT_PAYMENT_REFUND => '',
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [
