@@ -39,7 +39,7 @@ export default class ListContainer extends Component {
   }
 
   fetchAll = (params = {}) => {
-    params = { ...params, ...this.getDefaultPageParams() };
+    params = { ...this.getDefaultPageParams(), ...params };
     if (params) {
       this.setState(params);
     }
