@@ -776,7 +776,6 @@ angular
     'statusClass',
     function(isStatusKey, statusClass) {
       return function(key, value) {
-        console.log('IS STATUS KEY...', key, value);
         if (isStatusKey(key, value)) {
           return 'label ' + statusClass(value);
         }

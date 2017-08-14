@@ -50,14 +50,19 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   display: none;
 }
 
+.select2-container--classic .select2-selection--single .select2-selection__arrow {
+  height: 96%;
+}
+
+
+.select2-container--disabled {
+  background-color: #eee;
+}
+
 .select2-container .select2-selection--single .select2-selection__rendered {
   padding: 0 15px;
   width: 100%;
   line-height: 34px;
-
-  .select2-selection__arrow {
-    height: 96%;
-  }
 }
 
 .select2-search--dropdown {
@@ -919,4 +924,20 @@ a.highlight:hover, a.highlight:focus {
   display: table-cell;
   padding: 0 8px;
   vertical-align:bottom;
+}
+
+.inactive {
+  opacity: 0.5;
+}
+
+
+/* Use this class on parent when using float prpoerty on element*/
+.clearfix {
+  overflow: auto;
+
+  &:after {
+    clear: both;
+    content: '';
+    display: table;
+  }
 }

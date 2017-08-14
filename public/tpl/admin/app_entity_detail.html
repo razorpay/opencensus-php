@@ -14,16 +14,16 @@
   </div>
     <div class="row wrapper">
       <div class="list-group">
-        <div class="list-group-item" ng-repeat="(key, value) in entity"
+        <div class="list-group-item clearfix" ng-repeat="(key, value) in entity"
              ng-init="valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}">
+          {{key|titlecase}}
           <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
             {{displayValue(key, value, entity)}}
           </span>
-          {{key|titlecase}}
         </div>
         <div class="list-group-item" style="overflow:auto;">
-          <pre class="col-lg-8 pull-right">{{toJson(entity)}}</pre>
           Raw
+          <pre class="col-lg-12">{{toJson(entity)}}</pre>
         </div>
       </div>
     </div>
