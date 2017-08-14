@@ -287,14 +287,16 @@ class Repository extends Base\Repository
     /**
      * Return Payments object(s) which should be verified
      *
-     * @param array  $minMaxArray    Min/Max array
-     * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string $verifyStatus   value for filter of VerifyStatus
-     * @param string $paymentStatus  value for filter of paymentStatus
-     * @param bool   $random         Db should take param in random value or not
-     * @param int    $rowsToFetch    Rows to fetch
+     * @param array        $minMaxArray    Min/Max array
+     * @param array|string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
+     * @param string       $verifyStatus   value for filter of VerifyStatus
+     * @param string       $paymentStatus  value for filter of paymentStatus
+     * @param bool         $random         Db should take param in random value or not
+     * @param int          $rowsToFetch    Rows to fetch
      *
-     * @return Collection of Payment
+     * @param array        $disabledGateways
+     *
+     * @return array
      */
     public function getPaymentsToVerify(
                         array $minMaxArray,
@@ -307,7 +309,7 @@ class Repository extends Base\Repository
     {
         $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
 
-        $verifyDisabledGateways = array_merge ($verifyDisabledGateways, $disabledGateways);
+        $verifyDisabledGateways = array_merge($verifyDisabledGateways, $disabledGateways);
 
         $query = $this->newQuery()
                       ->whereNotNull(Payment\Entity::GATEWAY)

@@ -175,7 +175,6 @@ class Verify extends Base\Core
      */
     public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
     {
-
         $verifyFetchStartTime = time();
 
         Filter::isValidFilter($filter);
@@ -221,7 +220,8 @@ class Verify extends Base\Core
             }
         }
 
-        $disabledGateways = $this->getBlockedGateway();
+        $disabledGateways = $this->getBlockedGateways();
+
         //
         // We Fetch Twice the number of required payments,
         // and filtering extra payments in later stage
@@ -532,7 +532,7 @@ class Verify extends Base\Core
         );
     }
 
-    protected function getBlockedGateway()
+    protected function getBlockedGateways()
     {
         $blockedGateways = [];
 
