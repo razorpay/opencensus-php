@@ -65,7 +65,14 @@ module.exports = (commonConfig, isProd) => {
         },
       ],
     },
-    plugins: [new AdminRevPlugin()],
+    plugins: [
+      new AdminRevPlugin(),
+      new webpack.DefinePlugin({
+        'process.env': {
+          RZP_ADMIN: true,
+        },
+      }),
+    ],
   };
 
   return webpackMerge(commonConfig, adminConfig);

@@ -377,7 +377,6 @@ return [
             'url'       => 'invitations/{id}',
             'routeName' => 'invitations_delete'
         ],
-        'invitation_fetch'                  => 'invitations',
 
         // Virtual Accounts
         'virtual_account_fetch_multiple'    => [
@@ -476,6 +475,7 @@ return [
         // Offer create / update
         'offer_create'                      => 'offers',
         'offer_update'                      => 'offers/{id}',
+        'invitation_fetch'                  => 'invitations',
     ],
 
     // auth

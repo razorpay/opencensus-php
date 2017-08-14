@@ -1,5 +1,3 @@
-import './EmptyTableRow.styl';
-
 export default props => {
   return (
     <tr>
