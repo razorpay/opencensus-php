@@ -51,9 +51,7 @@ class Core extends Base\Core
         $gateway = $gatewayFile->getGateway();
         $bank = $gatewayFile->getBank();
 
-        $driver = ProcessorFactory::getProcessorClass($type, $gateway, $bank);
-
-        $processor = $this->app['gateway']->getFileProcessor($driver);
+        $processor = $this->app['gateway']->getFileProcessor($type, $gateway, $bank);
 
         $processor->process($gatewayFile);
     }
