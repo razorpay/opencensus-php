@@ -17,4 +17,5 @@ class RequestFields
     const VERIFY_AMOUNT                 = 'amt';
     const VERIFY_BANK_REF_NUMBER        = 'bankrefno';
     const VERIFY_MODE_OF_TRANSACTION    = 'md';
+    const VERIFY_ACCOUNT_NUMBER         = 'bracctno';
 }

@@ -292,6 +292,7 @@ return [
 
     'netbanking_corporation' => [
         'test_merchant_id'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'netbanking_kotak' => [

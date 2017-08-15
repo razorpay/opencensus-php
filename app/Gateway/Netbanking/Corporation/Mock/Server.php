@@ -28,6 +28,11 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    public function verify($input)
+    {
+        sd($input);
+    }
+
     protected function getCallbackResponseData($input)
     {
         return [

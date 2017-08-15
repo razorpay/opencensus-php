@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
+use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
@@ -123,20 +124,30 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData(array $input)
     {
-        $encryptedData = [
+        $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
-            RequestFields::VERIFY_PAYMENT_ID            => $verify->input['payment']['id'],
-            RequestFields::VERIFY_AMOUNT                => $this->getMerchantId(),
-            RequestFields::VERIFY_BANK_REF_NUMBER       => $this->getMerchantId(),
-            RequestFields::VERIFY_MODE_OF_TRANSACTION   => $this->getMerchantId(),
+            RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
+            RequestFields::VERIFY_AMOUNT                => $input['payment']['amount'] / 100,
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $input['gateway'][ResponseFields::BANK_REF_NUMBER],
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => $input['gateway'][ResponseFields::MODE_OF_TRANSACTION],
+            RequestFields::VERIFY_ACCOUNT_NUMBER        => "",
         ];
 
+        $enccryptedString = $this->getEncryptor()->encryptData($data);
+
         $data = [
-            RequestFields::VERIFY_MERCHANT_CODE   => $this->getMerchantId(),
-            RequestFields::DATA => $this->getEncryptedData($input)
+            RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
+            RequestFields::VERIFY_DATA          => $enccryptedString
         ];
 
         return $data;
+    }
+
+    protected function getEncryptor()
+    {
+        $secret = $this->getSecret();
+
+        return new Encryptor(AES::MODE_ECB, $secret);
     }
 
     protected function getPaymentRequestData($input)
@@ -170,6 +181,8 @@ class Gateway extends Base\Gateway
 
         return $mid;
     }
+
+
 
     /**
      * In this case, we have added a custom callback route.
