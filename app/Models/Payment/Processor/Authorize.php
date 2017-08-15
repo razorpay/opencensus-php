@@ -2408,11 +2408,20 @@ trait Authorize
 
     protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
     {
-        $invoice = $payment->order->invoice;
+        $invoice = $payment->invoice;
 
-        $data['razorpay_invoice_id']      = $invoice->getPublicId();
-        $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
-        $data['razorpay_invoice_status']  = $invoice->getStatus();
+        //
+        // Need to refresh invoice entity as in recordCapture() method
+        // post authorization order's invoice association gets updated.
+        // And not payment's invoice association. Also there that's
+        // needed(using order's invoice) as invoice inherits amount_paid
+        // and stuff from order associated.
+        //
+
+        $invoice->refresh();
+
+        $data['razorpay_invoice_id']     = $invoice->getPublicId();
+        $data['razorpay_invoice_status'] = $invoice->getStatus();
 
         $data['razorpay_signature'] = $this->getSignature($data);
     }

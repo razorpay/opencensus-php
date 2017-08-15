@@ -2349,4 +2349,4 @@ ALTER TABLE fund_transfer_attempts
 
 ALTER TABLE invoices
     ADD COLUMN callback_url TEXT AFTER group_taxes_discounts,
-    ADD COLUMN callback_url VARCHAR(16) DEFAULT NULL AFTER callback_url;
+    ADD COLUMN callback_method VARCHAR(16) DEFAULT NULL AFTER callback_url;
