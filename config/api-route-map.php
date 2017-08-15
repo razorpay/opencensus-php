@@ -541,6 +541,7 @@ return [
 
         // Payment Dispute
         'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
