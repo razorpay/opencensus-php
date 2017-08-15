@@ -29,6 +29,8 @@ class Entity extends Base\PublicEntity
     const GATEWAY_REFUNDED       = 'gateway_refunded';
     const REFERENCE1             = 'reference1';
     const REFERENCE2             = 'reference2';
+    //merchant reference number for refund if provided by merchant
+    const RECEIPT                = 'receipt';
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
@@ -96,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
+        self::RECEIPT           => null,
     ];
 
     protected $casts = [
@@ -393,6 +396,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setReceipt(string $value)
+    {
+        $this->setAttribute(self::RECEIPT, $value);
     }
 
     public function setUtr(string $value)

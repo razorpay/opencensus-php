@@ -2344,3 +2344,6 @@ ALTER TABLE gateway_rules
 
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
+
+ALTER TABLE refunds
+    ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER reference1;

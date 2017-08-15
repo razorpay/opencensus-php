@@ -64,6 +64,9 @@ class CreateRefunds extends Migration
             $table->string(Payment::REFERENCE2)
                   ->nullable();
 
+            $table->string(Refund::RECEIPT)
+                  ->nullable();
+
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
@@ -73,6 +76,8 @@ class CreateRefunds extends Migration
             $table->index(Refund::CREATED_AT);
             $table->index(Refund::LAST_ATTEMPTED_AT);
             $table->index(Refund::REFERENCE1);
+
+            $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant::ID)
