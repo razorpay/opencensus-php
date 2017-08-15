@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Corporation;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
@@ -61,7 +62,83 @@ class Gateway extends Base\Gateway
         );
 
         $this->checkCallbackStatus($content);
+
+        // If callback status was a success, we verify the payment immediately
+        $this->verifyCallback($input);
         sd($content);
+    }
+
+    /**
+     * Verifying the payment after callback response is saved to
+     * prevent user tampering with the data while making a payment.
+     */
+    protected function verifyCallback(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $content = $this->getVerifyRequestData($verify->input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'request'    => $request,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
+
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+    }
+
+    protected function getVerifyRequestData(array $input)
+    {
+        sd($input)
+        $encryptedData = [
+            RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
+            RequestFields::VERIFY_PAYMENT_ID            => $verify->input['payment']['id'],
+            RequestFields::VERIFY_AMOUNT                => $this->getMerchantId(),
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $this->getMerchantId(),
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => $this->getMerchantId(),
+        ];
+
+        $data = [
+            RequestFields::VERIFY_MERCHANT_CODE   => $this->getMerchantId(),
+            RequestFields::DATA => $this->getEncryptedData($input)
+        ];
+
+        return $data;
     }
 
     protected function getPaymentRequestData($input)
