@@ -27,6 +27,8 @@
         </div>
       </div>
     </div>
+
+   <!--Entity Terminal-->
     <div class="panel-footer row"
          ng-class="{'text-center': hasRetryRefund}"
          ng-show="entity.entity == 'terminal' || hasRetryRefund">
@@ -98,6 +100,16 @@
       </div>
     </div>
 
+     <!-- Entity: Dispute -->
+    <div class="panel-footer row" ng-show="loadType === 'dispute' && admin.permissions">
+      <div class="text-left m-b" role="group" style="text-align: center" aria-label="Dispute Actions">
+        <button class="btn btn-rounded approved-bg-color" style="color: white;"
+                ng-disabled="['won', 'lost'].indexOf(entity.status) !== -1"
+                ng-click="open.disputeEdit(entity)">
+          Edit Dispute
+        </button>
+      </div>
+    </div>
 
     <div class="panel-footer row" ng-show="entity.entity == 'iin'">
       <div class="btn-group text-left" role="group"
@@ -207,7 +219,10 @@
   </div>
 </script>
 
+<!--Dispute Modal-->
+<ng-include src="'/tpl/admin/dispute_modal.html'"></ng-include>
 
+<!--Edit Terminal-->
 <script type="text/ng-template" id="editTerminal.html">
   <div class="modal-header">
     <h3 class="modal-title">Edit Terminal</h3>
