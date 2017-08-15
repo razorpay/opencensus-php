@@ -65,7 +65,6 @@ class Gateway extends Base\Gateway
 
         // If callback status was a success, we verify the payment immediately
         $this->verifyCallback($input);
-        sd($content);
     }
 
     /**
@@ -124,7 +123,6 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData(array $input)
     {
-        sd($input)
         $encryptedData = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $verify->input['payment']['id'],
