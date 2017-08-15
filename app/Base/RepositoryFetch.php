@@ -118,7 +118,7 @@ trait RepositoryFetch
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
-        $this->getProcessedFetchParams($params);
+        $this->processFetchParams($params);
 
         $query = $this->newQuery();
 
@@ -361,7 +361,7 @@ trait RepositoryFetch
                           ->validate();
     }
 
-    protected function getProcessedFetchParams(array & $params)
+    protected function processFetchParams(array & $params)
     {
         $params = $this->unsetEmptyParams($params);
 
