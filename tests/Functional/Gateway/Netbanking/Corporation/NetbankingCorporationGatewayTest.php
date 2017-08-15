@@ -28,14 +28,34 @@ class NetbankingCorporationGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->doAuthAndCapturePayment($this->payment);
+        $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
 
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
+        $payment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $payment);
+
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+    }
+
+    protected function doNetbankingCorporationAuthAndCapturePayment($order = [])
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'CORP';
+
+        if (empty($order) === false)
+        {
+            $payment['order_id'] = $order['id'];
+        }
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        return $payment;
     }
 }
