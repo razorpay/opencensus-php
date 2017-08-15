@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "cff5964032a7a9f94abf14805194582a",
+    "content-hash": "e1f69504c0e25d0eed6d7d53040574dd",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -4835,12 +4835,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "723ab27bd33353059991b00d64e768893924f1d1"
+                "reference": "1183d28b08f6665e74c34c337551788770aa4b60"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/723ab27bd33353059991b00d64e768893924f1d1",
-                "reference": "723ab27bd33353059991b00d64e768893924f1d1",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/1183d28b08f6665e74c34c337551788770aa4b60",
+                "reference": "1183d28b08f6665e74c34c337551788770aa4b60",
                 "shasum": ""
             },
             "require": {
@@ -4878,24 +4878,23 @@
                 "source": "https://github.com/razorpay/spine/tree/laravel5.4_expands_test",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-07-03T03:54:18+00:00"
+            "time": "2017-08-15T12:01:26+00:00"
         },
         {
             "name": "razorpay/trace",
-            "version": "dev-refactor",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "00536203c7d70c038f15edc599f4f74b9deddedd"
+                "reference": "ab1463c5db336a7703c7df7ed0644eddc7845cb2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/00536203c7d70c038f15edc599f4f74b9deddedd",
-                "reference": "00536203c7d70c038f15edc599f4f74b9deddedd",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/ab1463c5db336a7703c7df7ed0644eddc7845cb2",
+                "reference": "ab1463c5db336a7703c7df7ed0644eddc7845cb2",
                 "shasum": ""
             },
             "require": {
-                "ext-mcrypt": "*",
                 "ext-openssl": "*",
                 "ext-phar": "*",
                 "illuminate/support": "5.*",
@@ -4905,14 +4904,17 @@
             },
             "require-dev": {
                 "codacy/coverage": "dev-master",
+                "kint-php/kint": "^2.1",
                 "phpunit/phpunit": "^4.7",
                 "zendframework/zend-diactoros": "dev-master"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Razorpay\\Trace\\": "src/",
-                    "Razorpay\\Trace\\Tests\\": "tests/"
+                    "Razorpay\\Trace\\": [
+                        "src/",
+                        "tests/"
+                    ]
                 }
             },
             "license": [
@@ -4932,12 +4934,17 @@
                     "email": "vivek@razorpay.com"
                 }
             ],
-            "description": "Logging solution for razorpay projects, uses monolog",
+            "description": "Logging solution for razorpay projects",
+            "keywords": [
+                "log",
+                "monolog",
+                "trace"
+            ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/refactor",
+                "source": "https://github.com/razorpay/trace/tree/2.0.1",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-07-27T10:01:39+00:00"
+            "time": "2017-08-14T09:26:35+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -8270,7 +8277,6 @@
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
-        "razorpay/trace": 20,
         "codacy/coverage": 20
     },
     "prefer-stable": false,
