@@ -265,7 +265,9 @@
           >View as Entity
           </a>
           <div style="margin-top: 35px;" role="group" aria-label="Payment Detail Actions">
-            <button class="btn btn-default btn-rounded btn-danger" ng-click="openDisputeModal()">Create Dispute</button>
+            <button ng-if="!entity.disputed" class="btn btn-default btn-rounded btn-danger" ng-click="openDisputeModal()">
+              Create Dispute
+            </button>
           </div>
         </div>
       </div>
@@ -324,129 +326,4 @@
 </script>
 
 
-<!--Create dispute form-->
-<script type="text/ng-template" id="disputeModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Create Dispute</h3>
-  </div>
-  <div class="modal-body">
-    <form class="form-horizontal" name="createDisputeForm">
-
-      <!--Gate Dispute Id-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label">Gateway Dispute Id:</label>
-        <div class="col-lg-9">
-          <input type="text" class="form-control m-b" ng-model="dispute.gateway_dispute_id" ng-required="true" />
-        </div>
-      </div>
-
-      <!--Gateway Dispute Status-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label">Gateway Dispute Status:</label>
-        <div class="col-lg-9">
-          <input type="text" class="form-control m-b" ng-model="dispute.gateway_dispute_status" ng-required="true">
-        </div>
-      </div>
-
-      <!--Phase-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label">Phase:</label>
-        <div class="col-lg-9" >
-          <select class="form-control m-b" ng-model="dispute.phase" required>
-            <option></option>
-            <option value="chargeback">Chargeback</option>
-            <option value="pre_arbitration">Pre Arbitration</option>
-            <option value="arbitration">Arbitration</option>
-          </select>
-        </div>
-      </div>
-
-      <!--Raised on Date-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label" style="display:table-cell; vertical-align: middle">
-          Raised on:
-        </label>
-        <div class="col-lg-9" style="display:table;">
-          <!--Date picker-->
-          <div style="display: table-cell; vertical-align: middle">
-            <div class="input-group input-date col-lg-3" name="raised_on"
-                 ng-click="date.open($event, 1)">
-
-              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
-                     ng-model="dispute.raised_on"
-                     is-open="date.opened.1"
-                     datepicker-options="dateRaised.dateOptions"
-                     close-text="Close"
-                     ng-required="true" />
-              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!--Expires on Date-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label" style="display:table-cell; vertical-align: middle">
-          Expires on:
-        </label>
-        <div class="col-lg-9" style="display:table;">
-          <!--Date picker-->
-          <div style="display: table-cell; vertical-align: middle">
-            <div class="input-group input-date col-lg-3" name="expires_on"
-                 ng-click="date.open($event, 0)">
-
-              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
-                     ng-model="dispute.expires_on"
-                     is-open="date.opened.0"
-                     datepicker-options="date.dateOptions"
-                     close-text="Close"
-                     ng-required="true"/>
-              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!--Reason Id-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label">Reason Id:</label>
-        <div class="col-lg-9">
-          <!-- Role Selection -->
-          <select class="select2 role-select2" style="width: 100%" ng-model="dispute.reason_id" role-select="Select a Reason Id" required>
-            <option></option>
-            <option ng-repeat="reason in reasonIds" value="{{reason.id}}">
-              ({{reason.network}} - {{reason.gateway_code}}) : {{reason.code}}
-            </option>
-          </select>
-        </div>
-      </div>
-
-
-      <!--Amount-->
-      <div class="form-group">
-        <label class="col-lg-3 control-label">Amount:</label>
-        <div class="col-lg-9">
-          <div class="input-group">
-            <span class="input-group-addon">{{currency}}</span>
-            <input type="text" class="form-control m-b" ng-model="dispute.amount" ng-required="true">
-          </div>
-        </div>
-      </div>
-
-      <!--Deduct on Onset-->
-      <div class="form-group">
-        <label class="col-sm-3 control-label">Deduct at Onset:</label>
-        <div class="col-sm-8">
-          <input type="checkbox" class="form-control m-b" ng-model="dispute.deduct_at_onset" />
-        </div>
-      </div>
-
-      <!--Action Buttons-->
-      <div class="modal-footer">
-        <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-        <button class="btn btn-primary" ng-click="createDisputeForm.$valid && ok()">OK</button>
-      </div>
-
-    </form>
-  </div>
-</script>
+<ng-include src="'/tpl/admin/dispute_modal.html'"></ng-include>

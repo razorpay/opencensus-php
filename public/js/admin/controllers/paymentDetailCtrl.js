@@ -278,6 +278,8 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+
+      // Create dispute
       $scope.createDispute = function(data) {
         var params = {
           route_name: 'payment_disputes',
@@ -361,11 +363,8 @@ app
           templateUrl: 'disputeModalContent.html',
           controller: 'DisputeModalCtrl',
           resolve: {
-            currency: function() {
-              return $scope.entity.currency;
-            },
-            merchant_id: function() {
-              return $scope.entity.merchant_id;
+            current: function() {
+              return $scope.entity;
             },
           },
         });
@@ -503,98 +502,6 @@ app
           };
         }
         $modalInstance.close(data);
-      };
-      $scope.cancel = function() {
-        $modalInstance.dismiss('cancel');
-      };
-    },
-  ])
-  .controller('DisputeModalCtrl', [
-    '$scope',
-    '$http',
-    'dateFactory',
-    '$modalInstance',
-    'currency',
-    'merchant_id',
-    function(
-      $scope,
-      $http,
-      dateFactory,
-      $modalInstance,
-      currency,
-      merchant_id
-    ) {
-      // This is displayed with 2 decimal places
-      $scope.currency = currency;
-      $scope.dispute = {};
-
-      // Date options for Raised date
-      $scope.dateRaised = dateFactory.getHandler($scope);
-      $scope.dateRaised.dateOptions['showWeeks'] = false;
-      $scope.dateRaised.dateOptions['minDate'] = moment().subtract(2, 'years'); // Avoid selection of date before today
-      $scope.dateRaised.dateOptions['maxDate'] = moment(); // Avoid selection of date after today
-
-      // Date options
-      $scope.date = dateFactory.getHandler($scope);
-      $scope.date.dateOptions['showWeeks'] = false;
-      $scope.date.dateOptions['minDate'] = moment(); // Avoid selection of date before today
-
-      // Get offers of merchant to display in the list
-      function getReasonId() {
-        var data = {
-          route_name: 'admin_fetch_entity_multiple',
-          url_params: {
-            '{type}': 'dispute_reason',
-          },
-          mode: 'test',
-        };
-        var request = $http.get('/admin/generic', {
-          params: data,
-        });
-
-        request
-          .success(function(data) {
-            if (data.success || true) {
-              $scope.reasonIds = data.data.items;
-
-              var reasonInfo = '';
-              angular.forEach($scope.reasonIds, function(reason, index) {
-                reasonInfo =
-                  reasonInfo +
-                  (index + 1) +
-                  '. ' +
-                  reason.description +
-                  '<br />';
-              });
-
-              $scope.reasonIdInfo = '<pre>' + reasonInfo + '</pre>';
-            } else {
-              $scope.alerts.resetAlerts(true);
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
-              });
-            }
-          })
-          .error(function() {
-            $scope.alerts.resetAlerts(true);
-            $scope.alerts.addAlert('danger', null);
-          });
-      }
-
-      getReasonId();
-
-      function cleanFields() {
-        $scope.dispute.raised_on =
-          new Date($scope.dispute.raised_on).getTime() / 1000;
-        $scope.dispute.expires_on =
-          new Date($scope.dispute.expires_on).getTime() / 1000;
-        $scope.dispute.amount = $scope.dispute.amount * 100;
-        $scope.dispute.deduct_at_onset = $scope.dispute.deduct_at_onset ? 1 : 0;
-      }
-
-      $scope.ok = function() {
-        cleanFields();
-        $modalInstance.close($scope.dispute);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
