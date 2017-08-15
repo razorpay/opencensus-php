@@ -38,7 +38,7 @@
         "laravel/tinker": "1.0.1",
         "graham-campbell/throttle": "^5.3",
         "rtconner/laravel-tagging": "~2.2",
-        "razorpay/trace": "2.0.0"
+        "razorpay/trace": "~2.0"
     },
     "repositories": [
         {

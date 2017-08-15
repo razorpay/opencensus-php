@@ -1040,6 +1040,11 @@ class BasicAuth
         return $this->internalApp;
     }
 
+    public function isDashboardApp()
+    {
+        return ($this->internalApp === 'dashboard');
+    }
+
     public function isCron()
     {
         $cron = ($this->internalApp === 'cron');
