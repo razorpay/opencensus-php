@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
 
 /**
  * Base processor class defines the steps which need to be performed for processing
@@ -17,7 +18,7 @@ abstract class Base extends Core
 {
     protected $gatewayFile;
 
-    protected $data;
+    protected $data = [];
 
     /**
      * We perform the following steps to process the gateway_file entity
@@ -39,7 +40,9 @@ abstract class Base extends Core
 
         try
         {
-            $this->generateData();
+            $entites = $this->fetchEntities();
+
+            $this->generateData($entites);
 
             $this->createFile();
 
@@ -86,7 +89,9 @@ abstract class Base extends Core
 
     abstract protected function canProcess(): bool;
 
-    abstract public function generateData();
+    abstract public function fetchEntities(): PublicCollection;
+
+    abstract public function generateData(PublicCollection $entites): array;
 
     abstract public function createFile();
 

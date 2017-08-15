@@ -17,13 +17,20 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 trait GenerateRefundFile
 {
-    /**
-     * Fetches all necessary refund related data required for generating the file
-     * If no refunds are found, we throw an exception with the appropriate error message
-     */
-    public function generateData()
+    public function fetchEntities(): PublicCollection
     {
-        $refunds = $this->fetchRefunds();
+        $from = $this->gatewayFile->getFrom();
+        $to = $this->gatewayFile->getTo();
+        $gateway = $this->gatewayFile->getGateway();
+        $bank = $this->gatewayFile->getBank();
+
+        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
+                        $this->type,
+                        $bank,
+                        $from,
+                        $to,
+                        $gateway
+                    );
 
         if ($refunds->isEmpty() === true)
         {
@@ -31,23 +38,49 @@ trait GenerateRefundFile
                     FailureCode::NO_DATA_FOR_FILE_GENERATION);
         }
 
-        try
-        {
-            $this->data = $this->fetchAdditionalDataForFileGeneration($refunds);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                            $e,
-                            Trace::INFO,
-                            TraceCode::GATEWAY_FILE_DATA_GENERATION_ERROR,
-                            [
-                                'id' => $this->gatewayFile->getId()
-                            ]);
+        return $refunds;
+    }
 
-            throw new GatewayFileException(
-                FailureCode::ERROR_GENERATING_FILE_DATA);
+    /**
+     * Fetches all necessary refund related data required for generating the file
+     * If no refunds are found, we throw an exception with the appropriate error message
+     */
+    public function generateData(PublicCollection $refunds): array
+    {
+        $gateway = $this->gatewayFile->getGateway();
+
+        foreach ($refunds as $refund)
+        {
+            $payment = $refund->payment;
+            $terminal = $payment->terminal;
+
+            $col['refund'] = $refund->toArray();
+            $col['payment'] = $payment->toArray();
+            $col['terminal'] = $terminal->toArray();
+
+            $this->data[] = $col;
         }
+
+        $paymentIds = $refunds->pluck('payment_id')->toArray();
+
+        $gatewayEntities = $this->repo->$gateway->fetchByPaymentIdsAndAction(
+                            $paymentIds, Action::AUTHORIZE);
+
+        $gatewayEntities = $gatewayEntities->keyBy('payment_id');
+
+        $this->data = array_map(function($row) use ($gatewayEntities)
+        {
+            $paymentId = $row['payment']['id'];
+
+            if (isset($gatewayEntities[$paymentId]))
+            {
+                $row['gateway'] = $gatewayEntities[$paymentId]->toArray();
+            }
+
+            return $row;
+        }, $this->data);
+
+        return $this->data;
     }
 
     /**
@@ -95,13 +128,6 @@ trait GenerateRefundFile
                                 'id' => $this->gatewayFile->getId()
                             ]);
 
-            // If the file has been saved and failure happened post that
-            // we delete the file
-            if (isset($file) === true)
-            {
-                $this->repo->delete($file);
-            }
-
             throw new GatewayFileException(
                 FailureCode::ERROR_CREATING_FILE);
         }
@@ -138,71 +164,6 @@ trait GenerateRefundFile
             throw new GatewayFileException(
                 FailureCode::ERROR_SENDING_MAIL);
         }
-    }
-
-    protected function fetchRefunds()
-    {
-        $from = $this->gatewayFile->getFrom();
-        $to = $this->gatewayFile->getTo();
-        $gateway = $this->gatewayFile->getGateway();
-        $bank = $this->gatewayFile->getBank();
-
-        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                        $this->type,
-                        $bank,
-                        $from,
-                        $to,
-                        $gateway
-                    );
-
-        return $refunds;
-    }
-
-    /**
-     * Fetches associated data for refunds (like terminal, payment, gateway entity)
-     * and serializes them for use in file generation
-     *
-     * @param  PublicCollection $refunds Set of refunds to process
-     * @return array                    Serialized data
-     */
-    protected function fetchAdditionalDataForFileGeneration(PublicCollection $refunds): array
-    {
-        $gateway = $this->gatewayFile->getGateway();
-
-        $data = [];
-
-        foreach ($refunds as $refund)
-        {
-            $payment = $refund->payment;
-            $terminal = $payment->terminal;
-
-            $col['refund'] = $refund->toArray();
-            $col['payment'] = $payment->toArray();
-            $col['terminal'] = $terminal->toArray();
-
-            $data[] = $col;
-        }
-
-        $paymentIds = $refunds->pluck('payment_id')->toArray();
-
-        $gatewayEntities = $this->repo->$gateway->fetchByPaymentIdsAndAction(
-                            $paymentIds, Action::AUTHORIZE);
-
-        $gatewayEntities = $gatewayEntities->keyBy('payment_id');
-
-        $data = array_map(function($row) use ($gatewayEntities)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($gatewayEntities[$paymentId]))
-            {
-                $row['gateway'] = $gatewayEntities[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $data);
-
-        return $data;
     }
 
     protected function getFileToWriteNameWithoutExt()
