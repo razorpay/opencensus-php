@@ -45,18 +45,27 @@ export const deletePlan = params => {
   };
 };
 
-const updateSubscriptions = isPending => (state, action) => {
-  if (isPending) {
-    return set(state, 'subscriptions', {
-      loading: true,
-      items: [],
-    });
+const updateSubscriptions = status => (state, action) => {
+  switch (status) {
+    case 'PENDING': {
+      return set(state, 'subscriptions', {
+        loading: true,
+        items: [],
+      });
+    }
+    case 'SUCCESS': {
+      return set(state, 'subscriptions', {
+        loading: false,
+        items: action.payload.data.items,
+      });
+    }
+    case 'ERROR': {
+      return set(state, 'subscriptions', {
+        loading: false,
+        items: [],
+      });
+    }
   }
-
-  return set(state, 'subscriptions', {
-    loading: false,
-    items: action.payload.data.items,
-  });
 };
 
 // List Reducer
@@ -74,8 +83,9 @@ let planInitialState = {
 export const planReducer = makeEntityReducer(
   PLAN_FETCH,
   {
-    [`${PLAN_FETCH_SUBSCRIPTIONS}::PENDING`]: updateSubscriptions(true),
-    [`${PLAN_FETCH_SUBSCRIPTIONS}::SUCCESS`]: updateSubscriptions(false),
+    [`${PLAN_FETCH_SUBSCRIPTIONS}::PENDING`]: updateSubscriptions('PENDING'),
+    [`${PLAN_FETCH_SUBSCRIPTIONS}::SUCCESS`]: updateSubscriptions('SUCCESS'),
+    [`${PLAN_FETCH_SUBSCRIPTIONS}::ERROR`]: updateSubscriptions('ERROR'),
   },
   planInitialState
 );

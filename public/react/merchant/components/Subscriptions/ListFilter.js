@@ -4,18 +4,18 @@ import ListFilter from '../ListFilter';
 import { PowerSelect } from 'react-power-select';
 import { humanize } from 'rzp/utils/rzp-utils';
 
-export default props => {
-  const statusList = [
-    'created',
-    'authenticated',
-    'active',
-    'pending',
-    'halted',
-    'cancelled',
-    'completed',
-    'expired',
-  ];
+const statusList = [
+  'created',
+  'authenticated',
+  'active',
+  'pending',
+  'halted',
+  'cancelled',
+  'completed',
+  'expired',
+];
 
+export default props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
