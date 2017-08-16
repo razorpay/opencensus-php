@@ -50,6 +50,7 @@ export default props => {
             <PowerSelect
               options={statusList}
               selected={props.input.value}
+              showClear={false}
               className="custom-powerselect"
               selectedOptionComponent={({ option }) => (
                 <div>
