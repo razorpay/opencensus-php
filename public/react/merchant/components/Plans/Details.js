@@ -4,9 +4,15 @@ import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
-export default ({ plan, isLoading, statusMsg }) => {
+import { subscriptionId, createdAt, status } from 'rzp/ui/item/pair';
+
+export default ({ plan, isLoading, statusMsg, subscriptions }) => {
+  const tableLimit = 5; // Set limit to total rows displayed in table
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -15,7 +21,15 @@ export default ({ plan, isLoading, statusMsg }) => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-plan text-info" />
+              <i
+                class="fa fa-list-ul text-info"
+                style={{
+                  padding: '4px 4px 3px',
+                  border: '2px solid',
+                  marginRight: '5px',
+                  verticalAlign: 'middle',
+                }}
+              />
               {' '}
               <strong>{plan.id}</strong>
             </div>
@@ -60,6 +74,33 @@ export default ({ plan, isLoading, statusMsg }) => {
                 />
 
                 <NestedEntityDetailRow label="Notes" value={plan.notes} />
+
+                {subscriptions.items
+                  ? <ListToggler
+                      label="Recently created Subscriptions"
+                      subLabel="to this plan"
+                      limit={tableLimit}
+                      limitUrl={`/subscriptions?plan_id=${plan.id}`}
+                      loading={subscriptions.loading}
+                      totalItems={subscriptions.items.length}
+                    >
+                      <DataTable
+                        columns={[subscriptionId, createdAt, status]}
+                        customClass="subscriptions-table"
+                        limit={tableLimit}
+                        progressLoader={true}
+                        title="Subscriptions"
+                        error={subscriptions.error}
+                        items={subscriptions.items}
+                        loading={subscriptions.loading}
+                        showHeaders={false}
+                      />
+                    </ListToggler>
+                  : <EntityDetailRow
+                      label="Subscriptions"
+                      value="No Subscriptions"
+                    />}
+
               </div>
             </div>
           </div>}

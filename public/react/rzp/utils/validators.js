@@ -14,6 +14,23 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+// Parse Object recursively and trims off extra spaces in strings
+export const trimDeep = params => {
+  let temp = Object.assign({}, params);
+
+  for (let key in temp) {
+    if (temp.hasOwnProperty(key)) {
+      if (typeof temp[key] === 'object' && temp[key]) {
+        temp[key] = trimDeep(temp[key]);
+      } else if (typeof temp[key] === 'string') {
+        temp[key] = temp[key].trim();
+      }
+    }
+  }
+
+  return temp;
+};
+
 export const length = (length, message = '') => {
   message = message || `Must be ${length} characters`;
 

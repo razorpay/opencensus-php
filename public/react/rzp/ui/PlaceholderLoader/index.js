@@ -1,3 +1,3 @@
 import './PlaceholderLoader.styl';
 
-export default props => <div class="PlaceholderLoader" {...props} />;
+export default props => <span class="PlaceholderLoader" {...props} />;
