@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\FileProcessor\Irctc;
 
+use RZP\Models\Merchant\FileProcessor\Base;
+
 class Refund extends Base
 {
     const MERCHANT_REFERENCE = 'merchant_reference';
@@ -78,5 +80,10 @@ class Refund extends Base
     public function getHeaders()
     {
         return self::HEADERS;
+    }
+
+    public function getDelimiter()
+    {
+        return '|';
     }
 }

@@ -26,11 +26,6 @@ class Base extends BaseModel\Core
     const MUTEX_LOCK_TIMEOUT = 2500;
 
     /**
-     * XLSX mime type
-     */
-    const XLSX_MIME_TYPE     = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-    /**
      * The MUTEX instance
      */
     protected $mutex;
@@ -74,7 +69,7 @@ class Base extends BaseModel\Core
      * @param array $entry
      *
      */
-    protected function processEntry(array & $entry)
+    protected function processEntry(array $entry)
     {
         throw new \BadMethodCallException();
     }
@@ -86,6 +81,11 @@ class Base extends BaseModel\Core
         {
             $success = unlink($filePath);
         }
+    }
+
+    public function getDelimiter()
+    {
+        return ',';
     }
 
     public function getHeaders()

@@ -579,8 +579,7 @@ final class Route
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
-        'merchant_file_processor'                 => ['post',     'merchant/file/process',                           '
-            MerchantController@processFile'                                    ],
+        'merchant_file_processor'                 => ['post',     'merchant/file/process',                          'MerchantController@processFile'                                    ],
     ];
 
     public static $public = [
@@ -977,6 +976,7 @@ final class Route
         'risk_update',
         'risk_fetch_multiple',
         'risk_get',
+        'merchant_file_processor',
     ];
 
     public static $proxy = [

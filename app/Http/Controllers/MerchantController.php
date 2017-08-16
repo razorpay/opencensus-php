@@ -752,7 +752,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Merchant\Service)->processFile($input);
+        $response = (new Merchant\FileProcessor\Orchestrator)->initiateFileProcessing($input);
 
         return ApiResponse::json($response);
     }

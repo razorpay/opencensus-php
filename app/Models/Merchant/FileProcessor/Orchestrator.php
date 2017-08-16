@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Orchestrator;
+namespace RZP\Models\Merchant\FileProcessor;
 
 use DirectoryIterator;
 
@@ -12,18 +12,13 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
+use RZP\Reconciliator\FileProcessor;
 
 class Orchestrator extends Base\Core
 {
-    const GATEWAY = 'gateway';
-
-    /**
-     * This contains file details, sheet details and email details,
-     * whenever applicable. It does not contain the actual content.
-     * It's all meta data.
-     */
-    const EXTRA_DETAILS    = 'extra_details';
     const ATTACHMENT_COUNT = 'attachment_count';
+    const MERCHANT         = 'merchant';
+    const TYPE             = 'type';
 
     /**************************
      * Email details constants
@@ -42,13 +37,6 @@ class Orchestrator extends Base\Core
 
     const IRCTC                = 'Irctc';
 
-    /**
-     * Gateways for which we run validations on email content
-     */
-    const EMAIL_VALIDATION = [
-        self::IRCTC,
-    ];
-
     /*********************
      * Instance variables
      *********************/
@@ -63,31 +51,23 @@ class Orchestrator extends Base\Core
 
     protected $validator;
     protected $fileProcessor;
-    protected $converter;
-    protected $gatewayReconciliator;
     protected $app;
-    protected $messenger;
-    protected $gateway;
 
-    public function __construct(string $merchant, string $type)
+    public function __construct()
     {
         parent::__construct();
 
-        $fileProcessor = __NAMESPACE__ . '\\' . studly_case($merchant) . '\\' . studly_case($type);
-
-        $this->fileProcessor = new  $fileProcessor();
         $this->validator     = new Validator;
+
+        $this->baseFileProcessor = new FileProcessor;
     }
 
     /**
-     * Determines whether the request is manual or via Mailgun, and
-     * either throws or suppresses the exception accordingly.
-     * Exception is suppressed in the latter case, as we do not want
-     * Mailgun to attempt retrying the same request.
+     * Get and Process File
      *
      * @param array $input The input received from the route
      *
-     * @return array Summary of reconciliation
+     * @return array Summary of file processing
      * @throws \Throwable
      */
     public function initiateFileProcessing(array $input)
@@ -103,6 +83,8 @@ class Orchestrator extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->traceException($e);
+
+            var_dump($e->getMessage());die;
 
             return [];
         }
@@ -157,7 +139,7 @@ class Orchestrator extends Base\Core
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
             $this->trace->info(
-                TraceCode::RECON_FILE_DETAILS,
+                TraceCode::MERCHANT_FILE_DETAILS,
                 [
                     'message'      => 'File details of the file being orchestrated.',
                     'file_details' => $fileDetails
@@ -173,18 +155,12 @@ class Orchestrator extends Base\Core
             }
             catch (\Exception $ex)
             {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                        'message'      => 'Skipping file because not able to convert file content to array. -> ' .
-                                            $ex->getMessage(),
-                        'file_details' => $fileDetails,
-                        'gateway'      => $this->gateway,
-                    ]);
-
-                $this->trace->traceException($ex);
-
-                $this->handleFileSkip($file, $fileDetails);
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_FILE_SKIP,
+                    ['file_details' => $fileDetails]
+                );
 
                 // Don't get the content of the file.
                 continue;
@@ -196,7 +172,7 @@ class Orchestrator extends Base\Core
             // In case of zip files, that's fine. But otherwise, it'll delete
             // off the settlement folder only.
             //
-            $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+            $this->baseFileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
         if (empty($this->allFilesContents) === true)
@@ -222,7 +198,7 @@ class Orchestrator extends Base\Core
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::MERCHANT         => $input['merchant'],
-            self::TYPE             => $input['refund'],
+            self::TYPE             => $input['type'],
         ];
 
         return $inputDetails;
@@ -287,69 +263,9 @@ class Orchestrator extends Base\Core
 
             // This step is mainly to figure out whether the file is of zip type,
             // since we need to execute a different set of flow ONLY for zip files.
-            $fileType = $this->fileProcessor->getTypeOfFile($file, $fileLocationType);
+            $fileType = $this->baseFileProcessor->getTypeOfFile($file, $fileLocationType);
 
-            // If it's a zip file, get all the details of all the files present in it.
-            // Else, get the file details of the attachment.
-            if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
-            {
-                $zipFileDetails = [];
-
-                try
-                {
-                    // Gets the actual zip file's details first.
-                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $fileLocationType);
-
-                    // Gets all files details present in the zip file.
-                    $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
-
-                    // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
-                    if (empty($extractedFileDetails) === true)
-                    {
-                        // Exception instead of alert, to handle zip extraction exceptions also in the
-                        // same alert in the catch block. (Cleaner code).
-                        throw new Exception\ReconciliationException(
-                            'No files present in the zip file attachment.',
-                            ['file_name' => $file->getClientOriginalName()]
-                        );
-                    }
-
-                    // Checks whether all the extracted files are zips too.
-                    $multiLevelZip = $this->isTwoLevelZip($extractedFileDetails);
-
-                    if ($multiLevelZip === true)
-                    {
-                        $extractedFileDetails = $this->getFileDetailsFromAllZipFiles($extractedFileDetails);
-                    }
-
-                    // Using array merge since $extractedFileDetails contains an
-                    // array of file details of different files in the zip file.
-                    $allFilesDetails = array_merge($allFilesDetails, $extractedFileDetails);
-                }
-                catch (\Exception $ex)
-                {
-                    $this->trace->traceException($ex);
-
-                    $this->messenger->raiseReconAlert(
-                        [
-                            'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                            'message'      => 'Skipping file because unzip file caused an exception -> ' .
-                                                $ex->getMessage(),
-                            'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
-                            'gateway'      => $this->gateway,
-                        ]);
-
-                    $this->deleteFileLocallyIfPresent($zipFileDetails);
-
-                    continue;
-                }
-            }
-            else
-            {
-                // Except zip, all other file types will return with a single element
-                // and not an array. Hence using push here instead of merge.
-                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $fileLocationType);
-            }
+            $allFilesDetails[] = $this->baseFileProcessor->getFileDetails($file, $fileLocationType);
         }
 
         return $allFilesDetails;
@@ -377,7 +293,7 @@ class Orchestrator extends Base\Core
 
         $delimiter = $this->fileProcessor->getDelimiter();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $delimiter);
+        $csvArray = $this->convertCsvToArray($fileDetails, $columnHeaders, $delimiter);
 
         $this->allFilesContents[] = $csvArray;
     }
@@ -416,8 +332,7 @@ class Orchestrator extends Base\Core
                 {
                     if ($columnHeadersCount !== count($row))
                     {
-                        //TODO throw exception
-                        throw new Exception\ReconciliationException(
+                        throw new Exception\BadRequestException(
                             'The number of columns in the row does not match the column headers count.',
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
                         );
