@@ -439,11 +439,7 @@ class ErrorCode
     const BAD_REQUEST_KEY_EXPIRING_SOON                                             = 'BAD_REQUEST_KEY_EXPIRING_SOON';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                           = 'BAD_REQUEST_KEY_OF_DEMO_ACCOUNT';
 
-    const BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED                                  = 'BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                                   = 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED';
-    const BAD_REQUEST_PAYMENT_VERIFICATION_RETRY                                    = 'BAD_REQUEST_PAYMENT_VERIFICATION_RETRY';
-    const BAD_REQUEST_PAYMENT_VERIFICATION_SKIP                                     = 'BAD_REQUEST_PAYMENT_VERIFICATION_SKIP';
-
 
     const BAD_REQUEST_INVALID_CHECKOUT_ID                                           = 'BAD_REQUEST_INVALID_CHECKOUT_ID';
     const BAD_REQUEST_INVALID_PLATFORM                                              = 'BAD_REQUEST_INVALID_PLATFORM';
