@@ -147,7 +147,7 @@ $errorTextColor = #F65656
     padding-right: 23px;
   }
 
-  input.input-xs, .PowerSelect {
+  input.input-xs {
     height: 22px;
   }
 
@@ -157,10 +157,22 @@ $errorTextColor = #F65656
 
   .PowerSelect__Trigger {
     padding: 0;
+    height: 20px; // Will be removed in the next version bump
+  }
+
+  .PowerSelect__Clear,
+  .PowerSelect__TriggerInputContainer,
+  .PowerSelect__TriggerInput,
+  .PowerSelect__TriggerLabel,
+  .PowerSelect__TriggerStatus {
+    height: 20px;
+  }
+
+  .PowerSelect__Clear {
+    padding: 0 4px; // Will be removed in the next version bump
   }
 
   .PowerSelect__TriggerInput {
-    height: 20px;
     padding-right: 10px;
     padding-left: 0;
   }

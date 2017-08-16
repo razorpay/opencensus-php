@@ -266,6 +266,7 @@ export default class ReportsContainer extends Component {
                     options={this.entityOptions}
                     searchEnabled={false}
                     selected={this.state.entity}
+                    showClear={false}
                     onChange={({ option }) => {
                       this.setState({ entity: option }); // only for powerselect view otherwise not consumed elsewhere
                       this.props.change('entity', option.value); // programmatically set redux-form 'entity' otherwise, powerselect closes before redux-form is updated
@@ -356,6 +357,7 @@ export default class ReportsContainer extends Component {
                         }}
                         searchIndices={['name', 'id', 'email']}
                         selected={this.state.merchantSelected}
+                        showClear={false}
                         optionComponent={({ option }) => (
                           <div style={{ padding: 5 }}>
                             <b style={{ marginRight: '5px' }}>{option.name}</b>
