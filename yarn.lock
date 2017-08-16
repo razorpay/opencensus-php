@@ -4618,10 +4618,12 @@ react-portal@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-portal/-/react-portal-3.0.0.tgz#9304fce836e8a3216b22588f8dc91b447728f0ae"
 
-react-power-select@1.0.0-beta.3:
-  version "1.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/react-power-select/-/react-power-select-1.0.0-beta.3.tgz#a7c13b4b513198394cd147f14354a1ba1bf5d043"
+react-power-select@^1.0.0-beta.8:
+  version "1.0.0-beta.8"
+  resolved "https://registry.yarnpkg.com/react-power-select/-/react-power-select-1.0.0-beta.8.tgz#837b0a287426f3b0d04538035185afb0fcb120b0"
   dependencies:
+    classnames "^2.2.5"
+    prop-types "^15.5.10"
     react-tether "^0.5.7"
 
 react-redux@^5.0.2:
