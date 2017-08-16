@@ -747,4 +747,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processFile()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->processFile($input);
+
+        return ApiResponse::json($response);
+    }
 }

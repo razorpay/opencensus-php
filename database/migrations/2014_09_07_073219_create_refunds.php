@@ -77,7 +77,7 @@ class CreateRefunds extends Migration
             $table->index(Refund::LAST_ATTEMPTED_AT);
             $table->index(Refund::REFERENCE1);
 
-            $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
+            $table->unique([Refund::MERCHANT_ID, Refund::RECEIPT]);
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant::ID)
