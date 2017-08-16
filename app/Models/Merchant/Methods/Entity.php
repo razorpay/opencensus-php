@@ -510,8 +510,9 @@ class Entity extends Base\PublicEntity
 
         $names = NetbankingProcessor::getNames($banks);
 
-        // Unsetting AIRP for now
+        // Unsetting AIRP, PUNB for now
         unset($names['AIRP']);
+        unset($names['PUNB']);
 
         return $names;
     }
