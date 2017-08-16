@@ -51,7 +51,7 @@ class PaymentVerificationException extends RecoverableException
         return $this->action;
     }
 
-    public function setAction(string $action)
+    public function setAction($action)
     {
         $this->action = $action;
     }
