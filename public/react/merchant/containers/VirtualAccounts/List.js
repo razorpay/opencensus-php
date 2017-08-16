@@ -19,6 +19,7 @@ import {
   status,
   createdAt,
 } from 'rzp/ui/item/pair';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.virtualaccounts, { fetchAll, fetchConfig, openModal })
 export default class VirtualAccountsListContainer extends ListContainer {
@@ -49,6 +50,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
             </div>
           </HeaderAction>
         </header>
+        <TestModeBanner />
 
         <content>
           <div class="content-wrapper">

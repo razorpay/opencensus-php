@@ -10,6 +10,7 @@ import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import { PowerSelect, TypeAhead } from 'react-power-select';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 function validYear(current) {
   return current.year() >= 2015 && current.year() <= 2017;
@@ -254,6 +255,7 @@ export default class ReportsContainer extends Component {
         <header>
           <NavLink to="/reports">Download Reports</NavLink>
         </header>
+        <TestModeBanner />
         <content>
           <div class="report-wrapper col-lg-8 col-sm-10 col-xs-11">
             {/*Report Type Selection*/}

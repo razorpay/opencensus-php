@@ -9,6 +9,7 @@ import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.settlements, {
   fetchAll,
@@ -29,6 +30,8 @@ export default class SettlementsListContainer extends ListContainer {
         <header>
           <NavLink to="/settlements">Settlements</NavLink>
         </header>
+
+        <TestModeBanner />
 
         <content>
           <div class="content-wrapper">

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Route, NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
@@ -24,7 +25,7 @@ export default class Settings extends Component {
             <NavLink to="/keys">API Keys</NavLink>
           </ShowWhen>
         </header>
-
+        <TestModeBanner />
         <content>
           <Route path="/config" component={Configuration} />
           <Route path="/webhooks" component={Webhooks} />
