@@ -6,7 +6,6 @@ use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
@@ -57,23 +56,10 @@ class ViewDataSerializer extends Base\Core
      * to be used in hosted page, pdf generation, mails etc.
      *
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
      */
     public function get(): array
     {
         $publicId = $this->invoice->getPublicId();
-
-        if ($this->invoice->isDraft())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Invoice with id $publicId is not issued yet");
-        }
-
-        if ($this->invoice->isCancelled())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Invoice with id $publicId is cancelled");
-        }
 
         $invoiceData = $this->getFormattedInvoiceDataForView();
 
