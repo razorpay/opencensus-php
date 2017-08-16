@@ -422,14 +422,11 @@ class Service extends Base\Service
 
         $terminal = $this->fetchMerchantTerminal($id);
 
-        $pricingPlan = $this->fetchMerchantPricing($id);
-
         $scheduleTasks = $this->fetchMerchantSchedule($id);
 
         $data = [
                     'details'        => $details,
                     'terminals'      => $terminal,
-                    'pricing_plan'   => $pricingPlan,
                     'schedule_tasks' => $scheduleTasks
                 ];
 
@@ -916,26 +913,6 @@ class Service extends Base\Service
         $this->logActionToSlack($id, Actions::HDFC_EXCEL);
 
         return [[], $file];
-    }
-
-    public function fetchPricingPlan($id)
-    {
-        $errors = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->fetch($id)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $response);
     }
 
     public function fetchMultipleEntities($mode, $entity, $input)
