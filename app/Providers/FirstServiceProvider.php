@@ -3,6 +3,7 @@
 namespace RZP\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use RZP\Trace\ApiTraceProcessor;
 
 class FirstServiceProvider extends ServiceProvider
 {

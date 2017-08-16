@@ -32,13 +32,23 @@ class Repository extends Base\Repository
                     });
     }
 
-    public function findByOrgId(string $orgId, array $relations = [])
+    public function findByOrgId(string $orgId, array $relations = [], string $type = 'all')
     {
-        return $this->getNewQueryWithPermissions()
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $openStates = State\Entity::OPEN_STATES;
+
+        $query = $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
                     ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->get();
+                    ->orderBy(Entity::CREATED_AT, 'desc');
+
+        if ($type == 'open')
+        {
+            $query->whereIn(Entity::STATE, $openStates);
+        }
+
+        return $query->get();
     }
 
     public function findByAdminIdAndOrgIdWithRelations($adminId, $orgId, $relations = [])
@@ -81,8 +91,6 @@ class Repository extends Base\Repository
 
         $wStep = Table::WORKFLOW_STEP;
 
-        $permission = Table::PERMISSION;
-
         return $this->getNewQueryWithPermissions()
                     ->join($wStep, function ($join) {
                         $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
@@ -119,27 +127,11 @@ class Repository extends Base\Repository
         // CLOSED is the absolute last state, We can expect unique entries.
         $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
-
         return $this->getNewQueryWithPermissions()
                     ->join($acsTable, $aId, '=', $acsActionId)
                     ->where($acsState, '=', State\Entity::CLOSED)
                     ->where($acsAdminId, '=', $adminId)
                     ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->get();
-    }
-
-    public function findOpenActionsByOrgId(
-        string $orgId,
-        array $relations = [])
-    {
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        $openStates = State\Entity::OPEN_STATES;
-
-        return $this->getNewQueryWithPermissions()
-                    ->orgId($orgId)
-                    ->whereIn(Entity::STATE, $openStates)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }

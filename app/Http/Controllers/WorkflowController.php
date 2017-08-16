@@ -11,7 +11,6 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
-use RZP\Models\Admin\Org;
 
 class WorkflowController extends Controller
 {
@@ -151,24 +150,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    // Not being used
-    public function createWorkflowStep(string $id)
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Step\Service)->create($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    // Not being used
-    public function getWorkflowStep(string $id, string $stepId)
-    {
-        $data = (new Workflow\Step\Service)->fetch($id, $stepId);
-
-        return ApiResponse::json($data);
-    }
-
     public function getWorkflowSteps(string $id)
     {
         $data = (new Workflow\Step\Service)->fetchMultiple($id);
@@ -190,30 +171,5 @@ class WorkflowController extends Controller
         $result = (new Comment\Service)->fetchByActionId($actionId);
 
         return ApiResponse::json($result);
-    }
-
-
-    // Workflow Manager API
-    public function getActionsForChecker()
-    {
-        $data = (new Workflow\Service)->getActionsForChecker();
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionsByMaker()
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Service)->getActionsByMakerAndType($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionsChecked()
-    {
-        $data = (new Workflow\Manager)->getActionsCheckedByAdmin();
-
-        return ApiResponse::json($data);
     }
 }

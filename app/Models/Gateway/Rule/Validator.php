@@ -197,7 +197,7 @@ class Validator extends Base\Validator
         $gateway = $input[Entity::GATEWAY];
         $issuer = $input[Entity::ISSUER] ?? null;
 
-        if ($issuer !== $gatewayToEmiBankMap[$gateway])
+        if ((isset($gatewayToEmiBankMap[$gateway]) === true) and ($issuer !== $gatewayToEmiBankMap[$gateway]))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid for emi for gateway ' . $gateway);
