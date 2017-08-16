@@ -154,7 +154,6 @@ class Verify extends Base\Core
 
     protected function getMinMaxArrayForVerify(string $filter)
     {
-        $verifyFetchStartTime = time();
 
         Filter::isValidFilter($filter);
 
@@ -170,7 +169,7 @@ class Verify extends Base\Core
         return $minMaxArray;
     }
 
-    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [])
+    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $minMaxArray)
     {
         $boundary = [];
 
@@ -183,7 +182,7 @@ class Verify extends Base\Core
             // index is incremented while doing query
             // As we want to get Payments which have passed that boundary,
             // and should be verified.
-            $boundary[-1] = $minimumTime;
+            $boundary[-1] = $minMaxArray['min'];
 
             // If bucket filter is passed, get rid of other bucket values
             if (empty($bucketFilter) === false)
@@ -227,13 +226,15 @@ class Verify extends Base\Core
      */
     public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
     {
+        $verifyFetchStartTime = time();
+
         $minMaxArray = $this->getMinMaxArrayForVerify($filter);
 
         $paymentStatus = $this->getPaymentStatusForFilter($filter);
 
         $verifyStatus = $this->getVerifyStatusForFilter($filter);
 
-        $boundary = $this->getBoundaryForVerify($filter, $bucketFilter);
+        $boundary = $this->getBoundaryForVerify($filter, $bucketFilter, $minMaxArray);
 
         $disabledGateways = $this->getBlockedGateways();
 
@@ -474,22 +475,22 @@ class Verify extends Base\Core
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $code = $e->getCode();
+            $action = $e->getAction();
 
             $result = Result::ERROR;
 
-            switch ($code)
+            switch ($action)
             {
-                case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED:
+                case Action::BLOCK:
 
                     $this->blockGatewayAfterInvalidVerifyResponse($payment->getGateway());
                     break;
 
-                case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_RETRY:
+                case Action::RETRY:
 
                     break;
 
-                case ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_SKIP:
+                case Action::SKIP:
 
                     $this->updateVerifyBucket($payment, $filter, 'last');
                     break;

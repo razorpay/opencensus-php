@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BaseException;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -14,6 +13,7 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Verify\Action;
 
 trait PaymentTrait
 {
@@ -1409,7 +1409,7 @@ trait PaymentTrait
             throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_SKIP);
+                Action::SKIP);
         });
     }
 
@@ -1438,7 +1438,7 @@ trait PaymentTrait
             throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_RETRY);
+                Action::RETRY);
         });
     }
 
@@ -1449,7 +1449,7 @@ trait PaymentTrait
             throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_BLOCKED);
+                Action::BLOCK);
         });
     }
 }

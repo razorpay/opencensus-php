@@ -15,6 +15,12 @@ class PaymentVerificationException extends RecoverableException
     protected $verify = null;
 
     /**
+     * Action that need to be performed,
+     * after the exception is catched by parent caller
+     */
+    protected $action = null;
+
+    /**
      * PaymentVerificationException constructor.
      * @param string $data This is the verify response received from verify object's getDataToTrace()
      * @param Verify $verify
@@ -23,6 +29,7 @@ class PaymentVerificationException extends RecoverableException
     public function __construct(
         $data,
         $verify,
+        $action = null,
         $code = ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         \Exception $previous = null)
     {
@@ -34,7 +41,19 @@ class PaymentVerificationException extends RecoverableException
 
         $message = json_encode($data);
 
+        $this->setAction($action);
+
         parent::__construct($message, $code, $previous);
+    }
+
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    public function setAction(string $action)
+    {
+        $this->action = $action;
     }
 
     public function getVerifyObject()
