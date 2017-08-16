@@ -63,6 +63,7 @@ const updateSubscriptions = status => (state, action) => {
       return set(state, 'subscriptions', {
         loading: false,
         items: [],
+        error: action.payload.errors,
       });
     }
   }

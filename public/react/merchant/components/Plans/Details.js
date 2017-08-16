@@ -82,6 +82,7 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
                         limit={tableLimit}
                         progressLoader={true}
                         title="Subscriptions"
+                        error={subscriptions.error}
                         items={subscriptions.items}
                         loading={subscriptions.loading}
                         showHeaders={false}
