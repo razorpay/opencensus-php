@@ -12,7 +12,14 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
 
 // Below keys are not to be shown through OtherDetail component
-const shownByDefault = ['id', 'entity', 'source', 'notes', 'created_at'];
+const shownByDefault = {
+  id: '',
+  entity: '',
+  source: '',
+  notes: '',
+  created_at: '',
+  on_hold: '',
+};
 
 const keysNotShown = entity => {
   var keys = [];
@@ -27,7 +34,7 @@ const keysNotShown = entity => {
     if (
       entity.hasOwnProperty(key) &&
       payload[key] !== undefined &&
-      shownByDefault.indexOf(key) < 0 &&
+      shownByDefault.hasOwnProperty(key) &&
       entity[key] !== null
     ) {
       keys.push(key);
@@ -79,14 +86,15 @@ export default ({
                   <OtherDetail
                     key={key}
                     label={key}
-                    value={
-                      key === 'on_hold'
-                        ? () => <CheckIcon value={transfer[key]} />
-                        : transfer[key]
-                    }
+                    value={transfer[key]}
                     entity={transfer}
                   />
                 ))}
+
+                <EntityDetailRow
+                  label="On Hold"
+                  value={() => <CheckIcon value={transfer.on_hold} />}
+                />
 
                 {/* Notes */}
                 <NestedEntityDetailRow label="Notes" value={transfer.notes} />
