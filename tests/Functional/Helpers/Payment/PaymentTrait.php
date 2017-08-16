@@ -237,7 +237,7 @@ trait PaymentTrait
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $count = count($content);
-        $this->assertLessThanOrEqual(4, $count);
+        $this->assertLessThanOrEqual(6, $count);
 
         return $content;
     }
