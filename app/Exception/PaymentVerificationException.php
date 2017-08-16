@@ -22,8 +22,10 @@ class PaymentVerificationException extends RecoverableException
 
     /**
      * PaymentVerificationException constructor.
-     * @param string $data This is the verify response received from verify object's getDataToTrace()
-     * @param Verify $verify
+     * @param string          $data This is the verify response received from verify object's getDataToTrace()
+     * @param Verify          $verify
+     * @param string|null     $action
+     * @param string          $code
      * @param \Exception|null $previous
      */
     public function __construct(

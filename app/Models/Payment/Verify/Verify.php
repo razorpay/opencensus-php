@@ -96,6 +96,19 @@ class Verify extends Base\Core
      */
     const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache';
 
+
+    /**
+     * Constant to signify that Verify Bucket should be updated with next boundary value
+     * This should be used when we want to run verify on given payment in next run
+     */
+    const NEXT = 'next';
+
+    /**
+     * Constant to signify that Verify Bucket should be updated with last boundary value
+     * This should be used when we want to disable verify for a given payment
+     */
+    const LAST = 'last';
+
     /**
      * Minimum duration a payment should be old before it gets picked up
      * for verify for a particular payment verify filter.
@@ -152,7 +165,13 @@ class Verify extends Base\Core
         $this->slackChannel = Config::get('slack.channels.tech_logs_verify');
     }
 
-    protected function getMinMaxArrayForVerify(string $filter)
+    /**
+     * Get the boundaries for which paymnets dhould be fetched for running verify
+     * @param string $filter
+     *
+     * @return array
+     */
+    protected function getStartAndEndTimeForVerify(string $filter)
     {
 
         Filter::isValidFilter($filter);
@@ -169,7 +188,15 @@ class Verify extends Base\Core
         return $minMaxArray;
     }
 
-    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $minMaxArray)
+    /**
+     * Get the boundary using filter and time boundary
+     * @param string $filter
+     * @param array  $bucketFilter
+     * @param arary  $timeBoundary
+     *
+     * @return array boundary array for verify
+     */
+    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $timeBoundary)
     {
         $boundary = [];
 
@@ -182,7 +209,7 @@ class Verify extends Base\Core
             // index is incremented while doing query
             // As we want to get Payments which have passed that boundary,
             // and should be verified.
-            $boundary[-1] = $minMaxArray['min'];
+            $boundary[-1] = $timeBoundary['min'];
 
             // If bucket filter is passed, get rid of other bucket values
             if (empty($bucketFilter) === false)
@@ -228,7 +255,7 @@ class Verify extends Base\Core
     {
         $verifyFetchStartTime = time();
 
-        $minMaxArray = $this->getMinMaxArrayForVerify($filter);
+        $minMaxArray = $this->getStartAndEndTimeForVerify($filter);
 
         $paymentStatus = $this->getPaymentStatusForFilter($filter);
 
@@ -471,7 +498,7 @@ class Verify extends Base\Core
         {
             $response = $this->processor($merchant)->verify($payment);
 
-            $this->updateVerifyBucket($payment, $filter, 'next');
+            $this->updateVerifyBucket($payment, $filter, self::NEXT);
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -492,19 +519,19 @@ class Verify extends Base\Core
 
                 case Action::SKIP:
 
-                    $this->updateVerifyBucket($payment, $filter, 'last');
+                    $this->updateVerifyBucket($payment, $filter, self::LAST);
                     break;
 
                 default:
 
-                    $this->updateVerifyBucket($payment, $filter, 'next');
+                    $this->updateVerifyBucket($payment, $filter, self::NEXT);
                     $result = $this->authorizePayment($merchant, $payment, $e);
                     break;
             }
         }
         catch (Exception\GatewayTimeoutException $e)
         {
-            $this->updateVerifyBucket($payment, $filter, 'next');
+            $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
             $this->trace->info(
                 TraceCode::GATEWAY_REQUEST_TIMEOUT,
@@ -515,7 +542,7 @@ class Verify extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->updateVerifyBucket($payment, $filter, 'next');
+            $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
@@ -618,7 +645,7 @@ class Verify extends Base\Core
     protected function updateVerifyBucket(
         Payment\Entity $payment,
         string $filter,
-        string $param = 'next')
+        string $param = self::NEXT)
     {
         if ($this->isBucketUpdateApplicable())
         {
@@ -728,7 +755,10 @@ class Verify extends Base\Core
         return $currentVerifyBucket;
     }
 
-    protected function getPaymentVerifyBucket(Payment\Entity $payment, string $filter, string $param = 'next')
+    protected function getPaymentVerifyBucket(
+        Payment\Entity $payment,
+        string $filter,
+        string $param = self::NEXT)
     {
         // For Payment having verified as error,
         // verify bucket should be 0
@@ -751,13 +781,13 @@ class Verify extends Base\Core
 
         switch ($param)
         {
-            case 'next':
+            case self::NEXT:
                 $currentVerifyBucket = $this->getCurrentVerifyBucket(
                     $diff,
                     $boundaries);
                 break;
 
-            case 'last':
+            case self::LAST:
                 $currentVerifyBucket = count($boundaries);
                 break;
 
