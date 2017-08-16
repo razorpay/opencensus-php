@@ -134,6 +134,39 @@ app
         });
       };
 
+      // Dispute specific actions
+      $scope.dispute = {
+        edit: function(data) {
+          var params = {
+            route_name: 'dispute_edit',
+            url_params: {
+              '{id}': $scope.entity.id,
+            },
+            mode: 'test',
+            body: data,
+          };
+
+          var request = $http({
+            method: 'patch',
+            url: '/admin/generic',
+            data: params,
+          });
+          request
+            .success(function(data) {
+              if (data.success) {
+                window.location.reload();
+              } else {
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
+      };
+
       // Offer Specific actions
       $scope.offer = {
         edit: function(offer) {
@@ -487,6 +520,20 @@ app
           });
           modalInstance.result.then(function(offer) {
             $scope.offer.edit(offer);
+          }, $.noop);
+        },
+        disputeEdit: function(dispute) {
+          var modalInstance = $modal.open({
+            templateUrl: 'disputeModalContent.html',
+            controller: 'DisputeModalCtrl',
+            resolve: {
+              current: function() {
+                return Object.assign({}, dispute);
+              },
+            },
+          });
+          modalInstance.result.then(function(dispute) {
+            $scope.dispute.edit(dispute);
           }, $.noop);
         },
         iinEdit: function(iin) {
