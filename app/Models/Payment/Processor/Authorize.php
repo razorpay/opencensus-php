@@ -2424,6 +2424,16 @@ trait Authorize
         $data['razorpay_invoice_status'] = $invoice->getStatus();
 
         $data['razorpay_signature'] = $this->getSignature($data);
+
+        //
+        // Receipt is not part of signature. Reason being it's null-able
+        // and brings little complexity in signature verification step.
+        // Still is being sent as part of callback parameters so that someone
+        // not keeping invoice_id with them can fetch the fresh entity using
+        // receipt if available.
+        //
+
+        $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
