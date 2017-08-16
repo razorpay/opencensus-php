@@ -287,14 +287,13 @@ class Repository extends Base\Repository
     /**
      * Return Payments object(s) which should be verified
      *
-     * @param array        $minMaxArray    Min/Max array
-     * @param array|string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string       $verifyStatus   value for filter of VerifyStatus
-     * @param string       $paymentStatus  value for filter of paymentStatus
-     * @param bool         $random         Db should take param in random value or not
-     * @param int          $rowsToFetch    Rows to fetch
-     *
-     * @param array        $disabledGateways
+     * @param array        $minMaxArray      Min/Max array
+     * @param array|string $verifyBoundary   Array of [VERIFY_BUCKET and timestamp] values
+     * @param string       $verifyStatus     Value for filter of VerifyStatus
+     * @param string       $paymentStatus    Value for filter of paymentStatus
+     * @param int          $rowsToFetch      Rows to fetch
+     * @param array        $disabledGateways Gateways for which verify should be skipped
+     * @param bool         $random           Db should take param in random value or not
      *
      * @return array
      */
@@ -303,17 +302,15 @@ class Repository extends Base\Repository
                         array $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
-                        bool $random = true,
                         int $rowsToFetch = 100,
-                        array $disabledGateways = [])
+                        array $verifyDisabledGateways = [],
+                        bool $random = true)
     {
-        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
-
-        $verifyDisabledGateways = array_merge($verifyDisabledGateways, $disabledGateways);
-
         $query = $this->newQuery()
                       ->whereNotNull(Payment\Entity::GATEWAY)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
+                      ->whereNotIn(
+                          Payment\Entity::GATEWAY,
+                          $verifyDisabledGateways);
 
         if ($verifyStatus !== null)
         {

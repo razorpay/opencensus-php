@@ -94,7 +94,7 @@ class Verify extends Base\Core
     /**
      * Cache key used to store gateway block info in hash map
      */
-    const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache_key';
+    const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache';
 
     /**
      * Minimum duration a payment should be old before it gets picked up
@@ -152,35 +152,11 @@ class Verify extends Base\Core
         $this->slackChannel = Config::get('slack.channels.tech_logs_verify');
     }
 
-    /**
-     * Verify Payments Based on filter and Bucket filter, if provided
-     * For detailed Documentation refer to
-     * https://docs.google.com/document/d/128BT3KYBRloYR85zaZODB5htUmG8JrGKKP6eGAGgW68
-     *
-     * @param  string $filter
-     * @param  array  $bucketFilter
-     * @return array aggregated result of verify results
-     *               Sample Result
-     *              [
-     *                  'filter'            => <filter>,
-     *                  'verified'          => <count>,
-     *                  'authorized/failed' => <count>,
-     *                  'timed out'         => <count>,
-     *                  'error'             => <count>,
-     *                  'authorizedTime'    => <time>,
-     *                  'totalTime'         => <time>
-     *              ]
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     */
-    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
+    protected function getMinMaxArrayForVerify(string $filter)
     {
         $verifyFetchStartTime = time();
 
         Filter::isValidFilter($filter);
-
-        $paymentStatus = $this->getPaymentStatusForFilter($filter);
-        $verifyStatus = $this->getVerifyStatusForFilter($filter);
 
         $minimumTime = self::MINIMUM_TIME_MAP[$filter];
 
@@ -191,6 +167,11 @@ class Verify extends Base\Core
             'max' => $maximumTime
         ];
 
+        return $minMaxArray;
+    }
+
+    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [])
+    {
         $boundary = [];
 
         if ($filter !== Filter::VERIFY_ERROR)
@@ -220,6 +201,40 @@ class Verify extends Base\Core
             }
         }
 
+        return $boundary;
+    }
+
+    /**
+     * Verify Payments Based on filter and Bucket filter, if provided
+     * For detailed Documentation refer to
+     * https://docs.google.com/document/d/128BT3KYBRloYR85zaZODB5htUmG8JrGKKP6eGAGgW68
+     *
+     * @param  string $filter
+     * @param  array  $bucketFilter
+     * @return array aggregated result of verify results
+     *               Sample Result
+     *              [
+     *                  'filter'            => <filter>,
+     *                  'verified'          => <count>,
+     *                  'authorized/failed' => <count>,
+     *                  'timed out'         => <count>,
+     *                  'error'             => <count>,
+     *                  'authorizedTime'    => <time>,
+     *                  'totalTime'         => <time>
+     *              ]
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
+    {
+        $minMaxArray = $this->getMinMaxArrayForVerify($filter);
+
+        $paymentStatus = $this->getPaymentStatusForFilter($filter);
+
+        $verifyStatus = $this->getVerifyStatusForFilter($filter);
+
+        $boundary = $this->getBoundaryForVerify($filter, $bucketFilter);
+
         $disabledGateways = $this->getBlockedGateways();
 
         //
@@ -231,7 +246,6 @@ class Verify extends Base\Core
                                                                 $boundary,
                                                                 $verifyStatus,
                                                                 $paymentStatus,
-                                                                true,
                                                                 self::ROWS_TO_FETCH * 2,
                                                                 $disabledGateways);
 
@@ -534,6 +548,8 @@ class Verify extends Base\Core
 
     protected function getBlockedGateways()
     {
+        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
+
         $blockedGateways = [];
 
         $allBlockedGateways = $this->redis->hGetAll(self::GATEWAY_BLOCK_CACHE_KEY);
@@ -550,7 +566,7 @@ class Verify extends Base\Core
             }
         }
 
-        return $blockedGateways;
+        return array_merge($verifyDisabledGateways, $blockedGateways);
     }
 
     protected function authorizePayment(
@@ -617,8 +633,11 @@ class Verify extends Base\Core
     {
         $cron = $this->app['basicauth']->isCron();
 
+        //
         // If filter is null, then verify is initiated manually, not via cron
+        // We need to check for route as we dont want recon to update verify bucket
         // Don't update VERIFY_BUCKET, in that case
+        //
         if (($cron === true) and
             ($this->route === 'payment_verify_multiple'))
         {
@@ -729,13 +748,21 @@ class Verify extends Base\Core
         // Get Verify Boundary to update Verify Bucket
         $boundaries = $this->getBoundaryInSeconds($filter);
 
-        if ($param === 'next')
+        switch ($param)
         {
-            $currentVerifyBucket = $this->getCurrentVerifyBucket($diff, $boundaries);
-        }
-        else if ($param === 'last')
-        {
-            $currentVerifyBucket = count($boundaries);
+            case 'next':
+                $currentVerifyBucket = $this->getCurrentVerifyBucket(
+                    $diff,
+                    $boundaries);
+                break;
+
+            case 'last':
+                $currentVerifyBucket = count($boundaries);
+                break;
+
+            default:
+                throw new Exception\LogicException(
+                    'Invalid param for setting verify bucket');
         }
 
         $nextVerifyBucket = $currentVerifyBucket + 1;
