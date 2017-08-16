@@ -112,12 +112,14 @@ export default ({
 
                 {reversals
                   ? <ListToggler
-                      show={true}
-                      label="Reversals"
+                      label="Recently created Reversals"
+                      subLabel="to this transfer"
+                      loading={reversals.loading}
                       totalItems={reversals.items.length}
-                      onToggleClick={() => onToggleReversalsList(transfer.id)}
                     >
                       <DataTable
+                        customClass="reversals-table"
+                        progressLoader={true}
                         title="Reversals"
                         columns={[reversalId, amount, createdAt]}
                         items={reversals.items}
