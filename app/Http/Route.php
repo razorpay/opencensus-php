@@ -785,7 +785,6 @@ final class Route
         'merchant_fetch_keys',
         'merchant_replace_key',
         'merchant_assign_pricing',
-        'merchant_get_pricing',
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
         'merchant_generate_test_bank_acnt',
@@ -1114,6 +1113,7 @@ final class Route
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
+        'merchant_get_pricing',
     ];
 
     public static $routePermission = [
@@ -1234,6 +1234,7 @@ final class Route
         'admin_get_file'                   => '*',
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
+        'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
     ];
 
     public static $direct = [

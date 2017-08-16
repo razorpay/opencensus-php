@@ -217,6 +217,7 @@ return [
                 'description' => 'Edit offer for a merchant',
             ],
             Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
+            Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
         ],
 
         PermissionCategory::PRICING => [
