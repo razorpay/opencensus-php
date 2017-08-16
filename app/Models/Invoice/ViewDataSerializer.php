@@ -105,8 +105,14 @@ class ViewDataSerializer extends Base\Core
 
         $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();
 
+        // Puts callback_url, callback_method in view data. Those are not
+        // exposed in route response as of now.
+
+        $invoiceData[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
+        $invoiceData[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+
         // Gets public view attributes of all payments against this invoice
-        // in desc order.
+        // in descending order.
 
         $invoiceData[Entity::PAYMENTS] = $this->invoice
                                               ->load(Entity::PAYMENTS)

@@ -322,8 +322,6 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
-        self::CALLBACK_URL,
-        self::CALLBACK_METHOD,
         self::USER_ID,
         self::CREATED_AT,
     ];
@@ -578,6 +576,16 @@ class Entity extends Base\PublicEntity
     public function getTypeLabel()
     {
         return Type::getLabel($this->getType());
+    }
+
+    public function getCallbackUrl()
+    {
+        return $this->getAttribute(self::CALLBACK_URL);
+    }
+
+    public function getCallbackMethod()
+    {
+        return $this->getAttribute(self::CALLBACK_METHOD);
     }
 
     public function hasBeenPaid()

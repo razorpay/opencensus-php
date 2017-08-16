@@ -110,20 +110,15 @@ class InvoiceTest extends TestCase
         $actualSignature = $response['razorpay_signature'];
 
         $signatureData = [
-            'razorpay_invoice_status' => 'paid',
-            'razorpay_invoice_id'     => $invoice->getPublicId(),
-            'razorpay_payment_id'     => $response['razorpay_payment_id'],
+            'razorpay_invoice_id'      => $invoice->getPublicId(),
+            'razorpay_invoice_receipt' => $invoice->getReceipt(),
+            'razorpay_invoice_status'  => 'paid',
+            'razorpay_payment_id'      => $response['razorpay_payment_id'],
         ];
-
-        ksort($signatureData);
 
         $exceptedSignature = $this->getSignature($signatureData, 'TheKeySecretForTests');
 
         $this->assertEquals($exceptedSignature, $actualSignature);
-
-        // Asserts that receipt is coming still in callback parameters
-
-        $this->assertEquals($invoice->getReceipt(), $response['razorpay_invoice_receipt']);
     }
 
     public function testCreateLinkWithSource()
