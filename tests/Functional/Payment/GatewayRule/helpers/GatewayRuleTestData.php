@@ -437,7 +437,6 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Create wallet sorter rule
         [
             'request' => [
                 'content' => [
@@ -473,6 +472,7 @@ return [
                     'merchant_id' => '10000000000000',
                     'type'        => 'sorter',
                     'gateway'     => 'wallet_jiomoney',
+                    'issuer'      => 'jiomoney',
                     'method'      => 'wallet',
                     'load'        => 50
                 ],

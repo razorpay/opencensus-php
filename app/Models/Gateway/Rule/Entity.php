@@ -324,7 +324,8 @@ class Entity extends Base\PublicEntity
 
     protected function modifyIssuer(array & $input)
     {
-        if (empty($input[self::ISSUER]) === false)
+        if ((empty($input[self::ISSUER]) === false) and
+            ($input[self::METHOD] !== Method::WALLET))
         {
             $input[self::ISSUER] = strtoupper($input[self::ISSUER]);
         }

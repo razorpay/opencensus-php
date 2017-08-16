@@ -94,6 +94,7 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_olamoney_terminal');
+        $this->fixtures->create('terminal:shared_jiomoney_terminal');
         $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
         $this->fixtures->create('terminal:shared_amex_terminal');
