@@ -34,7 +34,7 @@ const keysNotShown = entity => {
     if (
       entity.hasOwnProperty(key) &&
       payload[key] !== undefined &&
-      shownByDefault.hasOwnProperty(key) &&
+      !shownByDefault.hasOwnProperty(key) &&
       entity[key] !== null
     ) {
       keys.push(key);
