@@ -1095,12 +1095,15 @@ angular
           ebs: 'Ebs',
         },
         gatewayWalletMap: {
+          mobikwik: 'Mobikwik',
           wallet_airtelmoney: 'Airtelmoney',
           wallet_freecharge: 'Freecharge',
           wallet_jiomoney: 'Jiomoney',
           wallet_olamoney: 'Olamoney',
           wallet_payumoney: 'Payumoney',
           wallet_payzapp: 'Payzapp',
+          wallet_mpesa: 'Mpesa',
+          wallet_openwallet: 'Openwallet',
         },
         gatewayUpiMap: {
           upi_idfc: 'IDFC UPI',

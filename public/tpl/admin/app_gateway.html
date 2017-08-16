@@ -266,7 +266,10 @@
 
       <!-- Merchant Id-->
       <div class="form-group" ng-if="!editMode">
-        <label class="col-lg-2 control-label">Merchant ID*:</label>
+        <label class="col-lg-2 control-label">
+          <span style="color: red" ng-if="!editMode">*</span>
+          Merchant ID:
+        </label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="merchant_id"
                  ng-model="current.merchant_id"
@@ -287,7 +290,7 @@
           <select name="method" ng-model="current.method" class="form-control"
                   ng-change="updateGatewayList(current.method)"
                   ng-disabled="editMode" ng-required="!editMode" >
-            <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
+            <option ng-repeat="(key, option) in methodMap" value={{key}} ng-selected="{{key == gatewayRuleSearch.method}}">{{option}}</option>
           </select>
           <!--Display error for select type tags-->
           <span ng-show="editRuleForm.method.$error.required" style="font-size:11px; color: red;">
@@ -339,12 +342,12 @@
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">ALL</option>
-            <option ng-repeat="(key, option) in networkMap" value={{key}}>{{option}}</option>
+            <option ng-repeat="(key, option) in networkMap" value={{key}} ng-selected="{{key === current.network}}">{{option}}</option>
           </select>
         </div>
       </div>
 
-      <!-- Category2 .-->
+      <!-- Category2 -->
       <div class="form-group">
         <label class="col-lg-2 control-label">Category2:</label>
         <div class="col-lg-10" >
@@ -487,8 +490,7 @@
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="iins"
                  placeholder="Enter comma(,) separated values. Each value must be 6 digit. Example: 123422,345244"
-                 ng-model="current.iins"
-                 ng-readonly="editMode">
+                 ng-model="current.iins">
         </div>
       </div>
 
@@ -496,7 +498,7 @@
       <div class="form-group" ng-if="current.type === 'filter'">
         <label class="col-lg-2 control-label">Network Category:</label>
         <div class="col-lg-10" >
-          <input type="decimal" class="form-control m-b" name="load"
+          <input class="form-control m-b" name="network_category" ng-disabled="editMode"
                  ng-model="current.network_category">
         </div>
       </div>
@@ -518,7 +520,7 @@
         </div>
       </div>
 
-      <!-- Currency .-->
+      <!-- Currency -->
       <div class="form-group">
         <label class="col-lg-2 control-label">Currency:</label>
         <div class="col-lg-10" >

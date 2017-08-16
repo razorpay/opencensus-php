@@ -86,17 +86,7 @@ app
           .success(function(data) {
             if (data.success) {
               $scope.gatewayRules = data.data.items;
-
-              if (!$scope.gatewayRules.length) {
-                $scope.noResults = true;
-
-                // 1. Iins: Convert iins from array to comma supported to dispay in input field
-                $scope.gatewayRules['iins'] = $scope.gatewayRules['iins']
-                  ? $scope.gatewayRules['iins'].join(',')
-                  : null;
-              } else {
-                $scope.noResults = false;
-              }
+              $scope.noResults = $scope.gatewayRules.length ? false : true;
             } else {
               $scope.alerts.resetAlerts(true);
               angular.forEach(data.errors, function(value) {
@@ -184,6 +174,24 @@ app
 
       // Update gateway rule by id
       $scope.updateRuleById = function(rule) {
+        var data = {};
+        // Pruning rule as only 4 fields are required in edit mode
+        if (rule['load']) {
+          data['load'] = rule['load'];
+        }
+
+        if (rule['group']) {
+          data['group'] = rule['group'];
+        }
+
+        if (rule['iins']) {
+          data['iins'] = rule['iins'];
+        }
+
+        if (rule['filter_type']) {
+          data['filter_type'] = rule['filter_type'];
+        }
+
         var request = $http({
           url: 'admin/generic',
           method: 'patch',
@@ -195,9 +203,7 @@ app
             },
           },
           data: {
-            body: {
-              load: rule.load,
-            },
+            body: data,
           },
         });
 
@@ -360,6 +366,11 @@ app
 
       if (Object.keys(current).length) {
         $scope.editMode = true;
+
+        // 1. Iins: Convert iins from array to comma supported to dispay in input field
+        $scope.current['iins'] = $scope.current['iins']
+          ? $scope.current['iins'].join(',')
+          : null;
       }
 
       if ($scope.editMode) {
