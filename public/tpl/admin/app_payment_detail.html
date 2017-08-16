@@ -264,6 +264,11 @@
             class="btn btn-primary btn-rounded"
           >View as Entity
           </a>
+          <div ng-if="mode && mode === 'test'" style="margin-top: 35px;" role="group" aria-label="Payment Detail Actions">
+            <button ng-if="!entity.disputed" class="btn btn-default btn-rounded btn-danger" ng-click="openDisputeModal()">
+              Create Dispute
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -319,3 +324,6 @@
     <button ng-disabled="!valid(refund_amount, comment)" class="btn btn-primary" ng-click="ok(refund_amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
   </div>
 </script>
+
+
+<ng-include src="'/tpl/admin/dispute_modal.html'"></ng-include>

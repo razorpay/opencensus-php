@@ -1793,7 +1793,7 @@ app
 
         request
           .success(function(data) {
-            if (data.success || true) {
+            if (data.success) {
               $scope.merchantOffers = data.data.items;
             } else {
               $scope.alerts.resetAlerts(true);
