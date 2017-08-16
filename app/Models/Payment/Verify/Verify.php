@@ -96,7 +96,6 @@ class Verify extends Base\Core
      */
     const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache';
 
-
     /**
      * Constant to signify that Verify Bucket should be updated with next boundary value
      * This should be used when we want to run verify on given payment in next run
@@ -166,6 +165,64 @@ class Verify extends Base\Core
     }
 
     /**
+     * Verify Payments Based on filter and Bucket filter, if provided
+     * For detailed Documentation refer to
+     * https://docs.google.com/document/d/128BT3KYBRloYR85zaZODB5htUmG8JrGKKP6eGAGgW68
+     *
+     * @param  string $filter
+     * @param  array  $bucketFilter
+     * @return array aggregated result of verify results
+     *               Sample Result
+     *              [
+     *                  'filter'            => <filter>,
+     *                  'verified'          => <count>,
+     *                  'authorized/failed' => <count>,
+     *                  'timed out'         => <count>,
+     *                  'error'             => <count>,
+     *                  'authorizedTime'    => <time>,
+     *                  'totalTime'         => <time>
+     *              ]
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
+    {
+        $verifyFetchStartTime = time();
+
+        $timeBoundary = $this->getStartAndEndTimeForVerify($filter);
+
+        $paymentStatus = $this->getPaymentStatusForFilter($filter);
+
+        $verifyStatus = $this->getVerifyStatusForFilter($filter);
+
+        $boundary = $this->getBoundaryForVerify($filter, $bucketFilter, $timeBoundary);
+
+        $disabledGateways = $this->getBlockedGateways();
+
+        //
+        // We Fetch Twice the number of required payments,
+        // and filtering extra payments in later stage
+        //
+        $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
+                                                                $timeBoundary,
+                                                                $boundary,
+                                                                $verifyStatus,
+                                                                $paymentStatus,
+                                                                self::ROWS_TO_FETCH * 2,
+                                                                $disabledGateways);
+
+        $payments = $paymentsCollectionWithCount['payments'];
+
+        $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
+
+        $verifyFetchEndTime = time();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
+    }
+
+    /**
      * Get the boundaries for which paymnets dhould be fetched for running verify
      * @param string $filter
      *
@@ -173,26 +230,25 @@ class Verify extends Base\Core
      */
     protected function getStartAndEndTimeForVerify(string $filter)
     {
-
         Filter::isValidFilter($filter);
 
         $minimumTime = self::MINIMUM_TIME_MAP[$filter];
 
         $maximumTime = self::MAXIMUM_TIME_MAP[$filter];
 
-        $minMaxArray = [
+        $timeBoundary = [
             'min' => $minimumTime,
             'max' => $maximumTime
         ];
 
-        return $minMaxArray;
+        return $timeBoundary;
     }
 
     /**
      * Get the boundary using filter and time boundary
      * @param string $filter
      * @param array  $bucketFilter
-     * @param arary  $timeBoundary
+     * @param array  $timeBoundary
      *
      * @return array boundary array for verify
      */
@@ -228,64 +284,6 @@ class Verify extends Base\Core
         }
 
         return $boundary;
-    }
-
-    /**
-     * Verify Payments Based on filter and Bucket filter, if provided
-     * For detailed Documentation refer to
-     * https://docs.google.com/document/d/128BT3KYBRloYR85zaZODB5htUmG8JrGKKP6eGAGgW68
-     *
-     * @param  string $filter
-     * @param  array  $bucketFilter
-     * @return array aggregated result of verify results
-     *               Sample Result
-     *              [
-     *                  'filter'            => <filter>,
-     *                  'verified'          => <count>,
-     *                  'authorized/failed' => <count>,
-     *                  'timed out'         => <count>,
-     *                  'error'             => <count>,
-     *                  'authorizedTime'    => <time>,
-     *                  'totalTime'         => <time>
-     *              ]
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     */
-    public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
-    {
-        $verifyFetchStartTime = time();
-
-        $minMaxArray = $this->getStartAndEndTimeForVerify($filter);
-
-        $paymentStatus = $this->getPaymentStatusForFilter($filter);
-
-        $verifyStatus = $this->getVerifyStatusForFilter($filter);
-
-        $boundary = $this->getBoundaryForVerify($filter, $bucketFilter, $minMaxArray);
-
-        $disabledGateways = $this->getBlockedGateways();
-
-        //
-        // We Fetch Twice the number of required payments,
-        // and filtering extra payments in later stage
-        //
-        $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
-                                                                $minMaxArray,
-                                                                $boundary,
-                                                                $verifyStatus,
-                                                                $paymentStatus,
-                                                                self::ROWS_TO_FETCH * 2,
-                                                                $disabledGateways);
-
-        $payments = $paymentsCollectionWithCount['payments'];
-
-        $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
-
-        $verifyFetchEndTime = time();
-
-        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
-
-        return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
     }
 
     /**
@@ -509,23 +507,24 @@ class Verify extends Base\Core
             switch ($action)
             {
                 case Action::BLOCK:
-
                     $this->blockGatewayAfterInvalidVerifyResponse($payment->getGateway());
+
                     break;
 
                 case Action::RETRY:
 
                     break;
 
-                case Action::SKIP:
-
+                case Action::FINISH:
                     $this->updateVerifyBucket($payment, $filter, self::LAST);
+
                     break;
 
                 default:
-
                     $this->updateVerifyBucket($payment, $filter, self::NEXT);
+
                     $result = $this->authorizePayment($merchant, $payment, $e);
+
                     break;
             }
         }
@@ -647,7 +646,7 @@ class Verify extends Base\Core
         string $filter,
         string $param = self::NEXT)
     {
-        if ($this->isBucketUpdateApplicable())
+        if ($this->isBucketUpdateApplicable() === true)
         {
             $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
 
@@ -663,7 +662,10 @@ class Verify extends Base\Core
 
         //
         // If filter is null, then verify is initiated manually, not via cron
-        // We need to check for route as we dont want recon to update verify bucket
+        //
+        // We need to check for route, as we dont want any other cron
+        // running verify to update this maybe recon in future
+        //
         // Don't update VERIFY_BUCKET, in that case
         //
         if (($cron === true) and
@@ -783,8 +785,8 @@ class Verify extends Base\Core
         {
             case self::NEXT:
                 $currentVerifyBucket = $this->getCurrentVerifyBucket(
-                    $diff,
-                    $boundaries);
+                                               $diff,
+                                               $boundaries);
                 break;
 
             case self::LAST:

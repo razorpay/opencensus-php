@@ -1409,7 +1409,7 @@ trait PaymentTrait
             throw new Exception\PaymentVerificationException(
                 ['test' => 'test'],
                 '',
-                Action::SKIP);
+                Action::FINISH);
         });
     }
 

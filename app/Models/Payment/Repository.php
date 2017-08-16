@@ -303,14 +303,14 @@ class Repository extends Base\Repository
                         $verifyStatus = null,
                         $paymentStatus = null,
                         int $rowsToFetch = 100,
-                        array $verifyDisabledGateways = [],
+                        array $disabledGateways = [],
                         bool $random = true)
     {
         $query = $this->newQuery()
                       ->whereNotNull(Payment\Entity::GATEWAY)
                       ->whereNotIn(
                           Payment\Entity::GATEWAY,
-                          $verifyDisabledGateways);
+                          $disabledGateways);
 
         if ($verifyStatus !== null)
         {
