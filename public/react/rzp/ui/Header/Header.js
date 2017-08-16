@@ -3,7 +3,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import './Header.styl';
 import { connect } from 'react-redux';
 
-@connect(state => state.session, null)
+@connect(state => state.session || {}, null)
 export default class Header extends Component {
   render() {
     let { title, showMode, isLoading, children, className } = this.props;
@@ -19,7 +19,7 @@ export default class Header extends Component {
 }
 
 Header.defaultProps = {
-  showMode: true,
+  showMode: false,
 };
 
 Header.propTypes = {
