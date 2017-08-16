@@ -21,7 +21,15 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-plan text-info" />
+              <i
+                class="fa fa-list-ul text-info"
+                style={{
+                  padding: '4px 4px 3px',
+                  border: '2px solid',
+                  marginRight: '5px',
+                  verticalAlign: 'middle',
+                }}
+              />
               {' '}
               <strong>{plan.id}</strong>
             </div>
