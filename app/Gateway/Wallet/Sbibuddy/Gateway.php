@@ -358,13 +358,13 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    public function getEncryptor(): Encryptor
+    public function getEncryptor(): AESCrypto
     {
         $secret = base64_decode($this->getSecret());
 
         assert($secret !== null);
 
-        return new Encryptor(AES::MODE_ECB, $secret);
+        return new AESCrypto(AES::MODE_ECB, $secret);
     }
 
     protected function getMerchantId()
