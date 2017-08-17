@@ -237,7 +237,7 @@ trait PaymentTrait
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $count = count($content);
-        $this->assertLessThanOrEqual(4, $count);
+        $this->assertLessThanOrEqual(6, $count);
 
         return $content;
     }
@@ -1318,7 +1318,7 @@ trait PaymentTrait
 
                     $binRiskMapping = [
                         '510510' => '22.0',
-                        '401201' => '60.3',
+                        '401201' => '15.3',
                         '555555' => '2.4'
                     ];
 

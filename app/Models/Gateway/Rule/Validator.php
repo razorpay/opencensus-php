@@ -162,9 +162,15 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::WALLET:
+
+                $this->validateWalletIssuer($input);
+
+                break;
+
             default:
 
-                // For certain methods like UPI / wallet there is no concept of issuer, so
+                // For certain methods like UPI there is no concept of issuer, so
                 // we don't validate if issuer is null
                 if (empty($input[Entity::ISSUER]) === false)
                 {
@@ -232,6 +238,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a supported bank for gateway ' . $gateway);
+        }
+    }
+
+    protected function validateWalletIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $issuer = $input[Entity::ISSUER] ?? null;
+        $gateway = $input[Entity::GATEWAY];
+
+        if ($issuer === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'issuer cannot be null for wallet select filter rules');
+        }
+
+        if ($gateway !== Gateway::$walletToGatewayMap[$issuer])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'wallet issuer not valid for gateway');
         }
     }
 

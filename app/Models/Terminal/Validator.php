@@ -241,6 +241,7 @@ class Validator extends Base\Validator
     protected static $walletMpesaTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_mpesa',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 

@@ -91,6 +91,36 @@ class InvoiceTest extends TestCase
         });
     }
 
+    public function testPayInvoiceWithCallbackUrl()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice([
+                        'callback_url'    => 'http://localhost/works',
+                        'callback_method' => 'get',
+                        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $response = $this->doAuthPayment($payment);
+
+        $actualSignature = $response['razorpay_signature'];
+
+        $signatureData = [
+            'razorpay_invoice_id'      => $invoice->getPublicId(),
+            'razorpay_invoice_receipt' => $invoice->getReceipt(),
+            'razorpay_invoice_status'  => 'paid',
+            'razorpay_payment_id'      => $response['razorpay_payment_id'],
+        ];
+
+        $exceptedSignature = $this->getSignature($signatureData, 'TheKeySecretForTests');
+
+        $this->assertEquals($exceptedSignature, $actualSignature);
+    }
+
     public function testCreateLinkWithSource()
     {
         $this->startTest();

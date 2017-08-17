@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
+    const RISK_THRESHOLD            = 'risk_threshold';
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
@@ -98,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::BRAND_COLOR,
         self::HANDLE,
         self::INTERNATIONAL,
@@ -173,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
+        self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
@@ -198,6 +201,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS                => 'bool',
         self::CATEGORY                  => 'int',
         self::SETTLEMENT_SCHEDULE       => 'int',
+        self::RISK_THRESHOLD            => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
     ];
@@ -218,6 +222,7 @@ class Entity extends Base\PublicEntity
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
+    const RISK_THRESHOLD_DEFAULT     = 5;
 
     protected function generateTransactionReportEmail($input)
     {
@@ -895,6 +900,23 @@ class Entity extends Base\PublicEntity
     public function getRiskRating()
     {
         return $this->getAttribute(self::RISK_RATING);
+    }
+
+    public function getRiskThreshold()
+    {
+        return $this->getAttribute(self::RISK_THRESHOLD);
+    }
+
+    protected function getRiskThresholdAttribute()
+    {
+        $riskThreshold = $this->attributes[self::RISK_THRESHOLD];
+
+        if ($riskThreshold === null)
+        {
+            $riskThreshold = self::RISK_THRESHOLD_DEFAULT;
+        }
+
+        return (int) $riskThreshold;
     }
 
     public function getSubventionType()

@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
+        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
