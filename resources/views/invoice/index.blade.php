@@ -138,7 +138,6 @@
             }
 
             value = dict[key];
-
             cb.apply(value, [value, key, dict]);
           }
 
