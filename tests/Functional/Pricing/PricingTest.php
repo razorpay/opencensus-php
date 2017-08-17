@@ -216,6 +216,8 @@ class PricingTest extends TestCase
 
         $testData['response']['content']['id'] = $content['id'];
 
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+
         $this->startTest($testData);
     }
 
@@ -232,6 +234,8 @@ class PricingTest extends TestCase
 
     public function testMerchantGetPricingPlanNoPlanAssigned()
     {
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+
         $content = $this->startTest();
 
         // No plan assigned, so it should be empty array
@@ -247,6 +251,8 @@ class PricingTest extends TestCase
             array(
                 'id' => '1FcXNxsHt5dOPI',
                 'pricing_plan_id' => '1ycviEdCgurrFI'));
+
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
         $this->startTest();
     }
