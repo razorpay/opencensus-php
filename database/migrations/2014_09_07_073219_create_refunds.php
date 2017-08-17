@@ -64,7 +64,7 @@ class CreateRefunds extends Migration
             $table->string(Payment::REFERENCE2)
                   ->nullable();
 
-            $table->string(Refund::RECEIPT)
+            $table->string(Refund::RECEIPT, 40)
                   ->nullable();
 
             $table->integer(Refund::CREATED_AT);

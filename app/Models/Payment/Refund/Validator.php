@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                => 'sometimes|integer|min:100',
         'notes'                 => 'sometimes|notes',
-        'receipt'               => 'sometimes|string',
+        'receipt'               => 'sometimes|string|max:40',
         'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
         'reversals.*.transfer'  => 'required',
