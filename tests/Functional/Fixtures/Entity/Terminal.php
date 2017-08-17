@@ -431,15 +431,10 @@ class Terminal extends Base
             'gateway_terminal_password' => 'shared_account_hdfc_terminal_pass',
         ];
 
-        // Add recurring 3ds terminal;
-        $attributes['id'] = 'FssRecurr3DSTl';
-        $attributes['type'] = 3;
+        // Add fss recurring supports both 3ds and non3ds terminal;
+        $attributes['id'] = 'FssRecurringTl';
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
-
-        // Add recurring 3ds
-        $attributes['id'] = 'FssRecurrN3DST';
-        $attributes['type'] = 4;
+        $attributes['type'] = 6;
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
