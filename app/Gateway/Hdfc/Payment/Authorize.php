@@ -255,6 +255,16 @@ trait Authorize
         return false;
     }
 
+    protected function createAuthNotEnrolledRequestFields()
+    {
+        $this->createAuthNotEnrolledRequestFieldsFromEnrollData();
+
+        $this->trace(
+            Trace::DEBUG,
+            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
+            $this->authNotEnrolledRequest);
+    }
+
     protected function createAuthNotEnrolledRequestFieldsFromEnrollData()
     {
         //
@@ -271,16 +281,6 @@ trait Authorize
         $this->authNotEnrolledRequest['data'] = $data;
 
         unset($this->authNotEnrolledRequest['content']);
-    }
-
-    protected function createAuthNotEnrolledRequestFields()
-    {
-        $this->createAuthNotEnrolledRequestFieldsFromEnrollData();
-
-        $this->trace(
-            Trace::DEBUG,
-            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
-            $this->authNotEnrolledRequest);
     }
 
     protected function traceAuthNotEnrolledResponse()
@@ -382,8 +382,10 @@ trait Authorize
         ;
     }
 
-    protected function createAuthRecurringRequestFieldsFromEnrollData()
+    protected function createAuthRecurringRequestFieldsFromEnrollData(array $input)
     {
+        $this->createEnrollRequestFields($input);
+
         //
         // Only need to add zip and addr fields
         // since other fields have already been added during enroll
@@ -398,20 +400,19 @@ trait Authorize
 
     protected function authorizeRecurring($input)
     {
-        $this->createEnrollRequestFields($input);
-
-        $this->createAuthRecurringRequestFieldsFromEnrollData();
+        $this->createAuthRecurringRequestFieldsFromEnrollData($input);
 
         $data = &$this->authSecondRecurringRequest['data'];
+
+        $authSecondRecurringRequestForTrace = $this->authSecondRecurringRequest;
 
         // Fields not required for authorizeRecurring.
        unset($data['cvv2']);
 
-       // @TODO : trace is unsetting the variables
-       // $this->trace(
-       //     Trace::DEBUG,
-       //     TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
-       //     $this->authSecondRecurringRequest);
+       $this->trace(
+           Trace::DEBUG,
+           TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+           $authSecondRecurringRequestForTrace);
 
         $this->runRequestResponseFlow(
             $this->authSecondRecurringRequest,
