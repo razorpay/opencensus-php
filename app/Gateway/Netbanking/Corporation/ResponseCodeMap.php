@@ -11,5 +11,9 @@ class ResponseCodeMap extends Base\ResponseCodeMap
 
     const FUND_TRANSFER = 'T';
 
+    const RESULT_SUCCESS  = 'EXECUTED';
+    const RESULT_REJECTED = 'REJECTED';
+    const RESULT_FAILURE  = 'FAILURE';
+
     protected static $codes = [];
 }
