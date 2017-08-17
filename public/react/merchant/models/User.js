@@ -43,4 +43,8 @@ export default class User {
   get isNewUIEnabled() {
     return (this.tags || []).indexOf('Newui') !== -1;
   }
+
+  get isMarketplaceEnabled() {
+    return (this.tags || []).indexOf('Marketplace') !== -1;
+  }
 }

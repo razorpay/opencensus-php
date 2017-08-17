@@ -36,6 +36,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
       options={merchants}
       placeholder="Switch Merchant"
       searchIndices={['name']}
+      showClear={false}
       optionComponent={({ option }) => {
         return (
           <a class="SwitchMerchantDropdown__option">

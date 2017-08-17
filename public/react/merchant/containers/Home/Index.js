@@ -88,7 +88,7 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root">
-        <Header title="Dashboard" showMode={false}>
+        <Header title="Dashboard" showMode={true}>
           <div class="pull-right">
             <DateRangePickerField
               onDatesChange={params => {

@@ -278,6 +278,38 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+
+      // Create dispute
+      $scope.createDispute = function(data) {
+        var params = {
+          route_name: 'payment_disputes',
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          mode: 'test',
+          body: data,
+        };
+
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: params,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              window.location.reload();
+            } else {
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
+
       $scope.refund = function(data) {
         data.amount = parseInt(data.amount);
         var unrefundedAmount =
@@ -325,6 +357,22 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+
+      $scope.openDisputeModal = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'disputeModalContent.html',
+          controller: 'DisputeModalCtrl',
+          resolve: {
+            current: function() {
+              return $scope.entity;
+            },
+          },
+        });
+        modalInstance.result.then(function(data) {
+          $scope.createDispute(data);
+        }, $.noop);
+      };
+
       $scope.showRefunds = function() {
         if ($scope.isRefundsCollapsed === false) {
           $scope.isRefundsCollapsed = true;

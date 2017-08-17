@@ -1,43 +1,37 @@
 import { Component } from 'react';
-import AsyncButton from 'react-async-button';
-import BaseToggler from 'rzp/ui/Toggler/BaseToggler';
+import { NavLink } from 'react-router-dom';
 
 /*
- // USAGE: Check PaymentDetails
+ // Usage: Check PaymentDetails
+ // Constraints: Don't pass props `limitUrl` if `limit` is not passed as it won't be utlized
  // Eg: Refund list
 */
 
-export default class ListToggler extends BaseToggler {
+export default class ListToggler extends Component {
   render() {
+    let { loading, limit, totalItems, label, subLabel, limitUrl } = this.props;
+
     return (
       <div class="list-table">
-        <span class="list-label">{this.props.label} • </span>
-        <AsyncButton
-          class="primary-link"
-          text="View all"
-          pendingText="Fetching..."
-          onClick={this.toggle}
-        >
-          {({ buttonText, isPending }) => (
-            <span>
-              {isPending && 'Fetching...'}
-              {!isPending &&
-                <span>
-                  {this.state.show ? 'Hide' : 'View'} {' '}
-                  {this.props.totalItems
-                    ? <span>all <b>{this.props.totalItems} &gt;</b></span>
-                    : null}
-                </span>}
-            </span>
-          )}
-        </AsyncButton>
-        {this.state.show
-          ? <div class="panel-body" style={{ padding: '15px 0' }}>
-              <div class="list-group detail-row-container">
-                {this.props.children}
-              </div>
-            </div>
-          : null}
+        <span class="list-label">
+          <b>{label}</b> {subLabel}
+        </span>
+        {!loading && limit && limit < totalItems && <span> • </span>}
+
+        <span class="primary-link">
+          {!loading &&
+            limit &&
+            limit < totalItems &&
+            <NavLink to={limitUrl}>
+              View all <b>{totalItems} &gt;</b>
+            </NavLink>}
+        </span>
+
+        <div class="panel-body" style={{ padding: '15px 0' }}>
+          <div class="list-group detail-row-container">
+            {this.props.children}
+          </div>
+        </div>
       </div>
     );
   }

@@ -80,11 +80,10 @@ return [
         'action_comment_fetch'              => 'w-actions/{id}/comments',
         'workflow_action_details'           => 'w-actions/{id}/details',
         'workflow_action_update'            => 'w-actions/{id}',
-        'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
-        'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
         'action_checker_create'             => 'w-actions/{id}/checkers',
         'action_request_execute'            => 'w-actions/{id}/execute',
         'workflow_action_close'             => 'w-actions/close/{id}',
+        'workflow_action_get_multiple'      => 'w-actions',
 
         // Admin Actions
         // Create Schedule
@@ -95,9 +94,13 @@ return [
         // Add Adjustment
         'adj_add'                           => 'adjustments',
 
+        // Feature Delete
+        'feature_delete'                    => 'features/{entityId}/{featureName}',
+
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        'pricing_create_plan'               => 'pricing',
     ],
 
     // auth
@@ -404,7 +407,6 @@ return [
             'url'       => 'invitations/{id}',
             'routeName' => 'invitations_delete'
         ],
-        'invitation_fetch'                  => 'invitations',
 
         // Virtual Accounts
         'virtual_account_fetch_multiple'    => [
@@ -503,6 +505,7 @@ return [
         // Offer create / update
         'offer_create'                      => 'offers',
         'offer_update'                      => 'offers/{id}',
+        'invitation_fetch'                  => 'invitations',
     ],
 
     // auth
@@ -526,7 +529,6 @@ return [
         'pricing_get_merchant_plans'        => 'pricing/merchants',
         'pricing_get_plan'                  => 'pricing/{id}',
         'pricing_add_plan_rule'             => 'pricing/{id}/rule',
-        'pricing_create_plan'               => 'pricing',
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
 
@@ -541,8 +543,16 @@ return [
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
         // Generate Refunds Excel
         'refund_generate_excel'             => 'refunds/excel',
+        // Generate Emi Excel
+        'emi_generate_excel'                => 'emi/generate/excel',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
+
+        'refund_verify_failed'              => 'refunds/{id}/retry',
+
+        // Tags
+        'merchant_tag_add'                  => 'merchants/{id}/tags',
+        'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
@@ -558,6 +568,10 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
+
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth

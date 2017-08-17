@@ -35,6 +35,7 @@ const shownByDefault = [
   'notes',
   'refund_status',
   'refunds',
+  'tax',
   'service_tax',
   'status',
   'wallet',
@@ -141,20 +142,18 @@ export default props => {
 
                   <EntityDetailRow
                     label="Fees"
-                    value={() => (
-                      <Amount value={payment.fee - payment.service_tax} />
-                    )}
+                    value={() => <Amount value={payment.fee - payment.tax} />}
                   />
 
                   <EntityDetailRow
-                    label="GST"
-                    value={() => <Amount value={payment.service_tax} />}
+                    label="Tax"
+                    value={() => <Amount value={payment.tax} />}
                   />
 
                   <EntityDetailRow
                     label="Total Fees"
                     value={() => (
-                      <span data-tip="Total Fees is inclusive of GST charges">
+                      <span data-tip="Total Fees is inclusive of tax charges">
                         <Amount value={payment.fee} />
                         <i class="icon icon-info-circle info-tooltip" />
                       </span>
@@ -200,11 +199,14 @@ export default props => {
                   />
                   {payment.refund_status
                     ? <ListToggler
-                        label="Refunds"
+                        label="Recently created Refunds"
+                        subLabel="to this payment"
+                        loading={refunds.loading}
                         totalItems={refunds.items.length}
-                        onToggleClick={() => props.onToggleRefundList(payment)}
                       >
                         <DataTable
+                          customClass="refunds-table"
+                          progressLoader={true}
                           title="Refunds"
                           columns={[refundId, amount]}
                           items={refunds.items}

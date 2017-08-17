@@ -26,7 +26,9 @@ app
       $scope.methodMap = utilMapping.getMap('methodMap');
       $scope.gatewayAcquirerMap = utilMapping.getMap('gatewayAcquirerMap');
 
-      $scope.merchantId = '100000Razorpay'; // Default search for shared merchant
+      $scope.gatewayRuleSearch = {
+        merchant_id: '100000Razorpay',
+      };
 
       admin.identity().then(function(data) {
         $scope.admin = data;
@@ -62,15 +64,19 @@ app
 
       // fetch gateway rules on basis of mode and merchant id selected by user
       $scope.getRulesById = function() {
+        // Clear empty fields
+        for (var item in $scope.gatewayRuleSearch) {
+          !$scope.gatewayRuleSearch[item] &&
+            delete $scope.gatewayRuleSearch[item];
+        }
+
         var data = {
           route_name: 'admin_fetch_entity_multiple',
           url_params: {
             '{type}': 'gateway_rule',
           },
           mode: $scope.mode,
-          query_params: {
-            merchant_id: $scope.merchantId,
-          },
+          query_params: $scope.gatewayRuleSearch,
         };
         var request = $http.get('/admin/generic', {
           params: data,
@@ -80,12 +86,7 @@ app
           .success(function(data) {
             if (data.success) {
               $scope.gatewayRules = data.data.items;
-
-              if (!$scope.gatewayRules.length) {
-                $scope.noResults = true;
-              } else {
-                $scope.noResults = false;
-              }
+              $scope.noResults = $scope.gatewayRules.length ? false : true;
             } else {
               $scope.alerts.resetAlerts(true);
               angular.forEach(data.errors, function(value) {
@@ -109,10 +110,28 @@ app
             ? null
             : gatewayRule.issuer;
 
+          // Delete null, undefined or empty string keys
           if (!gatewayRule[key]) {
             delete gatewayRule[key];
           }
         });
+
+        if (!gatewayRule.type === 'filter' && gatewayRule.filter_type) {
+          delete gatewayRule.filter_type;
+        }
+
+        if (!gatewayRule.method === 'emi' && gatewayRule.emi_duration) {
+          delete gatewayRule.emi_duration;
+        }
+
+        if (!gatewayRule.method === 'emi' && gatewayRule.emi_subvention) {
+          delete gatewayRule.emi_subvention;
+        }
+
+        if (!gatewayRule.type === 'sorter' && gatewayRule.load) {
+          delete gatewayRule.load;
+        }
+
         return gatewayRule;
       }
 
@@ -155,6 +174,24 @@ app
 
       // Update gateway rule by id
       $scope.updateRuleById = function(rule) {
+        var data = {};
+        // Pruning rule as only 4 fields are required in edit mode
+        if (rule['load']) {
+          data['load'] = rule['load'];
+        }
+
+        if (rule['group']) {
+          data['group'] = rule['group'];
+        }
+
+        if (rule['iins']) {
+          data['iins'] = rule['iins'];
+        }
+
+        if (rule['filter_type']) {
+          data['filter_type'] = rule['filter_type'];
+        }
+
         var request = $http({
           url: 'admin/generic',
           method: 'patch',
@@ -166,9 +203,7 @@ app
             },
           },
           data: {
-            body: {
-              load: rule.load,
-            },
+            body: data,
           },
         });
 
@@ -240,6 +275,30 @@ app
         openRuleModal({}); // create new rule = {}
       };
 
+      $scope.updateGatewayList = function(method, gatewayRule) {
+        delete gatewayRule.gateway; // reset gateway whenever method value changes as user has to select fresh gateway value
+
+        switch (method) {
+          case 'card':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayCardMap');
+            break;
+          case 'emi':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayEmiMap');
+            break;
+          case 'netbanking':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayNBMap');
+            break;
+          case 'wallet':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayWalletMap');
+            break;
+          case 'upi':
+            $scope.gatewayListMap = utilMapping.getMap('gatewayUpiMap');
+            break;
+          default:
+            delete gatewayRule.method;
+        }
+      };
+
       // Open modal for editing existing gateway rule OR creating new gateway rule
       function openRuleModal(gatewayRule) {
         var modalInstance = $modal.open({
@@ -277,8 +336,10 @@ app
 
       $scope.editMode = false;
 
-      $scope.updateGatewayList = function(methodType) {
-        switch (methodType) {
+      $scope.updateGatewayList = function(method) {
+        $scope.current.gateway == null && delete $scope.current.gateway; // reset gateway as the value is dependent on method type
+
+        switch (method) {
           case 'card':
             $scope.gatewayListMap = utilMapping.getMap('gatewayCardMap');
             break;
@@ -294,6 +355,8 @@ app
           case 'upi':
             $scope.gatewayListMap = utilMapping.getMap('gatewayUpiMap');
             break;
+          default:
+            delete gatewayRule.method;
         }
       };
 
@@ -303,13 +366,34 @@ app
 
       if (Object.keys(current).length) {
         $scope.editMode = true;
+
+        // 1. Iins: Convert iins from array to comma supported to dispay in input field
+        $scope.current['iins'] = $scope.current['iins']
+          ? $scope.current['iins'].join(',')
+          : null;
       }
 
       if ($scope.editMode) {
         $scope.updateGatewayList(current.method);
       }
 
+      function cleanFields(currentRule) {
+        //1. Iins: Convert to array
+        if (currentRule['iins']) {
+          currentRule['iins'] = currentRule['iins'].split(','); // Convert command separate values to array
+        }
+
+        //2. Convert rupees values to paisa
+        if (currentRule.max_amount) {
+          currentRule.max_amount *= 100;
+        }
+        if (currentRule.min_amount) {
+          currentRule.min_amount *= 100;
+        }
+      }
+
       $scope.ok = function(currentRule) {
+        cleanFields(currentRule);
         $modalInstance.close(currentRule);
       };
       $scope.cancel = function() {

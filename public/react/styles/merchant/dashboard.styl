@@ -79,24 +79,139 @@
   }
 }
 
-.upload-container {
-  .row {
-    margin: 32px 0;
+.report-wrapper {
+  background-color: #fff;
+  padding: 0;
+  float: none;
+  padding-top: 8px;
+  margin: 0px auto;
 
-    [class^='col-'] {
-      text-align: center;
+  // This is only needed for desktop
+  @media(min-width: 992px) {
+    &:before {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 33.33%;
+      border-left: 1px solid #DEE5E7;
+    }
+  }
+
+  &:after {
+    clear: both;
+    content: '';
+    display: table;
+  }
+
+  .report-list-panel {
+    .title {
+      color: #7f7f7f;
+      font-size: 12px;
+    }
+    &--mobile {
+      padding: 16px 16px 0;
+
+      .title {
+        padding: 0 0 8px 0;
+      }
+    }
+    &--desktop {
+      padding: 0;
+      padding-top: 16px;
+      padding-bottom: 8px;
+
+      .title {
+        padding: 0 0 8px 24px;
+      }
+    }
+  }
+
+  .report-generate-panel {
+    padding: 11px 24px 24px;
+
+    .title {
+      color: #7f7f7f;
+      font-size: 12px;
+      padding-bottom: 8px;
     }
 
-    label {
-      cursor: pointer;
+    .account {
+      line-height: 36px;
+    }
 
-      input[type=checkbox] {
-        margin-left: 16px;
+    .custom-icon {
+      position: absolute;
+      z-index: 1;
+      color: #e0e0e0;
+      pointer-events: none;
+    }
+    .custom-select .custom-icon {
+      top: 8px;
+      left: 8px;
+      font-size: 20px;
+    }
+    .custom-date .custom-icon {
+      top: 10px;
+      right: 10px;
+    }
+
+    .typeAheadSkin {
+      position: absolute;
+      z-index: 2;
+      background-color: rgb(255, 255, 255);
+      top: 10px;
+      width: 87%;
+      margin-left: 30px;
+      pointer-events none;
+      font-size: 12px;
+    }
+
+    .PowerSelect__TriggerInput {
+      padding-left: 32px;
+    }
+
+    .form-heading {
+      font-weight: 600;
+      border-bottom: 1px solid #e2e8ea;
+      padding-bottom: 6px;
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    .form-element {
+      margin-bottom 16px;
+
+      //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
+      .fix-select {
+        background: transparent;
+        border: none;
+        margin-left: -5px;
+        width: 100%;
+      }
+
+      &:last-child {
+        margin-bottom: 4px;
+      }
+
+      &:after {
+        clear: both;
+        content: '';
+        display: table;
+      }
+
+      footer {
+        padding: 12px 0 0 0;
+      }
+
+      [class^='col-'] {
+        padding: 0;
+        margin-right: 16px;
       }
     }
   }
 }
-
 
 // Onboarding Card
 
@@ -170,7 +285,7 @@
   .Onboarding__Step {
     display: block;
     color: #58666e;
-    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.05);
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     background-color: #FAFAFA;
     padding: 14px;
@@ -211,4 +326,76 @@
       }
     }
   }
+}
+
+.reports-entity-options {
+  input[type=radio].report-type {
+    display: none;
+  }
+
+  input[type=radio].report-type + label {
+    width: 100%;
+    padding: 12px 24px;
+    margin: 0;
+    color: #555555;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+  }
+
+  &:not(:last-child) {
+    input[type=radio].report-type + label {
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+  }
+
+  input[type=radio].report-type + label:hover {
+    background-color: #f9f9f9;
+  }
+
+  input[type=radio].report-type:checked + label {
+    color: #6A55D1;
+    background-color: #f9f9f9;
+  }
+
+  @media(min-width: 992px) {
+    input[type=radio].report-type:checked + label:after {
+      float: right;
+      content: "\25BA";
+      color: #a5a5a5;
+      font-size: 11px;
+    }
+  }
+}
+
+.custom-tag {
+  color: #6a55d1;
+  float: right;
+  font-size: 14px;
+
+  &.icon {
+    margin-top: 2px;
+  }
+}
+
+.custom-powerselect {
+  border: 1px solid #cfdadd;
+  border-radius: 3px;
+
+  .PowerSelect__Trigger,
+  .PowerSelect__TriggerLabel,
+  .PowerSelect__TriggerStatus {
+    height: 28px;
+  }
+
+  .PowerSelect__TriggerLabel {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.custom-powerselect-options {
+  line-height: 24px !important;
+  padding: 2px 12px !important;
+  min-height: 28px;
 }

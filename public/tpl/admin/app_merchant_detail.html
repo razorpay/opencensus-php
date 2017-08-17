@@ -14,9 +14,14 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
           Login as Merchant
         </a>
-        <a ui-sref="app.merchants.activation({id:merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
+        <a ui-sref="app.merchants.activation({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Activation Form Details
         </a>
+
+        <a ui-sref="app.merchants.team({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
+          See Team Details
+        </a>
+
         <a href class="list-group-item lock-form" dynamic-tooltip="edit_merchant_lock_activation" ng-show="(merchant.details.locked==0) && (admin.permissions.indexOf('edit_merchant_lock_activation') !== -1)" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
@@ -268,7 +273,7 @@
             </div>
           </div>
 
-        <div class="list-group-item" ng-show="referer!=false">
+        <div class="list-group-item" ng-show="referer!==''">
           <span class="pull-right">{{referer}}</span>
           Referer
         </div>
@@ -982,6 +987,7 @@
              <option value="netbanking_federal">Netbanking Federal</option>
              <option value="netbanking_indusind">Netbanking Indusind</option>
              <option value="netbanking_rbl">Netbanking RBL</option>
+             <option value="netbanking_pnb">Netbanking PNB</option>
              <option value="cybersource">Cybersource</option>
              <option value="hitachi">Hitachi</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
@@ -1945,7 +1951,7 @@
   <div class="modal-footer">
       <div>You can also type other referral sources instead of merchant id</div>
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(referral)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-disabled="referral===''" ng-click="ok(referral)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="featureModalContent.html">
@@ -2109,7 +2115,7 @@
           </select>
         </div>
         <div class="col-lg-3" ng-show="reportForm.type === 'daily'">
-          <select class="form-control m-b" name="date" ng-model="reportForm.date">
+          <select class="form-control m-b" name="date" ng-model="reportForm.day">
             <option ng-repeat="date in range(1, daysInSelectedMonth)" value={{date}}>{{date}}</option>
           </select>
         </div>

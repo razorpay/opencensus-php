@@ -56,6 +56,7 @@ export default props => {
                     >
                       <DataTable
                         columns={[paymentId, amount, status, createdAt]}
+                        title="Payments"
                         items={payments.items}
                         loading={payments.loading}
                         showHeaders={false}

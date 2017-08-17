@@ -17,8 +17,9 @@ export default class TransferDetailsContainer extends Component {
   state = {};
 
   componentWillMount() {
-    this.props.fetchTransfer(this.props.id);
-    this.props.fetchReversals(this.props.id);
+    this.props
+      .fetchTransfer(this.props.id)
+      .then(() => this.props.fetchReversals(this.props.id));
   }
 
   // Open modal for reversing transfer
@@ -26,11 +27,6 @@ export default class TransferDetailsContainer extends Component {
     this.props.openModal({
       component: <ReversalModal transfer={transfer} />,
     });
-  };
-
-  // Fetch reversals list in details view
-  fetchReversals = id => {
-    return this.props.fetchReversals(id);
   };
 
   render() {
@@ -51,7 +47,6 @@ export default class TransferDetailsContainer extends Component {
         isLoading={loading}
         statusMsg={statusMsg}
         openReversalModal={this.openReversalModal}
-        onToggleReversalsList={this.fetchReversals}
       />
     );
   }

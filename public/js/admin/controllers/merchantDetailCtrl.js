@@ -201,11 +201,11 @@ app
       var getReferer = function(tags) {
         for (var i in tags) {
           var tag = tags[i];
-          if (tag.substr(0, 3).toLowerCase() === 'ref') {
+          if (tag.substr(0, 4).toLowerCase() === 'ref-') {
             return tag.substr(4);
           }
         }
-        return false;
+        return '';
       };
 
       $scope.tagMerchant = function(tags) {
@@ -1793,7 +1793,7 @@ app
 
         request
           .success(function(data) {
-            if (data.success || true) {
+            if (data.success) {
               $scope.merchantOffers = data.data.items;
             } else {
               $scope.alerts.resetAlerts(true);
@@ -2863,13 +2863,13 @@ app
         $scope.daysInSelectedMonth = numberOfDays(month, year); // total days in that month-year
 
         // Change the date if exceeding
-        if ($scope.daysInSelectedMonth < $scope.reportForm.date) {
-          $scope.reportForm.date = $scope.daysInSelectedMonth;
+        if ($scope.daysInSelectedMonth < $scope.reportForm.day) {
+          $scope.reportForm.day = $scope.daysInSelectedMonth;
         }
 
         // Remove the date key if duration is no longer 'daily'
         if ($scope.reportForm.type === 'monthly') {
-          delete $scope.reportForm.date;
+          delete $scope.reportForm.day;
         }
       };
 

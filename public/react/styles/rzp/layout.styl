@@ -482,6 +482,11 @@ tr:hover .row-action.btn-group {
       vertical-align: top;
     }
 
+    // check icon looks mis-aligned without negative margin
+    > i.icon-check, i.icon-close {
+      margin-left: -3px;
+    }
+
     // For nested values
     .table-responsive {
       margin-top: 8px;
@@ -502,6 +507,8 @@ tr:hover .row-action.btn-group {
   background-color: transparent;
   border: none;
   padding: 0;
+  word-break: break-word;
+  display: inline-block;
 }
 
 .list-table {
@@ -601,7 +608,10 @@ tr:hover .row-action.btn-group {
   }
 
   .PowerSelect__TriggerStatus {
-    border-top-color: #777;
+    padding-left: 0;
+    &::before {
+      border-top-color: #777;
+    }
   }
 
   .PowerSelect__TriggerLabel {
@@ -749,4 +759,13 @@ tr:hover .row-action.btn-group {
   font-size: 13px;
   color: #ccc;
   margin-left: 4px;
+}
+
+.empty-table-message, .table > tbody > tr > td.empty-table {
+  padding: 75px 50px;
+  text-align: center;
+
+  &:hover {
+    background: #fff;
+  }
 }

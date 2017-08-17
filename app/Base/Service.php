@@ -11,6 +11,8 @@ use Auth;
 
 class Service
 {
+    const ACCOUNT_HEADER = 'X-Razorpay-Account';
+
     private function setHeaders()
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
@@ -48,6 +50,11 @@ class Service
         ApiRequest::addHeader('X-Dashboard', 'true');
 
         $this->api = new Api($key, null);
+    }
+
+    public function setAccountCredentials(string $accountId)
+    {
+        ApiRequest::addHeader(self::ACCOUNT_HEADER, $accountId);
     }
 
     public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')

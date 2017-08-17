@@ -10,7 +10,7 @@ import {
   updateInvitation,
   cancelInvitation,
   fetchTeamDetails,
-} from 'merchant/modules/team';
+} from 'rzp/modules/team';
 
 const ROLES = without(roles, 'owner');
 @connect(state => state.session, {

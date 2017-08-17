@@ -20,7 +20,7 @@ import { luminateRow } from 'merchant/modules/app';
 })
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
-    params.type = 'link';
+    params.types = ['link', 'ecod'];
     return this.props.fetchInvoices(params);
   }
 
