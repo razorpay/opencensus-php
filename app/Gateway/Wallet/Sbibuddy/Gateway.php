@@ -72,7 +72,7 @@ class Gateway extends Base\Gateway
         // If status code is not success code, throw exception
         if ($data[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS_CODE)
         {
-            $this->handleCallbackFailure($data);
+            $this->handleFailure($data);
         }
 
         return $this->getCallbackResponseData($input);
@@ -105,7 +105,7 @@ class Gateway extends Base\Gateway
 
         if ($this->isStatusCodeSuccess($content) !== true)
         {
-            $this->handleRefundFailure($content);
+            $this->handleFailure($content);
         }
     }
 
@@ -174,15 +174,6 @@ class Gateway extends Base\Gateway
         );
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-    }
-
-    protected function handleCallbackFailure(array $content)
-    {
-        throw new Exception\GatewayErrorException(
-            ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
-            $content[ResponseFields::STATUS_CODE],
-            $content[ResponseFields::ERROR_DESCRIPTION]
-        );
     }
     //----------------Callback helper methods end--------------
 
@@ -265,7 +256,7 @@ class Gateway extends Base\Gateway
      *
      * @param $data Parsed data from the response of refund
      */
-    protected function handleRefundFailure(array $content)
+    protected function handleFailure(array $content)
     {
         throw new Exception\GatewayErrorException(
             ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
