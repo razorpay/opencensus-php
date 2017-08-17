@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID  => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
-        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:20',
+        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
     ];
 
     protected $proxyFetchParamRules = [
@@ -35,6 +35,7 @@ class Repository extends Base\Repository
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
         Entity::NOTES             => 'sometimes|notes_fetch',
+        Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         // TODO: Enable this once the expand pr is back merged.
         // EsRepository::SEARCH_HITS => 'sometimes|boolean',
@@ -43,6 +44,14 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::ORDER_ID    => 'sometimes|string|max:20',
+    ];
+
+    protected $signedIds = [
+        Entity::PAYMENT_ID,
+        Entity::CUSTOMER_ID,
+        Entity::ORDER_ID,
+        Entity::SUBSCRIPTION_ID,
+        Entity::BATCH_ID,
     ];
 
     // ---------------------- Custom validation methods --------------
@@ -311,43 +320,11 @@ class Repository extends Base\Repository
         $this->joinQueryPayment($query);
 
         $paymentId = $params[Entity::PAYMENT_ID];
-        Entity::stripSignWithoutValidation($paymentId);
 
         $paymentIdAttribute = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
-    }
-
-    protected function addQueryParamCustomerId(BuilderEx $query, array $params)
-    {
-        $customerId = $params[Entity::CUSTOMER_ID];
-
-        Customer\Entity::stripSignWithoutValidation($customerId);
-
-        $customerIdAttr = $this->dbColumn(Entity::CUSTOMER_ID);
-
-        $query->where($customerIdAttr, $customerId);
-    }
-
-    protected function addQueryParamOrderId(BuilderEx $query, array $params)
-    {
-        $orderId = (new Order\Entity)
-                        ->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
-
-        $orderIdAttribute = $this->dbColumn(Entity::ORDER_ID);
-
-        $query->where($orderIdAttribute, '=', $orderId);
-    }
-
-    protected function addQueryParamBatchId(BuilderEx $query, array $params)
-    {
-        $batchId = (new Batch\Entity)
-                        ->verifyIdAndSilentlyStripSign($params[Entity::BATCH_ID]);
-
-        $batchIdAttribute = $this->dbColumn(Entity::BATCH_ID);
-
-        $query->where($batchIdAttribute, '=', $batchId);
     }
 
     protected function addQueryParamTypes(BuilderEx $query, array $params)

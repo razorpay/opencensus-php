@@ -1222,7 +1222,7 @@ class InvoiceTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['order_id'] = '100000000order';
+        $testData['request']['content']['order_id'] = 'order_100000000order';
         $testData['request']['content']['payment_id'] = $payment['id'];
 
         $testData['response']['content']['count'] = 1;
