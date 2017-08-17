@@ -67,7 +67,7 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
-        $content = $this->getDataFromResponse($input['gateway']);
+        $content = $this->getDataFromResponse($input['gateway'], $input);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -288,7 +288,7 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function getDataFromResponse(array $encryptedResponse)
+    protected function getDataFromResponse(array $encryptedResponse, array $input)
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
@@ -300,20 +300,20 @@ class Gateway extends Base\Gateway
 
         parse_str($decryptedString, $response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $response);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, ['response' => $response]);
 
-        $this->checkDecryptionFailure($encryptedString, $response);
+        $this->checkDecryptionFailure($encryptedString, $input);
 
         return $response;
     }
 
-    protected function checkDecryptionFailure(string $encryptedString, array $content)
+    protected function checkDecryptionFailure(string $encryptedString, array $input)
     {
         if (empty($content) === true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['encrypted_string' => $encryptedString,
-                 'payment_id'       => $content[ResponseFields::MERCHANT_REFERENCE]]);
+                 'payment_id'       => $input['payment']['id']]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
