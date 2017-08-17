@@ -302,12 +302,12 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, ['response' => $response]);
 
-        $this->checkDecryptionFailure($encryptedString, $input);
+        $this->checkDecryptionFailure($encryptedString, $response, $input);
 
         return $response;
     }
 
-    protected function checkDecryptionFailure(string $encryptedString, array $input)
+    protected function checkDecryptionFailure(string $encryptedString, array $content, array $input)
     {
         if (empty($content) === true)
         {
