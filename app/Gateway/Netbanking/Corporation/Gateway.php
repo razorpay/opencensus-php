@@ -122,6 +122,13 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
     }
 
+    protected function parseVerifyResponse($content)
+    {
+        parse_str($content, $data);
+
+        sd($data);
+    }
+
     protected function getVerifyRequestData(array $input)
     {
         $data = [
@@ -133,17 +140,17 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_ACCOUNT_NUMBER        => "",
         ];
 
-        $enccryptedString = $this->getEncryptor()->encryptData($data);
+        $encryptedString = $this->getEncryptor()->encryptData($data);
 
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
-            RequestFields::VERIFY_DATA          => $enccryptedString
+            RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
         return $data;
     }
 
-    protected function getEncryptor()
+    public function getEncryptor()
     {
         $secret = $this->getSecret();
 
