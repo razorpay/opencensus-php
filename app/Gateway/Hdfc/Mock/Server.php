@@ -116,7 +116,8 @@ class Server extends Base\Mock\Server
                     'Hdfc\Mock: Action code not recognized. Action: ' . $this->data['action']);
         }
 
-        switch ($type) {
+        switch ($type)
+        {
             case 'auth_second_recurring':
                 $this->action = 'authorize';
                 $xml = $this->authSecondRecurringOnGateway();
