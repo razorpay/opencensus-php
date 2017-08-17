@@ -298,22 +298,9 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        $verify->apiSuccess = true;
+        $this->setVerifyApiSuccess($verify, $input['payment']);
 
-        // apiSuccess is false if the payment entity is in failed or created state
-        if (($input['payment']['status'] === Status::FAILED) or
-            ($input['payment']['status'] === Status::CREATED))
-        {
-            $verify->apiSuccess = false;
-        }
-
-        // Initially assume the gatewaySuccess if false
-        $verify->gatewaySuccess = false;
-
-        if ($this->isStatusCodeSuccess($content) === true)
-        {
-            $verify->gatewaySuccess = true;
-        }
+        $this->setVerifyGatewaySuccess($verify, $content);
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
@@ -323,6 +310,29 @@ class Gateway extends Base\Gateway
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $this->saveVerifyContentIfNeeded($payment, $input['payment']);
+    }
+
+    protected function setVerifyApiSuccess($verify, $payment)
+    {
+        $verify->apiSuccess = true;
+
+        // apiSuccess is false if the payment entity is in failed or created state
+        if (($payment['status'] === Status::FAILED) or
+            ($payment['status'] === Status::CREATED))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function setVerifyGatewaySuccess($verify, $content)
+    {
+        // Initially assume the gatewaySuccess if false
+        $verify->gatewaySuccess = false;
+
+        if ($this->isStatusCodeSuccess($content) === true)
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 
     protected function saveVerifyContentIfNeeded($gatewayPayment, $payment)
