@@ -2,16 +2,10 @@
 
 namespace RZP\Models\Merchant\FileProcessor;
 
-use DirectoryIterator;
-
-use App;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Base\RuntimeManager;
-use RZP\Models\FileStore\Format;
 use RZP\Reconciliator\FileProcessor;
 
 class Orchestrator extends Base\Core
@@ -19,17 +13,7 @@ class Orchestrator extends Base\Core
     const ATTACHMENT_COUNT = 'attachment_count';
     const MERCHANT         = 'merchant';
     const TYPE             = 'type';
-
-    /**************************
-     * Email details constants
-     **************************/
-    const EMAIL_DETAILS    = 'email_details';
-    const FROM             = 'from';
-    const TO               = 'to';
-    const SUBJECT          = 'subject';
-    const TIMESTAMP        = 'timestamp';
-    const BODY             = 'body';
-    const BODY_HTML_TEXT   = 'body_html_text';
+    const EXTRA_INPUT_TYPE = 'extra_input_type';
 
     /******************
      * Merchant constants
@@ -43,7 +27,6 @@ class Orchestrator extends Base\Core
 
     protected $allFilesContents;
     protected $allFilesDetails;
-    protected $emailDetails;
 
     /********************
      * Instance objects
@@ -51,7 +34,6 @@ class Orchestrator extends Base\Core
 
     protected $validator;
     protected $fileProcessor;
-    protected $app;
 
     public function __construct()
     {
@@ -84,8 +66,6 @@ class Orchestrator extends Base\Core
         {
             $this->trace->traceException($e);
 
-            var_dump($e->getMessage());die;
-
             return [];
         }
 
@@ -93,13 +73,12 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Determines whether the reconciliation request is manual or
-     * via MailGun and gets the files details accordingly.
+     * Identify Processor and processes request
      *
      * @param array $input The input received from the route.
-     * @return array Summary of reconciliation
-     * @throws Exception\ReconciliationException Raised when there are no
-     *                                           files to reconcile.
+     * @return array Summary of process
+     * @throws Exception\BadRequestException
+     *
      */
     protected function processRequest(array $input)
     {
@@ -116,8 +95,9 @@ class Orchestrator extends Base\Core
 
         if (empty($this->allFilesDetails) === true)
         {
-            //TODO
-            //throw exception
+            throw new Exception\BadRequestException(
+                'File Details are empty.'
+            );
         }
 
         return $this->orchestrate();
@@ -128,10 +108,10 @@ class Orchestrator extends Base\Core
      * Validates each file.
      * Gets the content of each file and stores it in an array.
      * Deletes the file from local storage.
-     * Calls the gateway reconciliator with
+     * Calls the Merchant File Processor with
      * all the file details and file contents.
      *
-     * @throws Exception\ReconciliationException
+     * @throws Exception\BadRequestException
      */
     protected function orchestrate()
     {
@@ -148,9 +128,7 @@ class Orchestrator extends Base\Core
 
             try
             {
-                // Converts to in-memory array and stores it in instance variable.
-                // Might have to move this into Gateway implementation since
-                // conversion to array might be different for different gateways.
+                // Converts to in-memory array and stores it in instance variable..
                 $this->getFileContentInArrayAndSet($fileDetails);
             }
             catch (\Exception $ex)
@@ -168,16 +146,13 @@ class Orchestrator extends Base\Core
 
             //
             // Delete the file. We have all the data in $allFilesContents.
-            // Ensure that you don't delete the directory by mistake.
-            // In case of zip files, that's fine. But otherwise, it'll delete
-            // off the settlement folder only.
             //
             $this->baseFileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
         if (empty($this->allFilesContents) === true)
         {
-            throw new Exception\ReconciliationException(
+            throw new Exception\BadRequestException(
                 'File contents are empty.',
                 [
                     'all_files_details' => $this->allFilesDetails,
@@ -201,44 +176,13 @@ class Orchestrator extends Base\Core
             self::TYPE             => $input['type'],
         ];
 
+        if (isset($input[self::EXTRA_INPUT_TYPE]) === true)
+        {
+            $inputDetails[self::EXTRA_INPUT_TYPE] = $input[self::EXTRA_INPUT_TYPE];
+        }
+
         return $inputDetails;
     }
-
-    protected function getEmailDetails($input)
-    {
-        //
-        // Sender info is picked from the 'X-Original-Sender' header, instead
-        // of 'sender' or 'from' headers.
-        //
-        // 'sender' will contain "settlement+{hash}@googlegroups.com", as the
-        // mail is being forwarded to Mailgun through our settlements group.
-        // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
-        // formatted by the sender's email client.
-        // 'X-Original-Sender' always contains just the email address.
-        //
-
-        $emailDetails = [
-            self::FROM           => $input['X-Original-Sender'] ?? $input['sender'],
-            self::SUBJECT        => $input['subject'],
-            self::TO             => $input['recipient'],
-            self::TIMESTAMP      => $input['timestamp'],
-            self::BODY           => $input['stripped-text'],
-            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input['stripped-html'])),
-        ];
-
-        //
-        // Validates that attachments are present in the email.
-        // In some cases (link based banks), attachment count can be 0.
-        // We haven't parsed the email for attachments yet at this point.
-        // Hence, sending `true` as the second parameter (allowZeroAttachments).
-        //
-        $this->validator->validateAttachments($input, true);
-
-        $emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
-
-        return $emailDetails;
-    }
-
 
     /**
      * @param        $inputDetails
@@ -271,22 +215,6 @@ class Orchestrator extends Base\Core
         return $allFilesDetails;
     }
 
-    protected function deleteFileLocallyIfPresent(array $fileDetails)
-    {
-        if (isset($fileDetails[FileProcessor::FILE_PATH]) === false)
-        {
-            return;
-        }
-
-        $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
-    }
-
-    /**
-     * Converts the data in file (excel/csv) and sets to in-memory array.
-     *
-     * @param $fileDetails
-     * @throws Exception\ReconciliationException
-     */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
         $columnHeaders = $this->fileProcessor->getHeaders();
@@ -355,6 +283,6 @@ class Orchestrator extends Base\Core
     {
         $merchantFileProcessorClassName = 'RZP\\Models\\Merchant\\FileProcessor' . '\\' . studly_case($inputDetails['merchant']) . '\\' . studly_case($inputDetails['type']);
 
-        $this->fileProcessor = new $merchantFileProcessorClassName;
+        $this->fileProcessor = new $merchantFileProcessorClassName($inputDetails);
     }
 }

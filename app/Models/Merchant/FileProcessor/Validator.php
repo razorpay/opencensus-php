@@ -15,7 +15,7 @@ class Validator
      * @param array $input
      * @param bool  $allowZeroAttachments
      *
-     * @throws Exception\ReconciliationException
+     * @throws Exception\BadRequestException
      */
     public function validateAttachments(array & $input, bool $allowZeroAttachments = false)
     {
@@ -46,7 +46,7 @@ class Validator
         if (($foundAttachmentsCount === 0) and
             ($allowZeroAttachments === false))
         {
-            throw new Exception\ReconciliationException(
+            throw new Exception\BadRequestException(
                 'No attachments found in the input.'
             );
         }
@@ -64,7 +64,7 @@ class Validator
             // The input's attachment-count and found attachments count should be equal.
             if ($input['attachment-count'] !== $foundAttachmentsCount)
             {
-                throw new Exception\ReconciliationException(
+                throw new Exception\BadRequestException(
                     'The number of attachments found, does not match with the attachment-count input',
                     ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
                 );

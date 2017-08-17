@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Merchant\FileProcessor\Irctc;
 
+use RZP\Exception;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund\Entity;
 use RZP\Models\Merchant\FileProcessor\Base;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base
 {
@@ -24,22 +28,51 @@ class Refund extends Base
         self::CANCELLATION_ID,
     ];
 
+    protected $refundType;
+
+    public function __construct(array $inputDetails)
+    {
+        parent::__construct();
+
+        $this->refundType = $inputDetails['extra_input_type'];
+    }
+
     protected function processEntry(array $row)
     {
         $paymentId = $row[self::PAYMENT_ID];
 
         $payment = $this->repo->payment->findByPublicId($paymentId);
 
-        $refundType = $row[self::REFUND_TYPE];
+        $type = $row[self::REFUND_TYPE];
 
-        if ($refundType === 'R')
+        $processed = false;
+
+        if (($this->refundType === 'R') and
+            ($type === $this->refundType))
         {
             $this->processRTypeRefunds($row, $payment);
+
+            $processed = true;
         }
-        else if ($refundType === 'C')
+        else if (($this->refundType === 'C') and
+                ($type === $this->refundType))
         {
             $this->processCTypeRefunds($row, $payment);
+
+            $processed = true;
         }
+        else
+        {
+            throw new Exception\BadRequestException(
+                'Refund Type is not valid',
+                [
+                    'input_refund_type' => $this->refundType,
+                    'row_data'          => $row,
+                ]
+            );
+        }
+
+        return $processed;
     }
 
     protected function processRTypeRefunds($row, $payment)
@@ -47,34 +80,37 @@ class Refund extends Base
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $input = [
-            Refund\Entity::RECEIPT => $row[self::CANCELLATION_ID],
-            Refund\Entity::NOTES   => [
+            Entity::RECEIPT => $row[self::CANCELLATION_ID],
+            Entity::NOTES   => [
                 'receipt' => $row[self::CANCELLATION_ID],
                 'refund_type' => $row[self::REFUND_TYPE],
             ]
         ];
 
-        $refund = $paymentProcessor->refund($payment, $input);
+        $refund = $paymentProcessor->createRefundFromMerchantFile($payment, $input);
     }
 
     protected function processCTypeRefunds($row, $payment)
     {
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
-        if ($payment->getStatus() !== 'captured') {
-            //TODO throw exception
+        if ($payment->getStatus() !== Payment\Status::CAPTURED) {
+            throw new Exception\BadRequestException(
+                'Payment is not Captured for C type refund',
+                $row
+            );
         }
 
         $input = [
-            Refund\Entity::AMOUNT  => $row[self::AMOUNT],
-            Refund\Entity::RECEIPT => $row[self::CANCELLATION_ID],
-            Refund\Entity::NOTES   => [
+            Entity::AMOUNT  => intval($row[self::REFUND_AMOUNT] * 100),
+            Entity::RECEIPT => $row[self::CANCELLATION_ID],
+            Entity::NOTES   => [
                 'receipt' => $row[self::CANCELLATION_ID],
                 'refund_type' => $row[self::REFUND_TYPE],
             ]
         ];
 
-        $refund = $paymentProcessor->refund($payment, $input);
+        $refund = $paymentProcessor->createRefundFromMerchantFile($payment, $input);
     }
 
     public function getHeaders()
