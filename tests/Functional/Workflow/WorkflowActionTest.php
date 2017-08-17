@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Workflow;
 use RZP\Models\Admin\Permission as AdminPermission;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Role\Repository as RoleRepository;
-use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;

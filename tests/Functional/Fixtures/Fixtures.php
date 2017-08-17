@@ -85,6 +85,8 @@ class Fixtures
 
         $this->workflow->setUp();
 
+        $this->workflow_action->setUp();
+
         $this->entities = $entities;
     }
 
