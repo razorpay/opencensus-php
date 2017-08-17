@@ -394,7 +394,10 @@ trait Authorize
 
         $this->authSecondRecurringRequest['data'] = $data;
 
+        // Fields not required for authorizeRecurring.
         unset($this->authSecondRecurringRequest['content']);
+
+        unset($this->authSecondRecurringRequest['data']['cvv2']);
     }
 
 
@@ -402,17 +405,10 @@ trait Authorize
     {
         $this->createAuthRecurringRequestFieldsFromEnrollData($input);
 
-        $data = &$this->authSecondRecurringRequest['data'];
-
-        $authSecondRecurringRequestForTrace = $this->authSecondRecurringRequest;
-
-        // Fields not required for authorizeRecurring.
-       unset($data['cvv2']);
-
-       $this->trace(
+        $this->trace(
            Trace::DEBUG,
            TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
-           $authSecondRecurringRequestForTrace);
+           $this->authSecondRecurringRequest);
 
         $this->runRequestResponseFlow(
             $this->authSecondRecurringRequest,
