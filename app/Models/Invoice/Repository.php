@@ -46,7 +46,6 @@ class Repository extends Base\Repository
         Entity::NOTES             => 'sometimes|notes_fetch',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
-
         self::EXPAND . '.*'       => 'string|in:payments,',
     ];
 

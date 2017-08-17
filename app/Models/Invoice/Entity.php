@@ -283,6 +283,7 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::LINE_ITEMS,
         self::PAYMENT_ID,
+        self::PAYMENTS,
         self::STATUS,
         self::EXPIRE_BY,
         self::ISSUED_AT,

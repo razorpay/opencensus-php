@@ -120,7 +120,9 @@ trait RepositoryFetch
     {
         $this->processFetchParams($params);
 
-        $query = $this->newQuery();
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $query = $this->newQuery()->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
@@ -134,7 +136,7 @@ trait RepositoryFetch
         // such thing.
         if (count($esParams) > 0)
         {
-            return $this->runEsFetch($esParams, $merchantId);
+            return $this->runEsFetch($esParams, $merchantId, $expands);
         }
 
         // If above doesn't happen we build query for mysql fetch and return the
@@ -232,7 +234,10 @@ trait RepositoryFetch
      *
      * @return PublicCollection
      */
-    protected function runEsFetch(array $params, string $merchantId = null): PublicCollection
+    protected function runEsFetch(
+        array $params,
+        string $merchantId = null,
+        array $expands): PublicCollection
     {
         $entity = $this->entity;
 
@@ -258,7 +263,9 @@ trait RepositoryFetch
         // query on found ids.
         $ids = array_column($result, 'id');
 
-        $entities = $this->newQuery()->findMany($ids, ['*']);
+        $entities = $this->newQuery()
+                         ->with($expands)
+                         ->findMany($ids, ['*']);
 
         // If the not all the ids from es are found in mysql, just raise an error.
         if (count($ids) !== $entities->count())
@@ -374,8 +381,24 @@ trait RepositoryFetch
         $this->validateFetchParams($params);
 
         $this->modifyFetchParams($params);
+    }
 
-        $this->updateExpandsIfApplicable($params);
+    /**
+     * Returns the relations to be eager loaded in fetch/find query. It is list
+     * of input expand(from query parameter) merged with the default list
+     * defined in Repository.
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    protected function getExpandsForQueryFromInput(array & $params): array
+    {
+        $extraExpands = $params[self::EXPAND] ?? [];
+
+        unset($params[self::EXPAND]);
+
+        return $this->getExpandsForQuery($extraExpands);
     }
 
     /**
@@ -529,9 +552,10 @@ trait RepositoryFetch
     {
         $this->validateFindParams($params);
 
-        $this->updateExpandsIfApplicable($params);
+        $expands = $this->getExpandsForQueryFromInput($params);
 
         $entity = $this->newQuery()
+                       ->with($expands)
                        ->merchantId($merchant->getId())
                        ->findOrFailPublic($id);
 
@@ -665,22 +689,6 @@ trait RepositoryFetch
         if (isset($params['count']) === false)
         {
             $params['count'] = $count;
-        }
-    }
-
-    /**
-     * Updates $expands if related value is sent as part of
-     * query parameters.
-     *
-     * @param $params
-     */
-    protected function updateExpandsIfApplicable(array & $params)
-    {
-        if (array_key_exists(self::EXPAND, $params) === true)
-        {
-            $this->addToExpands($params[self::EXPAND]);
-
-            unset($params[self::EXPAND]);
         }
     }
 }

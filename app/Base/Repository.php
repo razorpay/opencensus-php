@@ -6,15 +6,15 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
-use RZP\Base\Common;
-use RZP\Models\Base\EsRepository;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Constants\Entity as E;
+use RZP\Jobs\EsSync;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\EsSync;
 use RZP\Jobs\DispatchRouter;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\EsRepository;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -55,6 +55,14 @@ class Repository extends \Razorpay\Spine\Repository
     protected $trace;
 
     protected $manager;
+
+    /**
+     * List of relations to be eager loaded when entity(s) is fetched via GET,
+     * used in RepositoryFetch's methods.
+     *
+     * @var array
+     */
+    protected $expands = [];
 
     /**
      * Corresponding esRepo instance of entity.
@@ -651,6 +659,49 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $shouldSync;
+    }
+
+    public function getExpands(): array
+    {
+        return $this->expands;
+    }
+
+    /**
+     * Returns an array which can be used in with() of BuilderEx.
+     *
+     * It camel cases $expands (which is generally the snake cased output key)
+     * and returns unique list of it.
+     *
+     * @param array $extra - Optional, if provided returns list merged with default.
+     *
+     * @return array
+     */
+    public function getExpandsForQuery(array $extra = []): array
+    {
+        $defaultExpands = $this->expands;
+
+        $expands = array_merge($defaultExpands, $extra);
+
+        $relations = camel_case_array($expands);
+
+        return array_values(array_unique($relations));
+    }
+
+    /**
+     * Loads the relations as specified in $expands parameter.
+     * This method will not unset existing loaded relations.
+     *
+     * @param PublicEntity $entity
+     *
+     * @return PublicEntity
+     */
+    public function loadRelations(PublicEntity $entity): PublicEntity
+    {
+        $relations = $this->getExpandsForQuery();
+
+        $entity->load($relations);
+
+        return $entity;
     }
 
     protected function getParentNamespace()

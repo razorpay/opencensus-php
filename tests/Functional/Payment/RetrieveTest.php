@@ -28,7 +28,7 @@ class PaymentRetrieveTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $payment = $this->fixtures->create('payment:captured');
+        $payment = $this->fixtures->create('payment:captured', ['fee' => 23000]);
 
         $this->request = array(
             'method' => 'GET',
@@ -176,6 +176,31 @@ class PaymentRetrieveTest extends TestCase
         $payment = json_decode($content, true);
 
         $this->assertEquals($id, $payment['items'][0]['id']);
+    }
+
+    public function testRetrievePaymentWithCardDetails()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['fee' => 23000]);
+
+        $this->ba->privateAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('card_id', $response);
+    }
+
+    public function testRetrieveMultiplePaymentsWithCardDetails()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['fee' => 23000]);
+        $payment = $this->fixtures->create('payment:netbanking_captured', ['fee' => 23000]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     public function testFetchAuthorizedPaymentsOnAppAuth()

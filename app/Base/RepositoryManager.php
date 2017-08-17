@@ -6,6 +6,7 @@ use Closure;
 use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Base\PublicEntity;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
@@ -104,7 +105,7 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->reload($entity);
     }
 
-    public function loadRelations($entity)
+    public function loadRelations(PublicEntity $entity): PublicEntity
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
