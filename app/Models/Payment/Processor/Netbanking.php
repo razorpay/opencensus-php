@@ -226,9 +226,9 @@ class Netbanking
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::CIUB,
-        IFSC::ICIC,
 
         /*
+        IFSC::ICIC,
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
