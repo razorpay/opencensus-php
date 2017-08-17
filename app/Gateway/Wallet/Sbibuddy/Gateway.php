@@ -351,6 +351,29 @@ class Gateway extends Base\Gateway
 
     //----------------General helper methods-------------------
 
+    public function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
+    }
+
+    public function getEncryptor(): AESCrypto
+    {
+        $secret = base64_decode($this->getSecret());
+
+        assert($secret !== null);
+
+        return new AESCrypto(AES::MODE_ECB, $secret);
+    }
+
+    public function getEncryptedStringFromData($data)
+    {
+        $encodedData = http_build_query($data);
+
+        $cryptor = $this->getEncryptor();
+
+        return $cryptor->encryptString($encodedData);
+    }
+
     protected function isStatusCodeSuccess(array $data): bool
     {
         return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes);
@@ -365,15 +388,6 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    public function getEncryptor(): AESCrypto
-    {
-        $secret = base64_decode($this->getSecret());
-
-        assert($secret !== null);
-
-        return new AESCrypto(AES::MODE_ECB, $secret);
-    }
-
     protected function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
@@ -382,15 +396,6 @@ class Gateway extends Base\Gateway
         }
 
         return $this->terminal['gateway_merchant_id'];
-    }
-
-    public function getEncryptedStringFromData($data)
-    {
-        $encodedData = http_build_query($data);
-
-        $cryptor = $this->getEncryptor();
-
-        return $cryptor->encryptString($encodedData);
     }
 
     protected function sendRequest($request)
@@ -403,16 +408,5 @@ class Gateway extends Base\Gateway
 
         return [$this->parseResponse($responseContent), $responseContent];
     }
-
-    /**
-     * Formats amount to 2 decimal places
-     * @param  int $amount amount in paise (100)
-     * @return string amount formatted to 2 decimal places in INR (1.00)
-     */
-    public function formatAmount(int $amount): string
-    {
-        return number_format($amount / 100, 2, '.', '');
-    }
-
     //----------------General helper methods ends---------------
 }
