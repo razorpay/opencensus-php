@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Corporation;
 
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Action;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -19,9 +20,12 @@ class Gateway extends Base\Gateway
     protected $tpv;
 
     protected $map = [
-        RequestFields::CUSTOMER_ID      => NetbankingEntity::CUSTOMER_ID,
-        RequestFields::MERCHANT_CODE    => NetbankingEntity::MERCHANT_CODE,
-        RequestFields::AMOUNT           => NetbankingEntity::AMOUNT,
+        ResponseFields::CUSTOMER_ID      => NetbankingEntity::CUSTOMER_ID,
+        ResponseFields::MERCHANT_CODE    => NetbankingEntity::MERCHANT_CODE,
+        ResponseFields::AMOUNT           => NetbankingEntity::AMOUNT,
+        ResponseFields::BANK_REF_NUMBER  => NetbankingEntity::BANK_PAYMENT_ID,
+        ResponseFields::PAYMENT_ID       => NetbankingEntity::PAYMENT_ID,
+        ResponseFields::STATUS           => NetbankingEntity::STATUS,
     ];
 
     public function authorize(array $input)
@@ -66,6 +70,26 @@ class Gateway extends Base\Gateway
 
         // If callback status was a success, we verify the payment immediately
         $this->verifyCallback($input);
+
+        // Saving callback response only if the above checks pass
+        $gatewayPayment = $this->saveCallbackResponse($content);
+
+        return $gatewayPayment;
+    }
+
+    protected function saveCallbackResponse($content)
+    {
+        $data = [
+            NetbankingEntity::RECEIVED        => true
+        ] + $content;
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::PAYMENT_ID],
+                                    Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $data);
+
+        return $gatewayPayment;
     }
 
     /**
@@ -93,6 +117,18 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function checkGatewaySuccess($verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $content = $this->getVerifyRequestData($verify->input);
@@ -110,23 +146,23 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'gateway'    => $this->gateway,
-                'response'   => $response->body,
+                'response'   => $verify->verifyResponseContent,
                 'payment_id' => $verify->input['payment']['id'],
             ]
         );
-
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
     }
 
     protected function parseVerifyResponse($content)
     {
         parse_str($content, $data);
 
-        sd($data);
+        return $this->getEncryptor()->decryptData($data[ResponseFields::VERIFY_DATA]);
     }
 
     protected function getVerifyRequestData(array $input)
