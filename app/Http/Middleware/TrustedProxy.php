@@ -4,6 +4,7 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use Config;
+use Symfony\Component\HttpFoundation\Request;
 
 class TrustedProxy
 {
@@ -19,14 +20,10 @@ class TrustedProxy
      */
     public function handle($request, Closure $next)
     {
-        // Set trusted header names
-        foreach ($this->getTrustedHeaders() as $headerKey => $headerName)
-        {
-            $request->setTrustedHeaderName($headerKey, $headerName);
-        }
+        $proxies = $this->getTrustedProxies();
 
-        $proxies = $this->getTrustedProxies($request->getClientIps());
-        $request->setTrustedProxies($proxies);
+        // See https://symfony.com/doc/current/request/load_balancer_reverse_proxy.html
+        $request->setTrustedProxies($proxies, Request::HEADER_X_FORWARDED_AWS_ELB);
 
         return $next($request);
     }
@@ -34,35 +31,12 @@ class TrustedProxy
     /**
      * Return an array of trusted proxy IP addresses.
      *
-     * @param array $clientIpAddresses Array of client IP addresses retrieved
-     *                                  *prior* to setting trusted proxy
-     *
      * @return array
      */
-    protected function getTrustedProxies(array $clientIpAddresses = [])
+    protected function getTrustedProxies()
     {
         $trustedProxies = Config::get('trustedproxy.proxies');
 
         return (array) $trustedProxies;
-    }
-
-    /**
-     * Get trusted header names.
-     *
-     * @return array
-     */
-    protected function getTrustedHeaders()
-    {
-        $trustedHeaderNames = Config::get('trustedproxy.headers');
-
-        /*
-         * In case the user does not pass an array of header names we
-         * will default to an empty array. This will force defaults from
-         * class \Symfony\Component\HttpFoundation\Request::$trustedHeaders
-         */
-
-        $trustedHeaderNames = is_array($trustedHeaderNames) ? $trustedHeaderNames : [];
-
-        return $trustedHeaderNames;
     }
 }
