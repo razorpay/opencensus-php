@@ -76,6 +76,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     // ----------------------- Setters ---------------------------------------------
 
     public function setTdate($tdate)

@@ -10,6 +10,7 @@ class Status
     const SETTLED    = 'SETTLED';
     const FAILED     = 'FAILED';
     const VOIDED     = 'VOIDED';
+    const WAITING    = 'WAITING_3D_SECURE';
 
     // Voided is not actually a valid state for a credit transaction
     // However, this is being used for verify refund flow, where, if
