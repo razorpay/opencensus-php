@@ -250,21 +250,6 @@ class Gateway extends Base\Gateway
 
         return $contentToSave;
     }
-
-    /**
-     * Handles the failures by checking the response of refund call
-     *
-     * @param $data Parsed data from the response of refund
-     */
-    protected function handleFailure(array $content)
-    {
-        throw new Exception\GatewayErrorException(
-            ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
-            $content[ResponseFields::STATUS_CODE],
-            $content[ResponseFields::ERROR_DESCRIPTION]
-        );
-    }
-
     //----------------Refund helper methods end-----------------
 
     //-----------------Verify request helpers-------------------
@@ -383,6 +368,20 @@ class Gateway extends Base\Gateway
         $cryptor = $this->getEncryptor();
 
         return $cryptor->encryptString($encodedData);
+    }
+
+    /**
+     * Handles the failures by checking the response of refund call
+     *
+     * @param $data Parsed data from the response of refund
+     */
+    protected function handleFailure(array $content)
+    {
+        throw new Exception\GatewayErrorException(
+            ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
+            $content[ResponseFields::STATUS_CODE],
+            $content[ResponseFields::ERROR_DESCRIPTION]
+        );
     }
 
     protected function isStatusCodeSuccess(array $data): bool
