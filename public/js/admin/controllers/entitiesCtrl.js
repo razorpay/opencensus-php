@@ -352,6 +352,10 @@ app.controller('EntitiesCtrl', [
         jiomoney: booleanList,
         merchant_id: ['Merchant Id'],
       },
+      mobikwik: {
+        payment_id: ['Payment Id'],
+        received: booleanList,
+      },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
         caps_payment_id: ['Caps Payment Id'],
@@ -414,10 +418,6 @@ app.controller('EntitiesCtrl', [
       pricing: {
         plan_id: ['Plan Id'],
       },
-      mobikwik: {
-        payment_id: ['Payment Id'],
-        received: booleanList,
-      },
       refund: {
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id'],
@@ -428,6 +428,12 @@ app.controller('EntitiesCtrl', [
       reversal: {
         merchant_id: ['Merchant Id'],
         transfer_id: ['Transfer Id'],
+      },
+      risk: {
+        fraud_type: ['suspected', 'confirmed'],
+        source: ['bank', 'gateway', 'maxmind', 'manual', 'internal'],
+        merchant_id: ['Merchant Id'],
+        payment_id: ['Payment Id'],
       },
       settlement: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
