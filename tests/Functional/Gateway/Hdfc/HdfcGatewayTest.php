@@ -25,6 +25,8 @@ class HdfcGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
+        $this->mockTokenex();
+
         $this->fixtures->merchant->enableInternational();
 
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
