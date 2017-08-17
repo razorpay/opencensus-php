@@ -1091,6 +1091,8 @@ angular
           netbanking_axis: 'Axis Netbanking',
           netbanking_federal: 'Federal Netbanking',
           netbanking_airtel: 'Airtel Netbanking',
+          netbanking_rbl: 'RBL netbanking',
+          netbanking_indusind: 'IndusInd netbanking',
           billdesk: 'Billdesk',
           ebs: 'Ebs',
         },

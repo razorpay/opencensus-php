@@ -290,7 +290,7 @@
           <select name="method" ng-model="current.method" class="form-control"
                   ng-change="updateGatewayList(current.method)"
                   ng-disabled="editMode" ng-required="!editMode" >
-            <option ng-repeat="(key, option) in methodMap" value={{key}} ng-selected="{{key == gatewayRuleSearch.method}}">{{option}}</option>
+            <option ng-repeat="(key, option) in methodMap" value={{key}} ng-selected="{{key == current.method}}">{{option}}</option>
           </select>
           <!--Display error for select type tags-->
           <span ng-show="editRuleForm.method.$error.required" style="font-size:11px; color: red;">
@@ -320,7 +320,7 @@
       </div>
 
       <!-- Method Type -->
-      <div class="form-group" ng-if="current.method === 'card'">
+      <div class="form-group" ng-if="['card', 'emi'].indexOf(current.method) !== -1">
         <label class="col-lg-2 control-label">Method Type:</label>
         <div class="col-lg-10" >
           <select name="method_type" ng-model="current.method_type" class="form-control" ng-disabled="editMode">
@@ -361,6 +361,7 @@
             <option value="securities">Securities</option>
             <option value="commodities">Commodities</option>
             <option value="grocery">Grocery</option>
+            <option value="gaming">Gaming</option>
             <option value="ecommerce">Ecommerce</option>
             <option value="govt_education">Govt Education</option>
             <option value="pvt_education">Pvt Education</option>
@@ -457,7 +458,6 @@
                   ng-model="current.emi_duration"
                   ng-disabled="editMode"
                   ng-init="current.emi_duration = current.emi_duration || ''">
-            <option value="">ALL</option>
             <option value="3">3 months</option>
             <option value="6">6 months</option>
             <option value="9">9 months</option>
@@ -477,7 +477,6 @@
                   ng-model="current.emi_subvention"
                   ng-disabled="editMode"
                   ng-init="current.emi_subvention = current.emi_subvention || ''">
-            <option value="">ALL</option>
             <option value="customer">Customer</option>
             <option value="merchant">Merchant</option>
           </select>
