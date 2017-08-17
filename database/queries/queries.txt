@@ -2353,3 +2353,6 @@ ALTER TABLE invoices
 
 ALTER TABLE merchants
     ADD COLUMN risk_threshold TINYINT(2) UNSIGNED AFTER risk_rating;
+
+ALTER TABLE refunds
+    ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER reference1;
