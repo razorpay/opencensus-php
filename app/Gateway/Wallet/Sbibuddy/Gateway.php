@@ -56,7 +56,14 @@ class Gateway extends Base\Gateway
     {
         $data = $this->parseResponse($input['gateway']);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $data);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'payment_id'     => $input['payment']['id'],
+                'decrypted_data' => $data,
+                'gateway_name'   => $this->gateway
+            ]
+        );
 
         $this->assertPaymentId($input['payment']['id'], $data[ResponseFields::ORDER_ID]);
 
