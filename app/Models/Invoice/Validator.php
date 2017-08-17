@@ -602,6 +602,48 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateInvoiceViewable()
+    {
+        $invoice = $this->entity;
+
+        $id    = $invoice->getPublicId();
+        $label = $invoice->getTypeLabel();
+
+        switch ($invoice->getStatus())
+        {
+            //
+            // If invoice is in draft, cancelled state we don't send any data
+            // but just following error message to view.
+            //
+
+            case Status::DRAFT:
+
+                throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
+
+            case Status::CANCELLED:
+
+                throw new BadRequestValidationFailureException("$label with id $id is cancelled");
+
+            //
+            // If invoice type is expired we still send the data and JS code
+            // shows a torn page with other basic attributes. But in case of
+            // other types we would throw error so the error page with proper
+            // message is rendered.
+            //
+
+            case Status::EXPIRED:
+
+                if ($invoice->isTypeInvoice() === false)
+                {
+                    throw new BadRequestValidationFailureException("$label with id $id is expired");
+                }
+
+            default:
+
+                break;
+        }
+    }
+
     public function validateInvoiceMaxAllowedLineItems()
     {
         $invoice        = $this->entity;

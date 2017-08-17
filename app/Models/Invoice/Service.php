@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service
 {
@@ -264,33 +263,7 @@ class Service extends Base\Service
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
-        //
-        // If invoice is in draft, cancelled state we don't send any data
-        // but just following error message to view.
-        //
-        // If invoice type is expired we still send the data and JS code
-        // shows a torn page with other basic attributes. But in case of
-        // other types we would throw error so the error page with proper
-        // message is rendered.
-        //
-
-        $label = $invoice->getTypeLabel();
-
-        if ($invoice->isDraft() === true)
-        {
-            throw new BadRequestValidationFailureException("$label with id $invoiceId is not issued yet");
-        }
-
-        if ($invoice->isCancelled() === true)
-        {
-            throw new BadRequestValidationFailureException("$label with id $invoiceId is cancelled");
-        }
-
-        if (($invoice->isTypeInvoice() === false) and
-            ($invoice->isExpired() === true))
-        {
-            throw new BadRequestValidationFailureException("$label with id $invoiceId is expired");
-        }
+        $invoice->getValidator()->validateInvoiceViewable();
 
         return (new ViewDataSerializer($invoice))->get();
     }
