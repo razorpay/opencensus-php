@@ -1,21 +1,29 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import { Field, FieldArray, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import Alert from 'rzp/ui/Forms/Alert';
-import ModalHeader from 'rzp/ui/ModalHeader';
 import { required } from 'rzp/utils/validators';
 import { savePlan } from 'merchant/modules/plans';
-import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
+
+let Label = ({ text, htmlFor, required }) => {
+  var classes = typeof required !== 'undefined' ? 'label-required' : '';
+
+  return (
+    <div class="pair-label">
+      <label for={htmlFor} class={classes}> {text} </label>
+    </div>
+  );
+};
 
 @connect(null, {
   savePlan,
   showNotification,
-  ...ModalActions,
 })
 @reduxForm({
   form: 'newPlan',
@@ -28,6 +36,7 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
     notes: [],
   },
 })
+@withRouter
 export default class AddPlan extends Component {
   state = {};
 
@@ -42,6 +51,7 @@ export default class AddPlan extends Component {
       .savePlan(props)
       .then(plan => {
         this.props.onSave(plan);
+        this.props.history.push(`/plans/${plan[plan.resourceIdField]}`);
         this.props.showNotification({
           type: 'success',
           message: 'Plan saved successfully',
@@ -58,125 +68,173 @@ export default class AddPlan extends Component {
     const { handleSubmit, invalid, plan } = this.props;
 
     return (
-      <div class="plan-create">
-        <ModalHeader
-          title={plan && plan.id ? 'Edit Plan' : 'New Plan'}
-          onCloseClick={this.props.closeModal}
-        />
-
-        <div class="modal-body">
-          <Alert type="error" message={this.state.errors} />
-
-          <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
-            <div class="form-group">
-              <label class="col-sm-3 control-label label-required">
-                Plan Name
-              </label>
-              <div class="col-sm-7">
-                <Field
-                  name="item[name]"
-                  component={InputField}
-                  class="form-control"
-                  autoFocus={true}
-                  validate={required()}
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="control-label col-sm-3">Plan Description</label>
-              <div class="col-sm-7">
-                <Field
-                  name="item[description]"
-                  component="textarea"
-                  class="form-control"
-                />
-              </div>
-              <div class="col-sm-offset-3 col-sm-7">
-                <small class="help-block">
-                  <i class="icon icon-info-circle" />
-                  The
-                  {' '}
-                  <b>Plan Name</b>
-                  {' '}
-                  and
-                  {' '}
-                  <b>Plan Description</b>
-                  {' '}
-                  will appear on the invoice as entered above
-                </small>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="col-sm-3 control-label label-required">
-                Billing Frequency
-              </label>
-              <div class="col-sm-7">
-                <div class="billing-frequency">
-                  <span>Every</span>
+      <div class="content-wrapper content-sm txn-details">
+        <div class="panel panel-default SliderPanel">
+          <div class="panel-heading">
+            <i
+              class="fa fa-list-ul text-info"
+              style={{
+                padding: '4px 4px 3px',
+                border: '2px solid',
+                marginRight: '5px',
+                verticalAlign: 'middle',
+              }}
+            />
+            {' '}
+            <strong>{plan && plan.id ? 'Edit Plan' : 'New Plan'}</strong>
+          </div>
+          <div class="SliderPanel__Body">
+            <form class="panel-body" onSubmit={handleSubmit(this.save)}>
+              <div class="pair-group-item">
+                <Label text="Plan Name" required />
+                <div class="pair-value">
                   <Field
-                    name="interval"
+                    name="item[name]"
                     component={InputField}
                     class="form-control"
-                    validate={required()}
+                    autoFocus={true}
+                    validate={required('Plan name is required')}
+                    placeholder="The name known to your customers"
                   />
-                  <Field name="period" component="select" class="form-control">
-                    <option value="weekly">Week(s)</option>
-                    <option value="monthly">Month(s)</option>
-                    <option value="yearly">Year(s)</option>
-                  </Field>
                 </div>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label class="col-sm-3 control-label label-required">
-                Billing Amount
-              </label>
-              <div class="col-sm-7">
-                <Field
-                  name="item[amount]"
-                  component={InputGroupField}
-                  prefix="INR"
-                  suffix="per unit"
-                  class="form-control"
-                  validate={required()}
-                />
+              <div class="pair-group-item">
+                <Label text="Plan Description" />
+                <div class="pair-value">
+                  <Field
+                    name="item[description]"
+                    component="textarea"
+                    class="form-control"
+                    placeholder="Optional"
+                  />
+                  <small class="help-block">
+                    <i class="icon icon-info-circle" />
+                    The
+                    {' '}
+                    <b>Plan Name</b>
+                    {' '}
+                    and
+                    {' '}
+                    <b>Plan Description</b>
+                    {' '}
+                    will appear on the invoice as entered above
+                  </small>
+                </div>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label class="col-sm-3 control-label">
-                Internal Notes
-              </label>
-              <div class="col-sm-7">
-                <FieldArray name="notes" component={NotesFieldArray} />
-              </div>
-            </div>
-
-            <div class="row Modal__actions">
-              <div class="col-sm-offset-3 col-sm-7">
-                <div class="btn-toolbar">
-                  <button
-                    type="button"
-                    class="btn btn-default"
-                    onClick={this.props.closeModal}
+              <div class="pair-group-item">
+                <Label text="Billing Frequency" required />
+                <div class="pair-value">
+                  <div
+                    class="billing-frequency"
+                    style={{
+                      '*': {
+                        display: 'none',
+                      },
+                    }}
                   >
-                    Cancel
-                  </button>
+                    <span>Every</span>
+                    <Field
+                      name="interval"
+                      component="input"
+                      class="form-control"
+                      style={{
+                        width: '38px',
+                        padding: '6px 8px',
+                        display: 'inline-block',
+                        marginLeft: '8px',
+                      }}
+                      validate={required('Time period is required')}
+                    />
+                    <Field
+                      name="period"
+                      component="select"
+                      class="form-control"
+                      style={{
+                        width: '98px',
+                        padding: '6px 8px',
+                        display: 'inline-block',
+                        marginLeft: '8px',
+                      }}
+                    >
+                      <option value="weekly">Week(s)</option>
+                      <option value="monthly">Month(s)</option>
+                      <option value="yearly">Year(s)</option>
+                    </Field>
 
-                  <AsyncButton
-                    type="submit"
-                    class="btn btn-primary"
-                    text="Create Plan"
-                    pendingText="Creating..."
-                    onClick={handleSubmit(this.save)}
-                  />
+                    <small class="help-block">
+                      <i class="icon icon-info-circle" />
+                       You can set
+                      {' '}
+                      <b>billing cycle</b>
+                      {' '}
+                      (start date and end date) and
+                      {' '}
+                      <b>trial period</b> later while, creating a subscription.
+                    </small>
+                  </div>
                 </div>
               </div>
-            </div>
-          </form>
+
+              <div class="pair-group-item">
+                <Label text="Billing Amount" required />
+                <div class="pair-value">
+                  <Field
+                    name="item[amount]"
+                    component={InputGroupField}
+                    prefix="INR"
+                    suffix="per unit"
+                    class="form-control"
+                    validate={required('Billing amount is required')}
+                  />
+                  <small class="help-block">
+                    <i class="icon icon-info-circle" />
+                    <b>Billing amount</b>
+                    {' '}
+                    and
+                    {' '}
+                    <b>billing frequency</b>
+                    {' '}
+                    can not be changed later.
+                  </small>
+
+                </div>
+              </div>
+
+              <div class="pair-group-item">
+                <Label text="Internal Notes" />
+                <div class="pair-value">
+                  <FieldArray name="notes" component={NotesFieldArray} />
+                </div>
+              </div>
+
+              <Alert type="error" message={this.state.errors} />
+
+              <div class="row">
+                <div class="col-sm-offset-3">
+                  <div class="btn-toolbar">
+                    <AsyncButton
+                      type="submit"
+                      class="btn btn-primary"
+                      text="Create Plan"
+                      pendingText="Creating..."
+                      onClick={handleSubmit(this.save)}
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-default"
+                      onClick={() => {
+                        this.props.history.push(`/plans`);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     );

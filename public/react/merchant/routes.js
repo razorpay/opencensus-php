@@ -10,6 +10,8 @@ import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
+import PlanNew from 'merchant/containers/Plans/New';
+
 const entityMap = {
   '/payments/:id': PaymentsDetails,
   '/refunds/:id(rfnd_.+)': RefundDetails,
@@ -20,6 +22,7 @@ const entityMap = {
 
   '/route/payments/:id': PaymentsDetails,
   '/virtualaccounts/:id': VirtualAccountDetails,
+  '/plans/new': PlanNew,
   '/plans/:id': PlanDetails,
   '/subscriptions/:id': SubscriptionDetails,
   '/route/transfers/:id': TransferDetails,
