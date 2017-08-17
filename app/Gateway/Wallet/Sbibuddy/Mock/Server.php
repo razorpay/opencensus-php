@@ -98,11 +98,9 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseContent($paymentId)
     {
-        $payment = $this->repo->payment->findOrFail($paymentId);
-
         $wallet = $this->repo->wallet->fetchWalletByPaymentId($paymentId);
 
-        $amount = $this->getGatewayInstance()->formatAmount($payment[Payment::AMOUNT]);
+        $amount = $this->getGatewayInstance()->formatAmount($wallet[Wallet::AMOUNT]);
 
         $content = [
             ResponseFields::EXTERNAL_TRANSACTION_ID => $paymentId,
