@@ -336,8 +336,28 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $this->saveVerifyContentIfNeeded($payment, $input['payment']);
     }
 
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $payment)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        $walletAttributes = $this->getAuthorizeWalletContentToSave($payment);
+
+        if ($gatewayPayment === null)
+        {
+            $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes, Action::AUTHORIZE);
+        }
+        else if ($gatewayPayment['received'] === false)
+        {
+            $gatewayPayment->fill($walletAttributes);
+            $gatewayPayment->saveOrFail();
+        }
+
+        return $gatewayPayment;
+    }
     //-----------------Verify request helpers end---------------
 
     //----------------General helper methods-------------------
