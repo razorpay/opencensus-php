@@ -43,4 +43,25 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS,
         ],
     ],
+    'testGetWorkflowActionDetails' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/w-actions/%s/details',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'permission'    => [],
+                'checkers'      => [],
+                'comments'      => [],
+                'workflow_id'   => 'workflow_workflowId1000',
+                'workflow'      => [
+                    'id' => 'workflow_workflowId1000',
+                ],
+                'state'         => 'open',
+                'admin'         => [],
+                'current_level' => 1
+            ]
+        ]
+    ]
 ];
