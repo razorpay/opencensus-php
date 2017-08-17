@@ -228,19 +228,6 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to get absent gateways across multiple search params
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function getAbsentGateways(Downtime\Service $service)
-    {
-        $input = Request::all();
-
-        $data = $service->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
      * Method to handle webhook from statuscake
      *
      * @return \Symfony\Component\HttpFoundation\Response
@@ -250,6 +237,13 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = $service->processGatewayDowntimeWebhook($source, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPublicGatewayDowntimeData(Downtime\Service $service)
+    {
+        $data = $service->getPublicGatewayDowntimeData();
 
         return ApiResponse::json($data);
     }

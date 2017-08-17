@@ -1139,6 +1139,26 @@ return [
         ],
     ],
 
+    'testGetDowntimeInfoOverPublicRoute' => [
+        'request' => [
+            'url' => '/gateway/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'card' => [
+                    [
+                        'issuer' => ['ALL'],
+                        'scheduled' => true,
+                        'reason_code' => 'OTHER',
+                        'card_type' => 'credit',
+                        'network' => ['VISA'],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown' => [
         'request' => [
             'url' => '/preferences',

@@ -24,11 +24,11 @@ class Service extends Base\Service
         return $downtime->toArrayPublic();
     }
 
-    public function fetchMultiple(array $input)
+    public function getPublicGatewayDowntimeData(): array
     {
-        $absentGateways = $this->repo->gateway_downtime->fetch($input);
+        $downtimes = $this->core()->getPublicGatewayDowntimeData($this->merchant);
 
-        return $absentGateways->toArrayPublic();
+        return $downtimes->toArrayExternal();
     }
 
     public function processGatewayDowntimeWebhook(string $source, array $input)

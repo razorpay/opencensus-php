@@ -57,7 +57,7 @@ class Core extends Base\Core
         return $downtime;
     }
 
-    public function getFormattedGatewayDowntimeCheckoutData(Merchant\Entity $merchant)
+    public function getPublicGatewayDowntimeData(Merchant\Entity $merchant): Base\PublicCollection
     {
         // set the from time to current time. For all practical
         // purposes, this is usually not set by input.
@@ -71,7 +71,7 @@ class Core extends Base\Core
         // such downtimes
         $downtimes = $this->repo->gateway_downtime->fetchDowntimesWithoutTerminal($input);
 
-        return $downtimes->toArrayExternal();
+        return $downtimes;
     }
 
     public function fetchMostRecentActive(array $input)

@@ -866,6 +866,18 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetDowntimeInfoOverPublicRoute()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
     {
         $this->ba->publicAuth();

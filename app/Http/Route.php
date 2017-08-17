@@ -373,7 +373,7 @@ final class Route
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
         'gateway_create_downtime'                 => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
-        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
+        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getPublicGatewayDowntimeData'                               ],
         'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
@@ -645,6 +645,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
+        'gateway_fetch_downtime',
     ];
 
     public static $device = [
@@ -905,7 +906,6 @@ final class Route
         'gateway_remove_priorities',
         'gateway_create_downtime',
         'gateway_update_downtime',
-        'gateway_fetch_downtime',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
