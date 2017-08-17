@@ -38,7 +38,7 @@ return [
     'testPaymentWalletEntity' => [
         'action'               => 'authorize',
         // They give the response in Rupees
-        'amount'               => 500,
+        'amount'               => 50000,
         'wallet'               => 'sbibuddy',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -88,7 +88,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         Wallet::ACTION               => 'authorize',
-        Wallet::AMOUNT               => 500,
+        Wallet::AMOUNT               => 50000,
         Wallet::WALLET               => 'sbibuddy',
         Wallet::RECEIVED             => true,
         Wallet::EMAIL                => 'a@b.com',

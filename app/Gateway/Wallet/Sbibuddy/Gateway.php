@@ -158,6 +158,8 @@ class Gateway extends Base\Gateway
             Entity::DATE        => $date
         ];
 
+        $contentToSave[ResponseFields::AMOUNT] = $contentToSave[ResponseFields::AMOUNT] * 100;
+
         // Order ID in the wallet API is mapped to our payment ID
         $wallet = $this->repo->findByPaymentIdAndAction(
             $data[ResponseFields::ORDER_ID],
