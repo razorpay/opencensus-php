@@ -8,6 +8,11 @@
   <div ng-controller="PaymentDetailCtrl">
     <div class="panel panel-default col-sm-6 col-sm-offset-3" >
       <div class="panel-heading m-t m-b">
+        <div class="pull-right" ng-if="entity.merchant_id">
+          <a ui-sref="app.merchants.detail({id: entity.merchant_id})">
+          <code>{{entity.merchant_id}}</code>
+          </a>
+        </div>
         Payment Id: <strong>{{entity.id}}</strong>
       </div>
     <div class="text-center m-t b-w">
