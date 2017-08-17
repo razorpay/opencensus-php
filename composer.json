@@ -11,6 +11,8 @@
         "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "3.1.0",
         "symfony/event-dispatcher": "~2.2",
+        "symfony/http-kernel": "3.2.13",
+        "symfony/http-foundation": "3.2.13",
         "cebe/markdown": "~1.0.1",
         "elasticsearch/elasticsearch": "^5.2",
         "razorpay/ifsc": "~1.0",
