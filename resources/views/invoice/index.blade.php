@@ -197,7 +197,7 @@
             form.appendChild(createHiddenInput(key, value));
           });
 
-          var urlParamRegex = /^[^\?#]+\?([^#$]*)/,
+          var urlParamRegex = /^[^#]+\?([^#]+)/,
               matches       = callbackUrl.match(urlParamRegex),
               queryParams;
 
