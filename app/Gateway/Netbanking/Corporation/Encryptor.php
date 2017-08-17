@@ -22,7 +22,25 @@ class Encryptor extends AESCrypto
 
         $encoded = implode(self::PAIRS_SEPARATOR, $encoded);
 
-        return $this->aes->encrypt($encoded);
+        return base64_encode($this->aes->encrypt($encoded));
+    }
+
+    public function decryptData(string $encryptedString)
+    {
+        $encoded = $this->aes->decrypt(base64_decode($encryptedString));
+
+        $encoded = explode(self::PAIRS_SEPARATOR, $encoded);
+
+        $data = [];
+
+        foreach ($encoded as $value)
+        {
+            $pair = explode(self::KEY_VALUE_SEPARATOR, $value);
+
+            $data[$pair[0]] = $pair[1];
+        }
+
+        return $data;
     }
 
     public function decryptString(string $string)
