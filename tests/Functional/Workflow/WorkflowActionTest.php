@@ -13,6 +13,7 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 class WorkflowActionTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -36,6 +37,24 @@ class WorkflowActionTest extends TestCase
     {
         // Editing checker admin as maker.
         $this->ba->adminAuth('test', Org::MAKER_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['org_id'] = 'org_' . Org::RZP_ORG;
+
+        $this->testData[__FUNCTION__]['response']['entity_id'] = Org::CHECKER_ADMIN;
+
+        $this->startTest();
+    }
+
+    public function testCreateWorkflowActionInprogress()
+    {
+        $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
