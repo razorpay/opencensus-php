@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
-use RZP\Tests\Functional\Fixtures\Entity\Workflow;
-use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Models\Admin\Permission as AdminPermission;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -11,19 +12,38 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class WorkflowActionTest extends TestCase
 {
-    use WorkflowTrait;
     use RequestResponseFlowTrait;
-    use HeimdallTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WorkflowActionTestData.php';
 
         parent::setUp();
+
+        $makerRole = (new RoleRepository())->findByIdAndOrgId(Org::MAKER_ROLE, Org::RZP_ORG);
+
+        $permissions = (new AdminPermission\Repository)->retrieveIdsByNames([AdminPermission\Name::EDIT_ADMIN]);
+
+        $makerRole->permissions()->attach($permissions);
     }
 
+    /**
+     * Here we will edit admin action from makerAdmin
+     * and check weather the workflow is created.
+     * already a default workflow for edit admin permission is created in fixtures.
+     */
     public function testCreateWorkflowAction()
     {
+        // Editing checker admin as maker.
+        $this->ba->adminAuth('test', Org::MAKER_TOKEN, 'org_' . Org::RZP_ORG);
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 }

@@ -72,6 +72,10 @@ trait WorkflowTrait
                             'reviewer_count' => 1,
                             'role_id'        => Org::ADMIN_ROLE,
                         ],
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::CHECKER_ROLE,
+                        ]
                     ],
                 ],
             ],
