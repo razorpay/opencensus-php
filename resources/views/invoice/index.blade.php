@@ -185,10 +185,11 @@
                                       "paid",
                                       "has-redirect"]).join(" ");
 
-          var form = document.createElement("form"),
+          var form   = document.createElement("form"),
+              method = callbackMethod.toUpperCase(),
               input, key;
 
-          form.method = callbackMethod.toUpperCase();
+          form.method = method;
           form.action = callbackUrl;
 
           forEach(requestParams, function (value, key) {
@@ -200,7 +201,7 @@
               matches       = callbackUrl.match(urlParamRegex),
               queryParams;
 
-          if (form.method === "GET" && matches) {
+          if (method === "GET" && matches) {
 
             queryParams = matches[1];
 
