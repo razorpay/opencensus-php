@@ -5,10 +5,10 @@ namespace RZP\Models\Merchant\FileProcessor\Irctc;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund\Entity;
-use RZP\Models\Merchant\FileProcessor\Base;
+use RZP\Models\Merchant\FileProcessor\TypeProcessor;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class Refund extends Base
+class Refund extends TypeProcessor
 {
     const MERCHANT_REFERENCE = 'merchant_reference';
     const REFUND_TYPE        = 'refund_type';
@@ -30,11 +30,11 @@ class Refund extends Base
 
     protected $refundType;
 
-    public function __construct(array $inputDetails)
+    public function __construct(string $type)
     {
         parent::__construct();
 
-        $this->refundType = $inputDetails['extra_input_type'];
+        $this->refundType = $type;
     }
 
     protected function processEntry(array $row)
