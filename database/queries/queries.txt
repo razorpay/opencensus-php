@@ -2353,3 +2353,13 @@ ALTER TABLE invoices
 
 ALTER TABLE merchants
     ADD COLUMN risk_threshold TINYINT(2) UNSIGNED AFTER risk_rating;
+
+# Adds indexes on amount fields of orders and invoices table, Mostly useful
+# in stats query for now.
+
+ALTER TABLE orders
+    ADD INDEX orders_amount_index (amount),
+    ADD INDEX orders_amount_paid_index (amount_paid);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_amount_index (amount);
