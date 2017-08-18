@@ -5,7 +5,7 @@ namespace RZP\Tests\Unit\Gateway;
 use phpseclib\Crypt\AES;
 
 use RZP\Tests\TestCase;
-use RZP\Gateway\Wallet\Sbibuddy\Encryptor;
+use RZP\Gateway\Wallet\Sbibuddy\AESCrypto;
 
 class SbibuddyEncryptorTest extends TestCase
 {
@@ -22,7 +22,7 @@ class SbibuddyEncryptorTest extends TestCase
     {
         parent::setUp();
 
-        $this->encryptor = new Encryptor(AES::MODE_ECB, self::SECRET);
+        $this->encryptor = new AESCrypto(AES::MODE_ECB, self::SECRET);
     }
 
     public function testEncryption()
