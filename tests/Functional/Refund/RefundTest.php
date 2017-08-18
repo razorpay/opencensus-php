@@ -116,8 +116,6 @@ class RefundTest extends TestCase
 
         $this->expectException('Illuminate\Database\QueryException');
 
-        $requestData = $this->testData[__FUNCTION__];
-
         $response =  $this->refund(
                     [
                         'payment_id' => $payment['id'],
