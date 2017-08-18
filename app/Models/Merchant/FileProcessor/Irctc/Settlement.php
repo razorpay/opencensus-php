@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\FileProcessor\Irctc;
 
-use RZP\Models\Merchant\FileProcessor\Base;
+use RZP\Models\Merchant\FileProcessor\TypeProcessor;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class Settlement extends Base
+class Settlement extends TypeProcessor
 {
     const PAYMENT_ID         = 'payment_id';
     const PAYMENT_AMOUNT     = 'payment_amount';

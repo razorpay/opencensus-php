@@ -10,24 +10,29 @@ use RZP\Models\Base as BaseModel;
 
 class FileProcessor extends BaseModel\Core
 {
+    const REFUND = 'refund';
+    const SETTLEMENT = 'settlement';
+
     public function process(array $fileContents)
     {
         $processedIds = [];
 
         $details = [];
 
-        foreach ($fileContents as $file => &$fileDetails)
+        foreach ($fileContents as $file => $fileDetails)
         {
-            $type = $this->getType($fileDetails);
+            $type = $this->getType($fileDetails['file_details']);
 
-            $details['type']  = $type;
+            unset($fileDetails['file_details']);
+
+            $details[$type]  = $fileDetails;
         }
 
-        $this->processRTypeRefunds();
+        $this->processRTypeRefunds($details['refund']);
 
-        $this->processSettlements();
+        $this->processSettlements($details['settlement']);
 
-        $this->processCTypeRefunds();
+        $this->processCTypeRefunds($details['refund']);
 
         return $processedIds;
     }
@@ -53,9 +58,20 @@ class FileProcessor extends BaseModel\Core
         $settlementProcessor->process($details);
     }
 
-    protected function getType(array $fileDetails)
+    protected function getType($fileDetails)
     {
+        $fileName = $fileDetails['file_name'];
 
+        if (strpos($fileName, self::REFUND) !== false)
+        {
+            $type = self::REFUND;
+        }
+        else if (strpos($fileName, self::SETTLEMENT) !== false)
+        {
+            $type = self::SETTLEMENT;
+        }
+
+        return $type;
     }
 
     public function getDelimiter()

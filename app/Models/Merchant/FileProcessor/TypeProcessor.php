@@ -10,7 +10,7 @@ use RZP\Models\Base as BaseModel;
 
 class TypeProcessor extends BaseModel\Core
 {
-    public function process(array $fileContents)
+    public function process(array $fileDetails)
     {
         $processedIds = [];
 

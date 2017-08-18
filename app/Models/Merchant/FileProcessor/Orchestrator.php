@@ -21,6 +21,10 @@ class Orchestrator extends Base\Core
 
     const IRCTC                = 'Irctc';
 
+    const MERCHANT_FILE_DETAILS_VALIDATION = [
+        self::IRCTC
+    ];
+
     /*********************
      * Instance variables
      *********************/
@@ -92,6 +96,17 @@ class Orchestrator extends Base\Core
         $this->setMerchantProcessor($inputDetails);
 
         $this->allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
+
+        $merchant = studly_case($input['merchant']);
+
+        if (in_array($merchant, self::MERCHANT_FILE_DETAILS_VALIDATION) === true)
+        {
+            $fileDetailsValidator = 'validate' . $merchant . 'FileDetails';
+
+            $this->validator->$fileDetailsValidator($this->allFilesDetails);
+        }
+
+        $this->validator->validateIrctcFileDetails($this->allFilesDetails);
 
         if (empty($this->allFilesDetails) === true)
         {
@@ -173,13 +188,7 @@ class Orchestrator extends Base\Core
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::MERCHANT         => $input['merchant'],
-            self::TYPE             => $input['type'],
         ];
-
-        if (isset($input[self::EXTRA_INPUT_TYPE]) === true)
-        {
-            $inputDetails[self::EXTRA_INPUT_TYPE] = $input[self::EXTRA_INPUT_TYPE];
-        }
 
         return $inputDetails;
     }
@@ -222,6 +231,8 @@ class Orchestrator extends Base\Core
         $delimiter = $this->fileProcessor->getDelimiter();
 
         $csvArray = $this->convertCsvToArray($fileDetails, $columnHeaders, $delimiter);
+
+        $this->setExtraDetails($csvArray, $fileDetails);
 
         $this->allFilesContents[] = $csvArray;
     }
@@ -281,8 +292,13 @@ class Orchestrator extends Base\Core
 
     protected function setMerchantProcessor($inputDetails)
     {
-        $merchantFileProcessorClassName = 'RZP\\Models\\Merchant\\FileProcessor' . '\\' . studly_case($inputDetails['merchant']) . '\\' . studly_case($inputDetails['type']);
+        $merchantFileProcessorClassName = 'RZP\\Models\\Merchant\\FileProcessor' . '\\' . studly_case($inputDetails['merchant']) . '\\FileProcessor';
 
         $this->fileProcessor = new $merchantFileProcessorClassName($inputDetails);
+    }
+
+    protected function setExtraDetails(& $arrayContent, $fileDetails)
+    {
+        $arrayContent['file_details'] = $fileDetails;
     }
 }

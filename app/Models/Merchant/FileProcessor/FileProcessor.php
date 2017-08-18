@@ -13,18 +13,26 @@ class FileProcessor extends BaseModel\Core
     public function process(array $fileContents)
     {
         $processedIds = [];
+
         foreach ($fileContents as $file => $fileDetails)
         {
-            $type = $this->getType($fileDetails);
+            $typeProcessor = __NAMESPACE__ . studly_case($this->getType($fileDetails['file_details']));
+
+            unset($fileDetails['file_details']);
+
+            $processedIds[] = $typeProcessor->process($fileDetails);
         }
 
         return $processedIds;
     }
 
-    protected function getType(array $fileDetails)
+
+    //Should be implement in child class
+    protected function getType()
     {
 
     }
+
 
     public function getDelimiter()
     {

@@ -17,7 +17,7 @@ class Validator
      *
      * @throws Exception\BadRequestException
      */
-    public function validateAttachments(array & $input, bool $allowZeroAttachments = false)
+    public function validateAttachments(array & $input)
     {
         //
         // Gets all the attachments found in the input by checking the number of
@@ -43,8 +43,7 @@ class Validator
         //
         // Otherwise, there should be at least 1 attachment present.
         //
-        if (($foundAttachmentsCount === 0) and
-            ($allowZeroAttachments === false))
+        if ($foundAttachmentsCount === 0)
         {
             throw new Exception\BadRequestException(
                 'No attachments found in the input.'
@@ -69,6 +68,44 @@ class Validator
                     ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
                 );
             }
+        }
+    }
+
+    public function validateIrctcFileDetails($fileDetails)
+    {
+        $types = [];
+
+        $refundType = false;
+
+        $settlementType = false;
+
+        if (count($fileDetails) !== 2)
+        {
+            throw new Exception\BadRequestException(
+                'The number of attachments sent should be 2'
+            );
+        }
+
+        foreach ($fileDetails as $fileDetail)
+        {
+            $fileName = $fileDetail['file_name'];
+
+            if (strpos($fileName, 'refund') !== false)
+            {
+                $refundType = true;
+            }
+            else if (strop($fileName, 'settlement') !==false)
+            {
+                $settlementType = true;
+            }
+        }
+
+        if (($refundType === false) or
+            ($settlementType === false))
+        {
+            throw new Exception\BadRequestException(
+                'Both settlement file and refund file needs to be sent'
+            );
         }
     }
 }
