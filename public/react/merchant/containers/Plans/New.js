@@ -226,13 +226,15 @@ export default class AddPlan extends Component {
                   type="button"
                   class="btn btn-default btn-half"
                   onClick={() => {
-                    this.context.confirm({
-                      header: 'Do you want to close this panel?',
-                      message: 'Changes that you made may not be saved',
-                      affirmativeLabel: 'Leave',
-                      abortLabel: 'Stay',
-                      action: () => this.props.history.push(`/plans`),
-                    });
+                    this.context
+                      .confirm({
+                        header: 'Do you want to close this panel?',
+                        message: 'Changes that you made may not be saved',
+                        affirmativeLabel: 'Leave',
+                        abortLabel: 'Stay',
+                        action: () => this.props.history.push(`/plans`),
+                      })
+                      .catch(() => {});
                   }}
                 >
                   Discard
