@@ -478,7 +478,6 @@ final class Route
         'action_diff_get'                         => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
         'action_request_execute'                  => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
-        'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -1103,7 +1102,6 @@ final class Route
         'action_diff_get',
         'action_request_execute',
         'action_comment_create',
-        'action_comment_fetch',
         'workflow_action_update',
         'workflow_action_states',
         'workflow_action_details',
@@ -1177,7 +1175,6 @@ final class Route
         'action_diff_get'                  => '*',
         'action_request_execute'           => '*',
         'action_comment_create'            => '*',
-        'action_comment_fetch'             => '*',
         'workflow_action_close'            => '*',
         'workflow_action_update'           => '*',
         'workflow_action_states'           => '*',
