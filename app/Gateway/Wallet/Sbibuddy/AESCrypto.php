@@ -6,7 +6,6 @@ use RZP\Gateway\Base;
 
 class AESCrypto extends Base\AESCrypto
 {
-
     public function encryptString(string $data)
     {
         $encoded = utf8_encode($data);
