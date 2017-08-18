@@ -579,14 +579,14 @@ final class Route
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
 
         // Account API routes
-        'account_fetch'                           => ['get',      'accounts',                                       'AccountController@getAccounts'                                     ],
-        'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@getAccount'                                      ],
-        'account_create'                          => ['post',     'accounts',                                       'AccountController@postAccount'                                     ],
+        'account_fetch'                           => ['get',      'accounts',                                       'AccountController@get'                                             ],
+        'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@list'                                            ],
+        'account_create'                          => ['post',     'accounts',                                       'AccountController@create'                                          ],
         'account_create_files'                    => ['post',     'accounts/{id}/files',                            'AccountController@postAccountFiles'                                ],
-        'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@patchAccount'                                    ],
+        'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@update'                                          ],
         'account_edit_details'                    => ['patch',    'accounts/{id}/details',                          'AccountController@patchAccountDetails'                             ],
     ];
 

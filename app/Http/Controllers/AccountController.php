@@ -8,48 +8,9 @@ use RZP\Models\Merchant;
 
 class AccountController extends Controller
 {
-	protected $service;
+    use Traits\HasCrudMethods;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Merchant\Account\Service;
-    }
-
-    public function getAccounts()
-    {
-    	$input = Request::all();
-
-    	$accounts = $this->service->fetchMultiple($input);
-
-    	return ApiResponse::json($accounts);
-    }
-
-    public function getAccount(string $id)
-    {
-    	$account = $this->service->fetch($id);
-
-    	return ApiResponse::json($account);
-    }
-
-    public function postAccount()
-    {
-    	$input = Request::all();
-
-    	$account = $this->service->create($input);
-
-    	return ApiResponse::json($account);
-    }
-
-    public function patchAccount(string $id)
-    {
-    	$input = Request::all();
-
-    	$account = $this->service->edit($id, $input);
-
-    	return ApiResponse::json($account);
-    }
+	protected $service = Merchant\Account\Service::class;
 
     public function postAccountFiles(string $id)
     {
