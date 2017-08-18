@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Unit\Gateway;
+namespace RZP\Tests\Unit\Gateway;
 
 use DOMDocument;
 use DOMNode;
@@ -11,7 +11,7 @@ use UnexpectedValueException;
 
 use RZP\Gateway\Blade\XmlseclibsAdapter;
 use RZP\Gateway\Blade\Gateway as BladeGateway;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 //use Gateway\Blade\XmlseclibsAdapter;
 
 

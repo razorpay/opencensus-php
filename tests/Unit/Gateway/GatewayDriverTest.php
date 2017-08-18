@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit\Gateway;
+namespace  RZP\Tests\Unit\Gateway;
 
 use Mockery;
 use Models\Card;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 
 class GatewayDriverTest extends TestCase
 {
