@@ -208,6 +208,83 @@ class PaymentCreateController extends Controller
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
 
+    /*
+     * Creates a blade payment
+     */
+    public function postCreateBladePayment()
+    {
+        $input = Request::all();
+
+        //TODO remove all harcoding
+        $fields = [
+            'amount' => $input['purchase_amount'],
+            'currency' => 'INR',
+            'method' => 'card',
+            'card' => [
+                'name' => 'Test Card',
+                'number' => $input['pan'],
+                'cvv' => 123,
+                'expiry_month' => substr($input['expiry'], 0, 2),
+                'expiry_year' => '20' . substr($input['expiry'], 2, 2)
+            ],
+            'email' => 'test@razorpay.com',
+            'contact' => '9876543210',
+            'notes' => [
+                'device_category' => (isset($input['device_category']) ? $input['device_category'] : 'desktop'),
+                'installments' => (isset($input['installments']) ? $input['installments'] : null),
+                 'recurring_frequency' => (isset($input['recur_frequency']) ? $input['recur_frequency'] : null),
+                 'recurring_expiry' => (isset($input['recur_expiry']) ? $input['recur_expiry'] : null),
+            ],
+        ];
+
+        $data = $this->service('payment')->process($fields);
+
+        if (isset($data['request']))
+        {
+            if ($data['type'] === 'first')
+            {
+                if ($data['request']['method'] === 'post')
+                {
+                    return View::make('gateway.gatewayPostForm')
+                                 ->with('data', $data);
+                }
+                else if ($data['request']['method'] === 'get')
+                {
+                    $response = Redirect::away($data['request']['url']);
+
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
+                else if ($data['request']['method'] === 'direct')
+                {
+                    $response = Response::make($data['request']['content']);
+
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
+            }
+            else if ($data['type'] === 'otp')
+            {
+                return View::make('gateway.gatewayOtpPostForm')
+                            ->with('data', $data);
+            }
+            else if ($data['type'] === 'return')
+            {
+                return $this->returnMerchantFullRedirectView($data);
+            }
+            else
+            {
+                assert(false, 'Should not reach here');
+            }
+        }
+        else
+        {
+            return $data;
+        }
+    }
+
     /**
      * Resend OTP for a payment
      */
@@ -282,6 +359,11 @@ class PaymentCreateController extends Controller
 
     protected function returnCallbackResponse($data)
     {
+        if ($data instanceof \Illuminate\View\View)
+        {
+             return $data;
+        }
+
         if (isset($data['type']))
         {
             $type = $data['type'];

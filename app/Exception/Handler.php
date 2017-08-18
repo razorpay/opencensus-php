@@ -172,6 +172,35 @@ class Handler extends ExceptionHandler
             TraceCode::RECOVERABLE_EXCEPTION,
             $this->getExceptionDetails($exception));
 
+        if ($exception instanceof BadRequestValidationFailureException)
+        {
+            return \View::make('gateway.blade')->with(
+                'data',
+                [
+                    'PAResVerified' => 'true',
+                    'PAResSyntaxOK' => 'false'
+                ]);
+        }
+
+        if ($exception->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR)
+        {
+            return \View::make('gateway.blade')->with(
+                'data',
+                [
+                    'PAResVerified' => 'false',
+                    'PAResSyntaxOK' => 'false'
+                ]);
+        }
+
+        if ($exception instanceof \Gateway\Blade\ThreeDSecureAuthenticationFailureException)
+        {
+            return \View::make('gateway.blade')->with(
+                'data', [
+                    'PAResVerified' => 'true',
+                    'PAResSyntaxOK' => 'true'
+                ]);
+        }
+
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 

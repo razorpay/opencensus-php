@@ -20,6 +20,7 @@ class Gateway
     const AXIS_GENIUS        = 'axis_genius';
     const AXIS_MIGS          = 'axis_migs';
     const BILLDESK           = 'billdesk';
+    const BLADE              = 'blade';
     const CYBERSOURCE        = 'cybersource';
     const EBS                = 'ebs';
     const FIRST_DATA         = 'first_data';
@@ -143,6 +144,7 @@ class Gateway
         self::ATOM                => Settlement\Channel::ATOM,
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
+        self::BLADE               => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::HDFC                => Settlement\Channel::KOTAK,
@@ -181,6 +183,7 @@ class Gateway
      */
     public static $methodMap = [
         Method::CARD => [
+            self::BLADE,
             self::HDFC,
             self::ATOM,
             self::AXIS_MIGS,
@@ -322,6 +325,9 @@ class Gateway
             Network::VISA],
         self::AMEX => [
             Network::AMEX],
+        self::BLADE => [
+            Network::MC,
+            Network::VISA],
         self::PAYTM => [
             Network::MC,
             Network::VISA],
@@ -442,6 +448,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = [
+        Gateway::BLADE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,

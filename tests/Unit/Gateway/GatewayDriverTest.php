@@ -1,34 +1,34 @@
 <?php
 
-namespace RZP\Tests\Unit\Gateway;
+namespace Tests\Unit\Gateway;
 
 use Mockery;
-use RZP\Models\Card;
-use RZP\Tests\TestCase;
+use Models\Card;
+use Tests\TestCase;
 
 class GatewayDriverTest extends TestCase
 {
     public function testGatewayDriverCreation()
     {
         $class = $this->mockGatewayManagerFunctions(true, 'test', 'hdfc');
-        $this->assertEquals('RZP\Gateway\Hdfc\Mock\Gateway', $class);
+        $this->assertEquals('Gateway\Hdfc\Mock\Gateway', $class);
+
+        $class = $this->mockGatewayManagerFunctions(true, 'live', 'hdfc');
+        $this->assertEquals('Gateway\Hdfc\Gateway', $class);
 
         $class = $this->mockGatewayManagerFunctions(false, 'test', 'hdfc');
-        $this->assertEquals('RZP\Gateway\Hdfc\Gateway', $class);
+        $this->assertEquals('Gateway\Hdfc\Gateway', $class);
 
-        // $class = $this->mockGatewayManagerFunctions(true, 'live', 'hdfc');
-        // $this->assertEquals('RZP\Gateway\Hdfc\Gateway', $class);
+        $class = $this->mockGatewayManagerFunctions(false, 'live', 'atom');
+        $this->assertEquals('Gateway\Atom\Gateway', $class);
 
-        // $class = $this->mockGatewayManagerFunctions(false, 'live', 'atom');
-        // $this->assertEquals('RZP\Gateway\Atom\Gateway', $class);
-
-        // $class = $this->mockGatewayManagerFunctions(true, 'live', 'atom');
-        // $this->assertEquals('RZP\Gateway\Atom\Gateway', $class);
+        $class = $this->mockGatewayManagerFunctions(true, 'live', 'atom');
+        $this->assertEquals('Gateway\Atom\Gateway', $class);
     }
 
     protected function mockGatewayManagerFunctions($mockgateway = true, $mode = 'test', $gateway = 'hdfc')
     {
-        $mock = Mockery::mock('RZP\Gateway\GatewayManager')->makePartial()->shouldAllowMockingProtectedMethods();
+        $mock = Mockery::mock('Gateway\GatewayManager')->makePartial()->shouldAllowMockingProtectedMethods();
 
         $mock->shouldReceive('getGateways')->withNoArgs()->andReturn(['atom', 'hdfc']);
 

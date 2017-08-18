@@ -1984,6 +1984,13 @@ trait Authorize
      */
     protected function postPaymentAuthorizeProcessing(Payment\Entity $payment): array
     {
+        if ($payment->getGateway() === 'blade')
+        {
+            $data = ['PAResVerified' => 'true', 'PAResSyntaxOK' => 'true'];
+
+            return \View::make('gateway.blade')->with('data', $data);
+        }
+
         $this->updateLateAuthFlag($payment);
 
         // Auto capture payment, if applicable

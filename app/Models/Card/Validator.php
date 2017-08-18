@@ -9,7 +9,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
+        Entity::NUMBER             => 'required|numeric|digits_between:12,19',
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
@@ -29,9 +29,7 @@ class Validator extends Base\Validator
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19'
     ];
 
-    protected static $createValidators = array(
-        'expiry_date'
-    );
+    protected static $createValidators = [];
 
     protected function validateExpiryDate($input)
     {

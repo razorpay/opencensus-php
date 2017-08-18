@@ -1,0 +1,1056 @@
+<?php
+
+namespace RZP\Gateway\Blade;
+
+use Cache;
+use Carbon\Carbon;
+use GuzzleHttp;
+use DOMDocument;
+
+use RZP\Exception;
+use RZP\Exception\ThreeDSecureAuthenticationFailureException;
+use RZP\Gateway\Base;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+
+class Gateway extends Base\Gateway
+{
+    const VERSION = '1.0.2';
+
+    protected $gateway = 'blade';
+
+    /**
+     * @param  array  $input
+     * @return void
+     */
+    public function authorize(array $input)
+    {
+        parent::authorize($input);
+
+        $e = null;
+
+        $data = null;
+
+        $authenticationStatus = null;
+
+        try
+        {
+            $data = $this->threeDSecure($input);
+        }
+        catch (ThreeDSecureAuthenticationFailureException $e)
+        {
+            throw $e;
+        }
+        catch (Exception\GatewayErrorException $e)
+        {
+            $authenticationStatus = AuthenticateStatus::U;
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            $authenticationStatus = AuthenticateStatus::U;
+        }
+
+        // If it's an array then we need to run the 3dsecure
+        // flow for authenticating
+        if (is_array($data))
+        {
+            return $data;
+        }
+
+        if ($authenticationStatus === null)
+        {
+            $authenticationStatus = $data;
+        }
+
+        //
+        // Decide to go ahead with authorization or not
+        // based on authentication status
+        //
+        $ret = $this->shouldAuthorize($authenticationStatus);
+
+        if ($ret === false)
+        {
+            if ($e !== null)
+            {
+                throw $e;
+            }
+
+            if ($authenticationStatus === AuthenticateStatus::F)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            }
+        }
+
+        $input['authenticate_status'] = $authenticationStatus;
+
+        return $this->runGatewayAuthorization($input);
+    }
+
+    protected function runGatewayAuthorization($input)
+    {
+        $eci = ECI::getValue($input['authenticate_status'], $input['card']['network_code']);
+
+        if (isset($input['gateway']['transaction']['eci']))
+        {
+            $this->trace->info(TraceCode::BLADE_AUTH_ECI, $input['gateway']);
+
+            // Commenting just for
+            // assert ((int) $eci === (int) $input['gateway']['transaction']['eci']);
+        }
+    }
+
+    protected function shouldAuthorize($authenticationStatus)
+    {
+        if ($authenticationStatus === AuthenticateStatus::Y)
+        {
+            return true;
+        }
+        else if ($this->isAuthenticationMandatory() === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function threeDSecure($input)
+    {
+        $cardCache = Cache::get('card_cache', []);
+
+        $enrolled = null;
+
+        foreach ($cardCache as $range)
+        {
+            if (($range['begin'] <= $input['card']['number']) and
+                ($input['card']['number'] <= $range['end']))
+            {
+                if ($range['action'] !== 'A')
+                {
+                    $enrolled = Enrolled::N;
+                }
+            }
+        }
+
+        if ($enrolled === null)
+        {
+            // Send card enrollment verification request
+            $veres = $this->sendVereq($input);
+
+            // Process verification response
+            $enrolled = $this->processVeres($veres);
+        }
+
+        //
+        // Determine card enrollment status and take next action
+        //
+        if ($enrolled === Enrolled::Y)
+        {
+            // Card is enrolled
+            // send Pareq
+            return $this->sendPareq($input, $veres);
+        }
+        else if ($enrolled === Enrolled::U)
+        {
+            // Could not be checked due to some issue
+            return AuthenticateStatus::U;
+        }
+        else if ($enrolled === Enrolled::N)
+        {
+            // Card not enrolled for 3dsecure
+            return AuthenticateStatus::N;
+        }
+
+        if (is_array($enrolled))
+        {
+            // if it's an array then simply return.
+            return $enrolled;
+        }
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $pares = $input['gateway']['PaRes'];
+
+        $corePares = (array) $this->processPares($pares);
+
+        $txnAttributes = (array) $corePares['TX'];
+        $purchaseAttributes = (array) $corePares['Purchase'];
+
+        $gatewayInput = [
+            'purchase' => $purchaseAttributes,
+            'transaction' => $txnAttributes
+        ];
+
+        $status = $txnAttributes['status'];
+        $xid = $purchaseAttributes['xid'];
+
+        $authenticateStatus = ParesStatus::getAuthenticationStatus($status);
+
+        if ($authenticateStatus === AuthenticateStatus::F)
+        {
+            throw new ThreeDSecureAuthenticationFailureException(
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+        }
+
+        $input['gateway'] = $gatewayInput;
+        $input['authenticate_status'] = $authenticateStatus;
+
+        return $this->runGatewayAuthorization($input);
+    }
+
+    protected function processPares($pares)
+    {
+        $pares = base64_decode($pares);
+        $pares = gzinflate(substr($pares, 2));
+
+        $dom = $this->loadXmlViaDom($pares);
+
+        $adapter = new XmlseclibsAdapter;
+
+        try
+        {
+            $ret = $adapter->verify($dom);
+        }
+        catch (\Exception $e)
+        {
+            $msg = $e->getMessage();
+
+            $error = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
+
+            if ($msg === 'Reference validation failed')
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_INVALID_PARES_SIGNATURE_ERROR);
+
+                $error = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
+            }
+            else if ($msg === 'Trying to get property of non-object')
+            {
+                $error = ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID_RESPONSE;
+            }
+
+            $this->trace->traceException($e);
+
+            throw new ThreeDSecureAuthenticationFailureException($error);
+        }
+
+        if ($ret === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
+        }
+
+        // Convert to an object
+        $paresObject = simplexml_load_string($pares);
+
+        // Validate Payer Authentication Response
+        $this->validatePARes($paresObject);
+
+        $PARes = $paresObject->Message->PARes;
+
+        return $PARes;
+    }
+
+    protected function validatePARes($PAres)
+    {
+        $PAres = json_decode(json_encode($PAres), true);
+
+        $this->trace->info('PAResBase', $PAres);
+
+        if (empty($PAres['Message']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Message element not found', 'message');
+        }
+
+        validate(Validator::$PAresRules, $PAres, false);
+
+        $dotted_pares = array_dot($PAres);
+
+        $difference = array_diff($PAres, Validator::$PAresRules);
+
+        foreach ($difference as $key => $value)
+        {
+
+        }
+
+        $PAResBase = $PAres['Message']['PARes'];
+
+        if (in_array($PAResBase['TX']['status'], [ParesStatus::Y, ParesStatus::A], true))
+        {
+            Validator::validateLastFour($this->input['card']['last4'], $PAResBase['pan']);
+        }
+
+        $xid = '000000'.$this->input['payment']['id'];
+        $xid = base64_encode($xid);
+
+        if ($PAResBase['Purchase']['xid'] !== $xid)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Value mismatch', 'xid');
+        }
+
+        $purchaseDate = Carbon::createFromTimestamp($this->input['payment']['created_at'], 'Asia/Kolkata')
+                                ->format('Ymd H:m:s');
+
+        if ($PAResBase['Purchase']['date'] !== $purchaseDate)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Value mismatch', 'xid');
+        }
+
+        $currency = (int) $PAResBase['Purchase']['currency'];
+
+        if ($currency  !== 356)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Invalid currency code', 'xid');
+        }
+
+        $amount = (int) $PAResBase['Purchase']['purchAmount'];
+
+        if ($amount !== $this->input['payment']['amount'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Amount mismatch', 'amount');
+        }
+
+        $exponent = (int) $PAResBase['Purchase']['exponent'];
+
+        if ($exponent !== 2)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Exponent mismatch', 'exponent');
+        }
+
+        if ($PAres['Message']['@attributes']['id'] !== $this->input['payment']['public_id'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'ID mismatch', 'id');
+        }
+
+        $this->validateCredentials($PAResBase);
+    }
+
+    protected function validateCredentials($PARes)
+    {
+        $credentials = $this->getCreds();
+
+        if (($PARes['Merchant']['acqBIN'] !== $credentials['acq_bin']) or
+            ($PARes['Merchant']['merID'] !== $credentials['merchant_id']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Credentials mismatch');
+        }
+    }
+
+    protected function validateVERes($VEres)
+    {
+        $VEres = json_decode(json_encode($VEres), true);
+
+        $this->trace->info('VEres', $VEres);
+
+        validate(Validator::$VEresRules, $VEres, false);
+
+        if ($VEres['Message']['@attributes']['id'] !== $this->input['payment']['public_id'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'ID mismatch', 'id');
+        }
+
+        $dotted_veres = array_dot($VEres);
+
+        $difference = array_diff($VEres, Validator::$VEresRules);
+
+        foreach ($difference as $key => $value)
+        {
+
+        }
+    }
+
+    public function sendCRReq()
+    {
+        $this->messageId = 'rzp_' . \Str::random();
+
+        $request = $this->getCrreqRequestArray();
+
+        $xml = $this->postGuzzleRequest($request);
+
+        $valid = $this->validateXml($xml);
+
+        if ($valid === false)
+        {
+            $this->trace->warning(
+                TraceCode::BLADE_VERES_PARSE_FAILURE,
+                ['message' => 'Malformed xml: ' . $xml]);
+
+            return Enrolled::U;
+        }
+
+        $parsedXml = simplexml_load_string($xml);
+
+        $CRres = json_decode(json_encode($parsedXml), true);
+
+        $this->validateCrreq($CRres);
+
+        $cSerial = Cache::get('cache_serial', null);
+        $cache = Cache::get('card_cache', []);
+
+        $serial = null;
+
+        if (isset($CRres['Message']['CRRes']['serialNumber']))
+        {
+            $serial = $CRres['Message']['CRRes']['serialNumber'];
+        }
+
+        $this->validateCR($CRres);
+
+        if (($serial !== null) and
+            (isset($CRres['Message']['CRRes']['IReq']) === false))
+        {
+            // if ($cSerial === null)
+            // {
+            //     if (!$this->isSequentialArray($CRres['Message']['CRRes']['CR']))
+            //     {
+            //         $CR[] = $CRres['Message']['CRRes']['CR'];
+            //     }
+            //     else
+            //     {
+            //         $CR = $CRres['Message']['CRRes']['CR'];
+            //     }
+
+            //     foreach ($CRres['Message']['CRRes']['CR'] as $CR)
+            //     {
+            //         $cache[$CR['begin'] . '-' . $CR['end']] = $CR;
+            //     }
+            // }
+            // else
+            // {
+            //     if (empty($cache) === false)
+            //     {
+            //         if (isset($CRres['Message']['CRRes']['CR'][0]))
+            //         {
+            //             foreach ($CRres['Message']['CRRes']['CR'] as $CR)
+            //             {
+            //                 if (isset($cardCache[$CR['begin'] . '-' . $CR['end']]))
+            //                 {
+            //                     $cardCache[$CR['begin'] . '-' . $CR['end']] = $CR;
+            //                 }
+            //             }
+            //         }
+            //         else
+            //         {
+            //             if (isset($CRres['Message']['CRRes']['CR']))
+            //             {
+            //                 $CR = $CRres['Message']['CRRes']['CR'];
+
+            //                 if (isset($cardCache[$CR['begin'] . '-' . $CR['end']]))
+            //                 {
+            //                     $cache[$CR['begin'] . '-' . $CR['end']] = $CR;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
+            if (isset($CRres['Message']['CRRes']['CR']))
+            {
+                if (!$this->isSequentialArray($CRres['Message']['CRRes']['CR']))
+                {
+                    $CR[] = $CRres['Message']['CRRes']['CR'];
+                }
+                else
+                {
+                    $CR = $CRres['Message']['CRRes']['CR'];
+                }
+
+                foreach ($CRres['Message']['CRRes']['CR'] as $CR)
+                {
+                    $cache[$CR['begin'] . '-' . $CR['end']] = $CR;
+                }
+            }
+        }
+
+        if (isset($CRres['Message']['CRRes']['IReq']) === false)
+        {
+            Cache::forever('card_cache', $cache);
+            Cache::forever('cache_serial', $serial);
+        }
+
+        if ($serial === null)
+        {
+            Cache::forever('card_cache', []);
+            Cache::forever('cache_serial', null);
+        }
+
+        // if (empty($CRres['Message']['CRRes']['serialNumber']) === false)
+        // {
+        //     Cache::forever('blade_serial_number', $CRres['Message']['CRRes']['serialNumber']);
+        // }
+        // else
+        // {
+        //     Cache::forever('blade_serial_number', null);
+        //     Cache::forever('blade_card_cache', []);
+        // }
+    }
+
+    protected function isSequentialArray($array)
+    {
+        return array_keys($array) === range(0, count($array) - 1);
+    }
+
+    protected function validateCR($CRres)
+    {
+        if (isset($CRres['Message']['CRRes']['CR']))
+        {
+            if (!$this->isSequentialArray($CRres['Message']['CRRes']['CR']))
+            {
+                $CR[] = $CRres['Message']['CRRes']['CR'];
+            }
+            else
+            {
+                $CR = $CRres['Message']['CRRes']['CR'];
+            }
+
+            foreach ($CRres['Message']['CRRes']['CR'] as $CR)
+            {
+                if ((isset($CR['begin']) === false) or
+                    (isset($CR['end']) === false) or
+                    (isset($CR['action']) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Invalid value in CR');
+                }
+
+                $beginLength = strlen($CR['begin']);
+                $endLength = strlen($CR['end']);
+
+                if ((is_numeric($CR['begin']) === false) or
+                    (is_numeric($CR['end']) === false) or
+                    ($beginLength > 19) or ($beginLength < 13) or
+                    ($endLength > 19) or ($endLength < 13) or
+                    ($beginLength !== $endLength) or
+                    (in_array($CR['action'], ['A', 'D']) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Invalid value in CR');
+                }
+            }
+        }
+    }
+
+    public function getCrreqRequestArray()
+    {
+        $url = Url::CTH_DS;
+
+        $certFile = $this->config['mpi_ssl_client_pem'];
+        $keyFile = $this->config['mpi_ssl_client_key'];
+
+        $serialNumber = Cache::get('cache_serial', null);
+        $messageId = $this->messageId;
+
+        $creds = $this->getCreds();
+
+        $s = '';
+        if ($serialNumber)
+        {
+            $s = '
+                <serialNumber>'.$serialNumber.'</serialNumber>';
+        }
+
+        $xml = ''.
+            '<?xml version="1.0" encoding="UTF-8"?>
+            <ThreeDSecure>
+              <Message id="'.$messageId.'">
+                <CRReq>
+                  <version>1.0.2</version>
+                  <Merchant>
+                    <acqBIN>'.$creds['acq_bin'].'</acqBIN>
+                    <merID>'.$creds['merchant_id'].'</merID>
+                    <password>'.$creds['password'].'</password>
+                  </Merchant>'.$s.'
+                </CRReq>
+              </Message>
+            </ThreeDSecure>';
+
+        $headers = [
+            'Content-Type' => 'application/xml; charset=utf-8'
+        ];
+
+        $options = [
+            'body'      => $xml,
+            'headers'   => $headers,
+            'cert'      => [$certFile, ''],
+            'ssl_key'   => [$keyFile, ''],
+            'verify'    => false,
+            'debug'     => false,
+            'timeout'   => 30
+        ];
+
+        $request = [
+            'url'       => $url,
+            'method'    => 'POST',
+            'options'   => $options
+        ];
+
+        return $request;
+    }
+
+    protected function validateCrreq($CRres)
+    {
+        $this->trace->info('CRres', $CRres);
+
+        validate(Validator::$CRresRules, $CRres, false);
+
+        if ($CRres['Message']['@attributes']['id'] !== $this->messageId)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'ID mismatch', 'id');
+        }
+    }
+
+    protected function verifyXmlSign($pares)
+    {
+        $doc = new DOMDocument();
+        $arTests = ['SIGN_TEST'=>'./firmas/sign-basic-test_mio.xml'];
+
+        foreach ($arTests as $testName=>$testFile)
+        {
+            $doc->load($testFile);
+            $objXMLSecDSig = new XMLSecurityDSig();
+            $objDSig = $objXMLSecDSig->locateSignature($doc);
+
+            if (! $objDSig)
+            {
+                throw new Exception("Cannot locate Signature Node");
+            }
+        }
+
+        $objXMLSecDSig->canonicalizeSignedInfo();
+        $objXMLSecDSig->idKeys = ['wsu:Id'];
+        $objXMLSecDSig->idNS = [
+            'wsu' => 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd'];
+
+        $retVal = $objXMLSecDSig->validateReference();
+
+        if (! $retVal)
+        {
+           throw new Exception("Reference Validation Failed");
+        }
+
+        $objKey = $objXMLSecDSig->locateKey();
+
+        if (! $objKey )
+        {
+           throw new Exception("We have no idea about the key");
+        }
+        $key = NULL;
+        $objKeyInfo = XMLSecEnc::staticLocateKeyInfo($objKey, $objDSig);
+        if (! $objKeyInfo->key && empty($key)) {
+           $objKey->loadKey('i.pem', TRUE);
+        }
+        if ($objXMLSecDSig->verify($objKey)) {
+           print "Signature validateddd!";
+        } else {
+           print "Failure!!!!!!!!";
+        }
+        print "\n";
+    }
+
+    protected function processVeres($veres)
+    {
+        if ($veres instanceof \SimpleXMLElement)
+        {
+            $this->validateVERes($veres);
+
+            $VERes = $veres->Message->VERes;
+
+            $error = (array) $VERes->Error;
+
+            if (count($error) !== 0)
+            {
+                $msg = 'Error message: ' . $error['errorMessage'] . ' ' .
+                       'Error detail: ' . $error['errorDetail'];
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                    $error['errorCode'],
+                    $msg);
+            }
+
+            $CH = (array) $VERes->CH;
+
+            return $CH['enrolled'];
+        }
+
+        return $veres;
+    }
+
+    protected function sendPareq($input, $veres)
+    {
+        $creds = $this->getCreds();
+
+        $url = $veres->Message->VERes->url;
+
+        $xml = $this->getPareqXmlString($input, $veres, $creds);
+
+        $content = [
+            'PaReq'     => $xml,
+            'TermUrl'   => $input['callbackUrl'],
+            'MD'        => $input['payment']['public_id']
+        ];
+
+        $request = [
+            'url'       => $url,
+            'method'    => 'post',
+            'content'   => $content
+        ];
+
+        return $request;
+    }
+
+    protected function sendVereq($input)
+    {
+        $request = $this->getVereqRequestArray($input);
+
+        $xml = $this->postGuzzleRequest($request);
+
+        $valid = $this->validateXml($xml);
+
+        if ($valid === false)
+        {
+            $this->trace->warning(
+                TraceCode::BLADE_VERES_PARSE_FAILURE,
+                ['message' => 'Malformed xml: ' . $xml]);
+
+            return Enrolled::U;
+        }
+
+        return simplexml_load_string($xml);
+    }
+
+    protected function getVereqRequestArray($input)
+    {
+        $url = Url::CTH_DS;
+
+        $certFile = $this->config['mpi_ssl_client_pem'];
+        $keyFile = $this->config['mpi_ssl_client_key'];
+
+        // $id = $input['payment']['public_id'];
+
+        // $content = array(
+        //     'pan' => $input['card']['number'],
+        //     'message_id' => $id,
+        //     ''
+        // );
+
+        // $content = array_merge($content, $creds);
+
+        $xml = $this->getVereqXmlString($input);
+
+        $headers = [
+            'Content-Type' => 'application/xml; charset=utf-8',
+            'Accept' => $this->app['request']->header('Accept'),
+            'User-Agent' => $this->app['request']->header('User-Agent')
+        ];
+
+        $options = [
+            'body'      => $xml,
+            'headers'   => $headers,
+            'cert'      => [$certFile, ''],
+            'ssl_key'   => [$keyFile, ''],
+            'verify'    => false,
+            'debug'     => false,
+            'timeout'   => 30
+        ];
+
+        $request = [
+            'url'       => $url,
+            'method'    => 'POST',
+            'options'   => $options
+        ];
+
+        return $request;
+    }
+
+    protected function getPareqXmlString($input, $veres, $creds)
+    {
+        // Format YYYYMMDD HH:MM:SS
+        $date = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s');
+
+        $expiry = substr($input['card']['expiry_year'], -2).str_pad($input['card']['expiry_month'], 2, 0, STR_PAD_LEFT);
+
+        $xid = '000000'.$input['payment']['id'];
+        $xid = base64_encode($xid);
+
+        $mid = $input['payment']['public_id'];
+
+        $recurring = '';
+        $installments = '';
+
+        if ($input['payment']['notes']['installments'] !== null)
+        {
+            $installments = '<install>'. $input['payment']['notes']['installments'] . '</install>';
+        }
+
+        if ($input['payment']['notes']['recurring_frequency'] !== null)
+        {
+            $recurring = '<Recur>
+                        <frequency>'.$input['payment']['notes']['recurring_frequency'].'</frequency>
+                        <endRecur>'.$input['payment']['notes']['recurring_expiry'] .'</endRecur>
+                        </Recur>';
+        }
+
+        // Currency is INR (356 - ISO 4217 numeric value) for now
+        // TODO: Make it dynamic with INR as default
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
+                '<ThreeDSecure>
+                    <Message id="'.$mid.'">
+                        <PAReq>
+                          <version>'.self::VERSION.'</version>
+                          <Merchant>
+                            <acqBIN>'.$creds['acq_bin'].'</acqBIN>
+                            <merID>'.$creds['merchant_id'].'</merID>
+                            <name>Razorpay Payments</name>
+                            <country>356</country>
+                            <url>https://razorpay.com/</url>
+                          </Merchant>
+                          <Purchase>
+                            <xid>'.$xid.'</xid>
+                            <date>'.$date.'</date>
+                            <amount>'.($input['payment']['amount']/100).'</amount>
+                            <purchAmount>'.$input['payment']['amount'].'</purchAmount>
+                            <currency>356</currency>
+                            <exponent>2</exponent>
+                            '.$recurring.'
+                            '.$installments.'
+                          </Purchase>
+                          <CH>
+                            <acctID>'.$veres->Message->VERes->CH->acctID.'</acctID>
+                            <expiry>'.$expiry.'</expiry>
+                          </CH>
+                        </PAReq>
+                    </Message>
+                </ThreeDSecure>';
+
+        $xml = trim($xml);
+
+        $xml = zlib_encode($xml, 15);
+        $xml = base64_encode($xml);
+
+        return $xml;
+    }
+
+    protected function getVereqXmlString($input)
+    {
+        $creds = $this->getCreds();
+
+        $deviceCategory = DeviceCategory::getDeviceCategory($input['payment']['notes']['device_category']);
+
+        $accept = substr($this->app['request']->header('Accept'), 0, 2048);
+        $userAgent = substr($this->app['request']->header('User-Agent'), 0, 256);
+
+        $xml = ''.
+            '<?xml version="1.0" encoding="UTF-8"?>
+            <ThreeDSecure>
+              <Message id="'.$input['payment']['public_id'].'">
+                <VEReq>
+                  <version>1.0.2</version>
+                  <pan>'.$input['card']['number'].'</pan>
+                  <Merchant>
+                    <acqBIN>'.$creds['acq_bin'].'</acqBIN>
+                    <merID>'.$creds['merchant_id'].'</merID>
+                    <password>'.$creds['password'].'</password>
+                  </Merchant>
+                  <Browser>
+                    <deviceCategory>' . $deviceCategory. '</deviceCategory>
+                    <accept>' . $accept .'</accept>
+                    <userAgent>' . $userAgent. '</userAgent>
+                  </Browser>
+                </VEReq>
+              </Message>
+            </ThreeDSecure>';
+
+        return $xml;
+    }
+
+    protected function getCreds()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $creds = [
+                'acq_bin'       => '11111111111',
+                'merchant_id'   => '12AB,cd/34-EF  -g,5/H-67',
+                'password'      => '12345678',
+            ];
+        }
+        else
+        {
+            $terminal = $this->terminal;
+
+            $creds = [
+                'acq_bin'       => $terminal['gateway_access_code'],
+                'merchant_id'   => $terminal['gateway_merchant_id2'],
+                'password'      => $terminal['gateway_terminal_password'],
+            ];
+        }
+
+        return $creds;
+    }
+
+    protected function getFieldsFromXML($xml, $fields)
+    {
+        $array = [];
+
+        foreach ($fields as $field)
+        {
+            $array[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
+        }
+
+        return $array;
+    }
+
+    /**
+     * Validates the xml against the mpi schema.
+     * @return  bool true/false whether the xml is valid or not
+     */
+    protected function validateXml($xml)
+    {
+        $dom = $this->loadXmlViaDom($xml);
+
+        return ($dom !== false);
+    }
+
+    protected function loadXmlViaDom($xml)
+    {
+        // XML DTD Schema file
+        $file = __DIR__ . '/Schema/mpiXmlSchema.dtd';
+
+        // For validating against the xml dtd schema,
+        // we need to insert this line in the xml
+        // If the xml starts '<?xml version="1.0"?\>
+        // then this line is inserted as second line
+        // else it's inserted as first line.
+        //
+        $dtdLine = '<!DOCTYPE ThreeDSecure SYSTEM "'.$file.'">';
+
+        $ix = strpos($xml, '?>');
+
+        if ($ix === false)
+        {
+            // Doesn't have xml version line,
+            // so it's the first line in this case.
+            $xml = $dtdLine . $xml;
+        }
+        else
+        {
+            $xml = substr_replace($xml, $dtdLine, $ix + 2, 0);
+        }
+
+        $dom = new DOMDocument;
+        $dom->validateOnParse = true;
+
+        try
+        {
+            $ret = $dom->loadXML($xml);
+
+            if ($ret === false)
+            {
+                return $ret;
+            }
+
+            return $dom;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            $error = $e->getMessage();
+
+            switch (true)
+            {
+                case strpos($error, 'CanonicalizationMethod') !== false:
+                case strpos($error, 'SignedInfo') !== false:
+                case strpos($error, 'Signature') !== false:
+                case strpos($error, 'DigestMethod') !== false:
+                case strpos($error, 'DigestValue') !== false:
+                case strpos($error, 'SignatureMethod') !== false:
+                case strpos($error, 'SignatureValue') !== false:
+                case strpos($error, 'KeyInfo') !== false:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
+            }
+
+            throw new Exception\BadRequestValidationFailureException(
+                    'Invalid XML');
+        }
+    }
+
+    protected function isAuthenticationMandatory()
+    {
+        return true;
+    }
+
+    protected function postGuzzleRequest($request)
+    {
+        $client = new GuzzleHttp\Client();
+
+        $options = [];
+
+        $request['options'] = array_merge($options, $request['options']);
+
+        $request = $client->createRequest(
+            $request['method'], $request['url'], $request['options']);
+
+        $response = null;
+
+        try
+        {
+            $response = $client->send($request);
+        }
+        catch (GuzzleHttp\Exception\BadResponseException $e)
+        {
+            $response = $e->getResponse();
+
+            $responseBodyAsString = $response->getBody()->getContents();
+        }
+        catch (GuzzleHttp\Exception\ConnectException $e)
+        {
+            $response = $e->getResponse();
+
+            throw new Exception\GatewayTimeoutException(
+                $e->getMessage(), $e);
+        }
+
+        $content = $response->getBody()->getContents();
+
+        return $content;
+    }
+
+    protected function postCurlRequest($url, $txt, $certFile, $keyFile)
+    {
+        $curl_resource = curl_init();
+
+        curl_setopt ( $curl_resource, CURLOPT_URL, $url );
+        curl_setopt ( $curl_resource, CURLOPT_POST, 1 );
+        curl_setopt ( $curl_resource, CURLOPT_POSTFIELDS, $txt );
+        curl_setopt ( $curl_resource, CURLOPT_RETURNTRANSFER, 1 );
+        // curl_setopt ( $curl_resource, CURLOPT_HTTPHEADER, $headerdata);
+        curl_setopt ( $curl_resource, CURLOPT_HEADER, true);
+        curl_setopt ( $curl_resource, CURLOPT_SSLCERT , $certFile);
+        curl_setopt ( $curl_resource, CURLOPT_SSLCERTPASSWD, '');
+        curl_setopt ( $curl_resource, CURLOPT_SSLKEY, $keyFile);
+        curl_setopt ( $curl_resource, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt ( $curl_resource, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt ( $curl_resource, CURLOPT_SSLCERTTYPE, 'PEM');
+
+        $output = curl_exec($curl_resource);
+        curl_close($curl_resource);
+
+        return $output;
+    }
+}

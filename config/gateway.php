@@ -15,6 +15,7 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
+        'blade',
         'cybersource',
         'first_data',
         'ebs',
@@ -67,6 +68,8 @@ return [
     'mock_netbanking_indusind' => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'      => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'            => env('BILLDESK_MOCK'),
+    //TODO add this env
+    'mock_blade'               => env('BLADE_MOCK'),
     'mock_ebs'                 => env('EBS_MOCK'),
     'mock_wallet_olamoney'     => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'      => env('PAYZAPP_MOCK'),
@@ -147,6 +150,11 @@ return [
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
+    ],
+
+    'blade' => [
+        'mpi_ssl_client_key'   => env('CTH_CLIENT_CERT_KEY', 'key'),
+        'mpi_ssl_client_pem'   => env('CTH_CLIENT_CERT', 'cert'),
     ],
 
     'ebs' => [

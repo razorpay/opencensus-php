@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "9472657f01c7a70bec1e37163d267c2a",
+    "content-hash": "eace02d851f9a4a52b9232e9dc8e7144",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -871,7 +871,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2015-11-06T14:35:42+00:00"
+            "time": "2017-07-22T12:18:28+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -5152,24 +5152,23 @@
         },
         {
             "name": "robrichards/xmlseclibs",
-            "version": "2.0.1",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/robrichards/xmlseclibs.git",
-                "reference": "53bb1e9cae490a8f93af41bd9df6ea897161ca05"
+                "reference": "a29eb3100eb6c5a427d6a3f9e61aff37492405ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/53bb1e9cae490a8f93af41bd9df6ea897161ca05",
-                "reference": "53bb1e9cae490a8f93af41bd9df6ea897161ca05",
+                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/a29eb3100eb6c5a427d6a3f9e61aff37492405ae",
+                "reference": "a29eb3100eb6c5a427d6a3f9e61aff37492405ae",
                 "shasum": ""
             },
             "require": {
-                "php": ">= 5.3"
+                "php": ">= 5.6"
             },
             "suggest": {
-                "ext/mcrypt": "MCrypt extension",
-                "ext/openssl": "OpenSSL extension"
+                "ext-openssl": "OpenSSL extension"
             },
             "type": "library",
             "autoload": {
@@ -5189,7 +5188,7 @@
                 "xml",
                 "xmldsig"
             ],
-            "time": "2016-09-08T13:15:00+00:00"
+            "time": "2017-05-25T15:25:34+00:00"
         },
         {
             "name": "rtconner/laravel-tagging",

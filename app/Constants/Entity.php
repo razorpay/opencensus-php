@@ -111,6 +111,7 @@ class Entity
     const UPI                   = 'upi';
     const AEPS                  = 'aeps';
     const AMEX                  = 'amex';
+    const BLADE                 = 'blade';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const PAYTM                 = 'paytm';
@@ -160,6 +161,7 @@ class Entity
         self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
+        self::BLADE                 => \RZP\Gateway\Blade::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
         self::USER                  => \RZP\Models\User::class,
         self::OFFER                 => \RZP\Models\Offer::class,
