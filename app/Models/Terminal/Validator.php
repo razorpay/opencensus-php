@@ -308,7 +308,8 @@ class Validator extends Base\Validator
             $input['tpv'],
             $input[Entity::NETWORK_CATEGORY],
             $input[Entity::GATEWAY_ACQUIRER],
-            $input[Entity::MODE]);
+            $input[Entity::MODE],
+            $input[Entity::TYPE]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -334,6 +335,8 @@ class Validator extends Base\Validator
         $gateway = $input[Entity::GATEWAY];
 
         $type = $input[Entity::TYPE];
+
+        $mode = (int) $input[Entity::MODE];
 
         // FirstData N3DS terminals are always in purchase mode
         //
@@ -364,20 +367,23 @@ class Validator extends Base\Validator
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
 
         if ((($isFirstDataNon3DS === true) or ($isNonCardNonMockGateway === true)) and
-            ($input[Entity::MODE] !== Mode::PURCHASE))
+            ($mode !== Mode::PURCHASE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'FirstData Non-3DS terminals must be in Purchase mode',
                 Entity::GATEWAY);
         }
         else if (($isAuthCaptureOnlyGateway === true) and
-                 ($input[Entity::MODE] !== Mode::AUTH_CAPTURE))
+                 ($mode !== Mode::AUTH_CAPTURE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $input['gateway'] . ' terminals must be in AuthCapture mode',
                 Entity::GATEWAY);
         }
-        else if ($input[Entity::MODE] !== Mode::DUAL)
+        else if (($isFirstDataNon3DS === false) and
+                 ($isNonCardNonMockGateway === false) and
+                 ($isAuthCaptureOnlyGateway === false) and
+                 ($mode !== Mode::DUAL))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $input['gateway'] . ' terminals must be in Dual mode',
