@@ -190,7 +190,9 @@ class PaymentRetrieveTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayHasKey('card_id', $response);
+        $this->assertNotEmpty($response['card_id']);
+        $this->assertNotEmpty($response['card']['id']);
+        $this->assertEquals($response['card_id'], $response['card']['id']);
     }
 
     public function testRetrieveMultiplePaymentsWithCardDetails()

@@ -287,7 +287,7 @@ class AuthorizeTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/payments/'.$payment['public_id'];
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
 
         $this->ba->privateAuth();
 
@@ -307,7 +307,7 @@ class AuthorizeTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/payments/'.$payment['public_id'];
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
 
         $this->ba->privateAuth();
 
@@ -379,7 +379,7 @@ class AuthorizeTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/payments/'.$payment['public_id'];
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
 
         $this->ba->privateAuth();
 
