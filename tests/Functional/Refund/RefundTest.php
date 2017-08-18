@@ -75,6 +75,7 @@ class RefundTest extends TestCase
             [
                 'payment_id' => $payment->getPublicId(),
                 'notes'      => ['a' => 'b'],
+                'receipt'    => '2544325',
             ]);
 
         $this->assertEquals('refund', $refund['entity']);
@@ -98,6 +99,32 @@ class RefundTest extends TestCase
 
         $refunds = $this->getEntities('refund', ['payment_id' => $payment['id']]);
         $this->assertEquals($refunds['count'], 4);
+    }
+
+    public function testRefundsWithDuplicateReceipt()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'amount'     => '1000',
+                'receipt'    => '2544325',
+            ]);
+
+        $this->expectException('Illuminate\Database\QueryException');
+
+        $requestData = $this->testData[__FUNCTION__];
+
+        $response =  $this->refund(
+                    [
+                        'payment_id' => $payment['id'],
+                        'notes'      => ['a' => 'b'],
+                        'amount'     => '1000',
+                        'receipt'    => '2544325',
+                    ]);
     }
 
     public function testRefundWithHigherAmount()

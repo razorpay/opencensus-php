@@ -22,6 +22,10 @@ class Entity extends Base\PublicEntity
     const BASE_AMOUNT            = 'base_amount';
     const STATUS                 = 'status';
     const NOTES                  = 'notes';
+
+    //merchant reference number for refund if provided by merchant
+    const RECEIPT                = 'receipt';
+
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
@@ -29,8 +33,6 @@ class Entity extends Base\PublicEntity
     const GATEWAY_REFUNDED       = 'gateway_refunded';
     const REFERENCE1             = 'reference1';
     const REFERENCE2             = 'reference2';
-    //merchant reference number for refund if provided by merchant
-    const RECEIPT                = 'receipt';
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
@@ -69,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::GATEWAY_REFUNDED,
         self::NOTES,
+        self::RECEIPT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
@@ -87,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
+        self::RECEIPT,
         self::ACQUIRER_DATA,
         self::CREATED_AT
     ];

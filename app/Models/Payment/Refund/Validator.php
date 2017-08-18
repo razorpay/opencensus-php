@@ -30,7 +30,8 @@ class Validator extends Base\Validator
     protected static $directRules = [
         'payment_id'    => 'required',
         'amount'        => 'sometimes|integer|min:100',
-        'notes'         => 'sometimes|notes'
+        'notes'         => 'sometimes|notes',
+        'receipt'       => 'sometimes|string|max:40',
     ];
 
     protected static $verifyInternalRefundGateways = [

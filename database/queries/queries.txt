@@ -2355,5 +2355,5 @@ ALTER TABLE merchants
     ADD COLUMN risk_threshold TINYINT(2) UNSIGNED AFTER risk_rating;
 
 ALTER TABLE refunds
-    ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER reference1,
+    ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER notes,
     ADD UNIQUE INDEX refunds_merchant_id_receipt_unique (merchant_id, receipt);

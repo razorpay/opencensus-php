@@ -45,6 +45,9 @@ class CreateRefunds extends Migration
 
             $table->text(Refund::NOTES);
 
+            $table->string(Refund::RECEIPT)
+                  ->nullable();
+
             $table->char(Refund::TRANSACTION_ID, Transaction::ID_LENGTH)
                   ->unique()
                   ->nullable();
@@ -62,9 +65,6 @@ class CreateRefunds extends Migration
                   ->nullable();
 
             $table->string(Payment::REFERENCE2)
-                  ->nullable();
-
-            $table->string(Refund::RECEIPT)
                   ->nullable();
 
             $table->integer(Refund::CREATED_AT);
