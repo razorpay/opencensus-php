@@ -9,8 +9,9 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Gateway\Downtime;
 use RZP\Models\Gateway\Rule;
+use RZP\Models\Payment\Method;
+use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
@@ -244,6 +245,12 @@ class GatewayController extends Controller
     public function getPublicGatewayDowntimeData(Downtime\Service $service)
     {
         $data = $service->getPublicGatewayDowntimeData();
+
+        // For this route we are currently sending only netbanking
+        // downtimes in the response, so removing other routes
+        unset($data[Method::CARD]);
+        unset($data[Method::UPI]);
+        unset($data[Method::WALLET]);
 
         return ApiResponse::json($data);
     }

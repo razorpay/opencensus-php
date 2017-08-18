@@ -858,10 +858,9 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->create('gateway_downtime:card', [
-            'gateway' => 'ALL',
-            'issuer'  => 'ALL',
-            'network' => 'VISA']);
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway'     => 'netbanking_hdfc',
+            'issuer'      => 'ALL',]);
 
         $this->startTest();
     }

@@ -1146,13 +1146,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'card' => [
+                'netbanking' => [
                     [
-                        'issuer' => ['ALL'],
-                        'scheduled' => true,
+                        'issuer'      => ['HDFC'],
+                        'scheduled'   => true,
                         'reason_code' => 'OTHER',
-                        'card_type' => 'credit',
-                        'network' => ['VISA'],
                     ],
                 ],
             ],
