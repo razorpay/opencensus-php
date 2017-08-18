@@ -93,4 +93,25 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Updating default workflow action(wfActionId1000) with title and description
+     */
+    public function testUpdateWorkflowAction()
+    {
+        $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $defaultWorkflowActionId);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['org_id'] = 'org_' . Org::RZP_ORG;
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $defaultWorkflowActionId;
+
+        $this->startTest();
+    }
 }
