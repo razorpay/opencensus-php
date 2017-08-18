@@ -31,6 +31,11 @@ build:
           overwrite: true
           content:
       - script:
+          name: Export ES env var to API environment variables
+          code: >
+              export ES_HOST="$ELASTICSEARCH_PORT_9200_TCP_ADDR"
+              export ES_AUDIT_HOST="$ELASTICSEARCH_PORT_9200_TCP_ADDR"
+      - script:
           name: Export wercker DB env var to API environment variables
           code: >
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"

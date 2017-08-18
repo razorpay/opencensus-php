@@ -140,12 +140,12 @@ class WorkflowActionTest extends TestCase
             $content);
 
         //After Indexing into ES the document is not available in Real Time so a sec delay.
-        sleep(1);
+        sleep(5);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $workflowAction['id']);
-        s($workflowAction['id']);
+
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
