@@ -14,8 +14,12 @@ build:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
       - redis
+      - elasticsearch
     # The steps that will be executed on build
     steps:
+      - script:
+          name: ENV
+          code: env
       - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
