@@ -94,6 +94,7 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_billdesk_terminal');
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_olamoney_terminal');
+        $this->fixtures->create('terminal:shared_jiomoney_terminal');
         $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
         $this->fixtures->create('terminal:shared_amex_terminal');
@@ -116,13 +117,13 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
         $this->fixtures->create('terminal:shared_hdfc_emi_merchant_subvention_terminal');
 
-        $merchant = Merchant\Entity::find('10000000000000');
-
         $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
         $this->fixtures->merchant->enableEmi();
         $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
 
         $test = $this->testData[__FUNCTION__];
+
+        $merchant = Merchant\Entity::find('10000000000000');
 
         $this->runTestCase($test, $merchant);
     }
@@ -202,8 +203,9 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
-        $merchant = Merchant\Entity::find('10000000000000');
         $this->fixtures->merchant->editCategory2('securities');
+
+        $merchant = Merchant\Entity::find('10000000000000');
 
         $test = $this->testData[__FUNCTION__];
 
@@ -217,9 +219,9 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
                                 ['id' => 'SCorNbKtkTrmnl','network_category' => 'corporate']);
 
-        $merchant = Merchant\Entity::find('10000000000000');
-
         $this->fixtures->merchant->editCategory2('corporate');
+
+        $merchant = Merchant\Entity::find('10000000000000');
 
         $test = $this->testData[__FUNCTION__];
 
@@ -259,9 +261,9 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
-        $merchant = Merchant\Entity::find('10000000000000');
-
         $this->fixtures->merchant->editCategory2('securities');
+
+        $merchant = Merchant\Entity::find('10000000000000');
 
         $test = $this->testData[__FUNCTION__];
 

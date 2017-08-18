@@ -2344,7 +2344,6 @@ return [
                                 'taxes'         => [],
                             ],
                         ],
-                        'customer_id'      => 'cust_100000customer',
                         'short_url'        => 'http://bitly.dev/2eZ11Vn',
                         'notes'            => [],
                         'status'           => 'issued',

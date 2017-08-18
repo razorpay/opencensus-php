@@ -26,7 +26,7 @@ class Entity extends Base\PublicEntity
     /**
      * Prefix for pdf file name
      */
-    const PDF_PREFIX = 'pdfs/';
+    const PDF_PREFIX               = 'pdfs/';
 
     // ------------------ Entity Keys --------------------------------
 
@@ -93,6 +93,15 @@ class Entity extends Base\PublicEntity
      * the bottom of invoice.
      */
     const GROUP_TAXES_DISCOUNTS    = 'group_taxes_discounts';
+
+
+    /**
+     * Post payment hosted page sends back control to following
+     * callback URL via specified method (currently only GET).
+     */
+    const CALLBACK_URL             = 'callback_url';
+    const CALLBACK_METHOD          = 'callback_method';
+
     const DELETED_AT               = 'deleted_at';
 
     // ---------------------- Input Keys -----------------------------
@@ -192,6 +201,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_CONTACT         => null,
         self::CUSTOMER_BILLING_ADDR_ID => null,
         self::GROUP_TAXES_DISCOUNTS    => false,
+        self::CALLBACK_URL             => null,
+        self::CALLBACK_METHOD          => null,
     ];
 
     protected static $generators = [
@@ -222,6 +233,8 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::USER_ID,
         self::EXPIRE_BY,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
     ];
 
     protected $visible = [
@@ -259,6 +272,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::PARTIAL_PAYMENT,
         self::GROUP_TAXES_DISCOUNTS,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -563,6 +578,16 @@ class Entity extends Base\PublicEntity
     public function getTypeLabel()
     {
         return Type::getLabel($this->getType());
+    }
+
+    public function getCallbackUrl()
+    {
+        return $this->getAttribute(self::CALLBACK_URL);
+    }
+
+    public function getCallbackMethod()
+    {
+        return $this->getAttribute(self::CALLBACK_METHOD);
     }
 
     public function hasBeenPaid()

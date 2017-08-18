@@ -2344,3 +2344,22 @@ ALTER TABLE gateway_rules
 
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
+
+# Pre deployment of branch: invoices_callback
+
+ALTER TABLE invoices
+    ADD COLUMN callback_url TEXT AFTER group_taxes_discounts,
+    ADD COLUMN callback_method VARCHAR(16) DEFAULT NULL AFTER callback_url;
+
+ALTER TABLE merchants
+    ADD COLUMN risk_threshold TINYINT(2) UNSIGNED AFTER risk_rating;
+
+# Adds indexes on amount fields of orders and invoices table, Mostly useful
+# in stats query for now.
+
+ALTER TABLE orders
+    ADD INDEX orders_amount_index (amount),
+    ADD INDEX orders_amount_paid_index (amount_paid);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_amount_index (amount);

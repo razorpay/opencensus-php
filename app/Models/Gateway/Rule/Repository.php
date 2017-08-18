@@ -172,6 +172,13 @@ class Repository extends Base\Repository
                 }
             });
         }
+        else
+        {
+            if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
+            {
+                $query->whereNull($key);
+            }
+        }
     }
 
     /**

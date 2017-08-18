@@ -2167,18 +2167,4 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
-
-    public function shouldFailOnRiskFailure()
-    {
-        if ($this->isCard() === true)
-        {
-            if (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

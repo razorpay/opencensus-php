@@ -5,9 +5,15 @@ namespace RZP\Http;
 class RequestHeader
 {
     const REFERER                       = 'referer';
+
     const USER_AGENT                    = 'user-agent';
 
     // Dashboard Headers
+    const ADMIN_TOKEN                   = 'x-admin-token';
+
+    const DASHBOARD_HEADER_PREFIX       = 'x-dashboard';
+
+    const MERCHANT                      = 'x-dashboard-merchant';
      
     // Is dashboard?
     const X_DASHBOARD                   = 'X-Dashboard';
