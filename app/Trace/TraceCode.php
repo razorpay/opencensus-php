@@ -436,6 +436,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
     const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
+    const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
