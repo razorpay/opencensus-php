@@ -162,8 +162,7 @@ export default class AddPlan extends Component {
                     </Field>
 
                     <small class="help-block">
-                      <i class="icon icon-info-circle" />
-                      You can set
+                      <i class="icon icon-info-circle" /> You can set
                       {' '}
                       <b>billing cycle</b>
                       {' '}
