@@ -210,28 +210,23 @@ export default class AddPlan extends Component {
               />
 
               <Alert type="error" message={this.state.errors} />
-
-              <div class="row">
-                <div class="col-sm-offset-3">
-                  <div class="btn-toolbar">
-                    <AsyncButton
-                      type="submit"
-                      class="btn btn-primary"
-                      text="Create Plan"
-                      pendingText="Creating..."
-                      onClick={handleSubmit(this.save)}
-                    />
-                    <button
-                      type="button"
-                      class="btn btn-default"
-                      onClick={() => {
-                        this.props.history.push(`/plans`);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
+              <div class="btn-toolbar text-center">
+                <AsyncButton
+                  type="submit"
+                  class="btn btn-primary btn-half"
+                  text="Create Plan"
+                  pendingText="Creating..."
+                  onClick={handleSubmit(this.save)}
+                />
+                <button
+                  type="button"
+                  class="btn btn-default btn-half"
+                  onClick={() => {
+                    this.props.history.push(`/plans`);
+                  }}
+                >
+                  Discard
+                </button>
               </div>
             </form>
           </div>
