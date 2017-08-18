@@ -10,6 +10,7 @@ import { required } from 'rzp/utils/validators';
 import { savePlan } from 'merchant/modules/plans';
 import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
+import FormItem from 'merchant/components/FormItem';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
@@ -85,9 +86,9 @@ export default class AddPlan extends Component {
           </div>
           <div class="SliderPanel__Body">
             <form class="panel-body" onSubmit={handleSubmit(this.save)}>
-              <div class="pair-group-item">
-                <Label text="Plan Name" required />
-                <div class="pair-value">
+              <FormItem
+                label={_ => <Label text="Plan Name" required />}
+                field={_ => (
                   <Field
                     name="item[name]"
                     component={InputField}
@@ -96,44 +97,37 @@ export default class AddPlan extends Component {
                     validate={required('Plan name is required')}
                     placeholder="The name known to your customers"
                   />
-                </div>
-              </div>
-
-              <div class="pair-group-item">
-                <Label text="Plan Description" />
-                <div class="pair-value">
-                  <Field
-                    name="item[description]"
-                    component="textarea"
-                    class="form-control"
-                    placeholder="Optional"
-                  />
-                  <small class="help-block">
-                    <i class="icon icon-info-circle" />
-                    The
-                    {' '}
-                    <b>Plan Name</b>
-                    {' '}
-                    and
-                    {' '}
-                    <b>Plan Description</b>
-                    {' '}
-                    will appear on the invoice as entered above
-                  </small>
-                </div>
-              </div>
-
-              <div class="pair-group-item">
-                <Label text="Billing Frequency" required />
-                <div class="pair-value">
-                  <div
-                    class="billing-frequency"
-                    style={{
-                      '*': {
-                        display: 'none',
-                      },
-                    }}
-                  >
+                )}
+              />
+              <FormItem
+                label={_ => <Label text="Plan Description" />}
+                field={_ => (
+                  <div>
+                    <Field
+                      name="item[description]"
+                      component="textarea"
+                      class="form-control"
+                      placeholder="Optional"
+                    />
+                    <small class="help-block">
+                      <i class="icon icon-info-circle" />
+                      The
+                      {' '}
+                      <b>Plan Name</b>
+                      {' '}
+                      and
+                      {' '}
+                      <b>Plan Description</b>
+                      {' '}
+                      will appear on the invoice as entered above
+                    </small>
+                  </div>
+                )}
+              />
+              <FormItem
+                label={_ => <Label text="Billing Frequency" required />}
+                field={_ => (
+                  <div class="billing-frequency">
                     <span>Every</span>
                     <Field
                       name="interval"
@@ -165,7 +159,7 @@ export default class AddPlan extends Component {
 
                     <small class="help-block">
                       <i class="icon icon-info-circle" />
-                       You can set
+                      You can set
                       {' '}
                       <b>billing cycle</b>
                       {' '}
@@ -174,40 +168,46 @@ export default class AddPlan extends Component {
                       <b>trial period</b> later while, creating a subscription.
                     </small>
                   </div>
-                </div>
-              </div>
+                )}
+              />
 
-              <div class="pair-group-item">
-                <Label text="Billing Amount" required />
-                <div class="pair-value">
-                  <Field
-                    name="item[amount]"
-                    component={InputGroupField}
-                    prefix="INR"
-                    suffix="per unit"
-                    class="form-control"
-                    validate={required('Billing amount is required')}
+              <FormItem
+                label={_ => <Label text="Billing Amount" required />}
+                field={_ => (
+                  <div>
+                    <Field
+                      name="item[amount]"
+                      component={InputGroupField}
+                      prefix="INR"
+                      suffix="per unit"
+                      class="form-control"
+                      validate={required('Billing amount is required')}
+                      placeholder="199.99"
+                    />
+                    <small class="help-block">
+                      <i class="icon icon-info-circle" />
+                      <b>Billing amount</b>
+                      {' '}
+                      and
+                      {' '}
+                      <b>billing frequency</b>
+                      {' '}
+                      can not be changed later.
+                    </small>
+                  </div>
+                )}
+              />
+
+              <FormItem
+                label={_ => <Label text="Internal Notes" />}
+                field={_ => (
+                  <FieldArray
+                    name="notes"
+                    component={NotesFieldArray}
+                    required
                   />
-                  <small class="help-block">
-                    <i class="icon icon-info-circle" />
-                    <b>Billing amount</b>
-                    {' '}
-                    and
-                    {' '}
-                    <b>billing frequency</b>
-                    {' '}
-                    can not be changed later.
-                  </small>
-
-                </div>
-              </div>
-
-              <div class="pair-group-item">
-                <Label text="Internal Notes" />
-                <div class="pair-value">
-                  <FieldArray name="notes" component={NotesFieldArray} />
-                </div>
-              </div>
+                )}
+              />
 
               <Alert type="error" message={this.state.errors} />
 
