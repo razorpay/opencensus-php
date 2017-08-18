@@ -31,6 +31,30 @@ trait GenerateRefundFile
                         static::GATEWAY
                     );
 
+        $tpv = $this->gatewayFile->getTpv();
+
+        if ($tpv === null)
+        {
+            $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
+                            $this->type,
+                            $bank,
+                            $from,
+                            $to,
+                            $gateway
+                        );
+        }
+        else
+        {
+            $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
+                            $this->type,
+                            $bank,
+                            $from,
+                            $to,
+                            $gateway,
+                            $tpv
+                        );
+        }
+
         return $refunds;
     }
 

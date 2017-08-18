@@ -66,6 +66,13 @@ abstract class Base extends Core
         $this->repo->saveOrFail($gatewayFile);
     }
 
+    public function setGatewayFile(File\Entity $gatewayFile)
+    {
+        $this->gatewayFile = $gatewayFile;
+
+        return $this;
+    }
+
     /**
      * Handles any exception thrown during processing. Here we update the status as failed
      * with appropriate failure_code.
