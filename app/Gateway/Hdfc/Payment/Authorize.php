@@ -5,6 +5,7 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -382,15 +383,37 @@ trait Authorize
         ;
     }
 
-    protected function createAuthRecurringRequestFieldsFromEnrollData(array $input)
+    protected function createAuthRecurringRequestFields(array $input)
     {
-        $this->createEnrollRequestFields($input);
+        $payment = $input['payment'];
 
-        //
-        // Only need to add zip and addr fields
-        // since other fields have already been added during enroll
-        //
-        $data = $this->enrollRequest['data'];
+        $card = $input['card'];
+
+        // set the iso numeric currency code
+        $currency = $payment['currency'];
+
+        $data = [
+            'trackid'      => $payment['id'],
+            'amt'          => $payment['amount']/100,
+            'udf1'         => 'test',
+            'udf2'         => $payment['email'],
+            'udf3'         => $payment['contact'],
+            'udf4'         => 'test',
+            'udf5'         => 'test',
+            'currencycode' => Currency::ISO_NUMERIC_CODES[$currency],
+            'action'       => Action::AUTHORIZE,
+        ];
+
+        // Collect udf fields
+        // Only visa/master are supported for recurring
+        $this->populateRiskUdfIfApplicable($data, $input);
+
+        $this->udfCheckAndMeetHdfcRequirements($data);
+
+        $this->udfRemoveHackCharacters($data);
+
+        // Collect fields related to the card
+        $this->mapKeys($card, $this->cardKeyMappings, $data);
 
         $this->authSecondRecurringRequest['data'] = $data;
 
@@ -403,7 +426,7 @@ trait Authorize
 
     protected function authorizeRecurring($input)
     {
-        $this->createAuthRecurringRequestFieldsFromEnrollData($input);
+        $this->createAuthRecurringRequestFields($input);
 
         $this->trace(
            Trace::DEBUG,
