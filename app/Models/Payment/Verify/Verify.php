@@ -643,7 +643,7 @@ class Verify extends Base\Core
 
     protected function updateVerifyBucket(
         Payment\Entity $payment,
-        string $filter,
+        string $filter = null,
         string $param = self::NEXT)
     {
         if ($this->isBucketUpdateApplicable() === true)
