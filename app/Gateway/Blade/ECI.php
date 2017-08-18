@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Gateway\Blade;
+namespace RZP\Gateway\Blade;
 
 use RZP\Models\Card\Network;
 
@@ -39,24 +39,24 @@ class ECI
 
     protected static $eci = [
         Network::VISA => [
-            AuthenticateStatus::Y => '05',
-            AuthenticateStatus::U => '06',
-            AuthenticateStatus::N => '06',
-            AuthenticateStatus::F => '06',
+            AuthenticationStatus::Y => '05',
+            AuthenticationStatus::U => '06',
+            AuthenticationStatus::N => '06',
+            AuthenticationStatus::F => '06',
         ],
 
         Network::MC => [
-            AuthenticateStatus::Y => '02',
-            AuthenticateStatus::U => '01',
-            AuthenticateStatus::N => '01',
-            AuthenticateStatus::F => '00',
+            AuthenticationStatus::Y => '02',
+            AuthenticationStatus::U => '01',
+            AuthenticationStatus::N => '01',
+            AuthenticationStatus::F => '00',
         ],
 
         Network::JCB => [
-            AuthenticateStatus::Y => '05',
-            AuthenticateStatus::U => '06',
-            AuthenticateStatus::N => '06',
-            AuthenticateStatus::F => '07',
+            AuthenticationStatus::Y => '05',
+            AuthenticationStatus::U => '06',
+            AuthenticationStatus::N => '06',
+            AuthenticationStatus::F => '07',
         ],
     ];
 

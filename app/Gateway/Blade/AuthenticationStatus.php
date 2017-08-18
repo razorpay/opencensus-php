@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Blade;
 
-class AuthenticateStatus
+class AuthenticationStatus
 {
     /**
      * Successfully authenticated

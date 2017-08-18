@@ -183,7 +183,6 @@ class Gateway
      */
     public static $methodMap = [
         Method::CARD => [
-            self::BLADE,
             self::HDFC,
             self::ATOM,
             self::AXIS_MIGS,
@@ -192,6 +191,7 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
+            self::BLADE,
         ],
 
         Method::NETBANKING => [

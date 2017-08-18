@@ -36,10 +36,10 @@ class ParesStatus
     const A = 'A';
 
     protected static $authenticateStatusMap = array(
-        self::Y => AuthenticateStatus::Y,
-        self::N => AuthenticateStatus::F,
-        self::U => AuthenticateStatus::U,
-        self::A => AuthenticateStatus::U,
+        self::Y => AuthenticationStatus::Y,
+        self::N => AuthenticationStatus::F,
+        self::U => AuthenticationStatus::U,
+        self::A => AuthenticationStatus::U,
     );
 
     public static function getAuthenticationStatus($paresStatus)

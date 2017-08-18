@@ -44,11 +44,11 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\GatewayErrorException $e)
         {
-            $authenticationStatus = AuthenticateStatus::U;
+            $authenticationStatus = AuthenticationStatus::U;
         }
         catch (Exception\GatewayTimeoutException $e)
         {
-            $authenticationStatus = AuthenticateStatus::U;
+            $authenticationStatus = AuthenticationStatus::U;
         }
 
         // If it's an array then we need to run the 3dsecure
@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
                 throw $e;
             }
 
-            if ($authenticationStatus === AuthenticateStatus::F)
+            if ($authenticationStatus === AuthenticationStatus::F)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
 
     protected function shouldAuthorize($authenticationStatus)
     {
-        if ($authenticationStatus === AuthenticateStatus::Y)
+        if ($authenticationStatus === AuthenticationStatus::Y)
         {
             return true;
         }
@@ -154,12 +154,12 @@ class Gateway extends Base\Gateway
         else if ($enrolled === Enrolled::U)
         {
             // Could not be checked due to some issue
-            return AuthenticateStatus::U;
+            return AuthenticationStatus::U;
         }
         else if ($enrolled === Enrolled::N)
         {
             // Card not enrolled for 3dsecure
-            return AuthenticateStatus::N;
+            return AuthenticationStatus::N;
         }
 
         if (is_array($enrolled))
@@ -190,7 +190,7 @@ class Gateway extends Base\Gateway
 
         $authenticateStatus = ParesStatus::getAuthenticationStatus($status);
 
-        if ($authenticateStatus === AuthenticateStatus::F)
+        if ($authenticateStatus === AuthenticationStatus::F)
         {
             throw new ThreeDSecureAuthenticationFailureException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
