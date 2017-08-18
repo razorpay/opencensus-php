@@ -149,6 +149,10 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate  = true;
 
+    protected $embeddedRelations   = [
+        self::LINE_ITEMS,
+    ];
+
     protected $validOperations = [
         // Core's actions
         'create',
